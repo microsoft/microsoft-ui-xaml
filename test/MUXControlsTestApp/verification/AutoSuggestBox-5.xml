@@ -9,7 +9,7 @@
     Foreground=#E4000000
     Margin=0,0,0,0
     Padding=0,0,0,0
-    RenderSize=400,570
+    RenderSize=400,567
     Visibility=Visible
     Width=400
   [Windows.UI.Xaml.Controls.Grid]
@@ -24,7 +24,7 @@
       Margin=0,0,0,0
       Name=LayoutRoot
       Padding=0,0,0,0
-      RenderSize=400,570
+      RenderSize=400,567
       Visibility=Visible
     [Windows.UI.Xaml.Controls.TextBox]
         Background=#B3FFFFFF
@@ -40,7 +40,7 @@
         MinWidth=64
         Name=TextBox
         Padding=10,5,6,6
-        RenderSize=400,570
+        RenderSize=400,567
         Visibility=Visible
         Width=400
       [Windows.UI.Xaml.Controls.Grid]
@@ -54,7 +54,7 @@
           FocusVisualSecondaryThickness=1,1,1,1
           Margin=0,0,0,0
           Padding=0,0,0,0
-          RenderSize=400,570
+          RenderSize=400,567
           Visibility=Visible
         [Windows.UI.Xaml.Controls.Border]
             Background=#B3FFFFFF
@@ -68,7 +68,7 @@
             Margin=0,0,0,0
             Name=BorderElement
             Padding=0,0,0,0
-            RenderSize=400,570
+            RenderSize=400,567
             Visibility=Visible
         [Windows.UI.Xaml.Controls.ScrollViewer]
             Background=#00FFFFFF
@@ -82,7 +82,7 @@
             Margin=1,1,1,1
             Name=ContentElement
             Padding=10,5,6,6
-            RenderSize=394,568
+            RenderSize=394,565
             Visibility=Visible
           [Windows.UI.Xaml.Controls.Border]
               Background=[NULL]
@@ -96,7 +96,7 @@
               Margin=0,0,0,0
               Name=Root
               Padding=0,0,0,0
-              RenderSize=394,568
+              RenderSize=394,565
               Visibility=Visible
             [Windows.UI.Xaml.Controls.Grid]
                 Background=#00FFFFFF
@@ -109,7 +109,7 @@
                 FocusVisualSecondaryThickness=1,1,1,1
                 Margin=0,0,0,0
                 Padding=0,0,0,0
-                RenderSize=394,568
+                RenderSize=394,565
                 Visibility=Visible
               [Windows.UI.Xaml.Controls.ScrollContentPresenter]
                   Background=[NULL]
@@ -124,7 +124,7 @@
                   Margin=10,5,6,6
                   Name=ScrollContentPresenter
                   Padding=0,0,0,0
-                  RenderSize=378,557
+                  RenderSize=378,554
                   Visibility=Visible
                 [Windows.UI.Xaml.FrameworkElement]
                     FocusVisualPrimaryBrush=#E4000000
@@ -132,7 +132,7 @@
                     FocusVisualSecondaryBrush=#B3FFFFFF
                     FocusVisualSecondaryThickness=1,1,1,1
                     Margin=0,0,0,0
-                    RenderSize=378,557
+                    RenderSize=378,554
                     Visibility=Visible
               [Windows.UI.Xaml.Controls.Grid]
                   Background=[NULL]
@@ -145,7 +145,7 @@
                   FocusVisualSecondaryThickness=1,1,1,1
                   Margin=0,0,0,0
                   Padding=0,0,0,0
-                  RenderSize=394,568
+                  RenderSize=394,565
                   Visibility=Visible
               [Windows.UI.Xaml.Controls.Grid]
                   Background=[NULL]
@@ -231,7 +231,7 @@
             Margin=1,1,1,1
             Name=PlaceholderTextContentPresenter
             Padding=10,5,6,6
-            RenderSize=394,568
+            RenderSize=394,565
             Visibility=Visible
           [Windows.UI.Xaml.Controls.ContentPresenter]
               Background=[NULL]
@@ -245,7 +245,7 @@
               Foreground=#9E000000
               Margin=10,5,6,6
               Padding=0,0,0,0
-              RenderSize=378,557
+              RenderSize=378,554
               Visibility=Visible
         [Windows.UI.Xaml.Controls.Button]
             Background=#B3FFFFFF
@@ -300,5 +300,5 @@
         FocusVisualSecondaryThickness=1,1,1,1
         Margin=0,0,0,0
         Name=SuggestionsPopup
-        RenderSize=400,570
+        RenderSize=400,567
         Visibility=Visible

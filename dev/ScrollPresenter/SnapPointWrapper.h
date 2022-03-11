@@ -48,7 +48,7 @@ public:
     static SnapPointBase* GetSnapPointFromWrapper(std::shared_ptr<SnapPointWrapper<T>> snapPointWrapper);
 
 private:
-	static SnapPointBase* GetSnapPointFromWrapper(const SnapPointWrapper<T>* snapPointWrapper);
+    static SnapPointBase* GetSnapPointFromWrapper(const SnapPointWrapper<T>* snapPointWrapper);
 
 private:
     T m_snapPoint;

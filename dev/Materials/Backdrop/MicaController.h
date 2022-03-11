@@ -7,7 +7,7 @@
 
 struct MicaController : winrt::implementation::MicaControllerT<MicaController>, SystemBackdropComponentInternal::ISystemBackdropController
 {
-    MicaController() = default;
+    MicaController();
     ~MicaController();
 
     bool SetTarget(winrt::Windows::UI::Xaml::Window const& xamlWindow);
@@ -51,7 +51,7 @@ private:
     winrt::CompositionBrush m_currentBrush{ nullptr };
     winrt::Windows::UI::Composition::Compositor m_compositor{ nullptr };
     winrt::weak_ref<winrt::Microsoft::UI::Private::Controls::ICompositionSupportsSystemBackdrop> m_target{ nullptr };
-    std::unique_ptr<SystemBackdropComponentInternal::BaseWindowHandler> m_windowHandler{ nullptr };
+    com_ptr<SystemBackdropComponentInternal::BaseWindowHandler> m_windowHandler{ nullptr };
 
     bool m_isActive{ false };
     bool m_isExplicitFallbackColorSet{ false };

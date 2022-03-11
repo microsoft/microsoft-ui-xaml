@@ -74,7 +74,7 @@
       <Version>1.0.67</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.1.190606001</Version>
+      <Version>2.6.1</Version>
     </PackageReference>
   </ItemGroup>
   <!-- For reasons that are unclear, MSBuild generates an AppX manifest that has two duplicate entries for Microsoft.UI.Xaml.dll

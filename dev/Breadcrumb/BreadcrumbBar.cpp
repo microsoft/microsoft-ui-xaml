@@ -62,7 +62,7 @@ void BreadcrumbBar::OnApplyTemplate()
         itemsRepeater.Layout(*m_itemsRepeaterLayout);
         itemsRepeater.ItemsSource(winrt::make<Vector<IInspectable>>());
         itemsRepeater.ItemTemplate(*m_itemsRepeaterElementFactory);
-        
+
         m_itemsRepeaterElementPreparedRevoker = itemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &BreadcrumbBar::OnElementPreparedEvent });
         m_itemsRepeaterElementIndexChangedRevoker = itemsRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &BreadcrumbBar::OnElementIndexChangedEvent });
         m_itemsRepeaterElementClearingRevoker = itemsRepeater.ElementClearing(winrt::auto_revoke, { this, &BreadcrumbBar::OnElementClearingEvent });
@@ -148,7 +148,11 @@ void BreadcrumbBar::UpdateItemsRepeaterItemsSource()
     if (ItemsSource())
     {
         m_breadcrumbItemsSourceView = winrt::ItemsSourceView(ItemsSource());
-
+        if (const auto& itemsRepeater = m_itemsRepeater.get())
+        {
+            m_itemsIterable = winrt::make_self<BreadcrumbIterable>(ItemsSource());
+            itemsRepeater.ItemsSource(*m_itemsIterable);
+        }
         if (m_breadcrumbItemsSourceView)
         {
             m_itemsSourceChanged = m_breadcrumbItemsSourceView.CollectionChanged(winrt::auto_revoke, { this, &BreadcrumbBar::OnBreadcrumbBarItemsSourceCollectionChanged });
@@ -410,7 +414,7 @@ void BreadcrumbBar::OnGettingFocus(const winrt::IInspectable&, const winrt::Gett
                             args.Handled(true);
                         }
                     }
-                }   
+                }
             }
 
             // Focus was already in the repeater: in RS3+ Selection follows focus unless control is held down.
@@ -568,8 +572,8 @@ void BreadcrumbBar::OnChildPreviewKeyDown(const winrt::IInspectable&, const winr
             args.Handled(true);
             return;
         }
-        else if ( (flowDirectionIsLTR && (args.OriginalKey() == winrt::VirtualKey::GamepadDPadRight)) ||
-                    (!flowDirectionIsLTR && (args.OriginalKey() == winrt::VirtualKey::GamepadDPadLeft)) )
+        else if ((flowDirectionIsLTR && (args.OriginalKey() == winrt::VirtualKey::GamepadDPadRight)) ||
+            (!flowDirectionIsLTR && (args.OriginalKey() == winrt::VirtualKey::GamepadDPadLeft)))
         {
             if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Next))
             {
@@ -588,7 +592,7 @@ void BreadcrumbBar::OnChildPreviewKeyDown(const winrt::IInspectable&, const winr
             return;
         }
         else if ((flowDirectionIsLTR && (args.OriginalKey() == winrt::VirtualKey::GamepadDPadLeft)) ||
-                    (!flowDirectionIsLTR && (args.OriginalKey() == winrt::VirtualKey::GamepadDPadRight)))
+            (!flowDirectionIsLTR && (args.OriginalKey() == winrt::VirtualKey::GamepadDPadRight)))
         {
             if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Previous))
             {

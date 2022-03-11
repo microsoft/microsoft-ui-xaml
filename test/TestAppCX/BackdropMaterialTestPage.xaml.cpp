@@ -27,7 +27,7 @@ using namespace Windows::UI::Xaml::Navigation;
 
 BackdropMaterialTestPage::BackdropMaterialTestPage()
 {
-	InitializeComponent();
+    InitializeComponent();
 
     Loaded += ref new RoutedEventHandler(this, &BackdropMaterialTestPage::OnLoaded);
 

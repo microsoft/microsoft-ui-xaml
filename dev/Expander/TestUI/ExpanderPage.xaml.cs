@@ -23,6 +23,7 @@ namespace MUXControlsTestApp
         {
             return new TestControlAutomationPeer(this);
         }
+
     }
 
     public sealed class TestControlAutomationPeer : FrameworkElementAutomationPeer
@@ -32,9 +33,15 @@ namespace MUXControlsTestApp
         {
             return AutomationControlType.Custom;
         }
+
+        protected override string GetLocalizedControlTypeCore()
+        {
+            return "TestControl";
+        }
     }
 
     [TopLevelTestPage(Name = "Expander")]
+    [AxeScanTestPage(Name = "Expander-Axe")]
     public sealed partial class ExpanderPage : TestPage
     {
         public ExpanderPage()

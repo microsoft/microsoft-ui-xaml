@@ -23,10 +23,10 @@ using namespace Windows::UI::Xaml::Shapes;
 MainPage::MainPage() :
     mItems(ref new Vector<String^>())
 {
-	InitializeComponent();
+    InitializeComponent();
 
     AutomationProperties::SetName(this, L"MainPage");
-        
+
     Repeater->ItemsSource = mItems;
 }
 

@@ -153,7 +153,7 @@ $cleanMuxControlsDir = $muxControlsDir.Replace("\","\\") + "\\"
 Write-Output "$cleanMuxControlsDir"
 
 $assemblies=(
-	"System","EnvDTE","EnvDTE80"
+    "System","EnvDTE","EnvDTE80"
 )
 
 $source=@"

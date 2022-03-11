@@ -207,21 +207,21 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <FontIcon
-                            x:Name="Content"
-                            FontSize="{TemplateBinding FontSize}"
-                            FontFamily="{TemplateBinding FontFamily}"
-                            Glyph="{TemplateBinding Content}"
-                            MirroredWhenRightToLeft="True"
-                            Foreground="{TemplateBinding Foreground}"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                            AutomationProperties.AccessibilityView="Raw"
-                            RenderTransformOrigin="0.5, 0.5">
-                            <FontIcon.RenderTransform>
+                        <Border RenderTransformOrigin="0.5, 0.5">
+                            <Border.RenderTransform>
                                 <ScaleTransform x:Name="ScaleTransform" ScaleY="1" ScaleX="1" />
-                            </FontIcon.RenderTransform>
-                        </FontIcon>
+                            </Border.RenderTransform>
+                            <FontIcon
+                                x:Name="Content"
+                                FontSize="{TemplateBinding FontSize}"
+                                FontFamily="{TemplateBinding FontFamily}"
+                                Glyph="{TemplateBinding Content}"
+                                MirroredWhenRightToLeft="True"
+                                Foreground="{TemplateBinding Foreground}"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                AutomationProperties.AccessibilityView="Raw"/>
+                        </Border>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

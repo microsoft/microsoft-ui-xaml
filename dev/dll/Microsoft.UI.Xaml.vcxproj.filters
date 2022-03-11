@@ -29,9 +29,8 @@
     <ClCompile Include="FloatUtil.cpp" />
     <ClCompile Include="RegUtil.cpp" />
     <ClCompile Include="CommandingHelpers.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\XamlControlsResources.properties.cpp" />
     <ClCompile Include="XamlControlsResources.cpp" />
-    <ClCompile Include="..\..\BuildOutput\Intermediates\$(Platform)\Microsoft.UI.Xaml\obj\Generated Files\module.g.cpp" />
+    <ClCompile Include="$(DependencyPropertyCodeGenOutputDirectory)\XamlControlsResources.properties.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -100,7 +99,6 @@
     <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Microsoft.UI.Xaml.def" />
     <None Include="packages.config" />
     <None Include="$(OutDir)XamlMetadataProviderWindowsCodeGen.cs" />
     <None Include="XamlMetadataProviderGenerated.tt" />

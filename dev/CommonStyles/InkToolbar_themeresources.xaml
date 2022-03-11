@@ -251,6 +251,7 @@
         <Setter Property="FocusVisualMargin" Value="-3" />
         <Setter Property="Padding" Value="2,2,2,2" />
         <Setter Property="Margin" Value="2,2,2,2" />
+        <Setter Property="IsTextScaleFactorEnabled" Value="False" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
     </Style>
 
@@ -1508,8 +1509,9 @@
                     <Grid x:Name="RootElement"
                         Background="{TemplateBinding Background}"
                         Width="{StaticResource InkToolbarButtonWidth}"
-                        Height="{StaticResource InkToolbarButtonHeight}">
-
+                        Height="{StaticResource InkToolbarButtonHeight}"
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}" >
+                        
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />

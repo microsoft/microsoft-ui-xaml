@@ -31,6 +31,7 @@ ProgressRing::ProgressRing()
     SetValue(s_TemplateSettingsProperty, winrt::make<::ProgressRingTemplateSettings>());
 
     SizeChanged({ this, &ProgressRing::OnSizeChanged });
+    Loaded({ this, &ProgressRing::OnLoaded });
 }
 
 winrt::AutomationPeer ProgressRing::OnCreateAutomationPeer()
@@ -63,6 +64,11 @@ void ProgressRing::OnIndeterminateSourcePropertyChanged(winrt::DependencyPropert
 void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     ApplyTemplateSettings();
+}
+
+void ProgressRing::OnLoaded(const winrt::IInspectable&, const winrt::IInspectable&)
+{
+    UpdateStates();
 }
 
 void ProgressRing::OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)

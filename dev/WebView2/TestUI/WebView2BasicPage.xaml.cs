@@ -2,27 +2,24 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Windows.UI;
+using Windows.UI.Text;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
-using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Automation;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Navigation;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Globalization;
 using Windows.System;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Text;
 
 #if !BUILD_WINDOWS
 using Popup = Windows.UI.Xaml.Controls.Primitives.Popup;
@@ -167,6 +164,7 @@ namespace MUXControlsTestApp
             SourceBindingTest,
             GoBackAndForwardTest,
             NavigationStartingTest,
+            NavigationStartingInvalidTest,
             ResizeTest,
             BasicTapTouchTest,
             BasicFlingTouchTest,
@@ -196,6 +194,11 @@ namespace MUXControlsTestApp
             CloseThenDPIChangeTest,
             AddHostObjectToScriptTest,
             UserAgentTest,
+            NonAsciiUriTest,
+            OffTreeWebViewInputTest,
+            HtmlDropdownTest,
+            HiddenThenVisibleTest,
+            ParentHiddenThenVisibleTest
         };
 
         // Map of TestList entry to its webpage (index in TestPageNames[])
@@ -226,6 +229,7 @@ namespace MUXControlsTestApp
             { TestList.SourceBindingTest, 5 },
             { TestList.GoBackAndForwardTest, 0 },
             { TestList.NavigationStartingTest, 0 },
+            { TestList.NavigationStartingInvalidTest, 4 },
             { TestList.ResizeTest, 0 },
             { TestList.BasicTapTouchTest, 2 },
             { TestList.BasicFlingTouchTest, 2 },
@@ -255,6 +259,11 @@ namespace MUXControlsTestApp
             { TestList.CloseThenDPIChangeTest, 0 },
             { TestList.AddHostObjectToScriptTest, 0 },
             { TestList.UserAgentTest, 0 },
+            { TestList.NonAsciiUriTest, 7 },
+            { TestList.OffTreeWebViewInputTest, 1 },
+            { TestList.HtmlDropdownTest, 5 },
+            { TestList.HiddenThenVisibleTest, 1 },
+            { TestList.ParentHiddenThenVisibleTest, 1 },
         };
 
         readonly string[] TestPageNames =
@@ -266,6 +275,7 @@ namespace MUXControlsTestApp
             "SimplePageWithText.html",
             "SimpleInputPage.html",
             "SimplePageWithManyButtons.html",
+            "SimplePageWithNonÅscií.html",
         };
 
         readonly WebView2Common _helpers;
@@ -291,12 +301,22 @@ namespace MUXControlsTestApp
                 Content = "[x1] TabStop1"
             };
             AutomationProperties.SetName(tabStop1, "TabStopButton1");
+            tabStop1.GotFocus += (sender, args) =>
+            {
+                focusLog.Text += "Focus on: [x1]" + "\n";
+                focusScrollViewer.ChangeView(null, focusScrollViewer.ScrollableHeight, null);
+            };
             var tabStop2 = new Button()
             {
                 Name = "TabStopButton2",
                 Content = "[x2] TabStop2"
             };
             AutomationProperties.SetName(tabStop2, "TabStopButton2");
+            tabStop2.GotFocus += (sender, args) =>
+            {
+                focusLog.Text += "Focus on: [x2]" + "\n";
+                focusScrollViewer.ChangeView(null, focusScrollViewer.ScrollableHeight, null);
+            };
 
             AddWebViewControl("MyWebView2");
             // adding tabstop buttons x1 and x2 before and after default webview and its title, respectively
@@ -502,6 +522,7 @@ namespace MUXControlsTestApp
             _helpers.ClearStatus();
             var messageReceivedBox = FindName("MessageReceived") as CheckBox;
             messageReceivedBox.IsChecked = false;
+            AnaheimFocusTextBox.Text = string.Empty;
         }
 
         private void TestNameComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -520,7 +541,7 @@ namespace MUXControlsTestApp
                     {
                         AddWebViewControl("MyWebView2B");
                         AddWebViewControl("MyWebView2C");
-                        WebView2Common.LoadWebPage(MyWebView2, TestPageNames[0]);
+                        WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[test]]);
                     }
                     break;
                 case TestList.MultipleWebviews_FocusTest:
@@ -548,9 +569,7 @@ namespace MUXControlsTestApp
                 case TestList.SourceBeforeLoadTest:
                     {
                         // Remove existing WebView, we're going to replace it
-                        RemoveWebViewEventHandlers(MyWebView2);
-                        Border parentBorder = MyWebView2.Parent as Border;
-                        parentBorder.Child = null;
+                        Border parentBorder = RemoveExistingWebViewControl(MyWebView2);
 
                         Uri uri = WebView2Common.GetTestPageUri("SimplePageWithButton.html");
                         var newWebView2 = new WebView2() {
@@ -595,9 +614,7 @@ namespace MUXControlsTestApp
                 case TestList.WindowlessPopupTest:
                     {
                         // Remove existing WebView so it doesn't get confused with the one in the popup
-                        RemoveWebViewEventHandlers(MyWebView2);
-                        Border parentBorder = MyWebView2.Parent as Border;
-                        parentBorder.Child = null;
+                        _ = RemoveExistingWebViewControl(MyWebView2);
 
                         // Create popup contents: a new webview
                         var webviewInPopup = new WebView2() {
@@ -645,9 +662,7 @@ namespace MUXControlsTestApp
                 case TestList.CursorUpdateTest:
                     {
                         // Remove existing WebView, we're going to replace it
-                        RemoveWebViewEventHandlers(MyWebView2);
-                        Border parentBorder = MyWebView2.Parent as Border;
-                        parentBorder.Child = null;
+                        Border parentBorder = RemoveExistingWebViewControl(MyWebView2);
 
                         // Insert webview with public ProtectedCursor
                         var newWebView2 = new WebView2WithCursor() {
@@ -660,38 +675,93 @@ namespace MUXControlsTestApp
                         WebView2Common.LoadWebPage(newWebView2, TestPageNames[TestInfoDictionary[test]]);
                     }
                     break;
+                case TestList.NonAsciiUriTest:
+                    {
+                        // Put the URI with non-ascii characters in a TextBox, so we can easily copy/paste for manual testing.
+                        var box = FindName("CopyPasteTextBox2") as TextBox;
+                        string fileLocation = WebView2Common.GetTestPageUri("SimplePageWithNonÅscií.html").ToString();
+                        string query = "?query=";
+                        box.Text = fileLocation + query;
+
+                        WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[test]]);
+                    }
+                    break;
+                case TestList.OffTreeWebViewInputTest:
+                    {
+                        // Remove existing webview
+                        Border parentBorder = RemoveExistingWebViewControl(MyWebView2);
+                        parentBorder.BorderBrush = new SolidColorBrush(Colors.Pink);
+                    }
+                    break;
+                case TestList.HiddenThenVisibleTest:
+                    {
+                        // Remove existing WebView, we're going to replace it with a hidden one
+                        Border parentBorder = RemoveExistingWebViewControl(MyWebView2);
+                        var parentStackPanel = parentBorder.Parent as StackPanel;
+                        parentStackPanel.Children.Remove(parentBorder);
+
+                        // Create a new border that gets its size from the webview
+                        var newBorder = new Border() {
+                            BorderBrush = new SolidColorBrush(Colors.Red),
+                            BorderThickness = new Thickness(5)
+                        };
+
+                        // Add a new, collapsed WebView2 into the tree
+                        var uri = WebView2Common.GetTestPageUri(TestPageNames[TestInfoDictionary[test]]);
+                        var newWebView2 = new WebView2() {
+                            Name = "MyWebView2",
+                            Margin = new Thickness(8, 8, 8, 8),
+                            Width = 670,
+                            Height = 370,
+                            Source = uri,
+                            Visibility = Visibility.Collapsed,
+                        };
+                        AutomationProperties.SetName(newWebView2, "MyWebView2");
+                        newBorder.Child = newWebView2;
+                        parentStackPanel.Children.Add(newBorder);
+                        AddWebViewEventHandlers(newWebView2);
+                    }
+                    break;
+                case TestList.ParentHiddenThenVisibleTest:
+                    {
+                        // Remove existing WebView, we're going to replace it with a hidden one
+                        Border parentBorder = RemoveExistingWebViewControl(MyWebView2);
+                        var parentStackPanel = parentBorder.Parent as StackPanel;
+                        parentStackPanel.Children.Remove(parentBorder);
+
+                        // Create a new, collapsed border that gets its size from the webview
+                        var newBorder = new Border() {
+                            BorderBrush = new SolidColorBrush(Colors.Red),
+                            BorderThickness = new Thickness(5),
+                            Visibility = Visibility.Collapsed
+                        };
+
+                        // Add a new WebView2 into the tree
+                        var uri = WebView2Common.GetTestPageUri(TestPageNames[TestInfoDictionary[test]]);
+                        var newWebView2 = new WebView2() {
+                            Name = "MyWebView2",
+                            Margin = new Thickness(8, 8, 8, 8),
+                            Width = 670,
+                            Height = 370,
+                            Source = uri,
+                            Visibility = Visibility.Visible,
+                        };
+                        AutomationProperties.SetName(newWebView2, "MyWebView2");
+                        newBorder.Child = newWebView2;
+                        parentStackPanel.Children.Add(newBorder);
+                        AddWebViewEventHandlers(newWebView2);
+                    }
+                    break;
                 default:
                     WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[test]]);
                     break;
             }
         }
 
-        // Update Xaml app's status of focused Anaheim element
-        async public void UpdatingAnaheimFocusToolTipOpened(object sender, RoutedEventArgs args)
-        {
-            var MyWebView2 = FindName("MyWebView2") as WebView2;
-            string result = await MyWebView2.ExecuteScriptAsync("getFocus();");
-            char[] trimChar = { '\"' };
-            AnaheimFocusTextBox.Text = result.Trim(trimChar);
-        }
-
-        // Tooltip helper function for the second webview's tooltip.
-        async public void UpdatingAnaheimFocusToolTipOpenedMultipleWebview(object sender, RoutedEventArgs args)
-        {
-            // If this is run from multiple webview test expecting focus on the second webview control
-            // then set MyWebView2 to MyWebView2B.
-            if (FindName("MyWebView2B") != null)
-            {
-                var MyWebView2 = FindName("MyWebView2B") as WebView2;
-                string result = await MyWebView2.ExecuteScriptAsync("getFocus();");
-                char[] trimChar = { '\"' };
-                AnaheimFocusTextBox.Text = result.Trim(trimChar); // We should be fine checking the same textbox
-            }
-        }
-
-
         private void OnNavigationStarting(WebView2 sender, CoreWebView2NavigationStartingEventArgs args)
         {
+            // Be careful if changing this message. The "NavigationStarting" string is expected
+            // to be logged exactly once per NavigationStarting event by the NonAsciiUriTest.
             AppendMessage(string.Format("[{0}]: Got NavigationStarting ({1}).", sender.Name, args.Uri));
 
             string expectedUri = "http://www.blockedbynavigationstarting.invalid/";
@@ -750,13 +820,24 @@ namespace MUXControlsTestApp
             var toggleSwitch = FindName(sender.Name + "Toggle") as ToggleSwitch;
             if (AreEqualIgnoringSpace(args.Source, sender.Source.ToString()) && toggleSwitch.IsOn)
             {
-                Status1.Text = webMessageAsJson = args.WebMessageAsJson;
                 try
                 {
-                    Status2.Text = webMessageAsString = args.TryGetWebMessageAsString();
+                    webMessageAsString = args.TryGetWebMessageAsString();
+                    if (IsFocusMessage(webMessageAsString))
+                    {
+                        AnaheimFocusTextBox.Text = webMessageAsString;
+                        focusLog.Text += webMessageAsString + "\n";
+                        focusScrollViewer.ChangeView(null, focusScrollViewer.ScrollableHeight, null);
+                    }
+                    else
+                    {
+                        Status1.Text = webMessageAsJson = args.WebMessageAsJson;
+                        Status2.Text = webMessageAsString;
+                    }
                 }
                 catch
                 {
+                    Status1.Text = webMessageAsJson = args.WebMessageAsJson;
                     Status2.Text = "Invalid string (try args.WebMessageAsJson instead)";
                 }
             }
@@ -765,6 +846,12 @@ namespace MUXControlsTestApp
             {
                 VerifyWebMessageBasedTest(webMessageAsString, webMessageAsJson);
             }
+
+        }
+
+        private static bool IsFocusMessage(string webMessageAsString)
+        {
+            return webMessageAsString.StartsWith("Focus on:") || webMessageAsString.StartsWith("Blur on:");
         }
 
         private void OnCoreProcessFailed(WebView2 sender, CoreWebView2ProcessFailedEventArgs args)
@@ -816,7 +903,7 @@ namespace MUXControlsTestApp
             stackPanelText.Children.Add(textBlock);
             stackPanelText.Children.Add(toggleSwitch);
 
-            var webView2 = new WebView2() 
+            var webView2 = new WebView2()
             {
                 Name = webviewName,
                 Margin = new Thickness(8, 8, 8, 8)
@@ -828,7 +915,8 @@ namespace MUXControlsTestApp
                 Width = 670,
                 Height = 370,
                 BorderBrush = new SolidColorBrush(Colors.Blue),
-                BorderThickness = new Thickness(1)
+                BorderThickness = new Thickness(1),
+                Name = webviewName + "Border"
             };
             border.Child = webView2;
 
@@ -868,6 +956,14 @@ namespace MUXControlsTestApp
             };
             stackPanel.Children.Add(border);
             WebView2Collection.Children.Add(stackPanel);
+        }
+
+        Border RemoveExistingWebViewControl(WebView2 webview)
+        {
+            RemoveWebViewEventHandlers(webview);
+            Border parentBorder = webview.Parent as Border;
+            parentBorder.Child = null;
+            return parentBorder;
         }
 
         void AddWebViewEventHandlers(WebView2 webview)
@@ -930,34 +1026,6 @@ namespace MUXControlsTestApp
             Status2.Text = errorStatus.ToString("G");
         }
 
-        static Color GetPixelAtPoint(Point p, RenderTargetBitmap rtb, byte[] pixelArray)
-        {
-            // BGRA8 format has Blue, Green, Red and Alpha bits together in this order
-            Color pixelColor = new Color();
-            int x = (int)(p.X);
-            int y = (int)(p.Y);
-            int pointPosition = 4 * (rtb.PixelWidth * y + x);
-            pixelColor.B = pixelArray[pointPosition];
-            pixelColor.G = pixelArray[pointPosition + 1];
-            pixelColor.R = pixelArray[pointPosition + 2];
-            pixelColor.A = pixelArray[pointPosition + 3];
-
-            return pixelColor;
-        }
-
-        async Task<Color> SamplePointColors(Image showRtb, int x = 100, int y = 100)
-        {
-            var MyWebView2 = FindName("MyWebView2") as WebView2;
-            Point p1 = new Point(x, y);
-
-            RenderTargetBitmap rtb = new RenderTargetBitmap();
-            await rtb.RenderAsync(MyWebView2);
-            showRtb.Source = rtb;
-            var pixelBuffer = await rtb.GetPixelsAsync();
-            byte[] pixelArray = pixelBuffer.ToArray();       // In BGRA8 format
-            return GetPixelAtPoint(p1, rtb, pixelArray);
-        }
-
         // Some tests receive multiple messages from WebMessageReceived, but we only care about the last one
         bool IsTransientWebMessage(string webMessageAsString)
         {
@@ -970,7 +1038,7 @@ namespace MUXControlsTestApp
             // Tests may receive a resize message when the webview is initially displayed on screen
             bool isInitialWindowVisible = webMessageAsString.StartsWith("Visibility state is now") && !IsVisiblityTest(selectedTest);
 
-            return isTapWhenWaitingForSomethingElse || isInitialResize || isInitialWindowVisible;
+            return isTapWhenWaitingForSomethingElse || isInitialResize || isInitialWindowVisible || IsFocusMessage(webMessageAsString);
         }
 
         private static bool IsTransientTapTest(TestList selectedTest)
@@ -1110,6 +1178,15 @@ namespace MUXControlsTestApp
                         expectedStringResult = "Example property from host object";
                         break;
 
+                    case TestList.OffTreeWebViewInputTest:
+                        expectedStringResult = "Left mouse button clicked.";
+                        break;
+
+                    case TestList.HiddenThenVisibleTest:
+                    case TestList.ParentHiddenThenVisibleTest:
+                        expectedStringResult = "Left mouse button clicked.";
+                        break;
+
                     default:
                         {
                             logger.LogError("Unexpected test type in VerifyWebMessageBasedTest(), got message: " + stringResult);
@@ -1157,14 +1234,6 @@ namespace MUXControlsTestApp
 
                 switch (selectedTest)
                 {
-                    case TestList.BasicRenderingTest:
-                        {
-                            // BasicRenderingTest not working via RTB due to HWND-based rendering workaround. 
-                            // It is validated in TestRunner side via GDI.
-                            // Color expectedColor = Color.FromArgb(0xFF, 0xFF, 0x80, 0x00); // orange
-                            // await VerifySingleColorTest(selectedTest, expectedColor, logger);
-                        }
-                        break;
 
                     case TestList.NavigationErrorTest:
                         {
@@ -1247,21 +1316,6 @@ namespace MUXControlsTestApp
                         }
                         break;
 
-                    case TestList.BasicKeyboardTest:
-                        {
-                            string expectedMessage = "Input button clicked.";
-                            string receivedMessage = Status2.Text;
-                            logger.Verify((expectedMessage == receivedMessage),
-                                          string.Format("Test {0}: Expected web message {1} did not match received web message {2}.",
-                                                        selectedTest.ToString(), expectedMessage, receivedMessage));
-                            string expectedText = "Hello 123 Worm";
-                            string textResult = CopyPasteTextBox2.Text;
-                            logger.Verify((textResult == expectedText),
-                                          string.Format("Test {0}: Expected text {1} did not match with sampled text {2}.",
-                                                        selectedTest.ToString(), expectedText, textResult));
-                        }
-                        break;
-
                     case TestList.MouseCaptureTest:
                         {
                             string textResult = CopyPasteTextBox2.Text;
@@ -1275,11 +1329,11 @@ namespace MUXControlsTestApp
                     case TestList.ReloadTest:
                         {
                             Uri prevUri = MyWebView2.Source;
-                            await MyWebView2.ExecuteScriptAsync("document.getElementById(\"textInput1\").value='injectedText';");
+                            await MyWebView2.ExecuteScriptAsync("document.getElementById(\"w1\").value='injectedText';");
                             var task = MyWebView2.GetNavigationCompletedTask();
                             MyWebView2.Reload();
                             await task;
-                            string finalTextContent = await MyWebView2.ExecuteScriptAsync("document.getElementById(\"textInput1\").value;");
+                            string finalTextContent = await MyWebView2.ExecuteScriptAsync("document.getElementById(\"w1\").value;");
                             logger.Verify((finalTextContent == "\"\""),
                                           string.Format("Test {0}: TextBox value was not cleared (\"\"), value: {1}",
                                                         selectedTest.ToString(), finalTextContent));
@@ -1388,45 +1442,43 @@ namespace MUXControlsTestApp
 
                     case TestList.NavigationStartingTest:
                         {
-
-                            // Part 1: [SimplePage.html] calls  navigateToTextPage() -> Navigates to [SimplePageWithText.html].
+                            // Part 1: [SimplePage.html] calls navigateToTextPage() -> Navigates to [SimplePageWithText.html].
                             //         Ensure we get expected NavigationStarting event/args.
-                            //         Scope startTask to make sure we unsubscribe from NavigationStarting before starting Part 2.
-                            {
-                                var startTask = MyWebView2.GetNavigationStartingTask();
-                                _ = MyWebView2.ExecuteScriptAsync("navigateToTextPage();");
-                                await startTask;
-                                string startingStatus = Status1.Text;
-                                string expectedStatus = "MyWebView2 navigation starting...";
-                                logger.Verify((startingStatus == expectedStatus),
-                                              string.Format("Test {0}: Failed, Expected navigation status: {1} did not match actual navigation status: {2}",
-                                                            selectedTest, expectedStatus, startingStatus));
-                                string navigationStartingUri = Status3.Text;
-                                string expectedUri = WebView2Common.GetTestPageUri("SimplePageWithText.html").ToString();
-                                logger.Verify(AreEqualIgnoringSpace(navigationStartingUri, expectedUri),
-                                              string.Format("Test {0}: Failed, Expected NavigationStarting Uri {1} did not match actual NavigationStarting Uri {2}",
-                                                            selectedTest, expectedUri, navigationStartingUri));
-                                logger.Verify(_isUserInitiated,
-                                              string.Format("Test {0}: Failed, NavigationStartingArgs.IsUserInitiated value: {1}, did not match expected value: true",
-                                                            selectedTest, _isUserInitiated.ToString()));
-                                logger.Verify(!_isRedirected,
-                                              string.Format("Test {0}: Failed, NavigationStartingArgs.IsRedirected value: {1}, did not match expected value: false",
-                                                            selectedTest, _isRedirected.ToString()));
-                            }
-
-                            // Part 2: [SimplePageWithText.html] navigates to http://www.blockedbynavigationstarting.invalid. -> navigation  cancelled via OnNavigationStarting.
-                            //         Ensure we are still on [SimplePageWithText.html] at end.
-                            {
-                                var startTask2 = MyWebView2.GetNavigationStartingTask();
-                                _ = MyWebView2.ExecuteScriptAsync("navigateToInvalidPage();");
-                                await startTask2;
-
-                                string navigationStartingUri = Status3.Text;
-                                string expectedUri = WebView2Common.GetTestPageUri("SimplePageWithText.html").ToString();
-                                logger.Verify(AreEqualIgnoringSpace(navigationStartingUri, expectedUri),
+                            var startTask = MyWebView2.GetNavigationStartingTask();
+                            _ = MyWebView2.ExecuteScriptAsync("navigateToTextPage();");
+                            await startTask;
+                            string startingStatus = Status1.Text;
+                            string expectedStatus = "MyWebView2 navigation starting...";
+                            logger.Verify((startingStatus == expectedStatus),
+                                            string.Format("Test {0}: Failed, Expected navigation status: {1} did not match actual navigation status: {2}",
+                                                        selectedTest, expectedStatus, startingStatus));
+                            string navigationStartingUri = Status3.Text;
+                            string expectedUri = WebView2Common.GetTestPageUri("SimplePageWithText.html").ToString();
+                            logger.Verify(AreEqualIgnoringSpace(navigationStartingUri, expectedUri),
                                             string.Format("Test {0}: Failed, Expected NavigationStarting Uri {1} did not match actual NavigationStarting Uri {2}",
-                                                            selectedTest, expectedUri, navigationStartingUri));
-                            }
+                                                        selectedTest, expectedUri, navigationStartingUri));
+                            logger.Verify(_isUserInitiated,
+                                            string.Format("Test {0}: Failed, NavigationStartingArgs.IsUserInitiated value: {1}, did not match expected value: true",
+                                                        selectedTest, _isUserInitiated.ToString()));
+                            logger.Verify(!_isRedirected,
+                                            string.Format("Test {0}: Failed, NavigationStartingArgs.IsRedirected value: {1}, did not match expected value: false",
+                                                        selectedTest, _isRedirected.ToString()));
+                        }
+                        break;
+
+                    case TestList.NavigationStartingInvalidTest:
+                        {
+                            // Part 2: [SimplePage.html] navigates to http://www.blockedbynavigationstarting.invalid -> navigation cancelled via OnNavigationStarting.
+                            //         Ensure we are still on [SimplePage.html] at end.
+                            var startTask2 = MyWebView2.GetNavigationStartingTask();
+                            _ = MyWebView2.ExecuteScriptAsync("navigateToInvalidPage();");
+                            await startTask2;
+
+                            string navigationStartingUri = Status3.Text;
+                            string expectedUri = WebView2Common.GetTestPageUri("SimplePageWithText.html").ToString();
+                            logger.Verify(AreEqualIgnoringSpace(navigationStartingUri, expectedUri),
+                                        string.Format("Test {0}: Failed, Expected NavigationStarting Uri {1} did not match actual NavigationStarting Uri {2}",
+                                                        selectedTest, expectedUri, navigationStartingUri));
                         }
                         break;
 
@@ -1789,6 +1841,71 @@ namespace MUXControlsTestApp
                         }
                         break;
 
+                    case TestList.OffTreeWebViewInputTest:
+                        {
+                            // Create a new webview
+                            ApplicationTheme appTheme = Application.Current.RequestedTheme;
+                            Color backgroundColor = (appTheme == ApplicationTheme.Light) ? Colors.White : Colors.Black;
+                            var webView2 = new WebView2() {
+                                Name = "MyWebView2",
+                                Margin = new Thickness(8, 8, 8, 8)
+                            };
+                            AutomationProperties.SetName(webView2, "MyWebView2");
+                            AddWebViewEventHandlers(webView2);
+
+                            // Ensure the webview before we add it to the tree
+                            var task = webView2.EnsureCoreWebView2Async();
+                            await task;
+
+                            // Navigate
+                            var navCompletedTask = webView2.GetNavigationCompletedTask();
+                            WebView2Common.LoadWebPage(webView2, TestPageNames[TestInfoDictionary[selectedTest]]);
+                            await navCompletedTask;
+
+                            // Add the webview to the tree so we can see it
+                            var border = FindName("MyWebView2Border") as Border;
+                            border.Child = webView2;
+                        }
+                        break;
+                    case TestList.HtmlDropdownTest:
+                        {
+                            var selctedOption = await MyWebView2.ExecuteScriptAsync("getSelectedOption();");
+                            logger.Verify(selctedOption.Equals("\"2\""),
+                                string.Format("Test {0} Failed, Expected option \"2\" to be selcted, actually got {1}",
+                                    selectedTest, selctedOption));;
+                        }
+                        break;
+                    case TestList.HiddenThenVisibleTest:
+                        {
+                            logger.Verify(MyWebView2.Visibility == Visibility.Collapsed,
+                                 string.Format("Test {0}: Incorrect setup, Expected MyWebView2.Visibility to be Collapsed, was {1}",
+                                    selectedTest, MyWebView2.Visibility));
+
+                            // Make WebView2 visible
+                            MyWebView2.Visibility = Visibility.Visible;
+
+                            logger.Verify(MyWebView2.IsHitTestVisible,
+                                 string.Format("Test {0}: Failed, Expected MyWebView2.IsHitTestVisible to be true, was {1}",
+                                    selectedTest, MyWebView2.IsHitTestVisible));
+                        }
+                        break;
+                    case TestList.ParentHiddenThenVisibleTest:
+                        {
+                            var parentBorder = MyWebView2.Parent as Border;
+
+                            logger.Verify(parentBorder.Visibility == Visibility.Collapsed,
+                                 string.Format("Test {0}: Incorrect setup, Expected MyWebView2.Visibility to be Collapsed, was {1}",
+                                    selectedTest, parentBorder.Visibility));
+
+                            // Make WebView2's parent Border visible
+                            parentBorder.Visibility = Visibility.Visible;
+
+                            logger.Verify(MyWebView2.IsHitTestVisible,
+                                 string.Format("Test {0}: Failed, Expected MyWebView2.IsHitTestVisible to be true, was {1}",
+                                    selectedTest, MyWebView2.IsHitTestVisible));
+                        }
+                        break;
+
                     default:
                         break;
 
@@ -1809,15 +1926,6 @@ namespace MUXControlsTestApp
             }
 
             CleanupResultTextBox.Text = "Cleanup completed.";
-        }
-
-        async private Task VerifySingleColorTest(TestList selectedTest, Color expectedColor, ResultsLogger logger)
-        {
-            Color sampledColor = await SamplePointColors(ShowRtb1);
-            bool result = sampledColor.Equals(expectedColor);
-            logger.Verify(result,
-                          string.Format("Test {0}: Expected color {1} did not match with sampled color {2}",
-                                        selectedTest.ToString(), expectedColor.ToString(), sampledColor.ToString()));
         }
 
         protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)

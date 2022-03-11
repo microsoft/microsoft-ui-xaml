@@ -53,6 +53,7 @@ static constexpr auto c_navViewCloseButton = L"NavigationViewCloseButton"sv;
 static constexpr auto c_navViewCloseButtonToolTip = L"NavigationViewCloseButtonToolTip"sv;
 static constexpr auto c_paneShadowReceiverCanvas = L"PaneShadowReceiver"sv;
 static constexpr auto c_flyoutRootGrid = L"FlyoutRootGrid"sv;
+static constexpr auto c_settingsItemTag = L"Settings"sv;
 
 // DisplayMode Top specific items
 static constexpr auto c_topNavMenuItemsHost = L"TopNavMenuItemsHost"sv;
@@ -179,6 +180,7 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     {
         m_selectionChangedRevoker.revoke();
         m_autoSuggestBoxQuerySubmittedRevoker.revoke();
+        ClearAllNavigationViewItemRevokers();
     }
 }
 
@@ -220,13 +222,17 @@ NavigationView::NavigationView()
 
     m_navigationViewItemsFactory = winrt::make_self<NavigationViewItemsFactory>();
 
-    s_NavigationViewItemRevokersProperty =
-        InitializeDependencyProperty(
-            L"NavigationViewItemRevokers",
-            winrt::name_of<winrt::IInspectable>(),
-            winrt::name_of<winrt::NavigationViewItem>(),
-            true /* isAttached */,
-            nullptr /* defaultValue */);
+    static const auto s_NavigationViewItemRevokersPropertyInit = []()
+    {
+        s_NavigationViewItemRevokersProperty =
+            InitializeDependencyProperty(
+                L"NavigationViewItemRevokers",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::NavigationViewItem>(),
+                true /* isAttached */,
+                nullptr /* defaultValue */);
+        return false;
+    }();
 }
 
 void NavigationView::OnSelectionModelChildrenRequested(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelChildrenRequestedEventArgs& e)
@@ -1253,14 +1259,7 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
             }();
             winrt::get_self<NavigationViewItem>(nvi)->PropagateDepthToChildren(childDepth);
 
-            // Register for item events
-            auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
-            nviRevokers->tappedRevoker = nvi.Tapped(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemTapped });
-            nviRevokers->keyDownRevoker = nvi.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
-            nviRevokers->gotFocusRevoker = nvi.GotFocus(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemOnGotFocus });
-            nviRevokers->isSelectedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItemBase::IsSelectedProperty(), { this, &NavigationView::OnNavigationViewItemIsSelectedPropertyChanged });
-            nviRevokers->isExpandedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItem::IsExpandedProperty(), { this, &NavigationView::OnNavigationViewItemExpandedPropertyChanged });
-            nvi.SetValue(s_NavigationViewItemRevokersProperty, nviRevokers.as<winrt::IInspectable>());
+            SetNavigationViewItemRevokers(nvi);
         }
     }
 }
@@ -1295,8 +1294,7 @@ void NavigationView::OnRepeaterElementClearing(const winrt::ItemsRepeater& ir, c
         nvibImpl->IsTopLevelItem(false);
         if (auto nvi = nvib.try_as<winrt::NavigationViewItem>())
         {
-            // Revoke all the events that we were listing to on the item
-            nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
+            ClearNavigationViewItemRevokers(nvi);
         }
     }
 }
@@ -1320,7 +1318,7 @@ void NavigationView::CreateAndHookEventsToSettings()
     // Do localization for settings item label and Automation Name
     auto localizedSettingsName = ResourceAccessor::GetLocalizedStringResource(SR_SettingsButtonName);
     winrt::AutomationProperties::SetName(settingsItem, localizedSettingsName);
-    settingsItem.Tag(box_value(localizedSettingsName));
+    settingsItem.Tag(box_value(c_settingsItemTag));
     UpdateSettingsItemToolTip();
 
     // Add the name only in case of horizontal nav
@@ -1820,7 +1818,7 @@ void NavigationView::UpdatePaneButtonsWidths()
     }();
  
     templateSettings->PaneToggleButtonWidth(newButtonWidths);
-    templateSettings->SmallerPaneToggleButtonWidth(newButtonWidths - 8);
+    templateSettings->SmallerPaneToggleButtonWidth(std::max(0.0, newButtonWidths - 8));
 }
 
 void NavigationView::OnBackButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
@@ -3404,6 +3402,35 @@ void NavigationView::UpdateLeftNavigationOnlyVisualState(bool useTransitions)
     winrt::VisualStateManager::GoToState(*this, isToggleButtonVisible || !m_isLeftPaneTitleEmpty ? L"TogglePaneButtonVisible" : L"TogglePaneButtonCollapsed", false /*useTransitions*/);
 }
 
+void NavigationView::SetNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi)
+{
+    auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
+    nviRevokers->tappedRevoker = nvi.Tapped(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemTapped });
+    nviRevokers->keyDownRevoker = nvi.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
+    nviRevokers->gotFocusRevoker = nvi.GotFocus(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemOnGotFocus });
+    nviRevokers->isSelectedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItemBase::IsSelectedProperty(), { this, &NavigationView::OnNavigationViewItemIsSelectedPropertyChanged });
+    nviRevokers->isExpandedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItem::IsExpandedProperty(), { this, &NavigationView::OnNavigationViewItemExpandedPropertyChanged });
+
+    nvi.SetValue(s_NavigationViewItemRevokersProperty, nviRevokers.as<winrt::IInspectable>());
+
+    m_itemsWithRevokerObjects.insert(nvi);
+}
+
+void NavigationView::ClearNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi)
+{
+    nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
+    m_itemsWithRevokerObjects.erase(nvi);
+}
+
+void NavigationView::ClearAllNavigationViewItemRevokers()
+{
+    for (const auto& nvi : m_itemsWithRevokerObjects)
+    {
+        nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
+    }
+    m_itemsWithRevokerObjects.clear();
+}
+
 void NavigationView::InvalidateTopNavPrimaryLayout()
 {
     if (m_appliedTemplate && IsTopNavigationView())
@@ -4016,6 +4043,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         UpdatePaneTitleFrameworkElementParents();
         UpdateBackAndCloseButtonsVisibility();
         UpdatePaneToggleButtonVisibility();
+        UpdateTitleBarPadding();
         UpdateVisualState();
     }
     else if (property == s_IsSettingsVisibleProperty)

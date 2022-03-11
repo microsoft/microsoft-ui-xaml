@@ -5,7 +5,13 @@
 #include "common.h"
 #include "ResourceAccessor.h"
 
+PCWSTR ResourceAccessor::c_resourceLocWinUI{ L"Microsoft.UI.Xaml/Resources" };
+
+#ifdef MUX_EXPERIMENTAL
+PCWSTR ResourceAccessor::c_resourceLoc{ L"Microsoft.Experimental.UI.Xaml/Resources" };
+#else
 PCWSTR ResourceAccessor::c_resourceLoc{ L"Microsoft.UI.Xaml/Resources" };
+#endif
 
 winrt::ResourceMap ResourceAccessor::GetResourceMap()
 {
@@ -36,6 +42,33 @@ winrt::hstring ResourceAccessor::GetLocalizedStringResource(const wstring_view &
 
     return s_resourceMap.GetValue(resourceName, s_resourceContext).ValueAsString();
 }
+
+#ifdef MUX_EXPERIMENTAL
+winrt::hstring ResourceAccessor::GetLocalizedStringResourceFromWinUI(const wstring_view& resourceName)
+{
+    static winrt::ResourceMap s_resourceMapWinUI = []() {
+
+        constexpr wchar_t c_winUIPackageNamePrefix[] = L"Microsoft.UI.Xaml.";
+        constexpr size_t c_winUIPackageNamePrefixLength = ARRAYSIZE(c_winUIPackageNamePrefix) - 1;
+
+        for (auto resourceMapKvp : winrt::ResourceManager::Current().AllResourceMaps())
+        {
+            auto resourceMapName = resourceMapKvp.Key();
+            if (std::wstring_view(resourceMapName.c_str(), c_winUIPackageNamePrefixLength) == std::wstring_view(c_winUIPackageNamePrefix))
+            {
+                return resourceMapKvp.Value().GetSubtree(ResourceAccessor::c_resourceLocWinUI);
+            }
+        }
+
+        // If we don't find a matching framework package, use the app's resources:
+        return winrt::ResourceManager::Current().MainResourceMap().GetSubtree(ResourceAccessor::c_resourceLocWinUI);
+    }();
+
+    static winrt::ResourceContext s_resourceContext = winrt::ResourceContext::GetForViewIndependentUse();
+
+    return s_resourceMapWinUI.GetValue(resourceName, s_resourceContext).ValueAsString();
+}
+#endif
 
 winrt::LoadedImageSurface ResourceAccessor::GetImageSurface(const wstring_view &assetName, winrt::Size imageSize)
 {

@@ -9,7 +9,7 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedChevronDownSmallVisualSource.json
 //       
 //       Input file:
-//           AnimatedChevronDownSmallVisualSource.json (9531 bytes created 23:37-07:00 Oct 5 2021)
+//           AnimatedChevronDownSmallVisualSource.json (10093 bytes created 9:26-07:00 Jun 8 2021)
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -21,11 +21,11 @@
 // ____________________________________
 // |       Object stats       | Count |
 // |__________________________|_______|
-// | All CompositionObjects   |    65 |
+// | All CompositionObjects   |    53 |
 // |--------------------------+-------|
-// | Expression animators     |     7 |
-// | KeyFrame animators       |     6 |
-// | Reference parameters     |     7 |
+// | Expression animators     |     5 |
+// | KeyFrame animators       |     4 |
+// | Reference parameters     |     5 |
 // | Expression operations    |     4 |
 // |--------------------------+-------|
 // | Animated brushes         |     1 |
@@ -33,11 +33,11 @@
 // | ExpressionAnimations     |     2 |
 // | PathKeyFrameAnimations   |     - |
 // |--------------------------+-------|
-// | ContainerVisuals         |     4 |
-// | ShapeVisuals             |     3 |
+// | ContainerVisuals         |     3 |
+// | ShapeVisuals             |     2 |
 // |--------------------------+-------|
 // | ContainerShapes          |     - |
-// | CompositionSpriteShapes  |     3 |
+// | CompositionSpriteShapes  |     2 |
 // |--------------------------+-------|
 // | Brushes                  |     1 |
 // | Gradient stops           |     - |
@@ -108,20 +108,15 @@ class AnimatedChevronDownSmallVisualSource_AnimatedVisual : public winrt::implem
         IClosable>
 {
     winrt::com_ptr<ID2D1Factory> _d2dFactory{ nullptr };
-    static constexpr int64_t c_durationTicks{ 13333333L };
+    static constexpr int64_t c_durationTicks{ 4833333L };
     Compositor const _c{ nullptr };
     ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
     CompositionPropertySet const _themeProperties{ nullptr };
     CompositionColorBrush _themeColor_Foreground{ nullptr };
     CompositionPathGeometry _pathGeometry{ nullptr };
     ContainerVisual _root{ nullptr };
-    CubicBezierEasingFunction _cubicBezierEasingFunction_0{ nullptr };
-    CubicBezierEasingFunction _cubicBezierEasingFunction_1{ nullptr };
-    CubicBezierEasingFunction _cubicBezierEasingFunction_2{ nullptr };
     ExpressionAnimation _rootProgress{ nullptr };
     InsetClip _insetClip_0{ nullptr };
-    StepEasingFunction _holdThenStepEasingFunction{ nullptr };
-    StepEasingFunction _stepThenHoldEasingFunction{ nullptr };
 
     static void StartProgressBoundAnimation(
         CompositionObject target,
@@ -164,31 +159,19 @@ class AnimatedChevronDownSmallVisualSource_AnimatedVisual : public winrt::implem
         return result;
     }
 
-    // PreComp layer: Controls - 06 - Dropdown - 06 - PressedToPointerOver
+    // PreComp layer: Controls - 06 - Dropdown - 05 - PressedToNormal
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_0()
     {
-        // Frame 60.
-        const auto result = CreateBooleanKeyFrameAnimation(0.75F, true);
+        // Frame 10.
+        const auto result = CreateBooleanKeyFrameAnimation(0.344827592F, true);
         return result;
     }
 
-    // PreComp layer: Controls - 06 - Dropdown - 05 - PressedToNormal
+    // PreComp layer: Controls - 06 - Dropdown - 04 - PointerOverToPressed
     BooleanKeyFrameAnimation IsVisibleBooleanAnimation_1()
     {
-        // Frame 40.
-        const auto result = CreateBooleanKeyFrameAnimation(0.5F, true);
-        // Frame 60.
-        result.InsertKeyFrame(0.75F, false);
-        return result;
-    }
-
-    // PreComp layer: Controls - 06 - Dropdown - 01 - NormalToPointerOver Controls - 06 -
-    // Dropdown - 02 - NormalToPressed Controls - 06 - Dropdown - 03 - PointerOverToNormal
-    // Controls - 06 - Dropdown - 04 - PointerOverToPressed
-    BooleanKeyFrameAnimation IsVisibleBooleanAnimation_2()
-    {
-        // Frame 40.
-        const auto result = CreateBooleanKeyFrameAnimation(0.5F, false);
+        // Frame 10.
+        const auto result = CreateBooleanKeyFrameAnimation(0.344827592F, false);
         return result;
     }
 
@@ -228,8 +211,8 @@ class AnimatedChevronDownSmallVisualSource_AnimatedVisual : public winrt::implem
         return _pathGeometry = _c.CreatePathGeometry(CompositionPath(CanvasGeometryToIGeometrySource2D(Geometry())));
     }
 
-    // - PreComp layer: Controls - 06 - Dropdown - 06 - PressedToPointerOver
-    // Transforms for Controls - 06 - Dropdown - 06 - PressedToPointerOver Scale(1,1,0)
+    // - PreComp layer: Controls - 06 - Dropdown - 05 - PressedToNormal
+    // Transforms for Controls - 06 - Dropdown - 05 - PressedToNormal Scale(1,1,0)
     // Path 1
     CompositionSpriteShape SpriteShape_0()
     {
@@ -240,8 +223,8 @@ class AnimatedChevronDownSmallVisualSource_AnimatedVisual : public winrt::implem
         return result;
     }
 
-    // - PreComp layer: Controls - 06 - Dropdown - 05 - PressedToNormal
-    // Transforms for Controls - 06 - Dropdown - 05 - PressedToNormal Scale(1,1,0)
+    // - PreComp layer: Controls - 06 - Dropdown - 04 - PointerOverToPressed
+    // Transforms for Controls - 06 - Dropdown - 04 - PointerOverToPressed Scale(1,1,0)
     // Path 1
     CompositionSpriteShape SpriteShape_1()
     {
@@ -252,23 +235,7 @@ class AnimatedChevronDownSmallVisualSource_AnimatedVisual : public winrt::implem
         return result;
     }
 
-    // - PreComp layer: Controls - 06 - Dropdown - 01 - NormalToPointerOver Controls - 06
-    // - Dropdown - 02 - NormalToPressed Controls - 06 - Dropdown - 03 -
-    // PointerOverToNormal Controls - 06 - Dropdown - 04 - PointerOverToPressed
-    // Transforms for Controls - 06 - Dropdown - 01 - NormalToPointerOver Controls - 06 -
-    // Dropdown - 02 - NormalToPressed Controls - 06 - Dropdown - 03 - PointerOverToNormal
-    // Controls - 06 - Dropdown - 04 - PointerOverToPressed Scale(1,1,0)
-    // Path 1 Path 1 Path 1 Path 1
-    CompositionSpriteShape SpriteShape_2()
-    {
-        const auto result = _c.CreateSpriteShape(_pathGeometry);
-        result.Scale({ 4.0F, 4.0F });
-        result.FillBrush(_themeColor_Foreground);
-        StartProgressBoundAnimation(result, L"Offset", OffsetVector2Animation_2(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 06 - Dropdown - 06 - PressedToPointerOver
+    // PreComp layer: Controls - 06 - Dropdown - 05 - PressedToNormal
     ContainerVisual ContainerVisual_0()
     {
         const auto result = _c.CreateContainerVisual();
@@ -277,42 +244,23 @@ class AnimatedChevronDownSmallVisualSource_AnimatedVisual : public winrt::implem
         result.Size({ 48.0F, 48.0F });
         // Scale:<1, 1>
         result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 06 - Dropdown - 06 - PressedToPointerOver Scale(1,1,0)
+        // Transforms for Controls - 06 - Dropdown - 05 - PressedToNormal Scale(1,1,0)
         result.Children().InsertAtTop(ShapeVisual_0());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_0(), _rootProgress);
         return result;
     }
 
-    // PreComp layer: Controls - 06 - Dropdown - 05 - PressedToNormal
+    // PreComp layer: Controls - 06 - Dropdown - 04 - PointerOverToPressed
     ContainerVisual ContainerVisual_1()
     {
         const auto result = _c.CreateContainerVisual();
         result.Clip(_insetClip_0);
-        result.IsVisible(false);
         result.Size({ 48.0F, 48.0F });
         // Scale:<1, 1>
         result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 06 - Dropdown - 05 - PressedToNormal Scale(1,1,0)
+        // Transforms for Controls - 06 - Dropdown - 04 - PointerOverToPressed Scale(1,1,0)
         result.Children().InsertAtTop(ShapeVisual_1());
         StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_1(), _rootProgress);
-        return result;
-    }
-
-    // PreComp layer: Controls - 06 - Dropdown - 01 - NormalToPointerOver Controls - 06 -
-    // Dropdown - 02 - NormalToPressed Controls - 06 - Dropdown - 03 - PointerOverToNormal
-    // Controls - 06 - Dropdown - 04 - PointerOverToPressed
-    ContainerVisual ContainerVisual_2()
-    {
-        const auto result = _c.CreateContainerVisual();
-        result.Clip(_insetClip_0);
-        result.Size({ 48.0F, 48.0F });
-        // Scale:<1, 1>
-        result.TransformMatrix({ 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F });
-        // Transforms for Controls - 06 - Dropdown - 01 - NormalToPointerOver Controls - 06 -
-        // Dropdown - 02 - NormalToPressed Controls - 06 - Dropdown - 03 - PointerOverToNormal
-        // Controls - 06 - Dropdown - 04 - PointerOverToPressed Scale(1,1,0)
-        result.Children().InsertAtTop(ShapeVisual_2());
-        StartProgressBoundAnimation(result, L"IsVisible", IsVisibleBooleanAnimation_2(), _rootProgress);
         return result;
     }
 
@@ -323,30 +271,11 @@ class AnimatedChevronDownSmallVisualSource_AnimatedVisual : public winrt::implem
         const auto propertySet = result.Properties();
         propertySet.InsertScalar(L"Progress", 0.0F);
         const auto children = result.Children();
-        // PreComp layer: Controls - 06 - Dropdown - 06 - PressedToPointerOver
-        children.InsertAtTop(ContainerVisual_0());
         // PreComp layer: Controls - 06 - Dropdown - 05 - PressedToNormal
+        children.InsertAtTop(ContainerVisual_0());
+        // PreComp layer: Controls - 06 - Dropdown - 04 - PointerOverToPressed
         children.InsertAtTop(ContainerVisual_1());
-        // PreComp layer: Controls - 06 - Dropdown - 01 - NormalToPointerOver Controls - 06 -
-        // Dropdown - 02 - NormalToPressed Controls - 06 - Dropdown - 03 - PointerOverToNormal
-        // Controls - 06 - Dropdown - 04 - PointerOverToPressed
-        children.InsertAtTop(ContainerVisual_2());
         return result;
-    }
-
-    CubicBezierEasingFunction CubicBezierEasingFunction_0()
-    {
-        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F });
-    }
-
-    CubicBezierEasingFunction CubicBezierEasingFunction_1()
-    {
-        return _cubicBezierEasingFunction_1 = _c.CreateCubicBezierEasingFunction({ 0.850000024F, 0.0F }, { 0.75F, 1.0F });
-    }
-
-    CubicBezierEasingFunction CubicBezierEasingFunction_2()
-    {
-        return _cubicBezierEasingFunction_2 = _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.0F, 1.0F });
     }
 
     ExpressionAnimation RootProgress()
@@ -362,7 +291,7 @@ class AnimatedChevronDownSmallVisualSource_AnimatedVisual : public winrt::implem
         return result;
     }
 
-    // PreComp layer: Controls - 06 - Dropdown - 06 - PressedToPointerOver
+    // PreComp layer: Controls - 06 - Dropdown - 05 - PressedToNormal
     // Shape tree root for layer: Layer 2
     ShapeVisual ShapeVisual_0()
     {
@@ -373,8 +302,8 @@ class AnimatedChevronDownSmallVisualSource_AnimatedVisual : public winrt::implem
         return result;
     }
 
-    // PreComp layer: Controls - 06 - Dropdown - 05 - PressedToNormal
-    // Shape tree root for layer: Layer 2
+    // PreComp layer: Controls - 06 - Dropdown - 04 - PointerOverToPressed
+    // Shape tree root for layer: Layer 3
     ShapeVisual ShapeVisual_1()
     {
         const auto result = _c.CreateShapeVisual();
@@ -384,49 +313,14 @@ class AnimatedChevronDownSmallVisualSource_AnimatedVisual : public winrt::implem
         return result;
     }
 
-    // PreComp layer: Controls - 06 - Dropdown - 01 - NormalToPointerOver Controls - 06 -
-    // Dropdown - 02 - NormalToPressed Controls - 06 - Dropdown - 03 - PointerOverToNormal
-    // Controls - 06 - Dropdown - 04 - PointerOverToPressed
-    // Shape tree root for layer: Layer 2 Layer 2 Layer 2 Layer 2
-    ShapeVisual ShapeVisual_2()
-    {
-        const auto result = _c.CreateShapeVisual();
-        result.Size({ 48.0F, 48.0F });
-        // ShapeGroup: Group 1 Group 1 Group 1 Group 1
-        result.Shapes().Append(SpriteShape_2());
-        return result;
-    }
-
+    // - - - PreComp layer: Controls - 06 - Dropdown - 05 - PressedToNormal
+    // - - Transforms for Controls - 06 - Dropdown - 05 - PressedToNormal Scale(1,1,0)
+    // - ShapeGroup: Group 1
+    // Offset
     StepEasingFunction HoldThenStepEasingFunction()
     {
-        const auto result = _holdThenStepEasingFunction = _c.CreateStepEasingFunction();
+        const auto result = _c.CreateStepEasingFunction();
         result.IsFinalStepSingleFrame(true);
-        return result;
-    }
-
-    StepEasingFunction StepThenHoldEasingFunction()
-    {
-        const auto result = _stepThenHoldEasingFunction = _c.CreateStepEasingFunction();
-        result.IsInitialStepSingleFrame(true);
-        return result;
-    }
-
-    // - - PreComp layer: Controls - 06 - Dropdown - 06 - PressedToPointerOver
-    // - Transforms for Controls - 06 - Dropdown - 06 - PressedToPointerOver Scale(1,1,0)
-    // ShapeGroup: Group 1
-    // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_0()
-    {
-        // Frame 0.
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 24.0F }, StepThenHoldEasingFunction());
-        // Frame 50.
-        result.InsertKeyFrame(0.625F, { 24.0F, 24.0F }, HoldThenStepEasingFunction());
-        // Frame 60.
-        result.InsertKeyFrame(0.75F, { 24.0F, 22.0F }, CubicBezierEasingFunction_0());
-        // Frame 70.
-        result.InsertKeyFrame(0.875F, { 24.0F, 31.5F }, CubicBezierEasingFunction_1());
-        // Frame 79.
-        result.InsertKeyFrame(0.987500012F, { 24.0F, 24.0F }, CubicBezierEasingFunction_2());
         return result;
     }
 
@@ -434,44 +328,29 @@ class AnimatedChevronDownSmallVisualSource_AnimatedVisual : public winrt::implem
     // - Transforms for Controls - 06 - Dropdown - 05 - PressedToNormal Scale(1,1,0)
     // ShapeGroup: Group 1
     // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_1()
+    Vector2KeyFrameAnimation OffsetVector2Animation_0()
     {
         // Frame 0.
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 24.0F }, _stepThenHoldEasingFunction);
-        // Frame 30.
-        result.InsertKeyFrame(0.375F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
-        // Frame 40.
-        result.InsertKeyFrame(0.5F, { 24.0F, 22.0F }, _cubicBezierEasingFunction_0);
-        // Frame 50.
-        result.InsertKeyFrame(0.625F, { 24.0F, 31.5F }, _cubicBezierEasingFunction_1);
-        // Frame 59.
-        result.InsertKeyFrame(0.737500012F, { 24.0F, 24.0F }, _cubicBezierEasingFunction_2);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 24.0F }, HoldThenStepEasingFunction());
+        // Frame 10.
+        result.InsertKeyFrame(0.344827592F, { 24.0F, 31.5F }, _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.0F, 1.0F }));
+        // Frame 15.
+        result.InsertKeyFrame(0.517241359F, { 24.0F, 21.0F }, _c.CreateCubicBezierEasingFunction({ 0.550000012F, 0.0F }, { 0.75F, 1.0F }));
+        // Frame 29.
+        result.InsertKeyFrame(1.0F, { 24.0F, 24.0F }, _c.CreateCubicBezierEasingFunction({ 0.349999994F, 0.0F }, { 0.0F, 1.0F }));
         return result;
     }
 
-    // - - PreComp layer: Controls - 06 - Dropdown - 01 - NormalToPointerOver Controls -
-    // 06 - Dropdown - 02 - NormalToPressed Controls - 06 - Dropdown - 03 -
-    // PointerOverToNormal Controls - 06 - Dropdown - 04 - PointerOverToPressed
-    // - Transforms for Controls - 06 - Dropdown - 01 - NormalToPointerOver Controls - 06
-    // - Dropdown - 02 - NormalToPressed Controls - 06 - Dropdown - 03 -
-    // PointerOverToNormal Controls - 06 - Dropdown - 04 - PointerOverToPressed
-    // Scale(1,1,0)
-    // ShapeGroup: Group 1 Group 1 Group 1 Group 1
+    // - - PreComp layer: Controls - 06 - Dropdown - 04 - PointerOverToPressed
+    // - Transforms for Controls - 06 - Dropdown - 04 - PointerOverToPressed Scale(1,1,0)
+    // ShapeGroup: Group 1
     // Offset
-    Vector2KeyFrameAnimation OffsetVector2Animation_2()
+    Vector2KeyFrameAnimation OffsetVector2Animation_1()
     {
         // Frame 0.
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
-        // Frame 10.
-        result.InsertKeyFrame(0.125F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
-        // Frame 19.
-        result.InsertKeyFrame(0.237499997F, { 24.0F, 22.0F }, _cubicBezierEasingFunction_0);
-        // Frame 20.
-        result.InsertKeyFrame(0.25F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
-        // Frame 30.
-        result.InsertKeyFrame(0.375F, { 24.0F, 24.0F }, _holdThenStepEasingFunction);
-        // Frame 39.
-        result.InsertKeyFrame(0.487500012F, { 24.0F, 22.0F }, _cubicBezierEasingFunction_0);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 24.0F, 24.0F }, _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.833000004F, 0.833000004F }));
+        // Frame 9.
+        result.InsertKeyFrame(0.310344815F, { 24.0F, 31.5F }, _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.649999976F, 1.0F }));
         return result;
     }
 
@@ -577,7 +456,7 @@ winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual AnimatedChevronDownSmallVi
 
 double AnimatedChevronDownSmallVisualSource::FrameCount()
 {
-    return 80.0;
+    return 29.0;
 }
 
 double AnimatedChevronDownSmallVisualSource::Framerate()
@@ -587,12 +466,12 @@ double AnimatedChevronDownSmallVisualSource::Framerate()
 
 TimeSpan AnimatedChevronDownSmallVisualSource::Duration()
 {
-    return TimeSpan{ 13333333L };
+    return TimeSpan{ 4833333L };
 }
 
 double AnimatedChevronDownSmallVisualSource::FrameToProgress(double frameNumber)
 {
-    return frameNumber / 80.0;
+    return frameNumber / 29.0;
 }
 
 winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedChevronDownSmallVisualSource::Markers()
@@ -601,17 +480,17 @@ winrt::Windows::Foundation::Collections::IMapView<hstring, double> AnimatedChevr
         std::map<winrt::hstring, double>
         {
             { L"NormalToPointerOver_Start", 0.0 },
-            { L"NormalToPointerOver_End", 0.113125 },
-            { L"NormalToPressed_Start", 0.125625 },
-            { L"NormalToPressed_End", 0.238125 },
-            { L"PointerOverToNormal_Start", 0.250625 },
-            { L"PointerOverToNormal_End", 0.363125 },
-            { L"PointerOverToPressed_Start", 0.375625 },
-            { L"PointerOverToPressed_End", 0.488125 },
-            { L"PressedToNormal_Start", 0.500625 },
-            { L"PressedToNormal_End", 0.725625 },
-            { L"PressedToPointerOver_Start", 0.750625 },
-            { L"PressedToPointerOver_End", 0.988125 },
+            { L"NormalToPointerOver_End", 0.0 },
+            { L"NormalToPressed_Start", 0.0 },
+            { L"NormalToPressed_End", 0.312068965517241 },
+            { L"PointerOverToNormal_Start", 0.0 },
+            { L"PointerOverToNormal_End", 0.0 },
+            { L"PointerOverToPressed_Start", 0.0 },
+            { L"PointerOverToPressed_End", 0.312068965517241 },
+            { L"PressedToNormal_Start", 0.346551724137931 },
+            { L"PressedToNormal_End", 0.967241379310345 },
+            { L"PressedToPointerOver_Start", 0.346551724137931 },
+            { L"PressedToPointerOver_End", 0.967241379310345 },
         }
     ).GetView();
 }

@@ -1,47 +1,85 @@
+Param(
+    [Parameter(Position=0, Mandatory=$true)]
+    [string] $NuGetConfigPath
+)
+
 . .\version.ps1
 . .\template.ps1
 . .\config.ps1
 
-$feedUri = "https://pkgs.dev.azure.com/ms/microsoft-ui-xaml/_packaging/MUX-Dependencies/nuget/v2"
-
-$currentVersion = MakeVersion $releaseVersionMajor $releaseVersionMinor ( GetDatetimeStamp $pgoBranch )
-
-Write-Host ( "PGO OPTIMIZE: requesting {0} version {1}" -f $packageId, ( FormatVersion $currentVersion ) )
-
-$packageSource = Register-PackageSource -ForceBootstrap -Name MUX_Dependencies -Location $feedUri -ProviderName NuGet -Trusted
-$packages = ( Find-Package $packageId -Source MUX_Dependencies -AllowPrereleaseVersions -AllVersions ) | Sort-Object -Property Version -Descending
-
-$best = $null
-
-foreach ( $existing in $packages )
+function Get-AvailablePackages ( $package )
 {
-    $existingVersion = MakeVersionFromString $existing.Version
+    $result = @()
 
-    if ( ( CompareBranches $existingVersion $currentVersion ) -eq $False -or
-         ( CompareReleases $existingVersion $currentVersion ) -ne 0 )
+    $output = ( & nuget.exe list $package -prerelease -allversions -configfile $NuGetConfigPath )
+
+    if ( $LastExitCode -ne 0 )
     {
-        # If this is different release or branch, then skip it.
+        throw "FAILED: nuget.exe list"
+    }
+
+    foreach ( $line in $output )
+    {
+        $name, $version = $line.Split(" ")
+
+        if ( $name -eq $package )
+        {
+            $result += ( MakeVersionFromString $version )
+        }
+    }
+
+    return $result
+}
+
+function Install-Package ( $package, $version )
+{
+    & nuget.exe install $package -prerelease -version $version -configfile $NuGetConfigPath
+
+    if ( $LastExitCode -ne 0 )
+    {
+        throw "FAILED: nuget.exe install"
+    }
+}
+
+$forkPoint = ( GetForkPoint $pgoBranch )
+
+$requestedVersion = MakeVersion $releaseVersionMajor $releaseVersionMinor $releaseVersionPatch $releaseVersionPrerelease $forkPoint.DateString $forkPoint.BranchString
+
+Write-Host ( "PGO OPTIMIZE: requesting {0} version {1} ({2})" -f $packageId, ( FormatVersion $requestedVersion ), $forkPoint.SHA )
+
+$packageVersions = ( Get-AvailablePackages $packageId ) | Sort-Object -Descending -Property Major, Minor, Patch, Prerelease, Branch, Revision
+
+$bestVersion = $null
+
+foreach ( $existingVersion in $packageVersions )
+{
+    if ( ( CompareReleaseAndBranch $existingVersion $requestedVersion ) -eq $False )
+    {
+        # If this is different release number, pre-release tag or branch, then skip it.
         continue
     }
 
-    if ( ( CompareRevisions $existingVersion $currentVersion ) -le 0 )
+    # Sorting guarantees that all eligible entries are consecutive and sorted according to decreasing revision time stamp.
+    # Revisions are fixed, 10 character strings containing numbers (YYMMHHhhmm).  Sorting will arrange them reverse-chronologically.
+    # Once we are here, we are beginning of that segment.
+
+    if ( ( CompareRevisions $existingVersion $requestedVersion ) -le 0 )
     {
-        # Version are sorted in descending order, the first one less than or equal to the current is the one we want.
-        # NOTE: at this point the only difference between versions will be revision (date-time stamp)
-        # which is formatted as a fixed-length string, so string comparison WILL sort it correctly.
-        $best = $existing
+        # Revisions are sorted in descending order, the first one less than or equal to the current is the one we want.
+        $bestVersion = $existingVersion
         break
     }
 }
 
-if ( $best -eq $null )
+if ( $bestVersion -eq $null )
 {
     throw "Appropriate database cannot be found"
 }
 
-Write-Host ( "PGO OPTIMIZE: picked {0} version {1}" -f $packageId, $best.Version )
+$bestVersionAsString = ( FormatVersion $bestVersion )
 
-$best | Install-Package -Destination ..\..\packages -Force
-$packageSource | Unregister-PackageSource
+Write-Host ( "PGO OPTIMIZE: picked {0} version {1}" -f $packageId, $bestVersionAsString )
 
-FillOut-Template "PGO.version.props.template" "PGO.version.props" @{ "version" = $best.Version; "id" = $packageId }
+Install-Package $packageId $bestVersionAsString
+
+FillOut-Template "PGO.version.props.template" "PGO.version.props" @{ "version" = $bestVersionAsString; "id" = $packageId }

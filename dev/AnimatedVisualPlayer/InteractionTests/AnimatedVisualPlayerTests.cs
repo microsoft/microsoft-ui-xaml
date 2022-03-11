@@ -43,6 +43,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void SettingAnimationOptimizationDoesNotCrash()
+        {
+            using (var setup = new TestSetupHelper("AnimatedVisualPlayer Tests"))
+            {
+                var button = Button("SwitchCacheModeButton");
+                button.Click();
+                Wait.ForIdle();
+                button.Click();
+            }
+        }
+
+        [TestMethod]
         public void AccessibilityTest()
         {
             using (var setup = new TestSetupHelper("AnimatedVisualPlayer Tests"))
