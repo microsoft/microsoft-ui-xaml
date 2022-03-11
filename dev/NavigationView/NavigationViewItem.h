@@ -63,7 +63,7 @@ public:
     bool IsRepeaterVisible() const;
     void PropagateDepthToChildren(int depth);
     bool HasChildren();
-    // Needed for scenarios where the Repeater is not loaded (OnApplyTemplate) therefore we cannot guarantee a non-null MenuItemsSource acutally contains items
+    // Needed for scenarios where the ItemsRepeater is not loaded (OnApplyTemplate) therefore we cannot guarantee a non-null MenuItemsSource actually contains items
     bool HasPotentialChildren();
 
 private:

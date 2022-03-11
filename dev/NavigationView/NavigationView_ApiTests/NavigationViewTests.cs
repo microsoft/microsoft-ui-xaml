@@ -154,7 +154,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return navView;
         }
 
-        private NavigationView SetupNavigationViewHierarachy(NavigationViewPaneDisplayMode paneDisplayMode = NavigationViewPaneDisplayMode.Auto)
+        private NavigationView SetupNavigationViewHierarchy(NavigationViewPaneDisplayMode paneDisplayMode = NavigationViewPaneDisplayMode.Auto)
         {
             NavigationView navView = null;
             RunOnUIThread.Execute(() =>
@@ -221,8 +221,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var topNavViewPaneContent = SetupNavigationViewPaneContent(NavigationViewPaneDisplayMode.Top);
                 visualTreeVerifier.VerifyVisualTreeNoException(root: topNavViewPaneContent, verificationFileNamePrefix: "NavigationViewTopPaneContent");
 
-                Log.Comment($"Verify visual tree for NavigationViewHierarachy");
-                var hierarchyNavViewPaneContent = SetupNavigationViewHierarachy(NavigationViewPaneDisplayMode.Left);
+                Log.Comment($"Verify visual tree for NavigationViewHierarchy");
+                var hierarchyNavViewPaneContent = SetupNavigationViewHierarchy(NavigationViewPaneDisplayMode.Left);
                 visualTreeVerifier.VerifyVisualTreeNoException(root: hierarchyNavViewPaneContent, verificationFileNamePrefix: "NavigationViewHierarchy");   
             }
         }

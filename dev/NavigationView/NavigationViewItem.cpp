@@ -106,7 +106,7 @@ void NavigationViewItem::OnApplyTemplate()
         Loaded({ this, &NavigationViewItem::OnLoaded });
     }
 
-    if(HasPotentialChildren())
+    if (HasPotentialChildren())
     {
         LoadMenuItemsHost();
         UpdateRepeaterItemsSource();
@@ -135,7 +135,7 @@ void NavigationViewItem::LoadElementsForDisplayingChildren()
     
     LoadMenuItemsHost();
     
-    if(auto nvip = GetPresenter())
+    if (auto nvip = GetPresenter())
     {
         nvip->LoadChevron();
         UpdateVisualStateForChevron();
@@ -145,7 +145,10 @@ void NavigationViewItem::LoadElementsForDisplayingChildren()
 void NavigationViewItem::LoadMenuItemsHost()
 {
     // verify repeater is not already loaded
-    if(m_repeater != nullptr) { return; }
+    if (m_repeater != nullptr) 
+    { 
+        return; 
+    }
 
     if (auto nvImpl = winrt::get_self<NavigationView>(GetNavigationView()))
     {
@@ -325,17 +328,17 @@ void NavigationViewItem::OnMenuItemsVectorChanged(const winrt::Collections::IObs
 void NavigationViewItem::OnMenuItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     m_menuItemsVectorChangedRevoker.revoke();
-    if(auto menuItemsVector = MenuItems())
+    if (auto menuItemsVector = MenuItems())
     {
-        if(auto menuItemsObservableVector = menuItemsVector.as<winrt::IObservableVector<winrt::IInspectable>>())
+        if (auto menuItemsObservableVector = menuItemsVector.as<winrt::IObservableVector<winrt::IInspectable>>())
         {
             m_menuItemsVectorChangedRevoker = menuItemsObservableVector.VectorChanged(winrt::auto_revoke, { this, &NavigationViewItem::OnMenuItemsVectorChanged });
         }
-    }
-    
-    if(MenuItems().Size() > 0)
-    {
-        LoadElementsForDisplayingChildren();
+
+        if (menuItemsVector.Size() > 0)
+        {
+            LoadElementsForDisplayingChildren();
+        }
     }
     
     UpdateRepeaterItemsSource();
@@ -601,9 +604,9 @@ void NavigationViewItem::UpdateVisualStateForChevron()
         auto const chevronState = HasChildren() && !(m_isClosedCompact && ShouldRepeaterShowInFlyout()) ? (IsExpanded() ? ChevronStateValue::ChevronVisibleOpen : ChevronStateValue::ChevronVisibleClosed) : ChevronStateValue::ChevronHidden;
 
         auto const pointerChevronState = [this, pointerStateValue, chevronState]() {
-            // This Visual State Group will load the chevron in the PointerOver & Pressed state even if it is hidden.
-            // In order to avoid loading the chevron when we dont need it, only execute this if we can confirm chevron is needed.
-            if(m_hasHadChildren)
+            // This Visual State Group will load the chevron in the PointerOver & Pressed states even if it is hidden.
+            // In order to avoid loading the chevron when we don't need it, only execute this if we can confirm chevron is needed.
+            if (m_hasHadChildren)
             {
                 if (chevronState == ChevronStateValue::ChevronHidden)
                 {
