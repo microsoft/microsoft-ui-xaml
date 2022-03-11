@@ -40,8 +40,8 @@ void TeachingTip::OnApplyTemplate()
 {
     base_type::OnApplyTemplate();
 
-    m_acceleratorKeyActivatedRevoker.revoke();
-    m_previewKeyDownForF6Revoker.revoke();
+    m_keyboardAcceleratorKeyActivatedRevoker.revoke();
+    m_dispatcherAcceleratorKeyActivatedRevoker.revoke();
     m_effectiveViewportChangedRevoker.revoke();
     m_contentSizeChangedRevoker.revoke();
     m_closeButtonClickedRevoker.revoke();
@@ -115,6 +115,19 @@ void TeachingTip::OnApplyTemplate()
         }
         return winrt::Button::Click_revoker{};
     }();
+
+    if (winrt::IUIElement10 uiElement10 = *this)
+    {
+        winrt::KeyboardAccelerator keyboardAccelerator;
+        keyboardAccelerator.Key(winrt::VirtualKey::F6);
+        m_keyboardAcceleratorKeyActivatedRevoker = keyboardAccelerator.Invoked(winrt::auto_revoke, { this, &TeachingTip::OnF6KeyboardAcceleratorKeyClicked });
+        XamlRoot().Content().KeyboardAccelerators().Append(keyboardAccelerator);
+    }
+    else
+    {
+        m_dispatcherAcceleratorKeyActivatedRevoker = Dispatcher().AcceleratorKeyActivated(winrt::auto_revoke, { this, &TeachingTip::OnF6DispatcherAcceleratorKeyClicked });
+        return;
+    }
 
     UpdateButtonsState();
     OnIsLightDismissEnabledChanged();
@@ -896,25 +909,6 @@ void TeachingTip::IsOpenChangedToOpen()
         }
     }
 
-    [this]()
-    {
-        if (winrt::IUIElement10 uiElement10 = *this)
-        {
-            if (auto const xamlRoot = uiElement10.XamlRoot())
-            {
-                if (auto const content = xamlRoot.Content())
-                {
-                    m_previewKeyDownForF6Revoker = content.PreviewKeyDown(winrt::auto_revoke, { this, &TeachingTip::OnF6PreviewKeyDownClicked });
-                    return;
-                }
-            }
-        };
-
-        m_acceleratorKeyActivatedRevoker = Dispatcher().AcceleratorKeyActivated(winrt::auto_revoke, { this, &TeachingTip::OnF6AcceleratorKeyClicked });
-        return;
-    }();
-
-
     // Make sure we are in the correct VSM state after ApplyTemplate and moving the template content from the Control to the Popup:
     OnIsLightDismissEnabledChanged();
 }
@@ -939,8 +933,6 @@ void TeachingTip::IsOpenChangedToClose()
         }
     }
 
-    m_acceleratorKeyActivatedRevoker.revoke();
-    m_previewKeyDownForF6Revoker.revoke();
     m_currentEffectiveTipPlacementMode = winrt::TeachingTipPlacementMode::Auto;
     TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
 }
@@ -1079,22 +1071,21 @@ void TeachingTip::OnContentSizeChanged(const winrt::IInspectable&, const winrt::
     }
 }
 
-void TeachingTip::OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const winrt::AcceleratorKeyEventArgs& args)
+void TeachingTip::OnF6KeyboardAcceleratorKeyClicked(const winrt::KeyboardAccelerator&, const winrt::KeyboardAcceleratorInvokedEventArgs& args)
 {
     if (!args.Handled() &&
-        IsOpen() &&
-        args.VirtualKey() == winrt::VirtualKey::F6 &&
-        args.EventType() == winrt::CoreAcceleratorKeyEventType::KeyDown)
+        IsOpen())
     {
         args.Handled(HandleF6Clicked());
     }
 }
 
-void TeachingTip::OnF6PreviewKeyDownClicked(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args)
+void TeachingTip::OnF6DispatcherAcceleratorKeyClicked(const winrt::CoreDispatcher&, const winrt::AcceleratorKeyEventArgs& args)
 {
     if (!args.Handled() &&
         IsOpen() &&
-        args.Key() == winrt::VirtualKey::F6)
+        args.VirtualKey() == winrt::VirtualKey::F6 &&
+        args.EventType() == winrt::CoreAcceleratorKeyEventType::KeyDown)
     {
         args.Handled(HandleF6Clicked());
     }
