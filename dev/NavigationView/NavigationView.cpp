@@ -3418,17 +3418,37 @@ void NavigationView::SetNavigationViewItemRevokers(const winrt::NavigationViewIt
 
 void NavigationView::ClearNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi)
 {
+    RevokeNavigationViewItemRevokers(nvi);
     nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
     m_itemsWithRevokerObjects.erase(nvi);
 }
 
-void NavigationView::ClearAllNavigationViewItemRevokers()
+void NavigationView::ClearAllNavigationViewItemRevokers() noexcept
 {
     for (const auto& nvi : m_itemsWithRevokerObjects)
     {
-        nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
+        // ClearAllNavigationViewItemRevokers is only called in the destructor, where exceptions cannot be thrown.
+        // If the associated NV has not yet been cleaned up, we must detach these revokers or risk a call into freed
+        // memory being made.  However if they have been cleaned up these calls will throw. In this case we can ignore
+        // those exceptions.
+        try
+        {
+            RevokeNavigationViewItemRevokers(nvi);
+            nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
+        }
+        catch (...) {}
     }
     m_itemsWithRevokerObjects.clear();
+}
+
+void NavigationView::RevokeNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi)
+{
+    if (auto const revokers = nvi.GetValue(s_NavigationViewItemRevokersProperty))
+    {
+        if (auto const revokersAsNVIR = revokers.try_as<NavigationViewItemRevokers>()) {
+            revokersAsNVIR->RevokeAll();
+        }
+    }
 }
 
 void NavigationView::InvalidateTopNavPrimaryLayout()
