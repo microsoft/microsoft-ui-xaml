@@ -33,6 +33,8 @@ public:
 
     void UpdateClosedCompactVisualState(bool isTopLevelItem, bool isClosedCompact);
 
+    void LoadChevron();
+
 private:
     NavigationViewItem * GetNavigationViewItem();
     void UpdateMargin();

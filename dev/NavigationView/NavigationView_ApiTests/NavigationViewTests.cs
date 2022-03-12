@@ -154,6 +154,39 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return navView;
         }
 
+        private NavigationView SetupNavigationViewHierarchy(NavigationViewPaneDisplayMode paneDisplayMode = NavigationViewPaneDisplayMode.Auto)
+        {
+            NavigationView navView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+
+                NavigationViewItem navViewItem1 = new NavigationViewItem() { Content = "NVI1" };
+                navViewItem1.MenuItems.Add(new NavigationViewItem() { Content = "NVI1" });
+
+                NavigationViewItem navViewItem2 = new NavigationViewItem() { Content = "NVI2" };
+
+                navView.MenuItems.Add(navViewItem1);
+                navView.MenuItems.Add(navViewItem2);
+
+                navView.PaneTitle = "Hierarchical NavView";
+                navView.IsBackButtonVisible = NavigationViewBackButtonVisible.Visible;
+                navView.IsSettingsVisible = true;
+                navView.PaneDisplayMode = paneDisplayMode;
+                navView.OpenPaneLength = 120.0;
+                navView.ExpandedModeThresholdWidth = 600.0;
+                navView.CompactModeThresholdWidth = 400.0;
+                navView.Width = 800.0;
+                navView.Height = 600.0;
+                navView.Content = "This is a simple Hierarchical Navigation View test";
+                Content = navView;
+                Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TryEnterFullScreenMode();
+            });
+
+            IdleSynchronizer.Wait();
+            return navView;
+        }
+
         [TestMethod]
         public void VerifyVisualTree()
         {
@@ -187,6 +220,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment($"Verify visual tree for NavigationViewTopPaneContent");
                 var topNavViewPaneContent = SetupNavigationViewPaneContent(NavigationViewPaneDisplayMode.Top);
                 visualTreeVerifier.VerifyVisualTreeNoException(root: topNavViewPaneContent, verificationFileNamePrefix: "NavigationViewTopPaneContent");
+
+                Log.Comment($"Verify visual tree for NavigationViewHierarchy");
+                var hierarchyNavViewPaneContent = SetupNavigationViewHierarchy(NavigationViewPaneDisplayMode.Left);
+                visualTreeVerifier.VerifyVisualTreeNoException(root: hierarchyNavViewPaneContent, verificationFileNamePrefix: "NavigationViewHierarchy");   
             }
         }
 
