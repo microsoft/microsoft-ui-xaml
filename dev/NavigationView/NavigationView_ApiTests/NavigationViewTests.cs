@@ -1263,5 +1263,39 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 }
             });
         }
+
+        [TestMethod]
+        public void VerifyNVIOutlivingNVDoesNotCrash()
+        {
+            NavigationViewItem menuItem1 = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView();
+                menuItem1 = new NavigationViewItem();
+
+                navView.MenuItems.Add(menuItem1);
+                Content = navView;
+                Content.UpdateLayout();
+
+                navView.MenuItems.Clear();
+                Content = menuItem1;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                GC.Collect();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // NavigationView has a handler on NVI's IsSelected DependencyPropertyChangedEvent.
+                menuItem1.IsSelected = !menuItem1.IsSelected;
+            });
+        }
     }
 }
