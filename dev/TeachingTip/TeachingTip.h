@@ -61,9 +61,9 @@ public:
 private:
     PropertyChanged_revoker m_automationNameChangedRevoker{};
     PropertyChanged_revoker m_automationIdChangedRevoker{};
-    winrt::KeyboardAccelerator::Invoked_revoker m_keyboardAcceleratorKeyActivatedRevoker{};
-    winrt::CoreDispatcher::AcceleratorKeyActivated_revoker m_dispatcherAcceleratorKeyActivatedRevoker{};
+    winrt::CoreDispatcher::AcceleratorKeyActivated_revoker m_acceleratorKeyActivatedRevoker{};
     winrt::UIElement::PreviewKeyDown_revoker m_previewKeyDownForF6Revoker{};
+    winrt::UIElement::PreviewKeyDown_revoker m_popupPreviewKeyDownForF6Revoker{};
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
     winrt::Button::Click_revoker m_alternateCloseButtonClickedRevoker{};
     winrt::Button::Click_revoker m_actionButtonClickedRevoker{};
@@ -116,8 +116,8 @@ private:
     void OnAutomationIdChanged(const winrt::IInspectable&, const winrt::IInspectable&);
 
     void OnContentSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args);
-    void OnF6KeyboardAcceleratorKeyClicked(const winrt::KeyboardAccelerator&, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
-    void OnF6DispatcherAcceleratorKeyClicked(const winrt::CoreDispatcher&, const winrt::AcceleratorKeyEventArgs& args);
+    void OnF6PreviewKeyDownClicked(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args);
+    void OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const winrt::AcceleratorKeyEventArgs& args);
     bool HandleF6Clicked();
     void OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
@@ -210,6 +210,7 @@ private:
 
     winrt::Size m_currentXamlRootSize{ 0,0 };
 
+    bool m_ignoreNextIsOpenChanged{ false };
     bool m_isTemplateApplied{ false };
     bool m_createNewPopupOnOpen{ false };
 
