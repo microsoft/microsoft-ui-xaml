@@ -765,6 +765,7 @@
                             Control.IsTemplateFocusTarget="True">
                         </primitives:NavigationViewItemPresenter>
                         <local:ItemsRepeater
+                                x:Load="False"
                                 Grid.Row="1"
                                 Visibility="Collapsed"
                                 x:Name="NavigationViewItemMenuItemsHost">

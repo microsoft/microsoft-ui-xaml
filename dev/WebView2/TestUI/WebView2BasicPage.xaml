@@ -42,6 +42,7 @@
                             <ComboBoxItem AutomationProperties.Name="Focus_MouseActivateTest">Focus_MouseActivateTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="Focus_ReverseTabTest">Focus_ReverseTabTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="GoBackAndForwardTest">GoBackAndForwardTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="HiddenThenVisibleTest">HiddenThenVisibleTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="HostNameToFolderMappingTest">HostNameToFolderMappingTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="HtmlDropdownTest">HtmlDropdownTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="MouseCaptureTest">MouseCaptureTest</ComboBoxItem>
@@ -63,6 +64,7 @@
                             <ComboBoxItem AutomationProperties.Name="NavigationStartingTest">NavigationStartingTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="NonAsciiUriTest">NonAsciiUriTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="OffTreeWebViewInputTest">OffTreeWebViewInputTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="ParentHiddenThenVisibleTest">ParentHiddenThenVisibleTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="ParentVisibilityHiddenTest">ParentVisibilityHiddenTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="ParentVisibilityTurnedOnTest">ParentVisibilityTurnedOnTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="PointerReleaseWithoutPressTest">PointerReleaseWithoutPressTest</ComboBoxItem>
@@ -175,7 +177,7 @@
                             </ScrollViewer>
                         </StackPanel>
                         <StackPanel Orientation="Vertical">
-                            <TextBlock Text="RTB:" FontWeight="Bold" FontSize="11" Margin="0,2,0,2"/>
+                            <TextBlock Text="Focus:" FontWeight="Bold" FontSize="11" Margin="0,2,0,2"/>
                             <Border Width="400" Height="320" BorderBrush="Blue" BorderThickness="1" HorizontalAlignment="Left" Visibility="Visible">
                                 <ScrollViewer x:Name="focusScrollViewer" VerticalScrollBarVisibility="Visible">
                                     <TextBlock x:Name="focusLog" ></TextBlock>

@@ -4,7 +4,7 @@
   <Import Project="SdkVersion.props" />
 
   <Import Project="$(MSBuildThisFileDirectory)local.props" Condition="Exists('$(MSBuildThisFileDirectory)local.props')"/>
-  
+
   <!-- Since RS3, each release should define a min version which is required to build the theme resource. eg: MinSDKVersionRequiredForRS3ThemeResource -->
   <!-- When add page to PagesRequireCustomCompile, a MinSDKVersionRequired property should be attached to this page -->
   <!-- CustomCompile would use MinSDKVersionRequired to set TargetPlatformMinVersion for CompileXaml -->
@@ -19,11 +19,11 @@
 
   <PropertyGroup>
     <CSLangVersion>7</CSLangVersion>
-    
+
     <!-- Surface as errors the warnings that a XAML file is using a type defined in a later version of XAML than the min version for which we're compiling. -->
     <MSBuildWarningsAsErrors>WMC0151;XLS1105</MSBuildWarningsAsErrors>
   </PropertyGroup>
-  
+
   <!-- MUXControls Project-specific Properties -->
   <PropertyGroup Label="MUXControls" Condition="'$(MSBuildProjectName)' == 'MUXControls'">
   </PropertyGroup>
@@ -39,7 +39,7 @@
   <!-- MUXControlsTestApp Project-specific Properties -->
   <PropertyGroup Label="MUXControlsTestApp" Condition="'$(MSBuildProjectName)' == 'MUXControlsTestApp'">
   </PropertyGroup>
-    
+
   <!-- IXMPTestApp Project-specific Properties -->
   <PropertyGroup Label="IXMPTestApp" Condition="'$(MSBuildProjectName)' == 'IXMPTestApp'">
   </PropertyGroup>
@@ -50,7 +50,7 @@
   <!-- MUXControlsSampleApp Project-specific Properties -->
   <PropertyGroup Label="MUXControlsSampleApp" Condition="'$(MSBuildProjectName)' == 'MUXControlsSampleApp'">
   </PropertyGroup>
-  
+
   <!-- CustomTasks Project-specific Properties -->
   <PropertyGroup Label="CustomTasks" Condition="'$(MSBuildProjectName)' == 'CustomTasks'">
   </PropertyGroup>

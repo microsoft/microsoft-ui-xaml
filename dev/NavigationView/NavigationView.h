@@ -184,12 +184,12 @@ private:
     // displayed by the repeaters in this control. It is used to keep track of the
     // revokers for NavigationViewItem events and allows them to get revoked when
     // the item gets cleaned up
-    GlobalDependencyProperty s_NavigationViewItemRevokersProperty{ nullptr };
+    inline static GlobalDependencyProperty s_NavigationViewItemRevokersProperty{ nullptr };
     void SetNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
     void ClearNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
-    void ClearAllNavigationViewItemRevokers();
-    std::set<winrt::NavigationViewItem> m_itemsWithRevokerObjects{};
-    std::once_flag s_NavigationViewItemRevokersPropertySet;
+    void ClearAllNavigationViewItemRevokers() noexcept;
+    void RevokeNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
+    std::set<winrt::NavigationViewItem> m_itemsWithRevokerObjects;
 
     void InvalidateTopNavPrimaryLayout();
     // Measure functions for top navigation   

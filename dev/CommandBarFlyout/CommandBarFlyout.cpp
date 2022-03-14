@@ -14,32 +14,31 @@
 bool CommandBarFlyoutTrace::s_IsDebugOutputEnabled{ false };
 bool CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled{ false };
 
-// List of AppBarButton dependency properties being listened to for raising the CommandBarFlyoutCommandBar::OnCommandBarElementDependencyPropertyChanged notifications.
-// AppBarButton::IsCompact and AppBarButton::LabelPosition having no effect on an AppBarButton's rendering, when used as a secondary command, they are not present in the list.
-winrt::DependencyProperty CommandBarFlyout::s_appBarButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount]
-{
-    winrt::AppBarButton::IconProperty(),
-    winrt::AppBarButton::LabelProperty(),
-    nullptr
-};
-
-// List of AppBarToggleButton dependency properties being listened to for raising the CommandBarFlyoutCommandBar::OnCommandBarElementDependencyPropertyChanged notifications.
-// AppBarToggleButton::IsCompact and AppBarToggleButton::LabelPosition having no effect on an AppBarToggleButton's rendering, when used as a secondary command, they are not present in the list.
-winrt::DependencyProperty CommandBarFlyout::s_appBarToggleButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount]
-{
-    winrt::AppBarToggleButton::IconProperty(),
-    winrt::AppBarToggleButton::LabelProperty(),
-    nullptr
-};
+// List of AppBarButton/AppBarToggleButton dependency properties being listened to for raising the CommandBarFlyoutCommandBar::OnCommandBarElementDependencyPropertyChanged notifications.
+// IsCompact and LabelPosition have no effect on an AppBarButton's rendering, when used as a secondary command, they are not present in the list.
+// These two arrays are initialized in the constructor instead of being statically initialized here because that would result in the initialization happening during
+// dllmain and it is not valid to call COM apis at that time.
+winrt::DependencyProperty CommandBarFlyout::s_appBarButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount]{ nullptr, nullptr, nullptr };
+winrt::DependencyProperty CommandBarFlyout::s_appBarToggleButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount]{ nullptr, nullptr, nullptr };
 
 CommandBarFlyout::CommandBarFlyout()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_CommandBarFlyout);
 
-    if (SharedHelpers::IsRS4OrHigher() && s_appBarButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount - 1] == nullptr)
+    // Initialize s_appBarButtonDependencyProperties and s_appBarToggleButtonDependencyProperties if needed.
+    if (s_appBarButtonDependencyProperties[0] == nullptr)
     {
-        s_appBarButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount - 1] = winrt::AppBarButton::KeyboardAcceleratorTextOverrideProperty();
-        s_appBarToggleButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount - 1] = winrt::AppBarToggleButton::KeyboardAcceleratorTextOverrideProperty();
+        s_appBarButtonDependencyProperties[0] = winrt::AppBarButton::IconProperty();
+        s_appBarButtonDependencyProperties[1] = winrt::AppBarButton::LabelProperty();
+
+        s_appBarToggleButtonDependencyProperties[0] = winrt::AppBarToggleButton::IconProperty();
+        s_appBarToggleButtonDependencyProperties[1] = winrt::AppBarToggleButton::LabelProperty();
+
+        if (SharedHelpers::IsRS4OrHigher())
+        {
+            s_appBarButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount - 1] = winrt::AppBarButton::KeyboardAcceleratorTextOverrideProperty();
+            s_appBarToggleButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount - 1] = winrt::AppBarToggleButton::KeyboardAcceleratorTextOverrideProperty();
+        }
     }
 
     if (winrt::IFlyoutBase6 thisAsFlyoutBase6 = *this)

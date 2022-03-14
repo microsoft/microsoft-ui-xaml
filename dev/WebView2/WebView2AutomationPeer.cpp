@@ -36,6 +36,12 @@ winrt::AutomationControlType WebView2AutomationPeer::GetAutomationControlTypeCor
     return winrt::AutomationControlType::Pane;
 }
 
+winrt::Rect WebView2AutomationPeer::GetBoundingRectangleCore()
+{
+    winrt::Rect boundingRect = GetImpl()->GetBoundingRectangle();
+    return boundingRect;
+}
+
 #if WINUI3
 HRESULT WebView2AutomationPeer::GetRawElementProviderSimple(_Outptr_opt_ IRawElementProviderSimple** value)
 {

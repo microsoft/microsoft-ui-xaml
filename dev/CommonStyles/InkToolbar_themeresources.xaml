@@ -1509,8 +1509,9 @@
                     <Grid x:Name="RootElement"
                         Background="{TemplateBinding Background}"
                         Width="{StaticResource InkToolbarButtonWidth}"
-                        Height="{StaticResource InkToolbarButtonHeight}">
-
+                        Height="{StaticResource InkToolbarButtonHeight}"
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}" >
+                        
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />

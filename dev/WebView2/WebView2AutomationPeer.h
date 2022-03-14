@@ -20,6 +20,7 @@ public:
     // IAutomationPeerOverrides
     winrt::hstring GetClassNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
+    winrt::Rect GetBoundingRectangleCore();
 
     winrt::IInspectable GetFocusedElementCore();
     winrt::IInspectable NavigateCore(winrt::AutomationNavigationDirection direction);

@@ -476,6 +476,7 @@ void AnimatedIcon::OnSourcePropertyChanged(const winrt::DependencyPropertyChange
     {
         SetRootPanelChildToFallbackIcon();
     }
+    InvalidateMeasure();
 }
 
 void AnimatedIcon::UpdateMirrorTransform()
