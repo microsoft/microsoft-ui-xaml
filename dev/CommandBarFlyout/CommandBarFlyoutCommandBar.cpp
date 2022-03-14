@@ -19,9 +19,9 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
     Loaded({
         [this](auto const&, auto const&)
         {
-#ifdef _DEBUG
+//#ifdef _DEBUG
             COMMANDBARFLYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"Loaded");
-#endif
+//#endif
 
             UpdateUI(!m_commandBarFlyoutIsOpening);
 
@@ -69,9 +69,9 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
     SizeChanged({
         [this](auto const&, auto const&)
         {
-#ifdef _DEBUG
+//#ifdef _DEBUG
             COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"SizedChanged");
-#endif
+//#endif
 
             UpdateUI(!m_commandBarFlyoutIsOpening);
         }
@@ -94,9 +94,9 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
     Closed({
         [this](auto const&, auto const&)
         {
-#ifdef _DEBUG
+//#ifdef _DEBUG
             COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"Closed");
-#endif
+//#endif
 
             m_secondaryItemsRootSized = false;
 
@@ -113,9 +113,9 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
         winrt::AppBar::IsOpenProperty(),
         [this](auto const&, auto const&)
         {
-#ifdef _DEBUG
+//#ifdef _DEBUG
             COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"IsOpenProperty changed");
-#endif
+//#endif
 
             UpdateFlowsFromAndFlowsTo();
             UpdateUI(!m_commandBarFlyoutIsOpening);
@@ -127,9 +127,9 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
     PrimaryCommands().VectorChanged({
         [this](auto const&, auto const&)
         {
-#ifdef _DEBUG
+//#ifdef _DEBUG
             COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"PrimaryCommands VectorChanged");
-#endif
+//#endif
 
             EnsureLocalizedControlTypes();
             PopulateAccessibleControls();
@@ -141,9 +141,9 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
     SecondaryCommands().VectorChanged({
         [this](auto const&, auto const&)
         {
-#ifdef _DEBUG
+//#ifdef _DEBUG
             COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"SecondaryCommands VectorChanged");
-#endif
+//#endif
 
             m_secondaryItemsRootSized = false;
             EnsureLocalizedControlTypes();
@@ -254,9 +254,9 @@ void CommandBarFlyoutCommandBar::AttachEventHandlers()
             {
                 [this](auto const&, auto const&)
                 {
-#ifdef _DEBUG
+//#ifdef _DEBUG
                     COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"OverflowPopup ActualPlacementChanged");
-#endif
+//#endif
 
                     UpdateUI();
                 }
@@ -270,9 +270,9 @@ void CommandBarFlyoutCommandBar::AttachEventHandlers()
         {
             [this](auto const&, auto const&)
             {
-#ifdef _DEBUG
+//#ifdef _DEBUG
                 COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"secondaryItemsRoot SizeChanged");
-#endif
+//#endif
 
                 m_secondaryItemsRootSized = true;
                 UpdateUI(!m_commandBarFlyoutIsOpening);
@@ -621,7 +621,7 @@ void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
         const auto flyoutTemplateSettings = winrt::get_self<CommandBarFlyoutCommandBarTemplateSettings>(FlyoutTemplateSettings());
         const auto maxWidth = static_cast<float>(MaxWidth());
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
         COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"old ExpandedWidth:", flyoutTemplateSettings->ExpandedWidth());
         COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"old CurrentWidth:", flyoutTemplateSettings->CurrentWidth());
         COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"old WidthExpansionDelta:", flyoutTemplateSettings->WidthExpansionDelta());
@@ -631,7 +631,7 @@ void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
         COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"old OpenAnimationEndPosition:", flyoutTemplateSettings->OpenAnimationEndPosition());
         COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"old CloseAnimationEndPosition:", flyoutTemplateSettings->CloseAnimationEndPosition());
         COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this, L"MaxWidth:", maxWidth);
-#endif
+//#endif
 
         const winrt::Size infiniteSize = { std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
         m_primaryItemsRoot.get().Measure(infiniteSize);
@@ -692,14 +692,14 @@ void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
             flyoutTemplateSettings->CurrentWidth(collapsedWidth);
         }
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
         COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this, L"collapsedWidth:", collapsedWidth);
         COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"new ExpandedWidth:", expandedWidth);
         COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"new CurrentWidth:", flyoutTemplateSettings->CurrentWidth());
         COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"new WidthExpansionDelta:", flyoutTemplateSettings->WidthExpansionDelta());
         COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"new WidthExpansionAnimationStartPosition:", flyoutTemplateSettings->WidthExpansionAnimationStartPosition());
         COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"new WidthExpansionAnimationEndPosition:", flyoutTemplateSettings->WidthExpansionAnimationEndPosition());
-#endif
+//#endif
 
         // If we're currently playing the close animation, don't update these properties -
         // the animation is expecting them not to change out from under it.
@@ -728,11 +728,11 @@ void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
             flyoutTemplateSettings->CloseAnimationEndPosition(-expandedWidth);
         }
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
         COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"new OpenAnimationStartPosition:", flyoutTemplateSettings->OpenAnimationStartPosition());
         COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"new OpenAnimationEndPosition:", flyoutTemplateSettings->OpenAnimationEndPosition());
         COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"new CloseAnimationEndPosition:", flyoutTemplateSettings->CloseAnimationEndPosition());
-#endif
+//#endif
 
         flyoutTemplateSettings->WidthExpansionMoreButtonAnimationStartPosition(flyoutTemplateSettings->WidthExpansionDelta() / 2);
         flyoutTemplateSettings->WidthExpansionMoreButtonAnimationEndPosition(flyoutTemplateSettings->WidthExpansionDelta());
