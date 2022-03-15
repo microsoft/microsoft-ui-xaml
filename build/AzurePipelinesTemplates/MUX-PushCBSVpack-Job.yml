@@ -3,8 +3,8 @@ parameters:
 
 jobs:
 - job: CreateVPack
-  dependsOn:
-    - ${{ parameters.dependsOn }}
+  # dependsOn:
+  #   - ${{ parameters.dependsOn }}
   pool:
     name: WinDevPool-S
   variables:
@@ -16,6 +16,11 @@ jobs:
     inputs: 
       artifactName: drop
       downloadPath: $(System.ArtifactsDirectory)
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: 35915
+      buildId: 46434715
 
   # This contains the OS internal version of windows.winmd which is required for us to re-merge our winmd so that it can be used from OS repo.
   - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
@@ -58,46 +63,52 @@ jobs:
     condition: eq(variables['PublishVpack'], 'true')
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\WinUIVpack'
+      vpackToken: $(GitHub-Token)
       description: Microsoft.UI.Xaml
-      pushPkgName: Microsoft.UI.Xaml
+      pushPkgName: Microsoft.UI.Xaml-test
       version: $(vpackversion)
   - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInbox_x64'
     condition: eq(variables['PublishVpack'], 'true')
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\x64'
+      vpackToken: $(GitHub-Token)
       description: 'MicrosoftUIXamlInbox_x64'
-      pushPkgName: 'MicrosoftUIXamlInbox_x64'
+      pushPkgName: 'MicrosoftUIXamlInbox_x64-test'
       version: $(vpackversion)
   - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInbox_x86'
     condition: eq(variables['PublishVpack'], 'true')
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\x86'
+      vpackToken: $(GitHub-Token)
       description: 'MicrosoftUIXamlInbox_x86'
-      pushPkgName: 'MicrosoftUIXamlInbox_x86'
+      pushPkgName: 'MicrosoftUIXamlInbox_x86-test'
       version: $(vpackversion)
   - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInbox_arm'
     condition: eq(variables['PublishVpack'], 'true')
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\arm'
+      vpackToken: $(GitHub-Token)
       description: 'MicrosoftUIXamlInbox_arm'
-      pushPkgName: 'MicrosoftUIXamlInbox_arm'
+      pushPkgName: 'MicrosoftUIXamlInbox_arm-test'
       version: $(vpackversion)
   - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInbox_arm64'
     condition: eq(variables['PublishVpack'], 'true')
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\arm64'
+      vpackToken: $(GitHub-Token)
       description: 'MicrosoftUIXamlInbox_arm64'
-      pushPkgName: 'MicrosoftUIXamlInbox_arm64'
+      pushPkgName: 'MicrosoftUIXamlInbox_arm64-test'
       version: $(vpackversion)
   - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInboxWinmd'
     condition: eq(variables['PublishVpack'], 'true')
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\winmd'
+      vpackToken: $(GitHub-Token)
       description: 'MicrosoftUIXamlInboxWinmd'
-      pushPkgName: 'MicrosoftUIXamlInboxWinmd'
+      pushPkgName: 'MicrosoftUIXamlInboxWinmd-test'
       version: $(vpackversion)
