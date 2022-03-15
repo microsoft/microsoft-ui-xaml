@@ -40,7 +40,7 @@ It focuses on enabling three main use cases:
 1. **Modernizing existing apps**
     * Enabling you to extend existing Win32 (WPF, WinForms, MFC...) apps with modern Windows UI at your own pace using the upcoming release of [Xaml Islands](https://docs.microsoft.com/windows/apps/desktop/modernize/xaml-islands). Developers who currently use WinUI 2 for their app UX will be able to easily move to WinUI 3, as their syntax and capabilities are very similar
 2. **Creating new Windows apps**
-    * Enabling you to easily create new modern Windows apps with the flexibility offered by the Windows App SDK
+    * Enabling you to easily create new modern Windows apps with the flexibility offered by the [Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk/)
 3. **Enabling other frameworks**
     * Providing the native implementation for other frameworks like [React Native](https://github.com/Microsoft/react-native-windows) when running on Windows and .NET [MAUI](https://docs.microsoft.com/dotnet/maui/what-is-maui)
 
@@ -48,19 +48,20 @@ WinUI 3 is available as a part of the [Windows App SDK](https://docs.microsoft.c
 
 [Stable release channel for the Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk/stable-channel)
 
-There's also a version of WinUI 3 available that includes experimental features. You can read more about the Windows App SDK Experimental releases at the following documentation. Note that Experimental releases have limitations and known issues, so they are not equipped for production apps.
+We also ship experimental features as we develop them. You can read more about the Windows App SDK Experimental releases at the following documentation. Note that Experimental releases have limitations and known issues, so they are not equipped for production apps.
 
 [Experimental release channel for the Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk/experimental-channel).
 
 ### Features by release
 Legend:
+
 &#128994; - Available as supported feature
 
 &#128311; - Available as experimental feature  
 
 Blank -  Not available
 
-**WinUI 3 - Windows App SDK 1.0** is our latest release. For a detailed look at the features we're targeting in WinUI 3 in 2022, check out the [Windows App SDK feature roadmap]().
+**WinUI 3 - Windows App SDK 1.0** is our latest release. For a detailed look at the features we're targeting in WinUI 3 in 2022, check out the [Windows App SDK feature roadmap](https://github.com/microsoft/WindowsAppSDK/blob/main/docs/roadmap.md).
 
 | Customer Capability | Project Reunion 0.5 <br/>(March 2021) | Windows App SDK 0.8 <br/>(June 2021) | Windows App SDK 1.0 <br/> (November 2021) |
 | ------------------- | -------------------------------- | ------------------------------- | ----------------------------- |
@@ -91,7 +92,7 @@ Blank -  Not available
 
 ## WinUI 2 Controls Library
 
-WinUI 2 is native user experience (UX) framework for both Windows desktop and UWP applications tightly integrated with Windows 10 and above SDKs. 
+WinUI 2 is a native user experience (UX) framework for both Windows desktop and UWP applications tightly integrated with Windows 10 and above SDKs. 
 
 The next release of the **WinUI 2 Controls Library** will be v2.8, aiming to release in mid-2022.
 
