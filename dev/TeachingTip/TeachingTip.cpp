@@ -1218,7 +1218,10 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
 
             if (auto&& popup = m_popup.get())
             {
-                m_popupPreviewKeyDownForF6Revoker = popup.PreviewKeyDown(winrt::auto_revoke, { this, &TeachingTip::OnF6PreviewKeyDownClicked });
+                if (auto const popupContent = popup.Child())
+                {
+                    m_popupPreviewKeyDownForF6Revoker = popupContent.PreviewKeyDown(winrt::auto_revoke, { this, &TeachingTip::OnF6PreviewKeyDownClicked });
+                }
             }
         }
     }
