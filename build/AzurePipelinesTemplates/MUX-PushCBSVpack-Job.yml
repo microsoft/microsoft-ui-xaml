@@ -63,7 +63,7 @@ jobs:
     condition: eq(variables['PublishVpack'], 'true')
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\WinUIVpack'
-      vpackToken: $(GitHub-Token)
+      vpackToken: $(GitHubToken)
       description: Microsoft.UI.Xaml
       pushPkgName: Microsoft.UI.Xaml-test
       version: $(vpackversion)
@@ -72,7 +72,7 @@ jobs:
     condition: eq(variables['PublishVpack'], 'true')
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\x64'
-      vpackToken: $(GitHub-Token)
+      vpackToken: $(GitHubToken)
       description: 'MicrosoftUIXamlInbox_x64'
       pushPkgName: 'MicrosoftUIXamlInbox_x64-test'
       version: $(vpackversion)
@@ -81,7 +81,7 @@ jobs:
     condition: eq(variables['PublishVpack'], 'true')
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\x86'
-      vpackToken: $(GitHub-Token)
+      vpackToken: $(GitHubToken)
       description: 'MicrosoftUIXamlInbox_x86'
       pushPkgName: 'MicrosoftUIXamlInbox_x86-test'
       version: $(vpackversion)
@@ -90,7 +90,7 @@ jobs:
     condition: eq(variables['PublishVpack'], 'true')
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\arm'
-      vpackToken: $(GitHub-Token)
+      vpackToken: $(GitHubToken)
       description: 'MicrosoftUIXamlInbox_arm'
       pushPkgName: 'MicrosoftUIXamlInbox_arm-test'
       version: $(vpackversion)
@@ -99,7 +99,7 @@ jobs:
     condition: eq(variables['PublishVpack'], 'true')
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\arm64'
-      vpackToken: $(GitHub-Token)
+      vpackToken: $(GitHubToken)
       description: 'MicrosoftUIXamlInbox_arm64'
       pushPkgName: 'MicrosoftUIXamlInbox_arm64-test'
       version: $(vpackversion)
@@ -108,7 +108,7 @@ jobs:
     condition: eq(variables['PublishVpack'], 'true')
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\winmd'
-      vpackToken: $(GitHub-Token)
+      vpackToken: $(GitHubToken)
       description: 'MicrosoftUIXamlInboxWinmd'
       pushPkgName: 'MicrosoftUIXamlInboxWinmd-test'
       version: $(vpackversion)
