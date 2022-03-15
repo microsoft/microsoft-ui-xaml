@@ -9,7 +9,27 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Margin="12">
+    <local:TestPage.Resources>
+        <MenuFlyout x:Key="SampleContextMenu">
+            <MenuFlyoutItem Text="MenuFlyoutItem"/>
+            <MenuFlyoutSubItem Text="MenuFlyoutSubItem">
+                <MenuFlyoutItem Text="MenuFlyoutItem" />
+                <ToggleMenuFlyoutItem Text="ToggleMenuFlyoutItem" />
+                <MenuFlyoutSubItem Text="MenuFlyoutSubItem">
+                    <MenuFlyoutItem Text="MenuFlyoutItem" />
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="MenuFlyoutItem" />
+                </MenuFlyoutSubItem>
+            </MenuFlyoutSubItem>
+            <MenuFlyoutSeparator/>
+            <MenuFlyoutItem Text="MenuFlyoutItem"/>
+        </MenuFlyout>
+    </local:TestPage.Resources>
+    
+    <Grid Margin="12" ContextRequested="Grid_ContextRequested">
+        <Grid.Resources>
+            
+        </Grid.Resources>
         <Grid.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                 <GradientStop Color="Red" Offset="0.000" />
