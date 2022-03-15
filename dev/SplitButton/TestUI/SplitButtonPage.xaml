@@ -43,13 +43,16 @@
                     </StackPanel>
 
                     <TextBlock Text="Test SplitButton" FontSize="22"/>
-                    <controls:SplitButton x:Name="TestSplitButton" AutomationProperties.Name="TestSplitButton" Margin="0,12,0,0" Content="Test Button" Click="TestSplitButton_Click">
-                        <controls:SplitButton.Flyout>
-                            <Flyout x:Name="TestFlyout" AutomationProperties.Name="TestFlyout" Opened="TestSplitButtonFlyout_Opened" Closed="TestSplitButtonFlyout_Closed">
-                                <TextBlock Text="Hello"/>
-                            </Flyout>
-                        </controls:SplitButton.Flyout>
-                    </controls:SplitButton>
+                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                        <Button Content="Test button"/>
+                        <controls:SplitButton x:Name="TestSplitButton" AutomationProperties.Name="TestSplitButton" Content="Test Button" Click="TestSplitButton_Click">
+                            <controls:SplitButton.Flyout>
+                                <Flyout x:Name="TestFlyout" AutomationProperties.Name="TestFlyout" Opened="TestSplitButtonFlyout_Opened" Closed="TestSplitButtonFlyout_Closed">
+                                    <TextBlock Text="Hello"/>
+                                </Flyout>
+                            </controls:SplitButton.Flyout>
+                        </controls:SplitButton>
+                    </StackPanel>
                 </StackPanel>
 
                 <StackPanel Style="{ThemeResource StandardGroupingStackPanel}" Margin="0,8,0,0">
