@@ -27,8 +27,10 @@ public:
 private:
 
     void SetUpTemplateParts();
+    void UpdateAutomationSizeAndPosition();
 
     bool m_isFlyoutOpen{ false };
+    winrt::IObservableVector<winrt::MenuBarItem>::VectorChanged_revoker m_itemsVectorChangedRevoker{};
 
     // Visual components
     tracker_ref<winrt::ItemsControl> m_contentRoot{ this };
