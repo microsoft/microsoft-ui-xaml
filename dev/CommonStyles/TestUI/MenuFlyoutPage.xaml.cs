@@ -29,10 +29,9 @@ namespace MUXControlsTestApp
 
         private void Grid_ContextRequested(UIElement sender, ContextRequestedEventArgs args)
         {
-            Point point;
             var requestedElement = sender as FrameworkElement;
 
-            if (args.TryGetPosition(requestedElement, out point))
+            if (args.TryGetPosition(requestedElement, out Point point))
             {
                 sharedFlyout.ShowAt(requestedElement, point);
             }

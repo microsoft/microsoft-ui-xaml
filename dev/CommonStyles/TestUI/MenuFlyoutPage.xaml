@@ -27,9 +27,7 @@
     </local:TestPage.Resources>
     
     <Grid Margin="12" ContextRequested="Grid_ContextRequested">
-        <Grid.Resources>
-            
-        </Grid.Resources>
+
         <Grid.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                 <GradientStop Color="Red" Offset="0.000" />
@@ -55,6 +53,8 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.RowSpan="2">
+            <TextBlock Text="Right-click grid to invoke MenuFlyout from cursor position" Margin="0,0,0,12"/>
+            
             <Button Content="Short Text MenuFlyout" x:Name="TestMenuFlyoutButton" AutomationProperties.Name="TestMenuFlyoutButton" Margin="0,0,0,12">
                 <Button.Flyout>
                     <MenuFlyout>
