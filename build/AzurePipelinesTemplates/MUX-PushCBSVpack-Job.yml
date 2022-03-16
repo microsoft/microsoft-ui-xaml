@@ -57,6 +57,7 @@ jobs:
     displayName: 'Push VPack Microsoft.UI.Xaml'
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\WinUIVpack'
+      githubToken: $(WinUI2GitHubToken)
       description: Microsoft.UI.Xaml
       pushPkgName: Microsoft.UI.Xaml
       version: $(vpackversion)
@@ -64,6 +65,7 @@ jobs:
     displayName: 'Push VPack MicrosoftUIXamlInbox_x64'
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\x64'
+      githubToken: $(WinUI2GitHubToken)
       description: 'MicrosoftUIXamlInbox_x64'
       pushPkgName: 'MicrosoftUIXamlInbox_x64'
       version: $(vpackversion)
@@ -71,6 +73,7 @@ jobs:
     displayName: 'Push VPack MicrosoftUIXamlInbox_x86'
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\x86'
+      githubToken: $(WinUI2GitHubToken)
       description: 'MicrosoftUIXamlInbox_x86'
       pushPkgName: 'MicrosoftUIXamlInbox_x86'
       version: $(vpackversion)
@@ -78,6 +81,7 @@ jobs:
     displayName: 'Push VPack MicrosoftUIXamlInbox_arm'
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\arm'
+      githubToken: $(WinUI2GitHubToken)
       description: 'MicrosoftUIXamlInbox_arm'
       pushPkgName: 'MicrosoftUIXamlInbox_arm'
       version: $(vpackversion)
@@ -85,6 +89,7 @@ jobs:
     displayName: 'Push VPack MicrosoftUIXamlInbox_arm64'
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\arm64'
+      githubToken: $(WinUI2GitHubToken)
       description: 'MicrosoftUIXamlInbox_arm64'
       pushPkgName: 'MicrosoftUIXamlInbox_arm64'
       version: $(vpackversion)
@@ -92,6 +97,7 @@ jobs:
     displayName: 'Push VPack MicrosoftUIXamlInboxWinmd'
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\winmd'
+      githubToken: $(WinUI2GitHubToken)
       description: 'MicrosoftUIXamlInboxWinmd'
       pushPkgName: 'MicrosoftUIXamlInboxWinmd'
       version: $(vpackversion)
