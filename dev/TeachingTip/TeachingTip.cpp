@@ -1148,9 +1148,9 @@ bool TeachingTip::HandleF6Clicked(bool fromPopup)
 
     auto const hasFocusInSubtree = [this]()
     {
-        auto current = winrt::FocusManager::GetFocusedElement().try_as<winrt::DependencyObject>();
         if (auto const rootElement = m_rootElement.get())
         {
+            auto current = winrt::FocusManager::GetFocusedElement(rootElement.XamlRoot()).try_as<winrt::DependencyObject>();
             while (current)
             {
                 if (current.try_as<winrt::UIElement>() == rootElement)
@@ -1240,9 +1240,6 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
                 if (auto const popupContent = popup.Child())
                 {
                     m_popupPreviewKeyDownForF6Revoker = popupContent.PreviewKeyDown(winrt::auto_revoke, { this, &TeachingTip::OnF6PopupPreviewKeyDownClicked });
-
-                    m_popupPreviewKeyDownEventHandler = winrt::box_value<winrt::KeyEventHandler>({ this, &TeachingTip::OnF6PopupPreviewKeyDownClickedEvenHandled });
-                    popupContent.AddHandler(winrt::UIElement::PreviewKeyDownEvent(), m_popupPreviewKeyDownEventHandler, true /*handledEventsToo*/);
                 }
             }
         }
@@ -1305,17 +1302,6 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
 
 void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
 {
-    if (m_popupPreviewKeyDownEventHandler)
-    {
-        if (auto&& popup = m_popup.get())
-        {
-            if (auto const popupContent = popup.Child())
-            {
-                popupContent.RemoveHandler(winrt::UIElement::PreviewKeyDownEvent(), m_popupPreviewKeyDownEventHandler);
-            }
-        }
-        m_popupPreviewKeyDownEventHandler = nullptr;
-    }
     m_windowSizeChangedRevoker.revoke();
     m_xamlRootChangedRevoker.revoke();
     m_xamlRoot.set(nullptr);

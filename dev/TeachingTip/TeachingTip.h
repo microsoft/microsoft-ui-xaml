@@ -59,7 +59,6 @@ public:
     friend class TeachingTipTestHooks;
 
 private:
-    winrt::IInspectable m_popupPreviewKeyDownEventHandler{nullptr};
     PropertyChanged_revoker m_automationNameChangedRevoker{};
     PropertyChanged_revoker m_automationIdChangedRevoker{};
     winrt::CoreDispatcher::AcceleratorKeyActivated_revoker m_acceleratorKeyActivatedRevoker{};
