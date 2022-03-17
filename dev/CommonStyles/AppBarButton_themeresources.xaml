@@ -35,7 +35,11 @@
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
             <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE974;</x:String>
+            <x:String x:Key="AppBarButtonOverflowFlyoutGlyph">&#xE974;</x:String>
             <x:Double x:Key="AppBarButtonSubItemChevronFontSize">8</x:Double>
+            <x:Double x:Key="AppBarButtonSecondarySubItemChevronFontSize">12</x:Double>
+            <Thickness x:Key="AppBarButtonSubItemChevronMargin">-23,20,12,0</Thickness>
+            <Thickness x:Key="AppBarButtonSecondarySubItemChevronMargin">0,0,16,0</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="AppBarButtonBackground" ResourceKey="SystemControlTransparentBrush" />
@@ -65,7 +69,11 @@
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
             <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE974;</x:String>
+            <x:String x:Key="AppBarButtonOverflowFlyoutGlyph">&#xE974;</x:String>
             <x:Double x:Key="AppBarButtonSubItemChevronFontSize">8</x:Double>
+            <x:Double x:Key="AppBarButtonSecondarySubItemChevronFontSize">12</x:Double>
+            <Thickness x:Key="AppBarButtonSubItemChevronMargin">-23,20,12,0</Thickness>
+            <Thickness x:Key="AppBarButtonSecondarySubItemChevronMargin">0,0,16,0</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="AppBarButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
@@ -95,7 +103,11 @@
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
             <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
             <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE974;</x:String>
+            <x:String x:Key="AppBarButtonOverflowFlyoutGlyph">&#xE974;</x:String>
             <x:Double x:Key="AppBarButtonSubItemChevronFontSize">8</x:Double>
+            <x:Double x:Key="AppBarButtonSecondarySubItemChevronFontSize">12</x:Double>
+            <Thickness x:Key="AppBarButtonSubItemChevronMargin">-23,20,12,0</Thickness>
+            <Thickness x:Key="AppBarButtonSecondarySubItemChevronMargin">0,0,16,0</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -255,6 +267,7 @@
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}" />
+                                        <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundPointerOver}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundPointerOver}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -266,6 +279,7 @@
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}" />
+                                        <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundPressed}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundPressed}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -277,10 +291,18 @@
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarButtonForegroundDisabled}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundDisabled}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundDisabled}" />
+                                        <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundDisabled}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundDisabled}" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="OverflowNormal"/>
+                                <VisualState x:Name="OverflowNormal">
+                                    <VisualState.Setters>
+                                        <Setter Target="SubItemChevron.Glyph" Value="{ThemeResource AppBarButtonOverflowFlyoutGlyph}"/>
+                                        <Setter Target="SubItemChevron.Margin" Value="{ThemeResource AppBarButtonSecondarySubItemChevronMargin}"/>
+                                        <Setter Target="SubItemChevron.VerticalAlignment" Value="Center"/>
+                                        <Setter Target="SubItemChevron.FontSize" Value="{ThemeResource AppBarButtonSecondarySubItemChevronFontSize}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
                                 <VisualState x:Name="OverflowPointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource AppBarButtonBackgroundPointerOver}" />
@@ -289,6 +311,11 @@
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundPointerOver}" />
+                                        <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundPointerOver}" />
+                                        <Setter Target="SubItemChevron.Glyph" Value="{ThemeResource AppBarButtonOverflowFlyoutGlyph}"/>
+                                        <Setter Target="SubItemChevron.Margin" Value="{ThemeResource AppBarButtonSecondarySubItemChevronMargin}"/>
+                                        <Setter Target="SubItemChevron.VerticalAlignment" Value="Center"/>
+                                        <Setter Target="SubItemChevron.FontSize" Value="{ThemeResource AppBarButtonSecondarySubItemChevronFontSize}"/>
                                         <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundPointerOver}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -301,6 +328,11 @@
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundPressed}" />
                                         <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundPressed}" />
+                                        <Setter Target="SubItemChevron.Glyph" Value="{ThemeResource AppBarButtonOverflowFlyoutGlyph}"/>
+                                        <Setter Target="SubItemChevron.Margin" Value="{ThemeResource AppBarButtonSecondarySubItemChevronMargin}"/>
+                                        <Setter Target="SubItemChevron.VerticalAlignment" Value="Center"/>
+                                        <Setter Target="SubItemChevron.FontSize" Value="{ThemeResource AppBarButtonSecondarySubItemChevronFontSize}"/>
+                                        <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundPressed}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OverflowSubMenuOpened">
@@ -312,6 +344,10 @@
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundSubMenuOpened}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundSubMenuOpened}" />
                                         <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundSubMenuOpened}" />
+                                        <Setter Target="SubItemChevron.Glyph" Value="{ThemeResource AppBarButtonOverflowFlyoutGlyph}"/>
+                                        <Setter Target="SubItemChevron.Margin" Value="{ThemeResource AppBarButtonSecondarySubItemChevronMargin}"/>
+                                        <Setter Target="SubItemChevron.VerticalAlignment" Value="Center"/>
+                                        <Setter Target="SubItemChevron.FontSize" Value="{ThemeResource AppBarButtonSecondarySubItemChevronFontSize}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
