@@ -1113,7 +1113,27 @@ void TeachingTip::OnF6PreviewKeyDownClicked(const winrt::IInspectable&, const wi
     }
 }
 
-bool TeachingTip::HandleF6Clicked()
+void TeachingTip::OnF6PopupPreviewKeyDownClicked(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args)
+{
+    if (!args.Handled() &&
+        IsOpen() &&
+        args.Key() == winrt::VirtualKey::F6)
+    {
+        args.Handled(HandleF6Clicked(/*fromPopup*/true));
+    }
+}
+
+void TeachingTip::OnF6PopupPreviewKeyDownClickedEvenHandled(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args)
+{
+    if (!args.Handled() &&
+        IsOpen() &&
+        args.Key() == winrt::VirtualKey::F6)
+    {
+        args.Handled(HandleF6Clicked(/*fromPopup*/true));
+    }
+}
+
+bool TeachingTip::HandleF6Clicked(bool fromPopup)
 {
     //  Logging usage telemetry
     if (m_hasF6BeenInvoked)
@@ -1143,13 +1163,13 @@ bool TeachingTip::HandleF6Clicked()
         return false;
     }();
 
-    if (hasFocusInSubtree)
+    if (hasFocusInSubtree && fromPopup)
     {
         bool setFocus = SetFocus(m_previouslyFocusedElement.get(), winrt::FocusState::Programmatic);
         m_previouslyFocusedElement = nullptr;
         return setFocus;
     }
-    else
+    else if (!hasFocusInSubtree && !fromPopup)
     {
         const winrt::Button f6Button = [this]() -> winrt::Button
         {
@@ -1179,9 +1199,8 @@ bool TeachingTip::HandleF6Clicked()
             const bool setFocus = f6Button.Focus(winrt::FocusState::Keyboard);
             return setFocus;
         }
-
-        return false;
     }
+    return false;
 }
 
 void TeachingTip::OnAutomationNameChanged(const winrt::IInspectable&, const winrt::IInspectable&)
@@ -1220,7 +1239,10 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
             {
                 if (auto const popupContent = popup.Child())
                 {
-                    m_popupPreviewKeyDownForF6Revoker = popupContent.PreviewKeyDown(winrt::auto_revoke, { this, &TeachingTip::OnF6PreviewKeyDownClicked });
+                    m_popupPreviewKeyDownForF6Revoker = popupContent.PreviewKeyDown(winrt::auto_revoke, { this, &TeachingTip::OnF6PopupPreviewKeyDownClicked });
+
+                    m_popupPreviewKeyDownEventHandler = winrt::box_value<winrt::KeyEventHandler>({ this, &TeachingTip::OnF6PopupPreviewKeyDownClickedEvenHandled });
+                    popupContent.AddHandler(winrt::UIElement::PreviewKeyDownEvent(), m_popupPreviewKeyDownEventHandler, true /*handledEventsToo*/);
                 }
             }
         }
@@ -1283,6 +1305,17 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
 
 void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
 {
+    if (m_popupPreviewKeyDownEventHandler)
+    {
+        if (auto&& popup = m_popup.get())
+        {
+            if (auto const popupContent = popup.Child())
+            {
+                popupContent.RemoveHandler(winrt::UIElement::PreviewKeyDownEvent(), m_popupPreviewKeyDownEventHandler);
+            }
+        }
+        m_popupPreviewKeyDownEventHandler = nullptr;
+    }
     m_windowSizeChangedRevoker.revoke();
     m_xamlRootChangedRevoker.revoke();
     m_xamlRoot.set(nullptr);
