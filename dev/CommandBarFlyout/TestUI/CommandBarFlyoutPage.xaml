@@ -34,17 +34,17 @@
         <Grid.Resources>
             <muxc:CommandBarFlyout Placement="Right" x:Name="Flyout1" AutomationProperties.AutomationId="Flyout1" Opened="OnFlyoutOpened" Closed="OnFlyoutClosed">
                 <AppBarButton x:Name="CutButton1" AutomationProperties.AutomationId="CutButton1" Label="Cut" Icon="Cut" Click="OnElementClicked"/>
-                <AppBarSeparator />
                 <AppBarButton x:Name="CopyButton1" AutomationProperties.AutomationId="CopyButton1" Label="Copy" Icon="Copy" Click="OnElementClicked" />
                 <AppBarButton x:Name="PasteButton1" AutomationProperties.AutomationId="PasteButton1" Label="Paste" Icon="Paste" Click="OnElementClicked" />
-                <AppBarButton x:Name="BoldButton1" AutomationProperties.AutomationId="BoldButton1" Label="Bold" Icon="Bold" Click="OnElementClicked" />
-                <AppBarButton x:Name="ItalicButton1" AutomationProperties.AutomationId="ItalicButton1" Label="Italic" Icon="Italic" Click="OnElementClicked" />
+                <AppBarSeparator />
+                <AppBarToggleButton x:Name="BoldButton1" AutomationProperties.AutomationId="BoldButton1" Label="Bold" Icon="Bold" Click="OnElementClicked" />
+                <AppBarToggleButton x:Name="ItalicButton1" AutomationProperties.AutomationId="ItalicButton1" Label="Italic" Icon="Italic" Click="OnElementClicked" />
                 <AppBarToggleButton x:Name="UnderlineButton1" AutomationProperties.AutomationId="UnderlineButton1" Label="Underline" Icon="Underline" Click="OnElementClicked" />
                 <muxc:CommandBarFlyout.SecondaryCommands>
                     <AppBarButton x:Name="UndoButton1" AutomationProperties.AutomationId="UndoButton1" Label="Undo" Icon="Undo" Click="OnElementClicked" />
-                    <AppBarSeparator IsTabStop="False" />
                     <AppBarButton x:Name="RedoButton1" AutomationProperties.AutomationId="RedoButton1" Label="Redo" Icon="Redo" Click="OnElementClicked" />
                     <AppBarButton x:Name="SelectAllButton1" AutomationProperties.AutomationId="SelectAllButton1" Label="Select all" Click="OnElementClicked" />
+                    <AppBarSeparator />
                     <AppBarToggleButton x:Name="FavoriteToggleButton1" AutomationProperties.AutomationId="FavoriteToggleButton1" Label="Favorite" Icon="Favorite" Checked="OnElementChecked" Unchecked="OnElementUnchecked" />
                 </muxc:CommandBarFlyout.SecondaryCommands>
             </muxc:CommandBarFlyout>
@@ -196,13 +196,15 @@
                 <AppBarButton x:Name="CutButton10" AutomationProperties.AutomationId="CutButton10" Label="Cut" Icon="Cut" Click="OnElementClicked" />
                 <AppBarButton x:Name="CopyButton10" AutomationProperties.AutomationId="CopyButton10" Label="Copy" Icon="Copy" Click="OnElementClicked" />
                 <AppBarButton x:Name="PasteButton10" AutomationProperties.AutomationId="PasteButton10" Label="Paste" Icon="Paste" Click="OnElementClicked" />
-                <AppBarButton x:Name="BoldButton10" AutomationProperties.AutomationId="BoldButton10" Label="Bold" Icon="Bold" Click="OnElementClicked" />
-                <AppBarButton x:Name="ItalicButton10" AutomationProperties.AutomationId="ItalicButton10" Label="Italic" Icon="Italic" Click="OnElementClicked" />
-                <AppBarButton x:Name="UnderlineButton10" AutomationProperties.AutomationId="UnderlineButton10" Label="Underline" Icon="Underline" Click="OnElementClicked" />
+                <AppBarSeparator />
+                <AppBarToggleButton x:Name="BoldButton10" AutomationProperties.AutomationId="BoldButton10" Label="Bold" Icon="Bold" Click="OnElementClicked" />
+                <AppBarToggleButton x:Name="ItalicButton10" AutomationProperties.AutomationId="ItalicButton10" Label="Italic" Icon="Italic" Click="OnElementClicked" />
+                <AppBarToggleButton x:Name="UnderlineButton10" AutomationProperties.AutomationId="UnderlineButton10" Label="Underline" Icon="Underline" Click="OnElementClicked" />
                 <contract13Present:CommandBarFlyout.SecondaryCommands>
                     <AppBarButton x:Name="UndoButton10" AutomationProperties.AutomationId="UndoButton10" Label="Undo" Icon="Undo" Click="OnElementClicked" />
                     <AppBarButton x:Name="RedoButton10" AutomationProperties.AutomationId="RedoButton10" Label="Redo" Icon="Redo" Click="OnElementClicked" />
                     <AppBarButton x:Name="SelectAllButton10" AutomationProperties.AutomationId="SelectAllButton10" Label="Select all" Click="OnElementClicked" />
+                    <AppBarSeparator />
                     <AppBarToggleButton x:Name="FavoriteToggleButton10" AutomationProperties.AutomationId="FavoriteToggleButton10" Label="Favorite" Icon="Favorite" Checked="OnElementChecked" Unchecked="OnElementUnchecked" />
                 </contract13Present:CommandBarFlyout.SecondaryCommands>
             </contract13Present:CommandBarFlyout>

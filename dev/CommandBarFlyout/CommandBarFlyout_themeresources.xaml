@@ -124,8 +124,8 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <Thickness x:Key="CommandBarFlyoutAppBarButtonInnerBorderMargin">2</Thickness>
-    <Thickness x:Key="CommandBarFlyoutAppBarEllipsisButtonInnerBorderMargin">2,2,6,2</Thickness>
+    <Thickness x:Key="CommandBarFlyoutAppBarButtonInnerBorderMargin">2,4</Thickness>
+    <Thickness x:Key="CommandBarFlyoutAppBarEllipsisButtonInnerBorderMargin">2,4</Thickness>
     <contract12Present:ThemeShadow x:Key="CommandBarFlyoutOverflowShadow"/>
 
     <Style x:Key="CommandBarFlyoutAppBarButtonStyleBase" TargetType="AppBarButton">
@@ -157,6 +157,7 @@
                                 <VisualState x:Name="LabelCollapsed" />
                                 <VisualState x:Name="Overflow">
                                     <VisualState.Setters>
+                                        <Setter Target="AppBarButtonInnerBorder.Margin" Value="4,2" />
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
                                         <Setter Target="ContentRoot.Width" Value="NaN" />
                                         <Setter Target="ContentViewbox.Visibility" Value="Collapsed" />
@@ -166,6 +167,7 @@
                                 </VisualState>
                                 <VisualState x:Name="OverflowWithToggleButtons">
                                     <VisualState.Setters>
+                                        <Setter Target="AppBarButtonInnerBorder.Margin" Value="4,2" />
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
                                         <Setter Target="ContentRoot.Width" Value="NaN" />
                                         <Setter Target="ContentViewbox.Visibility" Value="Collapsed" />
@@ -175,6 +177,7 @@
                                 </VisualState>
                                 <VisualState x:Name="OverflowWithMenuIcons">
                                     <VisualState.Setters>
+                                        <Setter Target="AppBarButtonInnerBorder.Margin" Value="4,2" />
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
                                         <Setter Target="ContentRoot.Width" Value="NaN" />
                                         <Setter Target="ContentViewbox.HorizontalAlignment" Value="Left" />
@@ -188,6 +191,7 @@
                                 </VisualState>
                                 <VisualState x:Name="OverflowWithToggleButtonsAndMenuIcons">
                                     <VisualState.Setters>
+                                        <Setter Target="AppBarButtonInnerBorder.Margin" Value="4,2" />
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
                                         <Setter Target="ContentRoot.Width" Value="NaN" />
                                         <Setter Target="ContentViewbox.HorizontalAlignment" Value="Left" />
@@ -387,6 +391,7 @@
                                 <VisualState x:Name="LabelCollapsed" />
                                 <VisualState x:Name="Overflow">
                                     <VisualState.Setters>
+                                        <Setter Target="AppBarButtonInnerBorder.Margin" Value="4,2" />
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
                                         <Setter Target="ContentRoot.Width" Value="NaN" />
                                         <Setter Target="ContentViewbox.Visibility" Value="Collapsed" />
@@ -396,6 +401,7 @@
                                 </VisualState>
                                 <VisualState x:Name="OverflowWithMenuIcons">
                                     <VisualState.Setters>
+                                        <Setter Target="AppBarButtonInnerBorder.Margin" Value="4,2" />
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
                                         <Setter Target="ContentRoot.Width" Value="NaN" />
                                         <Setter Target="ContentViewbox.Visibility" Value="Visible" />
@@ -648,7 +654,7 @@
                             ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
                             AutomationProperties.AccessibilityView="Raw">
                             <ItemsPresenter x:Name="ItemsPresenter"
-                                Margin="3"/>
+                                Margin="0,2"/>
                         </ScrollViewer>
                     </Grid>
                 </ControlTemplate>
@@ -682,7 +688,7 @@
                             ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
                             AutomationProperties.AccessibilityView="Raw">
                             <ItemsPresenter x:Name="ItemsPresenter"
-                                Margin="3"/>
+                                Margin="0,2"/>
                         </ScrollViewer>
                     </Grid>
                 </ControlTemplate>
@@ -695,8 +701,8 @@
         <Setter Property="Foreground" Value="{ThemeResource CommandBarFlyoutAppBarButtonForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource CommandBarFlyoutAppBarButtonBorderBrush}" />
         <Setter Property="Padding" Value="0" />
-        <Setter Property="Width" Value="44" />
-        <Setter Property="Height" Value="40" />
+        <Setter Property="Width" Value="40" />
+        <Setter Property="Height" Value="44" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -778,7 +784,7 @@
         <Setter Property="ExitDisplayModeOnAccessKeyInvoked" Value="False" />
         <Setter Property="DefaultLabelPosition" Value="Collapsed" />
         <Setter Property="MaxWidth" Value="440" />
-        <Setter Property="Height" Value="48" />
+        <Setter Property="Height" Value="46" />
         <Setter Property="IsDynamicOverflowEnabled" Value="True" />
         <contract7Present:Setter Property="CommandBarOverflowPresenterStyle" Value="{StaticResource CommandBarFlyoutCommandBarOverflowPresenterStyle}" />
         <contract7NotPresent:Setter Property="CommandBarOverflowPresenterStyle" Value="{StaticResource CommandBarFlyoutCommandBarOverflowPresenterStyleRS4}" />
@@ -1265,6 +1271,7 @@
                                     </RectangleGeometry>
                                 </Grid.Clip>
                                 <Grid x:Name="PrimaryItemsRoot"
+                                    Padding="2,0"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     BorderThickness="{TemplateBinding BorderThickness}"
                                     contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
@@ -1274,8 +1281,6 @@
                                         <ColumnDefinition Width="Auto" MinWidth="3" />
                                     </Grid.ColumnDefinitions>
                                     <ItemsControl x:Name="PrimaryItemsControl"
-                                        Height="40"
-                                        Margin="3,3,0,3"
                                         Grid.Column="0"
                                         IsTabStop="False"
                                         HorizontalAlignment="Left">
