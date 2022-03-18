@@ -1123,16 +1123,6 @@ void TeachingTip::OnF6PopupPreviewKeyDownClicked(const winrt::IInspectable&, con
     }
 }
 
-void TeachingTip::OnF6PopupPreviewKeyDownClickedEvenHandled(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args)
-{
-    if (!args.Handled() &&
-        IsOpen() &&
-        args.Key() == winrt::VirtualKey::F6)
-    {
-        args.Handled(HandleF6Clicked(/*fromPopup*/true));
-    }
-}
-
 bool TeachingTip::HandleF6Clicked(bool fromPopup)
 {
     //  Logging usage telemetry
@@ -1150,7 +1140,14 @@ bool TeachingTip::HandleF6Clicked(bool fromPopup)
     {
         if (auto const rootElement = m_rootElement.get())
         {
-            auto current = winrt::FocusManager::GetFocusedElement(rootElement.XamlRoot()).try_as<winrt::DependencyObject>();
+            auto current = [rootElement]() {
+                if (winrt::IUIElement10 uiElement10 = rootElement)
+                {
+                    return winrt::FocusManager::GetFocusedElement(uiElement10.XamlRoot()).try_as<winrt::DependencyObject>();
+                }
+                return winrt::FocusManager::GetFocusedElement().try_as<winrt::DependencyObject>();
+            }();
+
             while (current)
             {
                 if (current.try_as<winrt::UIElement>() == rootElement)
@@ -1239,6 +1236,7 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
             {
                 if (auto const popupContent = popup.Child())
                 {
+                    // This handler is not required for Winui3 because the framework bug this works around has been fixed.
                     m_popupPreviewKeyDownForF6Revoker = popupContent.PreviewKeyDown(winrt::auto_revoke, { this, &TeachingTip::OnF6PopupPreviewKeyDownClicked });
                 }
             }
