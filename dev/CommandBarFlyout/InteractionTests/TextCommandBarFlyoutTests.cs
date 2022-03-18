@@ -683,7 +683,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Enter enough text to guarantee that double-tapping the RichEditBox will select text.");
                 fillWithTextButton.InvokeAndWait();
 
-                Log.Comment("Double-tap to select the text and bring up the selection menu. The CommandBarFlyout should appear, but should not take focus.");
+                Log.Comment("Double-click to select the text and bring up the selection menu. The CommandBarFlyout should appear, but should not take focus.");
                 InputHelper.LeftDoubleClick(richEditBox);
                 Wait.ForIdle();
 
@@ -700,7 +700,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Enter text again.");
                 fillWithTextButton.InvokeAndWait();
 
-                Log.Comment("Double-tap to select the text and bring up the selection menu. The CommandBarFlyout should appear, but should not take focus.");
+                Log.Comment("Double-click to select the text and bring up the selection menu. The CommandBarFlyout should appear, but should not take focus.");
                 InputHelper.LeftDoubleClick(richEditBox);
                 Wait.ForIdle();
 
