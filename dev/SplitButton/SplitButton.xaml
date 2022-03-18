@@ -25,72 +25,13 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:SplitButton">
-                    <Grid
-                        x:Name="RootGrid"
+                    <Border
+                        x:Name="RootBorder"
                         Background="Transparent"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                         contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
-
-                        <Grid.Resources>
-                            <!-- Override the style of the inner buttons so that they don't affect background/foreground/border colors -->
-                            <Style TargetType="Button">
-                                <Setter Property="Foreground" Value="{ThemeResource SplitButtonForeground}" />
-                                <Setter Property="BorderBrush" Value="Transparent" />
-                                <Setter Property="BorderThickness" Value="{ThemeResource SplitButtonBorderThemeThickness}" />
-                                <Setter Property="HorizontalAlignment" Value="Left" />
-                                <Setter Property="VerticalAlignment" Value="Center" />
-                                <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-                                <Setter Property="FontWeight" Value="Normal" />
-                                <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
-                                <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-                                <Setter Property="FocusVisualMargin" Value="-3" />
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Grid x:Name="RootGrid" Background="Transparent">
-
-                                                <VisualStateManager.VisualStateGroups>
-                                                    <VisualStateGroup x:Name="CommonStates">
-                                                        <VisualState x:Name="Normal"/>
-                                                        <VisualState x:Name="PointerOver">
-                                                            <VisualState.Setters>
-                                                                <Setter Target="ContentPresenter.(local:AnimatedIcon.State)" Value="PointerOver"/>
-                                                            </VisualState.Setters>
-                                                        </VisualState>
-                                                        <VisualState x:Name="Pressed">
-                                                            <VisualState.Setters>
-                                                                <Setter Target="ContentPresenter.(local:AnimatedIcon.State)" Value="Pressed"/>
-                                                            </VisualState.Setters>
-                                                        </VisualState>
-                                                        <VisualState x:Name="Disabled">
-                                                            <VisualState.Setters>
-                                                                <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource SplitButtonForegroundDisabled}"/>
-                                                                <Setter Target="RootGrid.Background" Value="{ThemeResource SplitButtonBackgroundDisabled}"/>
-                                                                <Setter Target="ContentPresenter.BorderBrush" Value="Transparent"/>
-                                                            </VisualState.Setters>
-                                                        </VisualState>
-                                                    </VisualStateGroup>
-                                                </VisualStateManager.VisualStateGroups>
-
-                                                <ContentPresenter x:Name="ContentPresenter"
-                                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                                    Content="{TemplateBinding Content}"
-                                                    ContentTransitions="{TemplateBinding ContentTransitions}"
-                                                    ContentTemplate="{TemplateBinding ContentTemplate}"
-                                                    Padding="{TemplateBinding Padding}"
-                                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                    AutomationProperties.AccessibilityView="Raw"
-                                                    local:AnimatedIcon.State="Normal"/>
-                                            </Grid>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Grid.Resources>
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -98,10 +39,10 @@
 
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushDisabled}"/>
+                                        <Setter Target="RootBorder.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushDisabled}"/>
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="Transparent"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="Transparent"/>
-                                        <Setter Target="RootGrid.Background" Value="Transparent"/>
+                                        <Setter Target="RootBorder.Background" Value="Transparent"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -109,7 +50,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundPressed}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundPressed}"/>
-                                        <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushPressed}"/>
+                                        <Setter Target="RootBorder.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushPressed}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundPressed}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundSecondaryPressed}"/>
                                     </VisualState.Setters>
@@ -119,7 +60,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundPressed}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundPressed}"/>
-                                        <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushPressed}"/>
+                                        <Setter Target="RootBorder.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushPressed}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundPressed}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundSecondaryPressed}"/>
                                     </VisualState.Setters>
@@ -162,11 +103,9 @@
                                     <VisualState.Setters>
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundChecked}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundChecked}"/>
-                                        <Setter Target="RootGrid.BorderThickness" Value="0"/>
+                                        <Setter Target="RootBorder.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushChecked}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundChecked}"/>
-                                        <Setter Target="PrimaryButton.BorderThickness" Value="1"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundChecked}"/>
-                                        <Setter Target="SecondaryButton.BorderThickness" Value="1"/>
                                         <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource SplitButtonBorderBrushCheckedDivider}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -175,11 +114,9 @@
                                     <VisualState.Setters>
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundCheckedPressed}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundCheckedPressed}"/>
-                                        <Setter Target="RootGrid.BorderThickness" Value="0"/>
+                                        <Setter Target="RootBorder.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushCheckedPressed}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundCheckedPressed}"/>
-                                        <Setter Target="PrimaryButton.BorderThickness" Value="1"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundCheckedPressed}"/>
-                                        <Setter Target="SecondaryButton.BorderThickness" Value="1"/>
                                         <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource SplitButtonBorderBrushCheckedDivider}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -188,33 +125,28 @@
                                     <VisualState.Setters>
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundCheckedPressed}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundCheckedPressed}"/>
-                                        <Setter Target="RootGrid.BorderThickness" Value="0"/>
+                                        <Setter Target="RootBorder.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushCheckedPressed}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundCheckedPressed}"/>
-                                        <Setter Target="PrimaryButton.BorderThickness" Value="1"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundCheckedPressed}"/>
-                                        <Setter Target="SecondaryButton.BorderThickness" Value="1"/>
                                         <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource SplitButtonBorderBrushCheckedDivider}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="CheckedPrimaryPointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="RootGrid.BorderThickness" Value="0"/>
+                                        <Setter Target="RootBorder.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushChecked}"/>
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundCheckedPointerOver}"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundCheckedPointerOver}"/>
-                                        <Setter Target="PrimaryButton.BorderThickness" Value="1"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundChecked}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundChecked}"/>
-                                        <Setter Target="SecondaryButton.BorderThickness" Value="1"/>
                                         <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource SplitButtonBorderBrushCheckedDivider}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="CheckedPrimaryPressed">
                                     <VisualState.Setters>
-                                        <Setter Target="RootGrid.BorderThickness" Value="0"/>
+                                        <Setter Target="RootBorder.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushChecked}"/>
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundCheckedPressed}"/>
-                                        <Setter Target="PrimaryButton.BorderThickness" Value="1"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundCheckedPressed}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundChecked}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundChecked}"/>
@@ -224,26 +156,22 @@
 
                                 <VisualState x:Name="CheckedSecondaryPointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="RootGrid.BorderThickness" Value="0"/>
+                                        <Setter Target="RootBorder.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushChecked}"/>
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundChecked}"/>
-                                        <Setter Target="PrimaryButton.BorderThickness" Value="1"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundChecked}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundCheckedPointerOver}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundCheckedPointerOver}"/>
-                                        <Setter Target="SecondaryButton.BorderThickness" Value="1"/>
                                         <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource SplitButtonBorderBrushCheckedDivider}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
                                 <VisualState x:Name="CheckedSecondaryPressed">
                                     <VisualState.Setters>
-                                        <Setter Target="RootGrid.BorderThickness" Value="0"/>
+                                        <Setter Target="RootBorder.BorderBrush" Value="{ThemeResource SplitButtonBorderBrushChecked}"/>
                                         <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundChecked}"/>
-                                        <Setter Target="PrimaryButton.BorderThickness" Value="1"/>
                                         <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundChecked}"/>
                                         <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource SplitButtonBackgroundCheckedPressed}"/>
                                         <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource SplitButtonForegroundCheckedPressed}"/>
-                                        <Setter Target="SecondaryButton.BorderThickness" Value="1"/>
                                         <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource SplitButtonBorderBrushCheckedDivider}"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -261,73 +189,135 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition x:Name="PrimaryButtonColumn" Width="*" MinWidth="{ThemeResource SplitButtonPrimaryButtonSize}"/>
-                            <ColumnDefinition x:Name="Separator" Width="1" />
-                            <ColumnDefinition x:Name="SecondaryButtonColumn" Width="{ThemeResource SplitButtonSecondaryButtonSize}"/>
-                        </Grid.ColumnDefinitions>
+                        <Grid contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
+                            <Grid.Resources>
+                                <!-- Override the style of the inner buttons so that they don't affect background/foreground/border colors -->
+                                <Style TargetType="Button">
+                                    <Setter Property="Foreground" Value="{ThemeResource SplitButtonForeground}" />
+                                    <Setter Property="BorderBrush" Value="Transparent" />
+                                    <Setter Property="BorderThickness" Value="{ThemeResource SplitButtonBorderThemeThickness}" />
+                                    <Setter Property="HorizontalAlignment" Value="Left" />
+                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                    <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+                                    <Setter Property="FontWeight" Value="Normal" />
+                                    <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+                                    <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+                                    <Setter Property="FocusVisualMargin" Value="-3" />
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Grid x:Name="RootGrid" Background="Transparent">
 
-                        <Grid x:Name="PrimaryBackgroundGrid"
-                            Background="{TemplateBinding Background}"
-                            Grid.ColumnSpan="2" />
+                                                    <VisualStateManager.VisualStateGroups>
+                                                        <VisualStateGroup x:Name="CommonStates">
+                                                            <VisualState x:Name="Normal"/>
+                                                            <VisualState x:Name="PointerOver">
+                                                                <VisualState.Setters>
+                                                                    <Setter Target="ContentPresenter.(local:AnimatedIcon.State)" Value="PointerOver"/>
+                                                                </VisualState.Setters>
+                                                            </VisualState>
+                                                            <VisualState x:Name="Pressed">
+                                                                <VisualState.Setters>
+                                                                    <Setter Target="ContentPresenter.(local:AnimatedIcon.State)" Value="Pressed"/>
+                                                                </VisualState.Setters>
+                                                            </VisualState>
+                                                            <VisualState x:Name="Disabled">
+                                                                <VisualState.Setters>
+                                                                    <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource SplitButtonForegroundDisabled}"/>
+                                                                    <Setter Target="RootGrid.Background" Value="{ThemeResource SplitButtonBackgroundDisabled}"/>
+                                                                    <Setter Target="ContentPresenter.BorderBrush" Value="Transparent"/>
+                                                                </VisualState.Setters>
+                                                            </VisualState>
+                                                        </VisualStateGroup>
+                                                    </VisualStateManager.VisualStateGroups>
 
-                        <Grid x:Name="DividerBackgroundGrid"
-                            Width="1"
-                            Background="{ThemeResource SplitButtonBorderBrushDivider}"
-                            Grid.Column="1"/>
+                                                    <ContentPresenter x:Name="ContentPresenter"
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        Content="{TemplateBinding Content}"
+                                                        ContentTransitions="{TemplateBinding ContentTransitions}"
+                                                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                        Padding="{TemplateBinding Padding}"
+                                                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                        AutomationProperties.AccessibilityView="Raw"
+                                                        local:AnimatedIcon.State="Normal"/>
+                                                </Grid>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Grid.Resources>
 
-                        <Grid x:Name="SecondaryBackgroundGrid"
-                            Background="{TemplateBinding Background}"
-                            Grid.Column="2"/>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition x:Name="PrimaryButtonColumn" Width="*" MinWidth="{ThemeResource SplitButtonPrimaryButtonSize}"/>
+                                <ColumnDefinition x:Name="Separator" Width="1" />
+                                <ColumnDefinition x:Name="SecondaryButtonColumn" Width="{ThemeResource SplitButtonSecondaryButtonSize}"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Grid x:Name="PrimaryBackgroundGrid"
+                                Background="{TemplateBinding Background}"
+                                Grid.ColumnSpan="2" />
+
+                            <Grid x:Name="DividerBackgroundGrid"
+                                Width="1"
+                                Background="{ThemeResource SplitButtonBorderBrushDivider}"
+                                Grid.Column="1"/>
+
+                            <Grid x:Name="SecondaryBackgroundGrid"
+                                Background="{TemplateBinding Background}"
+                                Grid.Column="2"/>
                         
-                        <Button x:Name="PrimaryButton"
-                            Grid.Column="0"
-                            Foreground="{TemplateBinding Foreground}"
-                            Background="{TemplateBinding Background}"
-                            BorderThickness="0"
-                            BorderBrush="Transparent"
-                            Content="{TemplateBinding Content}"
-                            ContentTransitions="{TemplateBinding ContentTransitions}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Command="{TemplateBinding Command}"
-                            CommandParameter="{TemplateBinding CommandParameter}"
-                            FontFamily="{TemplateBinding FontFamily}"
-                            FontSize="{TemplateBinding FontSize}"
-                            FontWeight="{TemplateBinding FontWeight}"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch"
-                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                            Padding="{TemplateBinding Padding}"
-                            IsTabStop="False"
-                            AutomationProperties.AccessibilityView="Raw"/>
+                            <Button x:Name="PrimaryButton"
+                                Grid.Column="0"
+                                Foreground="{TemplateBinding Foreground}"
+                                Background="{TemplateBinding Background}"
+                                BorderThickness="0"
+                                BorderBrush="Transparent"
+                                Content="{TemplateBinding Content}"
+                                ContentTransitions="{TemplateBinding ContentTransitions}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Command="{TemplateBinding Command}"
+                                CommandParameter="{TemplateBinding CommandParameter}"
+                                FontFamily="{TemplateBinding FontFamily}"
+                                FontSize="{TemplateBinding FontSize}"
+                                FontWeight="{TemplateBinding FontWeight}"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Padding="{TemplateBinding Padding}"
+                                IsTabStop="False"
+                                AutomationProperties.AccessibilityView="Raw"/>
 
-                        <Button x:Name="SecondaryButton"
-                            Grid.Column="2"
-                            Foreground="{ThemeResource SplitButtonForegroundSecondary}"
-                            Background="{TemplateBinding Background}"
-                            BorderThickness="0"
-                            BorderBrush="Transparent"
-                            HorizontalContentAlignment="Stretch"
-                            VerticalContentAlignment="Stretch"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch"
-                            Padding="0,0,12,0"
-                            IsTabStop="False"
-                            AutomationProperties.AccessibilityView="Raw">
-                            <Button.Content>
-                                <local:AnimatedIcon Height="12" Width="12" VerticalAlignment="Center" HorizontalAlignment="Right" AutomationProperties.AccessibilityView="Raw">
-                                    <animatedvisuals:AnimatedChevronDownSmallVisualSource/>
-                                    <local:AnimatedIcon.FallbackIconSource>
-                                        <local:FontIconSource FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                                              FontSize="8"
-                                                              Glyph="&#xE96E;"
-                                                              IsTextScaleFactorEnabled="False"/>
-                                    </local:AnimatedIcon.FallbackIconSource>
-                                </local:AnimatedIcon>
-                            </Button.Content>
-                        </Button>
-                    </Grid>
+                            <Button x:Name="SecondaryButton"
+                                Grid.Column="2"
+                                Foreground="{ThemeResource SplitButtonForegroundSecondary}"
+                                Background="{TemplateBinding Background}"
+                                BorderThickness="0"
+                                BorderBrush="Transparent"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Stretch"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                Padding="0,0,12,0"
+                                IsTabStop="False"
+                                AutomationProperties.AccessibilityView="Raw">
+                                <Button.Content>
+                                    <local:AnimatedIcon Height="12" Width="12" VerticalAlignment="Center" HorizontalAlignment="Right" AutomationProperties.AccessibilityView="Raw">
+                                        <animatedvisuals:AnimatedChevronDownSmallVisualSource/>
+                                        <local:AnimatedIcon.FallbackIconSource>
+                                            <local:FontIconSource FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                                  FontSize="8"
+                                                                  Glyph="&#xE96E;"
+                                                                  IsTextScaleFactorEnabled="False"/>
+                                        </local:AnimatedIcon.FallbackIconSource>
+                                    </local:AnimatedIcon>
+                                </Button.Content>
+                            </Button>
+                        </Grid>
+                    </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
