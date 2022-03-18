@@ -238,6 +238,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Tap on a button to show the CommandBarFlyout.");
                 InputHelper.Tap(showCommandBarFlyoutButton);
 
+                FocusHelper.SetFocus(FindElement.ById("CutButton1"));
+
                 Log.Comment("Press Tab key to move focus to first secondary command: Undo.");
                 KeyboardHelper.PressKey(Key.Tab);
                 Wait.ForIdle();
@@ -311,6 +313,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Tap on a button to show the CommandBarFlyout.");
                 InputHelper.Tap(showCommandBarFlyoutButton);
 
+                FocusHelper.SetFocus(FindElement.ById("CutButton1"));
+
                 Log.Comment($"Press {rightStr} key to move focus to second primary command: Copy.");
                 KeyboardHelper.PressKey(rightKey);
                 Wait.ForIdle();
@@ -375,6 +379,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Tap on a button to show the CommandBarFlyout.");
                 InputHelper.Tap(showCommandBarFlyoutButton);
+
+                FocusHelper.SetFocus(FindElement.ById("CutButton1"));
 
                 Log.Comment("Press Down key to move focus to second primary command: Copy.");
                 KeyboardHelper.PressKey(Key.Down);
@@ -487,6 +493,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Tap on a button to show the CommandBarFlyout.");
                 InputHelper.Tap(showCommandBarFlyoutButton);
 
+                FocusHelper.SetFocus(FindElement.ById("CutButton1"));
+
                 Button cutButton1 = FindElement.ById<Button>("CutButton1");
                 var cutButtonElement = AutomationElement.FocusedElement;
                 Verify.AreEqual(cutButtonElement.Current.AutomationId, cutButton1.AutomationId);
@@ -556,6 +564,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Log.Comment("Expanding the CommandBar by invoking the more button.");
                     FindElement.ById<Button>("MoreButton").InvokeAndWait();
                 }
+
+                FocusHelper.SetFocus(FindElement.ById("CutButton1"));
 
                 Log.Comment("Retrieving the more button and undo button's automation element objects.");
 
@@ -958,6 +968,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 showCommandBarFlyoutButton.Invoke();
                 Wait.ForIdle();
                 Verify.AreEqual(ToggleState.On, isFlyoutOpenCheckBox.ToggleState);
+
+                FocusHelper.SetFocus(FindElement.ById("UndoButton6"));
 
                 Button undoButton6 = FindElement.ById<Button>("UndoButton6");
                 Verify.IsNotNull(undoButton6);

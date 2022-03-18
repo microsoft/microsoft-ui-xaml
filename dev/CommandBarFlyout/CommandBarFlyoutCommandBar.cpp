@@ -25,31 +25,24 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
 
             UpdateUI(!m_commandBarFlyoutIsOpening);
 
-            // Programmatically focus the first primary command if any, else programmatically focus the first secondary command if any.
-            auto commands = PrimaryCommands().Size() > 0 ? PrimaryCommands() : (SecondaryCommands().Size() > 0 ? SecondaryCommands() : nullptr);
-
-            if (commands)
+            if (auto owningFlyout = m_owningFlyout.get())
             {
-                const bool usingPrimaryCommands = commands == PrimaryCommands();
-                const bool ensureTabStopUniqueness = usingPrimaryCommands || SharedHelpers::IsRS3OrHigher();
-                const auto firstCommandAsFrameworkElement = commands.GetAt(0).try_as<winrt::FrameworkElement>();
-
-                if (firstCommandAsFrameworkElement)
+                // We only want to focus an initial element if we're opening in standard mode -
+                // in transient mode, we don't want to be taking focus.
+                if (owningFlyout.ShowMode() == winrt::FlyoutShowMode::Standard)
                 {
-                    if (SharedHelpers::IsFrameworkElementLoaded(firstCommandAsFrameworkElement))
+                    // Programmatically focus the first primary command if any, else programmatically focus the first secondary command if any.
+                    auto commands = PrimaryCommands().Size() > 0 ? PrimaryCommands() : (SecondaryCommands().Size() > 0 ? SecondaryCommands() : nullptr);
+
+                    if (commands)
                     {
-                        FocusCommand(
-                            commands,
-                            usingPrimaryCommands ? m_moreButton.get() : nullptr /*moreButton*/,
-                            winrt::FocusState::Programmatic /*focusState*/,
-                            true /*firstCommand*/,
-                            ensureTabStopUniqueness);
-                    }
-                    else
-                    {
-                        m_firstItemLoadedRevoker = firstCommandAsFrameworkElement.Loaded(winrt::auto_revoke,
+                        const bool usingPrimaryCommands = commands == PrimaryCommands();
+                        const bool ensureTabStopUniqueness = usingPrimaryCommands || SharedHelpers::IsRS3OrHigher();
+                        const auto firstCommandAsFrameworkElement = commands.GetAt(0).try_as<winrt::FrameworkElement>();
+
+                        if (firstCommandAsFrameworkElement)
                         {
-                            [this, commands, usingPrimaryCommands, ensureTabStopUniqueness](winrt::IInspectable const& sender, auto const&)
+                            if (SharedHelpers::IsFrameworkElementLoaded(firstCommandAsFrameworkElement))
                             {
                                 FocusCommand(
                                     commands,
@@ -57,9 +50,24 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
                                     winrt::FocusState::Programmatic /*focusState*/,
                                     true /*firstCommand*/,
                                     ensureTabStopUniqueness);
-                                m_firstItemLoadedRevoker.revoke();
                             }
-                        });
+                            else
+                            {
+                                m_firstItemLoadedRevoker = firstCommandAsFrameworkElement.Loaded(winrt::auto_revoke,
+                                {
+                                    [this, commands, usingPrimaryCommands, ensureTabStopUniqueness](winrt::IInspectable const& sender, auto const&)
+                                    {
+                                        FocusCommand(
+                                            commands,
+                                            usingPrimaryCommands ? m_moreButton.get() : nullptr /*moreButton*/,
+                                            winrt::FocusState::Programmatic /*focusState*/,
+                                            true /*firstCommand*/,
+                                            ensureTabStopUniqueness);
+                                        m_firstItemLoadedRevoker.revoke();
+                                    }
+                                });
+                            }
+                        }
                     }
                 }
             }
