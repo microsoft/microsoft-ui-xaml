@@ -109,6 +109,8 @@ public:
     void TabCloseRequested(winrt::event_token const& token);
     winrt::event_token TabDragCompleted(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDragCompletedEventArgs> const& value);
     void TabDragCompleted(winrt::event_token const& token);
+    winrt::event_token TabDraggedOutside(winrt::DragEventHandler const& value);
+    void TabDraggedOutside(winrt::event_token const& token);
     winrt::event_token TabDragStarting(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDragStartingEventArgs> const& value);
     void TabDragStarting(winrt::event_token const& token);
     winrt::event_token TabDroppedOutside(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDroppedOutsideEventArgs> const& value);
@@ -124,6 +126,7 @@ public:
     event_source<winrt::SelectionChangedEventHandler> m_selectionChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabCloseRequestedEventArgs>> m_tabCloseRequestedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDragCompletedEventArgs>> m_tabDragCompletedEventSource;
+    event_source<winrt::DragEventHandler> m_tabDraggedOutsideEventSource;
     event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDragStartingEventArgs>> m_tabDragStartingEventSource;
     event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDroppedOutsideEventArgs>> m_tabDroppedOutsideEventSource;
     event_source<winrt::TypedEventHandler<winrt::TabView, winrt::IVectorChangedEventArgs>> m_tabItemsChangedEventSource;

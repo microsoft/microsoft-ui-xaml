@@ -37,6 +37,7 @@ TabViewProperties::TabViewProperties()
     , m_selectionChangedEventSource{static_cast<TabView*>(this)}
     , m_tabCloseRequestedEventSource{static_cast<TabView*>(this)}
     , m_tabDragCompletedEventSource{static_cast<TabView*>(this)}
+    , m_tabDraggedOutsideEventSource{static_cast<TabView*>(this)}
     , m_tabDragStartingEventSource{static_cast<TabView*>(this)}
     , m_tabDroppedOutsideEventSource{static_cast<TabView*>(this)}
     , m_tabItemsChangedEventSource{static_cast<TabView*>(this)}
@@ -582,6 +583,16 @@ winrt::event_token TabViewProperties::TabDragCompleted(winrt::TypedEventHandler<
 void TabViewProperties::TabDragCompleted(winrt::event_token const& token)
 {
     m_tabDragCompletedEventSource.remove(token);
+}
+
+winrt::event_token TabViewProperties::TabDraggedOutside(winrt::DragEventHandler const& value)
+{
+    return m_tabDraggedOutsideEventSource.add(value);
+}
+
+void TabViewProperties::TabDraggedOutside(winrt::event_token const& token)
+{
+    m_tabDraggedOutsideEventSource.remove(token);
 }
 
 winrt::event_token TabViewProperties::TabDragStarting(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDragStartingEventArgs> const& value)

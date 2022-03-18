@@ -77,6 +77,24 @@ void TabViewListView::PrepareContainerForItemOverride(const winrt::DependencyObj
     __super::PrepareContainerForItemOverride(element, item);
 }
 
+void TabViewListView::OnDragEnter(winrt::DragEventArgs const& e)
+{
+    /*e.DragUIOverride().IsGlyphVisible(false);
+    e.DragUIOverride().Caption(L"Test Test");
+    e.DragUIOverride().IsContentVisible(false);*/
+
+    __super::OnDragEnter(e);
+}
+
+void TabViewListView::OnDragLeave(winrt::DragEventArgs const& e)
+{
+    e.DragUIOverride().IsGlyphVisible(false);
+    e.DragUIOverride().Caption(L"Test Test");
+    e.DragUIOverride().IsContentVisible(false);
+
+    __super::OnDragLeave(e);
+}
+
 void TabViewListView::OnContainerContentChanging(const winrt::IInspectable& sender, const winrt::Windows::UI::Xaml::Controls::ContainerContentChangingEventArgs& args)
 {
     if (const auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))

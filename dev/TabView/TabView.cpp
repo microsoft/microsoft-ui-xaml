@@ -104,6 +104,7 @@ void TabView::OnApplyTemplate()
             m_listViewDragItemsStartingRevoker = listView.DragItemsStarting(winrt::auto_revoke, { this, &TabView::OnListViewDragItemsStarting });
             m_listViewDragItemsCompletedRevoker = listView.DragItemsCompleted(winrt::auto_revoke, { this, &TabView::OnListViewDragItemsCompleted });
             m_listViewDragOverRevoker = listView.DragOver(winrt::auto_revoke, { this, &TabView::OnListViewDragOver });
+            //m_listViewDragLeaveRevoker = listView.DragLeave(winrt::auto_revoke, { this, &TabView::OnListViewDragLeave });
             m_listViewDropRevoker = listView.Drop(winrt::auto_revoke, { this, &TabView::OnListViewDrop });
 
             m_listViewGettingFocusRevoker = listView.GettingFocus(winrt::auto_revoke, { this, &TabView::OnListViewGettingFocus });
@@ -154,6 +155,22 @@ void TabView::OnApplyTemplate()
                 shadowCaster.Translation(translation);
 
                 shadowCaster.Shadow(shadow);
+            }
+        }
+        else
+        {
+            if (auto tabDragVisualContainer = GetTemplateChildT<winrt::Grid>(L"ShadowCaster", controlProtected))
+            {
+                winrt::ThemeShadow shadow;
+                shadow.Receivers().Append(GetShadowReceiver());
+
+                double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
+
+                const auto currentTranslation = tabDragVisualContainer.Translation();
+                const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
+                tabDragVisualContainer.Translation(translation);
+
+                tabDragVisualContainer.Shadow(shadow);
             }
         }
     }
@@ -407,6 +424,7 @@ void TabView::UnhookEventsAndClearFields()
     m_listViewDragItemsStartingRevoker.revoke();
     m_listViewDragItemsCompletedRevoker.revoke();
     m_listViewDragOverRevoker.revoke();
+    m_listViewDragLeaveRevoker.revoke();
     m_listViewDropRevoker.revoke();
     m_listViewGettingFocusRevoker.revoke();
     m_listViewCanReorderItemsPropertyChangedRevoker.revoke();
@@ -833,7 +851,6 @@ void TabView::OnListViewDragItemsStarting(const winrt::IInspectable& sender, con
 
     auto item = args.Items().GetAt(0);
     auto tab = FindTabViewItemFromDragItem(item);
-    //tab.Background(winrt::SolidColorBrush(winrt::Colors::Red()));
     auto myArgs = winrt::make_self<TabViewTabDragStartingEventArgs>(args, item, tab);
 
     m_tabDragStartingEventSource(*this, *myArgs);
@@ -849,6 +866,11 @@ void TabView::OnListViewDragOver(const winrt::IInspectable& sender, const winrt:
 void TabView::OnListViewDrop(const winrt::IInspectable& sender, const winrt::DragEventArgs& args)
 {
     m_tabStripDropEventSource(*this, args);
+}
+
+void TabView::OnListViewDragLeave(const winrt::IInspectable& sender, const winrt::DragEventArgs& args)
+{
+    m_tabDraggedOutsideEventSource(*this, args);
 }
 
 void TabView::OnListViewDragItemsCompleted(const winrt::IInspectable& sender, const winrt::DragItemsCompletedEventArgs& args)

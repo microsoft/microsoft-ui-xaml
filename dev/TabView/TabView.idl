@@ -119,6 +119,7 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
     event Windows.Foundation.TypedEventHandler<TabView, TabViewTabDragCompletedEventArgs> TabDragCompleted;
     event Windows.UI.Xaml.DragEventHandler TabStripDragOver;
     event Windows.UI.Xaml.DragEventHandler TabStripDrop;
+    event Windows.UI.Xaml.DragEventHandler TabDraggedOutside;
 
     static Windows.UI.Xaml.DependencyProperty TabWidthModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TabStripHeaderProperty{ get; };

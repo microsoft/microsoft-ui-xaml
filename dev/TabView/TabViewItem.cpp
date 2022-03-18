@@ -220,6 +220,13 @@ void TabViewItem::OnTabDragCompleted(const winrt::IInspectable& sender, const wi
     UpdateForeground();
 }
 
+void TabViewItem::OnDragLeave(winrt::DragEventArgs const& args)
+{
+    __super::OnDragLeave(args);
+
+    args.DragUIOverride().Caption(L"Test");
+}
+
 winrt::AutomationPeer TabViewItem::OnCreateAutomationPeer()
 {
     return winrt::make<TabViewItemAutomationPeer>(*this);
@@ -370,6 +377,8 @@ void TabViewItem::OnHeaderChanged()
 
 void TabViewItem::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
 {
+    this->IsSelected(true);
+
     if (args.Pointer().PointerDeviceType() == winrt::PointerDeviceType::Mouse)
     {
         auto pointerPoint = args.GetCurrentPoint(*this);
@@ -377,16 +386,13 @@ void TabViewItem::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
         m_isCheckingforMouseDrag = true;
         m_lastMouseLeftButtonDownPosition = pointerPoint.Position();
 
-        if (IsSelected())
+        if (pointerPoint.Properties().IsLeftButtonPressed())
         {
-            if (pointerPoint.Properties().IsLeftButtonPressed())
+            auto isCtrlDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+            if (isCtrlDown)
             {
-                auto isCtrlDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
-                if (isCtrlDown)
-                {
-                    // Return here so the base class will not pick it up, but let it remain unhandled so someone else could handle it.
-                    return;
-                }
+                // Return here so the base class will not pick it up, but let it remain unhandled so someone else could handle it.
+                return;
             }
         }
     }

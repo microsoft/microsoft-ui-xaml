@@ -4865,7 +4865,14 @@ void NavigationView::SetDropShadow()
         {
             if (winrt::IUIElement10 shadowCaster_uiElement10 = shadowCaster)
             {
-                shadowCaster_uiElement10.Shadow(winrt::ThemeShadow{});
+                winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
+                shadowCaster_uiElement10.Shadow(shadow);
+
+                const auto translation = shadowCaster.Translation();
+
+                const double shadowDepth = 16;
+
+                shadowCaster.Translation({ translation.x, translation.y, (float)shadowDepth });
             }
         }              
     }

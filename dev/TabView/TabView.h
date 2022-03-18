@@ -10,6 +10,7 @@
 #include "TabView.properties.h"
 #include "TabViewTabCloseRequestedEventArgs.g.h"
 #include "TabViewTabDroppedOutsideEventArgs.g.h"
+//#include "TabViewTabDraggedOutsideEventArgs.g.h"
 #include "TabViewTabDragStartingEventArgs.g.h"
 #include "TabViewTabDragCompletedEventArgs.g.h"
 #include "DispatcherHelper.h"
@@ -141,6 +142,7 @@ private:
     void OnListViewDragItemsCompleted(const winrt::IInspectable& sender, const winrt::DragItemsCompletedEventArgs& args);
     void OnListViewDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
     void OnListViewDrop(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
+    void OnListViewDragLeave(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
 
     void OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
     void OnCtrlTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
@@ -203,6 +205,7 @@ private:
     winrt::ListView::DragItemsCompleted_revoker m_listViewDragItemsCompletedRevoker{};
     winrt::UIElement::DragOver_revoker m_listViewDragOverRevoker{};
     winrt::UIElement::Drop_revoker m_listViewDropRevoker{};
+    winrt::UIElement::DragLeave_revoker m_listViewDragLeaveRevoker{};
 
     winrt::FxScrollViewer::Loaded_revoker m_scrollViewerLoadedRevoker{};
     winrt::FxScrollViewer::ViewChanged_revoker m_scrollViewerViewChangedRevoker{};

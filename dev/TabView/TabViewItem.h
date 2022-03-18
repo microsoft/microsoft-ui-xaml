@@ -38,6 +38,8 @@ public:
     void OnPointerCanceled(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
 
+    void OnDragLeave(winrt::DragEventArgs const& e);
+
     void RaiseRequestClose(TabViewTabCloseRequestedEventArgs const& args);
     void OnTabViewWidthModeChanged(winrt::TabViewWidthMode const& mode);
     void OnCloseButtonOverlayModeChanged(winrt::TabViewCloseButtonOverlayMode const& mode);
@@ -78,6 +80,7 @@ private:
 
     void OnTabDragStarting(const winrt::IInspectable& sender, const winrt::TabViewTabDragStartingEventArgs& args);
     void OnTabDragCompleted(const winrt::IInspectable& sender, const winrt::TabViewTabDragCompletedEventArgs& args);
+    
 
     void HideLeftAdjacentTabSeparator();
     void RestoreLeftAdjacentTabSeparatorVisibility();

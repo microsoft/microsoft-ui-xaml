@@ -304,16 +304,32 @@ void TreeViewList::OnDragEnter(winrt::DragEventArgs const& args)
     {
         UpdateDropTargetDropEffect(false, false, nullptr);
     }
+
+    args.DragUIOverride().IsGlyphVisible(false);
+    args.DragUIOverride().Caption(L"Test Test");
+    args.DragUIOverride().IsContentVisible(false);
+
     __super::OnDragEnter(args);
 }
 
 void TreeViewList::OnDragLeave(winrt::DragEventArgs const& args)
 {
     m_emptySlotIndex = -1;
+
+    args.DragUIOverride().IsGlyphVisible(false);
+    args.DragUIOverride().Caption(L"Test Test");
+    args.DragUIOverride().IsContentVisible(false);
+
     __super::OnDragLeave(args);
+
+    args.DragUIOverride().IsGlyphVisible(false);
+    args.DragUIOverride().Caption(L"Test Test");
+    args.DragUIOverride().IsContentVisible(false);
+
     if (!args.Handled())
     {
         UpdateDropTargetDropEffect(false, true, nullptr);
+        
     }
 }
 

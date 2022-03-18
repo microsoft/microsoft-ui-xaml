@@ -98,6 +98,7 @@
 
                         <ContentPresenter x:Name="TabContentPresenter"
                             Grid.Row="1"
+                            Background="{ThemeResource TabViewItemHeaderBackgroundSelected}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}" />
                     </Grid>
