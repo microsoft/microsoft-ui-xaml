@@ -311,33 +311,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
 
         public static void DoubleTap(UIObject obj)
         {
-            // Allowing three attempts to work around occasional failure on Phone builds.
-            int retries = 3;
-            while (retries > 0)
+            try
             {
-                try
+                Log.Comment("Double-tap on {0}.", obj.GetIdentifier());
+                using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Tap))
                 {
-                    Log.Comment("Double-tap on {0}.", obj.GetIdentifier());
-                    using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Tap))
+                    if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
                     {
-                        if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
-                        {
-                            Log.Warning("Touch input is not available on OS versions less than RS5. Falling back to mouse input.");
-                            obj.DoubleClick(PointerButtons.Primary);
-                        }
-                        else
-                        {
-                            obj.DoubleTap();
-                        }
+                        Log.Warning("Touch input is not available on OS versions less than RS5. Falling back to mouse input.");
+                        obj.DoubleClick(PointerButtons.Primary);
                     }
-
-                    retries = 0;
+                    else
+                    {
+                        obj.DoubleTap();
+                    }
                 }
-                catch (Exception e)
-                {
-                    Log.Warning("Exception while double-tapping: " + e.Message);
-                    retries--;
-                }
+            }
+            catch (Exception e)
+            {
+                Log.Warning("Exception while double-tapping: " + e.Message);
             }
 
             Wait.ForIdle();
