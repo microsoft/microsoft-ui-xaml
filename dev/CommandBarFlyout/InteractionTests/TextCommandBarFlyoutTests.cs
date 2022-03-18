@@ -691,7 +691,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(boldButton);
                 Verify.IsFalse(boldButton.HasKeyboardFocus);
 
-                Log.Comment("Press backspace to delete the selected text. This should work because the RichEditBox should still has focus.");
+                Log.Comment("Press backspace to delete the selected text. This should work because the RichEditBox should still have focus.");
                 KeyboardHelper.PressKey(Key.Backspace);
                 Wait.ForIdle();
 

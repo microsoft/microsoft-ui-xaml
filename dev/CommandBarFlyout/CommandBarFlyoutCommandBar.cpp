@@ -54,18 +54,18 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
                             else
                             {
                                 m_firstItemLoadedRevoker = firstCommandAsFrameworkElement.Loaded(winrt::auto_revoke,
+                                {
+                                    [this, commands, usingPrimaryCommands, ensureTabStopUniqueness](winrt::IInspectable const& sender, auto const&)
                                     {
-                                        [this, commands, usingPrimaryCommands, ensureTabStopUniqueness](winrt::IInspectable const& sender, auto const&)
-                                        {
-                                            FocusCommand(
-                                                commands,
-                                                usingPrimaryCommands ? m_moreButton.get() : nullptr /*moreButton*/,
-                                                winrt::FocusState::Programmatic /*focusState*/,
-                                                true /*firstCommand*/,
-                                                ensureTabStopUniqueness);
-                                            m_firstItemLoadedRevoker.revoke();
-                                        }
-                                    });
+                                        FocusCommand(
+                                            commands,
+                                            usingPrimaryCommands ? m_moreButton.get() : nullptr /*moreButton*/,
+                                            winrt::FocusState::Programmatic /*focusState*/,
+                                            true /*firstCommand*/,
+                                            ensureTabStopUniqueness);
+                                        m_firstItemLoadedRevoker.revoke();
+                                    }
+                                });
                             }
                         }
                     }
