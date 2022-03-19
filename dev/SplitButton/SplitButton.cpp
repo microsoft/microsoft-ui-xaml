@@ -132,6 +132,7 @@ void SplitButton::UpdateVisualStates(bool useTransitions)
     auto secondaryButton = m_secondaryButton.get();
     if (!IsEnabled()) {
         winrt::VisualStateManager::GoToState(*this, L"Disabled", useTransitions);
+        UpdateLayout();
     }
     else if (primaryButton && secondaryButton)
     {
@@ -140,10 +141,12 @@ void SplitButton::UpdateVisualStates(bool useTransitions)
             if (InternalIsChecked())
             {
                 winrt::VisualStateManager::GoToState(*this, L"CheckedFlyoutOpen", useTransitions);
+                UpdateLayout();
             }
             else
             {
                 winrt::VisualStateManager::GoToState(*this, L"FlyoutOpen", useTransitions);
+                UpdateLayout();
             }
         }
         // SplitButton and ToggleSplitButton share a template -- this section is driving the checked states for ToggleSplitButton.

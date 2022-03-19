@@ -142,6 +142,7 @@
 
             <StackPanel Orientation="Horizontal" Margin="0,12,0,12">
                 <controls:ToggleSplitButton x:Name="BindingToggleSplitButton" Content="IsChecked" IsChecked="{Binding IsChecked, ElementName=IsCheckedCheckBox, Mode=TwoWay}"/>
+                <ToggleButton Content="Some text" IsChecked="{Binding IsChecked, ElementName=IsCheckedCheckBox, Mode=TwoWay}"/>
                 <CheckBox x:Name="IsCheckedCheckBox" Content="IsChecked" IsChecked="False" Margin="12,0,0,0"/>
             </StackPanel>
 

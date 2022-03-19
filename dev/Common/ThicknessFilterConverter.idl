@@ -1,0 +1,27 @@
+﻿namespace MU_XCP_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+[default_interface]
+runtimeclass ThicknessFilterConverter : Windows.UI.Xaml.DependencyObject, Windows.UI.Xaml.Data.IValueConverter
+{
+    ThicknessFilterConverter();
+
+    [MUX_DEFAULT_VALUE("winrt::ThicknessFilterKind::None")]
+    ThicknessFilterKind Filter{ get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty FilterProperty{ get; };
+};
+
+[MUX_PUBLIC]
+[webhosthidden]
+enum ThicknessFilterKind
+{
+    None,
+    Top,
+    Right,
+    Bottom,
+    Left,
+};
+}
