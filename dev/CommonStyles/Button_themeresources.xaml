@@ -14,7 +14,7 @@
             <StaticResource x:Key="AccentButtonForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="AccentButtonForegroundPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="AccentButtonForegroundPressed" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
-            <StaticResource x:Key="AccentButtonForegroundDisabled" ResourceKey="TextOnAccentFillColorDisabled" />
+            <StaticResource x:Key="AccentButtonForegroundDisabled" ResourceKey="TextOnAccentFillColorDisabledBrush" />
             <StaticResource x:Key="AccentButtonBorderBrush" ResourceKey="AccentControlElevationBorderBrush" />
             <StaticResource x:Key="AccentButtonBorderBrushPointerOver" ResourceKey="AccentControlElevationBorderBrush" />
             <StaticResource x:Key="AccentButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
@@ -94,7 +94,7 @@
             <StaticResource x:Key="AccentButtonForeground" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="AccentButtonForegroundPointerOver" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
             <StaticResource x:Key="AccentButtonForegroundPressed" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
-            <StaticResource x:Key="AccentButtonForegroundDisabled" ResourceKey="TextOnAccentFillColorDisabled" />
+            <StaticResource x:Key="AccentButtonForegroundDisabled" ResourceKey="TextOnAccentFillColorDisabledBrush" />
             <StaticResource x:Key="AccentButtonBorderBrush" ResourceKey="AccentControlElevationBorderBrush" />
             <StaticResource x:Key="AccentButtonBorderBrushPointerOver" ResourceKey="AccentControlElevationBorderBrush" />
             <StaticResource x:Key="AccentButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
