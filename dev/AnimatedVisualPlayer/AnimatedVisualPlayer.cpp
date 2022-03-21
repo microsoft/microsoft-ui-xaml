@@ -809,7 +809,7 @@ void AnimatedVisualPlayer::OnAnimationOptimizationPropertyChanged(
 void AnimatedVisualPlayer::CreateAnimations() {
     m_createAnimationsCounter++;
 
-    if (m_isAnimationsCreated)
+    if (m_isAnimationsCreated || m_animatedVisual == nullptr || !SharedHelpers::IsRS5OrHigher())
     {
         return;
     }
@@ -817,7 +817,7 @@ void AnimatedVisualPlayer::CreateAnimations() {
     // Check if current animated visual supports creating animations and create them.
     if (const auto& animatedVisual = m_animatedVisual.get())
     {
-        if (const auto& animatedVisual2 = m_animatedVisual.try_as<winrt::IAnimatedVisual2>())
+        if (const auto& animatedVisual2 = animatedVisual.try_as<winrt::IAnimatedVisual2>())
         {
             animatedVisual2.CreateAnimations();
             m_isAnimationsCreated = true;
@@ -845,7 +845,7 @@ void AnimatedVisualPlayer::DestroyAnimations() {
             // Check if current animated visual supports destroyig animations.
             if (const auto& animatedVisual = m_animatedVisual.get())
             {
-                if (const auto& animatedVisual2 = m_animatedVisual.try_as<winrt::IAnimatedVisual2>())
+                if (const auto& animatedVisual2 = animatedVisual.try_as<winrt::IAnimatedVisual2>())
                 {
                     animatedVisual2.DestroyAnimations();
                     m_isAnimationsCreated = false;
