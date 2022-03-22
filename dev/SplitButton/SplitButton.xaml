@@ -238,7 +238,6 @@
                                                             <VisualState.Setters>
                                                                 <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource SplitButtonForegroundDisabled}"/>
                                                                 <Setter Target="RootGrid.Background" Value="{ThemeResource SplitButtonBackgroundDisabled}"/>
-                                                                <Setter Target="ContentPresenter.BorderBrush" Value="Transparent"/>
                                                             </VisualState.Setters>
                                                         </VisualState>
                                                     </VisualStateGroup>
