@@ -66,7 +66,7 @@
                     </controls:SplitButton>
 
                     <StackPanel Orientation="Horizontal">
-                        <controls:SplitButton Margin="0,12,0,0" Content="Test Alignment (default)" Width="300" Height="50">
+                        <controls:SplitButton Margin="0,12,0,0" Content="Test Alignment (default)" Width="300" Height="50" BorderThickness="5">
                             <controls:SplitButton.Flyout>
                                 <Flyout>
                                     <TextBlock Text="Hello"/>

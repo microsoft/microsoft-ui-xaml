@@ -23,5 +23,7 @@ enum ThicknessFilterKind
     Right,
     Bottom,
     Left,
+    TopBottom,
+    LeftRight,
 };
 }

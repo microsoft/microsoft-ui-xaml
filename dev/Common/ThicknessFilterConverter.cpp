@@ -23,6 +23,14 @@ winrt::Thickness ThicknessFilterConverter::Convert(winrt::Thickness const& thick
     case winrt::ThicknessFilterKind::Left:
         result.Left = 0;
         break;
+    case winrt::ThicknessFilterKind::TopBottom:
+        result.Top = 0;
+        result.Bottom = 0;
+    break;
+    case winrt::ThicknessFilterKind::LeftRight:
+        result.Left = 0;
+        result.Right = 0;
+        break;
     }
 
     return result;
