@@ -15,7 +15,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:ColorPicker">
-                    <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" Padding="0,4"
+                    <Grid x:Name="RootGrid" Background="{TemplateBinding Background}"
                         MaxWidth="{StaticResource ColorPickerVerticalOrientationMaxWidth}"
                         MinWidth="{StaticResource ColorPickerVerticalOrientationMinWidth}">
                         <Grid.Resources>
@@ -174,7 +174,7 @@
 
                                         <Setter Target="AlphaSliderGrid.(Grid.Column)" Value="2"/>
                                         <Setter Target="AlphaSliderGrid.(Grid.Row)" Value="0"/>
-                                        <Setter Target="AlphaSliderGrid.Margin" Value="0,0,16,0"/>
+                                        <Setter Target="AlphaSliderGrid.Margin" Value="0,0,6,0"/>
                                         <Setter Target="AlphaSlider.Orientation" Value="Vertical"/>
                                         <Setter Target="AlphaSliderCheckeredBackgroundRectangle.Height" Value="Auto"/>
                                         <Setter Target="AlphaSliderCheckeredBackgroundRectangle.Width" Value="12"/>
@@ -192,7 +192,7 @@
                                     
                                         <Setter Target="MoreEntriesPanel.(Grid.Column)" Value="3"/>
                                         <Setter Target="MoreEntriesPanel.(Grid.Row)" Value="0"/>
-                                        <Setter Target="MoreEntriesPanel.Margin" Value="0"/>
+                                        <Setter Target="MoreEntriesPanel.Margin" Value="10,0,0,0"/>
                                         <Setter Target="MoreButton.Margin" Value="0"/>
 
                                         <Setter Target="ColorRepresentationComboBox.(Grid.Row)" Value="1"/>
@@ -247,35 +247,19 @@
                                     Components="{TemplateBinding ColorSpectrumComponents}"
                                     contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                                     TabIndex="0"/>
-                                <Grid x:Name="ColorPreviewRectangleGrid" Grid.Column="1" Grid.Row="0" Width="44" Margin="12,0,0,0">
+                                <Grid x:Name="ColorPreviewRectangleGrid" Grid.Column="1" Grid.Row="0" Width="44" Margin="12,0,0,0" CornerRadius="{ThemeResource ControlCornerRadius}">
                                     <Grid.RowDefinitions>
                                         <RowDefinition />
                                         <RowDefinition />
                                     </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition />
-                                        <ColumnDefinition />
-                                    </Grid.ColumnDefinitions>
-                                    <Rectangle VerticalAlignment="Stretch" Grid.ColumnSpan="2" Grid.RowSpan="2"
-                                               contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                               contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
-                                               contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                               contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}">
+                                    <Rectangle VerticalAlignment="Stretch" Grid.ColumnSpan="2" Grid.RowSpan="2">
                                         <Rectangle.Fill>
                                             <ImageBrush x:Name="ColorPreviewRectangleCheckeredBackgroundImageBrush" />
                                         </Rectangle.Fill>
                                     </Rectangle>
-                                    <Rectangle x:Name="ColorPreviewRectangle" VerticalAlignment="Stretch" Grid.ColumnSpan="2" Grid.RowSpan="2"
-                                               contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                               contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
-                                               contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                               contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
-                                    <Rectangle x:Name="PreviousColorRectangle" VerticalAlignment="Stretch" Grid.ColumnSpan="2" Grid.Row="1" Visibility="Collapsed"
-                                               contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                               contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
-                                               contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                               contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
-                                    <Rectangle x:Name="BorderRectangle" Style="{StaticResource ColorPickerBorderStyle}" Grid.RowSpan="2" Grid.ColumnSpan="2"
+                                    <Rectangle x:Name="ColorPreviewRectangle" VerticalAlignment="Stretch" Grid.RowSpan="2" />
+                                    <Rectangle x:Name="PreviousColorRectangle" VerticalAlignment="Stretch" Grid.Row="1" Visibility="Collapsed" />
+                                    <Rectangle x:Name="BorderRectangle" Style="{StaticResource ColorPickerBorderStyle}" Grid.RowSpan="2"
                                                contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                                contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
@@ -294,7 +278,7 @@
                                 </Rectangle>
                                 <primitives:ColorPickerSlider x:Name="ThirdDimensionSlider" Minimum="0" Maximum="100" ColorChannel="Value" Orientation="Horizontal" Style="{StaticResource ColorPickerSliderStyle}" IsThumbToolTipEnabled="False" TabIndex="1"/>
                             </Grid>
-                            <Grid Margin="0,0,0,16" x:Name="AlphaSliderGrid" Grid.Row="2">
+                            <Grid Margin="0,0,0,6" x:Name="AlphaSliderGrid" Grid.Row="2">
                                 <Rectangle x:Name="AlphaSliderCheckeredBackgroundRectangle" RenderTransformOrigin="0.5, 0.5" Height="12" VerticalAlignment="Center"
                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
@@ -315,7 +299,7 @@
                                 </Rectangle>
                                 <primitives:ColorPickerSlider x:Name="AlphaSlider" Minimum="0" Maximum="100" ColorChannel="Alpha" Orientation="Horizontal" Style="{StaticResource ColorPickerSliderStyle}" IsThumbToolTipEnabled="False" TabIndex="2"/>
                             </Grid>
-                            <StackPanel x:Name="MoreEntriesPanel" Grid.Row="3" Margin="0,0,0,12">
+                            <StackPanel x:Name="MoreEntriesPanel" Grid.Row="3" Margin="0,10,0,0">
                                 <ToggleButton
                                     x:Name="MoreButton"
                                     MinHeight="32"

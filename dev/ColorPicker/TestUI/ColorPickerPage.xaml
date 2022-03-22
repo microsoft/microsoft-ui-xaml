@@ -18,14 +18,21 @@
         </Grid.ColumnDefinitions>
 
         <!-- Sample control -->
-        <ScrollViewer AutomationProperties.AutomationId="ColorPickerScrollViewer" Height="500"
-            HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible" IsVerticalRailEnabled="True">
-            <StackPanel>
-                <controls:ColorPicker x:Name="ColorPicker" IsAlphaEnabled="True" ColorChanged="ColorPicker_ColorChanged" />
-                <TextBlock Text="Text"/>
-            </StackPanel>
-        </ScrollViewer>
-        
+        <Grid  Margin="8,0,8,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Sample" Style="{ThemeResource StandardGroupHeader}"/>
+            <ScrollViewer Grid.Row="1" BorderThickness="1" BorderBrush="{ThemeResource SystemChromeHighColor}" Padding="4"
+                          AutomationProperties.AutomationId="ColorPickerScrollViewer">
+                <StackPanel>
+                    <controls:ColorPicker x:Name="ColorPicker" IsAlphaEnabled="True" ColorChanged="ColorPicker_ColorChanged" />
+                    <TextBlock Text="Text"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
         <!-- Options -->
         <Grid Grid.Column="1" Margin="8,0,8,0">
             <Grid.RowDefinitions>
