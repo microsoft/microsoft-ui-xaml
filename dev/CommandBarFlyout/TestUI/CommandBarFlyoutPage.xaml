@@ -130,6 +130,7 @@
                     <AppBarButton x:Name="UndoButton5" AutomationProperties.AutomationId="UndoButton5" Label="Undo" Icon="Undo" Click="OnElementClicked" />
                     <AppBarButton x:Name="RedoButton5" AutomationProperties.AutomationId="RedoButton5" Label="Redo" Icon="Redo" Click="OnElementClicked" />
                     <AppBarButton x:Name="SelectAllButton5" AutomationProperties.AutomationId="SelectAllButton5" Label="Select all" Click="OnElementClicked" />
+                    <AppBarButton x:Name="LongLabelButton5" AutomationProperties.AutomationId="LongLabelButton5" Label="AppBarButton with long label" Visibility="Collapsed" Click="OnElementClicked" />
                 </muxc:CommandBarFlyout.SecondaryCommands>
             </muxc:CommandBarFlyout>
             <muxc:CommandBarFlyout Placement="Right" x:Name="Flyout6" AutomationProperties.AutomationId="Flyout6" Opened="OnFlyoutOpened" Closed="OnFlyoutClosed">
@@ -138,6 +139,7 @@
                     <AppBarButton x:Name="RedoButton6" AutomationProperties.AutomationId="RedoButton6" Label="Redo" Icon="Redo" Click="OnElementClicked" />
                     <AppBarButton x:Name="SelectAllButton6" AutomationProperties.AutomationId="SelectAllButton6" Label="Select all" Click="OnElementClicked" />
                     <AppBarToggleButton x:Name="FavoriteToggleButton6" AutomationProperties.AutomationId="FavoriteToggleButton6" Label="Favorite" Icon="Favorite" Checked="OnElementChecked" Unchecked="OnElementUnchecked" />
+                    <AppBarButton x:Name="LongLabelButton6" AutomationProperties.AutomationId="LongLabelButton6" Label="AppBarButton with long label" Visibility="Collapsed" Click="OnElementClicked" />
                 </muxc:CommandBarFlyout.SecondaryCommands>
             </muxc:CommandBarFlyout>
             <muxc:CommandBarFlyout Placement="Right" x:Name="Flyout7" AutomationProperties.AutomationId="Flyout7" Opened="OnFlyoutOpened" Closed="OnFlyoutClosed">
@@ -235,6 +237,22 @@
                     <TextBox x:Name="DynamicLabelTimerIntervalTextBox" Text="1500" Margin="5,0,0,0" AutomationProperties.AutomationId="DynamicLabelTimerIntervalTextBox"/>
                     <TextBlock Text="Change Count:" Margin="5,0,0,0" VerticalAlignment="Center"/>
                     <TextBox x:Name="DynamicLabelChangeCountTextBox" Text="4" Margin="5,0,0,0" AutomationProperties.AutomationId="DynamicLabelChangeCountTextBox"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="10,0,10,2">
+                    <CheckBox x:Name="UseSecondaryCommandDynamicVisibilityCheckBox" Content="Use Secondary Command with Dynamic Visibility?" AutomationProperties.AutomationId="UseSecondaryCommandDynamicVisibilityCheckBox" />
+                    <CheckBox x:Name="SecondaryCommandDynamicVisibilityChangedCheckBox" Content="Visibility Changed?" AutomationProperties.AutomationId="SecondaryCommandDynamicVisibilityChangedCheckBox" Margin="5,0,0,0" />
+                    <TextBlock Text="Timer Interval (ms):" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="DynamicVisibilityTimerIntervalTextBox" Text="1500" Margin="5,0,0,0" AutomationProperties.AutomationId="DynamicVisibilityTimerIntervalTextBox"/>
+                    <TextBlock Text="Change Count:" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="DynamicVisibilityChangeCountTextBox" Text="4" Margin="5,0,0,0" AutomationProperties.AutomationId="DynamicVisibilityChangeCountTextBox"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="10,0,10,2">
+                    <CheckBox x:Name="UseOverflowContentRootDynamicWidthCheckBox" Content="Use OverflowContentRoot with Dynamic Width?" AutomationProperties.AutomationId="UseOverflowContentRootDynamicWidthCheckBox" />
+                    <CheckBox x:Name="OverflowContentRootDynamicWidthChangedCheckBox" Content="Width Changed?" AutomationProperties.AutomationId="OverflowContentRootDynamicWidthChangedCheckBox" Margin="5,0,0,0" />
+                    <TextBlock Text="Timer Interval (ms):" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="DynamicWidthTimerIntervalTextBox" Text="1500" Margin="5,0,0,0" AutomationProperties.AutomationId="DynamicWidthTimerIntervalTextBox"/>
+                    <TextBlock Text="Change Count:" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="DynamicWidthChangeCountTextBox" Text="4" Margin="5,0,0,0" AutomationProperties.AutomationId="DynamicWidthChangeCountTextBox"/>
                 </StackPanel>
                 <CheckBox x:Name="ClearSecondaryCommandsCheckBox" Content="Clear Secondary Commands Asynchronously?" AutomationProperties.AutomationId="ClearSecondaryCommandsCheckBox" Margin="10,0,10,2" />
             </StackPanel>
