@@ -49,8 +49,8 @@ private:
     void DetachEventHandlers();
 
     void UpdateFlowsFromAndFlowsTo();
-    void UpdateUI(bool useTransitions = true, bool isForCommandBarElementDependencyPropertyChange = false);
-    void UpdateVisualState(bool useTransitions, bool isForCommandBarElementDependencyPropertyChange = false);
+    void UpdateUI(bool useTransitions = true, bool isForSizeChange = false);
+    void UpdateVisualState(bool useTransitions, bool isForSizeChange = false);
     void UpdateTemplateSettings();
     void EnsureAutomationSetCountAndPosition();
     void EnsureLocalizedControlTypes();

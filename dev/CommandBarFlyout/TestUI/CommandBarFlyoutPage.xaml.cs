@@ -11,6 +11,7 @@ using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
+using MUXControlsTestApp.Utilities;
 
 using CommandBarFlyout = Microsoft.UI.Xaml.Controls.CommandBarFlyout;
 
@@ -25,18 +26,27 @@ namespace MUXControlsTestApp
         private CommandBarFlyout clearPrimaryCommandsFlyout;
 
         private DispatcherTimer dynamicLabelTimer = new DispatcherTimer();
+        private DispatcherTimer dynamicVisibilityTimer = new DispatcherTimer();
+        private DispatcherTimer dynamicWidthTimer = new DispatcherTimer();
         private DispatcherTimer dynamicCommandTimer = new DispatcherTimer();
         private AppBarButton dynamicLabelSecondaryCommand;
+        private AppBarButton dynamicVisibilitySecondaryCommand;
+        private FrameworkElement dynamicWidthOverflowContentRoot;
         private CommandBarFlyout dynamicCommandBarFlyout;
         private string originalLabelSecondaryCommand;
+        private Visibility originalVisibilitySecondaryCommand;
+        private double originalWidthOverflowContentRoot;
         private int dynamicLabelChangeCount;
+        private int dynamicVisibilityChangeCount;
+        private int dynamicWidthChangeCount;
 
         public CommandBarFlyoutPage()
         {
             this.InitializeComponent();
 
             dynamicLabelTimer.Tick += DynamicLabelTimer_Tick;
-
+            dynamicVisibilityTimer.Tick += DynamicVisibilityTimer_Tick;
+            dynamicWidthTimer.Tick += DynamicWidthTimer_Tick;
             dynamicCommandTimer.Tick += DynamicCommandTimer_Tick;
 
             clearSecondaryCommandsTimer.Interval = new TimeSpan(0, 0, 3 /*sec*/);
@@ -113,12 +123,42 @@ namespace MUXControlsTestApp
         public void OnFlyoutOpened(object sender, object args)
         {
             IsFlyoutOpenCheckBox.IsChecked = true;
+
+            CommandBarFlyout commandBarFlyout = sender as CommandBarFlyout;
+
+            if (commandBarFlyout != null && (bool)UseOverflowContentRootDynamicWidthCheckBox.IsChecked && commandBarFlyout.SecondaryCommands != null && commandBarFlyout.SecondaryCommands.Count > 0)
+            {
+                FrameworkElement secondaryCommandAsFE = commandBarFlyout.SecondaryCommands[0] as FrameworkElement;
+                FrameworkElement overflowContentRoot = secondaryCommandAsFE.FindVisualParentByName("OverflowContentRoot");
+
+                if (overflowContentRoot == null)
+                {
+                    secondaryCommandAsFE.Loaded += SecondaryCommandAsFE_Loaded;
+                }
+                else
+                {
+                    SetDynamicOverflowContentRoot(overflowContentRoot);
+                }
+            }
+        }
+
+        private void SecondaryCommandAsFE_Loaded(object sender, RoutedEventArgs e)
+        {
+            FrameworkElement secondaryCommandAsFE = sender as FrameworkElement;
+            
+            secondaryCommandAsFE.Loaded -= SecondaryCommandAsFE_Loaded;
+
+            FrameworkElement overflowContentRoot = secondaryCommandAsFE.FindVisualParentByName("OverflowContentRoot");
+
+            SetDynamicOverflowContentRoot(overflowContentRoot);
         }
 
         public void OnFlyoutClosed(object sender, object args)
         {
             IsFlyoutOpenCheckBox.IsChecked = false;
-            SetDynamicSecondaryCommand(null);
+            SetDynamicLabelSecondaryCommand(null);
+            SetDynamicVisibilitySecondaryCommand(null);
+            SetDynamicOverflowContentRoot(null);
             SetClearSecondaryCommandsFlyout(null);
         }
 
@@ -190,11 +230,12 @@ namespace MUXControlsTestApp
         private void ShowFlyoutAt(FlyoutBase flyout, FrameworkElement targetElement, FlyoutShowMode showMode = FlyoutShowMode.Transient)
         {
             bool useSecondaryCommandDynamicLabel = (bool)UseSecondaryCommandDynamicLabelCheckBox.IsChecked;
+            bool useSecondaryCommandDynamicVisibility = (bool)UseSecondaryCommandDynamicVisibilityCheckBox.IsChecked;
             bool clearSecondaryCommands = (bool)ClearSecondaryCommandsCheckBox.IsChecked;
             bool addPrimaryCommandDynamicallyCheckBox = (bool)AddPrimaryCommandDynamicallyCheckBox.IsChecked;
             bool clearPrimaryCommands = (bool)ClearPrimaryCommandsCheckBox.IsChecked;
 
-            if (useSecondaryCommandDynamicLabel || addPrimaryCommandDynamicallyCheckBox || clearSecondaryCommands || clearPrimaryCommands)
+            if (useSecondaryCommandDynamicLabel || useSecondaryCommandDynamicVisibility || addPrimaryCommandDynamicallyCheckBox || clearSecondaryCommands || clearPrimaryCommands)
             {
                 CommandBarFlyout commandBarFlyout = flyout as CommandBarFlyout;
 
@@ -204,7 +245,12 @@ namespace MUXControlsTestApp
                     {
                         if (useSecondaryCommandDynamicLabel)
                         {
-                            SetDynamicSecondaryCommand(commandBarFlyout.SecondaryCommands[0] as AppBarButton);
+                            SetDynamicLabelSecondaryCommand(commandBarFlyout.SecondaryCommands[0] as AppBarButton);
+                        }
+
+                        if (useSecondaryCommandDynamicVisibility && commandBarFlyout.SecondaryCommands.Count > 4)
+                        {
+                            SetDynamicVisibilitySecondaryCommand(commandBarFlyout.SecondaryCommands[4] as AppBarButton);
                         }
 
                         if (clearSecondaryCommands)
@@ -265,7 +311,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void SetDynamicSecondaryCommand(AppBarButton appBarButton)
+        private void SetDynamicLabelSecondaryCommand(AppBarButton appBarButton)
         {
             if (appBarButton == null)
             {
@@ -291,6 +337,75 @@ namespace MUXControlsTestApp
                     dynamicLabelTimer.Start();
                 }
             }
+        }
+
+        private void SetDynamicVisibilitySecondaryCommand(AppBarButton appBarButton)
+        {
+            if (appBarButton == null)
+            {
+                if (dynamicVisibilitySecondaryCommand != null)
+                {
+                    if (dynamicVisibilitySecondaryCommand.Visibility != originalVisibilitySecondaryCommand)
+                    {
+                        dynamicVisibilitySecondaryCommand.Visibility = originalVisibilitySecondaryCommand;
+                        SecondaryCommandDynamicVisibilityChangedCheckBox.IsChecked = true;
+                    }
+                    dynamicVisibilitySecondaryCommand = null;
+                    dynamicVisibilityTimer.Stop();
+                }
+            }
+            else
+            {
+                if (dynamicVisibilitySecondaryCommand == null)
+                {
+                    originalVisibilitySecondaryCommand = appBarButton.Visibility;
+                    dynamicVisibilitySecondaryCommand = appBarButton;
+                    dynamicVisibilityTimer.Interval = new TimeSpan(0, 0, 0, 0, int.Parse(DynamicVisibilityTimerIntervalTextBox.Text) /*msec*/);
+                    dynamicVisibilityChangeCount = int.Parse(DynamicVisibilityChangeCountTextBox.Text);
+                    dynamicVisibilityTimer.Start();
+                }
+            }
+        }
+
+        private void SetDynamicOverflowContentRoot(FrameworkElement overflowContentRoot)
+        {
+            if (overflowContentRoot == null)
+            {
+                if (dynamicWidthOverflowContentRoot != null)
+                {
+                    if (dynamicWidthOverflowContentRoot.ActualWidth != originalWidthOverflowContentRoot)
+                    {
+                        dynamicWidthOverflowContentRoot.Width = originalWidthOverflowContentRoot;
+                        OverflowContentRootDynamicWidthChangedCheckBox.IsChecked = true;
+                    }
+                    dynamicWidthOverflowContentRoot = null;
+                    dynamicWidthTimer.Stop();
+                }
+            }
+            else if (dynamicWidthOverflowContentRoot == null)
+            {
+                if (overflowContentRoot.ActualWidth == 0.0)
+                {
+                    overflowContentRoot.SizeChanged += OverflowContentRoot_SizeChanged;
+                }
+                else
+                {
+                    originalWidthOverflowContentRoot = overflowContentRoot.ActualWidth;
+                    dynamicWidthOverflowContentRoot = overflowContentRoot;
+                    dynamicWidthTimer.Interval = new TimeSpan(0, 0, 0, 0, int.Parse(DynamicWidthTimerIntervalTextBox.Text) /*msec*/);
+                    dynamicWidthChangeCount = int.Parse(DynamicWidthChangeCountTextBox.Text);
+                    dynamicWidthTimer.Start();
+                }
+            }
+        }
+
+        private void OverflowContentRoot_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            FrameworkElement overflowContentRoot = sender as FrameworkElement;
+
+            overflowContentRoot.SizeChanged -= OverflowContentRoot_SizeChanged;
+
+            SetDynamicOverflowContentRoot(overflowContentRoot);
         }
 
         private void SetDynamicPrimaryCommand()
@@ -340,6 +455,44 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void DynamicVisibilityTimer_Tick(object sender, object e)
+        {
+            if (dynamicVisibilitySecondaryCommand != null)
+            {
+                dynamicVisibilitySecondaryCommand.Visibility = dynamicVisibilitySecondaryCommand.Visibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
+
+                SecondaryCommandDynamicVisibilityChangedCheckBox.IsChecked = true;
+
+                if (--dynamicVisibilityChangeCount == 0)
+                {
+                    dynamicVisibilityTimer.Stop();
+                }
+            }
+        }
+
+        private void DynamicWidthTimer_Tick(object sender, object e)
+        {
+            if (dynamicWidthOverflowContentRoot != null)
+            {
+                if (dynamicWidthOverflowContentRoot.ActualWidth == originalWidthOverflowContentRoot)
+                {
+                    // Testing dynamic size expansion
+                    dynamicWidthOverflowContentRoot.Width = dynamicWidthOverflowContentRoot.ActualWidth + 24.0;
+                }
+                else
+                {
+                    // Testing dynamic size shrinkage
+                    dynamicWidthOverflowContentRoot.Width = originalWidthOverflowContentRoot;
+                }
+
+                OverflowContentRootDynamicWidthChangedCheckBox.IsChecked = true;
+
+                if (--dynamicWidthChangeCount == 0)
+                {
+                    dynamicWidthTimer.Stop();
+                }
+            }
+        }
 
         private void DynamicCommandTimer_Tick(object sender, object e)
         {

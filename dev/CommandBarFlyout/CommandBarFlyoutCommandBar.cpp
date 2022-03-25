@@ -25,31 +25,24 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
 
             UpdateUI(!m_commandBarFlyoutIsOpening);
 
-            // Programmatically focus the first primary command if any, else programmatically focus the first secondary command if any.
-            auto commands = PrimaryCommands().Size() > 0 ? PrimaryCommands() : (SecondaryCommands().Size() > 0 ? SecondaryCommands() : nullptr);
-
-            if (commands)
+            if (auto owningFlyout = m_owningFlyout.get())
             {
-                const bool usingPrimaryCommands = commands == PrimaryCommands();
-                const bool ensureTabStopUniqueness = usingPrimaryCommands || SharedHelpers::IsRS3OrHigher();
-                const auto firstCommandAsFrameworkElement = commands.GetAt(0).try_as<winrt::FrameworkElement>();
-
-                if (firstCommandAsFrameworkElement)
+                // We only want to focus an initial element if we're opening in standard mode -
+                // in transient mode, we don't want to be taking focus.
+                if (owningFlyout.ShowMode() == winrt::FlyoutShowMode::Standard)
                 {
-                    if (SharedHelpers::IsFrameworkElementLoaded(firstCommandAsFrameworkElement))
+                    // Programmatically focus the first primary command if any, else programmatically focus the first secondary command if any.
+                    auto commands = PrimaryCommands().Size() > 0 ? PrimaryCommands() : (SecondaryCommands().Size() > 0 ? SecondaryCommands() : nullptr);
+
+                    if (commands)
                     {
-                        FocusCommand(
-                            commands,
-                            usingPrimaryCommands ? m_moreButton.get() : nullptr /*moreButton*/,
-                            winrt::FocusState::Programmatic /*focusState*/,
-                            true /*firstCommand*/,
-                            ensureTabStopUniqueness);
-                    }
-                    else
-                    {
-                        m_firstItemLoadedRevoker = firstCommandAsFrameworkElement.Loaded(winrt::auto_revoke,
+                        const bool usingPrimaryCommands = commands == PrimaryCommands();
+                        const bool ensureTabStopUniqueness = usingPrimaryCommands || SharedHelpers::IsRS3OrHigher();
+                        const auto firstCommandAsFrameworkElement = commands.GetAt(0).try_as<winrt::FrameworkElement>();
+
+                        if (firstCommandAsFrameworkElement)
                         {
-                            [this, commands, usingPrimaryCommands, ensureTabStopUniqueness](winrt::IInspectable const& sender, auto const&)
+                            if (SharedHelpers::IsFrameworkElementLoaded(firstCommandAsFrameworkElement))
                             {
                                 FocusCommand(
                                     commands,
@@ -57,9 +50,24 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
                                     winrt::FocusState::Programmatic /*focusState*/,
                                     true /*firstCommand*/,
                                     ensureTabStopUniqueness);
-                                m_firstItemLoadedRevoker.revoke();
                             }
-                        });
+                            else
+                            {
+                                m_firstItemLoadedRevoker = firstCommandAsFrameworkElement.Loaded(winrt::auto_revoke,
+                                {
+                                    [this, commands, usingPrimaryCommands, ensureTabStopUniqueness](winrt::IInspectable const& sender, auto const&)
+                                    {
+                                        FocusCommand(
+                                            commands,
+                                            usingPrimaryCommands ? m_moreButton.get() : nullptr /*moreButton*/,
+                                            winrt::FocusState::Programmatic /*focusState*/,
+                                            true /*firstCommand*/,
+                                            ensureTabStopUniqueness);
+                                        m_firstItemLoadedRevoker.revoke();
+                                    }
+                                });
+                            }
+                        }
                     }
                 }
             }
@@ -70,16 +78,20 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
         [this](auto const&, auto const&)
         {
 #ifdef _DEBUG
-            COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"SizedChanged");
+            COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"SizeChanged");
 #endif
 
-            UpdateUI(!m_commandBarFlyoutIsOpening);
+            UpdateUI(!m_commandBarFlyoutIsOpening, true /*isForSizeChange*/);
         }
     });
 
     Closing({
         [this](auto const&, auto const&)
         {
+#ifdef _DEBUG
+            COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"Closing");
+#endif
+
             if (auto owningFlyout = m_owningFlyout.get())
             {
                 if (owningFlyout.AlwaysExpanded())
@@ -275,7 +287,7 @@ void CommandBarFlyoutCommandBar::AttachEventHandlers()
 #endif
 
                 m_secondaryItemsRootSized = true;
-                UpdateUI(!m_commandBarFlyoutIsOpening);
+                UpdateUI(!m_commandBarFlyoutIsOpening, true /*isForSizeChange*/);
             }
         });
 
@@ -491,19 +503,19 @@ void CommandBarFlyoutCommandBar::UpdateFlowsFromAndFlowsTo()
 }
 
 void CommandBarFlyoutCommandBar::UpdateUI(
-    bool useTransitions, bool isForCommandBarElementDependencyPropertyChange)
+    bool useTransitions, bool isForSizeChange)
 {
-    COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, useTransitions, isForCommandBarElementDependencyPropertyChange);
+    COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, useTransitions, isForSizeChange);
 
     UpdateTemplateSettings();
-    UpdateVisualState(useTransitions, isForCommandBarElementDependencyPropertyChange);
+    UpdateVisualState(useTransitions, isForSizeChange);
 
     UpdateProjectedShadow();
 }
 
 void CommandBarFlyoutCommandBar::UpdateVisualState(
     bool useTransitions,
-    bool isForCommandBarElementDependencyPropertyChange)
+    bool isForSizeChange)
 {
     if (IsOpen())
     {
@@ -567,14 +579,14 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
             }
         }
 
-        if (isForCommandBarElementDependencyPropertyChange)
+        if (isForSizeChange)
         {
-            // UpdateVisualState is called as a result of a secondary command bar element dependency property change. This CommandBarFlyoutCommandBar is already open
+            // UpdateVisualState is called as a result of a size change (for instance caused by a secondary command bar element dependency property change). This CommandBarFlyoutCommandBar is already open
             // and expanded. Jump to the Collapsed and back to ExpandedUp/ExpandedDown state to apply all refreshed CommandBarFlyoutCommandBarTemplateSettings values.
             winrt::VisualStateManager::GoToState(*this, L"Collapsed", false);
         }
 
-        winrt::VisualStateManager::GoToState(*this, shouldExpandUp ? L"ExpandedUp" : L"ExpandedDown", useTransitions && !isForCommandBarElementDependencyPropertyChange);
+        winrt::VisualStateManager::GoToState(*this, shouldExpandUp ? L"ExpandedUp" : L"ExpandedDown", useTransitions && !isForSizeChange);
 
         // Union of AvailableCommandsStates and ExpansionStates
         bool hasPrimaryCommands = (PrimaryCommands().Size() != 0);
@@ -1396,6 +1408,6 @@ void CommandBarFlyoutCommandBar::OnCommandBarElementDependencyPropertyChanged()
     // Only refresh the UI when the CommandBarFlyoutCommandBar is already open since it will be refreshed anyways in the event it gets opened.
     if (IsOpen())
     {
-        UpdateUI(!m_commandBarFlyoutIsOpening, true /*isForCommandBarElementDependencyPropertyChange*/);
+        UpdateUI(!m_commandBarFlyoutIsOpening, true /*isForSizeChange*/);
     }
 }
