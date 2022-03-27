@@ -879,6 +879,44 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "ScrollPresenter should handle BringIntoView for its direct content.")]
+        public void HandleContentBringIntoView()
+        {
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
+            AutoResetEvent scrollPresenterViewChangedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                rectangleScrollPresenterContent = new Rectangle() { Margin = new Thickness(0, 500, 0, 0) };
+                scrollPresenter = new ScrollPresenter();
+
+                SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent);
+
+            });
+
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
+            
+            RunOnUIThread.Execute(() =>
+            {
+                scrollPresenter.ViewChanged += (s, e) =>
+                {
+                    scrollPresenterViewChangedEvent.Set();
+                };
+
+                rectangleScrollPresenterContent.StartBringIntoView(new BringIntoViewOptions() { AnimationDesired = false });
+            });
+            
+            WaitForEvent("Waiting for ViewChanged event", scrollPresenterViewChangedEvent);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(500.0, scrollPresenter.VerticalOffset);
+            });
+        }
+
         private void SetupDefaultUI(
             ScrollPresenter scrollPresenter,
             Rectangle rectangleScrollPresenterContent,
