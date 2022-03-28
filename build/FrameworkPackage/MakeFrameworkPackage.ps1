@@ -4,7 +4,7 @@ Param(
     [string]$outputDirectory,
     [string]$Platform,
     [string]$Configuration,
-    [string]$Publisher = "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+    [string]$Publisher = "CN=WinUIest",
     [string]$VersionOverride,
     [int]$Subversion = "000",
     [string]$builddate_yymm,
@@ -367,7 +367,7 @@ if ($env:TFS_ToolsDirectory -and ($env:BUILD_DEFINITIONNAME -match "release") -a
     # From here: https://osgwiki.com/wiki/Package_ES_Appx_Bundle#Code_sign_Appx_Bundle
     $signCert = "136020001"
 
-    $signtool = "`"$signToolPath`" -i:`"$outputAppxFileFullPath`" -c:$signCert -s:`"CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US`""
+    $signtool = "`"$signToolPath`" -i:`"$outputAppxFileFullPath`" -c:$signCert -s:`"CN=WinUIest`""
 }
 else
 {

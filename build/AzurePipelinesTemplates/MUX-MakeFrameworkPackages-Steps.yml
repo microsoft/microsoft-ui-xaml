@@ -41,7 +41,7 @@ steps:
               {
                   "KeyCode" : "Dynamic",
                   "CertTemplateName" : "WINMSAPP1ST",
-                  "CertSubjectName" : "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+                  "CertSubjectName" : "CN=WinUIest",
                   "OperationCode" : "SigntoolSign",
                   "Parameters" : {
                       "OpusName" : "Microsoft",
@@ -55,7 +55,7 @@ steps:
               {
                   "KeyCode" : "Dynamic",
                   "CertTemplateName" : "WINMSAPP1ST",
-                  "CertSubjectName" : "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+                  "CertSubjectName" : "CN=WinUIest",
                   "OperationCode" : "SigntoolVerify",
                   "Parameters" : {},
                   "ToolName" : "sign",
