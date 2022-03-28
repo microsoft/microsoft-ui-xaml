@@ -106,11 +106,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             get
             {
 #if USING_TAEF
-                string testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App";
+                string testAppName = "MUXControlsTestApp_1v3as5fwzag50!taef.executionengine.universal.App";
 #else
-                string testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!App";
+                string testAppName = "MUXControlsTestApp_1v3as5fwzag50!App";
 #endif
-                return new TestApplicationInfo("MUXControlsTestApp", testAppName, "MUXControlsTestApp_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+                return new TestApplicationInfo("MUXControlsTestApp", testAppName, "MUXControlsTestApp_1v3as5fwzag50", MUXCertSerialNumber, MUXBaseAppxDir);
             }
         }
 
@@ -119,11 +119,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             get
             {
 #if USING_TAEF
-                string testAppName = "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe!taef.executionengine.universal.App";
+                string testAppName = "MUXControlsInnerLoopTestApp_1v3as5fwzag50!taef.executionengine.universal.App";
 #else
-                string testAppName = "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe!App";
+                string testAppName = "MUXControlsInnerLoopTestApp_1v3as5fwzag50!App";
 #endif
-                return new TestApplicationInfo("MUXControlsTestApp", testAppName, "MUXControlsInnerLoopTestApp_8wekyb3d8bbwe", "MUXControlsInnerLoopTestApp", "MUXControlsTestApp", "MUXControlsTestApp", MUXCertSerialNumber, MUXBaseAppxDir);
+                return new TestApplicationInfo("MUXControlsTestApp", testAppName, "MUXControlsInnerLoopTestApp_1v3as5fwzag50", "MUXControlsInnerLoopTestApp", "MUXControlsTestApp", "MUXControlsTestApp", MUXCertSerialNumber, MUXBaseAppxDir);
             }
         }
 
@@ -131,7 +131,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
-                return new TestApplicationInfo("NugetPackageTestApp", "NugetPackageTestApp_8wekyb3d8bbwe!App", "NugetPackageTestApp_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+                return new TestApplicationInfo("NugetPackageTestApp", "NugetPackageTestApp_1v3as5fwzag50!App", "NugetPackageTestApp_1v3as5fwzag50", MUXCertSerialNumber, MUXBaseAppxDir);
             }
         }
 
@@ -139,7 +139,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
-                return new TestApplicationInfo("AppThatUsesMUXIndirectly", "AppThatUsesMUXIndirectly_8wekyb3d8bbwe!App", "AppThatUsesMUXIndirectly_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+                return new TestApplicationInfo("AppThatUsesMUXIndirectly", "AppThatUsesMUXIndirectly_1v3as5fwzag50!App", "AppThatUsesMUXIndirectly_1v3as5fwzag50", MUXCertSerialNumber, MUXBaseAppxDir);
             }
         }
 
@@ -147,7 +147,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
-                return new TestApplicationInfo("NugetPackageTestAppCX", "NugetPackageTestAppCX_8wekyb3d8bbwe!App", "NugetPackageTestAppCX_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+                return new TestApplicationInfo("NugetPackageTestAppCX", "NugetPackageTestAppCX_1v3as5fwzag50!App", "NugetPackageTestAppCX_1v3as5fwzag50", MUXCertSerialNumber, MUXBaseAppxDir);
             }
         }
 
@@ -155,7 +155,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
-                return new TestApplicationInfo("WpfApp", "WpfApp_8wekyb3d8bbwe!App", "WpfApp_8wekyb3d8bbwe", "WpfApp", "WpfApp.exe", "WpfApp", isUwpApp: false, MUXCertSerialNumber, MUXBaseAppxDir);
+                return new TestApplicationInfo("WpfApp", "WpfApp_1v3as5fwzag50!App", "WpfApp_1v3as5fwzag50", "WpfApp", "WpfApp.exe", "WpfApp", isUwpApp: false, MUXCertSerialNumber, MUXBaseAppxDir);
             }
         }
 
@@ -163,7 +163,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
-                return new TestApplicationInfo("WpfApp_8wekyb3d8bbwe", "WpfApp", @"WpfApp\WpfApp.exe");
+                return new TestApplicationInfo("WpfApp_1v3as5fwzag50", "WpfApp", @"WpfApp\WpfApp.exe");
             }
         }
 
@@ -171,7 +171,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             get
             {
-                return new TestApplicationInfo("MUXExperimentalTestApp", "MUXExperimentalTestApp_8wekyb3d8bbwe!App", "MUXExperimentalTestApp_8wekyb3d8bbwe", MUXCertSerialNumber, MUXBaseAppxDir);
+                return new TestApplicationInfo("MUXExperimentalTestApp", "MUXExperimentalTestApp_1v3as5fwzag50!App", "MUXExperimentalTestApp_1v3as5fwzag50", MUXCertSerialNumber, MUXBaseAppxDir);
             }
         }
     }

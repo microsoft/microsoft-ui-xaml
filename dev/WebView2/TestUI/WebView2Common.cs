@@ -46,7 +46,7 @@ namespace MUXControlsTestApp
         }
 
         // [Desktop (Packaged)] Get a file:// URI for the test page from app's Assets folder
-        // Ex: file:///C:/Program%20Files/WindowsApps/MUXControlsTestApp.Desktop_1.0.0.0_x86__8wekyb3d8bbwe/Assets/SimplePage.html
+        // Ex: file:///C:/Program%20Files/WindowsApps/MUXControlsTestApp.Desktop_1.0.0.0_x86__1v3as5fwzag50/Assets/SimplePage.html
         public static Uri GetTestPageUri(string testPageName)
         {
             string appDirectory  = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -87,7 +87,7 @@ namespace MUXControlsTestApp
         }
 
         // UWP Version: Get a file:// URI for the test page in app data (can be loaded by Anahaeim)
-        // Ex: file:///C:/Users/<user>/AppData/Local/Packages/MUXControlsTestApp_8wekyb3d8bbwe/TempState/SimplePage.htm
+        // Ex: file:///C:/Users/<user>/AppData/Local/Packages/MUXControlsTestApp_1v3as5fwzag50/TempState/SimplePage.htm
         public static Uri GetTestPageUri(string testPageName)
         {
             string localAppDataPath = AppDataPaths.GetDefault().LocalAppData;
