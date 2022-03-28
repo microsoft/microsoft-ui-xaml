@@ -1,5 +1,5 @@
 $CertificateFriendlyName = "WinUITest"
-$Publisher = "CN=WinUIest"
+$Publisher = "CN=WinUITest"
 
 $cert = New-SelfSignedCertificate -Type Custom `
     -Subject $Publisher `
