@@ -8,7 +8,7 @@
 
   <Identity
     Name="WpfApp"
-    Publisher="CN=WinUIest"
+    Publisher="CN=WinUITest"
     Version="1.0.0.0" />
 
   <Properties>
