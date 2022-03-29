@@ -13,6 +13,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)ScrollViewBlankPage.xaml.cs">
       <DependentUpon>ScrollViewBlankPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewBringIntoViewPage.xaml.cs">
+      <DependentUpon>ScrollViewBringIntoViewPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ScrollViewDynamicPage.xaml.cs">
       <DependentUpon>ScrollViewDynamicPage.xaml</DependentUpon>
     </Compile>
@@ -35,6 +38,11 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)ScrollViewBlankPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollViewBringIntoViewPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
