@@ -2,13 +2,6 @@ parameters:
   signOutput: false
 
 steps:
-
-  - task: powershell@2
-    displayName: GenerateTestPFX.ps1
-    inputs:
-      targetType: filePath
-      filePath: GenerateTestPFX.ps1
-
   - template: MUX-BuildProject-Steps.yml
     parameters:
       solutionPath: MUXControls.sln
