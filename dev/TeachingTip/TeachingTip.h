@@ -162,6 +162,7 @@ private:
     void EstablishShadows();
     void TrySetCenterPoint(const winrt::IUIElement9& element, const winrt::float3& centerPoint);
     bool ToggleVisibilityForEmptyContent(const wstring_view visibleStateName, const wstring_view collapsedStateName, const winrt::hstring& content);
+    void UpdateButtonAutomationProperties(const winrt::Button button, const winrt::IInspectable content);
 
     // The tail is designed as an 8x16 pixel shape, however it is actually a 10x20 shape which is partially occluded by the tip content.
     // This is done to get the border of the tip to follow the tail shape without drawing the border on the tip edge of the tail.
@@ -187,8 +188,10 @@ private:
     tracker_ref<winrt::Grid> m_nonHeroContentRootGrid{ this };
     tracker_ref<winrt::Border> m_heroContentBorder{ this };
     tracker_ref<winrt::Button> m_actionButton{ this };
+    tracker_ref<winrt::ContentPresenter> m_actionButtonContent{ this };
     tracker_ref<winrt::Button> m_alternateCloseButton{ this };
     tracker_ref<winrt::Button> m_closeButton{ this };
+    tracker_ref<winrt::ContentPresenter> m_closeButtonContent{ this };
     tracker_ref<winrt::Polygon> m_tailPolygon{ this };
     tracker_ref<winrt::Grid> m_tailEdgeBorder{ this };
     tracker_ref<winrt::UIElement> m_titleTextBlock{ this };
@@ -296,6 +299,8 @@ private:
     static constexpr wstring_view s_mainContentPresenterName{ L"MainContentPresenter"sv };
     static constexpr wstring_view s_actionButtonName{ L"ActionButton"sv };
     static constexpr wstring_view s_closeButtonName{ L"CloseButton"sv };
+    static constexpr wstring_view s_actionButtonContentName{ L"ActionButtonContent"sv };
+    static constexpr wstring_view s_closeButtonContentName{ L"CloseButtonContent"sv };
     static constexpr wstring_view s_tailPolygonName{ L"TailPolygon"sv };
     static constexpr wstring_view s_tailEdgeBorderName{ L"TailEdgeBorder"sv };
     static constexpr wstring_view s_topTailPolygonHighlightName{ L"TopTailPolygonHighlight"sv };

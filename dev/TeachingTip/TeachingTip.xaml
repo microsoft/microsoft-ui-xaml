@@ -393,7 +393,7 @@
                                                             Style="{TemplateBinding ActionButtonStyle}" 
                                                             Command="{TemplateBinding ActionButtonCommand}"
                                                             CommandParameter="{TemplateBinding ActionButtonCommandParameter}">
-                                                            <ContentPresenter TextWrapping="WrapWholeWords" Content="{TemplateBinding ActionButtonContent}"/>
+                                                        <ContentPresenter x:Name="ActionButtonContent" TextWrapping="WrapWholeWords" Content="{TemplateBinding ActionButtonContent}"/>
                                                     </Button>
                                                     <Button x:Name="CloseButton"
                                                             HorizontalAlignment="Stretch"
@@ -401,7 +401,7 @@
                                                             Command="{TemplateBinding CloseButtonCommand}"
                                                             CommandParameter="{TemplateBinding CloseButtonCommandParameter}"
                                                             Grid.Column="1">
-                                                        <ContentPresenter TextWrapping="WrapWholeWords" Content="{TemplateBinding CloseButtonContent}"/>
+                                                        <ContentPresenter x:Name="CloseButtonContent" TextWrapping="WrapWholeWords" Content="{TemplateBinding CloseButtonContent}"/>
                                                     </Button>
                                                 </Grid>
                                             </StackPanel>
