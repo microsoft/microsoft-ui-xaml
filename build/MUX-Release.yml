@@ -13,101 +13,101 @@ resources:
     name: OneBranch.Pipelines/GovernedTemplates
     ref: refs/heads/main
 jobs:
-- job: Scanning
-  pool: 
-    name: WinDevPool-L
-    demands: ImageOverride -equals WinDevVS16-9
+# - job: Scanning
+#   pool: 
+#     name: WinDevPool-L
+#     demands: ImageOverride -equals WinDevVS16-9
 
-  steps:
+#   steps:
 
-  - checkout: self
+#   - checkout: self
 
-  - task: NodeTool@0
+#   - task: NodeTool@0
 
-  - template: v2/Steps/PackageES/Windows.SDL.Sources.Analysis.OS.Undocked.yml@templates_onebranch
-    parameters:
-      globalsdl:
-        codeql:                                          # run codeql
-          psscriptanalyzer:
-            enable: false
-        prefast:                                         # run prefast
-          enabled: true
+#   - template: v2/Steps/PackageES/Windows.SDL.Sources.Analysis.OS.Undocked.yml@templates_onebranch
+#     parameters:
+#       globalsdl:
+#         codeql:                                          # run codeql
+#           psscriptanalyzer:
+#             enable: false
+#         prefast:                                         # run prefast
+#           enabled: true
 
-- job: Build
-  # Skip the build job if we are reusing the output of a previous build.
-  # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
-  condition:
-    eq(variables['useBuildOutputFromBuildId'],'')
-  pool: 
-    name: WinDevPool-L
-    demands: ImageOverride -equals WinDevVS16-9
-  timeoutInMinutes: 120
-  strategy:
-    maxParallel: 10
-    matrix:
-      Debug_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Debug'
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-        PGOBuildMode: 'Optimize'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-        PGOBuildMode: 'Optimize'
-      Release_Arm:
-        buildPlatform: 'arm'
-        buildConfiguration: 'Release'
-      Release_Arm64:
-        buildPlatform: 'arm64'
-        buildConfiguration: 'Release'
+# - job: Build
+#   # Skip the build job if we are reusing the output of a previous build.
+#   # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
+#   condition:
+#     eq(variables['useBuildOutputFromBuildId'],'')
+#   pool: 
+#     name: WinDevPool-L
+#     demands: ImageOverride -equals WinDevVS16-9
+#   timeoutInMinutes: 120
+#   strategy:
+#     maxParallel: 10
+#     matrix:
+#       Debug_x86:
+#         buildPlatform: 'x86'
+#         buildConfiguration: 'Debug'
+#       Release_x86:
+#         buildPlatform: 'x86'
+#         buildConfiguration: 'Release'
+#         PGOBuildMode: 'Optimize'
+#       Release_x64:
+#         buildPlatform: 'x64'
+#         buildConfiguration: 'Release'
+#         PGOBuildMode: 'Optimize'
+#       Release_Arm:
+#         buildPlatform: 'arm'
+#         buildConfiguration: 'Release'
+#       Release_Arm64:
+#         buildPlatform: 'arm64'
+#         buildConfiguration: 'Release'
 
-  variables:
-    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
-    buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
-    publishDir : $(Build.ArtifactStagingDirectory)
-    artifactsDir: $(Build.SourcesDirectory)\Artifacts
-    sbomdir: $(Build.ArtifactStagingDirectory)\sbom\$(buildConfiguration)\$(buildPlatform)
-  steps:
+#   variables:
+#     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+#     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
+#     publishDir : $(Build.ArtifactStagingDirectory)
+#     artifactsDir: $(Build.SourcesDirectory)\Artifacts
+#     sbomdir: $(Build.ArtifactStagingDirectory)\sbom\$(buildConfiguration)\$(buildPlatform)
+#   steps:
 
-  - checkout: self
+#   - checkout: self
 
-  # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
-  - task: DownloadPackage@1
-    displayName: 'Download Microsoft.Telemetry.Inbox.Native'
-    inputs:
-      feed: '/3415933f-ac0d-4766-8c0a-3f4c247c25f5'                         # 0
-      view: 'ef61a1c1-003b-4a27-bde5-beec8301021b'                          # Release
-      definition: '2fe60c09-c66f-4275-ae2d-f015c7170c72'                    # Microsoft.Telemetry.Inbox.Native
-      version: '10.0.18362.1-190318-1202.19h1-release.amd64fre'             # latest version
-      downloadPath: '$(System.DefaultWorkingDirectory)'                     # download and extract to repo root
+#   # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
+#   - task: DownloadPackage@1
+#     displayName: 'Download Microsoft.Telemetry.Inbox.Native'
+#     inputs:
+#       feed: '/3415933f-ac0d-4766-8c0a-3f4c247c25f5'                         # 0
+#       view: 'ef61a1c1-003b-4a27-bde5-beec8301021b'                          # Release
+#       definition: '2fe60c09-c66f-4275-ae2d-f015c7170c72'                    # Microsoft.Telemetry.Inbox.Native
+#       version: '10.0.18362.1-190318-1202.19h1-release.amd64fre'             # latest version
+#       downloadPath: '$(System.DefaultWorkingDirectory)'                     # download and extract to repo root
 
-  # Replace the stubbed MicrosoftTelemetry.h with the real one
-  # Delete the existing stubbed MicrosoftTelemetry.h first, to ensure that if it is no longer at the expected path that the task, and build, fails
-  - script: |
-     del $(System.DefaultWorkingDirectory)\dev\telemetry\MicrosoftTelemetry.h
-     move /Y $(System.DefaultWorkingDirectory)\build\native\inc\MicrosoftTelemetry.h $(System.DefaultWorkingDirectory)\dev\telemetry\
-    failOnStderr: true
-    displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
+#   # Replace the stubbed MicrosoftTelemetry.h with the real one
+#   # Delete the existing stubbed MicrosoftTelemetry.h first, to ensure that if it is no longer at the expected path that the task, and build, fails
+#   - script: |
+#      del $(System.DefaultWorkingDirectory)\dev\telemetry\MicrosoftTelemetry.h
+#      move /Y $(System.DefaultWorkingDirectory)\build\native\inc\MicrosoftTelemetry.h $(System.DefaultWorkingDirectory)\dev\telemetry\
+#     failOnStderr: true
+#     displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
 
-  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
-    parameters:
-      signOutput: true
+#   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+#     parameters:
+#       signOutput: true
 
-  - script: |
-     mkdir $(sbomdir)
-  - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
-    displayName: 'Generate SBOM manifest'
-    inputs:
-      BuildDropPath: $(sbomdir)
+#   - script: |
+#      mkdir $(sbomdir)
+#   - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+#     displayName: 'Generate SBOM manifest'
+#     inputs:
+#       BuildDropPath: $(sbomdir)
 
-  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
+#   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
-  - task: PkgESSetupBuild@12
-    displayName: Package ES - Setup Build
-    inputs:
-      disableOutputRedirect: true
+  # - task: PkgESSetupBuild@12
+  #   displayName: Package ES - Setup Build
+  #   inputs:
+  #     disableOutputRedirect: true
 
   # - task: DownloadBuildArtifacts@0 
   #   inputs: 
@@ -119,14 +119,14 @@ jobs:
   #     artifactName: drop
   #     downloadPath: '$(artifactsDir)'
 
-  - task: NodeTool@0
+  # - task: NodeTool@0
 
-  - template: v2/Steps/PackageES/Windows.SDL.Binary.Analysis.OS.Undocked.yml@templates_onebranch
-    parameters:
-      variables:
-        ob_outputDirectory: $(buildOutputDir)\                   # provide path to binaries to be scanned
+  # - template: v2/Steps/PackageES/Windows.SDL.Binary.Analysis.OS.Undocked.yml@templates_onebranch
+  #   parameters:
+  #     variables:
+  #       ob_outputDirectory: $(artifactsDir)\                   # provide path to binaries to be scanned
 
-# # Create Nuget Package
+# Create Nuget Package
 # - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
 #   parameters:
 #     jobName: CreateNugetPackage
@@ -135,9 +135,9 @@ jobs:
 #     useReleaseTag: '$(MUXFinalRelease)'
 #     prereleaseVersionTag: prerelease
 
-# - template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
-#   parameters:
-#     dependsOn: Build
+- template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
+  parameters:
+    dependsOn: Build
 
 # - template: AzurePipelinesTemplates\MUX-ComplianceChecks-Job.yml
 #   parameters:
