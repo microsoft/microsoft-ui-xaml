@@ -1259,6 +1259,10 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
     {
         // We won't be playing an animation so we're immediately idle.
         SetIsIdle(true);
+
+        // Since we immediately opened, just immediately fire off the Opened event.
+        auto const myArgs = winrt::make_self<TeachingTipOpenedEventArgs>();
+        m_openedEventSource(*this, *myArgs);
     }
 
     if (auto const teachingTipPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::TeachingTipAutomationPeer>())
@@ -1727,6 +1731,9 @@ void TeachingTip::StartExpandToOpen()
         {
             strongThis->SetIsIdle(true);
         }
+
+        auto const myArgs = winrt::make_self<TeachingTipOpenedEventArgs>();
+        strongThis->m_openedEventSource(*strongThis, *myArgs);
     });
 
     // Under normal circumstances we would have launched an animation just now, if we did not then we should make sure that the idle state is correct
