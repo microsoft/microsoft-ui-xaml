@@ -55,6 +55,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private TextBlock effectivePlacementTextBlock;
 
+        public TextBlock GetActionNameTextBlock()
+        {
+            return GetElement(ref actionNameTextBlock, "ActionNameTextBlock");
+        }
+        private TextBlock actionNameTextBlock;
+
+        public Button GetUpdateActionNameButton()
+        {
+            return GetElement(ref updateActionNameButton, "UpdateActionNameButton");
+        }
+        private Button updateActionNameButton;
+
         public Button GetTargetBoundsButton()
         {
             return GetElement(ref targetBoundsButton, "GetTargetBoundsButton");

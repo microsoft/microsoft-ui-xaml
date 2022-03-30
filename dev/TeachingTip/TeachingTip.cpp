@@ -58,10 +58,8 @@ void TeachingTip::OnApplyTemplate()
     m_nonHeroContentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_nonHeroContentRootGridName, controlProtected));
     m_heroContentBorder.set(GetTemplateChildT<winrt::Border>(s_heroContentBorderName, controlProtected));
     m_actionButton.set(GetTemplateChildT<winrt::Button>(s_actionButtonName, controlProtected));
-    m_actionButtonContent.set(GetTemplateChildT<winrt::ContentPresenter>(s_actionButtonContentName, controlProtected));
     m_alternateCloseButton.set(GetTemplateChildT<winrt::Button>(s_alternateCloseButtonName, controlProtected));
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
-    m_closeButtonContent.set(GetTemplateChildT<winrt::ContentPresenter>(s_closeButtonContentName, controlProtected));
     m_tailEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_tailEdgeBorderName, controlProtected));
     m_tailPolygon.set(GetTemplateChildT<winrt::Polygon>(s_tailPolygonName, controlProtected));
     ToggleVisibilityForEmptyContent(c_TitleTextBlockVisibleStateName, c_TitleTextBlockCollapsedStateName, Title());
@@ -123,8 +121,8 @@ void TeachingTip::OnApplyTemplate()
     OnIconSourceChanged();
     OnHeroContentPlacementChanged();
 
-    UpdateButtonAutomationProperties(m_actionButton.get(), m_actionButtonContent.get().Content());
-    UpdateButtonAutomationProperties(m_closeButton.get(), m_closeButtonContent.get().Content());
+    UpdateButtonAutomationProperties(m_actionButton.get(), ActionButtonContent());
+    UpdateButtonAutomationProperties(m_closeButton.get(), CloseButtonContent());
 
     EstablishShadows();
 
@@ -216,8 +214,11 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
 
 void TeachingTip::UpdateButtonAutomationProperties(const winrt::Button button, const winrt::IInspectable content)
 {
-    winrt::hstring nameHString = SharedHelpers::TryGetStringRepresentationFromObject(content);
-    winrt::AutomationProperties::SetName(button, nameHString);
+    if (button) 
+    {
+        winrt::hstring nameHString = SharedHelpers::TryGetStringRepresentationFromObject(content);
+        winrt::AutomationProperties::SetName(button, nameHString);
+    }
 }
 
 bool TeachingTip::ToggleVisibilityForEmptyContent(const wstring_view visibleStateName, const wstring_view collapsedStateName, const winrt::hstring& content)

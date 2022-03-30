@@ -188,10 +188,8 @@ private:
     tracker_ref<winrt::Grid> m_nonHeroContentRootGrid{ this };
     tracker_ref<winrt::Border> m_heroContentBorder{ this };
     tracker_ref<winrt::Button> m_actionButton{ this };
-    tracker_ref<winrt::ContentPresenter> m_actionButtonContent{ this };
     tracker_ref<winrt::Button> m_alternateCloseButton{ this };
     tracker_ref<winrt::Button> m_closeButton{ this };
-    tracker_ref<winrt::ContentPresenter> m_closeButtonContent{ this };
     tracker_ref<winrt::Polygon> m_tailPolygon{ this };
     tracker_ref<winrt::Grid> m_tailEdgeBorder{ this };
     tracker_ref<winrt::UIElement> m_titleTextBlock{ this };
@@ -299,8 +297,6 @@ private:
     static constexpr wstring_view s_mainContentPresenterName{ L"MainContentPresenter"sv };
     static constexpr wstring_view s_actionButtonName{ L"ActionButton"sv };
     static constexpr wstring_view s_closeButtonName{ L"CloseButton"sv };
-    static constexpr wstring_view s_actionButtonContentName{ L"ActionButtonContent"sv };
-    static constexpr wstring_view s_closeButtonContentName{ L"CloseButtonContent"sv };
     static constexpr wstring_view s_tailPolygonName{ L"TailPolygon"sv };
     static constexpr wstring_view s_tailEdgeBorderName{ L"TailEdgeBorder"sv };
     static constexpr wstring_view s_topTailPolygonHighlightName{ L"TopTailPolygonHighlight"sv };
