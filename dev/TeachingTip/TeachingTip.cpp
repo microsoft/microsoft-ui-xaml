@@ -8,6 +8,7 @@
 #include "ResourceAccessor.h"
 #include "TeachingTipClosingEventArgs.h"
 #include "TeachingTipClosedEventArgs.h"
+#include "TeachingTipOpenedEventArgs.h"
 #include "TeachingTipTestHooks.h"
 #include "TeachingTipAutomationPeer.h"
 #include "../ResourceHelper/Utils.h"

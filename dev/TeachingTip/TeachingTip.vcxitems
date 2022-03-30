@@ -20,6 +20,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TeachingTipAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TeachingTipClosedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TeachingTipClosingEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TeachingTipOpenedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TeachingTipTemplateSettings.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TeachingTipTestHooks.cpp" />
   </ItemGroup>
@@ -68,6 +69,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipClosedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipClosingEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipOpenedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TeachingTipTestHooks.h" />
   </ItemGroup>
