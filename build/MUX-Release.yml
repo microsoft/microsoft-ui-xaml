@@ -104,10 +104,10 @@ jobs:
 
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
-  # - task: PkgESSetupBuild@12
-  #   displayName: Package ES - Setup Build
-  #   inputs:
-  #     disableOutputRedirect: true
+  - task: PkgESSetupBuild@12
+    displayName: Package ES - Setup Build
+    inputs:
+      disableOutputRedirect: true
 
   # - task: DownloadBuildArtifacts@0 
   #   inputs: 
@@ -119,25 +119,25 @@ jobs:
   #     artifactName: drop
   #     downloadPath: '$(artifactsDir)'
 
-  # - task: NodeTool@0
+  - task: NodeTool@0
 
-  # - template: v2/Steps/PackageES/Windows.SDL.Binary.Analysis.OS.Undocked.yml@templates_onebranch
-  #   parameters:
-  #     variables:
-  #       ob_outputDirectory: $(artifactsDir)\                   # provide path to binaries to be scanned
+  - template: v2/Steps/PackageES/Windows.SDL.Binary.Analysis.OS.Undocked.yml@templates_onebranch
+    parameters:
+      variables:
+        ob_outputDirectory: $(buildOutputDir)\                   # provide path to binaries to be scanned
 
-# Create Nuget Package
-- template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
-  parameters:
-    jobName: CreateNugetPackage
-    dependsOn: Build
-    signOutput: true
-    useReleaseTag: '$(MUXFinalRelease)'
-    prereleaseVersionTag: prerelease
+# # Create Nuget Package
+# - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+#   parameters:
+#     jobName: CreateNugetPackage
+#     dependsOn: Build
+#     signOutput: true
+#     useReleaseTag: '$(MUXFinalRelease)'
+#     prereleaseVersionTag: prerelease
 
-- template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
-  parameters:
-    dependsOn: Build
+# - template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
+#   parameters:
+#     dependsOn: Build
 
 # - template: AzurePipelinesTemplates\MUX-ComplianceChecks-Job.yml
 #   parameters:
