@@ -365,6 +365,8 @@ AnimatedVisualPlayer::AnimatedVisualPlayer()
 
 AnimatedVisualPlayer::~AnimatedVisualPlayer()
 {
+    *m_isAlive = false;
+
     // Ensure any outstanding play is stopped.
     if (m_nowPlaying)
     {
@@ -834,7 +836,12 @@ void AnimatedVisualPlayer::DestroyAnimations() {
     // Call RequestCommit to make sure that previous compositor calls complete before destroying animations.
     // RequestCommitAsync is available only for RS4+
     m_rootVisual.Compositor().RequestCommitAsync().Completed(
-        [&, createAnimationsCounter = m_createAnimationsCounter](auto, auto) {
+        [&, createAnimationsCounter = m_createAnimationsCounter, isAlive = m_isAlive](auto, auto) {
+
+            if (!*isAlive) {
+                return;
+            }
+
             // Check if there was any CreateAnimations call after DestroyAnimations.
             // We should not destroy animations in this case,
             // they will be destroyed by the following DestroyAnimations call.

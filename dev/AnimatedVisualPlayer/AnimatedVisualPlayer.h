@@ -150,4 +150,9 @@ private:
 
     bool m_isAnimationsCreated{ false };
     uint32_t m_createAnimationsCounter = 0;
+
+    // Flag that tracks that this object is alive.
+    // Needed in case if we scheduled RequestCommitAsync callback
+    // and this object was destroyed before callback is called.
+    std::shared_ptr<bool> m_isAlive = std::make_shared<bool>(true);
 };
