@@ -129,7 +129,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <PackageCertificateKeyFile>..\..\..\build\MSTest.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>..\..\..\build\WinUITest.pfx</PackageCertificateKeyFile>
     <AppxPackageName>NugetPackageTestAppCX</AppxPackageName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
@@ -206,7 +206,7 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <None Include="..\..\..\build\MSTest.pfx" />
+    <None Include="..\..\..\build\WinUITest.pfx" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

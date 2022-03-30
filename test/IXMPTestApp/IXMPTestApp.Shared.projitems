@@ -27,7 +27,7 @@
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <PackageCertificateKeyFile>$(MSBuildThisFileDirectory)\..\..\build\MSTest.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>$(MSBuildThisFileDirectory)\..\..\build\WinUITest.pfx</PackageCertificateKeyFile>
     <AppxPackageName>IXMPTestApp</AppxPackageName>
     <!-- needed to work with TDP -->
     <GenerateAppxPackageOnBuild Condition="'$(IsDebugTestConfiguration)' == 'true'">true</GenerateAppxPackageOnBuild>
@@ -131,7 +131,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)\..\..\build\MSTest.pfx" />
+    <None Include="$(MSBuildThisFileDirectory)\..\..\build\WinUITest.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)\MainPage.xaml.cs">

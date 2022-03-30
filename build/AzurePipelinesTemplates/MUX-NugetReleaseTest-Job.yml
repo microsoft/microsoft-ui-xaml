@@ -64,6 +64,12 @@ jobs:
       downloadPath: $(artifactDownloadPath)
       itemPattern: '**\*.nupkg'
 
+  - task: powershell@2
+    displayName: GenerateTestPFX.ps1
+    inputs:
+      targetType: filePath
+      filePath: GenerateTestPFX.ps1
+
   # Copy nupkg to localpackages and update proj file to point to it
   - powershell: |
       $pathToNupkg = "$($env:artifactDownloadPath)\drop"
