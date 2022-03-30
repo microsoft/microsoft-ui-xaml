@@ -91,6 +91,13 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                <TextBlock Text="NumberOfWeeksInView:" VerticalAlignment="Center"/>
+                <TextBox x:Name="numberOfWeeksInView" Text="6" Margin="2" VerticalAlignment="Center"/>
+                <Button x:Name="getNumberOfWeeksInView" Content="Get" Margin="2" Click="GetNumberOfWeeksInView_Click" VerticalAlignment="Center"/>
+                <Button x:Name="setNumberOfWeeksInView" Content="Set" Margin="2" Click="SetNumberOfWeeksInView_Click" VerticalAlignment="Center"/>
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
                 <TextBlock Text="DayItemMargin:" VerticalAlignment="Center"/>
                 <TextBox x:Name="dayItemMargin" Text="0, 5, 0, 0" Margin="2" VerticalAlignment="Center" MinWidth="125"/>
                 <Button x:Name="setDayItemMargin" Content="Set" Margin="2" Click="SetDayItemMargin_Click" VerticalAlignment="Center"/>
