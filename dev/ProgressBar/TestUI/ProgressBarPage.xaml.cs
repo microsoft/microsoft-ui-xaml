@@ -116,6 +116,18 @@ namespace MUXControlsTestApp
 
             TestWUXProgressBar.Padding = new Thickness(paddingLeft, 0, paddingRight, 0);
         }
+
+        public void AreVisibleCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            TestProgressBar.Visibility = Visibility.Visible;
+            TestWUXProgressBar.Visibility = Visibility.Visible;
+        }
+
+        public void AreVisibleCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            TestProgressBar.Visibility = Visibility.Collapsed;
+            TestWUXProgressBar.Visibility = Visibility.Collapsed;
+        }
     }
 
     public class NullableBooleanToBooleanConverter : IValueConverter

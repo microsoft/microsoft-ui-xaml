@@ -68,6 +68,7 @@
                                     </VisualTransition>
                                 </VisualStateGroup.Transitions>
                                 <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Collapsed"/>
                                 <VisualState x:Name="Determinate" />
                                 <VisualState x:Name="Updating" />
                                 <VisualState x:Name="UpdatingError">
@@ -163,6 +164,20 @@
                                             Duration="0:0:0.25"/>
                                     </Storyboard>
                                 </VisualState>
+                                <VisualState x:Name="CollapsedError">
+                                    <Storyboard>
+                                        <ColorAnimation
+                                            Storyboard.TargetName="DeterminateProgressBarIndicator"
+                                            Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
+                                            To="{Binding Source={ThemeResource SystemControlErrorTextForegroundBrush},Path=Color}"
+                                            Duration="0:0:0.0"/>
+                                        <ColorAnimation
+                                            Storyboard.TargetName="ProgressBarRoot"
+                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                            To="{StaticResource SystemControlErrorBackgroundColor}"
+                                            Duration="0:0:0.0"/>
+                                    </Storyboard>
+                                </VisualState>
                                 <VisualState x:Name="IndeterminatePaused">
                                     <Storyboard>
                                         <DoubleAnimationUsingKeyFrames
@@ -209,6 +224,20 @@
                                             Storyboard.TargetProperty="Opacity"
                                             To="{ThemeResource ProgressBarIndicatorPauseOpacity}"
                                             Duration="0:0:0.25" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="CollapsedPaused">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames
+                                            Storyboard.TargetName="DeterminateProgressBarIndicator"
+                                            Storyboard.TargetProperty="Fill" >
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemBaseMediumLowColor}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="DeterminateProgressBarIndicator"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="{ThemeResource ProgressBarIndicatorPauseOpacity}"
+                                            Duration="0:0:0.0" />
                                     </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>

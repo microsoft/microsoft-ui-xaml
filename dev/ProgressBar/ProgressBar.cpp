@@ -22,6 +22,7 @@ ProgressBar::ProgressBar()
     RegisterPropertyChangedCallback(winrt::RangeBase::MinimumProperty(), { this, &ProgressBar::OnIndicatorWidthComponentChanged });
     RegisterPropertyChangedCallback(winrt::RangeBase::MaximumProperty(), { this, &ProgressBar::OnIndicatorWidthComponentChanged });
     RegisterPropertyChangedCallback(winrt::Control::PaddingProperty(), { this, &ProgressBar::OnIndicatorWidthComponentChanged });
+    RegisterPropertyChangedCallback(winrt::UIElement::VisibilityProperty(), { this, &ProgressBar::OnVisibilityPropertyChanged });
 
     SetValue(s_TemplateSettingsProperty, winrt::make<::ProgressBarTemplateSettings>());
 }
@@ -72,6 +73,11 @@ void ProgressBar::OnShowPausedPropertyChanged(const winrt::DependencyPropertyCha
     UpdateStates();
 }
 
+void ProgressBar::OnVisibilityPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty& args)
+{
+    UpdateStates();
+}
+
 void ProgressBar::OnShowErrorPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     SetProgressBarIndicatorWidth();
@@ -80,7 +86,21 @@ void ProgressBar::OnShowErrorPropertyChanged(const winrt::DependencyPropertyChan
 
 void ProgressBar::UpdateStates()
 {
-    if (IsIndeterminate())
+    if (Visibility() == winrt::Visibility::Collapsed) {
+        if (ShowError())
+        {
+            winrt::VisualStateManager::GoToState(*this, s_CollapsedErrorStateName, true);
+        }
+        else if (ShowPaused())
+        {
+            winrt::VisualStateManager::GoToState(*this, s_CollapsedPausedStateName, true);
+        }
+        else
+        {
+            winrt::VisualStateManager::GoToState(*this, s_CollapsedStateName, true);
+        }
+    }
+    else if (IsIndeterminate())
     {
         if (ShowError())
         {
