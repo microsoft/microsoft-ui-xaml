@@ -13,25 +13,25 @@ resources:
     name: OneBranch.Pipelines/GovernedTemplates
     ref: refs/heads/main
 jobs:
-# - job: Scanning
-#   pool: 
-#     name: WinDevPool-L
-#     demands: ImageOverride -equals WinDevVS16-9
+- job: Scanning
+  pool: 
+    name: WinDevPool-L
+    demands: ImageOverride -equals WinDevVS16-9
 
-#   steps:
+  steps:
 
-#   - checkout: self
+  - checkout: self
 
-#   - task: NodeTool@0
+  - task: NodeTool@0
 
-#   - template: v2/Steps/PackageES/Windows.SDL.Sources.Analysis.OS.Undocked.yml@templates_onebranch
-#     parameters:
-#       globalsdl:
-#         codeql:                                          # run codeql
-#           psscriptanalyzer:
-#             enable: false
-#         prefast:                                         # run prefast
-#           enabled: true
+  - template: v2/Steps/PackageES/Windows.SDL.Sources.Analysis.OS.Undocked.yml@templates_onebranch
+    parameters:
+      globalsdl:
+        codeql:                                          # run codeql
+          psscriptanalyzer:
+            enable: false
+        prefast:                                         # run prefast
+          enabled: true
 
 - job: Build
   # Skip the build job if we are reusing the output of a previous build.
@@ -45,9 +45,6 @@ jobs:
   strategy:
     maxParallel: 10
     matrix:
-      Debug_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Debug'
       Release_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Release'
@@ -109,16 +106,6 @@ jobs:
     inputs:
       disableOutputRedirect: true
 
-  # - task: DownloadBuildArtifacts@0 
-  #   inputs: 
-  #     buildType: specific
-  #     buildVersionToDownload: specific
-  #     project: $(System.TeamProjectId)
-  #     pipeline: 72016
-  #     buildId: 46195835
-  #     artifactName: drop
-  #     downloadPath: '$(artifactsDir)'
-
   - task: NodeTool@0
 
   - template: v2/Steps/PackageES/Windows.SDL.Binary.Analysis.OS.Undocked.yml@templates_onebranch
@@ -126,61 +113,57 @@ jobs:
       variables:
         ob_outputDirectory: $(buildOutputDir)\                   # provide path to binaries to be scanned
 
-# Create Nuget Package
-# - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
-#   parameters:
-#     jobName: CreateNugetPackage
-#     dependsOn: Build
-#     signOutput: true
-#     useReleaseTag: '$(MUXFinalRelease)'
-#     prereleaseVersionTag: prerelease
+Create Nuget Package
+- template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+  parameters:
+    jobName: CreateNugetPackage
+    dependsOn: Build
+    signOutput: true
+    useReleaseTag: '$(MUXFinalRelease)'
+    prereleaseVersionTag: prerelease
 
-# - template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
-#   parameters:
-#     dependsOn: Build
+- template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
+  parameters:
+    dependsOn: Build
 
-# - template: AzurePipelinesTemplates\MUX-ComplianceChecks-Job.yml
-#   parameters:
-#     dependsOn: CreateVPack
+# Build solution that depends on nuget package
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    buildJobName: 'BuildNugetPkgTests'
+    buildArtifactName: 'NugetPkgTestsDrop'
+    runTestJobName: 'RunNugetPkgTestsInHelix'
+    helixType: 'test/nuget'
+    dependsOn: CreateNugetPackage
+    useFrameworkPkg: false
 
-# # Build solution that depends on nuget package
-# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-#   parameters:
-#     buildJobName: 'BuildNugetPkgTests'
-#     buildArtifactName: 'NugetPkgTestsDrop'
-#     runTestJobName: 'RunNugetPkgTestsInHelix'
-#     helixType: 'test/nuget'
-#     dependsOn: CreateNugetPackage
-#     useFrameworkPkg: false
+# Framework package tests
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    buildJobName: 'BuildFrameworkPkgTests'
+    buildArtifactName: 'FrameworkPkgTestsDrop'
+    runTestJobName: 'RunFrameworkPkgTestsInHelix'
+    helixType: 'test/frpkg'
+    dependsOn: CreateNugetPackage
+    useFrameworkPkg: true
 
-# # Framework package tests
-# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-#   parameters:
-#     buildJobName: 'BuildFrameworkPkgTests'
-#     buildArtifactName: 'FrameworkPkgTestsDrop'
-#     runTestJobName: 'RunFrameworkPkgTestsInHelix'
-#     helixType: 'test/frpkg'
-#     dependsOn: CreateNugetPackage
-#     useFrameworkPkg: true
+- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+  parameters:
+    dependsOn:
+    - RunNugetPkgTestsInHelix
+    - RunFrameworkPkgTestsInHelix
+    rerunPassesRequiredToAvoidFailure: 5
+    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
 
-# - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
-#   parameters:
-#     dependsOn:
-#     - RunNugetPkgTestsInHelix
-#     - RunFrameworkPkgTestsInHelix
-#     rerunPassesRequiredToAvoidFailure: 5
-#     minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
+# NuGet package WACK tests
+- template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+  parameters:
+    name: 'NugetPkgWACKTests'
+    dependsOn: BuildNugetPkgTests
+    artifactName: 'NugetPkgTestsDrop'
 
-# # NuGet package WACK tests
-# - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
-#   parameters:
-#     name: 'NugetPkgWACKTests'
-#     dependsOn: BuildNugetPkgTests
-#     artifactName: 'NugetPkgTestsDrop'
-
-# # Framework package WACK tests
-# - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
-#   parameters:
-#     name: 'FrameworkPkgWACKTests'
-#     dependsOn: BuildFrameworkPkgTests
-#     artifactName: 'FrameworkPkgTestsDrop'
+# Framework package WACK tests
+- template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+  parameters:
+    name: 'FrameworkPkgWACKTests'
+    dependsOn: BuildFrameworkPkgTests
+    artifactName: 'FrameworkPkgTestsDrop'

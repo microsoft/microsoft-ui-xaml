@@ -3,10 +3,10 @@ parameters:
 
 jobs:
 - job: CreateVPack
-  # dependsOn:
-  #   - ${{ parameters.dependsOn }}
+  dependsOn:
+    - ${{ parameters.dependsOn }}
   pool:
-    name: WinDevPool-L
+    name: WinDevPool-S
   variables:
     windowsPublicsWinmdVersion: 0.0.2
     internalSDKFeedUrl: https://pkgs.dev.azure.com/microsoft/WinUI/_packaging/WinUIInternalWindowsSDK/nuget/v3/index.json
@@ -28,12 +28,6 @@ jobs:
     inputs: 
       artifactName: drop
       downloadPath: $(System.ArtifactsDirectory)
-
-      buildType: specific
-      buildVersionToDownload: specific
-      project: $(System.TeamProjectId)
-      pipeline: 72016
-      buildId: 47219852
 
   # This contains the OS internal version of windows.winmd which is required for us to re-merge our winmd so that it can be used from OS repo.
   - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
