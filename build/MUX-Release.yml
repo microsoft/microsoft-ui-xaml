@@ -15,7 +15,7 @@ resources:
 jobs:
 - job: Scanning
   pool: 
-    name: WinDevPool-L
+    name: WinDevPool-S
     demands: ImageOverride -equals WinDevVS16-9
 
   steps:
