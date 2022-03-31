@@ -150,11 +150,6 @@ namespace MUXControlsTestApp
         {
             ToggleStateOnClickTextBlock.Text = ToggleSplitButton.IsChecked ? "Checked" : "Unchecked";
         }
-
-        private void SplitButtonCommand_ExecuteRequested(Windows.UI.Xaml.Input.XamlUICommand sender, Windows.UI.Xaml.Input.ExecuteRequestedEventArgs args)
-        {
-
-        }
     }
 
     public class MyCommand : ICommand
