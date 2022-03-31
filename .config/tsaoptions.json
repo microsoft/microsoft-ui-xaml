@@ -3,7 +3,7 @@
     "projectName": "os",
     "areaPath": "OS\\WDX\\DXP\\WinDev\\Controls",
     "iterationPath": "OS",
-    "notificationAliases": [ ],
+    "notificationAliases": [ "uxpct@microsoft.com" ],
     "ignoreBranchName": true,
     "codebaseName": "microsoft_microsoft-ui-xaml"
 }
