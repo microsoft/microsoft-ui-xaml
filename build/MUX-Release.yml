@@ -113,7 +113,7 @@ jobs:
       variables:
         ob_outputDirectory: $(buildOutputDir)\                   # provide path to binaries to be scanned
 
-Create Nuget Package
+# Create Nuget Package
 - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
   parameters:
     jobName: CreateNugetPackage
