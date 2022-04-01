@@ -1015,18 +1015,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void VerifyTeachingTipButtonsNameAutomationProperty()
         {
-            using(var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
             {
                 elements = new TeachingTipTestPageElements();
+
                 SetActionButtonContentTo("Small text");
+                SetCloseButtonContent(CloseButtonContentOptions.ShortText);
 
-                elements.GetUpdateActionNameButton().Invoke();
-                Wait.ForIdle();
+                OpenTeachingTip();
 
-                TextBlock textBlock = elements.GetActionNameTextBlock();
+                var actionButton = FindElement.ById("ActionButton");
+                var closeButton = FindElement.ById("CloseButton");
 
-                Log.Comment("Verify that Action button content presenter text will update the buttons name automation property");
-                Verify.AreEqual(textBlock.GetText(), "A:Short Text.");
+                Log.Comment("Verify that action and close buttons content presenter text will update the buttons name automation property");
+                Verify.AreEqual(actionButton.Name, "A:Short Text.");
+                Verify.AreEqual(closeButton.Name, "C:Short Text.");
             }
         }
 

@@ -447,11 +447,6 @@ namespace MUXControlsTestApp
             this.targetButton.StartBringIntoView(new BringIntoViewOptions());
         }
 
-        public void OnGetActionButtonAutomationNameButtonClicked(object sender, RoutedEventArgs args)
-        {
-            this.ActionNameTextBlock.Text = getTeachingTip().ActionButtonContent.ToString();
-        }
-
         public void OnUseTestWindowBoundsCheckBoxChecked(object sender, RoutedEventArgs args)
         {
             var tip = getTeachingTip();

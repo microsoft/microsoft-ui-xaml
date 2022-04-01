@@ -200,13 +200,13 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     else if (property == s_ActionButtonContentProperty)
     {
         UpdateButtonsState();
-        winrt::IInspectable value = unbox_value<winrt::IInspectable>(args.NewValue());
+        winrt::IInspectable value = args.NewValue();
         UpdateButtonAutomationProperties(m_actionButton.get(), value);
     }
     else if (property == s_CloseButtonContentProperty)
     {
         UpdateButtonsState();
-        winrt::IInspectable value = unbox_value<winrt::IInspectable>(args.NewValue());
+        winrt::IInspectable value = args.NewValue();
         UpdateButtonAutomationProperties(m_closeButton.get(), value);
     }
 
