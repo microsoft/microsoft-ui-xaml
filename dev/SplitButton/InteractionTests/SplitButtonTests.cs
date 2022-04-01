@@ -97,11 +97,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ClickPrimaryButtonWithKey(splitButton, "ENTER");
                 Verify.AreEqual("3", executeCountTextBlock.DocumentText);
 
+                Log.Comment("Use invoke pattern to execute command");
+                splitButton.InvokeAndWait();
+                Verify.AreEqual("4", executeCountTextBlock.DocumentText);
+
                 Log.Comment("Verify that setting CanExecute to false disables the primary button");
                 canExecuteCheckBox.Uncheck();
                 Wait.ForIdle();
                 ClickPrimaryButton(splitButton);
-                Verify.AreEqual("3", executeCountTextBlock.DocumentText);
+                Verify.AreEqual("4", executeCountTextBlock.DocumentText);
             }
         }
 
