@@ -121,6 +121,9 @@ void TeachingTip::OnApplyTemplate()
     OnIconSourceChanged();
     OnHeroContentPlacementChanged();
 
+    UpdateButtonAutomationProperties(m_actionButton.get(), ActionButtonContent());
+    UpdateButtonAutomationProperties(m_closeButton.get(), CloseButtonContent());
+
     EstablishShadows();
 
     m_isTemplateApplied = true;
@@ -147,11 +150,6 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
             m_TargetUnloadedRevoker = newTarget.Unloaded(winrt::auto_revoke, { this,&TeachingTip::ClosePopupOnUnloadEvent });
         }
         OnTargetChanged();
-    }
-    else if (property == s_ActionButtonContentProperty ||
-        property == s_CloseButtonContentProperty)
-    {
-        UpdateButtonsState();
     }
     else if (property == s_PlacementMarginProperty)
     {
@@ -199,7 +197,28 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
             TeachingTipTestHooks::NotifySubtitleVisibilityChanged(*this);
         }
     }
+    else if (property == s_ActionButtonContentProperty)
+    {
+        UpdateButtonsState();
+        winrt::IInspectable value = args.NewValue();
+        UpdateButtonAutomationProperties(m_actionButton.get(), value);
+    }
+    else if (property == s_CloseButtonContentProperty)
+    {
+        UpdateButtonsState();
+        winrt::IInspectable value = args.NewValue();
+        UpdateButtonAutomationProperties(m_closeButton.get(), value);
+    }
 
+}
+
+void TeachingTip::UpdateButtonAutomationProperties(const winrt::Button button, const winrt::IInspectable content)
+{
+    if (button) 
+    {
+        winrt::hstring nameHString = SharedHelpers::TryGetStringRepresentationFromObject(content);
+        winrt::AutomationProperties::SetName(button, nameHString);
+    }
 }
 
 bool TeachingTip::ToggleVisibilityForEmptyContent(const wstring_view visibleStateName, const wstring_view collapsedStateName, const winrt::hstring& content)

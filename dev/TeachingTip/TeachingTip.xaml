@@ -393,7 +393,7 @@
                                                             Style="{TemplateBinding ActionButtonStyle}" 
                                                             Command="{TemplateBinding ActionButtonCommand}"
                                                             CommandParameter="{TemplateBinding ActionButtonCommandParameter}">
-                                                            <ContentPresenter TextWrapping="WrapWholeWords" Content="{TemplateBinding ActionButtonContent}"/>
+                                                        <ContentPresenter TextWrapping="WrapWholeWords" Content="{TemplateBinding ActionButtonContent}"/>
                                                     </Button>
                                                     <Button x:Name="CloseButton"
                                                             HorizontalAlignment="Stretch"
