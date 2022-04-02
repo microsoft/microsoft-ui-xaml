@@ -191,6 +191,17 @@ namespace MUXControlsTestApp
             PageCalendar2.Height = Double.Parse(calendarHeight.Text);
         }
 
+        private void GetNumberOfWeeksInView_Click(object sender, RoutedEventArgs e)
+        {
+            numberOfWeeksInView.Text = PageCalendar.NumberOfWeeksInView.ToString();
+        }
+
+        private void SetNumberOfWeeksInView_Click(object sender, RoutedEventArgs e)
+        {
+            PageCalendar.NumberOfWeeksInView = Int32.Parse(numberOfWeeksInView.Text);
+            PageCalendar2.NumberOfWeeksInView = Int32.Parse(numberOfWeeksInView.Text);
+        }
+
         private void SetDayItemMargin_Click(object sender, RoutedEventArgs e)
         {
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))

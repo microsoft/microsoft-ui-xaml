@@ -317,7 +317,19 @@ $priOutputPath = [IO.Path]::GetFullPath("$fullOutputPath\resources.pri")
 $priCBSOutputPath = [IO.Path]::GetFullPath("$fullOutputPath\CBSresources.pri")
 $noiseAssetPath = [IO.Path]::GetFullPath("$fullOutputPath\Assets\NoiseAsset_256x256_PNG.png")
 $resourceContents = [IO.Path]::GetFullPath("$fullOutputPath\Resources")
-$pfxPath = [IO.Path]::GetFullPath("..\MSTest.pfx")
+
+$pfxPath = [IO.Path]::GetFullPath("MSTest.pfx")
+$CertificateFriendlyName = "MSTest"
+
+$cert = New-SelfSignedCertificate -Type Custom `
+    -Subject $Publisher `
+    -KeyUsage DigitalSignature `
+    -FriendlyName $CertificateFriendlyName `
+    -CertStoreLocation "Cert:\CurrentUser\My" `
+    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+
+$certificateBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pkcs12)
+[System.IO.File]::WriteAllBytes($pfxPath, $certificateBytes)
 
 pushd $fullOutputPath\PackageContents
 
@@ -355,24 +367,7 @@ Write-Host $makeappx
 cmd /c $makeappx
 if ($LastExitCode -ne 0) { Exit 1 }
 
-if ($env:TFS_ToolsDirectory -and ($env:BUILD_DEFINITIONNAME -match "release") -and $env:UseSimpleSign)
-{
-    # From MakeAppxBundle in the XES tools
-    $signToolPath = $env:TFS_ToolsDirectory + "\bin\SimpleSign.exe"
-    if (![System.IO.File]::Exists($signToolPath))
-    {
-       $signToolPath = "SimpleSign.exe"
-    }
-
-    # From here: https://osgwiki.com/wiki/Package_ES_Appx_Bundle#Code_sign_Appx_Bundle
-    $signCert = "136020001"
-
-    $signtool = "`"$signToolPath`" -i:`"$outputAppxFileFullPath`" -c:$signCert -s:`"CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US`""
-}
-else
-{
-    $signtool = "`"" + (Join-Path $WindowsSdkBinDir "signtool.exe") + "`" sign /a /v /fd SHA256 /f $pfxPath $outputAppxFileFullPath"
-}
+$signtool = "`"" + (Join-Path $WindowsSdkBinDir "signtool.exe") + "`" sign /a /v /fd SHA256 /f $pfxPath $outputAppxFileFullPath"
 Write-Host $signtool
 cmd /c $signtool
 if ($LastExitCode -ne 0) { Exit 1 }

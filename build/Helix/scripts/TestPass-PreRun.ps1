@@ -21,7 +21,7 @@ function UninstallTestApps {
         # which prevents other versions of the app from being installed.
         # To handle this, we can directly call Remove-AppxPackage against the full name of the package. However, without
         # Get-AppxPackage to find the PackageFullName, we just have to manually construct the name.
-        $packageFullName = "$($pkgName)_1.0.0.0_$($Platform)__8wekyb3d8bbwe" 
+        $packageFullName = "$($pkgName)_1.0.0.0_$($Platform)__6f07fta6qpts2" 
         Write-Host "Removing $packageFullName if installed"
         Remove-AppxPackage $packageFullName -ErrorVariable appxerror -ErrorAction SilentlyContinue 
         if($appxerror)

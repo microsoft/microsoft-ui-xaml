@@ -757,5 +757,13 @@
   <PropertyGroup>
     <!-- Tell CreateLCGFile to use the LCE file from RC.EXE -->
     <LCEFile>$(_LceFile)</LCEFile>
+
+    <!-- Generate the test pfx file before building -->
+    <GeneratePfxScript>$(MSBuildProjectDirectory)\..\..\GenerateTestPfx.ps1</GeneratePfxScript>
+    <PfxFile>$(MSBuildProjectDirectory)\..\..\build\WinUITest.pfx</PfxFile>
   </PropertyGroup>
+  <Target Name="GeneratePfx" BeforeTargets="PrepareForBuild" Condition="!Exists('$(PfxFile)')" >
+    <Message Text="Generate test .pfx file" />
+    <RunPowershellScript Path="$(GeneratePfxScript)" FilesWritten="$(PfxFile)" />
+  </Target>
 </Project>

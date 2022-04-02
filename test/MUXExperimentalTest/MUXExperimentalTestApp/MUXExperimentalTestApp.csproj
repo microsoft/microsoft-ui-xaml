@@ -19,7 +19,7 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
-    <PackageCertificateKeyFile>..\..\..\build\MSTest.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>..\..\..\build\WinUITest.pfx</PackageCertificateKeyFile>
     <AppxPackageName>MUXExperimentalTestApp</AppxPackageName>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
@@ -112,7 +112,7 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <None Include="..\..\..\build\MSTest.pfx" />
+    <None Include="..\..\..\build\WinUITest.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Properties\Default.rd.xml" />

@@ -8,7 +8,7 @@
 
   <Identity
     Name="WpfApp"
-    Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+    Publisher="CN=WinUITest"
     Version="1.0.0.0" />
 
   <Properties>
