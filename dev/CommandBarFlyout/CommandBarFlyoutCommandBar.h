@@ -30,7 +30,7 @@ public:
     void PlayOpenAnimation();
     bool HasCloseAnimation();
     bool HasSecondaryOpenCloseAnimations();
-    void PlayCloseAnimation(std::function<void()> onCompleteFunc);
+    void PlayCloseAnimation(const winrt::weak_ref<winrt::CommandBarFlyout>& weakCommandBarFlyout, std::function<void()> onCompleteFunc);
 
     void BindOwningFlyoutPresenterToCornerRadius();
 
