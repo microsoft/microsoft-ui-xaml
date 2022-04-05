@@ -115,11 +115,11 @@ void TabViewItem::UpdateTabGeometry()
     
     WCHAR strOut[1024];
     StringCchPrintf(strOut, ARRAYSIZE(strOut), data,
-        height,
+        height - 1,
         leftCorner, leftCorner, leftCorner, leftCorner, leftCorner,
         ActualWidth() - (leftCorner + rightCorner),
         rightCorner, rightCorner, rightCorner, rightCorner,
-        height - (4 + rightCorner));
+        height - (4 + rightCorner + 1));
 
     const auto geometry = winrt::XamlReader::Load(strOut).try_as<winrt::Geometry>();
 
