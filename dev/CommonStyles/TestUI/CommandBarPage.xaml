@@ -250,69 +250,6 @@
                 <AppBarSeparator/>
                 <AppBarButton Icon="Save" Label="Save"/>
                 <AppBarToggleButton Icon="Add" Label="Toggle"/>
-                <AppBarButton Icon="Add" Label="Add">
-                    <AppBarButton.Resources>
-                        <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
-                    </AppBarButton.Resources>
-                    <AppBarButton.Flyout>
-                        <MenuFlyout Placement="Bottom">
-                            <MenuFlyoutItem Text="Item 1"/>
-                            <MenuFlyoutItem Text="Item 2"/>
-                            <MenuFlyoutItem Text="Item 3"/>
-                        </MenuFlyout>
-                    </AppBarButton.Flyout>
-                </AppBarButton>
-                <AppBarButton Icon="Add" Label="Add">
-                    <AppBarButton.Resources>
-                        <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
-                    </AppBarButton.Resources>
-                    <AppBarButton.Flyout>
-                        <MenuFlyout Placement="Bottom">
-                            <MenuFlyoutItem Text="Item 1"/>
-                            <MenuFlyoutItem Text="Item 2"/>
-                            <MenuFlyoutItem Text="Item 3"/>
-                        </MenuFlyout>
-                    </AppBarButton.Flyout>
-                </AppBarButton>
-                <AppBarButton Icon="Add" Label="Add">
-                    <AppBarButton.Resources>
-                        <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
-                    </AppBarButton.Resources>
-                    <AppBarButton.Flyout>
-                        <MenuFlyout Placement="Bottom">
-                            <MenuFlyoutItem Text="Item 1"/>
-                            <MenuFlyoutItem Text="Item 2"/>
-                            <MenuFlyoutItem Text="Item 3"/>
-                        </MenuFlyout>
-                    </AppBarButton.Flyout>
-                </AppBarButton>
-                <AppBarSeparator />
-                <AppBarButton Icon="Add" Label="Add">
-                    <AppBarButton.Resources>
-                        <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
-                    </AppBarButton.Resources>
-                    <AppBarButton.Flyout>
-                        <MenuFlyout Placement="Bottom">
-                            <MenuFlyoutItem Text="Item 1"/>
-                            <MenuFlyoutItem Text="Item 2"/>
-                            <MenuFlyoutItem Text="Item 3"/>
-                        </MenuFlyout>
-                    </AppBarButton.Flyout>
-                </AppBarButton>
-                <AppBarSeparator />
-                <AppBarButton Icon="Add" Label="Add">
-                    <AppBarButton.Resources>
-                        <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
-                    </AppBarButton.Resources>
-                    <AppBarButton.Flyout>
-                        <MenuFlyout Placement="Bottom">
-                            <MenuFlyoutItem Text="Item 1"/>
-                            <MenuFlyoutItem Text="Item 2"/>
-                            <MenuFlyoutItem Text="Item 3"/>
-                        </MenuFlyout>
-                    </AppBarButton.Flyout>
-                </AppBarButton>
-                <AppBarSeparator/>
                 <CommandBar.SecondaryCommands>
                     <AppBarButton Icon="Add" Label="Add">
                         <AppBarButton.Resources>
