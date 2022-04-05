@@ -214,9 +214,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Opening the CommandBar and invoking the first button in the secondary commands list.");
                 openCommandBarAction();
 
-
                 setup.ExecuteAndWaitForEvents(() => FindElement.ById<Button>("ProofingButton").Invoke(), new List<string>() { "ProofingButton clicked" });
-
 
                 Verify.IsTrue(isFlyoutOpenCheckBox.ToggleState == ToggleState.On);
             }
@@ -1262,6 +1260,60 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Dismissing flyout");
                 KeyboardHelper.PressKey(Key.Escape);
+            }
+        }
+
+        [TestMethod]
+        public void CanHideCommandBarFlyoutInFlyoutClosedHandler()
+        {
+            CanHideCommandBarFlyoutInFlyoutClosedHandler(useAnimations: false);
+            CanHideCommandBarFlyoutInFlyoutClosedHandler(useAnimations: true);
+        }
+
+        private void CanHideCommandBarFlyoutInFlyoutClosedHandler(bool useAnimations)
+        {
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                ToggleButton useAnimatedCommandBarFlyoutCommandBarStyleCheckBox = FindElement.ById<ToggleButton>("UseAnimatedCommandBarFlyoutCommandBarStyleCheckBox");
+                Verify.IsNotNull(useAnimatedCommandBarFlyoutCommandBarStyleCheckBox);
+
+                if (useAnimations && useAnimatedCommandBarFlyoutCommandBarStyleCheckBox.ToggleState == ToggleState.Off)
+                {
+                    Log.Comment("Using DefaultCommandBarFlyoutCommandBarStyle with animations.");
+                    useAnimatedCommandBarFlyoutCommandBarStyleCheckBox.Toggle();
+                    Wait.ForIdle();
+                }
+
+                ToggleButton hideFlyoutOnFlyoutClosedCheckBox = FindElement.ById<ToggleButton>("HideFlyoutOnFlyoutClosedCheckBox");
+                Verify.IsNotNull(hideFlyoutOnFlyoutClosedCheckBox);
+
+                if (hideFlyoutOnFlyoutClosedCheckBox.ToggleState == ToggleState.Off)
+                {
+                    Log.Comment("Hiding CommandBarFlyout in FlyoutClosed handler.");
+                    hideFlyoutOnFlyoutClosedCheckBox.Toggle();
+                    Wait.ForIdle();
+                }
+
+                Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with AlwaysExpanded");
+                ToggleButton isFlyoutOpenCheckBox = FindElement.ById<ToggleButton>("IsFlyoutOpenCheckBox");
+
+                Log.Comment("Invoking button 'Show CommandBarFlyout with AlwaysExpanded' to show the Flyout9 command bar.");
+                showCommandBarFlyoutButton.Invoke();
+                Wait.ForIdle();
+
+                Log.Comment("Checking command bar opened successfully.");
+                Verify.AreEqual(ToggleState.On, isFlyoutOpenCheckBox.ToggleState);
+
+                using (var waiter = isFlyoutOpenCheckBox.GetToggledWaiter())
+                {
+                    Log.Comment("Invoking the first secondary command to close the CommandBarFlyout.");
+                    setup.ExecuteAndWaitForEvents(() => FindElement.ById<Button>("UndoButton9").Invoke(), new List<string>() { "UndoButton9 clicked" });
+                    waiter.Wait();
+                }
+                Wait.ForIdle();
+
+                Log.Comment("Checking command bar closed successfully.");
+                Verify.AreEqual(ToggleState.Off, isFlyoutOpenCheckBox.ToggleState);
             }
         }
     }

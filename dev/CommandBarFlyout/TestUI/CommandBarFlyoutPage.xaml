@@ -5,10 +5,17 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:muxcp="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:contract13Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,13)"
     mc:Ignorable="d">
+
+    <local:TestPage.Resources>
+        <Style x:Key="animatedCommandBarFlyoutCommandBarStyle" TargetType="muxcp:CommandBarFlyoutCommandBar" BasedOn="{StaticResource DefaultCommandBarFlyoutCommandBarStyle}">
+            <Setter Property="Background" Value="Gold" />
+        </Style>
+    </local:TestPage.Resources>
 
     <Grid>
         <Grid.Background>
@@ -255,6 +262,8 @@
                     <TextBox x:Name="DynamicWidthChangeCountTextBox" Text="4" Margin="5,0,0,0" AutomationProperties.AutomationId="DynamicWidthChangeCountTextBox"/>
                 </StackPanel>
                 <CheckBox x:Name="ClearSecondaryCommandsCheckBox" Content="Clear Secondary Commands Asynchronously?" AutomationProperties.AutomationId="ClearSecondaryCommandsCheckBox" Margin="10,0,10,2" />
+                <CheckBox x:Name="UseAnimatedCommandBarFlyoutCommandBarStyleCheckBox" Content="Use DefaultCommandBarFlyoutCommandBarStyle with animations?" AutomationProperties.AutomationId="UseAnimatedCommandBarFlyoutCommandBarStyleCheckBox" Margin="10,0,10,2" />
+                <CheckBox x:Name="HideFlyoutOnFlyoutClosedCheckBox" Content="Hide flyout in FlyoutClosed handler?" AutomationProperties.AutomationId="HideFlyoutOnFlyoutClosedCheckBox" Margin="10,0,10,2" />
             </StackPanel>
         </ScrollViewer>
         <StackPanel Grid.Row="1">
