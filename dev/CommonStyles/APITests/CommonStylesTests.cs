@@ -475,6 +475,86 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void VerifyAppBarButtonChevronMarginsDoNotCollide()
+        {
+            StackPanel root = null;
+            ManualResetEvent rootLoadedEvent = new ManualResetEvent(false);
+            CommandBar commandBar = null;
+            ManualResetEvent commandBarSizeChangedEvent = new ManualResetEvent(false);
+            AppBarButton appBarButton = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                root = (StackPanel)XamlReader.Load(
+                    @"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' 
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> 
+                            <StackPanel.Resources>
+                                <Visibility x:Key='AppBarButtonHasFlyoutChevronVisibility'>Visible</Visibility>
+                                <x:String x:Key='AppBarButtonFlyoutGlyph'>&#xE972;</x:String>
+                                <Thickness x:Key='AppBarButtonSubItemChevronMargin'>-22,20,12,0</Thickness>
+                                <Thickness x:Key='AppBarButtonSubItemChevronLabelOnRightMargin'>-6,20,12,0</Thickness>
+                                <MenuFlyout x:Key='MenuFlyout' Placement='Bottom'>
+                                    <MenuFlyoutItem Text='Item 1'/>
+                                    <MenuFlyoutItem Text='Item 2'/>
+                                    <MenuFlyoutItem Text='Item 3'/>
+                                </MenuFlyout>
+                            </StackPanel.Resources>
+                            <CommandBar x:Name='CommandBar' DefaultLabelPosition='Right'>
+                                <AppBarButton Label='Add' Icon='Add' Flyout='{StaticResource MenuFlyout}'/>
+                                <AppBarSeparator />
+                                <AppBarButton x:Name='LastAppBarButton' Label='Add' Icon='Add' Flyout='{StaticResource MenuFlyout}'/>
+                                <AppBarSeparator />
+                                <CommandBar.SecondaryCommands>
+                                    <AppBarButton Icon='Add' Label='Add' />
+                                </CommandBar.SecondaryCommands>
+                            </CommandBar>
+                      </StackPanel>");
+
+                root.Loaded += (sender, args) => { rootLoadedEvent.Set(); };
+                commandBar = (CommandBar)root.FindName("CommandBar");
+                commandBar.SizeChanged += (sender, args) => { commandBarSizeChangedEvent.Set(); };
+                appBarButton = (AppBarButton)root.FindName("LastAppBarButton");
+
+                Content = root;
+                Content.UpdateLayout();
+            });
+
+            rootLoadedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            FontIcon subItemChevron = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                subItemChevron = (FontIcon)GetVisualChildByName(appBarButton, "SubItemChevron");
+
+                Verify.AreEqual((Thickness)root.Resources["AppBarButtonSubItemChevronLabelOnRightMargin"], subItemChevron.Margin);
+
+                commandBarSizeChangedEvent.Reset();
+                commandBar.Width = 0;
+            });
+
+            commandBarSizeChangedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                commandBarSizeChangedEvent.Reset();
+                commandBar.Width = double.NaN;
+            });
+
+            commandBarSizeChangedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                subItemChevron = (FontIcon)GetVisualChildByName(appBarButton, "SubItemChevron");
+
+                Verify.AreEqual((Thickness)root.Resources["AppBarButtonSubItemChevronLabelOnRightMargin"], subItemChevron.Margin);
+            });
+        }
+
         private string XamlStringForControl(string controlName)
         {
             return $@"<Grid Width='400' Height='400' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> 
