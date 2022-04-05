@@ -249,7 +249,10 @@ CommandBarFlyout::CommandBarFlyout()
                 {
                     args.Cancel(true);
 
+                    const winrt::CommandBarFlyout commandBarFlyout = *this;
+
                     commandBar->PlayCloseAnimation(
+                        winrt::make_weak(commandBarFlyout),
                         [this]()
                         {
                             m_isClosingAfterCloseAnimation = true;

@@ -403,17 +403,23 @@ bool CommandBarFlyoutCommandBar::HasCloseAnimation()
 }
 
 void CommandBarFlyoutCommandBar::PlayCloseAnimation(
+    const winrt::weak_ref<winrt::CommandBarFlyout>& weakCommandBarFlyout,
     std::function<void()> onCompleteFunc)
 {
+    COMMANDBARFLYOUT_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
+
     if (auto closingStoryboard = m_closingStoryboard.get())
     {
         if (closingStoryboard.GetCurrentState() != winrt::ClockState::Active)
         {
             m_closingStoryboardCompletedCallbackRevoker = closingStoryboard.Completed(winrt::auto_revoke,
             {
-                [this, onCompleteFunc](auto const&, auto const&)
+                [this, weakCommandBarFlyout, onCompleteFunc](auto const&, auto const&)
                 {
-                    onCompleteFunc();
+                    if (weakCommandBarFlyout.get())
+                    {
+                        onCompleteFunc();
+                    }
                 }
             });
 
