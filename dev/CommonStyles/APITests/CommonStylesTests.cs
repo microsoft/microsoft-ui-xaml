@@ -549,8 +549,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                subItemChevron = (FontIcon)GetVisualChildByName(appBarButton, "SubItemChevron");
-
                 Verify.AreEqual((Thickness)root.Resources["AppBarButtonSubItemChevronLabelOnRightMargin"], subItemChevron.Margin);
             });
         }
