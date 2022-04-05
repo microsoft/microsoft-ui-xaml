@@ -448,9 +448,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> 
                             <StackPanel.Resources>
                                 <Visibility x:Key='AppBarButtonHasFlyoutChevronVisibility'>Collapsed</Visibility>
+                                <SolidColorBrush x:Key='AppBarButtonSubItemChevronForeground' Color='Red' />
                                 <x:String x:Key='AppBarButtonFlyoutGlyph'>&#xE972;</x:String>
                                 <x:Double x:Key='AppBarButtonSubItemChevronFontSize'>12</x:Double>
-                                <SolidColorBrush x:Key='AppBarButtonSubItemChevronForeground' Color='Red' />
+                                <Thickness x:Key='AppBarButtonSubItemChevronMargin'>-24,20,12,0</Thickness>
+                                <x:String x:Key='AppBarButtonOverflowFlyoutGlyph'>&#xE973;</x:String>
+                                <x:Double x:Key='AppBarButtonSecondarySubItemChevronFontSize'>14</x:Double>
+                                <Thickness x:Key='AppBarButtonSecondarySubItemChevronMargin'>-25,20,12,0</Thickness>
                             </StackPanel.Resources>
                             <AppBarButton x:Name='TestAppBarButton'/>
                       </StackPanel>");
@@ -466,12 +470,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
+                Panel subItemChevronPanel = (Panel)GetVisualChildByName(appBarButton, "SubItemChevronPanel");
                 FontIcon subItemChevron = (FontIcon)GetVisualChildByName(appBarButton, "SubItemChevron");
+                FontIcon overflowSubItemChevron = (FontIcon)GetVisualChildByName(appBarButton, "OverflowSubItemChevron");
 
-                Verify.AreEqual((Visibility)root.Resources["AppBarButtonHasFlyoutChevronVisibility"], subItemChevron.Visibility);
+                Verify.AreEqual((Visibility)root.Resources["AppBarButtonHasFlyoutChevronVisibility"], subItemChevronPanel.Visibility);
+
                 Verify.AreEqual((string)root.Resources["AppBarButtonFlyoutGlyph"], subItemChevron.Glyph);
                 Verify.AreEqual((double)root.Resources["AppBarButtonSubItemChevronFontSize"], subItemChevron.FontSize);
                 Verify.AreEqual(((SolidColorBrush)root.Resources["AppBarButtonSubItemChevronForeground"]).Color, ((SolidColorBrush)subItemChevron.Foreground).Color);
+                Verify.AreEqual((Thickness)root.Resources["AppBarButtonSubItemChevronMargin"], subItemChevron.Margin);
+
+                Verify.AreEqual((string)root.Resources["AppBarButtonOverflowFlyoutGlyph"], overflowSubItemChevron.Glyph);
+                Verify.AreEqual((double)root.Resources["AppBarButtonSecondarySubItemChevronFontSize"], overflowSubItemChevron.FontSize);
+                Verify.AreEqual(((SolidColorBrush)root.Resources["AppBarButtonSubItemChevronForeground"]).Color, ((SolidColorBrush)overflowSubItemChevron.Foreground).Color);
+                Verify.AreEqual((Thickness)root.Resources["AppBarButtonSecondarySubItemChevronMargin"], overflowSubItemChevron.Margin);
             });
         }
 

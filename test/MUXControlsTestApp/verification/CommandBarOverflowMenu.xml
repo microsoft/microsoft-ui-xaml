@@ -11,12 +11,13 @@
     MinWidth=160
     Name=OverflowContentRoot
     Padding=0,0,0,0
-    RenderSize=160,173
+    RenderSize=160,170
     Visibility=Visible
   [Windows.UI.Xaml.Controls.CommandBarOverflowPresenter]
-      Background=#FFF2F2F2
-      BorderBrush=#FFCCCCCC
+      Background=Windows.UI.Xaml.Media.AcrylicBrush
+      BorderBrush=#FF000000
       BorderThickness=0,0,0,0
+      CornerRadius=8,8,8,8
       FocusVisualPrimaryBrush=#E4000000
       FocusVisualPrimaryThickness=2,2,2,2
       FocusVisualSecondaryBrush=#B3FFFFFF
@@ -25,11 +26,11 @@
       Margin=0,0,0,0
       Name=SecondaryItemsControl
       Padding=0,0,0,0
-      RenderSize=160,109
+      RenderSize=160,106
       Visibility=Visible
     [Windows.UI.Xaml.Controls.Grid]
-        Background=#FFF2F2F2
-        BorderBrush=#FFCCCCCC
+        Background=Windows.UI.Xaml.Media.AcrylicBrush
+        BorderBrush=#FF000000
         BorderThickness=1,1,1,1
         CornerRadius=8,8,8,8
         FocusVisualPrimaryBrush=#E4000000
@@ -39,12 +40,13 @@
         Margin=0,0,0,0
         Name=LayoutRoot
         Padding=0,0,0,0
-        RenderSize=160,109
+        RenderSize=160,106
         Visibility=Visible
       [Windows.UI.Xaml.Controls.ScrollViewer]
           Background=#00FFFFFF
           BorderBrush=#00FFFFFF
           BorderThickness=0,0,0,0
+          CornerRadius=0,0,0,0
           FocusVisualPrimaryBrush=#E4000000
           FocusVisualPrimaryThickness=2,2,2,2
           FocusVisualSecondaryBrush=#B3FFFFFF
@@ -52,7 +54,7 @@
           Foreground=#E4000000
           Margin=0,0,0,0
           Padding=0,0,0,0
-          RenderSize=158,107
+          RenderSize=158,104
           Visibility=Visible
         [Windows.UI.Xaml.Controls.Border]
             Background=[NULL]
@@ -66,7 +68,7 @@
             Margin=0,0,0,0
             Name=Root
             Padding=0,0,0,0
-            RenderSize=158,107
+            RenderSize=158,104
             Visibility=Visible
           [Windows.UI.Xaml.Controls.Grid]
               Background=#00FFFFFF
@@ -79,7 +81,7 @@
               FocusVisualSecondaryThickness=1,1,1,1
               Margin=0,0,0,0
               Padding=0,0,0,0
-              RenderSize=158,107
+              RenderSize=158,104
               Visibility=Visible
             [Windows.UI.Xaml.Controls.ScrollContentPresenter]
                 Background=[NULL]
@@ -94,7 +96,7 @@
                 Margin=0,0,0,0
                 Name=ScrollContentPresenter
                 Padding=0,0,0,0
-                RenderSize=158,107
+                RenderSize=158,104
                 Visibility=Visible
               [Windows.UI.Xaml.Controls.ItemsPresenter]
                   FocusVisualPrimaryBrush=#E4000000
@@ -104,12 +106,13 @@
                   Margin=0,4,0,4
                   Name=ItemsPresenter
                   Padding=0,0,0,0
-                  RenderSize=158,99
+                  RenderSize=158,96
                   Visibility=Visible
                 [Windows.UI.Xaml.Controls.ContentControl]
                     Background=[NULL]
                     BorderBrush=[NULL]
                     BorderThickness=0,0,0,0
+                    CornerRadius=0,0,0,0
                     FocusVisualPrimaryBrush=#E4000000
                     FocusVisualPrimaryThickness=2,2,2,2
                     FocusVisualSecondaryBrush=#B3FFFFFF
@@ -130,12 +133,13 @@
                     FocusVisualSecondaryThickness=1,1,1,1
                     Margin=0,0,0,0
                     Padding=0,0,0,0
-                    RenderSize=158,99
+                    RenderSize=158,96
                     Visibility=Visible
                   [Windows.UI.Xaml.Controls.AppBarButton]
                       Background=#00FFFFFF
                       BorderBrush=#00FFFFFF
                       BorderThickness=0,0,0,0
+                      CornerRadius=4,4,4,4
                       FocusVisualPrimaryBrush=#E4000000
                       FocusVisualPrimaryThickness=2,2,2,2
                       FocusVisualSecondaryBrush=#B3FFFFFF
@@ -143,7 +147,7 @@
                       Foreground=#E4000000
                       Margin=0,0,0,0
                       Padding=0,0,0,0
-                      RenderSize=158,33
+                      RenderSize=158,32
                       Visibility=Visible
                     [Windows.UI.Xaml.Controls.Grid]
                         Background=#00FFFFFF
@@ -157,13 +161,13 @@
                         Margin=0,0,0,0
                         Name=Root
                         Padding=0,0,0,0
-                        RenderSize=158,33
+                        RenderSize=158,32
                         Visibility=Visible
                       [Windows.UI.Xaml.Controls.Border]
                           Background=#00FFFFFF
                           BorderBrush=#00FFFFFF
                           BorderThickness=0,0,0,0
-                          CornerRadius=0,0,0,0
+                          CornerRadius=4,4,4,4
                           FocusVisualPrimaryBrush=#E4000000
                           FocusVisualPrimaryThickness=2,2,2,2
                           FocusVisualSecondaryBrush=#B3FFFFFF
@@ -171,7 +175,7 @@
                           Margin=4,0,4,0
                           Name=AppBarButtonInnerBorder
                           Padding=0,0,0,0
-                          RenderSize=150,33
+                          RenderSize=150,32
                           Visibility=Visible
                       [Windows.UI.Xaml.Controls.Grid]
                           Background=[NULL]
@@ -185,7 +189,7 @@
                           Margin=0,0,0,0
                           Name=ContentRoot
                           Padding=0,0,0,0
-                          RenderSize=158,33
+                          RenderSize=158,32
                           Visibility=Visible
                         [Windows.UI.Xaml.Controls.Viewbox]
                             FocusVisualPrimaryBrush=#E4000000
@@ -245,22 +249,58 @@
                             Margin=38,0,12,0
                             Name=OverflowTextLabel
                             Padding=0,5,0,8
-                            RenderSize=108,33
+                            RenderSize=108,32
                             Visibility=Visible
-                        [Windows.UI.Xaml.Controls.FontIcon]
+                        [Windows.UI.Xaml.Controls.TextBlock]
                             FocusVisualPrimaryBrush=#E4000000
                             FocusVisualPrimaryThickness=2,2,2,2
                             FocusVisualSecondaryBrush=#B3FFFFFF
                             FocusVisualSecondaryThickness=1,1,1,1
                             Foreground=#9E000000
-                            Margin=-23,20,12,0
-                            Name=SubItemChevron
+                            Margin=24,0,12,0
+                            Name=KeyboardAcceleratorTextLabel
+                            Padding=0,0,0,0
                             RenderSize=0,0
                             Visibility=Collapsed
+                        [Windows.UI.Xaml.Controls.Grid]
+                            Background=[NULL]
+                            BorderBrush=[NULL]
+                            BorderThickness=0,0,0,0
+                            CornerRadius=0,0,0,0
+                            FocusVisualPrimaryBrush=#E4000000
+                            FocusVisualPrimaryThickness=2,2,2,2
+                            FocusVisualSecondaryBrush=#B3FFFFFF
+                            FocusVisualSecondaryThickness=1,1,1,1
+                            Margin=0,0,0,0
+                            Name=SubItemChevronPanel
+                            Padding=0,0,0,0
+                            RenderSize=0,0
+                            Visibility=Collapsed
+                          [Windows.UI.Xaml.Controls.FontIcon]
+                              FocusVisualPrimaryBrush=#E4000000
+                              FocusVisualPrimaryThickness=2,2,2,2
+                              FocusVisualSecondaryBrush=#B3FFFFFF
+                              FocusVisualSecondaryThickness=1,1,1,1
+                              Foreground=#9E000000
+                              Margin=-23,20,12,0
+                              Name=SubItemChevron
+                              RenderSize=0,0
+                              Visibility=Visible
+                          [Windows.UI.Xaml.Controls.FontIcon]
+                              FocusVisualPrimaryBrush=#E4000000
+                              FocusVisualPrimaryThickness=2,2,2,2
+                              FocusVisualSecondaryBrush=#B3FFFFFF
+                              FocusVisualSecondaryThickness=1,1,1,1
+                              Foreground=#9E000000
+                              Margin=0,0,16,0
+                              Name=OverflowSubItemChevron
+                              RenderSize=0,0
+                              Visibility=Collapsed
                   [Windows.UI.Xaml.Controls.AppBarButton]
                       Background=#00FFFFFF
                       BorderBrush=#00FFFFFF
                       BorderThickness=0,0,0,0
+                      CornerRadius=4,4,4,4
                       FocusVisualPrimaryBrush=#E4000000
                       FocusVisualPrimaryThickness=2,2,2,2
                       FocusVisualSecondaryBrush=#B3FFFFFF
@@ -268,7 +308,7 @@
                       Foreground=#E4000000
                       Margin=0,0,0,0
                       Padding=0,0,0,0
-                      RenderSize=158,33
+                      RenderSize=158,32
                       Visibility=Visible
                     [Windows.UI.Xaml.Controls.Grid]
                         Background=#00FFFFFF
@@ -282,13 +322,13 @@
                         Margin=0,0,0,0
                         Name=Root
                         Padding=0,0,0,0
-                        RenderSize=158,33
+                        RenderSize=158,32
                         Visibility=Visible
                       [Windows.UI.Xaml.Controls.Border]
                           Background=#00FFFFFF
                           BorderBrush=#00FFFFFF
                           BorderThickness=0,0,0,0
-                          CornerRadius=0,0,0,0
+                          CornerRadius=4,4,4,4
                           FocusVisualPrimaryBrush=#E4000000
                           FocusVisualPrimaryThickness=2,2,2,2
                           FocusVisualSecondaryBrush=#B3FFFFFF
@@ -296,7 +336,7 @@
                           Margin=4,0,4,0
                           Name=AppBarButtonInnerBorder
                           Padding=0,0,0,0
-                          RenderSize=150,33
+                          RenderSize=150,32
                           Visibility=Visible
                       [Windows.UI.Xaml.Controls.Grid]
                           Background=[NULL]
@@ -310,7 +350,7 @@
                           Margin=0,0,0,0
                           Name=ContentRoot
                           Padding=0,0,0,0
-                          RenderSize=158,33
+                          RenderSize=158,32
                           Visibility=Visible
                         [Windows.UI.Xaml.Controls.Viewbox]
                             FocusVisualPrimaryBrush=#E4000000
@@ -370,22 +410,58 @@
                             Margin=38,0,12,0
                             Name=OverflowTextLabel
                             Padding=0,5,0,8
-                            RenderSize=108,33
+                            RenderSize=108,32
                             Visibility=Visible
-                        [Windows.UI.Xaml.Controls.FontIcon]
+                        [Windows.UI.Xaml.Controls.TextBlock]
                             FocusVisualPrimaryBrush=#E4000000
                             FocusVisualPrimaryThickness=2,2,2,2
                             FocusVisualSecondaryBrush=#B3FFFFFF
                             FocusVisualSecondaryThickness=1,1,1,1
                             Foreground=#9E000000
-                            Margin=-23,20,12,0
-                            Name=SubItemChevron
+                            Margin=24,0,12,0
+                            Name=KeyboardAcceleratorTextLabel
+                            Padding=0,0,0,0
                             RenderSize=0,0
                             Visibility=Collapsed
+                        [Windows.UI.Xaml.Controls.Grid]
+                            Background=[NULL]
+                            BorderBrush=[NULL]
+                            BorderThickness=0,0,0,0
+                            CornerRadius=0,0,0,0
+                            FocusVisualPrimaryBrush=#E4000000
+                            FocusVisualPrimaryThickness=2,2,2,2
+                            FocusVisualSecondaryBrush=#B3FFFFFF
+                            FocusVisualSecondaryThickness=1,1,1,1
+                            Margin=0,0,0,0
+                            Name=SubItemChevronPanel
+                            Padding=0,0,0,0
+                            RenderSize=0,0
+                            Visibility=Collapsed
+                          [Windows.UI.Xaml.Controls.FontIcon]
+                              FocusVisualPrimaryBrush=#E4000000
+                              FocusVisualPrimaryThickness=2,2,2,2
+                              FocusVisualSecondaryBrush=#B3FFFFFF
+                              FocusVisualSecondaryThickness=1,1,1,1
+                              Foreground=#9E000000
+                              Margin=-23,20,12,0
+                              Name=SubItemChevron
+                              RenderSize=0,0
+                              Visibility=Visible
+                          [Windows.UI.Xaml.Controls.FontIcon]
+                              FocusVisualPrimaryBrush=#E4000000
+                              FocusVisualPrimaryThickness=2,2,2,2
+                              FocusVisualSecondaryBrush=#B3FFFFFF
+                              FocusVisualSecondaryThickness=1,1,1,1
+                              Foreground=#9E000000
+                              Margin=0,0,16,0
+                              Name=OverflowSubItemChevron
+                              RenderSize=0,0
+                              Visibility=Collapsed
                   [Windows.UI.Xaml.Controls.AppBarToggleButton]
                       Background=#00FFFFFF
                       BorderBrush=#00FFFFFF
                       BorderThickness=1,1,1,1
+                      CornerRadius=4,4,4,4
                       FocusVisualPrimaryBrush=#E4000000
                       FocusVisualPrimaryThickness=2,2,2,2
                       FocusVisualSecondaryBrush=#B3FFFFFF
@@ -393,7 +469,7 @@
                       Foreground=#E4000000
                       Margin=0,0,0,0
                       Padding=0,0,0,0
-                      RenderSize=158,33
+                      RenderSize=158,32
                       Visibility=Visible
                     [Windows.UI.Xaml.Controls.Grid]
                         Background=#00FFFFFF
@@ -407,13 +483,13 @@
                         Margin=0,0,0,0
                         Name=Root
                         Padding=0,0,0,0
-                        RenderSize=158,33
+                        RenderSize=158,32
                         Visibility=Visible
                       [Windows.UI.Xaml.Controls.Border]
                           Background=#00FFFFFF
                           BorderBrush=#00FFFFFF
                           BorderThickness=1,1,1,1
-                          CornerRadius=0,0,0,0
+                          CornerRadius=4,4,4,4
                           FocusVisualPrimaryBrush=#E4000000
                           FocusVisualPrimaryThickness=2,2,2,2
                           FocusVisualSecondaryBrush=#B3FFFFFF
@@ -421,7 +497,7 @@
                           Margin=4,0,4,0
                           Name=AppBarToggleButtonInnerBorder
                           Padding=0,0,0,0
-                          RenderSize=150,33
+                          RenderSize=150,32
                           Visibility=Visible
                       [Windows.UI.Xaml.Controls.Grid]
                           Background=[NULL]
@@ -435,7 +511,7 @@
                           Margin=0,0,0,0
                           Name=ContentRoot
                           Padding=0,0,0,0
-                          RenderSize=158,33
+                          RenderSize=158,32
                           Visibility=Visible
                         [Windows.UI.Xaml.Controls.TextBlock]
                             FocusVisualPrimaryBrush=#E4000000
@@ -508,12 +584,24 @@
                             Margin=38,0,12,0
                             Name=OverflowTextLabel
                             Padding=0,5,0,8
-                            RenderSize=108,33
+                            RenderSize=108,32
                             Visibility=Visible
+                        [Windows.UI.Xaml.Controls.TextBlock]
+                            FocusVisualPrimaryBrush=#E4000000
+                            FocusVisualPrimaryThickness=2,2,2,2
+                            FocusVisualSecondaryBrush=#B3FFFFFF
+                            FocusVisualSecondaryThickness=1,1,1,1
+                            Foreground=#9E000000
+                            Margin=24,0,12,0
+                            Name=KeyboardAcceleratorTextLabel
+                            Padding=0,0,0,0
+                            RenderSize=0,0
+                            Visibility=Collapsed
                 [Windows.UI.Xaml.Controls.ContentControl]
                     Background=[NULL]
                     BorderBrush=[NULL]
                     BorderThickness=0,0,0,0
+                    CornerRadius=0,0,0,0
                     FocusVisualPrimaryBrush=#E4000000
                     FocusVisualPrimaryThickness=2,2,2,2
                     FocusVisualSecondaryBrush=#B3FFFFFF
@@ -534,7 +622,7 @@
                 FocusVisualSecondaryThickness=1,1,1,1
                 Margin=0,0,0,0
                 Padding=0,0,0,0
-                RenderSize=158,107
+                RenderSize=158,104
                 Visibility=Visible
             [Windows.UI.Xaml.Controls.Grid]
                 Background=[NULL]
@@ -553,6 +641,7 @@
                   Background=#00FFFFFF
                   BorderBrush=#00FFFFFF
                   BorderThickness=0,0,0,0
+                  CornerRadius=3,3,3,3
                   FocusVisualPrimaryBrush=#E4000000
                   FocusVisualPrimaryThickness=2,2,2,2
                   FocusVisualSecondaryBrush=#B3FFFFFF
@@ -582,6 +671,7 @@
                   Background=#00FFFFFF
                   BorderBrush=#00FFFFFF
                   BorderThickness=0,0,0,0
+                  CornerRadius=3,3,3,3
                   FocusVisualPrimaryBrush=#E4000000
                   FocusVisualPrimaryThickness=2,2,2,2
                   FocusVisualSecondaryBrush=#B3FFFFFF
