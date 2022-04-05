@@ -14,11 +14,14 @@ using Windows.UI.Xaml.Input;
 using MUXControlsTestApp.Utilities;
 
 using CommandBarFlyout = Microsoft.UI.Xaml.Controls.CommandBarFlyout;
+using CommandBarFlyoutCommandBar = Microsoft.UI.Xaml.Controls.Primitives.CommandBarFlyoutCommandBar;
 
 namespace MUXControlsTestApp
 {
     public sealed partial class CommandBarFlyoutPage : TestPage
     {
+        private Style animatedCommandBarFlyoutCommandBarStyle;
+
         private DispatcherTimer clearSecondaryCommandsTimer = new DispatcherTimer();
         private CommandBarFlyout clearSecondaryCommandsFlyout;
 
@@ -43,6 +46,8 @@ namespace MUXControlsTestApp
         public CommandBarFlyoutPage()
         {
             this.InitializeComponent();
+
+            animatedCommandBarFlyoutCommandBarStyle = this.Resources["animatedCommandBarFlyoutCommandBarStyle"] as Style;
 
             dynamicLabelTimer.Tick += DynamicLabelTimer_Tick;
             dynamicVisibilityTimer.Tick += DynamicVisibilityTimer_Tick;
@@ -126,18 +131,36 @@ namespace MUXControlsTestApp
 
             CommandBarFlyout commandBarFlyout = sender as CommandBarFlyout;
 
-            if (commandBarFlyout != null && (bool)UseOverflowContentRootDynamicWidthCheckBox.IsChecked && commandBarFlyout.SecondaryCommands != null && commandBarFlyout.SecondaryCommands.Count > 0)
+            if (commandBarFlyout != null)
             {
-                FrameworkElement secondaryCommandAsFE = commandBarFlyout.SecondaryCommands[0] as FrameworkElement;
-                FrameworkElement overflowContentRoot = secondaryCommandAsFE.FindVisualParentByName("OverflowContentRoot");
+                if ((bool)UseOverflowContentRootDynamicWidthCheckBox.IsChecked && commandBarFlyout.SecondaryCommands != null && commandBarFlyout.SecondaryCommands.Count > 0)
+                {
+                    FrameworkElement secondaryCommandAsFE = commandBarFlyout.SecondaryCommands[0] as FrameworkElement;
+                    FrameworkElement overflowContentRoot = secondaryCommandAsFE.FindVisualParentByName("OverflowContentRoot");
 
-                if (overflowContentRoot == null)
-                {
-                    secondaryCommandAsFE.Loaded += SecondaryCommandAsFE_Loaded;
+                    if (overflowContentRoot == null)
+                    {
+                        secondaryCommandAsFE.Loaded += SecondaryCommandAsFE_Loaded;
+                    }
+                    else
+                    {
+                        SetDynamicOverflowContentRoot(overflowContentRoot);
+                    }
                 }
-                else
+
+                if (animatedCommandBarFlyoutCommandBarStyle != null && (bool)UseAnimatedCommandBarFlyoutCommandBarStyleCheckBox.IsChecked && commandBarFlyout.PrimaryCommands != null && commandBarFlyout.PrimaryCommands.Count > 0)
                 {
-                    SetDynamicOverflowContentRoot(overflowContentRoot);
+                    FrameworkElement primaryCommandAsFE = commandBarFlyout.PrimaryCommands[0] as FrameworkElement;
+
+                    if (primaryCommandAsFE != null)
+                    {
+                        var commandBarFlyoutCommandBar = primaryCommandAsFE.FindVisualParentByType<CommandBarFlyoutCommandBar>();
+
+                        if (commandBarFlyoutCommandBar != null)
+                        {
+                            commandBarFlyoutCommandBar.Style = animatedCommandBarFlyoutCommandBarStyle;
+                        }
+                    }
                 }
             }
         }
@@ -160,6 +183,16 @@ namespace MUXControlsTestApp
             SetDynamicVisibilitySecondaryCommand(null);
             SetDynamicOverflowContentRoot(null);
             SetClearSecondaryCommandsFlyout(null);
+
+            if ((bool)HideFlyoutOnFlyoutClosedCheckBox.IsChecked)
+            {
+                var commandBarFlyout = sender as CommandBarFlyout;
+
+                if (commandBarFlyout != null)
+                {
+                    commandBarFlyout.Hide();
+                }
+            }
         }
 
         private void RecordEvent(string eventString)
