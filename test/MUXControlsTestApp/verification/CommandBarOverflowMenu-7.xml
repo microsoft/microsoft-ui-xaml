@@ -262,16 +262,40 @@
                             Padding=0,0,0,0
                             RenderSize=0,0
                             Visibility=Collapsed
-                        [Windows.UI.Xaml.Controls.FontIcon]
+                        [Windows.UI.Xaml.Controls.Grid]
+                            Background=[NULL]
+                            BorderBrush=[NULL]
+                            BorderThickness=0,0,0,0
+                            CornerRadius=0,0,0,0
                             FocusVisualPrimaryBrush=#E4000000
                             FocusVisualPrimaryThickness=2,2,2,2
                             FocusVisualSecondaryBrush=#B3FFFFFF
                             FocusVisualSecondaryThickness=1,1,1,1
-                            Foreground=#9E000000
-                            Margin=-23,20,12,0
-                            Name=SubItemChevron
+                            Margin=0,0,0,0
+                            Name=SubItemChevronPanel
+                            Padding=0,0,0,0
                             RenderSize=0,0
                             Visibility=Collapsed
+                          [Windows.UI.Xaml.Controls.FontIcon]
+                              FocusVisualPrimaryBrush=#E4000000
+                              FocusVisualPrimaryThickness=2,2,2,2
+                              FocusVisualSecondaryBrush=#B3FFFFFF
+                              FocusVisualSecondaryThickness=1,1,1,1
+                              Foreground=#9E000000
+                              Margin=-23,20,12,0
+                              Name=SubItemChevron
+                              RenderSize=0,0
+                              Visibility=Visible
+                          [Windows.UI.Xaml.Controls.FontIcon]
+                              FocusVisualPrimaryBrush=#E4000000
+                              FocusVisualPrimaryThickness=2,2,2,2
+                              FocusVisualSecondaryBrush=#B3FFFFFF
+                              FocusVisualSecondaryThickness=1,1,1,1
+                              Foreground=#9E000000
+                              Margin=0,0,16,0
+                              Name=OverflowSubItemChevron
+                              RenderSize=0,0
+                              Visibility=Collapsed
                   [Windows.UI.Xaml.Controls.AppBarButton]
                       Background=#00FFFFFF
                       BorderBrush=#00FFFFFF
@@ -399,16 +423,40 @@
                             Padding=0,0,0,0
                             RenderSize=0,0
                             Visibility=Collapsed
-                        [Windows.UI.Xaml.Controls.FontIcon]
+                        [Windows.UI.Xaml.Controls.Grid]
+                            Background=[NULL]
+                            BorderBrush=[NULL]
+                            BorderThickness=0,0,0,0
+                            CornerRadius=0,0,0,0
                             FocusVisualPrimaryBrush=#E4000000
                             FocusVisualPrimaryThickness=2,2,2,2
                             FocusVisualSecondaryBrush=#B3FFFFFF
                             FocusVisualSecondaryThickness=1,1,1,1
-                            Foreground=#9E000000
-                            Margin=-23,20,12,0
-                            Name=SubItemChevron
+                            Margin=0,0,0,0
+                            Name=SubItemChevronPanel
+                            Padding=0,0,0,0
                             RenderSize=0,0
                             Visibility=Collapsed
+                          [Windows.UI.Xaml.Controls.FontIcon]
+                              FocusVisualPrimaryBrush=#E4000000
+                              FocusVisualPrimaryThickness=2,2,2,2
+                              FocusVisualSecondaryBrush=#B3FFFFFF
+                              FocusVisualSecondaryThickness=1,1,1,1
+                              Foreground=#9E000000
+                              Margin=-23,20,12,0
+                              Name=SubItemChevron
+                              RenderSize=0,0
+                              Visibility=Visible
+                          [Windows.UI.Xaml.Controls.FontIcon]
+                              FocusVisualPrimaryBrush=#E4000000
+                              FocusVisualPrimaryThickness=2,2,2,2
+                              FocusVisualSecondaryBrush=#B3FFFFFF
+                              FocusVisualSecondaryThickness=1,1,1,1
+                              Foreground=#9E000000
+                              Margin=0,0,16,0
+                              Name=OverflowSubItemChevron
+                              RenderSize=0,0
+                              Visibility=Collapsed
                   [Windows.UI.Xaml.Controls.AppBarToggleButton]
                       Background=#00FFFFFF
                       BorderBrush=#00FFFFFF
