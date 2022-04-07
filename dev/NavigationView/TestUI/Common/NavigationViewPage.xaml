@@ -58,6 +58,7 @@
                 </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem x:Name="IntegerItem" AutomationProperties.Name="Integer" Icon="Accept"/>
                 <muxcontrols:NavigationViewItemSeparator />
+                <muxcontrols:NavigationViewItem x:Name="AcceptItem" AutomationProperties.Name="AcceptItem" Icon="Accept" Content="Accept"/>
                 <muxcontrols:NavigationViewItem x:Name="HasChildItem" AutomationProperties.Name="HasChildItem" Content="Item with child">
                     <muxcontrols:NavigationViewItem.MenuItems>
                         <muxcontrols:NavigationViewItem x:Name="ChildItem" AutomationProperties.Name="ChildItem" Content="Child Item Content" Icon="Document" />
