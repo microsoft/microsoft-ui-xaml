@@ -164,6 +164,11 @@ void MenuBarItem::OnMenuBarItemKeyDown( winrt::IInspectable const& sender, winrt
 
 void MenuBarItem::OnPresenterKeyDown( winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
 {
+    if (auto const& sourceAsUIElement = args.OriginalSource().try_as<winrt::MenuFlyoutSubItem>())
+    {
+        return;
+    }
+
     const auto key = args.Key();
     if (key == winrt::VirtualKey::Right)
     {
