@@ -78,7 +78,8 @@ Blank -  Not available
 | Title bar customization                                               | &#128994;          | &#128994;          | &#128994;                    |
 | Fluent Shadows                                                        | &#128994;          | &#128994;          | &#128994;                    |
 | Input validation for data fields                                      | &#128311;          | &#128311;          | &#128311;                    |
-| Supports multiple top-level windows on the same or separate threads   | &#128311;          | &#128311;          | &#128994;[^2]                |
+| Supports multiple top-level windows on the same thread                | &#128311;          | &#128311;          | &#128994;[^2]                |
+| Supports multiple top-level windows on separate threads               | &#128311;          | &#128311;          | &#128311;                    |
 | Drag and drop                                                         | &#128994;          | &#128994;          | &#128994;                    |
 | RenderTargetBitmap                                                    | &#128994;          | &#128994;          | &#128994;                    |
 | Mouse cursor customization                                            | &#128994;          | &#128994;          | &#128994;                    |
@@ -87,7 +88,7 @@ Blank -  Not available
 | In-app acrylic                                                        | &#128994;          | &#128994;          | &#128994;                    |
 | XAML Islands                                                          |                    | &#128311;          | &#128311;                    |
 
-[^1]: Supported in packaged apps only
+[^1]: Supported on Visual Studio 2022 Preview 5 and above for packaged apps only 
 [^2]: Supported in 1.0.1 and above
 
 ## WinUI 2 Controls Library
