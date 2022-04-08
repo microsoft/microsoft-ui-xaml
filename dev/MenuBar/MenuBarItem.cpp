@@ -164,9 +164,12 @@ void MenuBarItem::OnMenuBarItemKeyDown( winrt::IInspectable const& sender, winrt
 
 void MenuBarItem::OnPresenterKeyDown( winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
 {
-    if (auto const& sourceAsUIElement = args.OriginalSource().try_as<winrt::MenuFlyoutSubItem>())
+    if (auto const& subitem = args.OriginalSource().try_as<winrt::MenuFlyoutSubItem>())
     {
-        return;
+        if (subitem.Items().GetAt(0))
+        {
+            return;
+        }
     }
 
     const auto key = args.Key();
@@ -311,7 +314,7 @@ void MenuBarItem::OnFlyoutClosed( winrt::IInspectable const& sender, winrt::IIns
 
 void MenuBarItem::OnFlyoutOpening( winrt::IInspectable const& sender, winrt::IInspectable const& args)
 {
-    Focus(winrt::FocusState::Pointer);
+    Focus(winrt::FocusState::Programmatic);
 
     m_isFlyoutOpen = true;
 
