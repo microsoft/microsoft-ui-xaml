@@ -160,6 +160,30 @@ void MenuBarItem::OnMenuBarItemKeyDown( winrt::IInspectable const& sender, winrt
     {
         ShowMenuFlyout();
     }
+    else if (key == winrt::VirtualKey::Right)
+    {
+        if (FlowDirection() == winrt::FlowDirection::RightToLeft)
+        {
+            MoveFocusTo(FlyoutLocation::Left);
+        }
+        else
+        {
+            MoveFocusTo(FlyoutLocation::Right);
+        }
+    }
+    else if (key == winrt::VirtualKey::Left)
+    {
+        if (FlowDirection() == winrt::FlowDirection::RightToLeft)
+        {
+            MoveFocusTo(FlyoutLocation::Right);
+        }
+        else
+        {
+            MoveFocusTo(FlyoutLocation::Left);
+        }
+    }
+
+    args.Handled(TRUE);
 }
 
 void MenuBarItem::OnPresenterKeyDown( winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
@@ -273,6 +297,23 @@ void MenuBarItem::OpenFlyoutFrom(FlyoutLocation location)
         else
         {
             winrt::get_self<MenuBarItem>(menuBar.Items().GetAt((index + 1) % menuBar.Items().Size()))->ShowMenuFlyout();
+        }
+    }
+}
+
+void MenuBarItem::MoveFocusTo(FlyoutLocation location)
+{
+    if (auto menuBar = m_menuBar.get())
+    {
+        uint32_t index = 0;
+        menuBar.Items().IndexOf(*this, index);
+        if (location == FlyoutLocation::Left)
+        {
+            winrt::get_self<MenuBarItem>(menuBar.Items().GetAt(((index - 1) + menuBar.Items().Size()) % menuBar.Items().Size()))->Focus(winrt::FocusState::Programmatic);
+        }
+        else
+        {
+            winrt::get_self<MenuBarItem>(menuBar.Items().GetAt((index + 1) % menuBar.Items().Size()))->Focus(winrt::FocusState::Programmatic);
         }
     }
 }

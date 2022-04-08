@@ -39,6 +39,7 @@ private:
     void AttachEventHandlers();
     void DetachEventHandlers(bool useSafeGet = false);
     void OpenFlyoutFrom(FlyoutLocation location);
+    void MoveFocusTo(FlyoutLocation location);
 
     void OnVisualPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void UpdateVisualStates();
