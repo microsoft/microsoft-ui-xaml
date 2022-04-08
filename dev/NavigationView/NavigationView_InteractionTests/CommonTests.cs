@@ -882,6 +882,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                     Verify.AreEqual(2, positionInSet, "Position in set, not including separator/header");
                     Verify.AreEqual(2, sizeOfSet, "Size of set");
+
+                    Log.Comment("Setting focus to HasChildItem");
+                    UIObject hasChildItem = FindElement.ByName("HasChildItem");
+                    hasChildItem.SetFocus();
+                    Wait.ForIdle();
+
+                    ae = AutomationElement.FocusedElement;
+                    positionInSet = (int)ae.GetCurrentPropertyValue(AutomationElement.PositionInSetProperty);
+                    sizeOfSet = (int)ae.GetCurrentPropertyValue(AutomationElement.SizeOfSetProperty);
+
+                    Verify.AreEqual(5, positionInSet, "Position in set, not including separator/header");
+                    Verify.AreEqual(5, sizeOfSet, "Size of set");
                 }
             }
         }

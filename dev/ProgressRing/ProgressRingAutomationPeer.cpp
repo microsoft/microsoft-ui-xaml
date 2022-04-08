@@ -19,7 +19,14 @@ winrt::IInspectable ProgressRingAutomationPeer::GetPatternCore(winrt::PatternInt
 {
     if (patternInterface == winrt::PatternInterface::RangeValue)
     {
-        return *this;
+        if (GetImpl()->IsIndeterminate())
+        {
+            return nullptr;
+        }
+        else
+        {
+            return *this;
+        }
     }
 
     return __super::GetPatternCore(patternInterface);
