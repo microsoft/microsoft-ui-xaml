@@ -12,6 +12,7 @@
 #include "TabViewTabDroppedOutsideEventArgs.g.h"
 #include "TabViewTabDragStartingEventArgs.g.h"
 #include "TabViewTabDragCompletedEventArgs.g.h"
+#include "TabViewTrace.h"
 #include "DispatcherHelper.h"
 
 static constexpr double c_tabShadowDepth = 16.0;
@@ -218,7 +219,7 @@ private:
 
     winrt::hstring m_tabCloseButtonTooltipText{};
 
-    winrt::Size previousAvailableSize{};
+    winrt::Size m_previousAvailableSize{};
 
     bool m_isDragging{ false };
 };

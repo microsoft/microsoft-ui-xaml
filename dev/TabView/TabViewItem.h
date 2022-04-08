@@ -11,6 +11,7 @@
 #include "TabViewItem.properties.h"
 #include "TabViewItemAutomationPeer.h"
 #include "TabViewItemTemplateSettings.h"
+#include "TabViewTrace.h"
 
 class TabViewItem :
     public ReferenceTracker<TabViewItem, winrt::implementation::TabViewItemT>,
