@@ -188,6 +188,7 @@ void MenuBarItem::OnMenuBarItemKeyDown( winrt::IInspectable const& sender, winrt
 
 void MenuBarItem::OnPresenterKeyDown( winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
 {
+    // If the event came from a MenuFlyoutSubItem it means right/left arrow will open it, so we should not handle them to not override default behaviour
     if (auto const& subitem = args.OriginalSource().try_as<winrt::MenuFlyoutSubItem>())
     {
         if (subitem.Items().GetAt(0))
