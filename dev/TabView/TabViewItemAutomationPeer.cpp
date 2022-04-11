@@ -19,7 +19,7 @@ TabViewItemAutomationPeer::TabViewItemAutomationPeer(winrt::TabViewItem const& o
 // IAutomationPeerOverrides
 winrt::IInspectable TabViewItemAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
-    if (patternInterface == winrt::PatternInterface::SelectionItem)
+    if (patternInterface == winrt::PatternInterface::SelectionItem || patternInterface == winrt::PatternInterface::Drag)
     {
         return *this;
     }
