@@ -170,6 +170,7 @@ void MenuBarItem::OnMenuBarItemKeyDown( winrt::IInspectable const& sender, winrt
         {
             MoveFocusTo(FlyoutLocation::Right);
         }
+        args.Handled(TRUE);
     }
     else if (key == winrt::VirtualKey::Left)
     {
@@ -181,9 +182,8 @@ void MenuBarItem::OnMenuBarItemKeyDown( winrt::IInspectable const& sender, winrt
         {
             MoveFocusTo(FlyoutLocation::Left);
         }
+        args.Handled(TRUE);
     }
-
-    args.Handled(TRUE);
 }
 
 void MenuBarItem::OnPresenterKeyDown( winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
