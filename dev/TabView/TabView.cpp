@@ -21,6 +21,10 @@ static constexpr wstring_view c_tabViewItemMaxWidthName{ L"TabViewItemMaxWidth"s
 // TODO: what is the right number and should this be customizable?
 static constexpr double c_scrollAmount = 50.0;
 
+// Change to 'true' to turn on debugging outputs in Output window
+bool TabViewTrace::s_IsDebugOutputEnabled{ false };
+bool TabViewTrace::s_IsVerboseDebugOutputEnabled{ false };
+
 TabView::TabView()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TabView);
@@ -968,9 +972,9 @@ void TabView::OnScrollIncreaseClick(const winrt::IInspectable&, const winrt::Rou
 
 winrt::Size TabView::MeasureOverride(winrt::Size const& availableSize)
 {
-    if (previousAvailableSize.Width != availableSize.Width)
+    if (m_previousAvailableSize.Width != availableSize.Width)
     {
-        previousAvailableSize = availableSize;
+        m_previousAvailableSize = availableSize;
         UpdateTabWidths();
     }
 
@@ -1006,7 +1010,7 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths, bool fillAllAvailableSpac
         if (auto&& tabColumn = m_tabColumn.get())
         {
             // Note: can be infinite
-            const auto availableWidth = previousAvailableSize.Width - widthTaken;
+            const auto availableWidth = m_previousAvailableSize.Width - widthTaken;
 
             // Size can be 0 when window is first created; in that case, skip calculations; we'll get a new size soon
             if (availableWidth > 0)
