@@ -5,7 +5,7 @@ Param(
     [string]$Platform,
     [string]$Configuration,
     [string]$Publisher = "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
-    [string]$VersionOverride,
+    [string]$VersionOverride = "8.2204.1002.0",
     [int]$Subversion = "000",
     [string]$builddate_yymm,
     [string]$builddate_dd,
