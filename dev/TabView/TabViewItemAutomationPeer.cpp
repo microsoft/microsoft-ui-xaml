@@ -19,7 +19,9 @@ TabViewItemAutomationPeer::TabViewItemAutomationPeer(winrt::TabViewItem const& o
 // IAutomationPeerOverrides
 winrt::IInspectable TabViewItemAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
-    if (patternInterface == winrt::PatternInterface::SelectionItem)
+    // We subclass from ListViewItemAutomationPeer without using everything from it,
+    // so we need to make sure we are returning TabViewItem's AutomationPeer for selection and drag, and not the parent class version
+    if (patternInterface == winrt::PatternInterface::SelectionItem || patternInterface == winrt::PatternInterface::Drag)
     {
         return *this;
     }

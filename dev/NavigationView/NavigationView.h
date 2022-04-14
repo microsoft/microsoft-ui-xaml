@@ -187,7 +187,8 @@ private:
     inline static GlobalDependencyProperty s_NavigationViewItemRevokersProperty{ nullptr };
     void SetNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
     void ClearNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
-    void ClearAllNavigationViewItemRevokers();
+    void ClearAllNavigationViewItemRevokers() noexcept;
+    void RevokeNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
     std::set<winrt::NavigationViewItem> m_itemsWithRevokerObjects;
 
     void InvalidateTopNavPrimaryLayout();

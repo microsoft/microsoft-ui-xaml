@@ -827,7 +827,7 @@ void WebView2::CreateMissingAnaheimWarning()
     linkText.Text(ResourceAccessor::GetLocalizedStringResource(SR_DownloadWebView2Runtime));
     auto hyperlink = winrt::Hyperlink();
     hyperlink.Inlines().Append(linkText);
-    auto url = winrt::Uri(L"https://aka.ms/winui3/webview2download/");
+    auto url = winrt::Uri(L"https://aka.ms/winui2/webview2download/");
     hyperlink.NavigateUri(url);
     warning.Inlines().Append(hyperlink);
     Content(warning);

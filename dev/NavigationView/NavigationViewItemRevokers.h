@@ -11,4 +11,12 @@ public:
     winrt::UIElement::GotFocus_revoker gotFocusRevoker{};
     PropertyChanged_revoker isSelectedRevoker{};
     PropertyChanged_revoker isExpandedRevoker{};
+
+    void RevokeAll() {
+        if (tappedRevoker) tappedRevoker.revoke();
+        if (keyDownRevoker) keyDownRevoker.revoke();
+        if (gotFocusRevoker) gotFocusRevoker.revoke();
+        if (isSelectedRevoker) isSelectedRevoker.revoke();
+        if (isExpandedRevoker) isExpandedRevoker.revoke();
+    }
 };

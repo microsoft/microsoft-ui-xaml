@@ -46,7 +46,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-         public void ChangeStateTest()
+        public void ChangeStateTest()
         {
             using (var setup = new TestSetupHelper("ProgressRing Tests"))
             {
@@ -93,7 +93,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("IsActive set to false updates ProgressRing to Inactive state");
 
                 isActiveCheckBox.ToggleAndWait();
-                
+
                 Verify.AreEqual("Inactive", visualStateText.DocumentText);
 
                 Log.Comment("Verify Lottie animation is not playing when in Inactive state");
@@ -296,6 +296,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 double diff = Math.Abs(oldValue - newValue);
 
                 Verify.IsGreaterThan(diff, Convert.ToDouble(0), "Value of ProgressBar increments properly within range with decimal Minimum and Maximum");
+            }
+        }
+
+        [TestMethod]
+        public void VerifyIndeterminateProgressRingDoesNotImplementRangeValuePattern()
+        {
+            using (var setup = new TestSetupHelper("ProgressRing Tests"))
+            {
+                UIObject progressRing = FindElement.ByName("Busy TestProgressRing");
+
+                Verify.IsNotNull(progressRing);
+
+                RangeValueImplementation rangeValueImplementation = new RangeValueImplementation(progressRing);
+
+                Verify.IsFalse(rangeValueImplementation.IsAvailable);
             }
         }
     }

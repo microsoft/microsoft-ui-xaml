@@ -675,16 +675,6 @@
                                     StrokeThickness=1
                                     Visibility=Visible
                                     Width=16
-                          [Microsoft.UI.Xaml.Controls.ItemsRepeater]
-                              Background=[NULL]
-                              FocusVisualPrimaryBrush=#E4000000
-                              FocusVisualPrimaryThickness=2,2,2,2
-                              FocusVisualSecondaryBrush=#B3FFFFFF
-                              FocusVisualSecondaryThickness=1,1,1,1
-                              Margin=0,0,0,0
-                              Name=NavigationViewItemMenuItemsHost
-                              RenderSize=0,0
-                              Visibility=Collapsed
                       [Microsoft.UI.Xaml.Controls.NavigationViewItem]
                           Background=#00FFFFFF
                           BorderBrush=#00FFFFFF
@@ -930,16 +920,6 @@
                                     StrokeThickness=1
                                     Visibility=Visible
                                     Width=16
-                          [Microsoft.UI.Xaml.Controls.ItemsRepeater]
-                              Background=[NULL]
-                              FocusVisualPrimaryBrush=#E4000000
-                              FocusVisualPrimaryThickness=2,2,2,2
-                              FocusVisualSecondaryBrush=#B3FFFFFF
-                              FocusVisualSecondaryThickness=1,1,1,1
-                              Margin=0,0,0,0
-                              Name=NavigationViewItemMenuItemsHost
-                              RenderSize=0,0
-                              Visibility=Collapsed
                   [Windows.UI.Xaml.Controls.Grid]
                       Background=[NULL]
                       BorderBrush=[NULL]
@@ -1758,16 +1738,6 @@
                           StrokeThickness=1
                           Visibility=Visible
                           Width=16
-                [Microsoft.UI.Xaml.Controls.ItemsRepeater]
-                    Background=[NULL]
-                    FocusVisualPrimaryBrush=#E4000000
-                    FocusVisualPrimaryThickness=2,2,2,2
-                    FocusVisualSecondaryBrush=#B3FFFFFF
-                    FocusVisualSecondaryThickness=1,1,1,1
-                    Margin=0,0,0,0
-                    Name=NavigationViewItemMenuItemsHost
-                    RenderSize=0,0
-                    Visibility=Collapsed
         [Windows.UI.Xaml.Controls.Border]
             Background=[NULL]
             BorderBrush=[NULL]

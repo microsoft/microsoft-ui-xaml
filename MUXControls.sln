@@ -70,12 +70,6 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ColorPicker_APITests", "dev
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ColorPicker_InteractionTests", "dev\ColorPicker\InteractionTests\ColorPicker_InteractionTests.shproj", "{A4D2FAE8-E7FC-4100-91FF-2202FAC91C70}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TREXDefs", "TREXDefs", "{1739D66B-9813-4370-AF65-2D297DA28016}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "x86", "x86", "{CECCF922-C9B8-430B-942D-E1ADB6EC3359}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "amd64", "amd64", "{B651FAF5-92D5-4574-B2FB-18B0C1AF0738}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RatingControl_APITests", "dev\RatingControl\APITests\RatingControl_APITests.shproj", "{274B93F7-CD18-4ED9-B569-0640529D187B}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ScrollView_APITests", "dev\ScrollView\APITests\ScrollView_APITests.shproj", "{374B93F8-DD19-5EDA-C56A-1640529D187C}"
@@ -108,7 +102,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuSpecs", "NuSpecs", "{F11E
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FrameworkPackage", "FrameworkPackage", "{447F5D0D-9189-4B8A-BCDC-0FE67646DE97}"
 	ProjectSection(SolutionItems) = preProject
-		build\FrameworkPackage\FrameworkPackage.csproj = build\FrameworkPackage\FrameworkPackage.csproj
 		build\FrameworkPackage\MakeFrameworkPackage.cmd = build\FrameworkPackage\MakeFrameworkPackage.cmd
 		build\FrameworkPackage\MakeFrameworkPackage.ps1 = build\FrameworkPackage\MakeFrameworkPackage.ps1
 	EndProjectSection
@@ -263,28 +256,6 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Repeater_APITests", "dev\Re
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Repeater_InteractionTests", "dev\Repeater\InteractionTests\Repeater_InteractionTests.shproj", "{999E00C9-0E58-402A-8E0E-CBAFB0ADC7E3}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CodeCoverage", "CodeCoverage", "{5FE8E48E-0A1E-4443-B0B7-B6F25A96829E}"
-	ProjectSection(SolutionItems) = preProject
-		tools\CodeCoverage\CodeCoverage.psm1 = tools\CodeCoverage\CodeCoverage.psm1
-		tools\CodeCoverage\CreateCodeCoverageReport.cmd = tools\CodeCoverage\CreateCodeCoverageReport.cmd
-		tools\CodeCoverage\CreateCodeCoverageReport.ps1 = tools\CodeCoverage\CreateCodeCoverageReport.ps1
-		tools\CodeCoverage\CreateCodeCoverageReportWrapper.cmd = tools\CodeCoverage\CreateCodeCoverageReportWrapper.cmd
-		tools\CodeCoverage\InstrumentBinaries.cmd = tools\CodeCoverage\InstrumentBinaries.cmd
-		tools\CodeCoverage\InstrumentBinaries.ps1 = tools\CodeCoverage\InstrumentBinaries.ps1
-		tools\CodeCoverage\PkgGen.cmd = tools\CodeCoverage\PkgGen.cmd
-		tools\CodeCoverage\PostBuild.cmd = tools\CodeCoverage\PostBuild.cmd
-		tools\CodeCoverage\PostBuildWrapper.cmd = tools\CodeCoverage\PostBuildWrapper.cmd
-		tools\CodeCoverage\PushCodeCoverageData.ps1 = tools\CodeCoverage\PushCodeCoverageData.ps1
-		tools\CodeCoverage\PushCodeCoverageSymbols.cmd = tools\CodeCoverage\PushCodeCoverageSymbols.cmd
-		tools\CodeCoverage\PushCodeCoverageSymbols.ps1 = tools\CodeCoverage\PushCodeCoverageSymbols.ps1
-		tools\CodeCoverage\StartCodeCoverage.ps1 = tools\CodeCoverage\StartCodeCoverage.ps1
-		tools\CodeCoverage\StopCodeCoverage.ps1 = tools\CodeCoverage\StopCodeCoverage.ps1
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "amd64_CodeCoverage", "amd64_CodeCoverage", "{23ED12A5-D2CB-4D6C-82B7-2D18060699F6}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "x86_CodeCoverage", "x86_CodeCoverage", "{5BD2E9D8-DC70-4CA9-91CD-B38746E68746}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Reveal_APITests", "dev\Materials\Reveal\APITests\Reveal_APITests.shproj", "{5049EA6C-88CE-4ED5-8692-947EEC9E52BC}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ScrollViewerAdapter_InteractionTests", "dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\InteractionTests\ScrollViewerAdapter_InteractionTests.shproj", "{79863454-1DBF-45BB-B3D3-420B8F5E8705}"
@@ -292,18 +263,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IconSource", "IconSource", "{E220EFAB-BA88-458D-A271-279B6630E864}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IconSource", "dev\IconSource\IconSource.vcxitems", "{19FFFF77-4814-4AD6-ACD7-42C6A50AB0D8}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WindowsPorting", "WindowsPorting", "{EE9F64DF-7F2B-45F0-82AA-F0DFF577AB82}"
-	ProjectSection(SolutionItems) = preProject
-		tools\WindowsPorting\Cleanup.cmd = tools\WindowsPorting\Cleanup.cmd
-		tools\WindowsPorting\PerformMUXControlsPort.cmd = tools\WindowsPorting\PerformMUXControlsPort.cmd
-		tools\WindowsPorting\PkgGenOS.cmd = tools\WindowsPorting\PkgGenOS.cmd
-		tools\WindowsPorting\PublishSources.cmd = tools\WindowsPorting\PublishSources.cmd
-		tools\WindowsPorting\PublishSourcesWrapper.cmd = tools\WindowsPorting\PublishSourcesWrapper.cmd
-		tools\WindowsPorting\SetParentVariables.cmd = tools\WindowsPorting\SetParentVariables.cmd
-		tools\WindowsPorting\SetSyncToWindowsVariables.cmd = tools\WindowsPorting\SetSyncToWindowsVariables.cmd
-		tools\WindowsPorting\SetSyncToWindowsVariablesWrapper.cmd = tools\WindowsPorting\SetSyncToWindowsVariablesWrapper.cmd
-	EndProjectSection
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "IconSource_APITests", "dev\IconSource\APITests\IconSource_APITests.shproj", "{D73627E9-564C-4A72-A12D-F6C82F17AD0D}"
 EndProject
@@ -322,15 +281,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PTRTracing", "PTRTracing", "{B4CF2535-396D-40AB-9028-D44233B31AE2}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTRTracing", "dev\PullToRefresh\PTRTracing\PTRTracing.vcxitems", "{890A5548-0515-4099-B526-0539FE9A0376}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ScriptsToCopy", "ScriptsToCopy", "{06BD5D83-CB4B-4FA9-8931-89BDB212B9AF}"
-	ProjectSection(SolutionItems) = preProject
-		tools\WindowsPorting\ScriptsToCopy\buildcontrols.cmd = tools\WindowsPorting\ScriptsToCopy\buildcontrols.cmd
-		tools\WindowsPorting\ScriptsToCopy\CommitSync.cmd = tools\WindowsPorting\ScriptsToCopy\CommitSync.cmd
-		tools\WindowsPorting\ScriptsToCopy\CommitSync.ps1 = tools\WindowsPorting\ScriptsToCopy\CommitSync.ps1
-		tools\WindowsPorting\ScriptsToCopy\SyncToMUXControls.cmd = tools\WindowsPorting\ScriptsToCopy\SyncToMUXControls.cmd
-		tools\WindowsPorting\ScriptsToCopy\SyncToMUXControls.ps1 = tools\WindowsPorting\ScriptsToCopy\SyncToMUXControls.ps1
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Interactions", "Interactions", "{3393A555-DA02-4310-AC37-129EE88661A0}"
 EndProject
@@ -1421,9 +1371,6 @@ Global
 		{395A71A1-4327-477B-85D4-AF0851732CCB} = {5654F115-F01A-495B-91C7-09408ABF14F0}
 		{E9AC4938-EC2A-46D3-85BF-27316DB8CC4D} = {1F86207F-AF12-4C39-8ACD-AE751D312673}
 		{A4D2FAE8-E7FC-4100-91FF-2202FAC91C70} = {1F86207F-AF12-4C39-8ACD-AE751D312673}
-		{1739D66B-9813-4370-AF65-2D297DA28016} = {5EF3865D-EFAC-4676-B1E6-FB09DD7C67FD}
-		{CECCF922-C9B8-430B-942D-E1ADB6EC3359} = {1739D66B-9813-4370-AF65-2D297DA28016}
-		{B651FAF5-92D5-4574-B2FB-18B0C1AF0738} = {1739D66B-9813-4370-AF65-2D297DA28016}
 		{274B93F7-CD18-4ED9-B569-0640529D187B} = {3B0C114B-AC74-4BB1-975D-26FE5D505BD1}
 		{374B93F8-DD19-5EDA-C56A-1640529D187C} = {4B0C114C-BC75-5BB2-A75E-36FE5D505BD2}
 		{374B93F7-CD18-4ED9-B569-0640529D187C} = {438CED23-DAB1-495E-9A72-0FF38E01EB80}
@@ -1498,14 +1445,10 @@ Global
 		{2ED883F5-20DB-4445-8C96-517A21E5E657} = {440DB3C5-0EFF-4F78-AD39-0C147230ABD3}
 		{8D2DA979-6313-49E2-8CF3-B568436D2944} = {440DB3C5-0EFF-4F78-AD39-0C147230ABD3}
 		{999E00C9-0E58-402A-8E0E-CBAFB0ADC7E3} = {440DB3C5-0EFF-4F78-AD39-0C147230ABD3}
-		{5FE8E48E-0A1E-4443-B0B7-B6F25A96829E} = {5EF3865D-EFAC-4676-B1E6-FB09DD7C67FD}
-		{23ED12A5-D2CB-4D6C-82B7-2D18060699F6} = {1739D66B-9813-4370-AF65-2D297DA28016}
-		{5BD2E9D8-DC70-4CA9-91CD-B38746E68746} = {1739D66B-9813-4370-AF65-2D297DA28016}
 		{5049EA6C-88CE-4ED5-8692-947EEC9E52BC} = {CE762527-4CC8-4604-A0DD-9EA4CB29C4A9}
 		{79863454-1DBF-45BB-B3D3-420B8F5E8705} = {CD99B535-DFD9-4A17-A2BC-113E93DDE42A}
 		{E220EFAB-BA88-458D-A271-279B6630E864} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{19FFFF77-4814-4AD6-ACD7-42C6A50AB0D8} = {E220EFAB-BA88-458D-A271-279B6630E864}
-		{EE9F64DF-7F2B-45F0-82AA-F0DFF577AB82} = {5EF3865D-EFAC-4676-B1E6-FB09DD7C67FD}
 		{D73627E9-564C-4A72-A12D-F6C82F17AD0D} = {E220EFAB-BA88-458D-A271-279B6630E864}
 		{8211954E-FE33-469C-87C7-9C863ACE1759} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{8D0E4610-B51D-45C1-8B82-240BD2F73A92} = {8211954E-FE33-469C-87C7-9C863ACE1759}
@@ -1515,7 +1458,6 @@ Global
 		{848448D5-F717-4F88-8F99-311CD60587FA} = {5654F115-F01A-495B-91C7-09408ABF14F0}
 		{B4CF2535-396D-40AB-9028-D44233B31AE2} = {B1242C40-BBB3-4490-A936-5C71A3BE8336}
 		{890A5548-0515-4099-B526-0539FE9A0376} = {B4CF2535-396D-40AB-9028-D44233B31AE2}
-		{06BD5D83-CB4B-4FA9-8931-89BDB212B9AF} = {EE9F64DF-7F2B-45F0-82AA-F0DFF577AB82}
 		{3393A555-DA02-4310-AC37-129EE88661A0} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{5D192660-07E0-4176-AE0A-EFEBAFA3C315} = {3393A555-DA02-4310-AC37-129EE88661A0}
 		{8DC0EA14-D850-4C6E-8918-BEEB89E877BD} = {5D192660-07E0-4176-AE0A-EFEBAFA3C315}

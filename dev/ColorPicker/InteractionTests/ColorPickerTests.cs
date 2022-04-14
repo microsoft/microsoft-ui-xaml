@@ -1187,7 +1187,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = SetupColorPickerTest(TestOptions.EnableAlpha | TestOptions.DisableColorSpectrumLoadWait))
             {
                 Verify.AreEqual("Color picker", FindElement.ById(ColorSpectrumAutomationId).Name);
-                Verify.AreEqual("Brightness", FindElement.ById(ThirdDimensionAutomationId).Name);
+                Verify.AreEqual("Value (Brightness)", FindElement.ById(ThirdDimensionAutomationId).Name);
                 Verify.AreEqual("Opacity", FindElement.ById(AlphaSliderAutomationId).Name);
                 Verify.AreEqual("Color model", FindElement.ById(ColorRepresentationComboBoxAutomationId).Name);
                 Verify.AreEqual("Red", FindElement.ById(RedTextBoxAutomationId).Name);
@@ -1197,7 +1197,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SelectTextBoxes(ColorChannels.HSV);
                 Verify.AreEqual("Hue", FindElement.ById(HueTextBoxAutomationId).Name);
                 Verify.AreEqual("Saturation", FindElement.ById(SaturationTextBoxAutomationId).Name);
-                Verify.AreEqual("Brightness", FindElement.ById(ValueTextBoxAutomationId).Name);
+                Verify.AreEqual("Value (Brightness)", FindElement.ById(ValueTextBoxAutomationId).Name);
             }
         }
 
@@ -1231,11 +1231,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 bool colorNamesAvailable = ApiInformation.IsMethodPresent("Windows.UI.ColorHelper", "ToDisplayName");
 
-                Verify.AreEqual(colorNamesAvailable ? "Red, Hue 0, Saturation 100, Brightness 100" : "Hue 0, Saturation 100, Brightness 100", colorSpectrum.Value);
+                Verify.AreEqual(colorNamesAvailable ? "Red, Hue 0, Saturation 100, Value 100" : "Hue 0, Saturation 100, Value 100", colorSpectrum.Value);
                 KeyboardHelper.PressKey(Key.Right);
-                Verify.AreEqual(colorNamesAvailable ? "Red, Hue 1, Saturation 100, Brightness 100" : "Hue 1, Saturation 100, Brightness 100", colorSpectrum.Value);
+                Verify.AreEqual(colorNamesAvailable ? "Red, Hue 1, Saturation 100, Value 100" : "Hue 1, Saturation 100, Value 100", colorSpectrum.Value);
                 KeyboardHelper.PressKey(Key.Right, ModifierKey.Control);
-                Verify.AreEqual(colorNamesAvailable ? "Orange, Hue 28, Saturation 100, Brightness 100" : "Hue 31, Saturation 100, Brightness 100", colorSpectrum.Value);
+                Verify.AreEqual(colorNamesAvailable ? "Orange, Hue 28, Saturation 100, Value 100" : "Hue 31, Saturation 100, Value 100", colorSpectrum.Value);
             }
         }
 

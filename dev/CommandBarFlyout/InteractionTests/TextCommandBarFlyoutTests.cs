@@ -668,6 +668,54 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void ValidateSelectionFlyoutDoesNotTakeFocus()
+        {
+            using (var setup = new TextCommandBarFlyoutTestSetupHelper())
+            {
+                // RichEditBox only implements the Text pattern, which the "TextBlock" MITA type exposes.
+                var richEditBox = new TextBlock(FindElement.ById("RichEditBox"));
+                var fillWithTextButton = new Button(FindElement.ById("RichEditBoxFillWithTextButton"));
+
+                Log.Comment("Give focus to the RichEditBox.");
+                FocusHelper.SetFocus(richEditBox);
+
+                Log.Comment("Enter enough text to guarantee that double-tapping the RichEditBox will select text.");
+                fillWithTextButton.InvokeAndWait();
+
+                Log.Comment("Double-click to select the text and bring up the selection menu. The CommandBarFlyout should appear, but should not take focus.");
+                InputHelper.LeftDoubleClick(richEditBox);
+                Wait.ForIdle();
+
+                var boldButton = FindElement.ByName("Bold");
+                Verify.IsNotNull(boldButton);
+                Verify.IsFalse(boldButton.HasKeyboardFocus);
+
+                Log.Comment("Press backspace to delete the selected text. This should work because the RichEditBox should still have focus.");
+                KeyboardHelper.PressKey(Key.Backspace);
+                Wait.ForIdle();
+
+                Verify.AreEqual(string.Empty, richEditBox.DocumentText);
+
+                Log.Comment("Enter text again.");
+                fillWithTextButton.InvokeAndWait();
+
+                Log.Comment("Double-click to select the text and bring up the selection menu. The CommandBarFlyout should appear, but should not take focus.");
+                InputHelper.LeftDoubleClick(richEditBox);
+                Wait.ForIdle();
+
+                boldButton = FindElement.ByName("Bold");
+                Verify.IsNotNull(boldButton);
+                Verify.IsFalse(boldButton.HasKeyboardFocus);
+
+                Log.Comment("Press the A key to overwrite the selected text.");
+                richEditBox.SendKeys("a");
+                Wait.ForIdle();
+
+                Verify.AreEqual("a", richEditBox.DocumentText);
+            }
+        }
+
         private void OpenFlyoutOn(string textControlName, bool asTransient)
         {
             Log.Comment("Opening text control flyout on the {0} in {1} mode.", textControlName, asTransient ? "transient" : "standard");

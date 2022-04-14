@@ -2,25 +2,53 @@ name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 variables:
   minimumExpectedTestsExecutedCount: 35  # Sanity check for minimum expected tests to be reported
   Packaging.EnableSBOMSigning: true
+
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: refs/heads/main
+  - repository: templates_onebranch
+    type: git
+    name: OneBranch.Pipelines/GovernedTemplates
+    ref: refs/heads/main
 jobs:
+- job: Scanning
+  pool: 
+    name: WinDevPool-S
+    demands: ImageOverride -equals WinDevVS16-9
+
+  steps:
+
+  - checkout: self
+
+  - task: NodeTool@0
+
+  - template: v2/Steps/PackageES/Windows.SDL.Sources.Analysis.OS.Undocked.yml@templates_onebranch
+    parameters:
+      globalsdl:
+        codeql:
+          tsandjs:
+            enabled: false
+          python:
+            enabled: false
+          psscriptanalyzer:
+            enable: true
+        prefast:
+          enabled: true
+
 - job: Build
   # Skip the build job if we are reusing the output of a previous build.
   # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
   condition:
     eq(variables['useBuildOutputFromBuildId'],'')
   pool: 
-    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: WinDevPoolOSS-L
-    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: WinDevPool-L
+    name: WinDevPool-L
     demands: ImageOverride -equals WinDevVS16-9
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
     matrix:
-      Debug_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Debug'
       Release_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Release'
@@ -43,6 +71,8 @@ jobs:
     artifactsDir: $(Build.SourcesDirectory)\Artifacts
     sbomdir: $(Build.ArtifactStagingDirectory)\sbom\$(buildConfiguration)\$(buildPlatform)
   steps:
+
+  - checkout: self
 
   # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
   - task: DownloadPackage@1
@@ -75,6 +105,18 @@ jobs:
 
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
+  - task: PkgESSetupBuild@12
+    displayName: Package ES - Setup Build
+    inputs:
+      disableOutputRedirect: true
+
+  - task: NodeTool@0
+
+  - template: v2/Steps/PackageES/Windows.SDL.Binary.Analysis.OS.Undocked.yml@templates_onebranch
+    parameters:
+      variables:
+        ob_outputDirectory: $(buildOutputDir)\                   # provide path to binaries to be scanned
+
 # Create Nuget Package
 - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
   parameters:
@@ -87,10 +129,6 @@ jobs:
 - template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
   parameters:
     dependsOn: Build
-
-- template: AzurePipelinesTemplates\MUX-ComplianceChecks-Job.yml
-  parameters:
-    dependsOn: CreateVPack
 
 # Build solution that depends on nuget package
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
