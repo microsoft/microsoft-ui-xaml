@@ -40,6 +40,11 @@
     <x:Double x:Key="AutoSuggestBoxLeftButtonMargin">3</x:Double>
     <x:Double x:Key="AutoSuggestBoxRightButtonMargin">4</x:Double>
 
+    <Thickness x:Key="AutoSuggestListPadding">0,2</Thickness>
+    <Thickness x:Key="AutoSuggestListMargin">0</Thickness>
+    <Thickness x:Key="AutoSuggestListBorderThemeThickness">1</Thickness>
+    <x:Double x:Key="AutoSuggestListMaxHeight">374</x:Double>
+
     <Style TargetType="TextBox" x:Key="AutoSuggestBoxTextBoxStyle">
         <Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}" />
         <Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}" />
@@ -454,7 +459,6 @@
 
                         <Popup x:Name="SuggestionsPopup">
                             <Border x:Name="SuggestionsContainer"
-                                    Padding="{ThemeResource AutoSuggestListMargin}"
                                     BorderThickness="{ThemeResource AutoSuggestListBorderThemeThickness}"
                                     BorderBrush="{ThemeResource AutoSuggestBoxSuggestionsListBorderBrush}"
                                     Background="{ThemeResource AutoSuggestBoxSuggestionsListBackground}"
@@ -470,7 +474,7 @@
                                     ItemTemplateSelector="{TemplateBinding ItemTemplateSelector}"
                                     ItemContainerStyle="{TemplateBinding ItemContainerStyle}"
                                     MaxHeight="{ThemeResource AutoSuggestListMaxHeight}"
-                                    Margin="{ThemeResource AutoSuggestListPadding}">
+                                    Padding="{ThemeResource AutoSuggestListPadding}">
                                     <ListView.ItemContainerTransitions>
                                         <contract7NotPresent:TransitionCollection />
                                     </ListView.ItemContainerTransitions>
