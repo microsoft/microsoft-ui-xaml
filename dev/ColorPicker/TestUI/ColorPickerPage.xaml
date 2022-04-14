@@ -25,9 +25,9 @@
             </Grid.RowDefinitions>
 
             <TextBlock Text="Sample" Style="{ThemeResource StandardGroupHeader}"/>
-            <ScrollViewer Grid.Row="1" BorderThickness="1" BorderBrush="{ThemeResource SystemChromeHighColor}" Padding="4"
+            <ScrollViewer Grid.Row="1" BorderThickness="1" BorderBrush="{ThemeResource SystemChromeHighColor}"
                           AutomationProperties.AutomationId="ColorPickerScrollViewer">
-                <StackPanel>
+                <StackPanel  Padding="4">
                     <controls:ColorPicker x:Name="ColorPicker" IsAlphaEnabled="True" ColorChanged="ColorPicker_ColorChanged" />
                     <TextBlock Text="Text"/>
                 </StackPanel>
@@ -41,9 +41,9 @@
             </Grid.RowDefinitions>
 
             <TextBlock Text="Options" Style="{ThemeResource StandardGroupHeader}"/>
-            <ScrollViewer Grid.Row="1" BorderThickness="1" BorderBrush="{ThemeResource SystemChromeHighColor}" Padding="4">
+            <ScrollViewer Grid.Row="1" BorderThickness="1" BorderBrush="{ThemeResource SystemChromeHighColor}">
                 <!-- Place options below -->
-                <StackPanel Width="400">
+                <StackPanel Width="400"  Padding="4">
                     <TextBlock Text="Set theme to..." />
                     <StackPanel Orientation="Horizontal">
                         <Button AutomationProperties.AutomationId="ThemeLightButton" Content="Light" Click="ThemeLightButton_Click" />
@@ -109,8 +109,8 @@
             </Grid.RowDefinitions>
 
             <TextBlock Text="Properties" Style="{ThemeResource StandardGroupHeader}"/>
-            <ScrollViewer Grid.Row="1" BorderThickness="1" BorderBrush="{ThemeResource SystemChromeHighColor}" Padding="4">
-                <StackPanel Width="400" >
+            <ScrollViewer Grid.Row="1" BorderThickness="1" BorderBrush="{ThemeResource SystemChromeHighColor}">
+                <StackPanel Width="400" Padding="4">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Currently focused element:" Margin="0,0,5,0" />
                         <TextBlock AutomationProperties.AutomationId="CurrentlyFocusedElementTextBlock" x:Name="CurrentlyFocusedElementTextBlock" />
