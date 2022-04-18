@@ -61,7 +61,7 @@ void InfoBar::OnApplyTemplate()
         winrt::AutomationProperties::SetName(iconTextblock, ResourceAccessor::GetLocalizedStringResource(GetIconSeverityLevelResourceName(Severity())));
     }
 
-    if (auto&& contentRootGrid = GetTemplateChildT<winrt::Button>(c_contentRootName, controlProtected))
+    if (auto&& contentRootGrid = GetTemplateChildT<winrt::Grid>(c_contentRootName, controlProtected))
     {
         winrt::AutomationProperties::SetLocalizedLandmarkType(contentRootGrid, ResourceAccessor::GetLocalizedStringResource(SR_InfoBarCustomLandmarkName));
     }

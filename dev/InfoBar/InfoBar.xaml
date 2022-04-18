@@ -17,7 +17,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:InfoBar">
-                    <Border x:Name="ContentRoot" 
+                    <Border
                         VerticalAlignment="Top"
                         Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
                         BorderBrush="{TemplateBinding BorderBrush}"
@@ -106,12 +106,13 @@
                         </VisualStateManager.VisualStateGroups>
 
                         <!-- Background is used here so that it overrides the severity status color if set. -->
-                        <Grid
+                        <Grid x:Name="ContentRoot"
                             HorizontalAlignment="Stretch"
                             MinHeight="{ThemeResource InfoBarMinHeight}"
                             Background="{TemplateBinding Background}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            Padding="{StaticResource InfoBarContentRootPadding}">
+                            Padding="{StaticResource InfoBarContentRootPadding}"
+                            AutomationProperties.LandmarkType="Custom">
 
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/> <!-- Icon -->
@@ -168,7 +169,6 @@
                                     primitives:InfoBarPanel.HorizontalOrientationMargin="{StaticResource InfoBarTitleHorizontalOrientationMargin}"
                                     primitives:InfoBarPanel.VerticalOrientationMargin="{StaticResource InfoBarTitleVerticalOrientationMargin}"
                                     TextWrapping="WrapWholeWords"
-                                    AutomationProperties.LandmarkType="Navigation"
                                     FontWeight="{StaticResource InfoBarTitleFontWeight}"
                                     FontSize="{StaticResource InfoBarTitleFontSize}"/>
 
