@@ -702,20 +702,23 @@ void TabView::OnItemsPresenterSizeChanged(const winrt::IInspectable& sender, con
 
 void TabView::BringSelectedTabIntoView()
 {
-    if(SelectedItem())
+    if (SelectedItem())
     {
         auto tvi = SelectedItem().try_as<winrt::TabViewItem>();
         if (!tvi)
         {
             tvi = ContainerFromItem(SelectedItem()).try_as<winrt::TabViewItem>();
         }
-        winrt::get_self<TabViewItem>(tvi)->StartBringTabIntoView();
+        if (tvi)
+        {
+            winrt::get_self<TabViewItem>(tvi)->StartBringTabIntoView();
+        }
     }
 }
 
 void TabView::OnItemsChanged(winrt::IInspectable const& item)
 {
-    if(m_isDragging)
+    if (m_isDragging)
     {
         return;
     }
