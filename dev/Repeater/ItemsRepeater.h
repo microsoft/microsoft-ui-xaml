@@ -136,6 +136,7 @@ private:
     void OnItemsSourceViewChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
     void InvalidateMeasureForLayout(winrt::Layout const& sender, winrt::IInspectable const& args);
     void InvalidateArrangeForLayout(winrt::Layout const& sender, winrt::IInspectable const& args);
+    void EnsureDefaultLayoutState();
 
     winrt::VirtualizingLayoutContext GetLayoutContext();
     bool IsProcessingCollectionChange() const { return m_processingItemsSourceChange != nullptr; }

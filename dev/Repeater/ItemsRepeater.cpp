@@ -43,10 +43,6 @@ ItemsRepeater::ItemsRepeater()
     Loaded({ this, &ItemsRepeater::OnLoaded });
     Unloaded({ this, &ItemsRepeater::OnUnloaded });
     LayoutUpdated({ this, &ItemsRepeater::OnLayoutUpdated });
-
-    // Initialize the cached layout to the default value
-    auto layout = Layout().as<winrt::VirtualizingLayout>();
-    OnLayoutChanged(nullptr, layout);
 }
 
 ItemsRepeater::~ItemsRepeater()
@@ -531,6 +527,8 @@ void ItemsRepeater::OnLayoutUpdated(const winrt::IInspectable& /*sender*/, const
 {
     // Now that the layout has settled, reset the measure counter to detect the next potential StackLayout layout cycle.
     m_stackLayoutMeasureCounter = 0u;
+
+    EnsureDefaultLayoutState();
 }
 
 void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& oldValue, const winrt::ItemsSourceView& newValue)
@@ -539,6 +537,8 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
     {
         throw winrt::hresult_error(E_FAIL, L"Cannot set ItemsSourceView during layout.");
     }
+
+    EnsureDefaultLayoutState();
 
     m_itemsSourceView.set(newValue);
 
@@ -596,6 +596,8 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
     {
         throw winrt::hresult_error(E_FAIL, L"ItemTemplate cannot be changed during layout.");
     }
+
+    EnsureDefaultLayoutState();
 
     // Since the ItemTemplate has changed, we need to re-evaluate all the items that
     // have already been created and are now in the tree. The easiest way to do that
@@ -783,6 +785,18 @@ void ItemsRepeater::InvalidateMeasureForLayout(winrt::Layout const&, winrt::IIns
 void ItemsRepeater::InvalidateArrangeForLayout(winrt::Layout const&, winrt::IInspectable const&)
 {
     InvalidateArrange();
+}
+
+void ItemsRepeater::EnsureDefaultLayoutState()
+{
+    // Initialize the cached layout to the default value
+    if (!GetLayoutContext().LayoutState())
+    {
+        // OnLayoutChanged has not been called yet for this ItemsRepeater.
+        // This is the first call for the default VirtualizingLayout layout after the control's creation.
+        auto layout = Layout().as<winrt::VirtualizingLayout>();
+        OnLayoutChanged(nullptr, layout);
+    }
 }
 
 winrt::VirtualizingLayoutContext ItemsRepeater::GetLayoutContext()
