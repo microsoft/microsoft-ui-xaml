@@ -49,8 +49,10 @@ void StackLayout::InitializeForContextCore(winrt::VirtualizingLayoutContext cons
 
 void StackLayout::UninitializeForContextCore(winrt::VirtualizingLayoutContext const& context)
 {
-    auto stackState = GetAsStackState(context.LayoutState());
-    stackState->UninitializeForContext(context);
+    if (auto stackState = GetAsStackState(context.LayoutState()))
+    {
+        stackState->UninitializeForContext(context);
+    }
 }
 
 winrt::Size StackLayout::MeasureOverride(
