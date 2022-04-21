@@ -192,4 +192,8 @@ private:
     // See: https://github.com/microsoft/microsoft-ui-xaml/issues/776
     // Solution: Have flag that is only true when DataTemplate exists but it is empty.
     bool m_isItemTemplateEmpty{ false };
+
+    // Tracks whether OnLayoutChanged has already been called or not so that
+    // EnsureDefaultLayoutState does not trigger a second call after the control's creation.
+    bool m_wasLayoutChangedCalled{ false };
 };

@@ -682,6 +682,8 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
 
 void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::Layout& newValue)
 {
+    m_wasLayoutChangedCalled = true;
+
     if (m_isLayoutInProgress)
     {
         throw winrt::hresult_error(E_FAIL, L"Layout cannot be changed during layout.");
@@ -789,9 +791,9 @@ void ItemsRepeater::InvalidateArrangeForLayout(winrt::Layout const&, winrt::IIns
 
 void ItemsRepeater::EnsureDefaultLayoutState()
 {
-    // Initialize the cached layout to the default value
-    if (!GetLayoutContext().LayoutState())
+    if (!m_wasLayoutChangedCalled)
     {
+        // Initialize the cached layout to the default value
         // OnLayoutChanged has not been called yet for this ItemsRepeater.
         // This is the first call for the default VirtualizingLayout layout after the control's creation.
         auto layout = Layout().as<winrt::VirtualizingLayout>();
