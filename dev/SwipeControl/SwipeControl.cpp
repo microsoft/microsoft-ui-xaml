@@ -50,7 +50,7 @@ void SwipeControl::Close()
 {
     CheckThread();
 
-    if (m_isOpen && !m_lastActionWasClosing && !m_isInteracting)
+    if (IsOpen() && !m_lastActionWasClosing && !m_isInteracting)
     {
         m_lastActionWasClosing = true;
         if (!m_isIdle)
@@ -189,7 +189,7 @@ void SwipeControl::IdleStateEntered(
     m_isInteracting = false;
     UpdateIsOpen(m_interactionTracker.get().Position() != winrt::float3::zero());
 
-    if (m_isOpen)
+    if (IsOpen())
     {
         if (m_currentItems && m_currentItems.get().Mode() == winrt::SwipeMode::Execute && m_currentItems.get().Size() > 0)
         {
@@ -246,7 +246,7 @@ void SwipeControl::InteractingStateEntered(
 
     //Once the user has started interacting with a SwipeControl in the closed state we are free to unblock contents.
     //Contents of items opposite the currently opened ones will not be created.
-    if (!m_isOpen)
+    if (!IsOpen())
     {
         m_blockNearContent = false;
         m_blockFarContent = false;
@@ -287,7 +287,7 @@ void SwipeControl::InertiaStateEntered(
     // If the user has panned the interaction tracker past 0 in the opposite direction of the previously
     // opened swipe items then when we set m_isOpen to true the animations will snap to that value.
     // To avoid this we block that side of the animation until the interacting state is entered.
-    if (m_isOpen)
+    if (IsOpen())
     {
         switch (m_createdContent)
         {
@@ -374,11 +374,6 @@ winrt::SwipeControl SwipeControl::GetLastInteractedWithSwipeControl()
         return *lastInteractedWithSwipeControl;
     }
     return nullptr;
-}
-
-bool SwipeControl::GetIsOpen()
-{
-    return m_isOpen;
 }
 
 bool SwipeControl::GetIsIdle()
@@ -636,7 +631,7 @@ void SwipeControl::OnPointerPressedEvent(
             m_currentItems.get().Mode() == winrt::SwipeMode::Execute &&
             m_currentItems.get().Size() > 0 &&
             m_currentItems.get().GetAt(0).BehaviorOnInvoked() == winrt::SwipeBehaviorOnInvoked::RemainOpen &&
-            m_isOpen)
+            IsOpen())
         {
             //If the swipe control is currently open on an Execute item's who's behaviorOnInvoked property is set to RemainOpen
             //we don't want to allow the user interaction to effect the swipe control anymore, so don't redirect the manipulation
@@ -663,7 +658,7 @@ void SwipeControl::InputEaterGridTapped(const winrt::IInspectable& /*sender*/, c
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    if (m_isOpen)
+    if (IsOpen())
     {
         CloseIfNotRemainOpenExecuteItem();
         args.Handled(true);
@@ -1060,7 +1055,7 @@ void SwipeControl::CloseIfNotRemainOpenExecuteItem()
         m_currentItems.get().Mode() == winrt::SwipeMode::Execute &&
         m_currentItems.get().Size() > 0 &&
         m_currentItems.get().GetAt(0).BehaviorOnInvoked() == winrt::SwipeBehaviorOnInvoked::RemainOpen &&
-        m_isOpen)
+        IsOpen())
     {
         //If we have a Mode set to Execute, and an item with BehaviorOnInvoked set to RemainOpen, we do not want to close, so no-op
         return;
@@ -1569,9 +1564,9 @@ void SwipeControl::UpdateIsOpen(bool isOpen)
 
     if (isOpen)
     {
-        if (!m_isOpen)
+        if (!IsOpen())
         {
-            m_isOpen = true;
+            OpenState(winrt::SwipeControlOpenState::Opened);
             m_lastActionWasOpening = true;
             switch (m_createdContent)
             {
@@ -1597,27 +1592,17 @@ void SwipeControl::UpdateIsOpen(bool isOpen)
             {
                 AttachDismissingHandlers();
             }
-
-            if (auto globalTestHooks = SwipeTestHooks::GetGlobalTestHooks())
-            {
-                globalTestHooks->NotifyOpenedStatusChanged(*this);
-            }
         }
     }
     else
     {
-        if (m_isOpen)
+        if (IsOpen())
         {
-            m_isOpen = false;
+            OpenState(winrt::SwipeControlOpenState::Closed);
             m_lastActionWasClosing = true;
             DetachDismissingHandlers();
             m_interactionTracker.get().Properties().InsertBoolean(s_isFarOpenPropertyName, false);
             m_interactionTracker.get().Properties().InsertBoolean(s_isNearOpenPropertyName, false);
-
-            if (auto globalTestHooks = SwipeTestHooks::GetGlobalTestHooks())
-            {
-                globalTestHooks->NotifyOpenedStatusChanged(*this);
-            }
         }
     }
 }
@@ -1628,7 +1613,7 @@ void SwipeControl::UpdateThresholdReached(float value)
 
     const bool oldValue = m_thresholdReached;
     const float effectiveStackPanelSize = static_cast<float>((m_isHorizontal ? m_swipeContentStackPanel.get().ActualWidth() : m_swipeContentStackPanel.get().ActualHeight()) - 1);
-    if (!m_isOpen || m_lastActionWasOpening)
+    if (!IsOpen() || m_lastActionWasOpening)
     {
         //If we are opening new swipe items then we need to scroll open c_ThresholdValue
         m_thresholdReached = abs(value) > std::min(effectiveStackPanelSize, c_ThresholdValue);

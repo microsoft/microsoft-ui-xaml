@@ -53,7 +53,6 @@ public:
 
 #pragma region TestHookHelpers
     static winrt::SwipeControl GetLastInteractedWithSwipeControl();
-    bool GetIsOpen();
     bool GetIsIdle();
 #pragma endregion
 
@@ -126,6 +125,8 @@ private:
 
     void ThrowIfHasVerticalAndHorizontalContent(bool IsHorizontal = false);
 
+    inline bool IsOpen() { return OpenState() == winrt::Microsoft::UI::Xaml::Controls::SwipeControlOpenState::Opened; }
+
     std::wstring GetAnimationTarget(winrt::UIElement child);
 
     winrt::SwipeControl GetThis();
@@ -187,7 +188,6 @@ private:
     bool m_lastActionWasOpening{ false };
     bool m_isInteracting{ false };
     bool m_isIdle{ true };
-    bool m_isOpen{ false };
     bool m_thresholdReached{ false };
     //Near content = left or top
     //Far content = right or bottom

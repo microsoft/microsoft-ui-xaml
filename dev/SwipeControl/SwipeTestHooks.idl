@@ -1,4 +1,4 @@
-namespace MU_PRIVATE_CONTROLS_NAMESPACE
+﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
 {
 
 [MUX_INTERNAL]
@@ -7,10 +7,8 @@ namespace MU_PRIVATE_CONTROLS_NAMESPACE
 runtimeclass SwipeTestHooks
 {
     static MU_XC_NAMESPACE.SwipeControl GetLastInteractedWithSwipeControl();
-    static Boolean GetIsOpen(MU_XC_NAMESPACE.SwipeControl swipeControl);
     static Boolean GetIsIdle(MU_XC_NAMESPACE.SwipeControl swipeControl);
     static event Windows.Foundation.TypedEventHandler<Object, Object> LastInteractedWithSwipeControlChanged;
-    static event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.SwipeControl, Object> OpenedStatusChanged;
     static event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.SwipeControl, Object> IdleStatusChanged;
 }
 

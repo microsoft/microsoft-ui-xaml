@@ -25,6 +25,14 @@ enum SwipeMode
 
 [MUX_PUBLIC]
 [webhosthidden]
+enum SwipeControlOpenState
+{
+    Closed,
+    Opened
+};
+
+[MUX_PUBLIC]
+[webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass SwipeItems : Windows.UI.Xaml.DependencyObject, Windows.Foundation.Collections.IVector<SwipeItem>
 {
@@ -49,12 +57,14 @@ unsealed runtimeclass SwipeControl : Windows.UI.Xaml.Controls.ContentControl
     SwipeItems RightItems { get; set; };
     SwipeItems TopItems { get; set; };
     SwipeItems BottomItems { get; set; };
+    SwipeControlOpenState OpenState{ get; };
     void Close();
 
     static Windows.UI.Xaml.DependencyProperty LeftItemsProperty { get; };
     static Windows.UI.Xaml.DependencyProperty RightItemsProperty { get; };
     static Windows.UI.Xaml.DependencyProperty TopItemsProperty { get; };
     static Windows.UI.Xaml.DependencyProperty BottomItemsProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty OpenStateProperty{ get; };
 }
 
 [MUX_PUBLIC]

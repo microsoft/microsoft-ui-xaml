@@ -18,6 +18,7 @@ using SwipeControl_TestUI;
 using IconSource = Microsoft.UI.Xaml.Controls.IconSource;
 using SwipeItem = Microsoft.UI.Xaml.Controls.SwipeItem;
 using SwipeControl = Microsoft.UI.Xaml.Controls.SwipeControl;
+using SwipeControlOpenState = Microsoft.UI.Xaml.Controls.SwipeControlOpenState;
 using SwipeItemInvokedEventArgs = Microsoft.UI.Xaml.Controls.SwipeItemInvokedEventArgs;
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
 using SwipeTestHooks = Microsoft.UI.Private.Controls.SwipeTestHooks;
@@ -36,6 +37,8 @@ namespace MUXControlsTestApp
         SwipeItem pastSender;
         UIElement animatedSwipe;
         DispatcherTimer _dt;
+        List<SwipeControl> swipeControls;
+        List<long> swipeControlOpenStateChangedTokens = new List<long>();
 
         public SwipeControlPage()
         {
@@ -70,6 +73,8 @@ namespace MUXControlsTestApp
                 MUXControlsTestHooks.SetLoggingLevelForType("SwipeControl", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
                 MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
             }
+
+            swipeControls = new List<SwipeControl> { sc1, sc2, sc3, sc4, sc5, sc6, sc7, sc8, sc9, sc10, sc11 };
         }
 
         private void SwipeTestHooks_LastInteractedWithSwipeControlChanged(object sender, object args)
@@ -248,13 +253,24 @@ namespace MUXControlsTestApp
 
             SetupAnimatedValuesSpy();
             SpyAnimatedValues();
-            SwipeTestHooks.OpenedStatusChanged += SwipeTestHooks_OpenedStatusChanged;
+            foreach (var swipeControl in swipeControls)
+            {
+                swipeControlOpenStateChangedTokens.Add(swipeControl.RegisterPropertyChangedCallback(SwipeControl.OpenStateProperty, SwipeControl_PropertyChanged));
+            }
             SwipeTestHooks.IdleStatusChanged += SwipeTestHooks_IdleStatusChanged;
         }
 
         private void TestSwipeControl_Unloaded(object sender, RoutedEventArgs e)
         {
-            SwipeTestHooks.OpenedStatusChanged -= SwipeTestHooks_OpenedStatusChanged;
+            var swipeControlCount = swipeControls.Count;
+            if (swipeControlCount != swipeControlOpenStateChangedTokens.Count)
+            {
+                throw new InvalidOperationException("swipeControls.Count != swipeControlOpenStateChangedTokens.Count");
+            }
+            for (var i = 0; i < swipeControlCount; ++i)
+            {
+                swipeControls[i].UnregisterPropertyChangedCallback(SwipeControl.OpenStateProperty, swipeControlOpenStateChangedTokens[i]);
+            }
             SwipeTestHooks.IdleStatusChanged -= SwipeTestHooks_IdleStatusChanged;
         }
 
@@ -412,16 +428,17 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void SwipeTestHooks_OpenedStatusChanged(SwipeControl sender, object args)
+        private void SwipeControl_PropertyChanged(DependencyObject obj, DependencyProperty dp)
         {
+            SwipeControl sender = (SwipeControl) obj;
             if (chkLogSwipeControlEvents.IsChecked == true)
             {
-                AppendAsyncEventMessage("SwipeTestHooks_OpenedStatusChanged sender.Name=" + sender.Name);
+                AppendAsyncEventMessage("SwipeControl_PropertyChanged sender.Name=" + sender.Name);
             }
 
             if (sender.Name == this.sc1.Name)
             {
-                if (SwipeTestHooks.GetIsOpen(this.sc1))
+                if (sender.OpenState == SwipeControlOpenState.Opened)
                 {
                     this.SwipeItem1OpenCheckBox.IsChecked = true;
                 }
@@ -432,7 +449,7 @@ namespace MUXControlsTestApp
             }
             if (sender.Name == this.sc2.Name)
             {
-                if (SwipeTestHooks.GetIsOpen(this.sc2))
+                if (sender.OpenState == SwipeControlOpenState.Opened)
                 {
                     this.SwipeItem2OpenCheckBox.IsChecked = true;
                 }
@@ -443,7 +460,7 @@ namespace MUXControlsTestApp
             }
             if (sender.Name == this.sc3.Name)
             {
-                if (SwipeTestHooks.GetIsOpen(this.sc3))
+                if (sender.OpenState == SwipeControlOpenState.Opened)
                 {
                     this.SwipeItem3OpenCheckBox.IsChecked = true;
                 }
@@ -454,7 +471,7 @@ namespace MUXControlsTestApp
             }
             if (sender.Name == this.sc4.Name)
             {
-                if (SwipeTestHooks.GetIsOpen(this.sc4))
+                if (sender.OpenState == SwipeControlOpenState.Opened)
                 {
                     this.SwipeItem4OpenCheckBox.IsChecked = true;
                 }
@@ -465,7 +482,7 @@ namespace MUXControlsTestApp
             }
             if (sender.Name == this.sc5.Name)
             {
-                if (SwipeTestHooks.GetIsOpen(this.sc5))
+                if (sender.OpenState == SwipeControlOpenState.Opened)
                 {
                     this.SwipeItem5OpenCheckBox.IsChecked = true;
                 }
@@ -476,7 +493,7 @@ namespace MUXControlsTestApp
             }
             if (sender.Name == this.sc6.Name)
             {
-                if (SwipeTestHooks.GetIsOpen(this.sc6))
+                if (sender.OpenState == SwipeControlOpenState.Opened)
                 {
                     this.SwipeItem6OpenCheckBox.IsChecked = true;
                 }
@@ -487,7 +504,7 @@ namespace MUXControlsTestApp
             }
             if (sender.Name == this.sc7.Name)
             {
-                if (SwipeTestHooks.GetIsOpen(this.sc7))
+                if (sender.OpenState == SwipeControlOpenState.Opened)
                 {
                     this.SwipeItem7OpenCheckBox.IsChecked = true;
                 }
@@ -498,7 +515,7 @@ namespace MUXControlsTestApp
             }
             if (sender.Name == this.sc8.Name)
             {
-                if (SwipeTestHooks.GetIsOpen(this.sc8))
+                if (sender.OpenState == SwipeControlOpenState.Opened)
                 {
                     this.SwipeItem8OpenCheckBox.IsChecked = true;
                 }
@@ -509,7 +526,7 @@ namespace MUXControlsTestApp
             }
             if (sender.Name == this.sc9.Name)
             {
-                if (SwipeTestHooks.GetIsOpen(this.sc9))
+                if (sender.OpenState == SwipeControlOpenState.Opened)
                 {
                     this.SwipeItem9OpenCheckBox.IsChecked = true;
                 }
@@ -520,7 +537,7 @@ namespace MUXControlsTestApp
             }
             if (sender.Name == this.sc10.Name)
             {
-                if (SwipeTestHooks.GetIsOpen(this.sc10))
+                if (sender.OpenState == SwipeControlOpenState.Opened)
                 {
                     this.SwipeItem10OpenCheckBox.IsChecked = true;
                 }
@@ -531,7 +548,7 @@ namespace MUXControlsTestApp
             }
             if (sender.Name == this.sc11.Name)
             {
-                if (SwipeTestHooks.GetIsOpen(this.sc11))
+                if (sender.OpenState == SwipeControlOpenState.Opened)
                 {
                     this.SwipeItem11OpenCheckBox.IsChecked = true;
                 }

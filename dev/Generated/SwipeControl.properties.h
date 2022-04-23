@@ -15,6 +15,9 @@ public:
     void LeftItems(winrt::SwipeItems const& value);
     winrt::SwipeItems LeftItems();
 
+    void OpenState(winrt::SwipeControlOpenState const& value);
+    winrt::SwipeControlOpenState OpenState();
+
     void RightItems(winrt::SwipeItems const& value);
     winrt::SwipeItems RightItems();
 
@@ -23,11 +26,13 @@ public:
 
     static winrt::DependencyProperty BottomItemsProperty() { return s_BottomItemsProperty; }
     static winrt::DependencyProperty LeftItemsProperty() { return s_LeftItemsProperty; }
+    static winrt::DependencyProperty OpenStateProperty() { return s_OpenStateProperty; }
     static winrt::DependencyProperty RightItemsProperty() { return s_RightItemsProperty; }
     static winrt::DependencyProperty TopItemsProperty() { return s_TopItemsProperty; }
 
     static GlobalDependencyProperty s_BottomItemsProperty;
     static GlobalDependencyProperty s_LeftItemsProperty;
+    static GlobalDependencyProperty s_OpenStateProperty;
     static GlobalDependencyProperty s_RightItemsProperty;
     static GlobalDependencyProperty s_TopItemsProperty;
 
@@ -39,6 +44,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnLeftItemsPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnOpenStatePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

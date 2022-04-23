@@ -15,6 +15,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 GlobalDependencyProperty SwipeControlProperties::s_BottomItemsProperty{ nullptr };
 GlobalDependencyProperty SwipeControlProperties::s_LeftItemsProperty{ nullptr };
+GlobalDependencyProperty SwipeControlProperties::s_OpenStateProperty{ nullptr };
 GlobalDependencyProperty SwipeControlProperties::s_RightItemsProperty{ nullptr };
 GlobalDependencyProperty SwipeControlProperties::s_TopItemsProperty{ nullptr };
 
@@ -47,6 +48,17 @@ void SwipeControlProperties::EnsureProperties()
                 ValueHelper<winrt::SwipeItems>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnLeftItemsPropertyChanged));
     }
+    if (!s_OpenStateProperty)
+    {
+        s_OpenStateProperty =
+            InitializeDependencyProperty(
+                L"OpenState",
+                winrt::name_of<winrt::SwipeControlOpenState>(),
+                winrt::name_of<winrt::SwipeControl>(),
+                false /* isAttached */,
+                ValueHelper<winrt::SwipeControlOpenState>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnOpenStatePropertyChanged));
+    }
     if (!s_RightItemsProperty)
     {
         s_RightItemsProperty =
@@ -75,6 +87,7 @@ void SwipeControlProperties::ClearProperties()
 {
     s_BottomItemsProperty = nullptr;
     s_LeftItemsProperty = nullptr;
+    s_OpenStateProperty = nullptr;
     s_RightItemsProperty = nullptr;
     s_TopItemsProperty = nullptr;
 }
@@ -88,6 +101,14 @@ void SwipeControlProperties::OnBottomItemsPropertyChanged(
 }
 
 void SwipeControlProperties::OnLeftItemsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::SwipeControl>();
+    winrt::get_self<SwipeControl>(owner)->OnPropertyChanged(args);
+}
+
+void SwipeControlProperties::OnOpenStatePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -135,6 +156,19 @@ void SwipeControlProperties::LeftItems(winrt::SwipeItems const& value)
 winrt::SwipeItems SwipeControlProperties::LeftItems()
 {
     return ValueHelper<winrt::SwipeItems>::CastOrUnbox(static_cast<SwipeControl*>(this)->GetValue(s_LeftItemsProperty));
+}
+
+void SwipeControlProperties::OpenState(winrt::SwipeControlOpenState const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<SwipeControl*>(this)->SetValue(s_OpenStateProperty, ValueHelper<winrt::SwipeControlOpenState>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::SwipeControlOpenState SwipeControlProperties::OpenState()
+{
+    return ValueHelper<winrt::SwipeControlOpenState>::CastOrUnbox(static_cast<SwipeControl*>(this)->GetValue(s_OpenStateProperty));
 }
 
 void SwipeControlProperties::RightItems(winrt::SwipeItems const& value)

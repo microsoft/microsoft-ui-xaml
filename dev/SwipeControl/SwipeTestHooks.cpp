@@ -21,22 +21,6 @@ winrt::SwipeControl SwipeTestHooks::GetLastInteractedWithSwipeControl()
     return SwipeControl::GetLastInteractedWithSwipeControl();
 }
 
-bool SwipeTestHooks::GetIsOpen(const winrt::SwipeControl& swipeControl)
-{
-    if (swipeControl)
-    {
-        return winrt::get_self<SwipeControl>(swipeControl)->GetIsOpen();
-    }
-    else
-    {
-        if (auto lastInteractedWithSwipeControl = SwipeControl::GetLastInteractedWithSwipeControl())
-        {
-            return winrt::get_self<SwipeControl>(lastInteractedWithSwipeControl)->GetIsOpen();
-        }
-        return false;
-    }
-}
-
 bool SwipeTestHooks::GetIsIdle(const winrt::SwipeControl& swipeControl)
 {
     if (swipeControl)
@@ -72,27 +56,6 @@ void SwipeTestHooks::LastInteractedWithSwipeControlChanged(winrt::event_token co
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_lastInteractedWithSwipeControlChangedEventSource.remove(token);
-}
-
-void SwipeTestHooks::NotifyOpenedStatusChanged(const winrt::SwipeControl& sender)
-{
-    auto hooks = EnsureGlobalTestHooks();
-    if (hooks->m_openedStatusChangedEventSource)
-    {
-        hooks->m_openedStatusChangedEventSource(sender, nullptr);
-    }
-}
-
-winrt::event_token SwipeTestHooks::OpenedStatusChanged(winrt::TypedEventHandler<winrt::SwipeControl, winrt::IInspectable> const& value)
-{
-    auto hooks = EnsureGlobalTestHooks();
-    return hooks->m_openedStatusChangedEventSource.add(value);
-}
-
-void SwipeTestHooks::OpenedStatusChanged(winrt::event_token const& token)
-{
-    auto hooks = EnsureGlobalTestHooks();
-    hooks->m_openedStatusChangedEventSource.remove(token);
 }
 
 void SwipeTestHooks::NotifyIdleStatusChanged(const winrt::SwipeControl& sender)

@@ -19,16 +19,11 @@ public:
     static com_ptr<SwipeTestHooks> EnsureGlobalTestHooks();
 
     static winrt::SwipeControl GetLastInteractedWithSwipeControl();
-    static bool GetIsOpen(const winrt::SwipeControl& swipeControl);
     static bool GetIsIdle(const winrt::SwipeControl& swipeControl);
 
     static void NotifyLastInteractedWithSwipeControlChanged();
     static winrt::event_token LastInteractedWithSwipeControlChanged(winrt::TypedEventHandler<winrt::IInspectable, winrt::IInspectable> const& value);
     static void LastInteractedWithSwipeControlChanged(winrt::event_token const& token);
-
-    static void NotifyOpenedStatusChanged(const winrt::SwipeControl& sender);
-    static winrt::event_token OpenedStatusChanged(winrt::TypedEventHandler<winrt::SwipeControl, winrt::IInspectable> const& value);
-    static void OpenedStatusChanged(winrt::event_token const& token);
 
     static void NotifyIdleStatusChanged(const winrt::SwipeControl& sender);
     static winrt::event_token IdleStatusChanged(winrt::TypedEventHandler<winrt::SwipeControl, winrt::IInspectable> const& value);
