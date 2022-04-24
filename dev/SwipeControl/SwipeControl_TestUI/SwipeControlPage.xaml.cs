@@ -29,6 +29,11 @@ namespace MUXControlsTestApp
 {
     public sealed partial class SwipeControlPage : TestPage
     {
+        static bool IsOpen(SwipeControlOpenState state)
+        {
+            return state == SwipeControlOpenState.Opened;
+        }
+
         object asyncEventReportingLock = new object();
         List<string> lstAsyncEventMessage = new List<string>();
         List<string> fullLogs = new List<string>();
@@ -37,8 +42,6 @@ namespace MUXControlsTestApp
         SwipeItem pastSender;
         UIElement animatedSwipe;
         DispatcherTimer _dt;
-        List<SwipeControl> swipeControls;
-        List<long> swipeControlOpenStateChangedTokens = new List<long>();
 
         public SwipeControlPage()
         {
@@ -74,7 +77,6 @@ namespace MUXControlsTestApp
                 MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
             }
 
-            swipeControls = new List<SwipeControl> { sc1, sc2, sc3, sc4, sc5, sc6, sc7, sc8, sc9, sc10, sc11 };
         }
 
         private void SwipeTestHooks_LastInteractedWithSwipeControlChanged(object sender, object args)
@@ -253,24 +255,11 @@ namespace MUXControlsTestApp
 
             SetupAnimatedValuesSpy();
             SpyAnimatedValues();
-            foreach (var swipeControl in swipeControls)
-            {
-                swipeControlOpenStateChangedTokens.Add(swipeControl.RegisterPropertyChangedCallback(SwipeControl.OpenStateProperty, SwipeControl_PropertyChanged));
-            }
             SwipeTestHooks.IdleStatusChanged += SwipeTestHooks_IdleStatusChanged;
         }
 
         private void TestSwipeControl_Unloaded(object sender, RoutedEventArgs e)
         {
-            var swipeControlCount = swipeControls.Count;
-            if (swipeControlCount != swipeControlOpenStateChangedTokens.Count)
-            {
-                throw new InvalidOperationException("swipeControls.Count != swipeControlOpenStateChangedTokens.Count");
-            }
-            for (var i = 0; i < swipeControlCount; ++i)
-            {
-                swipeControls[i].UnregisterPropertyChangedCallback(SwipeControl.OpenStateProperty, swipeControlOpenStateChangedTokens[i]);
-            }
             SwipeTestHooks.IdleStatusChanged -= SwipeTestHooks_IdleStatusChanged;
         }
 
@@ -424,137 +413,6 @@ namespace MUXControlsTestApp
                 else
                 {
                     this.SwipeItem11IdleCheckBox.IsChecked = false;
-                }
-            }
-        }
-
-        private void SwipeControl_PropertyChanged(DependencyObject obj, DependencyProperty dp)
-        {
-            SwipeControl sender = (SwipeControl) obj;
-            if (chkLogSwipeControlEvents.IsChecked == true)
-            {
-                AppendAsyncEventMessage("SwipeControl_PropertyChanged sender.Name=" + sender.Name);
-            }
-
-            if (sender.Name == this.sc1.Name)
-            {
-                if (sender.OpenState == SwipeControlOpenState.Opened)
-                {
-                    this.SwipeItem1OpenCheckBox.IsChecked = true;
-                }
-                else
-                {
-                    this.SwipeItem1OpenCheckBox.IsChecked = false;
-                }
-            }
-            if (sender.Name == this.sc2.Name)
-            {
-                if (sender.OpenState == SwipeControlOpenState.Opened)
-                {
-                    this.SwipeItem2OpenCheckBox.IsChecked = true;
-                }
-                else
-                {
-                    this.SwipeItem2OpenCheckBox.IsChecked = false;
-                }
-            }
-            if (sender.Name == this.sc3.Name)
-            {
-                if (sender.OpenState == SwipeControlOpenState.Opened)
-                {
-                    this.SwipeItem3OpenCheckBox.IsChecked = true;
-                }
-                else
-                {
-                    this.SwipeItem3OpenCheckBox.IsChecked = false;
-                }
-            }
-            if (sender.Name == this.sc4.Name)
-            {
-                if (sender.OpenState == SwipeControlOpenState.Opened)
-                {
-                    this.SwipeItem4OpenCheckBox.IsChecked = true;
-                }
-                else
-                {
-                    this.SwipeItem4OpenCheckBox.IsChecked = false;
-                }
-            }
-            if (sender.Name == this.sc5.Name)
-            {
-                if (sender.OpenState == SwipeControlOpenState.Opened)
-                {
-                    this.SwipeItem5OpenCheckBox.IsChecked = true;
-                }
-                else
-                {
-                    this.SwipeItem5OpenCheckBox.IsChecked = false;
-                }
-            }
-            if (sender.Name == this.sc6.Name)
-            {
-                if (sender.OpenState == SwipeControlOpenState.Opened)
-                {
-                    this.SwipeItem6OpenCheckBox.IsChecked = true;
-                }
-                else
-                {
-                    this.SwipeItem6OpenCheckBox.IsChecked = false;
-                }
-            }
-            if (sender.Name == this.sc7.Name)
-            {
-                if (sender.OpenState == SwipeControlOpenState.Opened)
-                {
-                    this.SwipeItem7OpenCheckBox.IsChecked = true;
-                }
-                else
-                {
-                    this.SwipeItem7OpenCheckBox.IsChecked = false;
-                }
-            }
-            if (sender.Name == this.sc8.Name)
-            {
-                if (sender.OpenState == SwipeControlOpenState.Opened)
-                {
-                    this.SwipeItem8OpenCheckBox.IsChecked = true;
-                }
-                else
-                {
-                    this.SwipeItem8OpenCheckBox.IsChecked = false;
-                }
-            }
-            if (sender.Name == this.sc9.Name)
-            {
-                if (sender.OpenState == SwipeControlOpenState.Opened)
-                {
-                    this.SwipeItem9OpenCheckBox.IsChecked = true;
-                }
-                else
-                {
-                    this.SwipeItem9OpenCheckBox.IsChecked = false;
-                }
-            }
-            if (sender.Name == this.sc10.Name)
-            {
-                if (sender.OpenState == SwipeControlOpenState.Opened)
-                {
-                    this.SwipeItem10OpenCheckBox.IsChecked = true;
-                }
-                else
-                {
-                    this.SwipeItem10OpenCheckBox.IsChecked = false;
-                }
-            }
-            if (sender.Name == this.sc11.Name)
-            {
-                if (sender.OpenState == SwipeControlOpenState.Opened)
-                {
-                    this.SwipeItem11OpenCheckBox.IsChecked = true;
-                }
-                else
-                {
-                    this.SwipeItem11OpenCheckBox.IsChecked = false;
                 }
             }
         }
