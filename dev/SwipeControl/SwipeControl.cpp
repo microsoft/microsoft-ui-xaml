@@ -191,7 +191,7 @@ void SwipeControl::IdleStateEntered(
 
     if (IsOpen())
     {
-        if (m_currentItems && m_currentItems.get().Mode() == winrt::SwipeMode::Execute && m_currentItems.get().Size() > 0)
+        if (!m_isIdle && m_currentItems && m_currentItems.get().Mode() == winrt::SwipeMode::Execute && m_currentItems.get().Size() > 0)
         {
             auto swipeItem = static_cast<winrt::SwipeItem>(m_currentItems.get().GetAt(0));
             winrt::get_self<SwipeItem>(swipeItem)->InvokeSwipe(*this);
