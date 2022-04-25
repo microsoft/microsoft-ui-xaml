@@ -363,6 +363,13 @@ void SwipeControl::ValuesChanged(
             CreateBottomContent();
         }
     }
+    // In some cases, `IdleStateEntered` alone isn't enough to maintain a consistent IsOpen state.
+    // E.g. m_interactionTracker.TryUpdatePosition(Vector3) isn't synchronous in CloseWithoutAnimation
+    // Updating IsOpen here guarantee the state is consistent across all interaction tracker state.
+    if (m_interactionTracker && !m_isInteracting)
+    {
+        UpdateIsOpen(m_interactionTracker.get().Position() != winrt::float3::zero());
+    }
     UpdateThresholdReached(value);
 }
 
