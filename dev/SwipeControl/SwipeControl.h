@@ -40,6 +40,8 @@ public:
     void IdleStateEntered(
         winrt::InteractionTrackerIdleStateEnteredArgs const& args);
 
+    void DoIdleStateEntered(winrt::float3 const& position);
+
     void InteractingStateEntered(
         winrt::InteractionTrackerInteractingStateEnteredArgs const& args);
 

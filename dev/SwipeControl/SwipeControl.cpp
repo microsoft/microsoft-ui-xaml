@@ -185,9 +185,13 @@ void SwipeControl::IdleStateEntered(
     winrt::InteractionTrackerIdleStateEnteredArgs const& /*args*/)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
+    DoIdleStateEntered(m_interactionTracker.get().Position());
+}
 
+void SwipeControl::DoIdleStateEntered(winrt::float3 const& position)
+{
     m_isInteracting = false;
-    UpdateIsOpen(m_interactionTracker.get().Position() != winrt::float3::zero());
+    UpdateIsOpen(position != winrt::float3::zero());
 
     if (IsOpen())
     {
@@ -362,13 +366,6 @@ void SwipeControl::ValuesChanged(
         {
             CreateBottomContent();
         }
-    }
-    // In some cases, `IdleStateEntered` alone isn't enough to maintain a consistent IsOpen state.
-    // E.g. m_interactionTracker.TryUpdatePosition(Vector3) isn't synchronous in CloseWithoutAnimation
-    // Updating IsOpen here guarantee the state is consistent across all interaction tracker state.
-    if (m_interactionTracker && !m_isInteracting)
-    {
-        UpdateIsOpen(m_interactionTracker.get().Position() != winrt::float3::zero());
     }
     UpdateThresholdReached(value);
 }
@@ -1047,10 +1044,10 @@ void SwipeControl::CloseWithoutAnimation()
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
     const bool wasIdle = m_isIdle;
-    m_interactionTracker.get().TryUpdatePosition({ 0.0f, 0.0f, 0.0f });
+    m_interactionTracker.get().TryUpdatePosition(winrt::float3::zero());
     if (wasIdle)
     {
-        IdleStateEntered(nullptr);
+        DoIdleStateEntered(winrt::float3::zero());
     }
 }
 
