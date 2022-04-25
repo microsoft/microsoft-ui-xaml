@@ -1,0 +1,38 @@
+﻿<local:TestPage
+    x:Class="MUXControlsTestApp.SwipeControlLoadedAlwaysClosedPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    NavigationCacheMode="Required">
+    <muxc:SwipeControl x:Name="sc">
+        <muxc:SwipeControl.LeftItems>
+            <muxc:SwipeItems Mode="Execute">
+                <muxc:SwipeItem Text="You shouldn't see me when navigating to this page" BehaviorOnInvoked="RemainOpen" Invoked="SwipeItem_Invoked">
+                    <muxc:SwipeItem.IconSource>
+                        <muxc:SymbolIconSource Symbol="Accept"/>
+                    </muxc:SwipeItem.IconSource>
+                </muxc:SwipeItem>
+            </muxc:SwipeItems>
+        </muxc:SwipeControl.LeftItems>
+        <Grid Padding="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <muxc:RadioButtons>
+                <RadioButton x:Name="backOnOpen" AutomationProperties.Name="backOnOpen" Content="Back on open" IsChecked="True"/>
+                <RadioButton x:Name="backOnInvoked" AutomationProperties.Name="backOnInvoked" Content="Back on invoked"/>
+            </muxc:RadioButtons>
+            <CheckBox Grid.Row="1" Content="IsOpen" IsChecked="{x:Bind local:SwipeControlLoadedAlwaysClosedPage.IsOpen(sc.OpenState), Mode=OneWay}" IsEnabled="False"/>
+            <Border Grid.Row="2">
+                <TextBlock TextWrapping="WrapWholeWords" Text="Swipe to navigate back, and come back to this page slowly, or rapidly. Expected result: the swipe control is in closed state, and you can swipt it. In some rare cases, this swipe control would stay open and slowly close with animation instead. Or, this swipe control would remain closed and refuse to be swiped."/>
+            </Border>
+        </Grid>
+    </muxc:SwipeControl>
+</local:TestPage>

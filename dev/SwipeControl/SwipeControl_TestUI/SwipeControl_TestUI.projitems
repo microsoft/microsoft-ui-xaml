@@ -10,8 +10,11 @@
     <Import_RootNamespace>SwipeControl_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)SwipeControlClearPage.xaml.cs" >
+    <Compile Include="$(MSBuildThisFileDirectory)SwipeControlClearPage.xaml.cs">
       <DependentUpon>SwipeControlClearPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)SwipeControlLoadedAlwaysClosedPage.xaml.cs">
+      <DependentUpon>SwipeControlLoadedAlwaysClosedPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)SwipeControlPage2.xaml.cs">
       <DependentUpon>SwipeControlPage2.xaml</DependentUpon>
@@ -26,6 +29,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)SwipeControlClearPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)SwipeControlLoadedAlwaysClosedPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
