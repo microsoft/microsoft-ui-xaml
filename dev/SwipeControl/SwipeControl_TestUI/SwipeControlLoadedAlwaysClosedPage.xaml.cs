@@ -3,6 +3,7 @@
 using SwipeControlOpenState = Microsoft.UI.Xaml.Controls.SwipeControlOpenState;
 using SwipeControl = Microsoft.UI.Xaml.Controls.SwipeControl;
 using SwipeItem = Microsoft.UI.Xaml.Controls.SwipeItem;
+using SwipeBehaviorOnInvoked = Microsoft.UI.Xaml.Controls.SwipeBehaviorOnInvoked;
 using SwipeItemInvokedEventArgs = Microsoft.UI.Xaml.Controls.SwipeItemInvokedEventArgs;
 
 namespace MUXControlsTestApp
@@ -26,7 +27,8 @@ namespace MUXControlsTestApp
         void SwipeControl_PropertyChanged(DependencyObject obj, DependencyProperty dp)
         {
             if (backOnOpen.IsChecked != true) return;
-            if (sc.OpenState == SwipeControlOpenState.Opened)
+            var isOpen = sc.OpenState == SwipeControlOpenState.Opened;
+            if (isOpen)
             {
                 Frame.GoBack();
             }
@@ -36,6 +38,11 @@ namespace MUXControlsTestApp
         {
             if (backOnInvoked.IsChecked != true) return;
             Frame.GoBack();
+        }
+
+        private void ComboBox_SelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
+        {
+            si.BehaviorOnInvoked = (SwipeBehaviorOnInvoked) behaviorOnInvoked.SelectedIndex;
         }
     }
 }

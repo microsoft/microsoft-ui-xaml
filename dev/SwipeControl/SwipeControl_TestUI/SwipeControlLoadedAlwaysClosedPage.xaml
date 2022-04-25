@@ -12,7 +12,7 @@
     <muxc:SwipeControl x:Name="sc">
         <muxc:SwipeControl.LeftItems>
             <muxc:SwipeItems Mode="Execute">
-                <muxc:SwipeItem Text="You shouldn't see me when navigating to this page" BehaviorOnInvoked="RemainOpen" Invoked="SwipeItem_Invoked">
+                <muxc:SwipeItem x:Name="si" Text="You shouldn't see me when navigating to this page" BehaviorOnInvoked="RemainOpen" Invoked="SwipeItem_Invoked">
                     <muxc:SwipeItem.IconSource>
                         <muxc:SymbolIconSource Symbol="Accept"/>
                     </muxc:SwipeItem.IconSource>
@@ -23,16 +23,21 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <muxc:RadioButtons>
+            <!-- selected index must sync with si.BehaviorOnInvoked -->
+            <ComboBox x:Name="behaviorOnInvoked" AutomationProperties.Name="behaviorOnInvoked" SelectedIndex="2" SelectionChanged="ComboBox_SelectionChanged">
+                <ComboBoxItem>Auto</ComboBoxItem>
+                <ComboBoxItem>Close</ComboBoxItem>
+                <ComboBoxItem>RemainOpen</ComboBoxItem>
+            </ComboBox>
+            <muxc:RadioButtons Grid.Row="1">
                 <RadioButton x:Name="backOnOpen" AutomationProperties.Name="backOnOpen" Content="Back on open" IsChecked="True"/>
                 <RadioButton x:Name="backOnInvoked" AutomationProperties.Name="backOnInvoked" Content="Back on invoked"/>
             </muxc:RadioButtons>
-            <CheckBox Grid.Row="1" Content="IsOpen" IsChecked="{x:Bind local:SwipeControlLoadedAlwaysClosedPage.IsOpen(sc.OpenState), Mode=OneWay}" IsEnabled="False"/>
-            <Border Grid.Row="2">
-                <TextBlock TextWrapping="WrapWholeWords" Text="Swipe to navigate back, and come back to this page slowly, or rapidly. Expected result: the swipe control is in closed state, and you can swipt it. In some rare cases, this swipe control would stay open and slowly close with animation instead. Or, this swipe control would remain closed and refuse to be swiped."/>
-            </Border>
+            <CheckBox Grid.Row="2" Content="IsOpen" IsChecked="{x:Bind local:SwipeControlLoadedAlwaysClosedPage.IsOpen(sc.OpenState), Mode=OneWay}" IsEnabled="False"/>
+            <TextBlock Grid.Row="3" TextWrapping="WrapWholeWords" Text="Swipe to navigate back, and come back to this page slowly, or rapidly. Expected result: the swipe control is in closed state, and you can swipt it. In some rare cases, this swipe control would stay open and slowly close with animation instead. Or, this swipe control would remain closed and refuse to be swiped."/>
         </Grid>
     </muxc:SwipeControl>
 </local:TestPage>
