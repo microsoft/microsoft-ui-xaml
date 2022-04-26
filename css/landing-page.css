@@ -17,18 +17,19 @@ h2,
 h3,
 h4,
 h5,
-h6 {
+h6
+{
  font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
  font-weight: 700;
 }
 
-header.masthead {
+.masthead {
  position: relative;
  background-size: cover;
  padding-top: 6rem;
  padding-bottom: 6rem;
 }
-header.masthead h1 {
+.masthead h1 {
  color:#0E53BD;
  font-size: 4rem;
 }
@@ -91,11 +92,11 @@ header.masthead h1 {
  background-color: #044317;
 }
 @media (min-width: 768px) {
- header.masthead {
+ .masthead {
    padding-top: 7rem;
    padding-bottom: 7rem;
  }
- header.masthead h1 {
+ .masthead h1 {
    font-size: 5rem;
    text-align: left;
  }
@@ -278,7 +279,7 @@ header.masthead h1 {
  padding-right: 2rem;
 }
 
-.features-icons h3 {
+.features-icons h3, #mainSubtext {
  color: black;
  font-weight: 100;
 }
@@ -365,6 +366,7 @@ footer.footer a{
 #mainSubtext{
  font-weight: 300;
  color: black;
+ font-size: 1.75rem;
 }
 
 #mainLogo {
