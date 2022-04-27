@@ -441,6 +441,7 @@ footer.footer a{
 a {
  color: #0267b8;
  cursor: pointer;
+ text-decoration: underline;
 }
 
 a:hover {
