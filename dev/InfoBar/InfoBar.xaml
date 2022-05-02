@@ -12,6 +12,7 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="{ThemeResource InfoBarBorderBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource InfoBarBorderThickness}" />
+        <Setter Property="AutomationProperties.LandmarkType" Value="Custom" />
         <contract7Present:Setter Property="AutomationProperties.IsDialog" Value="True"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
@@ -22,8 +23,7 @@
                         Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        AutomationProperties.LandmarkType="Custom">
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
                             
