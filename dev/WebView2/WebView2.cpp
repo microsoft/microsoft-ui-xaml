@@ -594,7 +594,14 @@ void WebView2::RegisterCoreEventHandlers()
                             return winrt::FocusManager::FindNextElement(xamlDirection);
                         }
                     }();
-                    if (nextElement)
+                    if (nextElement && nextElement.try_as<winrt::WebView2>() == *this)
+                    {
+                        // If the next element is this webview, then we are the only focusable element. Move focus back into the webview,
+                        // or else we'll get stuck trying to tab out of the top or bottom of the page instead of looping around.
+                        MoveFocusIntoCoreWebView(moveFocusRequestedReason);
+                        args.Handled(TRUE);
+                    }
+                    else if (nextElement)
                     {
                         // If Anaheim is also losing focus via something other than TAB (web LostFocus event fired)
                         // and the TAB handling is arriving later (eg due to longer MOJO delay), skip manually moving Xaml Focus to next element.
@@ -1263,24 +1270,7 @@ void WebView2::HandleGotFocus(const winrt::Windows::Foundation::IInspectable&, c
 {
     if (m_coreWebView && m_xamlFocusChangeInfo.m_isPending)
     {
-        try
-        {
-            m_coreWebViewController.MoveFocus(m_xamlFocusChangeInfo.m_storedMoveFocusReason);
-            m_webHasFocus = true;
-        }
-        catch (winrt::hresult_error e)
-        {
-            // Occasionally, a request to restore the minimized window does not complete. This triggers
-            // FocusManager to set Xaml Focus to WV2 and consequently into CWV2 MoveFocus() call above, 
-            // which in turn will attempt ::SetFocus() on InputHWND, and that will fail with E_INVALIDARG
-            // since that HWND remains minimized. Work around by ignoring this error here. Since the app
-            // is minimized, focus state is not relevant - the next (successful) attempt to restrore the app
-            // will set focus into WV2/CWV2 correctly.
-            if (e.code().value != E_INVALIDARG)
-            {
-                throw;
-            }
-        }
+        MoveFocusIntoCoreWebView(m_xamlFocusChangeInfo.m_storedMoveFocusReason);
         m_xamlFocusChangeInfo.m_isPending = false;
     }
 }
@@ -1305,6 +1295,28 @@ void WebView2::HandleGettingFocus(const winrt::Windows::Foundation::IInspectable
 
         m_xamlFocusChangeInfo.m_storedMoveFocusReason = moveFocusReason;
         m_xamlFocusChangeInfo.m_isPending = true;
+    }
+}
+
+void WebView2::MoveFocusIntoCoreWebView(winrt::CoreWebView2MoveFocusReason reason)
+{
+    try
+    {
+        m_coreWebViewController.MoveFocus(reason);
+        m_webHasFocus = true;
+    }
+    catch (winrt::hresult_error e)
+    {
+        // Occasionally, a request to restore the minimized window does not complete. This triggers
+        // FocusManager to set Xaml Focus to WV2 and consequently into CWV2 MoveFocus() call above, 
+        // which in turn will attempt ::SetFocus() on InputHWND, and that will fail with E_INVALIDARG
+        // since that HWND remains minimized. Work around by ignoring this error here. Since the app
+        // is minimized, focus state is not relevant - the next (successful) attempt to restrore the app
+        // will set focus into WV2/CWV2 correctly.
+        if (e.code().value != E_INVALIDARG)
+        {
+            throw;
+        }
     }
 }
 
