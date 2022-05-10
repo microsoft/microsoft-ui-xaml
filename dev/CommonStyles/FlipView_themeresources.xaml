@@ -161,11 +161,11 @@
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource FlipViewNextPreviousArrowForegroundPressed}" />
                                                     </ObjectAnimationUsingKeyFrames>
-                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX" RepeatBehavior="Forever">
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" RepeatBehavior="Forever">
                                                         <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource FlipViewButtonScalePressed}"/>
                                                         <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource FlipViewButtonScalePressed}"/>
                                                     </DoubleAnimationUsingKeyFrames>
-                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY" RepeatBehavior="Forever">
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" RepeatBehavior="Forever">
                                                         <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource FlipViewButtonScalePressed}"/>
                                                         <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource FlipViewButtonScalePressed}"/>
                                                     </DoubleAnimationUsingKeyFrames>
@@ -223,11 +223,11 @@
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource FlipViewNextPreviousArrowForegroundPressed}" />
                                                     </ObjectAnimationUsingKeyFrames>
-                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX" RepeatBehavior="Forever">
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" RepeatBehavior="Forever">
                                                         <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource FlipViewButtonScalePressed}"/>
                                                         <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource FlipViewButtonScalePressed}"/>
                                                     </DoubleAnimationUsingKeyFrames>
-                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY" RepeatBehavior="Forever">
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" RepeatBehavior="Forever">
                                                         <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource FlipViewButtonScalePressed}"/>
                                                         <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource FlipViewButtonScalePressed}"/>
                                                     </DoubleAnimationUsingKeyFrames>
@@ -285,11 +285,11 @@
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource FlipViewNextPreviousArrowForegroundPressed}" />
                                                     </ObjectAnimationUsingKeyFrames>
-                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX" RepeatBehavior="Forever">
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" RepeatBehavior="Forever">
                                                         <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource FlipViewButtonScalePressed}"/>
                                                         <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource FlipViewButtonScalePressed}"/>
                                                     </DoubleAnimationUsingKeyFrames>
-                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY" RepeatBehavior="Forever">
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" RepeatBehavior="Forever">
                                                         <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource FlipViewButtonScalePressed}"/>
                                                         <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource FlipViewButtonScalePressed}"/>
                                                     </DoubleAnimationUsingKeyFrames>
@@ -346,11 +346,11 @@
                                                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
                                                         <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource FlipViewNextPreviousArrowForegroundPressed}" />
                                                     </ObjectAnimationUsingKeyFrames>
-                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleX" RepeatBehavior="Forever">
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" RepeatBehavior="Forever">
                                                         <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource FlipViewButtonScalePressed}"/>
                                                         <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource FlipViewButtonScalePressed}"/>
                                                     </DoubleAnimationUsingKeyFrames>
-                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ScaleTransform" Storyboard.TargetProperty="ScaleY" RepeatBehavior="Forever">
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" RepeatBehavior="Forever">
                                                         <DiscreteDoubleKeyFrame KeyTime="0:0:0.016" Value="{ThemeResource FlipViewButtonScalePressed}"/>
                                                         <DiscreteDoubleKeyFrame KeyTime="0:0:30" Value="{ThemeResource FlipViewButtonScalePressed}"/>
                                                     </DoubleAnimationUsingKeyFrames>
