@@ -12,7 +12,6 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
-
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
@@ -34,11 +33,16 @@
             <CheckBox x:Name="IsNextTrackButtonVisibleCheckBox" AutomationProperties.Name="IsNextTrackButtonVisibleCheckBox" IsChecked="False" Content="IsNextTrackButtonVisibleCheckBox" />
             <CheckBox x:Name="IsPreviousTrackButtonVisibleCheckBox" AutomationProperties.Name="IsPreviousTrackButtonVisibleCheckBox" IsChecked="False" Content="IsPreviousTrackButtonVisible" />
             <CheckBox x:Name="IsCompactOverlayButtonVisibleCheckBox" AutomationProperties.Name="IsCompactOverlayButtonVisibleCheckBox" IsChecked="False" Content="IsCompactOverlayButtonVisible" />
+
+            <controls:RadioButtons x:Name="SourceUriRadioButtons" SelectedItem="ms-appx:///Assets/ladybug.wmv">
+                <x:String>ms-appx:///Assets/ladybug.wmv</x:String>
+                <x:String>https://www.w3schools.com/html/mov_bbb.mp4</x:String>
+            </controls:RadioButtons>
         </StackPanel>
 
         <Grid Grid.Column="1">
             <MediaPlayerElement
-                Source="ms-appx:///Assets/ladybug.wmv"
+                Source="{x:Bind GetMediaSourceFromString(SourceUriRadioButtons.SelectedItem), Mode=OneWay}"
                 MaxWidth="750"
                 MaxHeight="750"
                 AutoPlay="False"

@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Markup;
 using Windows.UI;
 using System.Windows.Input;
+using Windows.Media.Core;
 
 namespace MUXControlsTestApp
 {
@@ -18,6 +19,11 @@ namespace MUXControlsTestApp
         public MediaTransportControlsPage()
         {
             this.InitializeComponent();
+        }
+
+        public MediaSource GetMediaSourceFromString(object uri)
+        {
+            return MediaSource.CreateFromUri(new Uri(uri as string));
         }
     }
 }
