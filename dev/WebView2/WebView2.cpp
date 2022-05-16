@@ -514,17 +514,14 @@ HWND WebView2::GetHostHwnd() noexcept
 
 HWND WebView2::GetActiveInputWindowHwnd() noexcept
 {
-    if (!m_inputWindowHwnd)
+    auto inputWindowHwnd = m_fnGetFocus();
+    if (!inputWindowHwnd)
     {
-        auto inputWindowHwnd = m_fnGetFocus();
-        if (!inputWindowHwnd)
-        {
-            winrt::check_hresult(HRESULT_FROM_WIN32(::GetLastError()));
-        }
-        MUX_ASSERT(inputWindowHwnd != m_xamlHostHwnd); // Focused XAML host window cannot be set as input hwnd
-        m_inputWindowHwnd = inputWindowHwnd;
+        winrt::check_hresult(HRESULT_FROM_WIN32(::GetLastError()));
     }
-    return m_inputWindowHwnd;
+    MUX_ASSERT(inputWindowHwnd != m_xamlHostHwnd); // Focused XAML host window cannot be set as input hwnd
+
+    return inputWindowHwnd;
 }
 
 void WebView2::RegisterCoreEventHandlers()

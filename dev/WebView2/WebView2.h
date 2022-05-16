@@ -204,7 +204,6 @@ private:
     bool m_hasPenCapture{};
     HWND m_xamlHostHwnd{ nullptr };
     HWND m_tempHostHwnd{ nullptr };
-    HWND m_inputWindowHwnd{ nullptr };
     winrt::hstring m_stopNavigateOnUriChanged{};
     bool m_canGoPropSetInternally{};
 #if WINUI3
