@@ -74,29 +74,6 @@ void WebView2::OnVisibilityPropertyChanged(const winrt::DependencyObject& /*send
     UpdateRenderedSubscriptionAndVisibility();
 }
 
-void WebView2::UnregisterCoreEventHandlers()
-{
-    if (m_coreWebView)
-    {
-        m_coreNavigationStartingRevoker.revoke();
-        m_coreSourceChangedRevoker.revoke();
-        m_coreNavigationCompletedRevoker.revoke();
-        m_coreWebMessageReceivedRevoker.revoke();
-        m_coreProcessFailedRevoker.revoke();
-    }
-
-    if (m_coreWebViewController)
-    {
-        m_coreMoveFocusRequestedRevoker.revoke();
-        m_coreLostFocusRevoker.revoke();
-    }
-
-    if (m_coreWebViewCompositionController)
-    {
-        m_cursorChangedRevoker.revoke();
-    }
-}
-
 // Public Close() API
 void WebView2::Close()
 {
@@ -557,6 +534,28 @@ void WebView2::RegisterCoreEventHandlers()
             FireWebMessageReceived(args);
         }});
 
+    m_coreProcessFailedRevoker = m_coreWebView.ProcessFailed(winrt::auto_revoke, {
+    [this](auto const&, winrt::CoreWebView2ProcessFailedEventArgs const& args)
+    {
+        winrt::CoreWebView2ProcessFailedKind coreProcessFailedKind{ args.ProcessFailedKind() };
+        if (coreProcessFailedKind == winrt::CoreWebView2ProcessFailedKind::BrowserProcessExited)
+        {
+            m_isCoreFailure_BrowserExited_State = true;
+
+            // CoreWebView2 takes care of clearing the event handlers when closing the host,
+            // but we still need to reset the event tokens
+            UnregisterCoreEventHandlers();
+
+            // Null these out so we can't try to use them anymore
+            m_coreWebViewCompositionController = nullptr;
+            m_coreWebViewController = nullptr;
+            m_coreWebView = nullptr;
+            ResetProperties();
+        }
+
+        FireCoreProcessFailedEvent(args);
+    } });
+
     m_coreMoveFocusRequestedRevoker = m_coreWebViewController.MoveFocusRequested(winrt::auto_revoke, {
         [this](auto const&, const winrt::CoreWebView2MoveFocusRequestedEventArgs& args)
         {
@@ -635,28 +634,6 @@ void WebView2::RegisterCoreEventHandlers()
             m_webHasFocus = false;
         }});
 
-    m_coreProcessFailedRevoker = m_coreWebView.ProcessFailed(winrt::auto_revoke, {
-        [this](auto const&, winrt::CoreWebView2ProcessFailedEventArgs const& args)
-        {
-            winrt::CoreWebView2ProcessFailedKind coreProcessFailedKind{ args.ProcessFailedKind() };
-            if (coreProcessFailedKind == winrt::CoreWebView2ProcessFailedKind::BrowserProcessExited)
-            {
-                m_isCoreFailure_BrowserExited_State = true;
-
-                // CoreWebView2 takes care of clearing the event handlers when closing the host,
-                // but we still need to reset the event tokens
-                UnregisterCoreEventHandlers();
-
-                // Null these out so we can't try to use them anymore
-                m_coreWebViewCompositionController = nullptr;
-                m_coreWebViewController = nullptr;
-                m_coreWebView = nullptr;
-                ResetProperties();
-            }
-
-            FireCoreProcessFailedEvent(args);
-        }});
-
     m_cursorChangedRevoker = m_coreWebViewCompositionController.CursorChanged(winrt::auto_revoke, {
         [this](auto const& controller, auto const& obj)
         {
@@ -664,6 +641,29 @@ void WebView2::RegisterCoreEventHandlers()
 
             UpdateCoreWindowCursor();
         }});
+}
+
+void WebView2::UnregisterCoreEventHandlers()
+{
+    if (m_coreWebView)
+    {
+        m_coreNavigationStartingRevoker.revoke();
+        m_coreSourceChangedRevoker.revoke();
+        m_coreNavigationCompletedRevoker.revoke();
+        m_coreWebMessageReceivedRevoker.revoke();
+        m_coreProcessFailedRevoker.revoke();
+    }
+
+    if (m_coreWebViewController)
+    {
+        m_coreMoveFocusRequestedRevoker.revoke();
+        m_coreLostFocusRevoker.revoke();
+    }
+
+    if (m_coreWebViewCompositionController)
+    {
+        m_cursorChangedRevoker.revoke();
+    }
 }
 
 winrt::IAsyncAction WebView2::CreateCoreObjects()
