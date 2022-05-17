@@ -101,6 +101,13 @@ void WebView2::CloseInternal(bool inShutdownPath)
         m_visibilityChangedToken.value = 0;
     }
 
+    // TODO: We do not have direct analogue for AcceleratorKeyActivated with DispatcherQueue in Islands/ win32. Please refer Task# 30013704 for  more details.
+    if (auto coreWindow = winrt::CoreWindow::GetForCurrentThread())
+    {
+        m_inputWindowHwnd = nullptr;
+        m_acceleratorKeyActivatedRevoker.revoke();
+    }
+
     if (m_coreWebView)
     {
         m_coreWebView = nullptr;
