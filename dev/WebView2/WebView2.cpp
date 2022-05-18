@@ -1334,9 +1334,10 @@ void WebView2::MoveFocusIntoCoreWebView(winrt::CoreWebView2MoveFocusReason reaso
 // Xaml control and force HWND focus back to itself, popping Xaml focus out of the
 // WebView2 control. We mark TAB handled in our KeyDown handler so that it is ignored
 // by XamlRoot's tab processing.
+// If the WebView2 has been closed, then we should let Xaml's tab processing handle it.
 void WebView2::HandleKeyDown(const winrt::Windows::Foundation::IInspectable&, const winrt::KeyRoutedEventArgs& e)
 {
-    if (e.Key() == winrt::VirtualKey::Tab)
+    if (e.Key() == winrt::VirtualKey::Tab && !m_isClosed)
     {
         e.Handled(true);
     }
