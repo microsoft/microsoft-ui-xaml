@@ -78,21 +78,25 @@ namespace MUXControlsTestApp
         {
             if (hasDensityBars.IsChecked.Value)
             {
-                bool isToday = dayItem.Date.Date.Equals(DateTime.Now.Date);
+                Calendar calendar = new Calendar();
+                calendar.SetDateTime(dayItem.Date);
+                
+                DateTime today = DateTime.Now.Date;
+                bool isToday = calendar.Day == today.Day && calendar.Month == today.Month && calendar.Year == today.Year;
 
-                if (dayItem.Date.Day % 6 == 0 || isToday)
+                if (calendar.Day % 6 == 0 || isToday)
                 {
                     List<Color> densityColors = new List<Color>();
 
                     densityColors.Add(Colors.Green);
                     densityColors.Add(Colors.Green);
 
-                    if (dayItem.Date.Day % 4 == 0 || isToday)
+                    if (calendar.Day % 4 == 0 || isToday)
                     {
                         densityColors.Add(Colors.Blue);
                         densityColors.Add(Colors.Blue);
                     }
-                    if (dayItem.Date.Day % 9 == 0 || isToday)
+                    if (calendar.Day % 9 == 0 || isToday)
                     {
                         densityColors.Add(Colors.Orange);
                     }
@@ -113,9 +117,20 @@ namespace MUXControlsTestApp
 
         private void SetBlackout(CalendarViewDayItem dayItem)
         {
-            dayItem.IsBlackout = 
-                (isSundayBlackedOut.IsChecked.Value && dayItem.Date.DayOfWeek == System.DayOfWeek.Sunday) ||
-                (isTodayBlackedOut.IsChecked.Value && dayItem.Date.Date.Equals(DateTime.Now.Date));
+            Calendar calendar = new Calendar();
+
+            calendar.SetDateTime(dayItem.Date);
+            
+            bool isBlackout = isSundayBlackedOut.IsChecked.Value && calendar.DayOfWeek == Windows.Globalization.DayOfWeek.Sunday;
+
+            if (!isBlackout && isTodayBlackedOut.IsChecked.Value)
+            {
+                Calendar calendarToday = new Calendar();
+                calendarToday.SetToNow();
+                isBlackout = calendar.Day == calendarToday.Day && calendar.Month == calendarToday.Month && calendar.Year == calendarToday.Year;
+            }
+
+            dayItem.IsBlackout = isBlackout;
         }
 
         private void SelectionMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -176,9 +191,19 @@ namespace MUXControlsTestApp
             PageCalendar2.Height = Double.Parse(calendarHeight.Text);
         }
 
+        private void GetNumberOfWeeksInView_Click(object sender, RoutedEventArgs e)
+        {
+            numberOfWeeksInView.Text = PageCalendar.NumberOfWeeksInView.ToString();
+        }
+
+        private void SetNumberOfWeeksInView_Click(object sender, RoutedEventArgs e)
+        {
+            PageCalendar.NumberOfWeeksInView = Int32.Parse(numberOfWeeksInView.Text);
+            PageCalendar2.NumberOfWeeksInView = Int32.Parse(numberOfWeeksInView.Text);
+        }
+
         private void SetDayItemMargin_Click(object sender, RoutedEventArgs e)
         {
-#if USE_INSIDER_SDK
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
             {
                 string[] thicknessParts = dayItemMargin.Text.Split(',');
@@ -195,12 +220,10 @@ namespace MUXControlsTestApp
                     float.Parse(thicknessParts[2]),
                     float.Parse(thicknessParts[3]));
             }
-#endif
         }
 
         private void SetMonthYearItemMargin_Click(object sender, RoutedEventArgs e)
         {
-#if USE_INSIDER_SDK
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
             {
                 string[] thicknessParts = monthYearItemMargin.Text.Split(',');
@@ -217,12 +240,10 @@ namespace MUXControlsTestApp
                     float.Parse(thicknessParts[2]),
                     float.Parse(thicknessParts[3]));
             }
-#endif
         }
 
         private void SetFirstOfMonthLabelMargin_Click(object sender, RoutedEventArgs e)
         {
-#if USE_INSIDER_SDK
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
             {
                 string[] thicknessParts = firstOfMonthLabelMargin.Text.Split(',');
@@ -239,12 +260,10 @@ namespace MUXControlsTestApp
                     float.Parse(thicknessParts[2]),
                     float.Parse(thicknessParts[3]));
             }
-#endif
         }
 
         private void SetFirstOfYearDecadeLabelMargin_Click(object sender, RoutedEventArgs e)
         {
-#if USE_INSIDER_SDK
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
             {
                 string[] thicknessParts = firstOfYearDecadeLabelMargin.Text.Split(',');
@@ -261,7 +280,6 @@ namespace MUXControlsTestApp
                     float.Parse(thicknessParts[2]),
                     float.Parse(thicknessParts[3]));
             }
-#endif
         }
 
         private void GetDayItemFontSize_Click(object sender, RoutedEventArgs e)
@@ -306,23 +324,19 @@ namespace MUXControlsTestApp
 
         private void SetCalendarItemCornerRadius_Click(object sender, RoutedEventArgs e)
         {
-#if USE_INSIDER_SDK
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
             {
                 PageCalendar2.CalendarItemCornerRadius = PageCalendar.CalendarItemCornerRadius = new CornerRadius(double.Parse(calendarItemCornerRadius.Text));
             }
-#endif
         }
 
         private void ResetCalendarItemCornerRadius_Click(object sender, RoutedEventArgs e)
         {
-#if USE_INSIDER_SDK
             if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
             {
                 PageCalendar.ClearValue(CalendarView.CalendarItemCornerRadiusProperty);
                 PageCalendar2.ClearValue(CalendarView.CalendarItemCornerRadiusProperty);
             }
-#endif
         }
 
         private void GetCalendarItemBorderThickness_Click(object sender, RoutedEventArgs e)
@@ -377,7 +391,6 @@ namespace MUXControlsTestApp
                 case 36: // CalendarViewDayItem.Background
                     return null;
                 default:
-#if USE_INSIDER_SDK
                     if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
                     {
                         switch (brushPropertyName.SelectedIndex)
@@ -424,7 +437,6 @@ namespace MUXControlsTestApp
                                 return null;
                         }
                     }
-#endif // USE_INSIDER_SDK
                     return null;
             }
         }
@@ -519,7 +531,6 @@ namespace MUXControlsTestApp
                     SetBackgrounds(PageCalendar, solidColorBrush);
                     SetBackgrounds(PageCalendar2, solidColorBrush);
                     break;
-#if USE_INSIDER_SDK
                 default:
                     if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.TwentyOneH1))
                     {
@@ -585,7 +596,6 @@ namespace MUXControlsTestApp
                         }
                     }
                     break;
-#endif // USE_INSIDER_SDK
             }
         }
 

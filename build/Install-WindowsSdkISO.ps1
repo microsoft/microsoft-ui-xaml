@@ -273,7 +273,7 @@ if ($InstallWindowsSDK)
 {
     # Static(ish) link for Windows SDK
     # Note: there is a delay from Windows SDK announcements to availability via the static link
-    $uri = "https://software-download.microsoft.com/download/sg/Windows_InsiderPreview_SDK_en-us_$($buildNumber)_1.iso";
+    $uri = "https://software-static.download.prss.microsoft.com/sg/download/Windows_InsiderPreview_SDK_en-us_$($buildNumber)_1.iso";
 
     if ($env:TEMP -eq $null)
     {

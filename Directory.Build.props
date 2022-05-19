@@ -4,13 +4,13 @@
      Adding Sdk="Microsoft.NET.Sdk" to a project causes NuGet files to be generated very early on, so we need these defines to be here
      to ensure that all of our build output files end up in the same location.  This is parsed too late when put in mux.controls.props. -->
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup Condition="$(BuildingWithBuildExe) != 'true'">
-    <IsTDPConfiguration>false</IsTDPConfiguration>
-    <IsTDPConfiguration Condition="'$(Configuration)' == 'Debug_test'">true</IsTDPConfiguration>
+  <PropertyGroup>
+    <IsDebugTestConfiguration>false</IsDebugTestConfiguration>
+    <IsDebugTestConfiguration Condition="'$(Configuration)' == 'Debug_test'">true</IsDebugTestConfiguration>
     <Configuration Condition="'$(Configuration)' == 'Debug_test'">Debug</Configuration>
-    
+
     <BaseOutputPath>$(MSBuildThisFileDirectory)BuildOutput\$(Configuration)\</BaseOutputPath>
-	<BaseOutputPath Condition="'$(Configuration)' == 'Debug_test'">$(MSBuildThisFileDirectory)BuildOutput\Debug\</BaseOutputPath>
+    <BaseOutputPath Condition="'$(Configuration)' == 'Debug_test'">$(MSBuildThisFileDirectory)BuildOutput\Debug\</BaseOutputPath>
     <OutDir>$(BaseOutputPath)\$(Platform)\</OutDir>
 
     <!-- For native projects that use Win32 to mean x86, override the OutDir

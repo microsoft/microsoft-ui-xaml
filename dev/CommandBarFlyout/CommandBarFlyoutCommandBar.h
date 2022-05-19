@@ -30,7 +30,7 @@ public:
     void PlayOpenAnimation();
     bool HasCloseAnimation();
     bool HasSecondaryOpenCloseAnimations();
-    void PlayCloseAnimation(std::function<void()> onCompleteFunc);
+    void PlayCloseAnimation(const winrt::weak_ref<winrt::CommandBarFlyout>& weakCommandBarFlyout, std::function<void()> onCompleteFunc);
 
     void BindOwningFlyoutPresenterToCornerRadius();
 
@@ -49,8 +49,8 @@ private:
     void DetachEventHandlers();
 
     void UpdateFlowsFromAndFlowsTo();
-    void UpdateUI(bool useTransitions = true, bool isForCommandBarElementDependencyPropertyChange = false);
-    void UpdateVisualState(bool useTransitions, bool isForCommandBarElementDependencyPropertyChange = false);
+    void UpdateUI(bool useTransitions = true, bool isForSizeChange = false);
+    void UpdateVisualState(bool useTransitions, bool isForSizeChange = false);
     void UpdateTemplateSettings();
     void EnsureAutomationSetCountAndPosition();
     void EnsureLocalizedControlTypes();
@@ -89,7 +89,7 @@ private:
     tracker_ref<winrt::FrameworkElement> m_secondaryItemsRoot{ this };
     tracker_ref<winrt::ButtonBase> m_moreButton{ this };
     weak_ref<winrt::CommandBarFlyout> m_owningFlyout{ nullptr };
-    winrt::IPopup4::ActualPlacementChanged_revoker m_overflowPopupActualPlacementChangedRevoker{};
+    winrt::Popup::ActualPlacementChanged_revoker m_overflowPopupActualPlacementChangedRevoker{};
     RoutedEventHandler_revoker m_keyDownRevoker{};
     winrt::UIElement::PreviewKeyDown_revoker m_secondaryItemsRootPreviewKeyDownRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_secondaryItemsRootSizeChangedRevoker{};

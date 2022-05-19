@@ -685,11 +685,13 @@
                                 </VisualState>
                                 <VisualState x:Name="PointerOverChevronVisibleOpen">
                                     <VisualState.Setters>
+                                        <Setter Target="ExpandCollapseChevronIcon.Foreground" Value="{ThemeResource NavigationViewItemForegroundPointerOver}" />
                                         <Setter Target="ExpandCollapseChevron.(local:AnimatedIcon.State)" Value="PointerOverOn"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="PointerOverChevronVisibleClosed">
                                     <VisualState.Setters>
+                                        <Setter Target="ExpandCollapseChevronIcon.Foreground" Value="{ThemeResource NavigationViewItemForegroundPointerOver}" />
                                         <Setter Target="ExpandCollapseChevron.(local:AnimatedIcon.State)" Value="PointerOverOff"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -700,11 +702,13 @@
                                 </VisualState>
                                 <VisualState x:Name="PressedChevronVisibleOpen">
                                     <VisualState.Setters>
+                                        <Setter Target="ExpandCollapseChevronIcon.Foreground" Value="{ThemeResource NavigationViewItemForegroundPressed}" />
                                         <Setter Target="ExpandCollapseChevron.(local:AnimatedIcon.State)" Value="PressedOn"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="PressedChevronVisibleClosed">
                                     <VisualState.Setters>
+                                        <Setter Target="ExpandCollapseChevronIcon.Foreground" Value="{ThemeResource NavigationViewItemForegroundPressed}" />
                                         <Setter Target="ExpandCollapseChevron.(local:AnimatedIcon.State)" Value="PressedOff"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -783,6 +787,7 @@
                                     AutomationProperties.AccessibilityView="Raw"/>
 
                                 <Grid
+                                    x:Load="False"
                                     x:Name="ExpandCollapseChevron"
                                     Grid.Column="3"
                                     Visibility="Collapsed"
@@ -1092,11 +1097,13 @@
                                 </VisualState>
                                 <VisualState x:Name="PointerOverChevronVisibleOpen">
                                     <VisualState.Setters>
+                                        <Setter Target="ExpandCollapseChevronIcon.Foreground" Value="{ThemeResource NavigationViewItemForegroundPointerOver}" />
                                         <Setter Target="ExpandCollapseChevronIcon.(local:AnimatedIcon.State)" Value="PointerOverOn"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="PointerOverChevronVisibleClosed">
                                     <VisualState.Setters>
+                                        <Setter Target="ExpandCollapseChevronIcon.Foreground" Value="{ThemeResource NavigationViewItemForegroundPointerOver}" />
                                         <Setter Target="ExpandCollapseChevronIcon.(local:AnimatedIcon.State)" Value="PointerOverOff"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1107,11 +1114,13 @@
                                 </VisualState>
                                 <VisualState x:Name="PressedChevronVisibleOpen">
                                     <VisualState.Setters>
+                                        <Setter Target="ExpandCollapseChevronIcon.Foreground" Value="{ThemeResource NavigationViewItemForegroundPressed}" />
                                         <Setter Target="ExpandCollapseChevronIcon.(local:AnimatedIcon.State)" Value="PressedOn"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="PressedChevronVisibleClosed">
                                     <VisualState.Setters>
+                                        <Setter Target="ExpandCollapseChevronIcon.Foreground" Value="{ThemeResource NavigationViewItemForegroundPressed}" />
                                         <Setter Target="ExpandCollapseChevronIcon.(local:AnimatedIcon.State)" Value="PressedOff"/>
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1168,6 +1177,7 @@
                                         Height="12"
                                         RenderTransformOrigin="0.5, 0.5"
                                         x:Name="ExpandCollapseChevronIcon"
+                                        Foreground="{ThemeResource NavigationViewItemForeground}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"
                                         AutomationProperties.AccessibilityView="Raw"
@@ -1418,6 +1428,7 @@
                                     VerticalAlignment="Center"
                                     AutomationProperties.AccessibilityView="Raw"/>
                                 <Grid
+                                    x:Load="False"
                                     x:Name="ExpandCollapseChevron"
                                     Grid.Column="3"
                                     Visibility="Collapsed"

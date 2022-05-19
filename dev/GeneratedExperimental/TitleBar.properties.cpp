@@ -92,7 +92,7 @@ void TitleBarProperties::EnsureProperties()
                 winrt::name_of<winrt::TitleBar>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnTitlePropertyChanged));
     }
 }
 
@@ -128,6 +128,14 @@ void TitleBarProperties::OnIsBackButtonVisiblePropertyChanged(
 {
     auto owner = sender.as<winrt::TitleBar>();
     winrt::get_self<TitleBar>(owner)->OnIsBackButtonVisiblePropertyChanged(args);
+}
+
+void TitleBarProperties::OnTitlePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TitleBar>();
+    winrt::get_self<TitleBar>(owner)->OnTitlePropertyChanged(args);
 }
 
 void TitleBarProperties::CustomContent(winrt::IInspectable const& value)

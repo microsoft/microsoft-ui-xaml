@@ -35,16 +35,14 @@ void NavigationViewItemPresenter::OnApplyTemplate()
 
     if (auto navigationViewItem = GetNavigationViewItem())
     {
-        if (auto const expandCollapseChevron = GetTemplateChildT<winrt::Grid>(c_expandCollapseChevron, *this))
+        if (navigationViewItem->HasPotentialChildren())
         {
-            m_expandCollapseChevron.set(expandCollapseChevron);
-            m_expandCollapseChevronTappedToken = expandCollapseChevron.Tapped({ navigationViewItem, &NavigationViewItem::OnExpandCollapseChevronTapped });
+            LoadChevron();
         }
         navigationViewItem->UpdateVisualStateNoTransition();
 
-
         // We probably switched displaymode, so restore width now, otherwise the next time we will restore is when the CompactPaneLength changes
-        if(const auto& navigationView = navigationViewItem->GetNavigationView())
+        if (const auto& navigationView = navigationViewItem->GetNavigationView())
         {
             if (navigationView.PaneDisplayMode() != winrt::NavigationViewPaneDisplayMode::Top)
             {
@@ -57,6 +55,21 @@ void NavigationViewItemPresenter::OnApplyTemplate()
     m_chevronCollapsedStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_expandCollapseRotateCollapsedStoryboard, *this));
 
     UpdateMargin();
+}
+
+void NavigationViewItemPresenter::LoadChevron()
+{
+    if (!m_expandCollapseChevron)
+    {
+        if (auto navigationViewItem = GetNavigationViewItem())
+        {
+            if (auto const expandCollapseChevron = GetTemplateChildT<winrt::Grid>(c_expandCollapseChevron, *this))
+            {
+                m_expandCollapseChevron.set(expandCollapseChevron);
+                m_expandCollapseChevronTappedToken = expandCollapseChevron.Tapped({ navigationViewItem, &NavigationViewItem::OnExpandCollapseChevronTapped });
+            }
+        }
+    }
 }
 
 void NavigationViewItemPresenter::RotateExpandCollapseChevron(bool isExpanded)

@@ -22,6 +22,8 @@
 #include "RepeaterTrace.h"
 #endif
 
+#include "TabViewTrace.h"
+
 /*static*/
 UCHAR MUXControlsTestHooks::GetLoggingLevelForType(const wstring_view& type)
 {
@@ -99,6 +101,10 @@ void MUXControlsTestHooks::SetOutputDebugStringLevelForTypeImpl(const wstring_vi
         RepeaterTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
     }
 #endif
+    if (type == L"TabView" || type.empty())
+    {
+        TabViewTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
+    }
 }
 
 void MUXControlsTestHooks::SetLoggingLevelForTypeImpl(const wstring_view& type, bool isLoggingInfoLevel, bool isLoggingVerboseLevel)

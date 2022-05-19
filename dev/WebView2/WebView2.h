@@ -99,6 +99,8 @@ public:
 
     winrt::CoreWebView2 CoreWebView2();     // Getter for CoreWebView2 property (read-only)
 
+    winrt::Rect GetBoundingRectangle();
+
 private:
     bool ShouldNavigate(const winrt::Uri& uri);
     winrt::IAsyncAction OnSourceChanged(winrt::Uri providedUri);
@@ -146,7 +148,7 @@ private:
     void HandlePointerCaptureLost(const winrt::Windows::Foundation::IInspectable&, const winrt::PointerRoutedEventArgs& args);
     void HandleKeyDown(const winrt::Windows::Foundation::IInspectable&, const winrt::KeyRoutedEventArgs& e);
     void HandleGettingFocus(const winrt::Windows::Foundation::IInspectable&, const winrt::GettingFocusEventArgs& args) noexcept;
-    void HandleGotFocus(const winrt::Windows::Foundation::IInspectable&, const winrt::RoutedEventArgs&) noexcept;
+    void HandleGotFocus(const winrt::Windows::Foundation::IInspectable&, const winrt::RoutedEventArgs&);
     void HandleAcceleratorKeyActivated(const winrt::Windows::UI::Core::CoreDispatcher&, const winrt::AcceleratorKeyEventArgs& args) noexcept;
     void HandleXamlRootChanged();
     void HandleSizeChanged(const winrt::IInspectable& /*sender*/, const winrt::SizeChangedEventArgs& args);
@@ -155,6 +157,8 @@ private:
     void XamlRootChangedHelper(bool forceUpdate);
     void TryCompleteInitialization();
     void DisconnectFromRootVisualTarget();
+    void CreateAndSetVisual();
+    void AddChildPanel();
 
     void CheckAndUpdateWebViewPosition();
     void CheckAndUpdateWindowPosition();

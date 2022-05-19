@@ -3,61 +3,69 @@
 <head>
     <title>Simple Input Page</title>
     <style>
-
-        h1 {
-            background-color: #0080ff
-        }
-
-        h2 {
-            background-color: #00ff80
-        }
-        .largeButton {
-        display: block;
-        width: 100%;
-        border: none;
-        background-color: #4CAF50;
-        color: white;
-        padding: 14px 28px;
-        font-size: 16px;
-        cursor: pointer;
-        text-align: center;
-        }
     </style>
     <script>
-        function sendInputMessage()
-        {
-            window.chrome.webview.postMessage("Input button clicked.");
+        function doPostMessage(message) {
+            // Do different things in WebView2 vs the browser, so neither gets an error
+            try {
+                window.chrome.webview.postMessage(message);
+            }
+            catch {
+                window.postMessage(message);
+            }
         };
 
-        function getFocus()
+        function sendInputMessage() {
+            doPostMessage("Input button clicked.");
+        };
+
+        function onGotFocus(x) {
+            if (document.hasFocus()) {
+                var output = (x.id) ? x.id : x;
+                doPostMessage("Focus on: " + output);
+                console.log("Focus on: " + output);
+            }
+            else {
+                doPostMessage("Focus on: n/a");
+            }
+        };
+
+        function onFocusOut() {
+            if (!document.hasFocus()) {
+                doPostMessage("Focus on: document lost focus");
+                console.log("Focus on: document lost focus");
+            }
+        };
+
+        function onGotBlur(x)
         {
-            if (document.hasFocus())
-            {
-                var id = document.activeElement.id;
-                if (id == "textInput1")
-                {
-                    return 'w1';
-                }
-                else if (id == "enterInput")
-                {
-                    return 'b1';
-                }
-                else
-                {
-                    return 'unhandledWebviewControl';
-                }
-            }
-            else
-            {
-                return 'n/a';
-            }
+            var output = (x.id) ? x.id : x;
+            doPostMessage("Blur on: " + output);
+            console.log("Blur on: " + output);
+        };
+
+        function getSelectedOption() {
+            var s1 = document.getElementById("s1");
+            var val = s1.value;
+            console.log("Value: " + val);
+            return val;
         };
     </script>
 </head>
-<body>
+
+<body id="body" onfocus="onGotFocus(this)" onblur="onGotBlur(this)" onfocusout="onFocusOut()">
     <form>
-        TextBox: <input style="font-size:50px" type="text" id="textInput1" onblur="onGotBlur(this)" onfocus="onGotFocus(this)"><br>
+        TextBox: <input style="font-size:50px" type="text" id="w1" onblur="onGotBlur(this)" onfocus="onGotFocus(this)"><br>
     </form>
-    <button onclick="sendInputMessage()" id="enterInput"> Input button </button>
+
+    <button onclick="sendInputMessage()" id="b1" onblur="onGotBlur(this)" onfocus="onGotFocus(this)"> Input button </button>
+
+    <center>
+        <select name="select" id="s1" style="font-size:70px" onfocus="onGotFocus(this)">
+            <option value="1">Lorem</option>
+            <option value="2">Ipsum</option>
+            <option value="3">Dolor</option>
+        </select>
+    </center>
 </body>
 </html>

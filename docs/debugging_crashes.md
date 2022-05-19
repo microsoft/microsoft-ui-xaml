@@ -34,6 +34,16 @@ For example, running these commands in an administrative command prompt will set
 
 After you repro the crash, you should find a dump in the specified folder.
 
+You can automate crash dump collection and filing bugs by following these steps:
+1. Download the script at https://aka.ms/RNW/analyze-crash.ps1, for example to `C:\temp`
+2. Open an admin PowerShell. If you haven't enabled running unsigned scripts yet, do that by running: `Set-ExecutionPolicy Unrestricted`
+3. Run the script and pass it the name of your app's exe: `C:\temp\analyze-crash.ps1 -ExeName MyApp -Repo microsoft/microsoft-ui-xaml`
+The script will set up automatic crash dump collection for your app, download the native debugging tools (including the command-line debugger cdb), and ask you to reproduce the crash.
+
+At this point you can launch the app (e.g. from Start menu if you've already deployed it to the local device). When the app crashes, it will generate a crash dump (`.dmp` file). You can then press enter to resume execution of the script, and the script will use `cdb` to automatically analyze the crash dump, and output the results to a file `analyze.log`.
+
+The script will then copy the contents of the log to the clipboard, open the log file in notepad, and launch the browser to file an issue in the WinUI repo, where you can paste the stack trace into the bug template.
+
 ## How to get a good callstack for crashes
 
 For some crashes, such as access violations, the direct crash callstack is usually the right stack to use.

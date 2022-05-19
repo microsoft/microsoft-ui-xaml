@@ -4472,7 +4472,7 @@ void ScrollPresenter::OnBringIntoViewRequestedHandler(
         args.Handled() ||
         args.TargetElement() == static_cast<winrt::UIElement>(*this) ||
         (args.TargetElement() == content && content.Visibility() == winrt::Visibility::Collapsed) ||
-        !SharedHelpers::IsAncestor(args.TargetElement(), content, true /*checkVisibility*/))
+        (args.TargetElement() != content && !SharedHelpers::IsAncestor(args.TargetElement(), content, true /*checkVisibility*/)))
     {
         // Ignore the request when:
         // - There is no InteractionTracker to fulfill it.
@@ -4525,7 +4525,7 @@ void ScrollPresenter::OnBringIntoViewRequestedHandler(
             args.Handled() ||
             args.TargetElement() == static_cast<winrt::UIElement>(*this) ||
             (args.TargetElement() == content && content.Visibility() == winrt::Visibility::Collapsed) ||
-            !SharedHelpers::IsAncestor(args.TargetElement(), content, true /*checkVisibility*/))
+            (args.TargetElement() != content && !SharedHelpers::IsAncestor(args.TargetElement(), content, true /*checkVisibility*/)))
         {
             // Again, ignore the request when:
             // - There is no Content anymore.

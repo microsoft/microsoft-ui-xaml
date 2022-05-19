@@ -10,11 +10,12 @@
         <Setter Property="Background" Value="{ThemeResource MenuBarBackground}"/>
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="Height" Value="{StaticResource MenuBarHeight}"/>
+        <Setter Property="TabNavigation" Value="Once"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:MenuBar">
                     <Grid x:Name="LayoutRoot" Background="{TemplateBinding Background}" HorizontalAlignment="Stretch">
-                        <ItemsControl x:Name="ContentRoot" VerticalAlignment="Stretch" HorizontalAlignment="Left" IsTabStop="False">
+                        <ItemsControl x:Name="ContentRoot" VerticalAlignment="Stretch" HorizontalAlignment="Left" IsTabStop="False" TabNavigation="{TemplateBinding TabNavigation}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <StackPanel Orientation="Horizontal"/>

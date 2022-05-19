@@ -12,6 +12,7 @@
 #include "TabViewTabDroppedOutsideEventArgs.g.h"
 #include "TabViewTabDragStartingEventArgs.g.h"
 #include "TabViewTabDragCompletedEventArgs.g.h"
+#include "TabViewTrace.h"
 #include "DispatcherHelper.h"
 
 static constexpr double c_tabShadowDepth = 16.0;
@@ -148,6 +149,7 @@ private:
 
     bool RequestCloseCurrentTab();
     bool SelectNextTab(int increment);
+    void BringSelectedTabIntoView();
 
     void UpdateSelectedItem();
     void UpdateSelectedIndex();
@@ -163,6 +165,9 @@ private:
     void OnListViewGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
 
     int GetItemCount();
+
+    void UpdateBottomBorderLineVisualStates();
+    void UpdateTabBottomBorderLineVisualStates();
 
     winrt::TabViewItem FindTabViewItemFromDragItem(const winrt::IInspectable& item);
 
@@ -214,5 +219,7 @@ private:
 
     winrt::hstring m_tabCloseButtonTooltipText{};
 
-    winrt::Size previousAvailableSize{};
+    winrt::Size m_previousAvailableSize{};
+
+    bool m_isDragging{ false };
 };

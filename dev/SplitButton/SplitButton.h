@@ -27,14 +27,17 @@ public:
     bool IsFlyoutOpen() { return m_isFlyoutOpen; };
     void OpenFlyout();
     void CloseFlyout();
-    virtual void OnClickPrimary(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     virtual bool InternalIsChecked() { return false; }
 
     void UpdateVisualStates(bool useTransitions = true);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
+    void Invoke();
+
 protected:
+    virtual void OnClickPrimary(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+
     bool m_hasLoaded{ false };
 
 private:

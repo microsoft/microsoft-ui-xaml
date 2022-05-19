@@ -285,9 +285,9 @@
                         </ComboBox>
                         <Button AutomationProperties.Name="SetAutomationNameButton" Click="OnSetAutomationNameButtonClicked" Grid.Row="36" Grid.Column="1">Set</Button>
 
-                        <ComboBox x:Name="PageThemeComboBox" AutomationProperties.AutomationId="PageThemeComboBox" Grid.Row="37" SelectedIndex="0"
-                          SelectionChanged="OnPageThemeComboBoxSelectionChanged"
-                          Header="Page Theme:">
+                        <ComboBox x:Name="PageThemeComboBox" AutomationProperties.AutomationId="PageThemeComboBox" SelectedIndex="0" Grid.Column="0"
+                            SelectionChanged="OnPageThemeComboBoxSelectionChanged"
+                            Header="Page Theme:">
                             <ComboBoxItem x:Name="Default">Default</ComboBoxItem>
                             <ComboBoxItem x:Name="Light">Light</ComboBoxItem>
                             <ComboBoxItem x:Name="Dark">Dark</ComboBoxItem>

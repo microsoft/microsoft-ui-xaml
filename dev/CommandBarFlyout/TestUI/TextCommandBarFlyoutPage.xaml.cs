@@ -156,6 +156,16 @@ namespace MUXControlsTestApp
             RichEditBox1.Document.Selection.Collapse(true);
         }
 
+        private void OnTextBoxFillWithTextClicked(object sender, object args)
+        {
+            TextBox1.Text = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        }
+
+        private void OnRichEditBoxFillWithTextClicked(object sender, object args)
+        {
+            RichEditBox1.Document.SetText(TextSetOptions.None, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+        }
+
         private void OnRichTextBlockClearSelectionClicked(object sender, object args)
         {
             RichTextBlock1.Select(RichTextBlock1.ContentStart, RichTextBlock1.ContentStart);

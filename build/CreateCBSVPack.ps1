@@ -4,7 +4,10 @@ param
     [string] $releaseFolder,
 
     [Parameter(Mandatory=$true)]
-    [string] $publicsRoot
+    [string] $publicsRoot,
+
+    [Parameter(Mandatory=$true)]
+    [string] $publishDir
 )
 
 Trap
@@ -69,8 +72,8 @@ if(!(Get-Command mdmerge -ErrorAction Ignore))
     Write-Error "Cannot find mdmerge. Make sure to run from a Developer Command Prompt."
     exit 1
 }
-$winuiVpackFolder = "$releaseFolder\WinUIVpack"
-$cbsFolder = "$releaseFolder\CBS"
+$winuiVpackFolder = "$publishDir\WinUIVpack"
+$cbsFolder = "$publishDir\CBS"
 $winmdFolder = "$cbsFolder\winmd"
 $packagesDir = Join-Path $repoRoot "packages"
 $winmdReferencesDir = Join-Path $repoRoot "winmdreferences"

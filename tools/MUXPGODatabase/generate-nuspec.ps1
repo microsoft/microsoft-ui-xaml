@@ -6,6 +6,7 @@ Param(
 . .\template.ps1
 . .\config.ps1
 
-$version = FormatVersion ( MakeVersion $releaseVersionMajor $releaseVersionMinor ( GetDatetimeStamp $pgoBranch ) )
-Write-Host ( "PGO INSTRUMENT: generating {0} version {1}" -f $packageId, $version )
+$forkPoint = ( GetForkPoint $pgoBranch )
+$version = FormatVersion ( MakeVersion $releaseVersionMajor $releaseVersionMinor $releaseVersionPatch $releaseVersionPrerelease $forkPoint.DateString $forkPoint.BranchString )
+Write-Host ( "PGO INSTRUMENT: generating {0} version {1} ({2})" -f $packageId, $version, $forkPoint.SHA )
 FillOut-Template $templatePath $outputPath @{ "version" = $version; "id" = $packageId }

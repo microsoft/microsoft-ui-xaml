@@ -154,6 +154,39 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return navView;
         }
 
+        private NavigationView SetupNavigationViewHierarchy(NavigationViewPaneDisplayMode paneDisplayMode = NavigationViewPaneDisplayMode.Auto)
+        {
+            NavigationView navView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+
+                NavigationViewItem navViewItem1 = new NavigationViewItem() { Content = "NVI1" };
+                navViewItem1.MenuItems.Add(new NavigationViewItem() { Content = "NVI1" });
+
+                NavigationViewItem navViewItem2 = new NavigationViewItem() { Content = "NVI2" };
+
+                navView.MenuItems.Add(navViewItem1);
+                navView.MenuItems.Add(navViewItem2);
+
+                navView.PaneTitle = "Hierarchical NavView";
+                navView.IsBackButtonVisible = NavigationViewBackButtonVisible.Visible;
+                navView.IsSettingsVisible = true;
+                navView.PaneDisplayMode = paneDisplayMode;
+                navView.OpenPaneLength = 120.0;
+                navView.ExpandedModeThresholdWidth = 600.0;
+                navView.CompactModeThresholdWidth = 400.0;
+                navView.Width = 800.0;
+                navView.Height = 600.0;
+                navView.Content = "This is a simple Hierarchical Navigation View test";
+                Content = navView;
+                Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TryEnterFullScreenMode();
+            });
+
+            IdleSynchronizer.Wait();
+            return navView;
+        }
+
         [TestMethod]
         public void VerifyVisualTree()
         {
@@ -187,6 +220,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment($"Verify visual tree for NavigationViewTopPaneContent");
                 var topNavViewPaneContent = SetupNavigationViewPaneContent(NavigationViewPaneDisplayMode.Top);
                 visualTreeVerifier.VerifyVisualTreeNoException(root: topNavViewPaneContent, verificationFileNamePrefix: "NavigationViewTopPaneContent");
+
+                Log.Comment($"Verify visual tree for NavigationViewHierarchy");
+                var hierarchyNavViewPaneContent = SetupNavigationViewHierarchy(NavigationViewPaneDisplayMode.Left);
+                visualTreeVerifier.VerifyVisualTreeNoException(root: hierarchyNavViewPaneContent, verificationFileNamePrefix: "NavigationViewHierarchy");   
             }
         }
 
@@ -1261,6 +1298,40 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(expectedDefaultToolTip, ToolTipService.GetToolTip(menuItem1), $"Item 1's tooltip should have been \"{expectedDefaultToolTip ?? "null"}\".");
                     Verify.AreEqual(expectedCustomToolTip, ToolTipService.GetToolTip(menuItem2), $"Item 2's tooltip should have been {expectedCustomToolTip}.");
                 }
+            });
+        }
+
+        [TestMethod]
+        public void VerifyNVIOutlivingNVDoesNotCrash()
+        {
+            NavigationViewItem menuItem1 = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView();
+                menuItem1 = new NavigationViewItem();
+
+                navView.MenuItems.Add(menuItem1);
+                Content = navView;
+                Content.UpdateLayout();
+
+                navView.MenuItems.Clear();
+                Content = menuItem1;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                GC.Collect();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // NavigationView has a handler on NVI's IsSelected DependencyPropertyChangedEvent.
+                menuItem1.IsSelected = !menuItem1.IsSelected;
             });
         }
     }

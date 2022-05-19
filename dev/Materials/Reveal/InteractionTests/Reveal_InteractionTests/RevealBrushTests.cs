@@ -341,7 +341,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        //Issue #6649 Some tests fail when run on OS 21H1 
         [TestMethod]
+        [TestProperty("Ignore", "True")]
         public void RevealButtonStates_Values()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone2))
@@ -390,7 +392,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        //Issue #6649 Some tests fail when run on OS 21H1 
         [TestMethod]
+        [TestProperty("Ignore", "True")]
         public void RevealButtonStates_FastRelease_Values()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone2))
@@ -426,7 +430,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        //Issue #6649 Some tests fail when run on OS 21H1 
         [TestMethod]
+        [TestProperty("Ignore", "True")]
         public void RevealButtonStates_SlowRelease_Values()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone2))
@@ -462,8 +468,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-
+        //Issue #6649 Some tests fail when run on OS 21H1 
         [TestMethod]
+        [TestProperty("Ignore", "True")]
         public void RevealHoverLightPosition_Values()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))

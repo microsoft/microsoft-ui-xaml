@@ -212,7 +212,17 @@
                 <AppBarButton Icon="Save" Label="Save" />
                 <AppBarToggleButton Icon="Add" Label="Toggle" />
                 <CommandBar.SecondaryCommands>
-                    <AppBarButton Icon="Add" Label="Add" />
+                    <AppBarButton Icon="Add" Label="Add">
+                        <AppBarButton.Resources>
+                            <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
+                        </AppBarButton.Resources>
+                        <AppBarButton.Flyout>
+                            <controls:CommandBarFlyout Placement="Right">
+                                <AppBarButton Icon="Play" />
+                                <AppBarButton Icon="People" />
+                            </controls:CommandBarFlyout>
+                        </AppBarButton.Flyout>
+                    </AppBarButton>
                     <AppBarButton Icon="Remove" Label="Remove" />
                     <AppBarSeparator />
                     <AppBarToggleButton Icon="Add" Label="Toggle" />
@@ -240,6 +250,20 @@
                 <AppBarSeparator/>
                 <AppBarButton Icon="Save" Label="Save"/>
                 <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                <CommandBar.SecondaryCommands>
+                    <AppBarButton Icon="Add" Label="Add">
+                        <AppBarButton.Resources>
+                            <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
+                        </AppBarButton.Resources>
+                        <AppBarButton.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuFlyoutItem Text="Item 1"/>
+                                <MenuFlyoutItem Text="Item 2"/>
+                                <MenuFlyoutItem Text="Item 3"/>
+                            </MenuFlyout>
+                        </AppBarButton.Flyout>
+                    </AppBarButton>
+                </CommandBar.SecondaryCommands>
             </CommandBar>
         </StackPanel>
 

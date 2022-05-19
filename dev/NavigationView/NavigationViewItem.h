@@ -63,6 +63,8 @@ public:
     bool IsRepeaterVisible() const;
     void PropagateDepthToChildren(int depth);
     bool HasChildren();
+    // Needed for scenarios where the ItemsRepeater is not loaded (OnApplyTemplate) therefore we cannot guarantee a non-null MenuItemsSource actually contains items
+    bool HasPotentialChildren();
 
 private:
     winrt::UIElement const GetPresenterOrItem() const;
@@ -82,6 +84,8 @@ private:
     void OnPresenterPointerCanceled(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnPresenterPointerCaptureLost(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnIsEnabledChanged(const winrt::IInspectable& sender, const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnMenuItemsVectorChanged(const winrt::Collections::IObservableVector<winrt::IInspectable>& sender, const winrt::Collections::IVectorChangedEventArgs& args);
+
 
     void ResetTrackedPointerId();
     bool IgnorePointerId(const winrt::PointerRoutedEventArgs& args);
@@ -120,6 +124,8 @@ private:
     void UnhookEventsAndClearFields();
 
     void PrepNavigationViewItem(const winrt::SplitView& splitView);
+    void LoadElementsForDisplayingChildren();
+    void LoadMenuItemsHost();
 
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
@@ -136,6 +142,7 @@ private:
     winrt::ItemsRepeater::ElementPrepared_revoker m_repeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_repeaterElementClearingRevoker{};
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceViewCollectionChangedRevoker{};
+    winrt::Collections::IObservableVector<winrt::IInspectable>::VectorChanged_revoker m_menuItemsVectorChangedRevoker{};
 
     winrt::FlyoutBase::Closing_revoker m_flyoutClosingRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
@@ -160,4 +167,6 @@ private:
     bool m_isPointerOver{ false };
 
     bool m_isRepeaterParentedToFlyout{ false };
+    // used to bypass all Chevron visual state logic in order to keep it unloaded 
+    bool m_hasHadChildren{ false };
 };

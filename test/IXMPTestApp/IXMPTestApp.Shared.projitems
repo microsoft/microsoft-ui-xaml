@@ -1,10 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\mux.controls.props" Condition="Exists('$(MSBuildThisFileDirectory)\..\..\mux.controls.props') And $(BuildingWithBuildExe) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\mux.controls.props" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\environment.props" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\SdkVersion.props" Condition="$(BuildingWithBuildExe) == 'true'" />
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props') And $(BuildingWithBuildExe) != 'true'" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
@@ -28,10 +27,10 @@
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <PackageCertificateKeyFile>$(MSBuildThisFileDirectory)\..\..\build\MSTest.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>$(MSBuildThisFileDirectory)\..\..\build\WinUITest.pfx</PackageCertificateKeyFile>
     <AppxPackageName>IXMPTestApp</AppxPackageName>
     <!-- needed to work with TDP -->
-    <GenerateAppxPackageOnBuild Condition="'$(IsTDPConfiguration)' == 'true'">true</GenerateAppxPackageOnBuild>
+    <GenerateAppxPackageOnBuild Condition="'$(IsDebugTestConfiguration)' == 'true'">true</GenerateAppxPackageOnBuild>
     <!-- Override appx version for PackageES build -->
     <XefAppxManifestVersion>1.1.0.0</XefAppxManifestVersion>
     <LangVersion>$(CSLangVersion)</LangVersion>
@@ -125,14 +124,14 @@
   <PropertyGroup>
     <NoWarn>$(NoWarn);0105</NoWarn>
   </PropertyGroup>
-  <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
+  <ItemGroup>
     <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\dev\dll\Microsoft.UI.Xaml.vcxproj">
       <Project>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</Project>
       <Name>Microsoft.UI.Xaml</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)\..\..\build\MSTest.pfx" />
+    <None Include="$(MSBuildThisFileDirectory)\..\..\build\WinUITest.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)\MainPage.xaml.cs">
@@ -144,7 +143,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Tests\MetadataProviderTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\WaitForDebugger.cs" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
+  <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)\Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -194,25 +193,7 @@
   <Import Project="$(CSharpTargetsFilePath)" />
   <Import Project="..\RetargetCopyLocalFiles.targets" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\CustomInlineTasks.targets" />
-  <Target Name="CustomAfterGenerateAppPackages" AfterTargets="_GenerateAppxPackage" Condition="$(BuildingWithBuildExe) != 'true'">
+  <Target Name="CustomAfterGenerateAppPackages" AfterTargets="_GenerateAppxPackage">
     <RunPowershellScript Path="$(MSBuildThisFileDirectory)\..\..\tools\ExtractPackageDependencies.ps1" Parameters="-sourceFile $(OutDir)\$(MSBuildProjectName).build.appxrecipe -platform $(PlatformName) -outputFile $(AppxPackageTestDir)$(AppxPackageName).dependencies.txt" FilesWritten="$(AppxPackageTestDir)$(AppxPackageName).dependencies.txt" />
   </Target>
-  <ItemGroup Condition="$(BuildingWithBuildExe) == 'true'">
-    <BinplaceCompiled Include="$(ObjectPath)\$(ObjectDirectory)$(TargetName).pdb">
-      <DestinationFolder>Symbols.pri\NTTEST\exe</DestinationFolder>
-      <InProject>false</InProject>
-    </BinplaceCompiled>
-    <BinplaceCompiled Include="$(ObjectPath)\$(ObjectDirectory)$(TargetFileName)">
-      <DestinationFolder>NTTEST\windowstest\dxaml\controls\test\IXMPTestApp</DestinationFolder>
-    </BinplaceCompiled>
-    <BinplaceCompiled Include="@(Page->'$(ObjectPath)\$(ObjectDirectory)%(filename).xaml');@(ApplicationDefinition->'$(ObjectPath)\$(ObjectDirectory)%(Filename).xaml')">
-      <DestinationFolder>NTTEST\windowstest\dxaml\controls\test\IXMPTestApp</DestinationFolder>
-    </BinplaceCompiled>
-    <BinplaceCompiled Include="..\package\assets\*.*">
-      <DestinationFolder>NTTEST\windowstest\dxaml\controls\test\IXMPTestApp\assets</DestinationFolder>
-    </BinplaceCompiled>
-    <BinplaceCompiled Include="..\package\appxmanifest.xml">
-      <DestinationFolder>NTTEST\windowstest\dxaml\controls\test\IXMPTestApp</DestinationFolder>
-    </BinplaceCompiled>
-  </ItemGroup>
 </Project>
