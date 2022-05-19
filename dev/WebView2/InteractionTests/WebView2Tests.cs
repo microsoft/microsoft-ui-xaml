@@ -402,6 +402,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             WaitForTextBoxValue(status2, string.Empty, false /* match = false for not match */);
         }
 
+        private static void WaitForEnsureCompleted()
+        {
+            var status1 = new Edit(FindElement.ById("Status1"));
+            WaitForTextBoxValue(status1, "EnsureCoreWebView2Async() completed", true);
+        }
+
         private static void ChooseTest(string testName, bool waitForLoadCompleted = true)
         {
             WaitForCopyCompleted();
@@ -2208,64 +2214,46 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
-                Button x1 = new Button(FindElement.ById("TabStopButton1"));     // Xaml TabStop 1
-                Button x2 = new Button(FindElement.ById("TabStopButton2"));     // Xaml TabStop 2
-
                 // Part 1: Tab with no core webview
 
                 Log.Comment("Part 1: Tab with no core webview");
-                Log.Comment("Focus on x1");
-                x1.SetFocus();
-                Wait.ForIdle();
-                Verify.IsTrue(x1.HasKeyboardFocus, "TabStopButton1 has keyboard focus");
-
-                Log.Comment("Tab x1 -> webview -> x2");
-                using (var xamlFocusWaiter = new FocusAcquiredWaiter("TabStopButton2"))
-                {
-                    KeyboardHelper.PressKey(Key.Tab);
-                    KeyboardHelper.PressKey(Key.Tab);
-                    xamlFocusWaiter.Wait();
-                    Log.Comment("Focus is on " + UIObject.Focused);
-                    Verify.IsTrue(x2.HasKeyboardFocus, "TabStopButton2 has keyboard focus");
-                }
+                TabTwicePastWebView2();
 
                 // Part 2: Tab with core webview, ensured but not navigated
 
                 Log.Comment("Part 2: Tab with core webview, not navigated");
-                Log.Comment("Focus on x1");
-                x1.SetFocus();
-                Wait.ForIdle();
-                Verify.IsTrue(x1.HasKeyboardFocus, "TabStopButton1 has keyboard focus");
-
-                Log.Comment("Tab x1 -> webview -> x2");
-                using (var xamlFocusWaiter = new FocusAcquiredWaiter("TabStopButton2"))
-                {
-                    KeyboardHelper.PressKey(Key.Tab);
-                    KeyboardHelper.PressKey(Key.Tab);
-                    xamlFocusWaiter.Wait();
-                    Log.Comment("Focus is on " + UIObject.Focused);
-                    Verify.IsTrue(x2.HasKeyboardFocus, "TabStopButton2 has keyboard focus");
-                }
+                Button ensureButton = new Button(FindElement.ById("EnsureCWV2Button"));
+                ensureButton.Invoke();
+                WaitForEnsureCompleted();
+                TabTwicePastWebView2();
 
                 // Part 3: Tab with closed core webview
 
                 Log.Comment("Part 3: Tab with closed core webview");
-                ChooseTest("LifetimeStatesTabTest");  // Creates the CoreWebView2
+                ChooseTest("LifetimeStatesTabTest" /* waitForLoadCompleted */);
                 CompleteTestAndWaitForResult("LifetimeStatesTabTest");  // Closes the CoreWebView2
-                Log.Comment("Focus on x1");
-                x1.SetFocus();
-                Wait.ForIdle();
-                Verify.IsTrue(x1.HasKeyboardFocus, "TabStopButton1 has keyboard focus");
+                TabTwicePastWebView2();
+            }
+        }
 
-                Log.Comment("Tab x1 -> webview -> x2");
-                using (var xamlFocusWaiter = new FocusAcquiredWaiter("TabStopButton2"))
-                {
-                    KeyboardHelper.PressKey(Key.Tab);
-                    KeyboardHelper.PressKey(Key.Tab);
-                    xamlFocusWaiter.Wait();
-                    Log.Comment("Focus is on " + UIObject.Focused);
-                    Verify.IsTrue(x2.HasKeyboardFocus, "TabStopButton2 has keyboard focus");
-                }
+        private static void TabTwicePastWebView2()
+        {
+            Button x1 = new Button(FindElement.ById("TabStopButton1"));     // Xaml TabStop 1
+            Button x2 = new Button(FindElement.ById("TabStopButton2"));     // Xaml TabStop 2
+
+            Log.Comment("Focus on x1");
+            x1.SetFocus();
+            Wait.ForIdle();
+            Verify.IsTrue(x1.HasKeyboardFocus, "TabStopButton1 has keyboard focus");
+
+            Log.Comment("Tab x1 -> webview -> x2");
+            using (var xamlFocusWaiter = new FocusAcquiredWaiter("TabStopButton2"))
+            {
+                KeyboardHelper.PressKey(Key.Tab);
+                KeyboardHelper.PressKey(Key.Tab);
+                xamlFocusWaiter.Wait();
+                Log.Comment("Focus is on " + UIObject.Focused);
+                Verify.IsTrue(x2.HasKeyboardFocus, "TabStopButton2 has keyboard focus");
             }
         }
 
