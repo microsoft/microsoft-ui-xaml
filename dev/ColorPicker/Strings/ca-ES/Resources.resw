@@ -154,7 +154,7 @@
     <comment>The automation name for the color model selection combo box.</comment>
   </data>
   <data name="AutomationNameColorSpectrum" xml:space="preserve">
-    <value>Selector de color</value>
+    <value>Selector de colors</value>
     <comment>The automation name for the ColorSpectrum control.</comment>
   </data>
   <data name="TextGreenLabel" xml:space="preserve">

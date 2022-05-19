@@ -97,7 +97,8 @@ Example usage (running from the root of the repository folder):
 .\build\NuSpecs\build-nupkg.ps1 -BuildOutput "..\..\BuildOutput" -BuildFlavor "debug" -BuildArch "x64" -OutputDir "..\..\NugetPackage"
 ```
 
-> Note: To use debug build outputs as a NuGet package, you need to change [this line](https://github.com/microsoft/microsoft-ui-xaml/blob/7d2cd793a0154580f1dd0c9685c461198e05f207/dev/dll/Microsoft.UI.Xaml.vcxproj#L35) in `microsoft-ui-xaml/dev/dll/Microsoft.UI.Xaml.vcxproj` from
+> Note: To use debug build outputs as a NuGet package, you need to change the following line in 
+> [`microsoft-ui-xaml/dev/dll/Microsoft.UI.Xaml.Common.props`](../dev/dll/Microsoft.UI.Xaml.Common.props) from
 > ```xml
 > <DisableEmbeddedXbf Condition="'$(Configuration)'=='Release'">false</DisableEmbeddedXbf> 
 > ``` 
