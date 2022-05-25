@@ -199,7 +199,7 @@ namespace MUXControlsTestApp
             HtmlDropdownTest,
             HiddenThenVisibleTest,
             ParentHiddenThenVisibleTest,
-            LifetimeStatesTabTest,
+            LifetimeTabTest,
         };
 
         // Map of TestList entry to its webpage (index in TestPageNames[])
@@ -265,7 +265,7 @@ namespace MUXControlsTestApp
             { TestList.HtmlDropdownTest, 5 },
             { TestList.HiddenThenVisibleTest, 1 },
             { TestList.ParentHiddenThenVisibleTest, 1 },
-            { TestList.LifetimeStatesTabTest, 0 },
+            { TestList.LifetimeTabTest, 0 },
         };
 
         readonly string[] TestPageNames =
@@ -1907,7 +1907,7 @@ namespace MUXControlsTestApp
                                     selectedTest, MyWebView2.IsHitTestVisible));
                         }
                         break;
-                    case TestList.LifetimeStatesTabTest:
+                    case TestList.LifetimeTabTest:
                         {
                             MyWebView2.Close();
                         }

@@ -2209,8 +2209,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "D")]
-        public void LifetimeStatesTabTest()
+        [TestProperty("TestSuite", "A")]
+        public void LifetimeTabTest()
         {
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
@@ -2230,8 +2230,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Part 3: Tab with closed core webview
 
                 Log.Comment("Part 3: Tab with closed core webview");
-                ChooseTest("LifetimeStatesTabTest" /* waitForLoadCompleted */);
-                CompleteTestAndWaitForResult("LifetimeStatesTabTest");  // Closes the CoreWebView2
+                ChooseTest("LifetimeTabTest" /* waitForLoadCompleted */);
+                CompleteTestAndWaitForResult("LifetimeTabTest");  // Closes the CoreWebView2
                 TabTwicePastWebView2();
             }
         }
