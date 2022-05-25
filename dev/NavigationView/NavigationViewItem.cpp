@@ -7,6 +7,7 @@
 #include "NavigationView.h"
 #include "NavigationViewItem.h"
 #include "NavigationViewItemAutomationPeer.h"
+#include "StackLayout.h"
 #include "Utils.h"
 
 static constexpr wstring_view c_navigationViewItemPresenterName = L"NavigationViewItemPresenter"sv;
@@ -155,6 +156,12 @@ void NavigationViewItem::LoadMenuItemsHost()
         if (auto repeater = GetTemplateChildT<winrt::ItemsRepeater>(c_repeater, *this))
         {
             m_repeater.set(repeater);
+
+            if (auto stackLayout = repeater.Layout().try_as<winrt::StackLayout>())
+            {
+                auto stackLayoutImpl = winrt::get_self<StackLayout>(stackLayout);
+                stackLayoutImpl->DisableVirtualization(true);
+            }
 
             // Primary element setup happens in NavigationView
             m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { nvImpl,  &NavigationView::OnRepeaterElementPrepared });
