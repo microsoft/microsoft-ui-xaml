@@ -3,6 +3,6 @@
     "version": "3.1"
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Helix.Sdk": "6.0.0-beta.20529.1"
+    "Microsoft.DotNet.Helix.Sdk": "7.0.0-beta.22275.2"
   }
 }
