@@ -74,29 +74,6 @@ void WebView2::OnVisibilityPropertyChanged(const winrt::DependencyObject& /*send
     UpdateRenderedSubscriptionAndVisibility();
 }
 
-void WebView2::UnregisterCoreEventHandlers()
-{
-    if (m_coreWebView)
-    {
-        m_coreNavigationStartingRevoker.revoke();
-        m_coreSourceChangedRevoker.revoke();
-        m_coreNavigationCompletedRevoker.revoke();
-        m_coreWebMessageReceivedRevoker.revoke();
-        m_coreProcessFailedRevoker.revoke();
-    }
-
-    if (m_coreWebViewController)
-    {
-        m_coreMoveFocusRequestedRevoker.revoke();
-        m_coreLostFocusRevoker.revoke();
-    }
-
-    if (m_coreWebViewCompositionController)
-    {
-        m_cursorChangedRevoker.revoke();
-    }
-}
-
 // Public Close() API
 void WebView2::Close()
 {
@@ -122,6 +99,13 @@ void WebView2::CloseInternal(bool inShutdownPath)
     {
         UnregisterPropertyChangedCallback(winrt::UIElement::VisibilityProperty(), m_visibilityChangedToken.value);
         m_visibilityChangedToken.value = 0;
+    }
+
+    // TODO: We do not have direct analogue for AcceleratorKeyActivated with DispatcherQueue in Islands/ win32. Please refer Task# 30013704 for  more details.
+    if (auto coreWindow = winrt::CoreWindow::GetForCurrentThread())
+    {
+        m_inputWindowHwnd = nullptr;
+        m_acceleratorKeyActivatedRevoker.revoke();
     }
 
     if (m_coreWebView)
@@ -557,6 +541,28 @@ void WebView2::RegisterCoreEventHandlers()
             FireWebMessageReceived(args);
         }});
 
+    m_coreProcessFailedRevoker = m_coreWebView.ProcessFailed(winrt::auto_revoke, {
+    [this](auto const&, winrt::CoreWebView2ProcessFailedEventArgs const& args)
+    {
+        winrt::CoreWebView2ProcessFailedKind coreProcessFailedKind{ args.ProcessFailedKind() };
+        if (coreProcessFailedKind == winrt::CoreWebView2ProcessFailedKind::BrowserProcessExited)
+        {
+            m_isCoreFailure_BrowserExited_State = true;
+
+            // CoreWebView2 takes care of clearing the event handlers when closing the host,
+            // but we still need to reset the event tokens
+            UnregisterCoreEventHandlers();
+
+            // Null these out so we can't try to use them anymore
+            m_coreWebViewCompositionController = nullptr;
+            m_coreWebViewController = nullptr;
+            m_coreWebView = nullptr;
+            ResetProperties();
+        }
+
+        FireCoreProcessFailedEvent(args);
+    } });
+
     m_coreMoveFocusRequestedRevoker = m_coreWebViewController.MoveFocusRequested(winrt::auto_revoke, {
         [this](auto const&, const winrt::CoreWebView2MoveFocusRequestedEventArgs& args)
         {
@@ -635,28 +641,6 @@ void WebView2::RegisterCoreEventHandlers()
             m_webHasFocus = false;
         }});
 
-    m_coreProcessFailedRevoker = m_coreWebView.ProcessFailed(winrt::auto_revoke, {
-        [this](auto const&, winrt::CoreWebView2ProcessFailedEventArgs const& args)
-        {
-            winrt::CoreWebView2ProcessFailedKind coreProcessFailedKind{ args.ProcessFailedKind() };
-            if (coreProcessFailedKind == winrt::CoreWebView2ProcessFailedKind::BrowserProcessExited)
-            {
-                m_isCoreFailure_BrowserExited_State = true;
-
-                // CoreWebView2 takes care of clearing the event handlers when closing the host,
-                // but we still need to reset the event tokens
-                UnregisterCoreEventHandlers();
-
-                // Null these out so we can't try to use them anymore
-                m_coreWebViewCompositionController = nullptr;
-                m_coreWebViewController = nullptr;
-                m_coreWebView = nullptr;
-                ResetProperties();
-            }
-
-            FireCoreProcessFailedEvent(args);
-        }});
-
     m_cursorChangedRevoker = m_coreWebViewCompositionController.CursorChanged(winrt::auto_revoke, {
         [this](auto const& controller, auto const& obj)
         {
@@ -664,6 +648,29 @@ void WebView2::RegisterCoreEventHandlers()
 
             UpdateCoreWindowCursor();
         }});
+}
+
+void WebView2::UnregisterCoreEventHandlers()
+{
+    if (m_coreWebView)
+    {
+        m_coreNavigationStartingRevoker.revoke();
+        m_coreSourceChangedRevoker.revoke();
+        m_coreNavigationCompletedRevoker.revoke();
+        m_coreWebMessageReceivedRevoker.revoke();
+        m_coreProcessFailedRevoker.revoke();
+    }
+
+    if (m_coreWebViewController)
+    {
+        m_coreMoveFocusRequestedRevoker.revoke();
+        m_coreLostFocusRevoker.revoke();
+    }
+
+    if (m_coreWebViewCompositionController)
+    {
+        m_cursorChangedRevoker.revoke();
+    }
 }
 
 winrt::IAsyncAction WebView2::CreateCoreObjects()
@@ -1327,9 +1334,10 @@ void WebView2::MoveFocusIntoCoreWebView(winrt::CoreWebView2MoveFocusReason reaso
 // Xaml control and force HWND focus back to itself, popping Xaml focus out of the
 // WebView2 control. We mark TAB handled in our KeyDown handler so that it is ignored
 // by XamlRoot's tab processing.
+// If the WebView2 has been closed, then we should let Xaml's tab processing handle it.
 void WebView2::HandleKeyDown(const winrt::Windows::Foundation::IInspectable&, const winrt::KeyRoutedEventArgs& e)
 {
-    if (e.Key() == winrt::VirtualKey::Tab)
+    if (e.Key() == winrt::VirtualKey::Tab && !m_isClosed)
     {
         e.Handled(true);
     }
