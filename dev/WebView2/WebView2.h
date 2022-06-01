@@ -134,7 +134,8 @@ private:
     winrt::IAsyncAction CreateCoreWebViewFromEnvironment(HWND hwndParent);
     void CreateMissingAnaheimWarning();
 
-    void RegisterXamlHandlers();
+    void RegisterXamlEventHandlers();
+    void UnregisterXamlEventHandlers();
     void RegisterCoreEventHandlers();
     void UnregisterCoreEventHandlers();
 
