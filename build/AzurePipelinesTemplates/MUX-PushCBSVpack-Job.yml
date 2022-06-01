@@ -1,10 +1,19 @@
 parameters:
   dependsOn: ''
 
+# We need to generate an updated version of the Microsoft.UI.Xaml 2.7 vpack. 
+# We need to add a .winmd to the vpack, but the rest of the contents
+# need to extactly match the existing one (which should match what we published to nuget.org and the Store)
+# So we don't want to build a new release of WinUI 2.7, so instead we skip the build step and pull the 
+# build artifacts from the original Pipeline run (54303602).
+# This will let us push an updated vpack that contains the required .winmd.
+# Usually the version number of the vpack is derived from the version of the appx. But in this case, since 
+# the appx is not changing, we just hard-code a new version number.
+
 jobs:
 - job: CreateVPack
-  dependsOn:
-    - ${{ parameters.dependsOn }}
+  # dependsOn:
+  #   - ${{ parameters.dependsOn }}
   pool:
     name: WinDevPool-S
   variables:
@@ -16,6 +25,12 @@ jobs:
     inputs: 
       artifactName: drop
       downloadPath: $(System.ArtifactsDirectory)
+
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: 35915
+      buildId: 54303602
 
   # This contains the OS internal version of windows.winmd which is required for us to re-merge our winmd so that it can be used from OS repo.
   - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
