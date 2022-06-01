@@ -3,8 +3,8 @@ parameters:
 
 jobs:
 - job: CreateVPack
-  dependsOn:
-    - ${{ parameters.dependsOn }}
+  # dependsOn:
+  #   - ${{ parameters.dependsOn }}
   pool:
     name: WinDevPool-S
   variables:
