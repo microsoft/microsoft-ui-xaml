@@ -55,6 +55,23 @@ function Get-WebView2PackageVersion {
     return $webView2Version
 }
 
+function RemergeWinMd([string] $winmdSourceFolder, [string] $winmdTargetFolder, [string] $winmdReferencesDir)
+{
+    Write-Host "re-merge Microsoft.UI.Xaml.winmd"
+
+    New-Item -Path "$winmdTargetFolder" -ItemType Directory | Out-Null
+
+    # We need to re-merge Microsoft.UI.Xaml.winmd against the OS internal metadata instead of against the metadata from the public sdk:
+    $mdMergeArgs = "-v -metadata_dir ""$winmdReferencesDir"" -o ""$winmdTargetFolder"" -i ""$winmdSourceFolder"" -partial -n:3 -createPublicMetadata -transformExperimental:transform"
+    Write-Host "mdmerge $mdMergeArgs"
+    Invoke-Expression "mdmerge $mdMergeArgs" | Out-Null
+    if($LASTEXITCODE)
+    {
+        Write-Error "mdmerge exited with error ($LASTEXITCODE)"
+        exit
+    }
+}
+
 if (-not (Test-Path "$releaseFolder"))
 {
     Write-Error "Not found folder $releaseFolder"
@@ -98,7 +115,6 @@ if (Test-Path $winmdReferencesDir)
 
 New-Item -Path "$winuiVpackFolder" -ItemType Directory | Out-Null
 New-Item -Path "$cbsFolder" -ItemType Directory | Out-Null
-New-Item -Path "$cbswinmdFolder" -ItemType Directory | Out-Null
 New-Item -Path "$winmdReferencesDir" -ItemType Directory | Out-Null
 
 Write-Host "Copy OS publics to $winmdReferencesDir"
@@ -150,19 +166,7 @@ foreach ($flavour in $buildFlavours)
 
     if ($flavour -ieq "X64")
     {
-        Write-Host "re-merge Microsoft.UI.Xaml.winmd"
-
-        New-Item -Path "$winmdTargetFolder" -ItemType Directory | Out-Null
-
-        # We need to re-merge Microsoft.UI.Xaml.winmd against the OS internal metadata instead of against the metadata from the public sdk:
-        $mdMergeArgs = "-v -metadata_dir ""$winmdReferencesDir"" -o ""$winmdTargetFolder"" -i ""$winmdSourceFolder"" -partial -n:3 -createPublicMetadata -transformExperimental:transform"
-        Write-Host "mdmerge $mdMergeArgs"
-        Invoke-Expression "mdmerge $mdMergeArgs" | Out-Null
-        if($LASTEXITCODE)
-        {
-            Write-Error "mdmerge exited with error ($LASTEXITCODE)"
-            exit
-        }
+        RemergeWinMd $winmdSourceFolder $winmdTargetFolder $winmdReferencesDir
     }
 }
 
@@ -183,17 +187,7 @@ foreach ($flavour in $buildFlavours)
 
     if ($flavour -ieq "X64")
     {
-        Write-Host "re-merge Microsoft.UI.Xaml.winmd"
-
-        # We need to re-merge Microsoft.UI.Xaml.winmd against the OS internal metadata instead of against the metadata from the public sdk:
-        $mdMergeArgs = "-v -metadata_dir ""$winmdReferencesDir"" -o ""$cbswinmdFolder"" -i ""$targetFolder"" -partial -n:3 -createPublicMetadata -transformExperimental:transform"
-        Write-Host "mdmerge $mdMergeArgs"
-        Invoke-Expression "mdmerge $mdMergeArgs" | Out-Null
-        if($LASTEXITCODE)
-        {
-            Write-Error "mdmerge exited with error ($LASTEXITCODE)"
-            exit
-        }
+        RemergeWinMd $targetFolder $cbswinmdFolder $winmdReferencesDir
     }
 }
 
