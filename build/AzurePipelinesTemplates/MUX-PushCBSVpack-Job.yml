@@ -70,10 +70,10 @@ jobs:
       artifactName: cbs
     # This artifact is not consumed by anyone, but it is useful for debugging purposes.
 
-  - template: v2/Steps/PackageES/Windows.SDL.Binary.Analysis.OS.Undocked.yml@templates_onebranch
-    parameters:
-      variables:
-        ob_outputDirectory: $(publishDir) # provide path to binaries to be scanned
+  # - template: v2/Steps/PackageES/Windows.SDL.Binary.Analysis.OS.Undocked.yml@templates_onebranch
+  #   parameters:
+  #     variables:
+  #       ob_outputDirectory: $(publishDir) # provide path to binaries to be scanned
 
   # Push the VPacks:
   - task: PkgESVPack@12

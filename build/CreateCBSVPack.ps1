@@ -128,7 +128,7 @@ foreach ($flavour in $buildFlavours)
     $sourceFolder = "$releaseFolder\$flavour\FrameworkPackage"
     $winmdSourceFolder = "$releaseFolder\$flavour\Microsoft.UI.Xaml\sdk"
     $targetFolder = "$winuiVpackFolder\$flavour"
-    $winmdTargetFolder = "$winuiVpackFolder\$winmd"
+    $winmdTargetFolder = "$winuiVpackFolder\winmd"
 
     New-Item -Path "$targetFolder" -ItemType Directory | Out-Null
     New-Item -Path "$winmdTargetFolder" -ItemType Directory | Out-Null
