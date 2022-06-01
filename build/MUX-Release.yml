@@ -129,6 +129,7 @@ jobs:
 - template: AzurePipelinesTemplates\MUX-PushCBSVpack-Job.yml
   parameters:
     # dependsOn: Build
+    dependsOn: ''
 
 # # Build solution that depends on nuget package
 # - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
