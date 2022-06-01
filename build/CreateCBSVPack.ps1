@@ -74,7 +74,7 @@ if(!(Get-Command mdmerge -ErrorAction Ignore))
 }
 $winuiVpackFolder = "$publishDir\WinUIVpack"
 $cbsFolder = "$publishDir\CBS"
-$winmdFolder = "$cbsFolder\winmd"
+$cbswinmdFolder = "$cbsFolder\winmd"
 $packagesDir = Join-Path $repoRoot "packages"
 $winmdReferencesDir = Join-Path $repoRoot "winmdreferences"
 
@@ -98,7 +98,7 @@ if (Test-Path $winmdReferencesDir)
 
 New-Item -Path "$winuiVpackFolder" -ItemType Directory | Out-Null
 New-Item -Path "$cbsFolder" -ItemType Directory | Out-Null
-New-Item -Path "$winmdFolder" -ItemType Directory | Out-Null
+New-Item -Path "$cbswinmdFolder" -ItemType Directory | Out-Null
 New-Item -Path "$winmdReferencesDir" -ItemType Directory | Out-Null
 
 Write-Host "Copy OS publics to $winmdReferencesDir"
@@ -126,9 +126,12 @@ foreach ($flavour in $buildFlavours)
 foreach ($flavour in $buildFlavours) 
 {
     $sourceFolder = "$releaseFolder\$flavour\FrameworkPackage"
+    $winmdSourceFolder = "$releaseFolder\$flavour\Microsoft.UI.Xaml\sdk"
     $targetFolder = "$winuiVpackFolder\$flavour"
+    $winmdTargetFolder = "$winuiVpackFolder\$winmd"
 
     New-Item -Path "$targetFolder" -ItemType Directory | Out-Null
+    New-Item -Path "$winmdTargetFolder" -ItemType Directory | Out-Null
 
     $search = "Microsoft.UI.Xaml.*.appx"
     $found = Get-ChildItem $sourceFolder -Filter $search
@@ -145,6 +148,21 @@ foreach ($flavour in $buildFlavours)
 
     Write-Verbose "Copy item from '$sourcePathFull' to '$destPathFull' "
     Copy-Item $sourcePathFull $destPathFull
+
+    if ($flavour -ieq "X64")
+    {
+        Write-Host "re-merge Microsoft.UI.Xaml.winmd"
+
+        # We need to re-merge Microsoft.UI.Xaml.winmd against the OS internal metadata instead of against the metadata from the public sdk:
+        $mdMergeArgs = "-v -metadata_dir ""$winmdReferencesDir"" -o ""$winmdTargetFolder"" -i ""$winmdSourceFolder"" -partial -n:3 -createPublicMetadata -transformExperimental:transform"
+        Write-Host "mdmerge $mdMergeArgs"
+        Invoke-Expression "mdmerge $mdMergeArgs" | Out-Null
+        if($LASTEXITCODE)
+        {
+            Write-Error "mdmerge exited with error ($LASTEXITCODE)"
+            exit
+        }
+    }
 }
 
 # Create CBS Vpacks:
@@ -167,7 +185,7 @@ foreach ($flavour in $buildFlavours)
         Write-Host "re-merge Microsoft.UI.Xaml.winmd"
 
         # We need to re-merge Microsoft.UI.Xaml.winmd against the OS internal metadata instead of against the metadata from the public sdk:
-        $mdMergeArgs = "-v -metadata_dir ""$winmdReferencesDir"" -o ""$winmdFolder"" -i ""$targetFolder"" -partial -n:3 -createPublicMetadata -transformExperimental:transform"
+        $mdMergeArgs = "-v -metadata_dir ""$winmdReferencesDir"" -o ""$cbswinmdFolder"" -i ""$targetFolder"" -partial -n:3 -createPublicMetadata -transformExperimental:transform"
         Write-Host "mdmerge $mdMergeArgs"
         Invoke-Expression "mdmerge $mdMergeArgs" | Out-Null
         if($LASTEXITCODE)

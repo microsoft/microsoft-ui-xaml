@@ -29,6 +29,12 @@ jobs:
       artifactName: drop
       downloadPath: $(System.ArtifactsDirectory)
 
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: $(System.DefinitionId)
+      buildId: 50302336
+
   # This contains the OS internal version of windows.winmd which is required for us to re-merge our winmd so that it can be used from OS repo.
   - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
     displayName: 'nuget install Microsoft.Internal.WinUI.WindowsPublicsWinmd'
