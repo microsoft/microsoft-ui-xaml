@@ -22,7 +22,7 @@ jobs:
 
   - task: NuGetAuthenticate@0
 
-  - task: NodeTool@0
+  # - task: NodeTool@0
 
   - task: DownloadBuildArtifacts@0 
     inputs: 

@@ -131,7 +131,6 @@ foreach ($flavour in $buildFlavours)
     $winmdTargetFolder = "$winuiVpackFolder\winmd"
 
     New-Item -Path "$targetFolder" -ItemType Directory | Out-Null
-    New-Item -Path "$winmdTargetFolder" -ItemType Directory | Out-Null
 
     $search = "Microsoft.UI.Xaml.*.appx"
     $found = Get-ChildItem $sourceFolder -Filter $search
@@ -152,6 +151,8 @@ foreach ($flavour in $buildFlavours)
     if ($flavour -ieq "X64")
     {
         Write-Host "re-merge Microsoft.UI.Xaml.winmd"
+
+        New-Item -Path "$winmdTargetFolder" -ItemType Directory | Out-Null
 
         # We need to re-merge Microsoft.UI.Xaml.winmd against the OS internal metadata instead of against the metadata from the public sdk:
         $mdMergeArgs = "-v -metadata_dir ""$winmdReferencesDir"" -o ""$winmdTargetFolder"" -i ""$winmdSourceFolder"" -partial -n:3 -createPublicMetadata -transformExperimental:transform"
