@@ -61,13 +61,12 @@ WebView2::WebView2()
 
     // Set the background for WebView2 to ensure it will be visible to hit-testing.
     Background(winrt::SolidColorBrush(winrt::Colors::Transparent()));
-
 }
 
 void WebView2::OnManipulationModePropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/)
 {
     MUX_FAIL_FAST_MSG("WebView2.ManipulationMode cannot be set to anything other than \"None\".");
-};
+}
 
 void WebView2::OnVisibilityPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/)
 {
@@ -88,6 +87,9 @@ void WebView2::CloseInternal(bool inShutdownPath)
     UnregisterCoreEventHandlers();
 
     m_xamlRootChangedRevoker.revoke();
+    m_windowVisibilityChangedRevoker.revoke();
+    m_renderedRevoker.revoke();
+    m_layoutUpdatedRevoker.revoke();
 
     if (m_manipulationModeChangedToken.value != 0)
     {
@@ -101,12 +103,7 @@ void WebView2::CloseInternal(bool inShutdownPath)
         m_visibilityChangedToken.value = 0;
     }
 
-    // TODO: We do not have direct analogue for AcceleratorKeyActivated with DispatcherQueue in Islands/ win32. Please refer Task# 30013704 for  more details.
-    if (auto coreWindow = winrt::CoreWindow::GetForCurrentThread())
-    {
-        m_inputWindowHwnd = nullptr;
-        m_acceleratorKeyActivatedRevoker.revoke();
-    }
+    m_inputWindowHwnd = nullptr;
 
     if (m_coreWebView)
     {
@@ -124,6 +121,8 @@ void WebView2::CloseInternal(bool inShutdownPath)
         m_coreWebViewCompositionController = nullptr;
     }
 
+    UnregisterXamlEventHandlers();
+
     // If called from destructor, skip ResetProperties() as property values no longer matter.
     // (Otherwise, Xaml Core will assert on failure to resurrect WV2's DXaml Peer)
     if (!inShutdownPath)
@@ -133,7 +132,6 @@ void WebView2::CloseInternal(bool inShutdownPath)
 
     m_isClosed = true;
 }
-
 
 WebView2::~WebView2()
 {
@@ -685,7 +683,7 @@ winrt::IAsyncAction WebView2::CreateCoreObjects()
     else
     {
         m_creationInProgressAsync = std::make_unique<AsyncWebViewOperations>();
-        RegisterXamlHandlers();
+        RegisterXamlEventHandlers();
 
         // We are about to attempt re-creation of the environment,
         // so clear any previous 'Missing Anaheim Warning'
@@ -1365,7 +1363,7 @@ void WebView2::HandleAcceleratorKeyActivated(const winrt::Windows::UI::Core::Cor
     }
 }
 
-void WebView2::RegisterXamlHandlers()
+void WebView2::RegisterXamlEventHandlers()
 {
     m_gettingFocusRevoker = GettingFocus(winrt::auto_revoke, { this, &WebView2::HandleGettingFocus });
     m_gotFocusRevoker = GotFocus(winrt::auto_revoke, { this, &WebView2::HandleGotFocus });
@@ -1387,6 +1385,29 @@ void WebView2::RegisterXamlHandlers()
     }
 
     m_sizeChangedRevoker = SizeChanged(winrt::auto_revoke, { this, &WebView2::HandleSizeChanged });
+}
+
+void WebView2::UnregisterXamlEventHandlers()
+{
+    m_gettingFocusRevoker.revoke();
+    m_gotFocusRevoker.revoke();
+
+    m_pointerPressedRevoker.revoke();
+    m_pointerPressedRevoker.revoke();
+    m_pointerMovedRevoker.revoke();
+    m_pointerWheelChangedRevoker.revoke();
+    m_pointerExitedRevoker.revoke();
+    m_pointerEnteredRevoker.revoke();
+    m_pointerCanceledRevoker.revoke();
+    m_pointerCaptureLostRevoker.revoke();
+    m_keyDownRevoker.revoke();
+
+    if (auto coreWindow = winrt::CoreWindow::GetForCurrentThread())
+    {
+        m_acceleratorKeyActivatedRevoker.revoke();
+    }
+
+    m_sizeChangedRevoker.revoke();
 }
 
 winrt::AutomationPeer WebView2::OnCreateAutomationPeer()
@@ -1503,7 +1524,6 @@ void WebView2::TryCompleteInitialization()
             HandleXamlRootChanged();
         });
     }
-
 
     if (!m_actualThemeChangedRevoker)
     {
