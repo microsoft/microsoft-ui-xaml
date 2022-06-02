@@ -10,7 +10,7 @@
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <dependencies>
-      <group targetFramework="UAP10.0.15063">
+      <group targetFramework="UAP10.0.17763">
         <dependency id="Microsoft.NETCore.UniversalWindowsPlatform" version="6.2.8" exclude="Build,Analyzers" />
         <dependency id="Microsoft.UI.Xaml" version="2.6.1" exclude="Build,Analyzers" />
       </group>
