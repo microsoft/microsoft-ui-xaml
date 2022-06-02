@@ -191,13 +191,14 @@ foreach ($flavour in $buildFlavours)
     }
 }
 
-$manifestVersion = GetVersionFromManifest "$targetFolder\AppxManifest.xml"
-$version = $manifestVersion.split(".")
-$major = $version[0]
-$minor = $version[1]
-$patch = $version[2]
+# $manifestVersion = GetVersionFromManifest "$targetFolder\AppxManifest.xml"
+# $version = $manifestVersion.split(".")
+# $major = $version[0]
+# $minor = $version[1]
+# $patch = $version[2]
 
-$vpackversion = "$($major).$($minor).$($patch)"
+# $vpackversion = "$($major).$($minor).$($patch)"
+$vpackversion = "7.2203.17002"
 Write-Host "vpackversion=$vpackversion"
 
 $readmeFilePath = Join-Path $cbsFolder "readme.txt"
