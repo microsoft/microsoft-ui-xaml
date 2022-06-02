@@ -39,17 +39,20 @@ void TabViewItem::OnApplyTemplate()
     m_tabDragStartingRevoker.revoke();
     m_tabDragCompletedRevoker.revoke();
 
-    m_selectedBackgroundPath.set(GetTemplateChildT<winrt::Path>(L"SelectedBackgroundPath", controlProtected));
-
-    if (const auto selectedBackgroundPath = m_selectedBackgroundPath.get())
+    if (SharedHelpers::Is19H1OrHigher()) // UIElement.ActualOffset introduced in Win10 1903.
     {
-        m_selectedBackgroundPathSizeChangedRevoker = selectedBackgroundPath.SizeChanged(winrt::auto_revoke,
+        m_selectedBackgroundPath.set(GetTemplateChildT<winrt::Path>(L"SelectedBackgroundPath", controlProtected));
+
+        if (const auto selectedBackgroundPath = m_selectedBackgroundPath.get())
         {
-            [this](auto const&, auto const&)
+            m_selectedBackgroundPathSizeChangedRevoker = selectedBackgroundPath.SizeChanged(winrt::auto_revoke,
             {
-                UpdateSelectedBackgroundPathTranslateTransform();
-            }
-        });
+                [this](auto const&, auto const&)
+                {
+                    UpdateSelectedBackgroundPathTranslateTransform();
+                }
+            });
+        }
     }
 
     m_headerContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"ContentPresenter", controlProtected));
@@ -228,6 +231,8 @@ void TabViewItem::UpdateShadow()
 
 void TabViewItem::UpdateSelectedBackgroundPathTranslateTransform()
 {
+    MUX_ASSERT(SharedHelpers::Is19H1OrHigher());
+
     if (const auto selectedBackgroundPath = m_selectedBackgroundPath.get())
     {
         const auto selectedBackgroundPathActualOffset = selectedBackgroundPath.ActualOffset();
