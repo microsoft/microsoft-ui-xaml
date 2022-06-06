@@ -467,6 +467,7 @@
                             Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"
                             HorizontalAlignment="Right"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalTextAlignment="Right"
                             Visibility="Collapsed"
                             AutomationProperties.AccessibilityView="Raw" />
                     </Grid>
@@ -609,6 +610,7 @@
                                 Foreground="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForeground}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                HorizontalTextAlignment="Right"
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw" />
                     </Grid>
@@ -892,6 +894,7 @@
                             Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"
                             HorizontalAlignment="Right"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalTextAlignment="Right"
                             Visibility="Collapsed"
                             AutomationProperties.AccessibilityView="Raw" />
 
@@ -1035,6 +1038,7 @@
                             Foreground="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForeground}"
                             HorizontalAlignment="Right"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalTextAlignment="Right"
                             Visibility="Collapsed"
                             AutomationProperties.AccessibilityView="Raw" />
                     </Grid>
