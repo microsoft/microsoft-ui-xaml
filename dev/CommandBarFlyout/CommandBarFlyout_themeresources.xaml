@@ -334,6 +334,7 @@
                                 Foreground="{ThemeResource CommandBarFlyoutAppBarButtonKeyboardTextLabelForeground}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
+                                HorizontalTextAlignment="Right"
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw" />
                             <FontIcon x:Name="SubItemChevron"
@@ -588,6 +589,7 @@
                                 Foreground="{ThemeResource CommandBarFlyoutAppBarButtonKeyboardTextLabelForeground}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
+                                HorizontalTextAlignment="Right"
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw" />
                         </Grid>
