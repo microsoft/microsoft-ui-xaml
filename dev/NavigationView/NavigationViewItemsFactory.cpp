@@ -130,14 +130,11 @@ void NavigationViewItemsFactory::RecycleElementCore(winrt::ElementFactoryRecycle
 
         // Do not recycle SettingsItem
         bool isSettingsItem = m_settingsItem && m_settingsItem == args.Element();
-
+        
+        UnlinkElementFromParent(args);
         if (m_itemTemplateWrapper && !isSettingsItem)
         {
             m_itemTemplateWrapper.RecycleElement(args);
-        }
-        else
-        {
-            UnlinkElementFromParent(args);
         }
     }
 }
@@ -153,6 +150,7 @@ void NavigationViewItemsFactory::UnlinkElementFromParent(winrt::ElementFactoryRe
         if (children.IndexOf(args.Element(), childIndex))
         {
             children.RemoveAt(childIndex);
+            args.Parent(nullptr);
         }
     }
 }

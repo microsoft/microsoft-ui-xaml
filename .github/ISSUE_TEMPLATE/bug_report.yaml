@@ -1,7 +1,7 @@
 name: Bug report
 description: File a bug report
 title: "Bug title"
-labels: []
+labels: [bug]
 body:
   - type: markdown
     attributes:
@@ -33,15 +33,27 @@ body:
   - type: dropdown
     attributes:
       label: NuGet package version
-      description: If you are seeing your issue on older versions please try the latest
+      description: If you are seeing your issue on older versions please try the latest release
       options:
+        - "WinUI 3 - Windows App SDK 1.1 Preview 3: 1.1.0-preview3"
+        - "WinUI 3 - Windows App SDK 1.1 Preview 2: 1.1.0-preview2"
+        - "WinUI 3 - Windows App SDK 1.1 Preview 1: 1.1.0-preview1"
+        - "WinUI 3 - Windows App SDK 1.0.3"
+        - "WinUI 3 - Windows App SDK 1.0.2"
+        - "WinUI 3 - Windows App SDK 1.0.1"
         - "WinUI 3 - Windows App SDK 1.0"
+        - "WinUI 3 - Windows App SDK 1.0 Experimental: 1.0.0-experimental1"
+        - "WinUI 3 - Project Reunion 0.8: 0.8.8"
+        - "WinUI 3 - Project Reunion 0.8: 0.8.7"
+        - "WinUI 3 - Project Reunion 0.8 Preview 1: 0.8.7-preview1"
+        - "WinUI 3 - Project Reunion 0.8: 0.8.6"
+        - "WinUI 3 - Project Reunion 0.8 Preview 1: 0.8.6-preview1"
         - "WinUI 3 - Project Reunion 0.8: 0.8.5"
-        - "WinUI 3 - Project Reunion 0.8 Preview: 0.8.6-preview"
         - "WinUI 3 - Project Reunion 0.5: 0.5.7"
         - "WinUI 3 - Project Reunion 0.5: 0.5.0"
         - "WinUI 3 - Project Reunion 0.5 Preview: 0.5.0-prerelease"
         - "Microsoft.WinUI 3.0.0-preview4.210210.4"
+        - "Microsoft.UI.Xaml 2.7.1"
         - "Microsoft.UI.Xaml 2.7.0"
         - "Microsoft.UI.Xaml 2.6.2"
         - "Microsoft.UI.Xaml 2.6.1"

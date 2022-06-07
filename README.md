@@ -17,7 +17,6 @@ In these calls we’ll discuss the WinUI [roadmap](docs/roadmap.md), our status 
 
 You can watch them online here on YouTube at the [Windows Developer channel](https://www.youtube.com/channel/UCzLbHrU7U3cUDNQWWAqjceA).
 
-Add the event to your calendar: [ICS calendar file](docs/communitycalls/WinUICommunityCall.ics)
 
 ## Using WinUI 3
 

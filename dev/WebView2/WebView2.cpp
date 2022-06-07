@@ -61,40 +61,16 @@ WebView2::WebView2()
 
     // Set the background for WebView2 to ensure it will be visible to hit-testing.
     Background(winrt::SolidColorBrush(winrt::Colors::Transparent()));
-
 }
 
 void WebView2::OnManipulationModePropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/)
 {
     MUX_FAIL_FAST_MSG("WebView2.ManipulationMode cannot be set to anything other than \"None\".");
-};
+}
 
 void WebView2::OnVisibilityPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/)
 {
     UpdateRenderedSubscriptionAndVisibility();
-}
-
-void WebView2::UnregisterCoreEventHandlers()
-{
-    if (m_coreWebView)
-    {
-        m_coreNavigationStartingRevoker.revoke();
-        m_coreSourceChangedRevoker.revoke();
-        m_coreNavigationCompletedRevoker.revoke();
-        m_coreWebMessageReceivedRevoker.revoke();
-        m_coreProcessFailedRevoker.revoke();
-    }
-
-    if (m_coreWebViewController)
-    {
-        m_coreMoveFocusRequestedRevoker.revoke();
-        m_coreLostFocusRevoker.revoke();
-    }
-
-    if (m_coreWebViewCompositionController)
-    {
-        m_cursorChangedRevoker.revoke();
-    }
 }
 
 // Public Close() API
@@ -111,6 +87,9 @@ void WebView2::CloseInternal(bool inShutdownPath)
     UnregisterCoreEventHandlers();
 
     m_xamlRootChangedRevoker.revoke();
+    m_windowVisibilityChangedRevoker.revoke();
+    m_renderedRevoker.revoke();
+    m_layoutUpdatedRevoker.revoke();
 
     if (m_manipulationModeChangedToken.value != 0)
     {
@@ -123,6 +102,8 @@ void WebView2::CloseInternal(bool inShutdownPath)
         UnregisterPropertyChangedCallback(winrt::UIElement::VisibilityProperty(), m_visibilityChangedToken.value);
         m_visibilityChangedToken.value = 0;
     }
+
+    m_inputWindowHwnd = nullptr;
 
     if (m_coreWebView)
     {
@@ -140,6 +121,8 @@ void WebView2::CloseInternal(bool inShutdownPath)
         m_coreWebViewCompositionController = nullptr;
     }
 
+    UnregisterXamlEventHandlers();
+
     // If called from destructor, skip ResetProperties() as property values no longer matter.
     // (Otherwise, Xaml Core will assert on failure to resurrect WV2's DXaml Peer)
     if (!inShutdownPath)
@@ -149,7 +132,6 @@ void WebView2::CloseInternal(bool inShutdownPath)
 
     m_isClosed = true;
 }
-
 
 WebView2::~WebView2()
 {
@@ -557,6 +539,28 @@ void WebView2::RegisterCoreEventHandlers()
             FireWebMessageReceived(args);
         }});
 
+    m_coreProcessFailedRevoker = m_coreWebView.ProcessFailed(winrt::auto_revoke, {
+    [this](auto const&, winrt::CoreWebView2ProcessFailedEventArgs const& args)
+    {
+        winrt::CoreWebView2ProcessFailedKind coreProcessFailedKind{ args.ProcessFailedKind() };
+        if (coreProcessFailedKind == winrt::CoreWebView2ProcessFailedKind::BrowserProcessExited)
+        {
+            m_isCoreFailure_BrowserExited_State = true;
+
+            // CoreWebView2 takes care of clearing the event handlers when closing the host,
+            // but we still need to reset the event tokens
+            UnregisterCoreEventHandlers();
+
+            // Null these out so we can't try to use them anymore
+            m_coreWebViewCompositionController = nullptr;
+            m_coreWebViewController = nullptr;
+            m_coreWebView = nullptr;
+            ResetProperties();
+        }
+
+        FireCoreProcessFailedEvent(args);
+    } });
+
     m_coreMoveFocusRequestedRevoker = m_coreWebViewController.MoveFocusRequested(winrt::auto_revoke, {
         [this](auto const&, const winrt::CoreWebView2MoveFocusRequestedEventArgs& args)
         {
@@ -594,7 +598,14 @@ void WebView2::RegisterCoreEventHandlers()
                             return winrt::FocusManager::FindNextElement(xamlDirection);
                         }
                     }();
-                    if (nextElement)
+                    if (nextElement && nextElement.try_as<winrt::WebView2>() == *this)
+                    {
+                        // If the next element is this webview, then we are the only focusable element. Move focus back into the webview,
+                        // or else we'll get stuck trying to tab out of the top or bottom of the page instead of looping around.
+                        MoveFocusIntoCoreWebView(moveFocusRequestedReason);
+                        args.Handled(TRUE);
+                    }
+                    else if (nextElement)
                     {
                         // If Anaheim is also losing focus via something other than TAB (web LostFocus event fired)
                         // and the TAB handling is arriving later (eg due to longer MOJO delay), skip manually moving Xaml Focus to next element.
@@ -628,28 +639,6 @@ void WebView2::RegisterCoreEventHandlers()
             m_webHasFocus = false;
         }});
 
-    m_coreProcessFailedRevoker = m_coreWebView.ProcessFailed(winrt::auto_revoke, {
-        [this](auto const&, winrt::CoreWebView2ProcessFailedEventArgs const& args)
-        {
-            winrt::CoreWebView2ProcessFailedKind coreProcessFailedKind{ args.ProcessFailedKind() };
-            if (coreProcessFailedKind == winrt::CoreWebView2ProcessFailedKind::BrowserProcessExited)
-            {
-                m_isCoreFailure_BrowserExited_State = true;
-
-                // CoreWebView2 takes care of clearing the event handlers when closing the host,
-                // but we still need to reset the event tokens
-                UnregisterCoreEventHandlers();
-
-                // Null these out so we can't try to use them anymore
-                m_coreWebViewCompositionController = nullptr;
-                m_coreWebViewController = nullptr;
-                m_coreWebView = nullptr;
-                ResetProperties();
-            }
-
-            FireCoreProcessFailedEvent(args);
-        }});
-
     m_cursorChangedRevoker = m_coreWebViewCompositionController.CursorChanged(winrt::auto_revoke, {
         [this](auto const& controller, auto const& obj)
         {
@@ -657,6 +646,29 @@ void WebView2::RegisterCoreEventHandlers()
 
             UpdateCoreWindowCursor();
         }});
+}
+
+void WebView2::UnregisterCoreEventHandlers()
+{
+    if (m_coreWebView)
+    {
+        m_coreNavigationStartingRevoker.revoke();
+        m_coreSourceChangedRevoker.revoke();
+        m_coreNavigationCompletedRevoker.revoke();
+        m_coreWebMessageReceivedRevoker.revoke();
+        m_coreProcessFailedRevoker.revoke();
+    }
+
+    if (m_coreWebViewController)
+    {
+        m_coreMoveFocusRequestedRevoker.revoke();
+        m_coreLostFocusRevoker.revoke();
+    }
+
+    if (m_coreWebViewCompositionController)
+    {
+        m_cursorChangedRevoker.revoke();
+    }
 }
 
 winrt::IAsyncAction WebView2::CreateCoreObjects()
@@ -671,7 +683,7 @@ winrt::IAsyncAction WebView2::CreateCoreObjects()
     else
     {
         m_creationInProgressAsync = std::make_unique<AsyncWebViewOperations>();
-        RegisterXamlHandlers();
+        RegisterXamlEventHandlers();
 
         // We are about to attempt re-creation of the environment,
         // so clear any previous 'Missing Anaheim Warning'
@@ -1263,24 +1275,7 @@ void WebView2::HandleGotFocus(const winrt::Windows::Foundation::IInspectable&, c
 {
     if (m_coreWebView && m_xamlFocusChangeInfo.m_isPending)
     {
-        try
-        {
-            m_coreWebViewController.MoveFocus(m_xamlFocusChangeInfo.m_storedMoveFocusReason);
-            m_webHasFocus = true;
-        }
-        catch (winrt::hresult_error e)
-        {
-            // Occasionally, a request to restore the minimized window does not complete. This triggers
-            // FocusManager to set Xaml Focus to WV2 and consequently into CWV2 MoveFocus() call above, 
-            // which in turn will attempt ::SetFocus() on InputHWND, and that will fail with E_INVALIDARG
-            // since that HWND remains minimized. Work around by ignoring this error here. Since the app
-            // is minimized, focus state is not relevant - the next (successful) attempt to restrore the app
-            // will set focus into WV2/CWV2 correctly.
-            if (e.code().value != E_INVALIDARG)
-            {
-                throw;
-            }
-        }
+        MoveFocusIntoCoreWebView(m_xamlFocusChangeInfo.m_storedMoveFocusReason);
         m_xamlFocusChangeInfo.m_isPending = false;
     }
 }
@@ -1308,6 +1303,28 @@ void WebView2::HandleGettingFocus(const winrt::Windows::Foundation::IInspectable
     }
 }
 
+void WebView2::MoveFocusIntoCoreWebView(winrt::CoreWebView2MoveFocusReason reason)
+{
+    try
+    {
+        m_coreWebViewController.MoveFocus(reason);
+        m_webHasFocus = true;
+    }
+    catch (winrt::hresult_error e)
+    {
+        // Occasionally, a request to restore the minimized window does not complete. This triggers
+        // FocusManager to set Xaml Focus to WV2 and consequently into CWV2 MoveFocus() call above, 
+        // which in turn will attempt ::SetFocus() on InputHWND, and that will fail with E_INVALIDARG
+        // since that HWND remains minimized. Work around by ignoring this error here. Since the app
+        // is minimized, focus state is not relevant - the next (successful) attempt to restrore the app
+        // will set focus into WV2/CWV2 correctly.
+        if (e.code().value != E_INVALIDARG)
+        {
+            throw;
+        }
+    }
+}
+
 
 // Since WebView takes HWND focus (via OnGotFocus -> MoveFocus) Xaml assumes
 // focus was lost for an external reason. When the next unhandled TAB KeyDown
@@ -1315,9 +1332,10 @@ void WebView2::HandleGettingFocus(const winrt::Windows::Foundation::IInspectable
 // Xaml control and force HWND focus back to itself, popping Xaml focus out of the
 // WebView2 control. We mark TAB handled in our KeyDown handler so that it is ignored
 // by XamlRoot's tab processing.
+// If the WebView2 has been closed, then we should let Xaml's tab processing handle it.
 void WebView2::HandleKeyDown(const winrt::Windows::Foundation::IInspectable&, const winrt::KeyRoutedEventArgs& e)
 {
-    if (e.Key() == winrt::VirtualKey::Tab)
+    if (e.Key() == winrt::VirtualKey::Tab && !m_isClosed)
     {
         e.Handled(true);
     }
@@ -1345,7 +1363,7 @@ void WebView2::HandleAcceleratorKeyActivated(const winrt::Windows::UI::Core::Cor
     }
 }
 
-void WebView2::RegisterXamlHandlers()
+void WebView2::RegisterXamlEventHandlers()
 {
     m_gettingFocusRevoker = GettingFocus(winrt::auto_revoke, { this, &WebView2::HandleGettingFocus });
     m_gotFocusRevoker = GotFocus(winrt::auto_revoke, { this, &WebView2::HandleGotFocus });
@@ -1367,6 +1385,29 @@ void WebView2::RegisterXamlHandlers()
     }
 
     m_sizeChangedRevoker = SizeChanged(winrt::auto_revoke, { this, &WebView2::HandleSizeChanged });
+}
+
+void WebView2::UnregisterXamlEventHandlers()
+{
+    m_gettingFocusRevoker.revoke();
+    m_gotFocusRevoker.revoke();
+
+    m_pointerPressedRevoker.revoke();
+    m_pointerPressedRevoker.revoke();
+    m_pointerMovedRevoker.revoke();
+    m_pointerWheelChangedRevoker.revoke();
+    m_pointerExitedRevoker.revoke();
+    m_pointerEnteredRevoker.revoke();
+    m_pointerCanceledRevoker.revoke();
+    m_pointerCaptureLostRevoker.revoke();
+    m_keyDownRevoker.revoke();
+
+    if (auto coreWindow = winrt::CoreWindow::GetForCurrentThread())
+    {
+        m_acceleratorKeyActivatedRevoker.revoke();
+    }
+
+    m_sizeChangedRevoker.revoke();
 }
 
 winrt::AutomationPeer WebView2::OnCreateAutomationPeer()
@@ -1483,7 +1524,6 @@ void WebView2::TryCompleteInitialization()
             HandleXamlRootChanged();
         });
     }
-
 
     if (!m_actualThemeChangedRevoker)
     {

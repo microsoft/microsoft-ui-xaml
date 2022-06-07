@@ -198,7 +198,8 @@ namespace MUXControlsTestApp
             OffTreeWebViewInputTest,
             HtmlDropdownTest,
             HiddenThenVisibleTest,
-            ParentHiddenThenVisibleTest
+            ParentHiddenThenVisibleTest,
+            LifetimeTabTest,
         };
 
         // Map of TestList entry to its webpage (index in TestPageNames[])
@@ -264,6 +265,7 @@ namespace MUXControlsTestApp
             { TestList.HtmlDropdownTest, 5 },
             { TestList.HiddenThenVisibleTest, 1 },
             { TestList.ParentHiddenThenVisibleTest, 1 },
+            { TestList.LifetimeTabTest, 0 },
         };
 
         readonly string[] TestPageNames =
@@ -1903,6 +1905,11 @@ namespace MUXControlsTestApp
                             logger.Verify(MyWebView2.IsHitTestVisible,
                                  string.Format("Test {0}: Failed, Expected MyWebView2.IsHitTestVisible to be true, was {1}",
                                     selectedTest, MyWebView2.IsHitTestVisible));
+                        }
+                        break;
+                    case TestList.LifetimeTabTest:
+                        {
+                            MyWebView2.Close();
                         }
                         break;
 

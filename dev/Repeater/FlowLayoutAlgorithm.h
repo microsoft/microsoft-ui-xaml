@@ -77,6 +77,7 @@ private:
         const winrt::Size& availableSize,
         bool isWrapping,
         double minItemSpacing,
+        const bool disableVirtualization,
         const wstring_view& layoutId);
     void Generate(
         GenerateDirection direction,

@@ -142,11 +142,11 @@
     <comment>The automation name for the third-dimension slider when it's controlling value.</comment>
   </data>
   <data name="TextBlueLabel" xml:space="preserve">
-    <value>Синій</value>
+    <value>Темно-блакитний</value>
     <comment>The label for the text box to edit the blue component of the current RGB color.</comment>
   </data>
   <data name="AutomationNameBlueTextBox" xml:space="preserve">
-    <value>Синій</value>
+    <value>Темно-блакитний</value>
     <comment>The automation name for the text box to edit the blue component of the current RGB color.</comment>
   </data>
   <data name="AutomationNameColorModelComboBox" xml:space="preserve">
@@ -154,7 +154,7 @@
     <comment>The automation name for the color model selection combo box.</comment>
   </data>
   <data name="AutomationNameColorSpectrum" xml:space="preserve">
-    <value>Палітра кольорів</value>
+    <value>Вибір кольору</value>
     <comment>The automation name for the ColorSpectrum control.</comment>
   </data>
   <data name="TextGreenLabel" xml:space="preserve">
