@@ -11,7 +11,7 @@ function Get-AvailablePackages ( $package )
 {
     $result = @()
 
-    $output = ( & nuget.exe list $package -prerelease -allversions -configfile $NuGetConfigPath )
+    $output = ( & nuget.exe list $package -prerelease -allversions -configfile $NuGetConfigPath -NonInteractive )
 
     if ( $LastExitCode -ne 0 )
     {
@@ -33,7 +33,7 @@ function Get-AvailablePackages ( $package )
 
 function Install-Package ( $package, $version )
 {
-    & nuget.exe install $package -prerelease -version $version -configfile $NuGetConfigPath
+    & nuget.exe install $package -prerelease -version $version -configfile $NuGetConfigPath -NonInteractive
 
     if ( $LastExitCode -ne 0 )
     {

@@ -41,5 +41,5 @@ Write-Host "Factory.cpp methods";
 Write-Host "IFACEMETHODIMP RatingControlFactory::get_$($propertyName)Property(abi::IDependencyProperty** value) try
 {
     winrt::copy_to(getAsABI(s_$($propertyName)Property), value);
-    CATCH_RETURN;
+    MUX_CATCH_RETURN;
 }"

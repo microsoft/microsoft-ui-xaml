@@ -6,3 +6,5 @@ steps:
     displayName: 'Use NuGet ${{ parameters.nugetVersion }}'
     inputs:
       versionSpec: ${{ parameters.nugetVersion }}
+      
+  - task: NuGetAuthenticate@0
