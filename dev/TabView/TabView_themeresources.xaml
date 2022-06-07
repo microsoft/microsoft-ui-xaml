@@ -38,6 +38,10 @@
             <StaticResource x:Key="TabViewScrollButtonForegroundPressed"                    ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TabViewScrollButtonForegroundPointerOver"                ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TabViewScrollButtonForegroundDisabled"                   ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="TabViewScrollButtonBorderBrush"                          ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewScrollButtonBorderBrushPressed"                   ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewScrollButtonBorderBrushPointerOver"               ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewScrollButtonBorderBrushDisabled"                  ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TabViewItemSeparator"                                    ResourceKey="DividerStrokeColorDefaultBrush" />
             <StaticResource x:Key="TabViewItemHeaderCloseButtonBackground"                  ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TabViewItemHeaderCloseButtonBackgroundPressed"           ResourceKey="SubtleFillColorTertiaryBrush" />
@@ -65,7 +69,7 @@
 
             <StaticResource x:Key="TabViewBorderBrush"                                      ResourceKey="CardStrokeColorDefault" />
             <StaticResource x:Key="TabViewItemBorderBrush"                                  ResourceKey="SubtleFillColorTransparentBrush" />
-            <Thickness x:Key="TabViewItemHeaderCloseButtonBorderThickness">0</Thickness>
+            <Thickness x:Key="TabViewButtonBorderThickness">0</Thickness>
             <LinearGradientBrush x:Key="TabViewSelectedItemBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,4">
                 <LinearGradientBrush.RelativeTransform>
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>
@@ -110,6 +114,10 @@
             <StaticResource x:Key="TabViewScrollButtonForegroundPressed"                    ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TabViewScrollButtonForegroundPointerOver"                ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TabViewScrollButtonForegroundDisabled"                   ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="TabViewScrollButtonBorderBrush"                          ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewScrollButtonBorderBrushPressed"                   ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewScrollButtonBorderBrushPointerOver"               ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TabViewScrollButtonBorderBrushDisabled"                  ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TabViewItemSeparator"                                    ResourceKey="DividerStrokeColorDefaultBrush" />
             <StaticResource x:Key="TabViewItemHeaderCloseButtonBackground"                  ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TabViewItemHeaderCloseButtonBackgroundPressed"           ResourceKey="SubtleFillColorTertiaryBrush" />
@@ -137,7 +145,7 @@
 
             <StaticResource x:Key="TabViewBorderBrush"                                      ResourceKey="CardStrokeColorDefault" />
             <StaticResource x:Key="TabViewItemBorderBrush"                                  ResourceKey="SubtleFillColorTransparentBrush" />
-            <Thickness x:Key="TabViewItemHeaderCloseButtonBorderThickness">0</Thickness>
+            <Thickness x:Key="TabViewButtonBorderThickness">0</Thickness>
             <LinearGradientBrush x:Key="TabViewSelectedItemBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,4">
                 <LinearGradientBrush.RelativeTransform>
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>
@@ -178,10 +186,14 @@
             <StaticResource x:Key="TabViewScrollButtonBackgroundPressed"                    ResourceKey="SystemColorHighlightColorBrush" />
             <StaticResource x:Key="TabViewScrollButtonBackgroundPointerOver"                ResourceKey="SystemColorHighlightColorBrush" />
             <StaticResource x:Key="TabViewScrollButtonBackgroundDisabled"                   ResourceKey="SystemColorWindowColorBrush" />
-            <StaticResource x:Key="TabViewScrollButtonForeground"                           ResourceKey="SystemColorButtonFaceColorBrush" />
+            <StaticResource x:Key="TabViewScrollButtonForeground"                           ResourceKey="SystemColorButtonTextColorBrush" />
             <StaticResource x:Key="TabViewScrollButtonForegroundPressed"                    ResourceKey="SystemColorHighlightTextColorBrush" />
             <StaticResource x:Key="TabViewScrollButtonForegroundPointerOver"                ResourceKey="SystemColorHighlightTextColorBrush" />
             <StaticResource x:Key="TabViewScrollButtonForegroundDisabled"                   ResourceKey="SystemColorGrayTextColorBrush" />
+            <StaticResource x:Key="TabViewScrollButtonBorderBrush"                          ResourceKey="SystemColorButtonTextColorBrush" />
+            <StaticResource x:Key="TabViewScrollButtonBorderBrushPressed"                   ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TabViewScrollButtonBorderBrushPointerOver"               ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TabViewScrollButtonBorderBrushDisabled"                  ResourceKey="SystemColorGrayTextColorBrush" />
             <StaticResource x:Key="TabViewItemSeparator"                                    ResourceKey="SystemColorWindowTextColorBrush" />
             <StaticResource x:Key="TabViewItemHeaderCloseButtonBackground"                  ResourceKey="SystemColorButtonFaceColorBrush" />
             <StaticResource x:Key="TabViewItemHeaderCloseButtonBackgroundPressed"           ResourceKey="SystemColorButtonFaceColorBrush" />
@@ -209,7 +221,7 @@
 
             <SolidColorBrush x:Key="TabViewBorderBrush"                                     Color="{ThemeResource SystemColorHighlightColor}" />
             <StaticResource x:Key="TabViewItemBorderBrush"                                  ResourceKey="SubtleFillColorTransparentBrush" />
-            <Thickness x:Key="TabViewItemHeaderCloseButtonBorderThickness">1</Thickness>                
+            <Thickness x:Key="TabViewButtonBorderThickness">1</Thickness>                
             <LinearGradientBrush x:Key="TabViewSelectedItemBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,4">
                 <LinearGradientBrush.RelativeTransform>
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>
