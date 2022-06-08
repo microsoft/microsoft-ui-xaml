@@ -70,6 +70,7 @@
             <StaticResource x:Key="TabViewBorderBrush"                                      ResourceKey="CardStrokeColorDefault" />
             <StaticResource x:Key="TabViewItemBorderBrush"                                  ResourceKey="SubtleFillColorTransparentBrush" />
             <Thickness x:Key="TabViewButtonBorderThickness">0</Thickness>
+            <Thickness x:Key="TabViewItemHeaderCloseButtonBorderThickness">0</Thickness>
             <LinearGradientBrush x:Key="TabViewSelectedItemBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,4">
                 <LinearGradientBrush.RelativeTransform>
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>
@@ -146,6 +147,7 @@
             <StaticResource x:Key="TabViewBorderBrush"                                      ResourceKey="CardStrokeColorDefault" />
             <StaticResource x:Key="TabViewItemBorderBrush"                                  ResourceKey="SubtleFillColorTransparentBrush" />
             <Thickness x:Key="TabViewButtonBorderThickness">0</Thickness>
+            <Thickness x:Key="TabViewItemHeaderCloseButtonBorderThickness">0</Thickness>
             <LinearGradientBrush x:Key="TabViewSelectedItemBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,4">
                 <LinearGradientBrush.RelativeTransform>
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>
@@ -221,7 +223,8 @@
 
             <SolidColorBrush x:Key="TabViewBorderBrush"                                     Color="{ThemeResource SystemColorHighlightColor}" />
             <StaticResource x:Key="TabViewItemBorderBrush"                                  ResourceKey="SubtleFillColorTransparentBrush" />
-            <Thickness x:Key="TabViewButtonBorderThickness">1</Thickness>                
+            <Thickness x:Key="TabViewButtonBorderThickness">1</Thickness>
+            <Thickness x:Key="TabViewItemHeaderCloseButtonBorderThickness">1</Thickness>
             <LinearGradientBrush x:Key="TabViewSelectedItemBorderBrush" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,4">
                 <LinearGradientBrush.RelativeTransform>
                     <ScaleTransform ScaleY="-1" CenterY="0.5"/>

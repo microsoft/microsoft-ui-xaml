@@ -301,7 +301,7 @@
         <Setter Property="Background" Value="{ThemeResource TabViewItemHeaderCloseButtonBackground}"/>
         <Setter Property="Foreground" Value="{ThemeResource TabViewItemHeaderCloseButtonForeground}"/>
         <Setter Property="BorderBrush" Value="{ThemeResource TabViewItemHeaderCloseButtonBorderBrush}"/>
-        <Setter Property="BorderThickness" Value="{ThemeResource TabViewButtonBorderThickness}"/>
+        <Setter Property="BorderThickness" Value="{ThemeResource TabViewItemHeaderCloseButtonBorderThickness}"/>
         <Setter Property="FocusVisualMargin" Value="-3"/>
         <Setter Property="Template">
             <Setter.Value>
