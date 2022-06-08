@@ -10,6 +10,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
@@ -25,6 +26,16 @@ namespace SwitcherPrototype
         public MainPage()
         {
             this.InitializeComponent();
+
+            // Requires using Windows.UI.Xaml.Documents 
+            Glyphs glyph = new Glyphs();
+            glyph.FontUri = new Uri("ms-appx:///Assets/seguiemj.ttf");
+            glyph.FontRenderingEmSize = 30;
+            glyph.Indices = "300;301;305;318;500;501;506";
+            glyph.Fill = new SolidColorBrush(Windows.UI.Colors.Blue);
+
+            // Add to the visual tree (assumes stackPanel is defined in XAML page).
+            stackPanel.Children.Add(glyph);
         }
     }
 }

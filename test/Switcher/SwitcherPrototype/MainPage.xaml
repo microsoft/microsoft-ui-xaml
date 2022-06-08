@@ -8,24 +8,95 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <StackPanel Margin="10" Spacing="10">
-        <local:ViewSwitcher x:Name="ViewSwitcher" SelectedIndex="1" ShowPillVisual="{Binding ElementName=showPill, Path=IsOn}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel x:Name="stackPanel" Margin="10" Spacing="10">
+            <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 1: ViewSwitcher With Just Text (Using RadioButton, ToggleButton Style) </TextBlock>
+            <local:ViewSwitcher Background="White" HorizontalAlignment="Center" x:Name="ViewSwitcher1" SelectedIndex="1" ShowPillVisual="{Binding ElementName=showPill, Path=IsOn}">
+                <local:ViewSwitcher.ItemsSource>
+                    <local:MyCollection>
+                        <x:String>Option 0</x:String>
+                        <x:String>Option 1</x:String>
+                        <x:String>Option 2</x:String>
+                    </local:MyCollection>
+                </local:ViewSwitcher.ItemsSource>
+            </local:ViewSwitcher>
+
+            <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 2: ViewSwitcher With Just Icons (Using RadioButton, ToggleButton Style, AppBarToggleButton Icon)</TextBlock>
+            <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher2" SelectedIndex="1" ShowPillVisual="{Binding ElementName=showPill, Path=IsOn}">
+                <local:ViewSwitcher.ItemsSource>
+                    <local:MyCollection>
+                        <AppBarToggleButton Icon="Shuffle"></AppBarToggleButton>
+                        <AppBarToggleButton Icon="Shuffle"></AppBarToggleButton>
+                        <AppBarToggleButton Icon="Shuffle"></AppBarToggleButton>
+                    </local:MyCollection>
+                </local:ViewSwitcher.ItemsSource>
+            </local:ViewSwitcher>
+
+            <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 3: ViewSwitcher With Text and Icons (Using RadioButton, ToggleButton Style, AppBarToggleButton Icon)</TextBlock>
+            <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher3" SelectedIndex="1" ShowPillVisual="{Binding ElementName=showPill, Path=IsOn}">
+                <local:ViewSwitcher.ItemsSource>
+                    <local:MyCollection>
+                        <AppBarToggleButton Icon="Shuffle" Label="Option 0"></AppBarToggleButton>
+                        <AppBarToggleButton Icon="Shuffle" Label="Option 1"></AppBarToggleButton>
+                        <AppBarToggleButton Icon="Shuffle" Label="Option 2"></AppBarToggleButton>
+                    </local:MyCollection>
+                </local:ViewSwitcher.ItemsSource>
+            </local:ViewSwitcher>
+
+            <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 2: ViewSwitcher With Just Icons (Using RadioButton, ToggleButton Style, SymbolIcon Icon)</TextBlock>
+            <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher4" SelectedIndex="1" ShowPillVisual="{Binding ElementName=showPill, Path=IsOn}">
+                <local:ViewSwitcher.ItemsSource>
+                    <local:MyCollection>
+                        <SymbolIcon Margin="40, 0, 0, 0" Symbol="Play"></SymbolIcon>
+                        <SymbolIcon Margin="40, 0, 0, 0" Symbol="Play"></SymbolIcon>
+                        <SymbolIcon Margin="40, 0, 0, 0" Symbol="Play"></SymbolIcon>
+                    </local:MyCollection>
+                </local:ViewSwitcher.ItemsSource>
+            </local:ViewSwitcher>
+
+            <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 3: ViewSwitcher With Text and Icons (Using RadioButton, ToggleButton Style, SymbolIcon Icon)</TextBlock>
+            <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher5" SelectedIndex="1" ShowPillVisual="{Binding ElementName=showPill, Path=IsOn}">
+                <local:ViewSwitcher.ItemsSource>
+                    <local:MyCollection>
+                        <StackPanel Orientation="Horizontal">
+                            <SymbolIcon Margin="0, 0, 10, 0" Symbol="Play" />
+                            <TextBlock/>
+                            <TextBlock> Option 0 </TextBlock>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <SymbolIcon Margin="0, 0, 10, 0" Symbol="Play" />
+                            <TextBlock> Option 1</TextBlock>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <SymbolIcon Margin="0, 0, 10, 0" Symbol="Play" />
+                            <TextBlock> Option 2</TextBlock>
+                        </StackPanel>
+                    </local:MyCollection>
+                </local:ViewSwitcher.ItemsSource>
+            </local:ViewSwitcher>
+
+            <!--<TextBlock HorizontalAlignment="Center" Margin="10">Scenario 3: ViewSwitcher With Text and Icons</TextBlock>
+        <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher3" SelectedIndex="1" ShowPillVisual="{Binding ElementName=showPill, Path=IsOn}">
             <local:ViewSwitcher.ItemsSource>
                 <local:MyCollection>
-                    <x:String>Option 0</x:String>
-                    <x:String>Option 1</x:String>
-                    <x:String>Option 2</x:String>
+                    <Glyphs FontUri="ms-appx:///Assets/seguiemj.ttf" 
+                        FontRenderingEmSize="30" 
+                        Indices="300;301;305;318;500;501;506" 
+                        Fill="Blue"/>
                 </local:MyCollection>
             </local:ViewSwitcher.ItemsSource>
-        </local:ViewSwitcher>
+        </local:ViewSwitcher>-->
 
-        <TextBlock>Selected Index:</TextBlock>
-        <TextBlock Text="{Binding ElementName=ViewSwitcher, Path=SelectedIndex}" />
+            <TextBlock >Selected Index:</TextBlock>
+            <TextBlock Text="{Binding ElementName=ViewSwitcher1, Path=SelectedIndex}" />
 
-        <TextBlock>Selected Item:</TextBlock>
-        <TextBlock Text="{Binding ElementName=ViewSwitcher, Path=SelectedItem}" />
+            <TextBlock>Selected Item:</TextBlock>
+            <TextBlock Text="{Binding ElementName=ViewSwitcher1, Path=SelectedItem}" />
 
-        <ToggleSwitch Header="Show Pill" x:Name="showPill" />
+            <ToggleSwitch Header="Show Pill" x:Name="showPill" />
 
-    </StackPanel>
+            <ToggleSwitch Header="Switch Style Between Pivot and ViewSwitcher" x:Name="showStyle" />
+
+        </StackPanel>
+    </ScrollViewer>
 </Page>

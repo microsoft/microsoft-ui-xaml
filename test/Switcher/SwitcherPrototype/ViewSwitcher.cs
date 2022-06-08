@@ -10,7 +10,7 @@ using Windows.UI.Xaml.Shapes;
 namespace SwitcherPrototype
 {
     [ContentProperty(Name = "ItemsSource")]
-    public sealed class ViewSwitcher : Control
+    public sealed class ViewSwitcher : RadioButton
     {
         public ViewSwitcher()
         {
@@ -129,9 +129,9 @@ namespace SwitcherPrototype
                 SelectedIndex = index;
             }
             SelectedItem = m_repeater.ItemsSourceView.GetAt(index);
-
+            
             var slot = LayoutInformation.GetLayoutSlot(toggleButton);
-
+    
             m_animationBackPlate.Width = slot.Width;
 
             if (ShowPillVisual)
