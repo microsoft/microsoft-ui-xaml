@@ -13,7 +13,7 @@ using Windows.UI.Xaml.Media;
 
 namespace SwitcherPrototype
 {
-    public sealed class ViewSwitcherItem : ItemContainer
+    public sealed class ViewSwitcherItem : ItemsViewContainer
     {
         public ViewSwitcherItem()
         {

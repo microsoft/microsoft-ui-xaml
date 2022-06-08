@@ -4,6 +4,57 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:local="using:SwitcherPrototype">
 
+    <!-- TODO: Dont need all these resources, so it needs cleanup -->
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <StaticResource x:Key="ItemsViewHeaderForegroundBrush" ResourceKey="SystemControlForegroundBaseMediumBrush"/>
+            <StaticResource x:Key="ItemsViewHeaderBackgroundColor" ResourceKey="SystemAltHighColor"/>
+            <StaticResource x:Key="ItemsViewHeaderHoveredBackgroundColor" ResourceKey="SystemListLowColor"/>
+            <StaticResource x:Key="ItemsViewHeaderPressedBackgroundColor" ResourceKey="SystemListMediumColor"/>
+            <StaticResource x:Key="ItemsViewHeaderDraggedBackgroundBrush" ResourceKey="SystemControlBackgroundChromeMediumLowBrush"/>
+            <StaticResource x:Key="ItemsViewHeaderPointerOverBrush" ResourceKey="SystemControlHighlightListLowBrush"/>
+            <StaticResource x:Key="ItemsViewHeaderPressedBrush" ResourceKey="SystemControlHighlightListMediumBrush"/>
+            <SolidColorBrush x:Key="ItemsViewHeaderBackgroundBrush" Color="{StaticResource ItemsViewHeaderBackgroundColor}"/>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <StaticResource x:Key="ItemsViewHeaderForegroundBrush" ResourceKey="SystemControlForegroundBaseMediumBrush"/>
+            <StaticResource x:Key="ItemsViewHeaderBackgroundColor" ResourceKey="SystemAltHighColor"/>
+            <StaticResource x:Key="ItemsViewHeaderHoveredBackgroundColor" ResourceKey="SystemListLowColor"/>
+            <StaticResource x:Key="ItemsViewHeaderPressedBackgroundColor" ResourceKey="SystemListMediumColor"/>
+            <StaticResource x:Key="ItemsViewHeaderDraggedBackgroundBrush" ResourceKey="SystemControlBackgroundChromeMediumLowBrush"/>
+            <StaticResource x:Key="ItemsViewHeaderPointerOverBrush" ResourceKey="SystemControlHighlightListLowBrush"/>
+            <StaticResource x:Key="ItemsViewHeaderPressedBrush" ResourceKey="SystemControlHighlightListMediumBrush"/>
+            <SolidColorBrush x:Key="ItemsViewHeaderBackgroundBrush" Color="{StaticResource ItemsViewHeaderBackgroundColor}"/>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <StaticResource x:Key="ItemsViewHeaderForegroundBrush" ResourceKey="SystemControlForegroundBaseMediumBrush"/>
+            <StaticResource x:Key="ItemsViewHeaderBackgroundColor" ResourceKey="SystemAltHighColor"/>
+            <StaticResource x:Key="ItemsViewHeaderHoveredBackgroundColor" ResourceKey="SystemListLowColor"/>
+            <StaticResource x:Key="ItemsViewHeaderPressedBackgroundColor" ResourceKey="SystemListMediumColor"/>
+            <StaticResource x:Key="ItemsViewHeaderDraggedBackgroundBrush" ResourceKey="SystemControlBackgroundChromeMediumLowBrush"/>
+            <StaticResource x:Key="ItemsViewHeaderPointerOverBrush" ResourceKey="SystemControlHighlightListLowBrush"/>
+            <StaticResource x:Key="ItemsViewHeaderPressedBrush" ResourceKey="SystemControlHighlightListMediumBrush"/>
+            <SolidColorBrush x:Key="ItemsViewHeaderBackgroundBrush" Color="{StaticResource ItemsViewHeaderBackgroundColor}"/>
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+    <x:String x:Key="SortIconAscending">&#xE74A;</x:String>
+    <x:String x:Key="SortIconDescending">&#xE74B;</x:String>
+
+    <x:Double x:Key="ListAccentLowOpacity">0.6</x:Double>
+    <x:Double x:Key="ListAccentMediumOpacity">0.8</x:Double>
+
+    <SolidColorBrush x:Key="ItemsViewCurrencyVisualPrimaryBrush" Color="{StaticResource SystemListLowColor}"/>
+
+    <StaticResource x:Key="ItemsViewContainerSelectedBackgroundColor" ResourceKey="SystemAccentColor"/>
+    <StaticResource x:Key="ItemsViewContainerSelectedBackgroundOpacity" ResourceKey="ListAccentLowOpacity"/>
+    <StaticResource x:Key="ItemsViewContainerSelectedHoveredBackgroundColor" ResourceKey="SystemAccentColor"/>
+    <StaticResource x:Key="ItemsViewContainerSelectedHoveredBackgroundOpacity" ResourceKey="ListAccentMediumOpacity"/>
+    <StaticResource x:Key="ItemsViewContainerSelectedUnfocusedBackgroundColor" ResourceKey="SystemAccentColor"/>
+    <StaticResource x:Key="ItemsViewContainerSelectedUnfocusedBackgroundOpacity" ResourceKey="ListAccentLowOpacity"/>
+    <StaticResource x:Key="ItemsViewContainerSelectedHoveredUnfocusedBackgroundColor" ResourceKey="SystemAccentColor"/>
+    <StaticResource x:Key="ItemsViewContainerSelectedHoveredUnfocusedBackgroundOpacity" ResourceKey="ListAccentMediumOpacity"/>
+
 
     <Style TargetType="RadioButton" x:Name="ViewSwitcherToggleButtonStyle" BasedOn="{StaticResource DefaultToggleButtonStyle}">
 
@@ -18,7 +69,7 @@
         <Setter Property="ItemTemplate">
             <Setter.Value>
                 <DataTemplate>
-                    <RadioButton Content="{Binding}" Style="{StaticResource ViewSwitcherToggleButtonStyle}"/>
+                    <local:ItemsViewContainer Content="{Binding}" />
                 </DataTemplate>
             </Setter.Value>
         </Setter>
@@ -70,15 +121,63 @@
         </Setter>
     </Style>
 
-    <Style TargetType="local:ItemContainer" >
+
+
+    <Style TargetType="local:ItemsViewContainer">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="local:ItemContainer">
-                    <Border
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}">
-                    </Border>
+                <ControlTemplate TargetType="local:ItemsViewContainer">
+                    <Grid x:Name="PART_ContainerRoot" Background="{TemplateBinding Background}">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver">
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="PART_CommonVisual" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)" Duration="0" To="{ThemeResource SystemListLowColor}" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Selected">
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="PART_CommonVisual" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)" Duration="0" To="{ThemeResource ItemsViewContainerSelectedBackgroundColor}" />
+                                        <DoubleAnimation Storyboard.TargetName="PART_CommonVisual" Storyboard.TargetProperty="Opacity" Duration="0" To="{ThemeResource ItemsViewContainerSelectedBackgroundOpacity}" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="PointerOverSelected">
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="PART_CommonVisual" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)" Duration="0" To="{ThemeResource ItemsViewContainerSelectedHoveredBackgroundColor}" />
+                                        <DoubleAnimation Storyboard.TargetName="PART_CommonVisual" Storyboard.TargetProperty="Opacity" Duration="0" To="{ThemeResource ItemsViewContainerSelectedHoveredBackgroundOpacity}" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="PointerOverUnfocusedSelected">
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="PART_CommonVisual" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)" Duration="0" To="{ThemeResource ItemsViewContainerSelectedHoveredUnfocusedBackgroundColor}" />
+                                        <DoubleAnimation Storyboard.TargetName="PART_CommonVisual" Storyboard.TargetProperty="Opacity" Duration="0" To="{ThemeResource ItemsViewContainerSelectedHoveredUnfocusedBackgroundOpacity}" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="UnfocusedSelected">
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="PART_CommonVisual" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)" Duration="0" To="{ThemeResource ItemsViewContainerSelectedUnfocusedBackgroundColor}" />
+                                        <DoubleAnimation Storyboard.TargetName="PART_CommonVisual" Storyboard.TargetProperty="Opacity" Duration="0" To="{ThemeResource ItemsViewContainerSelectedUnfocusedBackgroundOpacity}" />
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="CurrencyStates">
+                                <VisualState x:Name="NotCurrent" />
+                                <VisualState x:Name="Current">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="PART_CurrencyVisual" Storyboard.TargetProperty="Opacity" To="1" Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Rectangle x:Name="PART_CurrencyVisual" Stroke="{ThemeResource ItemsViewCurrencyVisualPrimaryBrush}" StrokeThickness="1" Fill="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsHitTestVisible="False" Opacity="0" />
+                        <Rectangle x:Name="PART_CommonVisual" Fill="{ThemeResource SystemControlTransparentBrush}" StrokeThickness="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsHitTestVisible="False" />
+                        <ContentPresenter x:Name="PART_ContainerPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="2" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
