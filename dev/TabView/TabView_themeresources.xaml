@@ -196,6 +196,7 @@
             <StaticResource x:Key="TabViewButtonBorderBrushPressed"                         ResourceKey="SystemColorHighlightColorBrush" />
             <StaticResource x:Key="TabViewButtonBorderBrushPointerOver"                     ResourceKey="SystemColorHighlightColorBrush" />
             <StaticResource x:Key="TabViewButtonBorderBrushDisabled"                        ResourceKey="SystemColorGrayTextColorBrush" />
+            <StaticResource x:Key="TabViewScrollButtonBackground"                           ResourceKey="SystemColorButtonFaceColorBrush" />
             <StaticResource x:Key="TabViewScrollButtonBackgroundPressed"                    ResourceKey="SystemColorHighlightColorBrush" />
             <StaticResource x:Key="TabViewScrollButtonBackgroundPointerOver"                ResourceKey="SystemColorHighlightColorBrush" />
             <StaticResource x:Key="TabViewScrollButtonBackgroundDisabled"                   ResourceKey="SystemColorWindowColorBrush" />
