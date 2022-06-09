@@ -21,28 +21,6 @@
                 </local:ViewSwitcher.ItemsSource>
             </local:ViewSwitcher>
 
-            <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 2: ViewSwitcher With Just Icons (Using RadioButton, ToggleButton Style, AppBarToggleButton Icon)</TextBlock>
-            <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher2" SelectedIndex="1" ShowPillVisual="{Binding ElementName=showPill, Path=IsOn}">
-                <local:ViewSwitcher.ItemsSource>
-                    <local:MyCollection>
-                        <AppBarToggleButton Icon="Shuffle"></AppBarToggleButton>
-                        <AppBarToggleButton Icon="Shuffle"></AppBarToggleButton>
-                        <AppBarToggleButton Icon="Shuffle"></AppBarToggleButton>
-                    </local:MyCollection>
-                </local:ViewSwitcher.ItemsSource>
-            </local:ViewSwitcher>
-
-            <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 3: ViewSwitcher With Text and Icons (Using RadioButton, ToggleButton Style, AppBarToggleButton Icon)</TextBlock>
-            <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher3" SelectedIndex="1" ShowPillVisual="{Binding ElementName=showPill, Path=IsOn}">
-                <local:ViewSwitcher.ItemsSource>
-                    <local:MyCollection>
-                        <AppBarToggleButton Icon="Shuffle" Label="Option 0"></AppBarToggleButton>
-                        <AppBarToggleButton Icon="Shuffle" Label="Option 1"></AppBarToggleButton>
-                        <AppBarToggleButton Icon="Shuffle" Label="Option 2"></AppBarToggleButton>
-                    </local:MyCollection>
-                </local:ViewSwitcher.ItemsSource>
-            </local:ViewSwitcher>
-
             <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 2: ViewSwitcher With Just Icons (Using RadioButton, ToggleButton Style, SymbolIcon Icon)</TextBlock>
             <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher4" SelectedIndex="1" ShowPillVisual="{Binding ElementName=showPill, Path=IsOn}">
                 <local:ViewSwitcher.ItemsSource>
