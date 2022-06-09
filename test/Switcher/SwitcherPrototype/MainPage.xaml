@@ -10,7 +10,7 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel x:Name="stackPanel" Margin="10" Spacing="10">
-            <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 1: ViewSwitcher With Just Text (Using RadioButton, ToggleButton Style)</TextBlock>
+            <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 1: ViewSwitcher With Just Text (Using RadioButton, ToggleButton Style) </TextBlock>
             <local:ViewSwitcher Background="White" HorizontalAlignment="Center" x:Name="ViewSwitcher1" SelectedIndex="1" ShowPillVisual="{Binding ElementName=showPill, Path=IsOn}">
                 <local:ViewSwitcher.ItemsSource>
                     <local:MyCollection>
@@ -61,7 +61,7 @@
                         <StackPanel Orientation="Horizontal">
                             <SymbolIcon Margin="0, 0, 10, 0" Symbol="Play" />
                             <TextBlock/>
-                            <TextBlock> Option 0</TextBlock>
+                            <TextBlock> Option 0 </TextBlock>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <SymbolIcon Margin="0, 0, 10, 0" Symbol="Play" />

@@ -10,7 +10,7 @@ using Windows.UI.Xaml.Shapes;
 namespace SwitcherPrototype
 {
     [ContentProperty(Name = "ItemsSource")]
-    public sealed class ViewSwitcher : Control
+    public sealed class ViewSwitcher : RadioButton
     {
         public ViewSwitcher()
         {

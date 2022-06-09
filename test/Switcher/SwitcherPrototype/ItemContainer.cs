@@ -13,11 +13,11 @@ using Windows.UI.Xaml.Media;
 
 namespace SwitcherPrototype
 {
-    public sealed class ViewSwitcherItem : ItemContainer
+    public class ItemContainer : Control
     {
-        public ViewSwitcherItem()
+        public ItemContainer()
         {
-            this.DefaultStyleKey = typeof(ViewSwitcherItem);
+            this.DefaultStyleKey = typeof(ItemContainer);
         }
     }
 }
