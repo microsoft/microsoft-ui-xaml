@@ -250,7 +250,7 @@
     <comment>The automation name for the text box to edit the value component of the current HSV color.</comment>
   </data>
   <data name="ToolTipStringAlphaSlider" xml:space="preserve">
-    <value>%1!u!%% tutqunluq</value>
+    <value>Tutqunluq %1!u!%%</value>
     <comment>The string to display in the tool tip for the alpha slider. %1 is the alpha value between 0 and 100.</comment>
   </data>
   <data name="ToolTipStringHueSliderWithColorName" xml:space="preserve">
