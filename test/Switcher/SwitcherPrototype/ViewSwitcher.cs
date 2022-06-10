@@ -59,14 +59,14 @@ namespace SwitcherPrototype
 
 
 
-        public bool ShowPillVisual
+        public bool ShowBackplate
         {
-            get { return (bool)GetValue(ShowPillVisualProperty); }
-            set { SetValue(ShowPillVisualProperty, value); }
+            get { return (bool)GetValue(ShowBackplateProperty); }
+            set { SetValue(ShowBackplateProperty, value); }
         }
 
-        public static readonly DependencyProperty ShowPillVisualProperty =
-            DependencyProperty.Register("ShowPillVisual", typeof(bool), typeof(ViewSwitcher), new PropertyMetadata(false));
+        public static readonly DependencyProperty ShowBackplateProperty =
+            DependencyProperty.Register("ShowBackplate", typeof(bool), typeof(ViewSwitcher), new PropertyMetadata(true));
 
 
 
@@ -134,16 +134,8 @@ namespace SwitcherPrototype
     
             m_animationBackPlate.Width = slot.Width;
 
-            if (ShowPillVisual)
-            {
-                m_animationBackPlate.Margin = new Thickness(slot.X, slot.Y + slot.Height + 3, 0, 0);
-                m_animationBackPlate.Height = 3;
-            }
-            else
-            {
-                m_animationBackPlate.Margin = new Thickness(slot.X, slot.Y, 0, 0);
-                m_animationBackPlate.Height = slot.Height;
-            }
+            m_animationBackPlate.Margin = new Thickness(slot.X, slot.Y + slot.Height + 3, 0, 0);
+            m_animationBackPlate.Height = 3;
         }
 
 
