@@ -3,18 +3,20 @@
 <head>
     <title>Simple Page With NonAscii</title>
     <style>
-        h1 {
-            background-color: #0080ff
-        }
+    h1 {
+        background-color: #0080ff
+    }
     </style>
     <script>
+        "use strict";
+
         function getParams()
         {
             const queryString = window.location.search;
             const urlParams = new URLSearchParams(queryString);
             var textBlock = document.getElementById("params");
             const param = urlParams.get('query');
-            textBlock.innerHTML = param;
+            textBlock.innerText = param;
         }
     </script>
 </head>
