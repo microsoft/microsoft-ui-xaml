@@ -9,6 +9,13 @@
 
     </Style>
 
+    <Style x:Key="ComboBoxItemPill" TargetType="Rectangle">
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="Height" Value="3"/>
+        <Setter Property="Width" Value="4"/>
+        <Setter Property="Fill" Value="{ThemeResource ComboBoxItemPillFillBrush}"/>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+    </Style>
 
     <Style TargetType="local:ViewSwitcher" >
         <Setter Property="Background" Value="LightGray" />
@@ -44,7 +51,7 @@
 
                         <Rectangle x:Name="AnimationBackPlate"
                                    IsHitTestVisible="False"
-                                   Fill="Black"
+                                   Fill="White"
                                    Opacity="0.2"
                                    HorizontalAlignment="Left"
                                    VerticalAlignment="Center"
@@ -100,7 +107,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:ViewSwitcherItem">
-                    <Grid Background="{TemplateBinding Background}"
+                    <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" 
                           CornerRadius="{ThemeResource ControlCornerRadius}"
                           HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                           VerticalAlignment="{TemplateBinding VerticalAlignment}"
@@ -113,45 +120,45 @@
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal">
                                     <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter"/>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="RootGrid"/>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="PointerOver">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBackgroundPointerOver}"/>
                                         </ObjectAnimationUsingKeyFrames>
                                         <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushPointerOver}"/>
                                         </ObjectAnimationUsingKeyFrames>-->
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                        <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundPointerOver}"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter"/>
+                                        </ObjectAnimationUsingKeyFrames>-->
+                                        <PointerUpThemeAnimation Storyboard.TargetName="RootGrid"/>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBackgroundPressed}"/>
                                         </ObjectAnimationUsingKeyFrames>
                                         <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushPressed}"/>
                                         </ObjectAnimationUsingKeyFrames>-->
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                        <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundPressed}"/>
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="ContentPresenter"/>
+                                        </ObjectAnimationUsingKeyFrames>-->
+                                        <PointerDownThemeAnimation Storyboard.TargetName="RootGrid"/>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="Black"/>
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                        <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundDisabled}"/>
-                                        </ObjectAnimationUsingKeyFrames>
+                                        </ObjectAnimationUsingKeyFrames>-->
                                         <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushDisabled}"/>
                                         </ObjectAnimationUsingKeyFrames>-->
@@ -159,16 +166,22 @@
                                 </VisualState>
                                 <VisualState x:Name="Checked">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="White"/>
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                        <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="Black"/>
-                                        </ObjectAnimationUsingKeyFrames>
+                                        </ObjectAnimationUsingKeyFrames>-->
                                         <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushChecked}"/>
                                         </ObjectAnimationUsingKeyFrames>-->
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter"/>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="RootGrid"/>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PillTransform" Storyboard.TargetProperty="ScaleX">
+                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ComboBoxItemScaleAnimationDuration}" Value="4" KeySpline="0,0,0,1" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pill" Storyboard.TargetProperty="Opacity">
+                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ComboBoxItemScaleAnimationDuration}" Value="1" KeySpline="0,0,0,1" />
+                                        </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="CheckedPointerOver">
@@ -179,32 +192,35 @@
                                         <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonBorderBrushCheckedPointerOver}"/>
                                         </ObjectAnimationUsingKeyFrames>-->
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                        <!--<ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleButtonForegroundCheckedPointerOver}"/>
-                                        </ObjectAnimationUsingKeyFrames>
+                                        </ObjectAnimationUsingKeyFrames>-->
                                         <PointerUpThemeAnimation Storyboard.TargetName="ContentPresenter"/>
                                     </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <ContentPresenter x:Name="ContentPresenter" AutomationProperties.AccessibilityView="Raw" Background="{TemplateBinding Background}"
-                                      BackgroundSizing="{TemplateBinding BackgroundSizing}"  
+                        
+                        <ContentPresenter x:Name="ContentPresenter" AutomationProperties.AccessibilityView="Raw" 
                                       BorderThickness="{TemplateBinding BorderThickness}" ContentTemplate="{TemplateBinding ContentTemplate}"
                                       CornerRadius="{TemplateBinding CornerRadius}" Content="{TemplateBinding Content}"
                                       ContentTransitions="{TemplateBinding ContentTransitions}"
                                       HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" Padding="{TemplateBinding Padding}"
                                       VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" Margin="0">
                         </ContentPresenter>
-                        <Rectangle x:Name="AnimationPill"
-                                   IsHitTestVisible="False"
-                                   Fill="Black"
-                                   Opacity="0.2"
-                                   Height="3"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
-                                   RadiusX="4"
-                                   RadiusY="4"
-                                   Canvas.ZIndex="0"/>
+                        <Rectangle x:Name="Pill"
+                            Style="{StaticResource ComboBoxItemPill}"
+                            RadiusX="0.5"
+                            RadiusY="1"
+                            Margin="1,0,0,0"
+                            Grid.Row="1" Grid.Column="0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Bottom"
+                            Opacity="0">
+                            <Rectangle.RenderTransform>
+                                <CompositeTransform x:Name="PillTransform" ScaleX="1" />
+                            </Rectangle.RenderTransform>
+                        </Rectangle>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -338,4 +354,98 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <!--<ControlTemplate TargetType="local:ViewSwitcherButton">
+        <Grid x:Name="RootGrid"
+                          Margin="-1"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          contract7Present:CornerRadius="{ThemeResource ControlCornerRadius}">
+
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal" />
+
+                    <VisualState x:Name="PointerOver">
+                        <Storyboard>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonBackgroundPointerOver}" />
+                            </ObjectAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                    <VisualState x:Name="Pressed">
+                        <Storyboard>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonBackground}" />
+                            </ObjectAnimationUsingKeyFrames>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="BorderBrush">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonBorderBrush}" />
+                            </ObjectAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </VisualState>
+                    <VisualState x:Name="Disabled">
+                        <Storyboard>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource RadioButtonForegroundDisabled}" />
+                            </ObjectAnimationUsingKeyFrames>
+
+                        </Storyboard>
+                    </VisualState>
+                </VisualStateGroup>
+                <VisualStateGroup x:Name="CheckStates">
+                    <VisualState x:Name="Checked">
+                        <Storyboard>
+                            <Storyboard>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonBackground}" />
+                                </ObjectAnimationUsingKeyFrames>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="BorderBrush">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonBorderBrush}" />
+                                </ObjectAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PillTransform" Storyboard.TargetProperty="ScaleX">
+                                    <SplineDoubleKeyFrame KeyTime="{StaticResource ComboBoxItemScaleAnimationDuration}" Value="4" KeySpline="0,0,0,1" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pill" Storyboard.TargetProperty="Opacity">
+                                    <SplineDoubleKeyFrame KeyTime="{StaticResource ComboBoxItemScaleAnimationDuration}" Value="1" KeySpline="0,0,0,1" />
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </Storyboard>
+                    </VisualState>
+                    <VisualState x:Name="Unchecked" />
+                    <VisualState x:Name="Indeterminate" />
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <ContentPresenter 
+                            x:Name="ContentPresenter"
+                            Content="{TemplateBinding Content}" 
+                            ContentTransitions="{TemplateBinding ContentTransitions}" 
+                            ContentTemplate="{TemplateBinding ContentTemplate}" 
+                            Foreground="{TemplateBinding Foreground}" 
+                            Margin="{TemplateBinding Padding}" 
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}" 
+                            Grid.Column="1" 
+                            AutomationProperties.AccessibilityView="Raw" 
+                            TextWrapping="Wrap" />
+
+            <Rectangle x:Name="Pill"
+                            Style="{StaticResource ComboBoxItemPill}"
+                            RadiusX="0.5"
+                            RadiusY="1"
+                            Margin="1,0,0,0"
+                            Grid.Row="1" Grid.Column="0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Bottom"
+                            Opacity="0">
+                <Rectangle.RenderTransform>
+                    <CompositeTransform x:Name="PillTransform" ScaleX="1" />
+                </Rectangle.RenderTransform>
+            </Rectangle>
+        </Grid>
+    </ControlTemplate>-->
 </ResourceDictionary>

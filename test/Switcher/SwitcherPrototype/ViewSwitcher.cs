@@ -134,10 +134,10 @@ namespace SwitcherPrototype
             var slot = LayoutInformation.GetLayoutSlot(toggleButton);
     
             m_animationBackPlate.Width = slot.Width;
-            m_animationPill.Width = slot.Width;
+            //m_animationPill.Width = slot.Width;
 
-            m_animationPill.Margin = new Thickness(slot.X, slot.Y + slot.Height + 3, 0, 0);
-            m_animationPill.Height = 3;
+            //m_animationPill.Margin = new Thickness(slot.X, slot.Y + slot.Height + 3, 0, 0);
+            //m_animationPill.Height = 3;
 
             if (ShowBackplate)
             {
