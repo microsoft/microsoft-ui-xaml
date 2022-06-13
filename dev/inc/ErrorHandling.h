@@ -10,15 +10,15 @@
 #define E_INVALID_OPERATION HRESULT_FROM_WIN32(ERROR_INVALID_OPERATION)
 #endif
 
-// CATCH_RETURN macro should be used in all ABI methods like this:
+// MUX_CATCH_RETURN macro should be used in all ABI methods like this:
 // IFACEMETHODIMP CFoo::Bar(...) try
 // {
 //     ...
-//     CATCH_RETURN
+//     MUX_CATCH_RETURN
 // } 
 //
 
-#define CATCH_RETURN \
+#define MUX_CATCH_RETURN \
         return S_OK; \
     } catch (...) { \
         auto hr = winrt::to_hresult(); \

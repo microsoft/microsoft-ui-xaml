@@ -167,7 +167,7 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
             auto ret = func();
             auto propertyValue = ret.as<winrt::IPropertyValue>();
             to_winrt(*value) = propertyValue;
-            CATCH_RETURN;
+            MUX_CATCH_RETURN;
         }
 
         template<UINT32 ComponentCount>
@@ -251,7 +251,7 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
     { \
         if (index == 0) to_winrt(*source) = m_##Name; \
         else throw winrt::hresult_invalid_argument(); \
-        CATCH_RETURN; \
+        MUX_CATCH_RETURN; \
     }
 
 #pragma push_macro("DECLARE_DUAL_SOURCES")
@@ -265,7 +265,7 @@ namespace Microsoft { namespace UI { namespace Private { namespace Composition {
         if (index == 0) to_winrt(*source) = m_##Name1; \
         else if (index == 1) to_winrt(*source) = m_##Name2; \
         else throw winrt::hresult_invalid_argument(); \
-        CATCH_RETURN; \
+        MUX_CATCH_RETURN; \
     }
 
 #pragma push_macro("DECLARE_NAMED_PROPERTY_MAPPING")
