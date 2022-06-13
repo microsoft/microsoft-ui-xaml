@@ -196,7 +196,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel x:Name="stackPanel" Margin="10" Spacing="10">
             <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 1: ViewSwitcher With Just Text (Using RadioButton, ToggleButton Style) </TextBlock>
-            <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher1" SelectedIndex="1" ShowBackplate="{Binding ElementName=showPill, Path=IsOn}">
+            <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher1" SelectedIndex="1" ShowBackplate="{Binding ElementName=showBackplate, Path=IsOn}">
                 <local:ViewSwitcher.ItemsSource>
                     <local:MyCollection>
                         <TextBlock>Text</TextBlock>
@@ -206,7 +206,7 @@
             </local:ViewSwitcher>
 
             <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 2: ViewSwitcher With Just Icons (Using RadioButton, ToggleButton Style, SymbolIcon Icon)</TextBlock>
-            <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher4" SelectedIndex="1" ShowBackplate="{Binding ElementName=showPill, Path=IsOn}">
+            <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher4" SelectedIndex="1" ShowBackplate="{Binding ElementName=showBackplate, Path=IsOn}">
                 <local:ViewSwitcher.ItemsSource>
                     <local:MyCollection>
                         <SymbolIcon Margin="40, 0, 0, 0" Symbol="Play"></SymbolIcon>
@@ -217,7 +217,7 @@
             </local:ViewSwitcher>
 
             <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 3: ViewSwitcher With Text and Icons (Using RadioButton, ToggleButton Style, SymbolIcon Icon)</TextBlock>
-            <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher5" SelectedIndex="1" ShowBackplate="{Binding ElementName=showPill, Path=IsOn}">
+            <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher5" SelectedIndex="1" ShowBackplate="{Binding ElementName=showBackplate, Path=IsOn}">
                 <local:ViewSwitcher.ItemsSource>
                     <local:MyCollection>
                         <StackPanel Orientation="Horizontal">
@@ -237,7 +237,7 @@
             </local:ViewSwitcher>
 
             <!--<TextBlock HorizontalAlignment="Center" Margin="10">Scenario 3: ViewSwitcher With Text and Icons</TextBlock>
-        <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher3" SelectedIndex="1" ShowBackplate="{Binding ElementName=showPill, Path=IsOn}">
+        <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher3" SelectedIndex="1" ShowBackplate="{Binding ElementName=showBackplate, Path=IsOn}">
             <local:ViewSwitcher.ItemsSource>
                 <local:MyCollection>
                     <Glyphs FontUri="ms-appx:///Assets/seguiemj.ttf" 
@@ -254,10 +254,10 @@
             <TextBlock>Selected Item:</TextBlock>
             <TextBlock Text="{Binding ElementName=ViewSwitcher1, Path=SelectedItem}" />
 
-            <ToggleSwitch Header="Show Pill" x:Name="showPill" />
+            <ToggleSwitch Header="Show Backplate" x:Name="showBackplate" />
 
             <ToggleSwitch Header="Switch Style Between Pivot and ViewSwitcher" x:Name="showStyle" />
-            <ToggleButton Style="{StaticResource ToggleButtonStyle1}"></ToggleButton>
         </StackPanel>
     </ScrollViewer>
+    
 </Page>

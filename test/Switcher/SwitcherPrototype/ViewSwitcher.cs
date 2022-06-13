@@ -76,6 +76,7 @@ namespace SwitcherPrototype
             m_repeater.ElementPrepared += OnElementPrepared;
             m_repeater.ElementClearing += OnElementClearing;
             m_animationBackPlate = GetTemplateChild("AnimationBackPlate") as Rectangle;
+            m_animationPill = GetTemplateChild("AnimationPill") as Rectangle;
         }
 
         private void OnElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
@@ -133,9 +134,19 @@ namespace SwitcherPrototype
             var slot = LayoutInformation.GetLayoutSlot(toggleButton);
     
             m_animationBackPlate.Width = slot.Width;
+            m_animationPill.Width = slot.Width;
 
-            m_animationBackPlate.Margin = new Thickness(slot.X, slot.Y + slot.Height + 3, 0, 0);
-            m_animationBackPlate.Height = 3;
+            m_animationPill.Margin = new Thickness(slot.X, slot.Y + slot.Height + 3, 0, 0);
+            m_animationPill.Height = 3;
+
+            if (ShowBackplate)
+            {
+                m_animationBackPlate.Margin = new Thickness(slot.X, slot.Y, 0, 0);
+                m_animationBackPlate.Height = slot.Height;
+            } else
+            {
+                m_animationBackPlate.Height = 0;
+            }
         }
 
 
@@ -143,5 +154,6 @@ namespace SwitcherPrototype
         private ToggleButton m_selectedButton;
         private ItemsRepeater m_repeater;
         private Rectangle m_animationBackPlate;
+        private Rectangle m_animationPill;
     }
 }
