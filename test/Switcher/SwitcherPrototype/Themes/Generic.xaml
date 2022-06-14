@@ -59,7 +59,15 @@
     <Style TargetType="RadioButton" x:Name="ViewSwitcherToggleButtonStyle" BasedOn="{StaticResource DefaultToggleButtonStyle}">
 
     </Style>
-    
+
+     <Style x:Key="ComboBoxItemPill" TargetType="Rectangle">
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="Height" Value="3"/>
+        <Setter Property="Width" Value="4"/>
+        <Setter Property="Fill" Value="{ThemeResource ComboBoxItemPillFillBrush}"/>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        </Style>
+
     <Style TargetType="local:ViewSwitcher" >
         <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ButtonBorderBrush}" />
@@ -69,7 +77,7 @@
         <Setter Property="ItemTemplate">
             <Setter.Value>
                 <DataTemplate>
-                    <local:ItemsViewContainer Content="{Binding}" />
+                    <local:ViewSwitcherItem Content="{Binding}" />
                 </DataTemplate>
             </Setter.Value>
         </Setter>
@@ -187,11 +195,94 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:ViewSwitcherItem">
-                    <Border
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}">
-                    </Border>
+                    <Grid x:Name="RootGrid"
+                          Margin="-1"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{ThemeResource ControlCornerRadius}">
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+
+                                <VisualState x:Name="PointerOver">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonBackgroundPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Selected">
+                                    <Storyboard>
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonBackground}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonBorderBrush}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PillTransform" Storyboard.TargetProperty="ScaleX">
+                                                <SplineDoubleKeyFrame KeyTime="{StaticResource ComboBoxItemScaleAnimationDuration}" Value="4" KeySpline="0,0,0,1" />
+                                            </DoubleAnimationUsingKeyFrames>
+                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pill" Storyboard.TargetProperty="Opacity">
+                                                <SplineDoubleKeyFrame KeyTime="{StaticResource ComboBoxItemScaleAnimationDuration}" Value="1" KeySpline="0,0,0,1" />
+                                            </DoubleAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonBackground}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="BorderBrush">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonBorderBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource RadioButtonForegroundDisabled}" />
+                                        </ObjectAnimationUsingKeyFrames>
+
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                        </VisualStateManager.VisualStateGroups>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <ContentPresenter 
+                            x:Name="ContentPresenter"
+                            Content="{TemplateBinding Content}" 
+                            ContentTransitions="{TemplateBinding ContentTransitions}" 
+                            ContentTemplate="{TemplateBinding ContentTemplate}" 
+                            Foreground="{TemplateBinding Foreground}" 
+                            Margin="{TemplateBinding Padding}" 
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}" 
+                            Grid.Column="1" 
+                            AutomationProperties.AccessibilityView="Raw" 
+                            TextWrapping="Wrap" />
+
+                        <Rectangle x:Name="Pill"
+                            Style="{StaticResource ComboBoxItemPill}"
+                            RadiusX="0.5"
+                            RadiusY="1"
+                            Margin="1,0,0,0"
+                            Grid.Row="1" Grid.Column="0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Bottom"
+                            Opacity="0">
+                            <Rectangle.RenderTransform>
+                                <CompositeTransform x:Name="PillTransform" ScaleX="1" />
+                            </Rectangle.RenderTransform>
+                        </Rectangle>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
