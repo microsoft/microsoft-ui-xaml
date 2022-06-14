@@ -1137,7 +1137,7 @@ namespace MUXControlsTestApp
                         break;
 
                     case TestList.NavigateToLocalImageTest:
-                        expectedStringResult = "Image loaded in iframe.";
+                        expectedStringResult = "Image loaded.";
                         break;
 
                     case TestList.ScaledTouchTest:

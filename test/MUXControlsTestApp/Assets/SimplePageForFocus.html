@@ -5,6 +5,8 @@
     <style>
     </style>
     <script>
+        "use strict";
+
         var colorMappings = {
             "control1_has_focus": "#800080", //purple
             "control2_has_focus": "#008080", //teal
@@ -65,7 +67,6 @@
         document.addEventListener('visibilitychange', handleVisibilityChange, false);
     </script>
 </head>
-
 <body id="body" onfocus="onGotFocus(this)" onblur="onGotBlur(this)" onfocusout="onFocusOut()">
     <div id="rectangle" style="width:100px; height:100px; background-color:#ff8000"></div>
     <a style="font-size:50px" id="w1" href="http://www.bing.com" onblur="onGotBlur(this)" onfocus="onGotFocus(this)">[w1] Visit Bing!</a> 
@@ -80,9 +81,5 @@
         <i><font size="3" color="#008080">TEAL: w2 has focus</font></i><br>
         <i><font size="3" color="#00ff00">LIME: no web control has focus</font></i><br>
     </p>
-
-    <script>
-    </script>
-
 </body>
 </html>

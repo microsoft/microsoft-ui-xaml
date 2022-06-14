@@ -1,30 +1,30 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Simple Page With Image</title>
+<head>
+    <title>Simple Page With Image</title>
+    <script>
+        "use strict";
 
-        <script>
-            function checkIfImageLoaded(event)
-            {
-                event.preventDefault();
-                var iframe = document.getElementById("image_iframe");
-                var image = iframe.contentDocument || iframe.contentWindow.document;
-
-                if (image == null)
-                {
-                    window.chrome.webview.postMessage("Image not loaded.");
-                }
-                else
-                {
-                    window.chrome.webview.postMessage("Image loaded in iframe.");
-                }
-
-                window.setTimeout(checkIfImageLoaded, 100);
+        function doPostMessage(message) {
+            // Do different things in WebView2 vs the browser, so neither gets an error
+            try {
+                window.chrome.webview.postMessage(message);
             }
-        </script>
-    </head>
+            catch {
+                window.postMessage(message);
+            }
+        };
 
-    <body>
-        <iframe id="image_iframe" src="https://testapp.example/LargeWisteria.jpg" width="600" height="300" onload="checkIfImageLoaded(event);"></iframe>
-    </body>
+        function onImageLoaded() {
+            doPostMessage("Image loaded.");
+        }
+        function onImageLoadedFailed() {
+            doPostMessage("Image not loaded.");
+        }
+    </script>
+</head>
+<body>
+    <img id="LargeWisteria_image" src="https://testapp.example/LargeWisteria.jpg" width="600" height="300"
+        onload="onImageLoaded();" onerror="onImageLoadedFailed();" />
+</body>
 </html>

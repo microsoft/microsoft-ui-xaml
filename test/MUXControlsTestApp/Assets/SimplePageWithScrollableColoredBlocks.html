@@ -3,19 +3,21 @@
 <head>
     <title>Simple Page With Scrollable Color Blocks</title>
     <style>
-        #section1 {
-            height: 1000px;
-            width: 1500px;
-            background-color: #ff0000;
-        }
+    #section1 {
+        height: 1000px;
+        width: 1500px;
+        background-color: #ff0000;
+    }
 
-        #section2 {
-            height: 1000px;
-            width: 1500px;
-            background-color: #0000ff;
-        }
+    #section2 {
+        height: 1000px;
+        width: 1500px;
+        background-color: #0000ff;
+    }
     </style>
     <script>
+        "use strict";
+
         window.onscroll = function()
         {
             if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {

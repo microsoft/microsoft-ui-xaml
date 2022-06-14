@@ -11,6 +11,8 @@
     }
     </style>
     <script>
+        "use strict";
+
         function doPostMessage(message) {
             // Do different things in WebView2 vs the browser, so neither gets an error
             try {
@@ -73,7 +75,6 @@
         function getLanguage() {
             return document.getElementById("languageInfo").innerHTML;
         };
-
     </script>
 </head>
 <body id="body" onload="updateLanguage()" onfocus="onGotFocus(this)" onblur="onGotBlur(this)" onfocusout="onFocusOut()">
