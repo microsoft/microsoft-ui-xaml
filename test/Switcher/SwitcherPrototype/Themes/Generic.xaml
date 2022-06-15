@@ -69,7 +69,7 @@
         </Style>
 
     <Style TargetType="local:ViewSwitcher" >
-        <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
+        <Setter Property="Background" Value="LightGray" />
         <Setter Property="BorderBrush" Value="{ThemeResource ButtonBorderBrush}" />
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
@@ -77,7 +77,7 @@
         <Setter Property="ItemTemplate">
             <Setter.Value>
                 <DataTemplate>
-                    <local:ViewSwitcherItem Content="{Binding}" />
+                    <local:ViewSwitcherItem Content="{Binding}" Style="{StaticResource ViewSwitcherItemStyleSwitcher}"/>
                 </DataTemplate>
             </Setter.Value>
         </Setter>
@@ -90,7 +90,7 @@
                           CornerRadius="{TemplateBinding CornerRadius}"
                           HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                           VerticalAlignment="{TemplateBinding VerticalAlignment}"
-                          Padding="2">
+                          Padding="0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto" />
                         </Grid.RowDefinitions>
@@ -191,16 +191,32 @@
         </Setter>
     </Style>
 
-    <Style TargetType="local:ViewSwitcherItem" >
+    <Style x:Name="ViewSwitcherItemStyleSwitcher" TargetType="local:ViewSwitcherItem" >
+        <Setter Property="Background" Value="LightGray"/>
+        <Setter Property="BackgroundSizing" Value="OuterBorderEdge"/>
+        <Setter Property="Foreground" Value="{ThemeResource ToggleButtonForeground}"/>
+        <Setter Property="BorderBrush" Value="LightGray"/>
+        <Setter Property="BorderThickness" Value="{ThemeResource ToggleButtonBorderThemeThickness}"/>
+        <Setter Property="Padding" Value="{StaticResource ButtonPadding}"/>
+        <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}"/>
+        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}"/>
+        <Setter Property="FocusVisualMargin" Value="0"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:ViewSwitcherItem">
                     <Grid x:Name="RootGrid"
-                          Margin="-1"
                           Background="{TemplateBinding Background}"
                           BorderBrush="{TemplateBinding BorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}"
-                          CornerRadius="{ThemeResource ControlCornerRadius}">
+                          CornerRadius="{ThemeResource ControlCornerRadius}"
+                          HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                          VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                          Padding="0">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
@@ -211,6 +227,7 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonBackgroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <PointerUpThemeAnimation Storyboard.TargetName="RootGrid"/>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Selected">

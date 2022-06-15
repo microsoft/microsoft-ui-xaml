@@ -10,35 +10,34 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel x:Name="stackPanel" Margin="10" Spacing="10">
-            <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 1: ViewSwitcher With Just Text (Using RadioButton, ToggleButton Style)</TextBlock>
-            <local:ViewSwitcher Background="White" HorizontalAlignment="Center" x:Name="ViewSwitcher1" SelectedIndex="1" ShowPillVisual="{Binding ElementName=showPill, Path=IsOn}">
+            <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 1: ViewSwitcher With Just Text</TextBlock>
+            <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher1" SelectedIndex="1" ShowPillVisual="{Binding ElementName=showPill, Path=IsOn}">
                 <local:ViewSwitcher.ItemsSource>
                     <local:MyCollection>
-                        <x:String>Option 0</x:String>
-                        <x:String>Option 1</x:String>
-                        <x:String>Option 2</x:String>
+                        <TextBlock> Option 0</TextBlock>
+                        <TextBlock> Option 1</TextBlock>
+                        <TextBlock> Text </TextBlock>
                     </local:MyCollection>
                 </local:ViewSwitcher.ItemsSource>
             </local:ViewSwitcher>
 
-            <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 2: ViewSwitcher With Just Icons (Using RadioButton, ToggleButton Style, SymbolIcon Icon)</TextBlock>
+            <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 2: ViewSwitcher With Just Icons</TextBlock>
             <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher4" SelectedIndex="1" ShowPillVisual="{Binding ElementName=showPill, Path=IsOn}">
                 <local:ViewSwitcher.ItemsSource>
                     <local:MyCollection>
-                        <SymbolIcon Margin="40, 0, 0, 0" Symbol="Play"></SymbolIcon>
-                        <SymbolIcon Margin="40, 0, 0, 0" Symbol="Play"></SymbolIcon>
-                        <SymbolIcon Margin="40, 0, 0, 0" Symbol="Play"></SymbolIcon>
+                        <SymbolIcon Symbol="Play"></SymbolIcon>
+                        <SymbolIcon Symbol="Play"></SymbolIcon>
+                        <SymbolIcon Symbol="Play"></SymbolIcon>
                     </local:MyCollection>
                 </local:ViewSwitcher.ItemsSource>
             </local:ViewSwitcher>
 
-            <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 3: ViewSwitcher With Text and Icons (Using RadioButton, ToggleButton Style, SymbolIcon Icon)</TextBlock>
+            <TextBlock HorizontalAlignment="Center" Margin="10">Scenario 3: ViewSwitcher With Text and Icons</TextBlock>
             <local:ViewSwitcher HorizontalAlignment="Center" x:Name="ViewSwitcher5" SelectedIndex="1" ShowPillVisual="{Binding ElementName=showPill, Path=IsOn}">
                 <local:ViewSwitcher.ItemsSource>
                     <local:MyCollection>
                         <StackPanel Orientation="Horizontal">
                             <SymbolIcon Margin="0, 0, 10, 0" Symbol="Play" />
-                            <TextBlock/>
                             <TextBlock> Option 0</TextBlock>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
