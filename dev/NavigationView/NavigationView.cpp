@@ -1054,6 +1054,21 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
 
     if (updateSelection)
     {
+        auto indicatorTarget = nvi;
+
+        // Move indicator to topmost collapsed parent
+        auto parent = GetParentNavigationViewItemForContainer(nvi);
+        while (parent)
+        {
+            if (!parent.IsExpanded())
+            {
+                indicatorTarget = parent;
+            }
+            parent = GetParentNavigationViewItemForContainer(parent);
+        }
+
+        AnimateSelectionChanged(indicatorTarget);
+
         CloseFlyoutIfRequired(nvi);
     }
 }
