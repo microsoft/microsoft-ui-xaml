@@ -21,6 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
+using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
@@ -331,23 +332,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
             {
-                var invokedItem = FindElement.ByName("Music");
+                var musicItem = FindElement.ByName("Music");
+                var musicItemInvoker= new InvokeImplementation(musicItem);
 
-                invokedItem.Click();
+                musicItemInvoker.Invoke();
 
                 Wait.ForIdle();
 
                 var result = new TextBlock(FindElement.ByName("InvokedItemState"));
                 Log.Comment("Verify item is selected when Invoked event got raised");
                 Verify.AreEqual("ItemWasSelectedInItemInvoked", result.GetText());
+                Verify.IsTrue(Convert.ToBoolean(musicItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
 
-                invokedItem.Click();
+                musicItemInvoker.Invoke();
 
                 Wait.ForIdle();
 
                 Log.Comment("Verify item invoked was raised despite item already selected");
                 result = new TextBlock(FindElement.ByName("InvokedItemState"));
                 Verify.AreEqual("ItemWasInvokedSecomdTimeWithCorrectSelection", result.GetText());
+                Verify.IsTrue(Convert.ToBoolean(musicItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
             }
         }
 
