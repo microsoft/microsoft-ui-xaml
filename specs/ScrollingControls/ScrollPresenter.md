@@ -70,14 +70,10 @@ For example the following shows a large text block that wraps horizontally and s
 
 # Table of Contents
 
-[Overview](#overview)
-[ScrollView vs. ScrollPresenter](#scrollview-versus-scrollpresenter)
-[Examples](#snap-points-examples)
-[API Notes](#api-notes)
-[API Details (IDL)](#api-details)
+[[_TOC_]]
 
 
-# Overview
+# Conceptual pages (how to)
 
 `ScrollPresenter` is a container control that lets the user scroll (and pan), and zoom its content.
 
@@ -104,94 +100,10 @@ Again it is the parent `ScrollView` that sets the properties on its inner `Scrol
 to values chosen to match common usage, 
 for example the basic `<ScrollView/>` is configured for vertical scrolling.
 
-# ScrollView versus ScrollPresenter
-
-This section lists the differences between the `ScrollPresenter` and `ScrollView` elements:
-
-| **Characteristic**                                                   | **ScrollPresenter**                                         | **ScrollView**                                         |
-|----------------------------------------------------------------------|-------------------------------------------------------------|--------------------------------------------------------|
-| Namespace                                                            | Microsoft.UI.Xaml.Controls.Primitives                       | Microsoft.UI.Xaml.Controls                             |
-| Base class                                                           | FrameworkElement                                            | Control                                                |
-| Chrome                                                               | Has no chrome                                               | Has chrome with 2 scrollbars                           |
-| Policy                                                               | Does not set policy (ex: no particular content orientation) | Sets policy (ex: default vertical content orientation) |
-| Keyboard handling                                                    | No                                                          | Yes                                                    |
-| IScrollAnchorProvider interface implementation                       | Yes                                                         | No                                                     |
-| Background property                                                  | Yes                                                         | No                                                     |
-| CurrentAnchor property                                               | No                                                          | Yes                                                    |
-| ScrollBar visibility properties                                      | No                                                          | Yes                                                    |
-| Horizontal/vertical IScrollController properties                     | Yes                                                         | No                                                     |
-| RegisterAnchorCandidate/UnregisterAnchorCandidate methods            | No                                                          | Yes                                                    |
-| ViewChangeRequested event                                            | No                                                          | Yes                                                    |
-| ScrollPresenterProperty dependency property                          | No                                                          | Yes                                                    |
-| Horizontal/vertical/zoom snap points collection properties           | Yes                                                         | No                                                     |
 
 
-These are the APIs that are common between the two elements. The `ScrollView` simply delegates those API calls to its inner `ScrollPresenter`.
 
-| **Type**            | **Name**                          |
-|---------------------|-----------------------------------|
-| Property            | Content                           |
-| Property            | ExpressionAnimationSources        |
-| Property            | HorizontalOffset                  |
-| Property            | VerticalOffset                    |
-| Property            | ZoomFactor                        |
-| Property            | ExtentWidth                       |
-| Property            | ExtentHeight                      |
-| Property            | ViewportWidth                     |
-| Property            | ViewportHeight                    |
-| Property            | ScrollableWidth                   |
-| Property            | ScrollableHeight                  |
-| Property            | ContentOrientation                |
-| Property            | HorizontalScrollChainMode         |
-| Property            | VerticalScrollChainMode           |
-| Property            | HorizontalScrollRailMode          |
-| Property            | VerticalScrollRailMode            |
-| Property            | HorizontalScrollMode              |
-| Property            | VerticalScrollMode                |
-| Property            | ZoomChainMode                     |
-| Property            | ZoomMode                          |
-| Property            | IgnoredInputKinds                 |
-| Property            | MinZoomFactor                     |
-| Property            | MaxZoomFactor                     |
-| Property            | State                             |
-| Property            | HorizontalAnchorRatio             |
-| Property            | VerticalAnchorRatio               |
-| Dependency property | ContentProperty                   |
-| Dependency property | ContentOrientationProperty        |
-| Dependency property | HorizontalScrollChainModeProperty |
-| Dependency property | VerticalScrollChainModeProperty   |
-| Dependency property | HorizontalScrollRailModeProperty  |
-| Dependency property | VerticalScrollRailModeProperty    |
-| Dependency property | HorizontalScrollModeProperty      |
-| Dependency property | VerticalScrollModeProperty        |
-| Dependency property | ZoomChainModeProperty             |
-| Dependency property | ZoomModeProperty                  |
-| Dependency property | IgnoredInputKindsProperty         |
-| Dependency property | MinZoomFactorProperty             |
-| Dependency property | MaxZoomFactorProperty             |
-| Dependency property | HorizontalAnchorRatioProperty     |
-| Dependency property | VerticalAnchorRatioProperty       |
-| Method              | ScrollTo                          |
-| Method              | ScrollBy                          |
-| Method              | AddScrollVelocity                 |
-| Method              | ZoomTo                            |
-| Method              | ZoomBy                            |
-| Method              | AddZoomVelocity                   |
-| Event               | ExtentChanged                     |
-| Event               | StateChanged                      |
-| Event               | ViewChanged                       |
-| Event               | ScrollAnimationStarting           |
-| Event               | ZoomAnimationStarting             |
-| Event               | ScrollCompleted                   |
-| Event               | ZoomCompleted                     |
-| Event               | BringingIntoView                  |
-| Event               | AnchorRequested                   |
-
-
-This document will primarily focus on the `ScrollPresenter` aspects that are not present at the `ScrollView` level.
-The [ScrollView spec](ScrollView.md) can be referenced for the common APIs.
-
-# Snap points examples
+## Snap points examples
 
 The `ScrollPresenter` element exposes three collections to set scroll and zoom snap points.
 
@@ -219,7 +131,7 @@ The interval determines the equidistance between two successive points.
 The points are shifted from 0 by an amount defined by the offset.
 The start and end define a domain in which the snap points are effective.
 
-## Setting horizontal repeated snap points
+### Setting horizontal repeated snap points
 
 In this example, a horizontal repeated snap point is defined at values -10, 50, 110, 170, 230 and 290.
 
@@ -249,7 +161,7 @@ RepeatedScrollSnapPoint snapPoint =
 myScrollPresenter.HorizontalSnapPoints.Add(snapPoint);
 ```
 
-## Setting vertical repeated snap points
+### Setting vertical repeated snap points
 
 This example uses a vertical StackPanel in a `ScrollPresenter` with identically sized children.
 All the children are 200px tall and the goal is to have their top edge snap at the top edge of the viewport.
@@ -266,7 +178,7 @@ RepeatedScrollSnapPoint snapPoint =
 myScrollPresenter.VerticalSnapPoints.Add(snapPoint);
 ```
 
-## Setting vertical irregular snap points
+### Setting vertical irregular snap points
 
 This example showcases a vertical StackPanel in a `ScrollPresenter`.
 That panel has 4 chidren elements of variable heights,
@@ -306,7 +218,7 @@ So for example, if the natural rest point at the beginning of an inertial phase 
 the HorizontalOffset will animate to the snap point 505 instead.
 
 
-## Setting repeated zoom snap points
+### Setting repeated zoom snap points
 
 A `RepeatedZoomSnapPoint` is set on the `ScrollPresenter` in order to have its ZoomFactor snap to
 values 0.1, 0.2, 0.3, etc... at the end of an inertial zoom.
@@ -321,7 +233,7 @@ RepeatedZoomSnapPoint snapPoint =
 myScrollPresenter.ZoomSnapPoints.Add(snapPoint);
 ```
 
-## Setting irregular zoom snap points
+### Setting irregular zoom snap points
 
 In this case the goal is to set zoom snap points at values 0.15, 0.3, 0.6, 1.2, 2.4, 4.8 and 9.6.
 Seven individual `ZoomSnapPoint` instances are added to the ZoomSnapPoints collection:
@@ -333,7 +245,7 @@ for (double snapPointValue = 0.15; snapPointValue < 10.0; snapPointValue *= 2.0)
 }
 ```
 
-# Custom scroll controller example
+## Custom scroll controller example
 
 The `ScrollPresenter`'s HorizontalScrollController and VerticalScrollController properties allow to
 use custom scrollbar widgets instead of the default `ScrollBar` control.
@@ -458,21 +370,193 @@ It may be some alternative scrolling control.
 
 | **Member** | **Type** | **Description** |
 |------------|----------|-----------------|
-| AreInteractionsAllowed | Boolean | This read-only property indicates whether the scroll controller can perform user interactions or not.<br/>The scroll controller returns False for example when it is a disabled control.<br/>The `ScrollView` control accesses this property to evaluate its ComputedHorizontalScrollBarVisibility and ComputedVerticalScrollBarVisibility dependency properties, as well as the visibility of its scroll controller separator element (Template part named PART_ScrollBarsSeparator).<br/>For example, when the ScrollView.HorizontalScrollBarVisibility property is ScrollingScrollBarVisibility.Auto and the horizontal IScrollController implementation's AreInteractionsAllowed property returns False, the ComputedHorizontalScrollBarVisibility dependency property is set to Visibility.Collapsed. |
-| IsInteracting | Boolean| This read-only property indicates whether the scroll controller is handling a user interaction or not.<br/>A scroll controller may return True for example when the user is dragging a thumb to control the scrolling offset of the `ScrollPresenter`.<br/>A UI-thread-independent pan performed with the InteractionElement property must not cause the IsInteracting property to return True though. It would prevent the user from being able to interrupt inertia from such a pan by touching the `ScrollPresenter`'s content.<br/>The `ScrollView` control for example accesses this property to keep auto-hiding scroll controllers visible during a user interaction. (That auto-hiding behavior is dependent on the IUISettings5.AutoHideScrollBars property evaluation.)<br/>When returning True, this property prevents the `ScrollPresenter` from initiating a new pan of its content when the user touches it. |
-| InteractionElement | Microsoft.UI.Xaml.UIElement | This read-only property returns a UIElement that can be panned with touch off the UI-thread like the `ScrollPresenter`'s content.<br/>A scroll controller can return null instead of a UIElement, indicating that none of its UI pieces can be panned off the UI-thread. In that case the `ScrollPresenter` does not invoke the IsInteractionElementRailEnabled, InteractionElementScrollOrientation and SetExpressionAnimationSources APIs. |
-| IsInteractionElementRailEnabled | Boolean | This read-only property indicates whether the UIElement returned by the InteractionElement property must use railing during a UI-thread-independent pan. Railing locks the movement of the element on one orientation, horizontal or vertical.<br/>This property is only invoked when the InteractionElement property returns a non-null UIElement. |
-| InteractionElementScrollOrientation | Microsoft.UI.Xaml.Controls.Orientation | This read-only property returns the panning orientation of the UIElement returned by the InteractionElement property.<br/>This property is only invoked when the InteractionElement property returns a non-null UIElement. | 
-| SetExpressionAnimationSources(Microsoft.UI.Composition.CompositionPropertySet propertySet, String minOffsetPropertyName, String maxOffsetPropertyName, String offsetPropertyName, String multiplierPropertyName) | void | This method is invoked by the `ScrollPresenter` to provide a CompositionPropertySet populated with 4 properties. The scroll controller is meant to read 3 of those properties and write 1 of them. The 3 readable scalar properties are identified by the names minOffsetPropertyName, maxOffsetPropertyName and offsetPropertyName - they represent the minimum, maximum and current scrolling offset values. The 1 writeable property is also a scalar one, identified by the provided multiplierPropertyName name. The scroll controller is in charge of writing into this scalar property, providing a number that represents the relative movement of the InteractionElement and ScrollPresenter content. The property value represents a ratio. Both negative and positive ratios/multipliers are supported. For example, for a typical scrollbar thumb, the finger on the InteractionElement may go down by 2 pixels, causing the ScrollPresenter content to go up by 10 pixels. To achieve this, the scroll controller is expected to write -5.0f into the multiplierPropertyName property. The `ScrollPresenter` consumes that multiplierPropertyName scalar property in expression animations it builds internally to translate finger movement to content movement. All 4 animated scalars can be used in the scroll controller's expression animations, to position the InteractionElement's IVisual for example.<br/>This method is only invoked when the InteractionElement property returns a non-null UIElement. |
-| SetScrollMode(Microsoft.UI.Xaml.Controls.ScrollingScrollMode scrollMode) | void | This method is invoked by the `ScrollPresenter` to indicate whether scrolling through user input is turned on or not. For example, the `ScrollPresenter` uses 4 of its properties for these calls: HorizontalScrollController.SetScrollMode(HorizontalScrollMode) and VerticalScrollController.SetScrollMode(VerticalScrollMode). |
-| SetValues(Double minOffset, Double maxOffset, Double offset, Double viewport) | void | This method is invoked by the `ScrollPresenter` to provide dimension information to the scroll controller. _minOffset_ and  _maxOffset_ indicate the minimum and maximum offsets allowed for the relevant scrolling orientation, at idle. _offset_ indicates the current offset value, which is not necessarily between those minimum and maximum offsets because of overpan situations. _viewport_ indicates the size of the `ScrollPresenter`'s viewport. The scroll controller can use those dimensions to adjust the size and position of a UIElement, for example a draggable thumb on the UI thread. |
-| GetScrollAnimation(Int32 correlationId, Windows.Foundation.Numerics.Vector2 currentPosition, Microsoft.UI.Composition.CompositionAnimation defaultAnimation) | Microsoft.UI.Composition.CompositionAnimation | The scroll controller can request an animated scroll by raising its ScrollToRequested or ScrollByRequested event. In response, the `ScrollPresenter` does not raise its ScrollAnimationStarting event. Instead it invokes this GetScrollAnimation method to give the scroll controller the opportunity to customize the animation that is about to be launched. The scroll controller is given the correlationId for the operation, the current position of the content and default composition animation which is a Vector3KeyFrameAnimation about to be launched by default. The correlationId is the one provided earlier in ScrollControllerScrollToRequestedEventArgs.CorrelationId or in ScrollControllerScrollByRequestedEventArgs.CorrelationId. The scroll controller can then return: null or an unchanged _defaultAnimation_ to use that default animation, a modified version of _defaultAnimation_, or a brand-new custom animation. |
-| NotifyScrollCompleted(Int32 correlationId) | void | This method is invoked by the `ScrollPresenter` to indicate that a scrolling operation initiated through a ScrollToRequested, ScrollByRequested or AddScrollVelocityRequested event has completed. It provides the operation's correlationId which was exposed earlier in ScrollControllerScrollToRequestedEventArgs.CorrelationId, ScrollControllerScrollByRequestedEventArgs.CorrelationId or ScrollControllerAddScrollVelocityRequestedEventArgs.CorrelationId. |
-| ScrollToRequested | event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> | The scroll controller can request a scroll to a particular offset by raising its ScrollToRequested event. The `ScrollPresenter` handles the event and provides a correlationId in ScrollControllerScrollToRequestedEventArgs.CorrelationId for the operation that is about to start. The scroll controller can for example make such a request when a thumb is dragged to a new position. |
-| ScrollByRequested | event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollByRequestedEventArgs> | The scroll controller can request a scroll by a particular offset delta by raising its ScrollByRequested event. The `ScrollPresenter` handles the event and provides a correlationId in ScrollControllerScrollByRequestedEventArgs.CorrelationId for the operation that is about to start. The scroll controller can for example make such a request when a button is clicked to move a thumb by an increment. |
-| AddScrollVelocityRequested | event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerAddScrollVelocityRequestedEventArgs> | The scroll controller can request a scroll by adding velocity to the `ScrollPresenter` content through the AddScrollVelocityRequested event. |
-| InteractionRequested | event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerInteractionRequestedEventArgs> | This event can be raised by the scroll controller when the user attempts to initiate a UI-thread-independent pan, with touch or a pen, using the UIElement returned by the InteractionElement property. The `ScrollPresenter` sets the ScrollControllerInteractionRequestedEventArgs.Handled property to True when it successfully initiated such a pan. This event is not meant to be raised when the InteractionElement property returns null. |
-| InteractionInfoChanged | event Windows.Foundation.TypedEventHandler<IScrollController, Object> | This event is raised by the scroll controller after any of its properties AreInteractionsAllowed, IsInteracting, IsInteractionElementRailEnabled, InteractionElement, or InteractionElementScrollOrientation changed.  |
+
+## IScrollController AreInteractionsAllowed property (Boolean)
+
+This read-only property indicates whether the scroll controller can perform user interactions or not.
+
+The scroll controller returns False for example when it is a disabled control.
+
+The `ScrollView` control accesses this property to evaluate its ComputedHorizontalScrollBarVisibility and
+ComputedVerticalScrollBarVisibility dependency properties,
+as well as the visibility of its scroll controller separator element (Template part named PART_ScrollBarsSeparator).
+
+For example, when the ScrollView.HorizontalScrollBarVisibility property is `ScrollingScrollBarVisibility.Auto` and
+the horizontal IScrollController implementation's `AreInteractionsAllowed` property returns False,
+the `ComputedHorizontalScrollBarVisibility` dependency property is set to `Visibility.Collapsed`.
+
+## IScrollController.IsInteracting property (Boolean)
+
+This read-only property indicates whether the scroll controller is handling a user interaction or not.
+
+A scroll controller may return True for example when the user is dragging a thumb to control the scrolling offset of
+the `ScrollPresenter`.
+
+A UI-thread-independent pan performed with the InteractionElement property must not cause the IsInteracting property to return
+True though.
+It would prevent the user from being able to interrupt inertia from such a pan by touching the `ScrollPresenter`'s content.
+
+The `ScrollView` control for example accesses this property to keep auto-hiding scroll controllers visible during a user interaction.
+(That auto-hiding behavior is dependent on the IUISettings5.AutoHideScrollBars property evaluation.)
+
+When returning True, this property prevents the `ScrollPresenter` from initiating a new pan of its content when the user touches it.
+
+
+## IScrollController.InteractionElement property (UIElement)
+
+This read-only property returns a UIElement that can be panned with touch off the UI-thread like the `ScrollPresenter`'s content.
+
+A scroll controller can return null instead of a UIElement, indicating that none of its UI pieces can be panned off the UI-thread.
+In that case the `ScrollPresenter` does not invoke the IsInteractionElementRailEnabled,
+InteractionElementScrollOrientation and SetExpressionAnimationSources APIs.
+
+## IScrollController.IsInteractionElementRailEnabled property (Boolean)
+
+This read-only property indicates whether the UIElement returned by the InteractionElement property must use railing during
+a UI-thread-independent pan.
+Railing locks the movement of the element on one orientation, horizontal or vertical.
+
+This property is only invoked when the InteractionElement property returns a non-null UIElement.
+
+## IScrollController.InteractionElementScrollOrientation property (Orientation)
+
+This read-only property returns the panning orientation of the UIElement returned by the InteractionElement property.
+
+This property is only invoked when the InteractionElement property returns a non-null UIElement.
+
+## IScrollController.SetExpressionAnimationSources
+
+```cs
+void SetExpressionAnimationSources(
+    Microsoft.UI.Composition.CompositionPropertySet propertySet, 
+    String minOffsetPropertyName, 
+    String maxOffsetPropertyName, 
+    String offsetPropertyName, 
+    String multiplierPropertyName)
+```
+
+This method is invoked by the `ScrollPresenter` to provide a CompositionPropertySet populated with 4 properties.
+
+The scroll controller is meant to read 3 of those properties and write 1 of them.
+The 3 readable scalar properties are identified by the names minOffsetPropertyName, maxOffsetPropertyName and offsetPropertyName - 
+they represent the minimum, maximum and current scrolling offset values.
+
+The 1 writeable property is also a scalar one, identified by the provided multiplierPropertyName name.
+The scroll controller is in charge of writing into this scalar property, providing a number that represents the
+relative movement of the InteractionElement and ScrollPresenter content.
+The property value represents a ratio. Both negative and positive ratios/multipliers are supported.
+
+For example, for a typical scrollbar thumb, the finger on the InteractionElement may go down by 2 pixels,
+causing the ScrollPresenter content to go up by 10 pixels.
+To achieve this, the scroll controller is expected to write -5.0f into the multiplierPropertyName property.
+The `ScrollPresenter` consumes that multiplierPropertyName scalar property in expression animations it builds internally to
+translate finger movement to content movement.
+
+All 4 animated scalars can be used in the scroll controller's expression animations,
+to position the InteractionElement's IVisual for example.
+
+This method is only invoked when the InteractionElement property returns a non-null UIElement.
+
+## IScrollController.SetScrollMode
+
+```cs
+void SetScrollMode(Microsoft.UI.Xaml.Controls.ScrollingScrollMode scrollMode)
+```
+
+This method is invoked by the `ScrollPresenter` to indicate whether scrolling through user input is turned on or not.
+For example, the `ScrollPresenter` uses 4 of its properties for these calls: 
+HorizontalScrollController.SetScrollMode(HorizontalScrollMode) and VerticalScrollController.SetScrollMode(VerticalScrollMode).
+
+## IScrollController.SetValues
+
+```cs
+void SetValues(Double minOffset, Double maxOffset, Double offset, Double viewport)
+```
+
+This method is invoked by the `ScrollPresenter` to provide dimension information to the scroll controller.
+
+_minOffset_ and  _maxOffset_ indicate the minimum and maximum offsets allowed for the relevant scrolling orientation, at idle.
+_offset_ indicates the current offset value, which is not necessarily between those minimum and maximum offsets because of overpan situations.
+_viewport_ indicates the size of the `ScrollPresenter`'s viewport.
+
+The scroll controller can use those dimensions to adjust the size and position of a UIElement, for example a draggable thumb on the UI thread. |
+
+## IScrollController.GetScrollAnimation
+
+```cs
+CompositionAnimation GetScrollAnimation(Int32 correlationId, Windows.Foundation.Numerics.Vector2 currentPosition, Microsoft.UI.Composition.CompositionAnimation defaultAnimation)
+```
+
+The scroll controller can request an animated scroll by raising its ScrollToRequested or ScrollByRequested event.
+In response, the `ScrollPresenter` does not raise its ScrollAnimationStarting event.
+Instead it invokes this GetScrollAnimation method to give the scroll controller the opportunity to customize the animation that
+is about to be launched.
+The scroll controller is given the correlationId for the operation,
+the current position of the content and default composition animation which is a Vector3KeyFrameAnimation about to be launched by default.
+The correlationId is the one provided earlier in ScrollControllerScrollToRequestedEventArgs.CorrelationId or
+in ScrollControllerScrollByRequestedEventArgs.CorrelationId.
+The scroll controller can then return: null or an unchanged _defaultAnimation_ to use that default animation, a modified version of _defaultAnimation_, or a brand-new custom animation.
+
+## IScrollController.NotifyScrollCompleted
+
+```cs
+void NotifyScrollCompleted(Int32 correlationId)
+```
+
+This method is invoked by the `ScrollPresenter` to indicate that a scrolling operation initiated through a
+ScrollToRequested, ScrollByRequested or AddScrollVelocityRequested event has completed.
+It provides the operation's correlationId which was exposed earlier in
+ScrollControllerScrollToRequestedEventArgs.CorrelationId, ScrollControllerScrollByRequestedEventArgs.CorrelationId or
+ScrollControllerAddScrollVelocityRequestedEventArgs.CorrelationId. |
+
+## IScrollController.ScrollToRequested  event
+
+```cs
+event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> ScrollToRequested
+```
+The scroll controller can request a scroll to a particular offset by raising its ScrollToRequested event.
+The `ScrollPresenter` handles the event and provides a correlationId in ScrollControllerScrollToRequestedEventArgs.CorrelationId for
+the operation that is about to start.
+The scroll controller can for example make such a request when a thumb is dragged to a new position.
+
+## IScrollController.ScrollByRequested event
+
+```cs
+Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollByRequestedEventArgs> ScrollByRequested
+```
+
+The scroll controller can request a scroll by a particular offset delta by raising its ScrollByRequested event.
+The `ScrollPresenter` handles the event and provides a correlationId in ScrollControllerScrollByRequestedEventArgs.CorrelationId for
+the operation that is about to start.
+The scroll controller can for example make such a request when a button is clicked to move a thumb by an increment.
+
+## IScrollController.AddScrollVelocityRequested 
+
+```cs
+event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerAddScrollVelocityRequestedEventArgs> AddScrollVelocityRequested
+```
+
+The scroll controller can request a scroll by adding velocity to the `ScrollPresenter` content through the AddScrollVelocityRequested event.
+
+## IScrollController.InteractionRequested event
+
+```cs
+event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerInteractionRequestedEventArgs> InteractionRequested
+```
+
+This event can be raised by the scroll controller when the user attempts to initiate a UI-thread-independent pan,
+with touch or a pen, using the UIElement returned by the InteractionElement property.
+The `ScrollPresenter` sets the ScrollControllerInteractionRequestedEventArgs.Handled property to True when
+it successfully initiated such a pan. This event is not meant to be raised when the InteractionElement property returns null.
+
+## IScrollController.InteractionInfoChanged event 
+
+```cs
+event Windows.Foundation.TypedEventHandler<IScrollController, Object> InteractionInfoChanged
+```
+
+This event is raised by the scroll controller after any of its properties AreInteractionsAllowed, IsInteracting,
+IsInteractionElementRailEnabled, InteractionElement, or InteractionElementScrollOrientation changed.
 
 
 ## ScrollControllerScrollToRequestedEventArgs class
@@ -2170,6 +2254,91 @@ public sealed class CompositionScrollController : Control, IScrollController
 | `ScrollView` API Specification | [ScrollView API spec](ScrollView.md) |
 
 # Appendix
+
+
+## ScrollView versus ScrollPresenter
+
+This section lists the differences between the `ScrollPresenter` and `ScrollView` elements:
+
+| **Characteristic**                                                   | **ScrollPresenter**                                         | **ScrollView**                                         |
+|----------------------------------------------------------------------|-------------------------------------------------------------|--------------------------------------------------------|
+| Namespace                                                            | Microsoft.UI.Xaml.Controls.Primitives                       | Microsoft.UI.Xaml.Controls                             |
+| Base class                                                           | FrameworkElement                                            | Control                                                |
+| Chrome                                                               | Has no chrome                                               | Has chrome with 2 scrollbars                           |
+| Policy                                                               | Does not set policy (ex: no particular content orientation) | Sets policy (ex: default vertical content orientation) |
+| Keyboard handling                                                    | No                                                          | Yes                                                    |
+| IScrollAnchorProvider interface implementation                       | Yes                                                         | No                                                     |
+| Background property                                                  | Yes                                                         | No                                                     |
+| CurrentAnchor property                                               | No                                                          | Yes                                                    |
+| ScrollBar visibility properties                                      | No                                                          | Yes                                                    |
+| Horizontal/vertical IScrollController properties                     | Yes                                                         | No                                                     |
+| RegisterAnchorCandidate/UnregisterAnchorCandidate methods            | No                                                          | Yes                                                    |
+| ViewChangeRequested event                                            | No                                                          | Yes                                                    |
+| ScrollPresenterProperty dependency property                          | No                                                          | Yes                                                    |
+| Horizontal/vertical/zoom snap points collection properties           | Yes                                                         | No                                                     |
+
+
+These are the APIs that are common between the two elements. The `ScrollView` simply delegates those API calls to its inner `ScrollPresenter`.
+
+| **Type**            | **Name**                          |
+|---------------------|-----------------------------------|
+| Property            | Content                           |
+| Property            | ExpressionAnimationSources        |
+| Property            | HorizontalOffset                  |
+| Property            | VerticalOffset                    |
+| Property            | ZoomFactor                        |
+| Property            | ExtentWidth                       |
+| Property            | ExtentHeight                      |
+| Property            | ViewportWidth                     |
+| Property            | ViewportHeight                    |
+| Property            | ScrollableWidth                   |
+| Property            | ScrollableHeight                  |
+| Property            | ContentOrientation                |
+| Property            | HorizontalScrollChainMode         |
+| Property            | VerticalScrollChainMode           |
+| Property            | HorizontalScrollRailMode          |
+| Property            | VerticalScrollRailMode            |
+| Property            | HorizontalScrollMode              |
+| Property            | VerticalScrollMode                |
+| Property            | ZoomChainMode                     |
+| Property            | ZoomMode                          |
+| Property            | IgnoredInputKinds                 |
+| Property            | MinZoomFactor                     |
+| Property            | MaxZoomFactor                     |
+| Property            | State                             |
+| Property            | HorizontalAnchorRatio             |
+| Property            | VerticalAnchorRatio               |
+| Dependency property | ContentProperty                   |
+| Dependency property | ContentOrientationProperty        |
+| Dependency property | HorizontalScrollChainModeProperty |
+| Dependency property | VerticalScrollChainModeProperty   |
+| Dependency property | HorizontalScrollRailModeProperty  |
+| Dependency property | VerticalScrollRailModeProperty    |
+| Dependency property | HorizontalScrollModeProperty      |
+| Dependency property | VerticalScrollModeProperty        |
+| Dependency property | ZoomChainModeProperty             |
+| Dependency property | ZoomModeProperty                  |
+| Dependency property | IgnoredInputKindsProperty         |
+| Dependency property | MinZoomFactorProperty             |
+| Dependency property | MaxZoomFactorProperty             |
+| Dependency property | HorizontalAnchorRatioProperty     |
+| Dependency property | VerticalAnchorRatioProperty       |
+| Method              | ScrollTo                          |
+| Method              | ScrollBy                          |
+| Method              | AddScrollVelocity                 |
+| Method              | ZoomTo                            |
+| Method              | ZoomBy                            |
+| Method              | AddZoomVelocity                   |
+| Event               | ExtentChanged                     |
+| Event               | StateChanged                      |
+| Event               | ViewChanged                       |
+| Event               | ScrollAnimationStarting           |
+| Event               | ZoomAnimationStarting             |
+| Event               | ScrollCompleted                   |
+| Event               | ZoomCompleted                     |
+| Event               | BringingIntoView                  |
+| Event               | AnchorRequested                   |
+
 
 ## Future Supported Features with known scenarios
 
