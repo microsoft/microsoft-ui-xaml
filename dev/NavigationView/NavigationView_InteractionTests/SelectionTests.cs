@@ -21,7 +21,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
-using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
@@ -332,25 +331,44 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
             {
-                var musicItem = FindElement.ByName("Music");
-                var musicItemInvoker= new InvokeImplementation(musicItem);
+                var invokedItem = FindElement.ByName("Music");
 
-                musicItemInvoker.Invoke();
+                invokedItem.Click();
 
                 Wait.ForIdle();
 
                 var result = new TextBlock(FindElement.ByName("InvokedItemState"));
                 Log.Comment("Verify item is selected when Invoked event got raised");
                 Verify.AreEqual("ItemWasSelectedInItemInvoked", result.GetText());
-                Verify.IsTrue(Convert.ToBoolean(musicItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
 
-                musicItemInvoker.Invoke();
+                invokedItem.Click();
 
                 Wait.ForIdle();
 
                 Log.Comment("Verify item invoked was raised despite item already selected");
                 result = new TextBlock(FindElement.ByName("InvokedItemState"));
                 Verify.AreEqual("ItemWasInvokedSecomdTimeWithCorrectSelection", result.GetText());
+            }
+        }
+		
+        [TestMethod]
+        public void VerifySelectionItemPatternDoesInvoke()
+        {
+            // When using UIA SelectionItem pattern to select a navview item, this should also trigger an
+            // invoke on the item.
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                var musicItem = FindElement.ByName("Music");
+                var lvi = new ListViewItem(musicItem);
+
+                lvi.Select();
+                Wait.ForIdle();
+
+                Log.Comment("Verify item was invoked");
+                var result = new TextBlock(FindElement.ByName("InvokedItemState"));
+                Verify.AreEqual("ItemWasSelectedInItemInvoked", result.GetText());
+
+                Log.Comment("Verify item got selected");
                 Verify.IsTrue(Convert.ToBoolean(musicItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
             }
         }
