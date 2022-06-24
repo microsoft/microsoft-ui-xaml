@@ -5,13 +5,28 @@
 
 (Full Summary, Rationale, and High-Level Plan in the proposal on GitHub: [A more flexible ScrollViewer](https://github.com/Microsoft/microsoft-ui-xaml/issues/108))
 
-This spec describes a building block for the new `ScrollView` control (which is described in a [separate spec](ScrollView.md)): the `ScrollPresenter`. It is similar to the `ScrollContentPresenter` used in the old `ScrollViewer` control template as it applies the clipping, translation and scaling of the `ScrollView` content. It is present in the `ScrollView`'s default control template alongside the two `ScrollBar` controls.
+This spec describes a building block for the new `ScrollView` control (which is described in a [separate spec](ScrollView.md)): the `ScrollPresenter`.
+This pair of controls replaces the existing pair `ScrollViewer` and `ScrollContentPresenter`
 
-Contrary to the old `ScrollContentPresenter` element though, the `ScrollPresenter` is a fully functional and reusable primitive component with a public object model that is very similar to the `ScrollView` object model. In most cases, the `ScrollView` control merely forwards an API call to the identical API of its inner `ScrollPresenter`.
+|   | Current | New 
+-|-|-
+Primary control | [ScrollViewer](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.ScrollViewer) | `ScrollView`
+Primitive scroller | [ScrollContentPresenter](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.ScrollContentPresenter) | `ScrollPresenter` (this spec)
+
+`ScrollPresenter` is similar to the `ScrollContentPresenter` used in the old `ScrollViewer` control template as it applies
+the clipping, translation and scaling of the `ScrollView` content.
+It is present in the `ScrollView`'s default control template alongside the two `ScrollBar` controls.
+
+![Scroll controls](./images/scroll-controls.jpg)
+
+Contrary to the old `ScrollContentPresenter` element though, the `ScrollPresenter` is a fully functional and reusable primitive component with
+a public object model that is very similar to the `ScrollView` object model.
+In most cases, the `ScrollView` control merely forwards an API call to the identical API of its inner `ScrollPresenter`.
 
 The typical usage of a `ScrollPresenter` is that of a building block for a more complex control, like the `ScrollView`. 
 
-Here the `ScrollPresenter` is used as part of a scrolling/zooming control which employs custom UI widgets to control the translation and scale in lieu of two scrollbars.
+Here the `ScrollPresenter` is used as part of a scrolling/zooming control which
+employs custom UI widgets to control the translation and scale in lieu of two scrollbars.
 
 ```xml
 <UserControl
@@ -39,7 +54,9 @@ It can be used as a top level element too, as in the following example.
 ```
 
 
-Xaml has a [ScrollViewer](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.ScrollViewer) control for scrolling content, using scroll bars and panning, etc. Typical uses are as the root of a page whose content might not fit; and a ListView, which internally uses a ScrollViewer for its list of items. 
+Xaml has a [ScrollViewer](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.ScrollViewer) control for scrolling content,
+using scroll bars and panning, etc. Typical uses are as the root of a page whose content might not fit; and a ListView,
+which internally uses a ScrollViewer for its list of items. 
 
 For example the following shows a large text block that wraps horizontally and scrolls vertically:
 
@@ -73,11 +90,19 @@ The area that includes all of the content of the `ScrollPresenter` is the *exten
 
 A second kind of scrolling element, providing just clipping and translation of content, and
 
-The `ScrollPresenter` can be used as a primitive building block for controls like the `ScrollView` which adds the default user interaction widgets (scrollbars, scroll indicator, etc.) and policy. Indeed the `ScrollView` defined in the [separate spec](ScrollView.md) uses a `ScrollPresenter` as part of its implementation (in its ControlTemplate).
+The `ScrollPresenter` can be used as a primitive building block for controls like the `ScrollView` which
+adds the default user interaction widgets (scrollbars, scroll indicator, etc.) and policy.
+Indeed the `ScrollView` defined in the [separate spec](ScrollView.md) uses a `ScrollPresenter` as
+part of its implementation (in its ControlTemplate).
 
-Contrary to the `ScrollView` which is a Control, the `ScrollPresenter` is a FrameworkElement and as such it does not receive keyboard focus. Its parent `ScrollView` has the built-in logic to decide whether to scroll the viewport or move focus in response to a key event. 
+Contrary to the `ScrollView` which is a Control, the `ScrollPresenter` is a FrameworkElement and
+as such it does not receive keyboard focus. Its parent `ScrollView` has the
+built-in logic to decide whether to scroll the viewport or move focus in response to a key event. 
 
-The `ScrollPresenter` does not impose any particular policy. Again it is the parent `ScrollView` that sets the properties on its inner `ScrollPresenter` to values chosen to match common usage, for example the basic `<ScrollView/>` is configured for vertical scrolling.
+The `ScrollPresenter` does not impose any particular policy.
+Again it is the parent `ScrollView` that sets the properties on its inner `ScrollPresenter`
+to values chosen to match common usage, 
+for example the basic `<ScrollView/>` is configured for vertical scrolling.
 
 # ScrollView versus ScrollPresenter
 
@@ -163,7 +188,8 @@ These are the APIs that are common between the two elements. The `ScrollView` si
 | Event               | AnchorRequested                   |
 
 
-This document will primarily focus on the `ScrollPresenter` aspects that are not present at the `ScrollView` level. The [ScrollView spec](ScrollView.md) can be referenced for the common APIs.
+This document will primarily focus on the `ScrollPresenter` aspects that are not present at the `ScrollView` level.
+The [ScrollView spec](ScrollView.md) can be referenced for the common APIs.
 
 # Snap points examples
 
@@ -175,16 +201,23 @@ The `ScrollPresenter` element exposes three collections to set scroll and zoom s
 | Windows.Foundation.Collections.IVector<ScrollSnapPointBase> | VerticalSnapPoints         |
 | Windows.Foundation.Collections.IVector<ZoomSnapPointBase>   | ZoomSnapPoints             |
 
-At the end of a scroll inertia, the `ScrollPresenter`'s HorizontalOffset property will land at a value which depends on the HorizontalSnapPoints collection (same for VerticalOffset and VerticalSnapPoints). 
-Likewise, at the end of a zoom inertia, the `ScrollPresenter`'s ZoomFactor property will land at a value which depends on the ZoomSnapPoints collection.
+At the end of a scroll inertia, the `ScrollPresenter`'s HorizontalOffset property will land at
+a value which depends on the HorizontalSnapPoints collection (same for VerticalOffset and VerticalSnapPoints). 
+Likewise, at the end of a zoom inertia, the `ScrollPresenter`'s ZoomFactor property will land at
+a value which depends on the ZoomSnapPoints collection.
 
 Two types of scroll snap points exist, and they both derive from `ScrollSnapPointBase`: `ScrollSnapPoint` and `RepeatedScrollSnapPoint`. 
 
-A `ScrollSnapPoint` is a single point characterized by an alignment and value. The alignment enumeration of `Near`, `Center` or `Far` indicates where the snap point is located in relation to the viewport.
-For example, for a horizontal snap point, the `Near` alignment corresponds to the left edge of the viewport. `Center` means the middle of the viewport, and finally `Far` means the right edge.
+A `ScrollSnapPoint` is a single point characterized by an alignment and value.
+The alignment enumeration of `Near`, `Center` or `Far` indicates where the snap point is located in relation to the viewport.
+For example, for a horizontal snap point, the `Near` alignment corresponds to the left edge of the viewport.
+`Center` means the middle of the viewport, and finally `Far` means the right edge.
 
-A `RepeatedScrollSnapPoint` defines multiple equidistant points. It is characterized by an alignment, an interval, an offset, a start and end. The interval determines the equidistance between two successive points.
-The points are shifted from 0 by an amount defined by the offset. The start and end define a domain in which the snap points are effective.
+A `RepeatedScrollSnapPoint` defines multiple equidistant points.
+It is characterized by an alignment, an interval, an offset, a start and end.
+The interval determines the equidistance between two successive points.
+The points are shifted from 0 by an amount defined by the offset.
+The start and end define a domain in which the snap points are effective.
 
 ## Setting horizontal repeated snap points
 
@@ -192,12 +225,18 @@ In this example, a horizontal repeated snap point is defined at values -10, 50, 
 
 ![Repeater Scroll Snap points](images/RepeatedSnapPoints.png)
 
-The natural rest point is defined as the landing point after inertia if no snap points were present. That natural rest point defines which snap point value is activated. 
-In this case, if the natural rest point is before the _start_ 10 or after the _end_ 270, no snap point value is activated and inertia carries on without the influence of the repeated snap point.
-If however the natural rest point is in the \[10, 270\] domain, the closest snap point value to the natural rest point is activated. For example if the natural rest point is 95, the final HorizontalOffset property will be 110 instead of 95.
+The natural rest point is defined as the landing point after inertia if no snap points were present.
+That natural rest point defines which snap point value is activated. 
+In this case, if the natural rest point is before the _start_ 10 or after the _end_ 270,
+no snap point value is activated and inertia carries on without the influence of the repeated snap point.
+If however the natural rest point is in the \[10, 270\] domain,
+the closest snap point value to the natural rest point is activated.
+For example if the natural rest point is 95, the final HorizontalOffset property will be 110 instead of 95.
 Because the provided _alignment_ is Near, the snap point values align with the left edge of the `ScrollPresenter`.   
-The applicable ranges, or attraction zones, of the snap point values -10, 50, 110, 170, 230, 290 are respectively \[10, 20\], \]20, 80\], \]80, 140\], \]140, 200\], \]200, 260\] and \]260, 270\].
-If an activated horizontal snap point value is out-of-bounds, i.e. smaller than 0 or greater than ScrollableWidth, the content will first animate to that out-of-bounds position then animate back to the closest in-bounds position.
+The applicable ranges, or attraction zones, of the snap point values -10, 50, 110, 170, 230, 290 are
+respectively \[10, 20\], \]20, 80\], \]80, 140\], \]140, 200\], \]200, 260\] and \]260, 270\].
+If an activated horizontal snap point value is out-of-bounds, i.e. smaller than 0 or greater than ScrollableWidth,
+the content will first animate to that out-of-bounds position then animate back to the closest in-bounds position.
 
 ```csharp
 RepeatedScrollSnapPoint snapPoint = 
@@ -212,7 +251,9 @@ myScrollPresenter.HorizontalSnapPoints.Add(snapPoint);
 
 ## Setting vertical repeated snap points
 
-This example uses a vertical StackPanel in a `ScrollPresenter` with identically sized children. All the children are 200px tall and the goal is to have their top edge snap at the top edge of the viewport. A `RepeatedScrollSnapPoint` with Near alignment can be used for that purpose.
+This example uses a vertical StackPanel in a `ScrollPresenter` with identically sized children.
+All the children are 200px tall and the goal is to have their top edge snap at the top edge of the viewport.
+A `RepeatedScrollSnapPoint` with Near alignment can be used for that purpose.
 
 ```csharp
 RepeatedScrollSnapPoint snapPoint = 
@@ -227,12 +268,22 @@ myScrollPresenter.VerticalSnapPoints.Add(snapPoint);
 
 ## Setting vertical irregular snap points
 
-This example showcases a vertical StackPanel in a `ScrollPresenter`. That panel has 4 chidren elements of variable heights, each of them being assigned a snap point so that their center snaps vertically to the center of the viewport as much as possible.
+This example showcases a vertical StackPanel in a `ScrollPresenter`.
+That panel has 4 chidren elements of variable heights,
+each of them being assigned a snap point so that their center snaps vertically to the center of the viewport as much as possible.
 
 ![Repeated Scroll Snap points](images/VerticalScrollSnapPoints.png)
 
-The viewport is 610px tall, the 4 children are 360px, 290px, 220px and 160px tall. Since the desired alignment is Center, the content snap points will align to the middle of the viewport, at position 610/2=305px.
-The ideal snap points for the 4 children are respectively at positions 180, 505, 760 and 950 from the top of the StackPanel. Without the restriction of the content staying in-bounds, the 4 children's center would align with the viewport's center. The content extent being 1030px tall, the `ScrollPresenter`'s VerticalOffset property can vary from 0 to ScrollableHeight = 1030 - 610 = 420. To avoid the content first animating out-of-bounds and then animating in-bounds, the snap points can be moved to 305, 505, 725 and 725. Only the second child is not affected by boundary restrictions. The two last children get the same snap point at position 725.
+The viewport is 610px tall, the 4 children are 360px, 290px, 220px and 160px tall.
+Since the desired alignment is Center, the content snap points will align to the middle of the viewport, at position 610/2=305px.
+The ideal snap points for the 4 children are respectively at positions 180, 505, 760 and 950 from the top of the StackPanel.
+Without the restriction of the content staying in-bounds, the 4 children's center would align with the viewport's center.
+The content extent being 1030px tall, the `ScrollPresenter`'s VerticalOffset property can vary from 0 to
+ScrollableHeight = 1030 - 610 = 420.
+To avoid the content first animating out-of-bounds and then animating in-bounds,
+the snap points can be moved to 305, 505, 725 and 725.
+Only the second child is not affected by boundary restrictions.
+The two last children get the same snap point at position 725.
 
 ```csharp
 ScrollSnapPoint snapPoint1 = new ScrollSnapPoint(
@@ -249,12 +300,16 @@ myScrollPresenter.VerticalSnapPoints.Add(snapPoint2);
 myScrollPresenter.VerticalSnapPoints.Add(snapPoint3);
 ```
 
-The applicable ranges, or attraction zones, for snapPoint1, snapPoint2 and snapPoint3 are \]-inf, 405\], \]405, 615\] and \]615, +inf\[. So for example, if the natural rest point at the beginning of an inertial phase is 600, the HorizontalOffset will animate to the snap point 505 instead.
+The applicable ranges, or attraction zones, for snapPoint1,
+snapPoint2 and snapPoint3 are \]-inf, 405\], \]405, 615\] and \]615, +inf\[.
+So for example, if the natural rest point at the beginning of an inertial phase is 600,
+the HorizontalOffset will animate to the snap point 505 instead.
 
 
 ## Setting repeated zoom snap points
 
-A `RepeatedZoomSnapPoint` is set on the `ScrollPresenter` in order to have its ZoomFactor snap to values 0.1, 0.2, 0.3, etc... at the end of an inertial zoom.
+A `RepeatedZoomSnapPoint` is set on the `ScrollPresenter` in order to have its ZoomFactor snap to
+values 0.1, 0.2, 0.3, etc... at the end of an inertial zoom.
 
 ```csharp
 RepeatedZoomSnapPoint snapPoint = 
@@ -268,7 +323,8 @@ myScrollPresenter.ZoomSnapPoints.Add(snapPoint);
 
 ## Setting irregular zoom snap points
 
-In this case the goal is to set zoom snap points at values 0.15, 0.3, 0.6, 1.2, 2.4, 4.8 and 9.6. Seven individual `ZoomSnapPoint` instances are added to the ZoomSnapPoints collection:
+In this case the goal is to set zoom snap points at values 0.15, 0.3, 0.6, 1.2, 2.4, 4.8 and 9.6.
+Seven individual `ZoomSnapPoint` instances are added to the ZoomSnapPoints collection:
 
 ```csharp
 for (double snapPointValue = 0.15; snapPointValue < 10.0; snapPointValue *= 2.0)
@@ -279,15 +335,20 @@ for (double snapPointValue = 0.15; snapPointValue < 10.0; snapPointValue *= 2.0)
 
 # Custom scroll controller example
 
-The `ScrollPresenter`'s HorizontalScrollController and VerticalScrollController properties allow to use custom scrollbar widgets instead of the default `ScrollBar` control.
+The `ScrollPresenter`'s HorizontalScrollController and VerticalScrollController properties allow to
+use custom scrollbar widgets instead of the default `ScrollBar` control.
 
 | **Type**                                                | **Scroll controller properties** |
 |---------------------------------------------------------|----------------------------------|
 | Microsoft.UI.Xaml.Controls.Primitives.IScrollController | HorizontalScrollController       |
 | Microsoft.UI.Xaml.Controls.Primitives.IScrollController | VerticalScrollController         |
 
-Those widgets need to implement the IScrollController interface which standardizes the communication between the `ScrollPresenter` and its 2 scroll controllers. 
-In this example, the vertical `ScrollBar` found in a `ScrollView`'s default control template is hidden and replaced with a custom timeline scrubber in a Photos Gallery application. The TimelineScrubber control presents a timeline for the photos being scrolled through. The default horizontal `ScrollBar` is left intact.  
+Those widgets need to implement the IScrollController interface which standardizes the communication between
+the `ScrollPresenter` and its 2 scroll controllers. 
+In this example, the vertical `ScrollBar` found in a `ScrollView`'s default control template is hidden and
+replaced with a custom timeline scrubber in a Photos Gallery application.
+The TimelineScrubber control presents a timeline for the photos being scrolled through.
+The default horizontal `ScrollBar` is left intact.  
 
 ![Custom vertical scroll controller](images/VerticalTimelineScrubber.png)
 
@@ -307,9 +368,13 @@ An alternate approach would be to use a custom control template for that `Scroll
 ## ScrollPresenter class
 
 ### ScrollPresenter.HorizontalSnapPoints property
-Gets the collection of snap points affecting the `ScrollPresenter.HorizontalOffset` property. That collection is empty by default. Horizontal snap points cause the HorizontalOffset property to settle at deterministic values at the end of inertia.
 
-In this example, the `ScrollPresenter.HorizontalOffset` property lands at value 500.0 or 1500.0, whichever is closest to the position where the content would have stopped without the presence of snap points.
+Gets the collection of snap points affecting the `ScrollPresenter.HorizontalOffset` property.
+That collection is empty by default.
+Horizontal snap points cause the HorizontalOffset property to settle at deterministic values at the end of inertia.
+
+In this example, the `ScrollPresenter.HorizontalOffset` property lands at value 500.0 or 1500.0,
+whichever is closest to the position where the content would have stopped without the presence of snap points.
 
 ```csharp
 ScrollSnapPoint snapPoint1 = new ScrollSnapPoint(snapPointValue: 500.0, alignment: ScrollSnapPointsAlignment.Near);
@@ -320,9 +385,13 @@ myScrollPresenter.HorizontalSnapPoints.Add(snapPoint2);
 ```
 
 ### ScrollPresenter.VerticalSnapPoints property
-Gets the collection of snap points affecting the `ScrollPresenter.VerticalOffset` property. That collection is empty by default. Vertical snap points cause the VerticalOffset property to settle at deterministic values at the end of inertia.
 
-In this example, the `ScrollPresenter.VerticalOffset` property lands at value 500.0 or 1500.0, whichever is closest to the position where the content would have stopped without the presence of snap points.
+Gets the collection of snap points affecting the `ScrollPresenter.VerticalOffset` property.
+That collection is empty by default.
+Vertical snap points cause the VerticalOffset property to settle at deterministic values at the end of inertia.
+
+In this example, the `ScrollPresenter.VerticalOffset` property lands at value 500.0 or 1500.0,
+whichever is closest to the position where the content would have stopped without the presence of snap points.
 
 ```csharp
 ScrollSnapPoint snapPoint1 = new ScrollSnapPoint(snapPointValue: 500.0, alignment: ScrollSnapPointsAlignment.Near);
@@ -333,9 +402,13 @@ myScrollPresenter.VerticalSnapPoints.Add(snapPoint2);
 ```
 
 ### ScrollPresenter.ZoomSnapPoints property
-Gets the collection of snap points affecting the `ScrollPresenter.ZoomFactor` property. That collection is empty by default. Zoom snap points cause the ZoomFactor property to settle at deterministic values at the end of inertia.
 
-In this example, the `ScrollPresenter.ZoomFactor` property lands at value 2.5 or 5.0, whichever is closest to the zoom factor where the content would have stopped without the presence of snap points.
+Gets the collection of snap points affecting the `ScrollPresenter.ZoomFactor` property.
+That collection is empty by default.
+Zoom snap points cause the ZoomFactor property to settle at deterministic values at the end of inertia.
+
+In this example, the `ScrollPresenter.ZoomFactor` property lands at value 2.5 or 5.0,
+whichever is closest to the zoom factor where the content would have stopped without the presence of snap points.
 
 ```csharp
 ZoomSnapPoint snapPoint1 = new ZoomSnapPoint(snapPointValue: 2.5);
@@ -346,7 +419,10 @@ myScrollPresenter.ZoomSnapPoints.Add(snapPoint2);
 ```
 
 ### ScrollPresenter.HorizontalScrollController property
-Gets or sets the `IScrollController` implementation that can drive the horizontal scrolling of the `ScrollPresenter`. The component that implements IScrollController is typically a UI widget like a `ScrollBar` the user can interact with to control the scrolling offset in one direction.
+
+Gets or sets the `IScrollController` implementation that can drive the horizontal scrolling of the `ScrollPresenter`.
+The component that implements IScrollController is typically a UI widget like a `ScrollBar` the user can
+interact with to control the scrolling offset in one direction.
 The default HorizontalScrollController property value is null.
 
 ```csharp
@@ -356,7 +432,10 @@ myScrollPresenter.HorizontalScrollController = myTimelineScrubber;
 See [this section](#sample-iscrollController-implementations) for a couple of full `IScrollController` implementation samples.
 
 ### ScrollPresenter.VerticalScrollController property
-Gets or sets the `IScrollController` implementation that can drive the vertical scrolling of the `ScrollPresenter`. The component that implements IScrollController is typically a UI widget like a `ScrollBar` the user can interact with to control the scrolling offset in one direction. 
+
+Gets or sets the `IScrollController` implementation that can drive the vertical scrolling of the `ScrollPresenter`.
+The component that implements IScrollController is typically a UI widget like a `ScrollBar` the user can
+interact with to control the scrolling offset in one direction. 
 The default VerticalScrollController property value is null.
 
 ```csharp
@@ -368,9 +447,13 @@ See [this section](#sample-iscrollController-implementations) for a couple of fu
 
 ## IScrollController interface
 
-The `ScrollPresenter` exposes two read-write properties of type IScrollController representing optional scrollbar-like widgets that can participate in setting the scrolling offsets of the content. Those widgets are the implemeters of the IScrollController interface, while the `ScrollController` is the consumer.
+The `ScrollPresenter` exposes two read-write properties of type IScrollController representing optional scrollbar-like widgets that can
+participate in setting the scrolling offsets of the content.
+Those widgets are the implemeters of the IScrollController interface, while the `ScrollController` is the consumer.
 
-Throughout the remainder of this interface description, the term `ScrollPresenter` is used, but the consumer of the IScrollController interface is not necessarily a ScrollPresenter. It may be some alternative scrolling control.
+Throughout the remainder of this interface description, the term `ScrollPresenter` is used,
+but the consumer of the IScrollController interface is not necessarily a ScrollPresenter.
+It may be some alternative scrolling control.
 
 
 | **Member** | **Type** | **Description** |
@@ -1260,7 +1343,8 @@ public class ScrollBarController : IScrollController
 
 ## IScrollController implementation with interaction element
 
-The CompositionScrollController class below is a sample implementation of the IScrollController interface which supports UI-thread-independent scrolling of the `ScrollPresenter`'s content by exposing a pannable thumb.
+The CompositionScrollController class below is a sample implementation of the IScrollController interface which
+supports UI-thread-independent scrolling of the `ScrollPresenter`'s content by exposing a pannable thumb.
 
 ```csharp
 public sealed class CompositionScrollController : Control, IScrollController
