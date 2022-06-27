@@ -94,7 +94,7 @@ void WebView2::CloseInternal(bool inShutdownPath)
 
     if (m_tempHostHwnd && !winrt::CoreWindow::GetForCurrentThread())
     {
-        DestroyWindow(m_tempHostHwnd);
+        m_fnDestroyWindow(m_tempHostHwnd);
         m_tempHostHwnd = nullptr;
     }
 
@@ -1643,7 +1643,7 @@ void WebView2::UpdateParentWindow(HWND newParentWindow)
         // Reparent webview host
         m_coreWebViewController.ParentWindow(windowRef);
 
-        DestroyWindow(m_tempHostHwnd);
+        m_fnDestroyWindow(m_tempHostHwnd);
         m_tempHostHwnd = nullptr;
     }
 }
