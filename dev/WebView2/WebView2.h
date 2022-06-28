@@ -289,4 +289,5 @@ private:
     decltype(&DefWindowProcW) m_fnDefWindowProcW;
     decltype(&GetFocus) m_fnGetFocus;
     decltype(&RegisterClassW) m_fnRegisterClassW;
+    decltype(&DestroyWindow) m_fnDestroyWindow;
 };

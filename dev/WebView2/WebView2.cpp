@@ -38,6 +38,7 @@ WebView2::WebView2()
         m_fnDefWindowProcW = reinterpret_cast<decltype(m_fnDefWindowProcW)>(GetProcAddress(user32module, "DefWindowProcW"));
         m_fnGetFocus = reinterpret_cast<decltype(m_fnGetFocus)>(GetProcAddress(user32module, "GetFocus"));
         m_fnRegisterClassW = reinterpret_cast<decltype(m_fnRegisterClassW)>(GetProcAddress(user32module, "RegisterClassW"));
+        m_fnDestroyWindow = reinterpret_cast<decltype(m_fnDestroyWindow)>(GetProcAddress(user32module, "DestroyWindow"));
     }
 
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_WebView2);
@@ -90,6 +91,12 @@ void WebView2::CloseInternal(bool inShutdownPath)
     m_windowVisibilityChangedRevoker.revoke();
     m_renderedRevoker.revoke();
     m_layoutUpdatedRevoker.revoke();
+
+    if (m_tempHostHwnd && !winrt::CoreWindow::GetForCurrentThread())
+    {
+        m_fnDestroyWindow(m_tempHostHwnd);
+        m_tempHostHwnd = nullptr;
+    }
 
     if (m_manipulationModeChangedToken.value != 0)
     {
@@ -1501,10 +1508,18 @@ void WebView2::TryCompleteInitialization()
         return;
     }
 
-    HWND prevParentWindow = m_xamlHostHwnd;
-    m_xamlHostHwnd = nullptr;
-    HWND newParentWindow = GetHostHwnd();
-    UpdateParentWindow(newParentWindow);
+    // In a non-CoreWindow scenario, we may have created the CoreWebView2 with a dummy hwnd as its parent
+    // (see EnsureTemporaryHostHwnd()), in which case we need to update to use the real parent here.
+    // If we used a CoreWindow parent, that hwnd has not changed. The CoreWebView2 does not allow us to switch
+    // from using the CoreWindow as the parent to the XamlRoot.
+    winrt::CoreWindow coreWindow = winrt::CoreWindow::GetForCurrentThread();
+    if (!coreWindow)
+    {
+        HWND prevParentWindow = m_xamlHostHwnd;
+        m_xamlHostHwnd = nullptr;
+        HWND newParentWindow = GetHostHwnd();
+        UpdateParentWindow(newParentWindow);
+    }
 
     XamlRootChangedHelper(true /* forceUpdate */);
     if (auto thisXamlRoot = try_as<winrt::IUIElement10>())
@@ -1542,7 +1557,6 @@ void WebView2::TryCompleteInitialization()
     // even though it's expected.
     // We should avoid this altogether on desktop by not registering for the HighContrastChanged event, since for now it
     // will never be raised. Once Task #24777629 is fixed, we can remove the coreWindow check.
-    winrt::CoreWindow coreWindow = winrt::CoreWindow::GetForCurrentThread();
     if (!m_highContrastChangedRevoker && coreWindow)
     {
         m_highContrastChangedRevoker = m_accessibilitySettings.HighContrastChanged(winrt::auto_revoke,
@@ -1628,8 +1642,8 @@ void WebView2::UpdateParentWindow(HWND newParentWindow)
 
         // Reparent webview host
         m_coreWebViewController.ParentWindow(windowRef);
-        // TODO_WebView2Islands: currently m_tempHostHwnd is always the CoreWindow and as such
-        // does not need to be destroyed, but it will in the future if it's a dummy window.
+
+        m_fnDestroyWindow(m_tempHostHwnd);
         m_tempHostHwnd = nullptr;
     }
 }
@@ -1820,7 +1834,7 @@ void WebView2::CheckAndUpdateWebViewPosition()
     // (WebView2::HandleRendered()). The removed element's ActualWidth or ActualHeight could now evaluate to zero 
     // (if Width or Height weren't explicitly set), causing 0-sized Bounds to get applied below and clear the web content, 
     // producing a flicker that last until DComp Commit for this frame is processed by the compositor.
-    if (!this->IsLoaded())
+    if (!SafeIsLoaded())
     {
         return;
     }
