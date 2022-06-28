@@ -26,6 +26,7 @@ runtimeclass IndexPath;
 runtimeclass SelectionModelSelectionChangedEventArgs;
 runtimeclass SelectionModelChildrenRequestedEventArgs;
 runtimeclass SelectionModel;
+runtimeclass FlexboxLayout;
 
 [MUX_PREVIEW]
 [webhosthidden]
@@ -85,6 +86,71 @@ enum UniformGridLayoutItemsStretch
 [MUX_PREVIEW]
 [webhosthidden]
 delegate void ElementAnimationCompleted(ElementAnimator sender, Windows.UI.Xaml.UIElement element);
+
+[MUX_PREVIEW]
+[webhosthidden]
+enum FlexboxDirection
+{
+    Row = 0,
+    RowReverse = 1,
+    Column = 2,
+    ColumnReverse = 2
+};
+
+[MUX_PREVIEW]
+[webhosthidden]
+enum FlexboxWrap
+{
+    NoWrap = 0,
+    Wrap = 1,
+    WrapReverse = 2
+};
+
+[MUX_PREVIEW]
+[webhosthidden]
+enum FlexboxJustifyContent
+{
+    Start = 0,
+    End = 1,
+    Center = 2,
+    SpaceBetween = 3,
+    SpaceAround = 4,
+    SpaceEvenly = 5
+};
+
+[MUX_PREVIEW]
+[webhosthidden]
+enum FlexboxAlignItems
+{
+    Start = 0,
+    End = 1,
+    Center = 2,
+    Stretch = 3
+};
+
+[MUX_PREVIEW]
+[webhosthidden]
+enum FlexboxAlignContent
+{
+    Start = 0,
+    End = 1,
+    Center = 2,
+    Stretch = 3,
+    SpaceBetween = 4,
+    SpaceAround = 5,
+    SpaceEvenly = 6
+};
+
+[MUX_PREVIEW]
+[webhosthidden]
+enum FlexboxAlignSelf
+{
+    Auto = 0,
+    Start = 1,
+    End = 2,
+    Center = 3,
+    Stretch = 4,
+};
 
 [MUX_PUBLIC]
 [webhosthidden]
@@ -616,4 +682,41 @@ unsealed runtimeclass SelectionModel : Windows.UI.Xaml.Data.INotifyPropertyChang
     protected void OnPropertyChanged(String propertyName);
 }
 
+[MUX_PREVIEW]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass FlexboxLayout : NonVirtualizingLayout
+{
+    FlexboxLayout();
+
+    FlexboxWrap Wrap{ get; set; };
+    FlexboxDirection Direction{ get; set; };
+    FlexboxJustifyContent JustifyContent{ get; set; };
+    FlexboxAlignItems AlignItems{ get; set; };
+    FlexboxAlignContent AlignContent{ get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnChildPropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty OrderProperty{ get; };
+    static void SetOrder(Windows.UI.Xaml.UIElement element, Int32 value);
+    static Int32 GetOrder(Windows.UI.Xaml.UIElement element);
+
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnChildPropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty GrowProperty{ get; };
+    static void SetGrow(Windows.UI.Xaml.UIElement element, Double value);
+    static Double GetGrow(Windows.UI.Xaml.UIElement element);
+
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnChildPropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty ShrinkProperty{ get; };
+    static void SetShrink(Windows.UI.Xaml.UIElement element, Double value);
+    static Double GetShrink(Windows.UI.Xaml.UIElement element);
+
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnChildPropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty AlignSelfProperty{ get; };
+    static void SetAlignSelf(Windows.UI.Xaml.UIElement element, FlexboxAlignSelf value);
+    static FlexboxAlignSelf GetAlignSelf(Windows.UI.Xaml.UIElement element);
 }
+
+
+
+

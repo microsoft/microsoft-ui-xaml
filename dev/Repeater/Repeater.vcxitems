@@ -26,6 +26,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)BuildTreeScheduler.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CustomProperty.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactoryRecycleArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FlexboxLayout.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)FlexboxLayoutState.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsSourceView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ElementAnimator.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementClearingEventArgs.h" />
@@ -93,6 +95,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)BuildTreeScheduler.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)CustomProperty.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ElementFactoryRecycleArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)FlexboxLayout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemsSourceView.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ElementAnimator.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementClearingEventArgs.cpp" />
