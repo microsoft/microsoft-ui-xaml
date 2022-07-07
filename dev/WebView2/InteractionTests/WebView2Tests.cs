@@ -74,11 +74,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             // 1. Get installed Edge browser (or WebView2 Runtime) build version info.
             int browserBuildVersion = GetInstalledBrowserVersion();
 
-            // 2. Get WebView2Loader.dll Build version info.
-            int loaderBuildVersion = GetLoaderBuildVersion();
+            // 2. Get Microsoft.Web.WebView2.Core.dll build version info.
+            int sdkBuildVersion = GetSdkBuildVersion();
 
             // 3. If a runtime isn't installed or the SDK and runtime aren't compatible, install a compatible runtime.
-            bool hasCompatibleRuntimeInstalled = GetHasCompatibleRuntimeInstalled(browserBuildVersion, loaderBuildVersion);
+            bool hasCompatibleRuntimeInstalled = GetHasCompatibleRuntimeInstalled(browserBuildVersion, sdkBuildVersion);
 
             if (!hasCompatibleRuntimeInstalled)
             {
@@ -121,23 +121,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private static int GetInstalledBrowserVersion()
         {
-            string browserVersionString = string.Empty;
-            IntPtr browserVersionPtr;
-            int retval = NativeMethods.GetAvailableCoreWebView2BrowserVersionString(string.Empty, out browserVersionPtr);
-            if (retval != (int)NativeMethods.HResults.S_OK)
-            {
-                Log.Warning("WebView2Tests Init: Error: got hresult {0:x8} retrieving GetAvailableCoreWebView2BrowserVersionString", retval);
-            }
-            else if (browserVersionPtr == IntPtr.Zero)
-            {
-                Log.Warning("WebView2Tests Init: GetAvailableCoreWebView2BrowserVersionString returned version of 0");
-            }
-            else
-            {
-                // eg "80.0.361.48 beta", 361 is the build version
-                browserVersionString = Marshal.PtrToStringUni(browserVersionPtr);
-                Marshal.FreeCoTaskMem(browserVersionPtr);
-            }
+            string browserVersionString = Microsoft.Web.WebView2.Core.CoreWebView2Environment.GetAvailableBrowserVersionString();
 
             int browserBuildVersion = 0;
             string installedBrowser;
@@ -155,27 +139,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return browserBuildVersion;
         }
 
-        private static int GetLoaderBuildVersion()
+        private static int GetSdkBuildVersion()
         {
-            int loaderBuildVersion = 0;
-            string loaderPath = Path.Combine(Environment.CurrentDirectory, NativeMethods.LoaderName);
+            int sdkBuildVersion = 0;
+            string dllName = "Microsoft.Web.WebView2.Core.dll";
+            string dllPath = Path.Combine(Environment.CurrentDirectory, dllName);
 
             try
             {
-                FileVersionInfo loaderVersionInfo = FileVersionInfo.GetVersionInfo(loaderPath);
-                loaderBuildVersion = loaderVersionInfo.ProductBuildPart;
+                FileVersionInfo sdkVersionInfo = FileVersionInfo.GetVersionInfo(dllPath);
+                sdkBuildVersion = sdkVersionInfo.ProductBuildPart;
                 Log.Comment("WebView2Tests Init: Found {0}: version {1} [build version: {2}] (file: {3})",
-                            NativeMethods.LoaderName,
-                            loaderVersionInfo.ProductVersion,
-                            loaderBuildVersion,
-                            loaderVersionInfo.FileName
+                            dllName,
+                            sdkVersionInfo.ProductVersion,
+                            dllPath,
+                            sdkVersionInfo.FileName
                             );
             }
             catch (Exception e)
             {
-                Log.Error("WebView2Tests Init: could not find loader at {0} [exception: {1}]", loaderPath, e.ToString());
+                Log.Error("WebView2Tests Init: could not find loader at {0} [exception: {1}]", dllPath, e.ToString());
             }
-            return loaderBuildVersion;
+            return sdkBuildVersion;
         }
 
         private static bool GetHasCompatibleRuntimeInstalled(int browserBuildVersion, int loaderBuildVersion)
@@ -3000,18 +2985,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 );
 
                 EndSubTest("ProccessFailed Test");
-            }
-        }
-
-        private static class NativeMethods
-        {
-            public const string LoaderName = "WebView2Loader.dll";
-            [DllImport(LoaderName, CharSet = CharSet.Unicode)]
-            public static extern int GetAvailableCoreWebView2BrowserVersionString(string browserExecutableFolder, out IntPtr versionInfo);
-
-            public enum HResults : long
-            {
-                S_OK = 0x0
             }
         }
     }
