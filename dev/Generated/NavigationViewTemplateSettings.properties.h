@@ -15,8 +15,8 @@ public:
     void LeftPaneVisibility(winrt::Visibility const& value);
     winrt::Visibility LeftPaneVisibility();
 
-    void OpenPaneWidth(double value);
-    double OpenPaneWidth();
+    void OpenPaneLength(double value);
+    double OpenPaneLength();
 
     void OverflowButtonVisibility(winrt::Visibility const& value);
     winrt::Visibility OverflowButtonVisibility();
@@ -41,7 +41,7 @@ public:
 
     static winrt::DependencyProperty BackButtonVisibilityProperty() { return s_BackButtonVisibilityProperty; }
     static winrt::DependencyProperty LeftPaneVisibilityProperty() { return s_LeftPaneVisibilityProperty; }
-    static winrt::DependencyProperty OpenPaneWidthProperty() { return s_OpenPaneWidthProperty; }
+    static winrt::DependencyProperty OpenPaneLengthProperty() { return s_OpenPaneLengthProperty; }
     static winrt::DependencyProperty OverflowButtonVisibilityProperty() { return s_OverflowButtonVisibilityProperty; }
     static winrt::DependencyProperty PaneToggleButtonVisibilityProperty() { return s_PaneToggleButtonVisibilityProperty; }
     static winrt::DependencyProperty PaneToggleButtonWidthProperty() { return s_PaneToggleButtonWidthProperty; }
@@ -52,7 +52,7 @@ public:
 
     static GlobalDependencyProperty s_BackButtonVisibilityProperty;
     static GlobalDependencyProperty s_LeftPaneVisibilityProperty;
-    static GlobalDependencyProperty s_OpenPaneWidthProperty;
+    static GlobalDependencyProperty s_OpenPaneLengthProperty;
     static GlobalDependencyProperty s_OverflowButtonVisibilityProperty;
     static GlobalDependencyProperty s_PaneToggleButtonVisibilityProperty;
     static GlobalDependencyProperty s_PaneToggleButtonWidthProperty;
