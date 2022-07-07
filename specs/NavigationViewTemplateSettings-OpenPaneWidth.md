@@ -5,10 +5,8 @@ NavigationViewTemplateSettings.OpenPaneWidth
 
 *This spec adds a OpenPaneWidth property to the Xaml [NavigationViewTemplateSettings](https://docs.microsoft.com//windows/winui/api/microsoft.ui.xaml.controls.navigationviewtemplatesettings) class*
 
-Initially, the OpenPaneWidth property was defined with a hard-coded value in NavigationView's code-behind instead of in its template.
 <!-- Explanation for why we introduced this: To follow best API design practices to allow for better customization with the control template it was added to NavigationView's template as a preview API -->
-The OpenPaneWidth property defines the width of the pane of the NavigationView control when it is open and expanded to its full width.
-This was necessary to define because we introduced a variable extra margin while updating the control during the Windows 11 UI refresh.
+The OpenPaneWidth property defines the width of the pane of the NavigationView control when it is open and expanded to its full width. It takes the `min` between `OpenPaneLength` and the app's width. This was necessary to fix a bug where the NavView pane contents were being cropped when `OpenPaneLength` surpasses the app's width. `TemplateSettings.OpenPaneWidth` is set in `SplitView` and `ShadowCaster` template; it was previously a simple templatebinding to NavigationView's OpenPaneLength property.
 
 TemplateSetting properties are not commonly used by app developers, however, in situations when they copy a WinUI control's template into their own project, there is a Xaml error when the TemplateSettings property is not public.
 See [issue #6682](https://github.com/microsoft/microsoft-ui-xaml/issues/6682) for more information on the error caused by non-public TemplateSettings.
@@ -17,7 +15,7 @@ See [issue #6682](https://github.com/microsoft/microsoft-ui-xaml/issues/6682) fo
 
 ## NavigationViewTemplateSettings.OpenPaneWidth
 
-Gets the value of the width of the pane when opened and fully expanded. Defaults to 320.0.
+Gets the `min` between `OpenPaneLength` and the app's width. This is the calculated value of the width of the pane when opened and fully expanded. Defaults to 320.0.
 
 (Type: Double)
 
