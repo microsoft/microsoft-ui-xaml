@@ -124,6 +124,8 @@ public:
     void SetTabSeparatorOpacity(int index, int opacityValue);
     void SetTabSeparatorOpacity(int index);
 
+    bool MoveFocus(bool moveForward);
+
 private:
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnScrollViewerLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -146,6 +148,8 @@ private:
     void OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
     void OnCtrlTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
     void OnCtrlShiftTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
+
+    void OnAddButtonKeyDown(const winrt::IInspectable& sender, winrt::KeyRoutedEventArgs const& args);
 
     bool RequestCloseCurrentTab();
     bool SelectNextTab(int increment);
@@ -212,6 +216,8 @@ private:
 
     winrt::RepeatButton::Click_revoker m_scrollDecreaseClickRevoker{};
     winrt::RepeatButton::Click_revoker m_scrollIncreaseClickRevoker{};
+
+    winrt::Button::KeyDown_revoker m_addButtonKeyDownRevoker{};
 
     winrt::ItemsPresenter::SizeChanged_revoker m_itemsPresenterSizeChangedRevoker{};
 

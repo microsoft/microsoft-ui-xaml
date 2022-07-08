@@ -489,6 +489,20 @@ void TabViewItem::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args
     RestoreLeftAdjacentTabSeparatorVisibility();
 }
 
+// Note that the ItemsView will handle the left and right arrow keys, so this needs to be handled below the items view -
+// that's why we can't put this in TabView's OnKeyDown.
+void TabViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
+{
+    if (args.Key() == winrt::VirtualKey::Right)
+    {
+        args.Handled(winrt::get_self<TabView>(GetParentTabView())->MoveFocus(FlowDirection() == winrt::FlowDirection::LeftToRight));
+    }
+    else if (args.Key() == winrt::VirtualKey::Left)
+    {
+        args.Handled(winrt::get_self<TabView>(GetParentTabView())->MoveFocus(FlowDirection() != winrt::FlowDirection::LeftToRight));
+    }
+}
+
 void TabViewItem::OnIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     OnIconSourceChanged();
