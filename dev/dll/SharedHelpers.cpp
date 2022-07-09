@@ -820,7 +820,7 @@ bool SharedHelpers::IsFocusable(winrt::DependencyObject const& object, bool chec
         return control &&
             control.Visibility() == winrt::Visibility::Visible &&
             (control.IsEnabled() || control.AllowFocusWhenDisabled()) &&
-            (control.IsTabStop() || (!checkTabStop));
+            (control.IsTabStop() || !checkTabStop);
     }
     else
     {
