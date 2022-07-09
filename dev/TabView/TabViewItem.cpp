@@ -493,13 +493,21 @@ void TabViewItem::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args
 // that's why we can't put this in TabView's OnKeyDown.
 void TabViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 {
-    if (args.Key() == winrt::VirtualKey::Right)
+    if (!args.Handled())
     {
-        args.Handled(winrt::get_self<TabView>(GetParentTabView())->MoveFocus(FlowDirection() == winrt::FlowDirection::LeftToRight));
+        if (args.Key() == winrt::VirtualKey::Right)
+        {
+            args.Handled(winrt::get_self<TabView>(GetParentTabView())->MoveFocus(FlowDirection() == winrt::FlowDirection::LeftToRight));
+        }
+        else if (args.Key() == winrt::VirtualKey::Left)
+        {
+            args.Handled(winrt::get_self<TabView>(GetParentTabView())->MoveFocus(FlowDirection() != winrt::FlowDirection::LeftToRight));
+        }
     }
-    else if (args.Key() == winrt::VirtualKey::Left)
+
+    if (!args.Handled())
     {
-        args.Handled(winrt::get_self<TabView>(GetParentTabView())->MoveFocus(FlowDirection() != winrt::FlowDirection::LeftToRight));
+        __super::OnKeyDown(args);
     }
 }
 

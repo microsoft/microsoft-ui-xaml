@@ -1087,10 +1087,7 @@ bool CommandBarFlyoutCommandBar::IsControlFocusable(
     winrt::Control const& control,
     bool checkTabStop)
 {
-    return control &&
-        control.Visibility() == winrt::Visibility::Visible &&
-        (control.IsEnabled() || control.AllowFocusWhenDisabled()) &&
-        (control.IsTabStop() || (!checkTabStop && !control.try_as<winrt::AppBarSeparator>())); // AppBarSeparator is not focusable if IsTabStop is false
+    return SharedHelpers::IsFocusable(control, checkTabStop || control.try_as<winrt::AppBarSeparator>()); // AppBarSeparator is not focusable if IsTabStop is false
 }
 
 winrt::Control CommandBarFlyoutCommandBar::GetFirstTabStopControl(

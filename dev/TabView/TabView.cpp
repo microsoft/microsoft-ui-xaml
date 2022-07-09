@@ -945,6 +945,70 @@ void TabView::UpdateTabContent()
 
 void TabView::RequestCloseTab(winrt::TabViewItem const& container, bool updateTabWidths)
 {
+    // If the tab being closed is the currently focused tab, we'll move focus to the next tab
+    // when the tab closes.
+    bool tabIsFocused = false;
+    auto focusedElement{ winrt::FocusManager::GetFocusedElement() ? winrt::FocusManager::GetFocusedElement().try_as<winrt::DependencyObject>() : nullptr };
+
+    while (focusedElement)
+    {
+        if (focusedElement == container)
+        {
+            tabIsFocused = true;
+            break;
+        }
+
+        focusedElement = winrt::VisualTreeHelper::GetParent(focusedElement);
+    }
+
+    winrt::UIElement::LosingFocus_revoker losingFocusRevoker{};
+
+    if (tabIsFocused)
+    {
+        // If the tab specified both is focused and loses focus, then we'll move focus to an adjacent focusable tab, if one exists.
+        losingFocusRevoker = container.LosingFocus(winrt::auto_revoke, [&](const winrt::IInspectable&, const winrt::LosingFocusEventArgs& args)
+            {
+                if (!args.Cancel() && !args.Handled())
+                {
+                    int focusedIndex = IndexFromContainer(container);
+                    winrt::DependencyObject newFocusedElement{ nullptr };
+                    bool focusChanged = false;
+
+                    for (int i = focusedIndex + 1; i < GetItemCount(); i++)
+                    {
+                        auto candidateElement = ContainerFromIndex(i);
+
+                        if (SharedHelpers::IsFocusable(candidateElement))
+                        {
+                            newFocusedElement = candidateElement;
+                            break;
+                        }
+                    }
+
+                    if (!newFocusedElement)
+                    {
+                        for (int i = focusedIndex - 1; i >= 0; i--)
+                        {
+                            auto candidateElement = ContainerFromIndex(i);
+
+                            if (SharedHelpers::IsFocusable(candidateElement))
+                            {
+                                newFocusedElement = candidateElement;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!newFocusedElement)
+                    {
+                        newFocusedElement = m_addButton.get();
+                    }
+
+                    args.Handled(args.TrySetNewFocusedElement(newFocusedElement));
+                }
+            });
+    }
+
     if (auto&& listView = m_listView.get())
     {
         auto args = winrt::make_self<TabViewTabCloseRequestedEventArgs>(listView.ItemFromContainer(container), container);
@@ -1244,8 +1308,6 @@ bool TabView::MoveFocus(bool moveForward)
         return false;
     }
 
-    auto isFocusable = [](winrt::Control const& control) { return control.IsEnabled() && control.Visibility() == winrt::Visibility::Visible; };
-
     // Focus goes in this order:
     //
     //    Tab 1 -> Tab 1 close button -> Tab 2 -> Tab 2 close button -> ... -> Tab N -> Tab N close button -> Add tab button -> Tab 1
@@ -1258,13 +1320,13 @@ bool TabView::MoveFocus(bool moveForward)
     {
         if (auto tab = ContainerFromIndex(i).try_as<winrt::TabViewItem>())
         {
-            if (isFocusable(tab))
+            if (SharedHelpers::IsFocusable(tab, false /* checkTabStop */))
             {
                 focusOrderList.push_back(tab);
 
                 if (auto closeButton = winrt::get_self<TabViewItem>(tab)->GetCloseButton())
                 {
-                    if (isFocusable(closeButton))
+                    if (SharedHelpers::IsFocusable(closeButton, false /* checkTabStop */))
                     {
                         focusOrderList.push_back(closeButton);
                     }
@@ -1275,7 +1337,7 @@ bool TabView::MoveFocus(bool moveForward)
 
     if (auto&& addButton = m_addButton.get())
     {
-        if (isFocusable(addButton))
+        if (SharedHelpers::IsFocusable(addButton, false /* checkTabStop */))
         {
             focusOrderList.push_back(addButton);
         }

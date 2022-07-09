@@ -316,6 +316,8 @@ public:
 
     static winrt::float4 RgbaColor(winrt::Color const& color);
 
+    static bool IsFocusable(winrt::DependencyObject const& object, bool checkTabStop = true);
+
 private:
     SharedHelpers() = default;
 
