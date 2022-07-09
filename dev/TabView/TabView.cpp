@@ -1374,34 +1374,54 @@ bool TabView::MoveFocus(bool moveForward)
         // IsTabStop = true before calling Focus(), and then set it back to false if it was previously false.
 
         auto&& control = focusOrderList[currentIndex];
-        bool originalIsTabStop = control.IsTabStop();
+        const bool originalIsTabStop = control.IsTabStop();
+
+        auto scopeGuard = gsl::finally([control, originalIsTabStop]()
+            {
+                control.IsTabStop(originalIsTabStop);
+            });
+
         control.IsTabStop(true);
 
         if (control.Focus(winrt::FocusState::Keyboard))
         {
-            control.IsTabStop(originalIsTabStop);
             return true;
         }
 
-        control.IsTabStop(originalIsTabStop);
         currentIndex += increment;
     }
 
     return false;
 }
 
-bool TabView::SelectNextTab(int increment)
+bool TabView::MoveSelection(bool moveForward)
 {
-    bool handled = false;
-    const int itemsSize = GetItemCount();
-    if (itemsSize > 1)
+    int originalIndex = SelectedIndex();
+    const int increment = moveForward ? 1 : -1;
+    int currentIndex = originalIndex + increment;
+    const int itemCount = GetItemCount();
+
+    while (currentIndex != originalIndex)
     {
-        auto index = SelectedIndex();
-        index = (index + increment + itemsSize) % itemsSize;
-        SelectedIndex(index);
-        handled = true;
+        if (currentIndex < 0)
+        {
+            currentIndex = static_cast<int>(itemCount - 1);
+        }
+        else if (currentIndex >= itemCount)
+        {
+            currentIndex = 0;
+        }
+
+        if (SharedHelpers::IsFocusable(ContainerFromIndex(currentIndex)))
+        {
+            SelectedIndex(currentIndex);
+            return true;
+        }
+
+        currentIndex += increment;
     }
-    return handled;
+
+    return false;
 }
 
 bool TabView::RequestCloseCurrentTab()
@@ -1448,11 +1468,11 @@ void TabView::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 
                 if (isCtrlDown && !isShiftDown)
                 {
-                    args.Handled(SelectNextTab(1));
+                    args.Handled(MoveSelection(true /* moveForward */));
                 }
                 else if (isCtrlDown && isShiftDown)
                 {
-                    args.Handled(SelectNextTab(-1));
+                    args.Handled(MoveSelection(false /* moveForward */));
                 }
             }
         }
@@ -1466,12 +1486,12 @@ void TabView::OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const wi
 
 void TabView::OnCtrlTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args)
 {
-    args.Handled(SelectNextTab(1));
+    args.Handled(MoveSelection(true /* moveForward */));
 }
 
 void TabView::OnCtrlShiftTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args)
 {
-    args.Handled(SelectNextTab(-1));
+    args.Handled(MoveSelection(false /* moveForward */));
 }
 
 void TabView::OnAddButtonKeyDown(const winrt::IInspectable& sender, winrt::KeyRoutedEventArgs const& args)

@@ -464,9 +464,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(lastTab.IsSelected, "Ctrl+Shift+Tab should move selection to Last Tab");
                 Verify.IsTrue(lastTab.HasKeyboardFocus, "Focus should move to the last tab (since it has no focusable content)");
 
+                // Ctrl+Shift+Tab to the not-closable tab:
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Control | ModifierKey.Shift);
+                Verify.IsTrue(notCloseableTab.IsSelected, "Ctrl+Shift+Tab should move selection to the not-closable tab, past the disabled tab");
+                Verify.IsTrue(notCloseableTab.HasKeyboardFocus, "Focus should move to the not-closable tab (since it has no focusable content)");
+
                 // Ctrl+Tab to the first tab:
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Control);
-                Verify.IsTrue(firstTab.IsSelected, "Ctrl+Tab should move selection to First Tab");
+                Verify.IsTrue(lastTab.IsSelected, "Ctrl+Tab should move selection to the last tab");
+                Verify.IsTrue(lastTab.HasKeyboardFocus, "Focus should move to the last tab");
+
+                // Ctrl+Tab to the first tab:
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Control);
+                Verify.IsTrue(firstTab.IsSelected, "Ctrl+Tab should move selection to first tab");
                 Verify.IsTrue(firstTab.HasKeyboardFocus, "Focus should move to the first tab");
 
                 KeyboardHelper.PressKey(Key.Up);

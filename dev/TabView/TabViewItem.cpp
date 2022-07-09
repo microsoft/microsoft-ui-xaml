@@ -489,11 +489,17 @@ void TabViewItem::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args
     RestoreLeftAdjacentTabSeparatorVisibility();
 }
 
-// Note that the ItemsView will handle the left and right arrow keys, so this needs to be handled below the items view -
-// that's why we can't put this in TabView's OnKeyDown.
+// Note that the ItemsView will handle the left and right arrow keys if we don't do so before it does,
+// so this needs to be handled below the items view. That's why we can't put this in TabView's OnKeyDown.
 void TabViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 {
-    if (!args.Handled())
+    // We'll only handle the left and right arrow keys if no modifier keys are down.
+    // Otherwise, that's a signal to do other things like reordering tabs.
+    auto isCtrlDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    auto isAltDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Menu) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    auto isShiftDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Shift) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+
+    if (!args.Handled() && !isCtrlDown && !isAltDown && !isShiftDown)
     {
         if (args.Key() == winrt::VirtualKey::Right)
         {

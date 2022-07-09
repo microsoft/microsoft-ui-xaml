@@ -152,7 +152,7 @@ private:
     void OnAddButtonKeyDown(const winrt::IInspectable& sender, winrt::KeyRoutedEventArgs const& args);
 
     bool RequestCloseCurrentTab();
-    bool SelectNextTab(int increment);
+    bool MoveSelection(bool moveForward);
     void BringSelectedTabIntoView();
 
     void UpdateSelectedItem();
