@@ -256,7 +256,7 @@ private:
     void OnItemsContainerSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& e);
     void UpdateAdaptiveLayout(double width, bool forceSetDisplayMode = false);
-    void UpdateOpenPaneWidth(double width);
+    void UpdateOpenPaneLength(double width);
     void UpdatePaneLayout();
     void SetDisplayMode(const winrt::NavigationViewDisplayMode& displayMode, bool forceSetDisplayMode = false);
    
@@ -506,6 +506,6 @@ private:
 
     bool m_isLeftPaneTitleEmpty{ false };
 
-    double m_openPaneWidth{ 320.0 };
+    double m_OpenPaneLength{ 320.0 };
 };
 
