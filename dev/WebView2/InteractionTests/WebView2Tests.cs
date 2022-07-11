@@ -74,11 +74,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             // 1. Get installed Edge browser (or WebView2 Runtime) build version info.
             int browserBuildVersion = GetInstalledBrowserVersion();
 
-            // 2. Get WebView2Loader.dll Build version info.
-            int loaderBuildVersion = GetLoaderBuildVersion();
+            // 2. Get Microsoft.Web.WebView2.Core.dll build version info.
+            int sdkBuildVersion = GetSdkBuildVersion();
 
             // 3. If a runtime isn't installed or the SDK and runtime aren't compatible, install a compatible runtime.
-            bool hasCompatibleRuntimeInstalled = GetHasCompatibleRuntimeInstalled(browserBuildVersion, loaderBuildVersion);
+            bool hasCompatibleRuntimeInstalled = GetHasCompatibleRuntimeInstalled(browserBuildVersion, sdkBuildVersion);
 
             if (!hasCompatibleRuntimeInstalled)
             {
@@ -155,27 +155,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return browserBuildVersion;
         }
 
-        private static int GetLoaderBuildVersion()
+        private static int GetSdkBuildVersion()
         {
-            int loaderBuildVersion = 0;
-            string loaderPath = Path.Combine(Environment.CurrentDirectory, NativeMethods.LoaderName);
+            int sdkBuildVersion = 0;
+            string dllName = "Microsoft.Web.WebView2.Core.dll";
+            string dllPath = Path.Combine(Environment.CurrentDirectory, dllName);
 
             try
             {
-                FileVersionInfo loaderVersionInfo = FileVersionInfo.GetVersionInfo(loaderPath);
-                loaderBuildVersion = loaderVersionInfo.ProductBuildPart;
+                FileVersionInfo sdkVersionInfo = FileVersionInfo.GetVersionInfo(dllPath);
+                sdkBuildVersion = sdkVersionInfo.ProductBuildPart;
                 Log.Comment("WebView2Tests Init: Found {0}: version {1} [build version: {2}] (file: {3})",
-                            NativeMethods.LoaderName,
-                            loaderVersionInfo.ProductVersion,
-                            loaderBuildVersion,
-                            loaderVersionInfo.FileName
-                            );
+                            dllName,
+                            sdkVersionInfo.ProductVersion,
+                            sdkBuildVersion,
+                            sdkVersionInfo.FileName);
             }
             catch (Exception e)
             {
-                Log.Error("WebView2Tests Init: could not find loader at {0} [exception: {1}]", loaderPath, e.ToString());
+                Log.Error("WebView2Tests Init: could not find loader at {0} [exception: {1}]", dllPath, e.ToString());
             }
-            return loaderBuildVersion;
+            return sdkBuildVersion;
         }
 
         private static bool GetHasCompatibleRuntimeInstalled(int browserBuildVersion, int loaderBuildVersion)

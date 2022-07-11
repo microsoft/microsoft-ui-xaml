@@ -427,7 +427,7 @@
     <Import Condition="'$(PGOBuildMode)' == 'Optimize' and '$(DisablePGO)' != 'True'" Project="..\..\packages\$(PGODatabaseId).$(PGODatabaseVersion)\build\PGO.targets" />
     <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Project="..\..\packages\MUXCustomBuildTasks.1.0.74\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\..\packages\MUXCustomBuildTasks.1.0.74\build\native\MUXCustomBuildTasks.targets')" />
-    <Import Project="..\..\packages\Microsoft.Web.WebView2.1.0.1020.30\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1020.30\build\native\Microsoft.Web.WebView2.targets')" />
+    <Import Project="..\..\packages\Microsoft.Web.WebView2.1.0.1264.42\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1264.42\build\native\Microsoft.Web.WebView2.targets')" />
   </ImportGroup>
   <PropertyGroup>
     <MergedWinmdDirectory>$(OutDir)Merged</MergedWinmdDirectory>
@@ -726,7 +726,7 @@
     <Error Condition="!Exists('..\..\packages\MUXCustomBuildTasks.1.0.74\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MUXCustomBuildTasks.1.0.74\build\native\MUXCustomBuildTasks.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.targets'))" />
-    <Error Condition="!Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1020.30\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Web.WebView2.1.0.1020.30\build\native\Microsoft.Web.WebView2.targets'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1264.42\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Web.WebView2.1.0.1264.42\build\native\Microsoft.Web.WebView2.targets'))" />
   </Target>
   <!-- We want to generate SourceLink urls to GitHub even if we build against the AzDO repo -->
   <Target Name="_TranslateAzureDevOpsUrlToGitHubUrl"

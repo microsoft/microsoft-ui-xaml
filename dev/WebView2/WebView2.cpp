@@ -1428,7 +1428,7 @@ winrt::IUnknown WebView2::GetWebView2Provider()
     if (m_coreWebViewCompositionController)
     {
         auto coreWebView2CompositionControllerInterop = m_coreWebViewCompositionController.as<ICoreWebView2CompositionControllerInterop>();
-        winrt::check_hresult(coreWebView2CompositionControllerInterop->get_UIAProvider(provider.put()));
+        winrt::check_hresult(coreWebView2CompositionControllerInterop->get_AutomationProvider(provider.put()));
     }
     return provider.as<winrt::IUnknown>();
 }
@@ -1441,7 +1441,7 @@ winrt::IUnknown WebView2::GetProviderForHwnd(HWND hwnd)
         // If there is no provider for the given HWND, CoreWebview2 will return UIA_E_ELEMENTNOTAVAILABLE,
         // and we should just return an empty provider
         auto coreWebView2EnvironmentInterop = m_coreWebViewEnvironment.as<ICoreWebView2EnvironmentInterop>();
-        winrt::hresult hr = coreWebView2EnvironmentInterop->GetProviderForHwnd(hwnd, provider.put());
+        winrt::hresult hr = coreWebView2EnvironmentInterop->GetAutomationProviderForWindow(hwnd, provider.put());
         if (hr != UIA_E_ELEMENTNOTAVAILABLE)
         {
             winrt::check_hresult(hr);
