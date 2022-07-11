@@ -1105,6 +1105,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var outsidePoint = new Point(bounds.X + w2_offsetX + bounds.Width, bounds.Y + w2_offsetY);
 
                 PointerInput.Move(startPoint);
+
+                // Click once in edit box - this helps selection work in MITA, but is not necessary in manual testing
+                PointerInput.Press(PointerButtons.Primary);
+                PointerInput.Release(PointerButtons.Primary);
+
                 PointerInput.Press(PointerButtons.Primary);
                 PointerInput.Move(outsidePoint);
                 PointerInput.Release(PointerButtons.Primary);
