@@ -19,10 +19,4 @@
   </ItemGroup>
   <Import Project="..\MUXControlsTestApp.Shared.projitems" />
   <Import Project="..\MUXControlsTestApp.Shared.targets" />
-  <Target Name="Binplace" AfterTargets="Build">
-    <ItemGroup>
-      <BinplaceItem Include="$(PkgMicrosoft_Web_WebView2)\runtimes\win-$(Platform)\native\WebView2Loader.dll" />
-    </ItemGroup>
-    <Copy SourceFiles="@(BinplaceItem)" DestinationFiles="@(BinplaceItem -> '$(OutDir)\%(Filename)%(Extension)')" />
-  </Target>
 </Project>
