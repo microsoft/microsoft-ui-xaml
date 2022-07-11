@@ -140,7 +140,11 @@ public:
     {
         *pRetVal = nullptr;
 
-        SAFEARRAY* psa = SafeArrayCreateVector(VT_I4, 1, 2);
+        SAFEARRAY* psa = SafeArrayCreateVector(VT_I4, 0, 2);
+        if (psa == nullptr)
+        {
+            return E_OUTOFMEMORY;
+        }
 
         auto id = winrt::AutomationPeer::GenerateRawElementProviderRuntimeId();
 
