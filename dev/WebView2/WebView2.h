@@ -21,7 +21,7 @@ namespace winrt
 #pragma warning( disable : 28251 26812)   // warning C28251: Inconsistent annotation for function: this instance has an error
 #include <webview2.h>
 #include <WebView2EnvironmentOptions.h>
-#pragma warning( pop ) 
+#pragma warning( pop )
 
  // for making async/await possible
 struct AsyncWebViewOperations final : public Awaitable
@@ -122,7 +122,7 @@ private:
     void FireCoreProcessFailedEvent(const winrt::CoreWebView2ProcessFailedEventArgs& args);
     void FireCoreWebView2Initialized(winrt::hresult exception);
 
-    void UpdateDefaultBackgroundColor();
+    void UpdateDefaultVisualBackgroundColor();
 
     HWND GetHostHwnd() noexcept;
     HWND GetActiveInputWindowHwnd() noexcept;
@@ -175,6 +175,7 @@ private:
     void ResetProperties();
     void CloseInternal(bool inShutdownPath);
 
+    winrt::AccessibilitySettings GetAccessibilitySettings();
     bool SafeIsLoaded();
 
     void UpdateCoreWindowCursor();
@@ -208,9 +209,6 @@ private:
     HWND m_inputWindowHwnd{ nullptr };
     winrt::hstring m_stopNavigateOnUriChanged{};
     bool m_canGoPropSetInternally{};
-#if WINUI3
-    winrt::IExpSystemVisualBridge m_systemVisualBridge;
-#endif
     winrt::Windows::UI::Composition::SpriteVisual m_visual{ nullptr };
 
     winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker;

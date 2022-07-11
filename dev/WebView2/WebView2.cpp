@@ -9,20 +9,19 @@
 #include "math.h"
 #include "ResourceAccessor.h"
 #include "RuntimeProfiler.h"
+#include <uiautomationclient.h>
 #include "UIAutomationCore.h"
 #include "UIAutomationCoreApi.h"
 #include "WebView2.h"
 #include "WebView2AutomationPeer.h"
+#include <WebView2Interop.h>
 #include "WebView2Utility.h"
 #include "Windows.Globalization.h"
 #include <wrl\event.h>
+#include <winuser.h>
 
 // TODO: Lots of analyze warnings
 #pragma warning( disable : 26496 26462 26461 4471)
-
-#include <winuser.h>
-#include <uiautomationclient.h>
-#include <WebView2Interop.h>
 
 static constexpr wstring_view s_error_wv2_closed{ L"Cannot create CoreWebView2 for Closed WebView2 element."sv };
 static constexpr wstring_view s_error_cwv2_not_present{ L"Failed because a valid CoreWebView2 is not present. Make sure one was created, for example by calling EnsureCoreWebView2Async() API."sv };
@@ -485,17 +484,6 @@ HWND WebView2::GetHostHwnd() noexcept
             auto coreWindowInterop = coreWindow.as<ICoreWindowInterop>();
             winrt::check_hresult(coreWindowInterop->get_WindowHandle(&m_xamlHostHwnd));
         }
-        else
-        {
-            auto xamlRoot = this->XamlRoot();
-            if (xamlRoot)
-            {
-#ifdef WINUI3
-                com_ptr<IXamlRootNative> xamlRootNative = xamlRoot.as<IXamlRootNative>();
-                winrt::check_hresult(xamlRootNative->get_HostWindow(&m_xamlHostHwnd));
-#endif
-            }
-        }
     }
 
     return m_xamlHostHwnd;
@@ -546,28 +534,6 @@ void WebView2::RegisterCoreEventHandlers()
             FireWebMessageReceived(args);
         }});
 
-    m_coreProcessFailedRevoker = m_coreWebView.ProcessFailed(winrt::auto_revoke, {
-    [this](auto const&, winrt::CoreWebView2ProcessFailedEventArgs const& args)
-    {
-        winrt::CoreWebView2ProcessFailedKind coreProcessFailedKind{ args.ProcessFailedKind() };
-        if (coreProcessFailedKind == winrt::CoreWebView2ProcessFailedKind::BrowserProcessExited)
-        {
-            m_isCoreFailure_BrowserExited_State = true;
-
-            // CoreWebView2 takes care of clearing the event handlers when closing the host,
-            // but we still need to reset the event tokens
-            UnregisterCoreEventHandlers();
-
-            // Null these out so we can't try to use them anymore
-            m_coreWebViewCompositionController = nullptr;
-            m_coreWebViewController = nullptr;
-            m_coreWebView = nullptr;
-            ResetProperties();
-        }
-
-        FireCoreProcessFailedEvent(args);
-    } });
-
     m_coreMoveFocusRequestedRevoker = m_coreWebViewController.MoveFocusRequested(winrt::auto_revoke, {
         [this](auto const&, const winrt::CoreWebView2MoveFocusRequestedEventArgs& args)
         {
@@ -614,7 +580,7 @@ void WebView2::RegisterCoreEventHandlers()
                     }
                     else if (nextElement)
                     {
-                        // If Anaheim is also losing focus via something other than TAB (web LostFocus event fired)
+                        // If core webview is also losing focus via something other than TAB (web LostFocus event fired)
                         // and the TAB handling is arriving later (eg due to longer MOJO delay), skip manually moving Xaml Focus to next element.
                         if (m_webHasFocus)
                         {
@@ -639,10 +605,32 @@ void WebView2::RegisterCoreEventHandlers()
             }
         }});
 
+    m_coreProcessFailedRevoker = m_coreWebView.ProcessFailed(winrt::auto_revoke, {
+        [this](auto const&, winrt::CoreWebView2ProcessFailedEventArgs const& args)
+        {
+            winrt::CoreWebView2ProcessFailedKind coreProcessFailedKind{ args.ProcessFailedKind() };
+            if (coreProcessFailedKind == winrt::CoreWebView2ProcessFailedKind::BrowserProcessExited)
+            {
+                m_isCoreFailure_BrowserExited_State = true;
+
+                // CoreWebView2 takes care of clearing the event handlers when closing the host,
+                // but we still need to reset the event tokens
+                UnregisterCoreEventHandlers();
+
+                // Null these out so we can't try to use them anymore
+                m_coreWebViewCompositionController = nullptr;
+                m_coreWebViewController = nullptr;
+                m_coreWebView = nullptr;
+                ResetProperties();
+            }
+
+            FireCoreProcessFailedEvent(args);
+        }});
+
     m_coreLostFocusRevoker = m_coreWebViewController.LostFocus(winrt::auto_revoke, {
         [this](auto const&, auto const&)
         {
-            // Unset our tracking of Anaheim focus when it is lost via something other than TAB navigation.
+            // Unset our tracking of Edge focus when it is lost via something other than TAB navigation.
             m_webHasFocus = false;
         }});
 
@@ -786,17 +774,14 @@ winrt::IAsyncAction WebView2::CreateCoreWebViewFromEnvironment(HWND hwndParent)
     co_return;
 }
 
-void WebView2::UpdateDefaultBackgroundColor()
+void WebView2::UpdateDefaultVisualBackgroundColor()
 {
     auto appResources = winrt::Application::Current().Resources();
-    winrt::IInspectable backgroundColorAsI = (m_accessibilitySettings && m_accessibilitySettings.HighContrast()) ?
+    winrt::IInspectable backgroundColorAsI = (GetAccessibilitySettings() && GetAccessibilitySettings().HighContrast()) ?
         appResources.TryLookup(box_value(L"SystemColorWindowColor")) :
         appResources.TryLookup(box_value(L"SolidBackgroundFillColorBase"));
 
     winrt::Color backgroundColor = winrt::unbox_value_or<winrt::Color>(backgroundColorAsI, winrt::Color{});
-#ifdef WINUI3
-    if (m_systemVisualBridge) { m_systemVisualBridge.BackgroundColor(backgroundColor); }
-#endif
 }
 
 HWND WebView2::EnsureTemporaryHostHwnd()
@@ -852,16 +837,8 @@ void WebView2::CreateMissingAnaheimWarning()
     Content(warning);
 }
 
-// We could have a child Grid (see AddChildPanel) or a child TextBlock (see CreateMissingAnaheimWarning).
-// Make sure it is visited by the Measure pass.
 winrt::Size WebView2::MeasureOverride(winrt::Size const& availableSize)
 {
-    //if (auto child = Content().try_as<winrt::FrameworkElement>())
-    //{
-    //    child.Measure(availableSize);
-    //    return child.DesiredSize;
-    //}
-
     return __super::MeasureOverride(availableSize);
 }
 
@@ -1374,7 +1351,7 @@ void WebView2::RegisterXamlEventHandlers()
 {
     m_gettingFocusRevoker = GettingFocus(winrt::auto_revoke, { this, &WebView2::HandleGettingFocus });
     m_gotFocusRevoker = GotFocus(winrt::auto_revoke, { this, &WebView2::HandleGotFocus });
-    
+
     m_pointerPressedRevoker = PointerPressed(winrt::auto_revoke, { this, &WebView2::HandlePointerPressed });
     m_pointerReleasedRevoker = PointerReleased(winrt::auto_revoke, { this, &WebView2::HandlePointerReleased });
     m_pointerMovedRevoker = PointerMoved(winrt::auto_revoke, { this, &WebView2::HandlePointerMoved });
@@ -1400,7 +1377,7 @@ void WebView2::UnregisterXamlEventHandlers()
     m_gotFocusRevoker.revoke();
 
     m_pointerPressedRevoker.revoke();
-    m_pointerPressedRevoker.revoke();
+    m_pointerReleasedRevoker.revoke();
     m_pointerMovedRevoker.revoke();
     m_pointerWheelChangedRevoker.revoke();
     m_pointerExitedRevoker.revoke();
@@ -1486,6 +1463,16 @@ void WebView2::DisconnectFromRootVisualTarget()
     }
 }
 
+winrt::AccessibilitySettings WebView2::GetAccessibilitySettings()
+{
+    if (!m_accessibilitySettings)
+    {
+        m_accessibilitySettings = winrt::AccessibilitySettings();
+    }
+
+    return m_accessibilitySettings;
+}
+
 void WebView2::TryCompleteInitialization()
 {
     // If proper Anaheim not present, no further initialization is necessary
@@ -1543,12 +1530,7 @@ void WebView2::TryCompleteInitialization()
     if (!m_actualThemeChangedRevoker)
     {
         m_actualThemeChangedRevoker = this->ActualThemeChanged(winrt::auto_revoke,
-            [this](auto&&, auto&&) { UpdateDefaultBackgroundColor(); });
-    }
-
-    if (!m_accessibilitySettings)
-    {
-        m_accessibilitySettings = winrt::AccessibilitySettings();
+            [this](auto&&, auto&&) { UpdateDefaultVisualBackgroundColor(); });
     }
 
     // TODO_WebView2: Currently, AccessibilitySettings.HighContrastChanged does not work without a core window, and throws
@@ -1559,8 +1541,8 @@ void WebView2::TryCompleteInitialization()
     // will never be raised. Once Task #24777629 is fixed, we can remove the coreWindow check.
     if (!m_highContrastChangedRevoker && coreWindow)
     {
-        m_highContrastChangedRevoker = m_accessibilitySettings.HighContrastChanged(winrt::auto_revoke,
-            [this](auto&&, auto&&) { UpdateDefaultBackgroundColor(); });
+        m_highContrastChangedRevoker = GetAccessibilitySettings().HighContrastChanged(winrt::auto_revoke,
+            [this](auto&&, auto&&) { UpdateDefaultVisualBackgroundColor(); });
     }
 
     // WebView2 in WinUI 2 is a ContentControl that either renders its web content to a SpriteVisual, or in the case that
@@ -1585,35 +1567,18 @@ void WebView2::AddChildPanel()
 
 void WebView2::CreateAndSetVisual()
 {
-#ifdef WINUI3
-    if (!m_systemVisualBridge)
-    {
-        winrt::Compositor compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
-        m_systemVisualBridge = winrt::ExpSystemVisualBridge::Create(compositor);
-    }
-#else
     if (!m_visual)
     {
         m_visual = winrt::Window::Current().Compositor().CreateSpriteVisual();
     }
-#endif
-    UpdateDefaultBackgroundColor();
+    UpdateDefaultVisualBackgroundColor();
 
     SetCoreWebViewAndVisualSize(static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight()));
-#ifdef WINUI3
-    winrt::ElementCompositionPreview::SetElementChildVisual(*this, m_systemVisualBridge.BridgeVisual());
-#else
-    winrt::ElementCompositionPreview::SetElementChildVisual(*this, m_visual);
-#endif
 
-#ifdef WINUI3
-    winrt::com_ptr<IDCompositionTarget> sharedTarget = m_systemVisualBridge.as<IDCompositionTarget>();
-    auto coreWebView2CompositionControllerInterop = m_coreWebViewCompositionController.as<ICoreWebView2CompositionControllerInterop>();
-    winrt::check_hresult(coreWebView2CompositionControllerInterop->put_RootVisualTarget(sharedTarget.get()));
-#else
+    winrt::ElementCompositionPreview::SetElementChildVisual(*this, m_visual);
+
     auto coreWebView2CompositionControllerInterop = m_coreWebViewCompositionController.as<ICoreWebView2CompositionControllerInterop>();
     winrt::check_hresult(coreWebView2CompositionControllerInterop->put_RootVisualTarget(m_visual.as<::IUnknown>().get()));
-#endif
 }
 
 winrt::IAsyncOperation<winrt::hstring> WebView2::ExecuteScriptAsync(winrt::hstring javascriptCode)
@@ -1885,9 +1850,7 @@ winrt::Rect WebView2::GetBoundingRectangle()
 
 void WebView2::SetCoreWebViewAndVisualSize(const float width, const float height)
 {
-#ifdef WINUI3
-    if (!m_coreWebView && !m_systemVisualBridge) return;
-#endif
+    if (!m_coreWebView && !m_visual) return;
 
     if (m_coreWebView)
     {
@@ -1899,17 +1862,6 @@ void WebView2::SetCoreWebViewAndVisualSize(const float width, const float height
     // an inverse scale on the bridge visual. Since the inverse scale will reduce the size of the bridge visual, we
     // need to scale up the size by the rasterization scale to compensate.
 
-#ifdef WINUI3
-    if (m_systemVisualBridge)
-    {
-        winrt::Visual systemVisualBridgeVisual = m_systemVisualBridge.BridgeVisual();
-        winrt::float2 newSize = winrt::float2(width * m_rasterizationScale, height * m_rasterizationScale);
-        winrt::float3 newScale = winrt::float3(1.0f/m_rasterizationScale, 1.0f/m_rasterizationScale, 1.0);
-
-        systemVisualBridgeVisual.Size(newSize);
-        systemVisualBridgeVisual.Scale(newScale);
-    }
-#else
     if (m_visual)
     {
         winrt::float2 newSize = winrt::float2(width * m_rasterizationScale, height * m_rasterizationScale);
@@ -1918,7 +1870,6 @@ void WebView2::SetCoreWebViewAndVisualSize(const float width, const float height
         m_visual.Size(newSize);
         m_visual.Scale(newScale);
     }
-#endif
 }
 
 void WebView2::CheckAndUpdateWindowPosition()
@@ -1959,7 +1910,7 @@ void WebView2::CheckAndUpdateVisibility(bool force)
 }
 
 // When we hide the CoreWebView too early, we would see a flash caused by SystemVisualBridge's BackgroundColor being displayed.
-// To resolve this, we delay the call to hide CoreWV if the WebView is being hidden. 
+// To resolve this, we delay the call to hide CoreWV if the WebView is being hidden.
 void WebView2::UpdateCoreWebViewVisibility()
 {
     auto strongThis = get_strong();
