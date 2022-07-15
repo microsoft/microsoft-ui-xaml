@@ -14,7 +14,7 @@
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="10.0.18362.0" />
   </Dependencies>
-  <mp:PhoneIdentity PhoneProductId="365ed83b-0ee5-4fd6-a4e4-5d48c5a2f468" PhonePublisherId="a8099e80-050d-411d-9b45-4ea107a7be6b" />
+  <mp:PhoneIdentity PhoneProductId="6b8989ec-1e52-4206-b11c-f3bf533ee941" PhonePublisherId="a8099e80-050d-411d-9b45-4ea107a7be6b" />
   <Extensions>
 $(ActivatableTypes)
       <Extension Category="windows.activatableClass.inProcessServer">
