@@ -44,7 +44,7 @@ for more information on the error caused by non-public TemplateSettings.
 ## NavigationViewTemplateSettings.OpenPaneLength
 
 Gets the `min` between `OpenPaneLength` and the window's width.
-This is the calculated value of the width of the pane when opened and fully expanded. Defaults to 320.0.
+This is the calculated value of the width of the pane when opened and fully expanded. Defaults to 320.0 in [view pixels](https://docs.microsoft.com/uwp/api/Windows.Graphics.Display.DisplayInformation.RawPixelsPerViewPixel)
 
 (Type: Double)
 
