@@ -187,6 +187,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)FlexboxLayout.cpp">
       <Filter>Layouts\FlexboxLayout</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\FlexboxLayout.properties.cpp">
+      <Filter>Layouts\FlexboxLayout</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Layout.h">

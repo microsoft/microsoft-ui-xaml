@@ -87,6 +87,9 @@ float FlexboxLayout::CrossAxis(winrt::Size const& value)
     return (IsHorizontal() ? value.Height : value.Width);
 }
 
+//int FlexboxLayout::FlexBasis(winrt::Size const& value)
+
+
 winrt::Size FlexboxLayout::CreateSize(float mainAxis, float crossAxis)
 {
     return IsHorizontal() ?
@@ -174,11 +177,17 @@ winrt::Size FlexboxLayout::MeasureOverride(
         usedInCurrentMainAxis = 0;
         usedCrossAxis += usedInCurrentCrossAxis;
         usedInCurrentCrossAxis = 0;
+
+
     };
 
     std::vector<winrt::UIElement> sortedChildren = ChildrenSortedByOrder(context.try_as<winrt::NonVirtualizingLayoutContext>());
     for (winrt::UIElement const& child : sortedChildren)
     {
+        //In progress
+        //Asign initial size based on FlexBasis
+
+
         // Give each child the maximum available space
         // TODO: What about flex-shrink? Should we try them with less?
         // TODO: This is where flex-basis would come into play
@@ -212,7 +221,8 @@ winrt::Size FlexboxLayout::MeasureOverride(
         usedInCurrentCrossAxis = std::max(usedInCurrentCrossAxis, CrossAxis(childDesiredSize));
         itemsInRow++;
         // PORT_TODO
-        //growInRow += GetGrow(child);
+        //added growInRow += the double Getgrowchild -> float
+        growInRow += float(GetGrow(child));
     }
 
     // Incorporate any contribution from the pending row into our total calculation

@@ -3,9 +3,15 @@
 
 #pragma once
 
+#include <pch.h>
 #include "NonVirtualizingLayout.h"
 #include "FlexboxLayout.g.h"
 #include "FlexboxLayout.properties.h"
+#include "ItemsRepeater.h"
+#include "ItemsRepeater.g.h"
+#include "ItemsRepeater.properties.h"
+
+
 
 class FlexboxLayout :
     public ReferenceTracker<FlexboxLayout, winrt::implementation::FlexboxLayoutT, NonVirtualizingLayout>,
@@ -29,6 +35,10 @@ public:
     winrt::FlexboxAlignContent AlignContent();
     void AlignContent(winrt::FlexboxAlignContent const& value);
 
+    //flexbasis
+   // winrt::FlexboxBasis FlexBasis();
+    //void FlexBasis(winrt::FlexboxBasis const& value);
+
 #pragma region INonVirtualizingLayoutOverrides
     void InitializeForContextCore(winrt::LayoutContext const& context);
     void UninitializeForContextCore(winrt::LayoutContext const& context);
@@ -49,6 +59,7 @@ private:
     bool IsWrapping();
     float MainAxis(winrt::Size const& value);
     float CrossAxis(winrt::Size const& value);
+   // int FlexBasis(winrt::Size const& value);
     winrt::Size CreateSize(float mainAxis, float crossAxis);
     winrt::Point CreatePoint(float mainAxis, float crossAxis);
     std::vector<winrt::UIElement> ChildrenSortedByOrder(winrt::NonVirtualizingLayoutContext const& context);

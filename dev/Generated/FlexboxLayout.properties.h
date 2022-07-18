@@ -12,6 +12,9 @@ public:
     static void SetAlignSelf(winrt::UIElement const& target, winrt::FlexboxAlignSelf const& value);
     static winrt::FlexboxAlignSelf GetAlignSelf(winrt::UIElement const& target);
 
+    static void SetBasis(winrt::UIElement const& target, double value);
+    static double GetBasis(winrt::UIElement const& target);
+
     static void SetGrow(winrt::UIElement const& target, double value);
     static double GetGrow(winrt::UIElement const& target);
 
@@ -22,11 +25,13 @@ public:
     static double GetShrink(winrt::UIElement const& target);
 
     static winrt::DependencyProperty AlignSelfProperty() { return s_AlignSelfProperty; }
+    static winrt::DependencyProperty BasisProperty() { return s_BasisProperty; }
     static winrt::DependencyProperty GrowProperty() { return s_GrowProperty; }
     static winrt::DependencyProperty OrderProperty() { return s_OrderProperty; }
     static winrt::DependencyProperty ShrinkProperty() { return s_ShrinkProperty; }
 
     static GlobalDependencyProperty s_AlignSelfProperty;
+    static GlobalDependencyProperty s_BasisProperty;
     static GlobalDependencyProperty s_GrowProperty;
     static GlobalDependencyProperty s_OrderProperty;
     static GlobalDependencyProperty s_ShrinkProperty;

@@ -14,6 +14,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 #include "FlexboxLayout.g.cpp"
 
 GlobalDependencyProperty FlexboxLayoutProperties::s_AlignSelfProperty{ nullptr };
+GlobalDependencyProperty FlexboxLayoutProperties::s_BasisProperty{ nullptr };
 GlobalDependencyProperty FlexboxLayoutProperties::s_GrowProperty{ nullptr };
 GlobalDependencyProperty FlexboxLayoutProperties::s_OrderProperty{ nullptr };
 GlobalDependencyProperty FlexboxLayoutProperties::s_ShrinkProperty{ nullptr };
@@ -34,6 +35,17 @@ void FlexboxLayoutProperties::EnsureProperties()
                 winrt::name_of<winrt::FlexboxLayout>(),
                 true /* isAttached */,
                 ValueHelper<winrt::FlexboxAlignSelf>::BoxedDefaultValue(),
+                &FlexboxLayout::OnChildPropertyChanged);
+    }
+    if (!s_BasisProperty)
+    {
+        s_BasisProperty =
+            InitializeDependencyProperty(
+                L"Basis",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::FlexboxLayout>(),
+                true /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
                 &FlexboxLayout::OnChildPropertyChanged);
     }
     if (!s_GrowProperty)
@@ -74,6 +86,7 @@ void FlexboxLayoutProperties::EnsureProperties()
 void FlexboxLayoutProperties::ClearProperties()
 {
     s_AlignSelfProperty = nullptr;
+    s_BasisProperty = nullptr;
     s_GrowProperty = nullptr;
     s_OrderProperty = nullptr;
     s_ShrinkProperty = nullptr;
@@ -88,6 +101,17 @@ void FlexboxLayoutProperties::SetAlignSelf(winrt::UIElement const& target, winrt
 winrt::FlexboxAlignSelf FlexboxLayoutProperties::GetAlignSelf(winrt::UIElement const& target)
 {
     return ValueHelper<winrt::FlexboxAlignSelf>::CastOrUnbox(target.GetValue(s_AlignSelfProperty));
+}
+
+
+void FlexboxLayoutProperties::SetBasis(winrt::UIElement const& target, double value)
+{
+    target.SetValue(s_BasisProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double FlexboxLayoutProperties::GetBasis(winrt::UIElement const& target)
+{
+    return ValueHelper<double>::CastOrUnbox(target.GetValue(s_BasisProperty));
 }
 
 

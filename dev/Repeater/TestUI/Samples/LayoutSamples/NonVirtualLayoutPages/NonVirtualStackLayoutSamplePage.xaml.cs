@@ -2,7 +2,15 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Windows.UI.Xaml.Controls;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using Windows.UI.Xaml;
+using MUXControlsTestApp.Samples;
+
 
 namespace MUXControlsTestApp.Samples
 {
@@ -11,7 +19,10 @@ namespace MUXControlsTestApp.Samples
         public NonVirtualStackLayoutSamplePage()
         {
             this.InitializeComponent();
-            repeater.ItemsSource = Enumerable.Range(0, 10);
+            
+
         }
+        
     }
+    
 }
