@@ -540,12 +540,12 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
         throw winrt::hresult_error(E_FAIL, L"Cannot set ItemsSourceView during layout.");
     }
 
-    m_itemsSourceView.set(newValue);
-
-    if (oldValue)
+    if (m_itemsSourceViewChanged)
     {
         m_itemsSourceViewChanged.revoke();
     }
+
+    m_itemsSourceView.set(newValue);
 
     if (newValue)
     {
