@@ -55,6 +55,7 @@
 
     <Style x:Key="DefaultHyperlinkButtonStyle" TargetType="HyperlinkButton">
         <Setter Property="Background" Value="{ThemeResource HyperlinkButtonBackground}" />
+        <contract7Present:Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
         <Setter Property="Foreground" Value="{ThemeResource HyperlinkButtonForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource HyperlinkButtonBorderBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource HyperlinkButtonBorderThemeThickness}" />
@@ -71,6 +72,7 @@
                 <ControlTemplate TargetType="HyperlinkButton">
                     <ContentPresenter x:Name="ContentPresenter"
                         Background="{TemplateBinding Background}"
+                        contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         Content="{TemplateBinding Content}"

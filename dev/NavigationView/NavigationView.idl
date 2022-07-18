@@ -154,12 +154,12 @@ unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.Dependenc
     static Windows.UI.Xaml.DependencyProperty PaneToggleButtonWidthProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SmallerPaneToggleButtonWidthProperty{ get; };
 
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V2]
     {
         [MUX_DEFAULT_VALUE("320.0")]
-        Double OpenPaneWidth{ get; };
+        Double OpenPaneLength{ get; };
 
-        static Windows.UI.Xaml.DependencyProperty OpenPaneWidthProperty{ get; };
+        static Windows.UI.Xaml.DependencyProperty OpenPaneLengthProperty{ get; };
     }
 }
 
