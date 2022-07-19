@@ -972,7 +972,6 @@ void TabView::RequestCloseTab(winrt::TabViewItem const& container, bool updateTa
                 {
                     int focusedIndex = IndexFromContainer(container);
                     winrt::DependencyObject newFocusedElement{ nullptr };
-                    bool focusChanged = false;
 
                     for (int i = focusedIndex + 1; i < GetItemCount(); i++)
                     {
@@ -1354,7 +1353,7 @@ bool TabView::MoveFocus(bool moveForward)
     // At this point, we know that the focused control is indeed in the focus list, so we'll move focus to the next or previous control in the list.
 
     int sourceIndex = static_cast<int>(position - focusOrderList.begin());
-    int listSize = static_cast<int>(focusOrderList.size());
+    const int listSize = static_cast<int>(focusOrderList.size());
     const int increment = moveForward ? 1 : -1;
     int currentIndex = sourceIndex + increment;
 
@@ -1397,7 +1396,7 @@ bool TabView::MoveFocus(bool moveForward)
 
 bool TabView::MoveSelection(bool moveForward)
 {
-    int originalIndex = SelectedIndex();
+    const int originalIndex = SelectedIndex();
     const int increment = moveForward ? 1 : -1;
     int currentIndex = originalIndex + increment;
     const int itemCount = GetItemCount();
