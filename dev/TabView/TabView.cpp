@@ -1354,6 +1354,7 @@ bool TabView::MoveFocus(bool moveForward)
     // At this point, we know that the focused control is indeed in the focus list, so we'll move focus to the next or previous control in the list.
 
     int sourceIndex = static_cast<int>(position - focusOrderList.begin());
+    int listSize = static_cast<int>(focusOrderList.size());
     const int increment = moveForward ? 1 : -1;
     int currentIndex = sourceIndex + increment;
 
@@ -1361,9 +1362,9 @@ bool TabView::MoveFocus(bool moveForward)
     {
         if (currentIndex < 0)
         {
-            currentIndex = static_cast<int>(focusOrderList.size() - 1);
+            currentIndex = listSize - 1;
         }
-        else if (currentIndex >= focusOrderList.size())
+        else if (currentIndex >= listSize)
         {
             currentIndex = 0;
         }
