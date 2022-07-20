@@ -53,8 +53,8 @@
             <controls:LayoutPanel.Layout>
                 <controls:FlexboxLayout Wrap="Wrap" AlignContent="End"/>
             </controls:LayoutPanel.Layout>
-            <Grid MinWidth="80"/>
-            <Grid MinWidth="100"/>
+            <Grid MinWidth="80" controls:FlexboxLayout.Basis="50" />
+            <Grid MinWidth="100" controls:FlexboxLayout.Shrink="1" />
             <Grid MinWidth="50"/>
             <Grid MinWidth="40"/>
             <Grid MinWidth="40"/>

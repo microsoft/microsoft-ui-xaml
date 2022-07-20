@@ -14,6 +14,7 @@ public:
         float CrossAxis;
         unsigned int Count;
         float Grow;
+        float Shrink;
     };
 
     std::vector<RowMeasureInfo> Rows;

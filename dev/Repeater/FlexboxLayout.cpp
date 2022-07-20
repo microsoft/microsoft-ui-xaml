@@ -87,8 +87,6 @@ float FlexboxLayout::CrossAxis(winrt::Size const& value)
     return (IsHorizontal() ? value.Height : value.Width);
 }
 
-//int FlexboxLayout::FlexBasis(winrt::Size const& value)
-
 
 winrt::Size FlexboxLayout::CreateSize(float mainAxis, float crossAxis)
 {
@@ -107,6 +105,8 @@ winrt::Point FlexboxLayout::CreatePoint(float mainAxis, float crossAxis)
 std::vector<winrt::UIElement> FlexboxLayout::ChildrenSortedByOrder(winrt::NonVirtualizingLayoutContext const& context)
 {
     std::vector<winrt::UIElement> sorted;
+
+    // throw basis here?
 
     for (auto const& child : context.Children())
     {
@@ -155,6 +155,8 @@ winrt::Size FlexboxLayout::MeasureOverride(
 
     unsigned int itemsInRow = 0;
     float growInRow = 0.0;
+    //shrink
+    float shrinkInRow = 0.0;
 
     float usedInCurrentMainAxis = 0;
     float usedInCurrentCrossAxis = 0;
@@ -169,6 +171,7 @@ winrt::Size FlexboxLayout::MeasureOverride(
         newRow.CrossAxis = usedInCurrentCrossAxis;
         newRow.Count = itemsInRow;
         newRow.Grow = growInRow;
+        newRow.Shrink = shrinkInRow;
         state->Rows.emplace_back(newRow);
 
         itemsInRow = 0;
@@ -179,15 +182,35 @@ winrt::Size FlexboxLayout::MeasureOverride(
         usedInCurrentCrossAxis = 0;
 
 
+
     };
+    //std::vector<winrt::UIElement> FlexboxLayout::ChildrenInitial(winrt::NonVirtualizingLayoutContext const& ic);
+  //  std::vector<winrt::UIElement> initialChildren = ic.try_as<winrt::NonVirtualizingLayoutContext>();
+    // throw basis here?
+    for (winrt::UIElement const& child : context.Children()) {
+        //In progress
+       //Asign initial size based on FlexBasis
+        float flexBasis = 0;
+
+        winrt::Size childSize = child.DesiredSize();
+
+        float inputBasis = float(GetBasis(child));
+
+        if (inputBasis > -1) {
+            flexBasis = float(GetBasis(child));
+            //child.Measure(winrt::Size(250, 50));
+        }
+        else {
+
+            flexBasis = float(childSize.Width);
+
+        };
+    };
+
 
     std::vector<winrt::UIElement> sortedChildren = ChildrenSortedByOrder(context.try_as<winrt::NonVirtualizingLayoutContext>());
     for (winrt::UIElement const& child : sortedChildren)
     {
-        //In progress
-        //Asign initial size based on FlexBasis
-
-
         // Give each child the maximum available space
         // TODO: What about flex-shrink? Should we try them with less?
         // TODO: This is where flex-basis would come into play

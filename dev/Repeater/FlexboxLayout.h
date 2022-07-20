@@ -63,6 +63,8 @@ private:
     winrt::Size CreateSize(float mainAxis, float crossAxis);
     winrt::Point CreatePoint(float mainAxis, float crossAxis);
     std::vector<winrt::UIElement> ChildrenSortedByOrder(winrt::NonVirtualizingLayoutContext const& context);
+    // testing for basis initial
+    std::vector<winrt::UIElement> ChildrenInitial(winrt::NonVirtualizingLayoutContext const& ci);
 
     winrt::FlexboxWrap m_wrap;
     winrt::FlexboxDirection m_direction;
