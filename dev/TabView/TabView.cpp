@@ -1355,43 +1355,35 @@ bool TabView::MoveFocus(bool moveForward)
     int sourceIndex = static_cast<int>(position - focusOrderList.begin());
     const int listSize = static_cast<int>(focusOrderList.size());
     const int increment = moveForward ? 1 : -1;
-    int currentIndex = sourceIndex + increment;
+    int nextIndex = sourceIndex + increment;
 
-    while (currentIndex != sourceIndex)
+    if (nextIndex < 0)
     {
-        if (currentIndex < 0)
-        {
-            currentIndex = listSize - 1;
-        }
-        else if (currentIndex >= listSize)
-        {
-            currentIndex = 0;
-        }
-
-        // We have to do a bit of a dance for the close buttons - we don't want users to be able to give them focus when tabbing through an app,
-        // since we only want to tab into the TabView once and then tab out on the next tab press.  However, IsTabStop also controls keyboard
-        // focusability in general - we can't give keyboard focus to a control with IsTabStop = false.  To work around this, we'll temporarily set
-        // IsTabStop = true before calling Focus(), and then set it back to false if it was previously false.
-
-        auto&& control = focusOrderList[currentIndex];
-        const bool originalIsTabStop = control.IsTabStop();
-
-        auto scopeGuard = gsl::finally([control, originalIsTabStop]()
-            {
-                control.IsTabStop(originalIsTabStop);
-            });
-
-        control.IsTabStop(true);
-
-        if (control.Focus(winrt::FocusState::Keyboard))
-        {
-            return true;
-        }
-
-        currentIndex += increment;
+        nextIndex = listSize - 1;
+    }
+    else if (nextIndex >= listSize)
+    {
+        nextIndex = 0;
     }
 
-    return false;
+    // We have to do a bit of a dance for the close buttons - we don't want users to be able to give them focus when tabbing through an app,
+    // since we only want to tab into the TabView once and then tab out on the next tab press.  However, IsTabStop also controls keyboard
+    // focusability in general - we can't give keyboard focus to a control with IsTabStop = false.  To work around this, we'll temporarily set
+    // IsTabStop = true before calling Focus(), and then set it back to false if it was previously false.
+
+    auto&& control = focusOrderList[nextIndex];
+    const bool originalIsTabStop = control.IsTabStop();
+
+    auto scopeGuard = gsl::finally([control, originalIsTabStop]()
+        {
+            control.IsTabStop(originalIsTabStop);
+        });
+
+    control.IsTabStop(true);
+
+    // We checked focusability above, so we should never be in a situation where Focus() returns false.
+    MUX_ASSERT(control.Focus(winrt::FocusState::Keyboard));
+    return true;
 }
 
 bool TabView::MoveSelection(bool moveForward)
