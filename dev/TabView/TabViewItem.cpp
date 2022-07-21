@@ -501,14 +501,11 @@ void TabViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 
         if (!isAltDown || !isShiftDown)
         {
-            if (args.Key() == winrt::VirtualKey::Right)
-            {
-                args.Handled(winrt::get_self<TabView>(GetParentTabView())->MoveFocus(FlowDirection() == winrt::FlowDirection::LeftToRight));
-            }
-            else if (args.Key() == winrt::VirtualKey::Left)
-            {
-                args.Handled(winrt::get_self<TabView>(GetParentTabView())->MoveFocus(FlowDirection() != winrt::FlowDirection::LeftToRight));
-            }
+            bool moveForward =
+                (FlowDirection() == winrt::FlowDirection::LeftToRight && args.Key() == winrt::VirtualKey::Right) ||
+                (FlowDirection() == winrt::FlowDirection::RightToLeft && args.Key() == winrt::VirtualKey::Left);
+
+            args.Handled(winrt::get_self<TabView>(GetParentTabView())->MoveFocus(moveForward));
         }
     }
 

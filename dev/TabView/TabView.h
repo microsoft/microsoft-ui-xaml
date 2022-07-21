@@ -175,6 +175,8 @@ private:
 
     winrt::TabViewItem FindTabViewItemFromDragItem(const winrt::IInspectable& item);
 
+    static bool IsFocusable(winrt::DependencyObject const& object, bool checkTabStop = false);
+
     bool m_updateTabWidthOnPointerLeave{ false };
     bool m_pointerInTabstrip{ false };
 

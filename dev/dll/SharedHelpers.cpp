@@ -807,23 +807,3 @@ winrt::float4 SharedHelpers::RgbaColor(const winrt::Color& color)
 {
     return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
 }
-
-bool SharedHelpers::IsFocusable(winrt::DependencyObject const& object, bool checkTabStop)
-{
-    if (!object)
-    {
-        return false;
-    }
-
-    if (auto control = object.try_as<winrt::Control>())
-    {
-        return control &&
-            control.Visibility() == winrt::Visibility::Visible &&
-            (control.IsEnabled() || control.AllowFocusWhenDisabled()) &&
-            (control.IsTabStop() || !checkTabStop);
-    }
-    else
-    {
-        return false;
-    }
-}

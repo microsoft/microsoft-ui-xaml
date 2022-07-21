@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -315,8 +316,6 @@ public:
     }
 
     static winrt::float4 RgbaColor(winrt::Color const& color);
-
-    static bool IsFocusable(winrt::DependencyObject const& object, bool checkTabStop = true);
 
 private:
     SharedHelpers() = default;

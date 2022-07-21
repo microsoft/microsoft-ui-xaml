@@ -977,7 +977,7 @@ void TabView::RequestCloseTab(winrt::TabViewItem const& container, bool updateTa
                     {
                         auto candidateElement = ContainerFromIndex(i);
 
-                        if (SharedHelpers::IsFocusable(candidateElement))
+                        if (IsFocusable(candidateElement))
                         {
                             newFocusedElement = candidateElement;
                             break;
@@ -990,7 +990,7 @@ void TabView::RequestCloseTab(winrt::TabViewItem const& container, bool updateTa
                         {
                             auto candidateElement = ContainerFromIndex(i);
 
-                            if (SharedHelpers::IsFocusable(candidateElement))
+                            if (IsFocusable(candidateElement))
                             {
                                 newFocusedElement = candidateElement;
                                 break;
@@ -1319,13 +1319,13 @@ bool TabView::MoveFocus(bool moveForward)
     {
         if (auto tab = ContainerFromIndex(i).try_as<winrt::TabViewItem>())
         {
-            if (SharedHelpers::IsFocusable(tab, false /* checkTabStop */))
+            if (IsFocusable(tab, false /* checkTabStop */))
             {
                 focusOrderList.push_back(tab);
 
                 if (auto closeButton = winrt::get_self<TabViewItem>(tab)->GetCloseButton())
                 {
-                    if (SharedHelpers::IsFocusable(closeButton, false /* checkTabStop */))
+                    if (IsFocusable(closeButton, false /* checkTabStop */))
                     {
                         focusOrderList.push_back(closeButton);
                     }
@@ -1336,7 +1336,7 @@ bool TabView::MoveFocus(bool moveForward)
 
     if (auto&& addButton = m_addButton.get())
     {
-        if (SharedHelpers::IsFocusable(addButton, false /* checkTabStop */))
+        if (IsFocusable(addButton, false /* checkTabStop */))
         {
             focusOrderList.push_back(addButton);
         }
@@ -1412,7 +1412,7 @@ bool TabView::MoveSelection(bool moveForward)
             currentIndex = 0;
         }
 
-        if (SharedHelpers::IsFocusable(ContainerFromIndex(currentIndex)))
+        if (IsFocusable(ContainerFromIndex(currentIndex)))
         {
             SelectedIndex(currentIndex);
             return true;
@@ -1506,5 +1506,27 @@ void TabView::OnAddButtonKeyDown(const winrt::IInspectable& sender, winrt::KeyRo
         {
             args.Handled(MoveFocus(addButton.FlowDirection() != winrt::FlowDirection::LeftToRight));
         }
+    }
+}
+
+// Note that the parameter is a DependencyObject for convenience to allow us to call this on the return value of ContainerFromIndex.
+// There are some non-control elements that can take focus - e.g. a hyperlink in a RichTextBlock - but those aren't relevant for our purposes here.
+bool TabView::IsFocusable(winrt::DependencyObject const& object, bool checkTabStop)
+{
+    if (!object)
+    {
+        return false;
+    }
+
+    if (auto control = object.try_as<winrt::Control>())
+    {
+        return control &&
+            control.Visibility() == winrt::Visibility::Visible &&
+            (control.IsEnabled() || control.AllowFocusWhenDisabled()) &&
+            (control.IsTabStop() || !checkTabStop);
+    }
+    else
+    {
+        return false;
     }
 }
