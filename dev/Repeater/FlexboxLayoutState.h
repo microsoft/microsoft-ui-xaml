@@ -15,6 +15,7 @@ public:
         unsigned int Count;
         float Grow;
         float Shrink;
+        float Basis;
     };
 
     std::vector<RowMeasureInfo> Rows;

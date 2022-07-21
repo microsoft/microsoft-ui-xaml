@@ -163,6 +163,7 @@ winrt::Size FlexboxLayout::MeasureOverride(
 
     float usedMainAxis = 0;
     float usedCrossAxis = 0;
+    float basisInRow = 0;
 
     auto completeRow = [&]()
     {
@@ -172,6 +173,8 @@ winrt::Size FlexboxLayout::MeasureOverride(
         newRow.Count = itemsInRow;
         newRow.Grow = growInRow;
         newRow.Shrink = shrinkInRow;
+        //basis, do we need to save this inRow?
+        newRow.Basis = basisInRow;
         state->Rows.emplace_back(newRow);
 
         itemsInRow = 0;
@@ -184,38 +187,32 @@ winrt::Size FlexboxLayout::MeasureOverride(
 
 
     };
-    //std::vector<winrt::UIElement> FlexboxLayout::ChildrenInitial(winrt::NonVirtualizingLayoutContext const& ic);
-  //  std::vector<winrt::UIElement> initialChildren = ic.try_as<winrt::NonVirtualizingLayoutContext>();
-    // throw basis here?
-    for (winrt::UIElement const& child : context.Children()) {
-        //In progress
-       //Asign initial size based on FlexBasis
-        float flexBasis = 0;
-
-        winrt::Size childSize = child.DesiredSize();
-
-        float inputBasis = float(GetBasis(child));
-
-        if (inputBasis > -1) {
-            flexBasis = float(GetBasis(child));
-            //child.Measure(winrt::Size(250, 50));
-        }
-        else {
-
-            flexBasis = float(childSize.Width);
-
-        };
-    };
-
+   
+    
 
     std::vector<winrt::UIElement> sortedChildren = ChildrenSortedByOrder(context.try_as<winrt::NonVirtualizingLayoutContext>());
     for (winrt::UIElement const& child : sortedChildren)
     {
+        
+
         // Give each child the maximum available space
         // TODO: What about flex-shrink? Should we try them with less?
         // TODO: This is where flex-basis would come into play
         child.Measure(availableSize);
         winrt::Size childDesiredSize = child.DesiredSize();
+
+      //flexbasis
+    //Asign initial size based on FlexBasis
+        float flexBasis = 0;
+
+        float inputBasis = float((GetBasis(child)));
+
+        
+        if (inputBasis > 0) {
+            flexBasis = float((GetBasis(child)));
+            childDesiredSize = CreateSize(inputBasis, CrossAxis(childDesiredSize));
+        }
+
 
         if (usedInCurrentMainAxis + MainAxis(childDesiredSize) > MainAxis(availableSize))
         {
@@ -254,6 +251,8 @@ winrt::Size FlexboxLayout::MeasureOverride(
         completeRow();
     }
 
+    
+
     winrt::Size returnSize = CreateSize(
         usedMainAxis,
         usedCrossAxis);
@@ -284,7 +283,21 @@ winrt::Size FlexboxLayout::ArrangeOverride(
     {
         FlexboxLayoutState::RowMeasureInfo info = state->Rows[rowIndex];
 
+
         winrt::Size childDesiredSize = child.DesiredSize();
+
+       
+       //flexbasis
+       //Asign initial size based on FlexBasis
+        float flexBasis = 0;
+
+
+        //retrieve the user input
+        float inputBasis = float((GetBasis(child)));
+        if (inputBasis > 0) {
+            flexBasis = float((GetBasis(child)));
+            childDesiredSize = CreateSize(inputBasis, CrossAxis(childDesiredSize));
+        }
         if (usedInCurrentMainAxis + MainAxis(childDesiredSize) > MainAxis(finalSize))
         {
             // If we're not wrapping just hide all the remaining elements

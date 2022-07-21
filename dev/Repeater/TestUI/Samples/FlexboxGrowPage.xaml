@@ -20,8 +20,8 @@
             </Style>
             <Style TargetType="Grid">
                 <Setter Property="Background" Value="Orange"/>
-                <!--  <Setter Property="MinWidth" Value="80"/> -->
-               <Setter Property="MinHeight" Value="50"/> 
+             <!--   <Setter Property="MinWidth" Value="80"/> -->
+                <Setter Property="MinHeight" Value="50"/> 
                 <Setter Property="Margin" Value="6"/>
                 <Setter Property="CornerRadius" Value="6"/>
                 <Setter Property="BorderBrush" Value="Black"/>
@@ -38,17 +38,32 @@
             <controls:LayoutPanel.Layout>
                 <controls:FlexboxLayout/>
             </controls:LayoutPanel.Layout>
+            <Grid controls:FlexboxLayout.Grow="0" controls:FlexboxLayout.Basis="100" >
+                <TextBlock>0</TextBlock>
+            </Grid>
+            <Grid controls:FlexboxLayout.Grow="2" controls:FlexboxLayout.Basis="100">
+                <TextBlock>2</TextBlock>
+            </Grid>
             <Grid controls:FlexboxLayout.Grow="0" controls:FlexboxLayout.Basis="100">
-                <TextBlock>0</TextBlock>
-            </Grid>
-            <Grid controls:FlexboxLayout.Grow="0" controls:FlexboxLayout.Basis="50">
-                <TextBlock>0</TextBlock>
-            </Grid>
-            <Grid controls:FlexboxLayout.Grow="0" controls:FlexboxLayout.Basis="200">
                 <TextBlock>0</TextBlock>
             </Grid>
         </controls:LayoutPanel>
 
+        <controls:LayoutPanel MinWidth="500">
+            <controls:LayoutPanel.Layout>
+                <controls:FlexboxLayout/>
+            </controls:LayoutPanel.Layout>
+            <Grid controls:FlexboxLayout.Basis="50">
+                <TextBlock>0</TextBlock>
+            </Grid>
+            <Grid controls:FlexboxLayout.Basis="100">
+                <TextBlock>0</TextBlock>
+            </Grid>
+            <Grid  controls:FlexboxLayout.Basis="150">
+                <TextBlock>0</TextBlock>
+            </Grid>
+        </controls:LayoutPanel>
+        
         <controls:LayoutPanel MinWidth="500">
             <controls:LayoutPanel.Layout>
                 <controls:FlexboxLayout/>
