@@ -501,7 +501,7 @@ void TabViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 
         if (!isAltDown || !isShiftDown)
         {
-            bool moveForward =
+            const bool moveForward =
                 (FlowDirection() == winrt::FlowDirection::LeftToRight && args.Key() == winrt::VirtualKey::Right) ||
                 (FlowDirection() == winrt::FlowDirection::RightToLeft && args.Key() == winrt::VirtualKey::Left);
 
