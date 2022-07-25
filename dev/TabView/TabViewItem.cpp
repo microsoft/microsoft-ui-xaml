@@ -496,6 +496,9 @@ void TabViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
     if (!args.Handled())
     {
         // Alt+Shift+Arrow reorders tabs, so we don't want to handle that combination.
+        // ListView also handles Alt+Arrow  (no Shift) by just doing regular XY focus,
+        // same as how it handles Arrow without any modifier keys, so in that case
+        // we do want to handle things so we get the improved keyboarding experience.
         auto isAltDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Menu) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
         auto isShiftDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Shift) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
 
