@@ -162,6 +162,9 @@ namespace MUXControlsTestApp
                 Frame.NavigateWithoutAnimation(typeof(FlexboxWrapPage));
             };
 
+            flexDemoA.Click += delegate {
+                Frame.NavigateWithoutAnimation(typeof(flexDemoPageA));
+            };
             noGroupingList.Click += delegate
             {
                 Frame.NavigateWithoutAnimation(typeof(ItemsViewWithDataPage),

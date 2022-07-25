@@ -91,10 +91,6 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
-            <Button> Test Button</Button>
-
-                <Button> Test Button</Button>
-
         </StackPanel>
     </Grid>
 </Page>

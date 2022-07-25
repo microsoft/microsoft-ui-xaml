@@ -47,6 +47,7 @@
             <Button x:Name="flexboxOrderPage">flexboxOrderPage</Button>
             <Button x:Name="flexboxShrink">flexboxShrink</Button>
             <Button x:Name="flexboxWrap">flexboxWrap</Button>
+            <Button x:Name="flexDemoA">Flexbox Demo A</Button>
         </StackPanel>
 
         <StackPanel>
