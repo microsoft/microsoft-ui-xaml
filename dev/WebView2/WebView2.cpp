@@ -714,9 +714,8 @@ winrt::IAsyncAction WebView2::CreateCoreEnvironment() noexcept
 
     if (!m_options)
     {
-        // NOTE: To enable Anaheim logging, add:  --enable-logging=stderr --v=1
+        // NOTE: To enable Anaheim logging, add: m_options.AdditionalBrowserArguments(L"--enable-logging=stderr --v=1");
         m_options = winrt::CoreWebView2EnvironmentOptions();
-        m_options.AdditionalBrowserArguments(L"--enable-features=msEmbeddedBrowserVisualHosting");
 
         auto applicationLanguagesList = winrt::ApplicationLanguages::Languages();
         if (applicationLanguagesList.Size() > 0)
@@ -749,6 +748,8 @@ winrt::IAsyncAction WebView2::CreateCoreWebViewFromEnvironment(HWND hwndParent)
     try
     {
         auto windowRef = winrt::CoreWebView2ControllerWindowReference::CreateFromWindowHandle(reinterpret_cast<UINT64>(hwndParent));
+        // CreateCoreWebView2CompositionController(Async) creates a CompositionController and is in visual hosting mode.
+        // Calling CreateCoreWebView2Controller would create a Controller and would be in windowed mode.
         m_coreWebViewCompositionController = co_await m_coreWebViewEnvironment.CreateCoreWebView2CompositionControllerAsync(windowRef);
         m_coreWebViewController = m_coreWebViewCompositionController.as<winrt::CoreWebView2Controller>();
         m_coreWebViewController.ShouldDetectMonitorScaleChanges(false);
