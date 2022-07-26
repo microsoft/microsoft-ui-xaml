@@ -493,7 +493,7 @@ void TabViewItem::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args
 // so this needs to be handled below the items view. That's why we can't put this in TabView's OnKeyDown.
 void TabViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 {
-    if (!args.Handled())
+    if (!args.Handled() && (args.Key() == winrt::VirtualKey::Left || args.Key() == winrt::VirtualKey::Right))
     {
         // Alt+Shift+Arrow reorders tabs, so we don't want to handle that combination.
         auto isAltDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Menu) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
