@@ -18,7 +18,7 @@
                 <Setter Property="FontWeight" Value="Bold"/>
                 <Setter Property="FontSize" Value="24"/>
             </Style>
-            <Style TargetType="Grid">
+            <Style TargetType="Grid" x:Key="GridStyle">
                 <Setter Property="Background" Value="Orange"/>
                 <Setter Property="MinWidth" Value="120"/>
                 <Setter Property="MinHeight" Value="50"/>
@@ -36,73 +36,90 @@
                 <Setter Property="Foreground" Value="Black"/>
                 <Setter Property="HorizontalAlignment" Value="Left"/>
             </Style>
+            <Style TargetType="StackPanel" x:Key="AltGrid">
+                <Setter Property="Background" Value="Purple"/>
+                <Setter Property="Margin" Value="0,0,0,20"/>
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+            </Style>
+            <Style TargetType="Rectangle" x:Key="DemoRectangle">
+                <Setter Property="Fill" Value="Orange" />
+                <Setter Property="Height" Value="50"/>
+                <Setter Property="Stroke" Value="Black"/>
+                <Setter Property="StrokeThickness" Value="2"/>
+                <Setter Property="Margin" Value="6"/>
+                <Setter Property="RadiusX" Value="6"/>
+                <Setter Property="RadiusY" Value="6"/>
+
+            </Style>
         </StackPanel.Resources>
 
 
         <TextBlock Style="{StaticResource HeaderStyle}">Wrap</TextBlock>
 
-        <controls:LayoutPanel MaxWidth="500">
+        <controls:LayoutPanel MaxWidth="500" >
             <controls:LayoutPanel.Layout>
                 <controls:FlexboxLayout Direction="Row" Wrap="Wrap"/>
             </controls:LayoutPanel.Layout>
-            <Grid MinWidth="10">
+            <Grid MinWidth="10" Style="{StaticResource GridStyle}">
                 <TextBlock>1</TextBlock>
             </Grid>
-            <Grid MinWidth="20">
+            <Grid MinWidth="20" Style="{StaticResource GridStyle}">
                 <TextBlock>2</TextBlock>
             </Grid>
-            <Grid MinWidth="100">
+            <Grid MinWidth="100" Style="{StaticResource GridStyle}">
                 <TextBlock>3</TextBlock>
             </Grid>
-            <Grid MinWidth="120">
+            <Grid MinWidth="120" Style="{StaticResource GridStyle}">
                 <TextBlock>4</TextBlock>
             </Grid>
-            <Grid MinWidth="120">
+            <Grid MinWidth="120" Style="{StaticResource GridStyle}">
                 <TextBlock>5</TextBlock>
             </Grid>
-            <Grid MinWidth="60">
+            <Grid MinWidth="60" Style="{StaticResource GridStyle}">
                 <TextBlock>6</TextBlock>
             </Grid>
-            <Grid MinWidth="60">
+            <Grid MinWidth="60" Style="{StaticResource GridStyle}">
                 <TextBlock>7</TextBlock>
             </Grid>
-            <Grid MinWidth="100">
+            <Grid MinWidth="100" Style="{StaticResource GridStyle}">
                 <TextBlock>8</TextBlock>
             </Grid>
         </controls:LayoutPanel>
 
-        <TextBlock Style="{StaticResource HeaderStyle}">WrapReverse</TextBlock>
+        <TextBlock Style="{StaticResource HeaderStyle}">Default No Flexbox</TextBlock>
 
-        <controls:LayoutPanel MaxWidth="500">
-            <controls:LayoutPanel.Layout>
-                <controls:FlexboxLayout Direction="Row" Wrap="WrapReverse"/>
-            </controls:LayoutPanel.Layout>
-            <Grid MinWidth="60">
-                <TextBlock>1</TextBlock>
+        <StackPanel Style="{StaticResource AltGrid}" Width="500" Orientation="Horizontal">
+
+          
+            <Grid MinWidth="50" Width="50" Style="{StaticResource GridStyle}">
+                <TextBlock> 1</TextBlock>
             </Grid>
-            <Grid MinWidth="60">
-                <TextBlock>2</TextBlock>
+            <Grid MinWidth="50" Width="50" Style="{StaticResource GridStyle}">
+                <TextBlock> 2</TextBlock>
             </Grid>
-            <Grid MinWidth="100">
-                <TextBlock>3</TextBlock>
+            <Grid MinWidth="50" Width="50" Style="{StaticResource GridStyle}">
+                <TextBlock> 3</TextBlock>
             </Grid>
-            <Grid MinWidth="120">
+            <Grid MinWidth="60" Style="{StaticResource GridStyle}">
                 <TextBlock>4</TextBlock>
             </Grid>
-            <Grid MinWidth="120">
+            <Grid MinWidth="60" Style="{StaticResource GridStyle}">
                 <TextBlock>5</TextBlock>
             </Grid>
-            <Grid MinWidth="60">
+            <Grid MinWidth="100" Style="{StaticResource GridStyle}">
                 <TextBlock>6</TextBlock>
             </Grid>
-            <Grid MinWidth="60">
+            <Grid MinWidth="100" Style="{StaticResource GridStyle}">
                 <TextBlock>7</TextBlock>
             </Grid>
-            <Grid MinWidth="100">
+            <Grid MinWidth="100" Style="{StaticResource GridStyle}">
                 <TextBlock>8</TextBlock>
             </Grid>
-        </controls:LayoutPanel>
 
+
+
+
+        </StackPanel>
 
 
     </StackPanel>

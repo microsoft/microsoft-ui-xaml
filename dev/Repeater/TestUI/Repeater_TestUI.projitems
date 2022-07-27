@@ -310,7 +310,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Samples\Flexbox\" />
     <Folder Include="$(MSBuildThisFileDirectory)Samples\LayoutSamples\" />
     <Folder Include="$(MSBuildThisFileDirectory)Samples\AnimationSamples\" />
   </ItemGroup>
