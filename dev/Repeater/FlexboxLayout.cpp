@@ -106,15 +106,14 @@ std::vector<winrt::UIElement> FlexboxLayout::ChildrenSortedByOrder(winrt::NonVir
 {
     std::vector<winrt::UIElement> sorted;
 
-    // throw basis here?
-
+   
     for (auto const& child : context.Children())
     {
         sorted.push_back(child);
     }
     std::sort(sorted.begin(), sorted.end(), [](winrt::UIElement const& a, winrt::UIElement const& b)
         {
-            return (GetOrder(a) - GetOrder(b));
+            return (GetOrder(a) < GetOrder(b));
         });
 
     return sorted;
@@ -179,6 +178,8 @@ winrt::Size FlexboxLayout::MeasureOverride(
 
         itemsInRow = 0;
         growInRow = 0.0;
+        //shrink
+        shrinkInRow = 0.0;
         usedMainAxis = std::max(usedMainAxis, usedInCurrentMainAxis);
         usedInCurrentMainAxis = 0;
         usedCrossAxis += usedInCurrentCrossAxis;
@@ -203,14 +204,13 @@ winrt::Size FlexboxLayout::MeasureOverride(
 
       //flexbasis
     //Asign initial size based on FlexBasis
-        float flexBasis = 0;
 
-        float inputBasis = float((GetBasis(child)));
+        auto flexBasis = float((GetBasis(child)));
 
         
-        if (inputBasis > 0) {
-            flexBasis = float((GetBasis(child)));
-            childDesiredSize = CreateSize(inputBasis, CrossAxis(childDesiredSize));
+        if (flexBasis > 0) {
+          
+            childDesiredSize = CreateSize(flexBasis, CrossAxis(childDesiredSize));
         }
 
 
@@ -289,15 +289,14 @@ winrt::Size FlexboxLayout::ArrangeOverride(
        
        //flexbasis
        //Asign initial size based on FlexBasis
-        float flexBasis = 0;
+        auto flexBasis = float((GetBasis(child)));
 
 
-        //retrieve the user input
-        float inputBasis = float((GetBasis(child)));
-        if (inputBasis > 0) {
-            flexBasis = float((GetBasis(child)));
-            childDesiredSize = CreateSize(inputBasis, CrossAxis(childDesiredSize));
+        if (flexBasis > 0) {
+
+            childDesiredSize = CreateSize(flexBasis, CrossAxis(childDesiredSize));
         }
+
         if (usedInCurrentMainAxis + MainAxis(childDesiredSize) > MainAxis(finalSize))
         {
             // If we're not wrapping just hide all the remaining elements

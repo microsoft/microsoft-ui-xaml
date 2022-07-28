@@ -12,7 +12,7 @@ public:
     public:
         float MainAxis;
         float CrossAxis;
-        unsigned int Count;
+        int Count;
         float Grow;
         float Shrink;
         float Basis;
