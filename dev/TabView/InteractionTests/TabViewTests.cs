@@ -426,6 +426,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // TabViewTests.KeyboardTest fails in the lab #7546
         public void KeyboardTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
