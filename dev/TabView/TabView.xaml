@@ -257,6 +257,7 @@
                                 VerticalAlignment="Bottom">
                                 <RepeatButton x:Name="ScrollDecreaseButton"
                                     AutomationProperties.AccessibilityView="Raw"
+                                    IsTabStop="False"
                                     Delay="50"
                                     Interval="100"
                                     HighContrastAdjustment="None"
@@ -276,6 +277,7 @@
                                 VerticalAlignment="Bottom">
                                 <RepeatButton x:Name="ScrollIncreaseButton"
                                     AutomationProperties.AccessibilityView="Raw"
+                                    IsTabStop="False"
                                     Delay="50"
                                     Interval="100"
                                     HighContrastAdjustment="None"
