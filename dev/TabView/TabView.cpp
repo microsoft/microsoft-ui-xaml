@@ -138,6 +138,7 @@ void TabView::OnApplyTemplate()
             }
 
             m_addButtonClickRevoker = addButton.Click(winrt::auto_revoke, { this, &TabView::OnAddButtonClick });
+            m_addButtonKeyDownRevoker = addButton.KeyDown(winrt::auto_revoke, { this, &TabView::OnAddButtonKeyDown });
         }
         return addButton;
     }());
@@ -423,6 +424,7 @@ void TabView::UnhookEventsAndClearFields()
     m_scrollViewerViewChangedRevoker.revoke();
     m_scrollDecreaseClickRevoker.revoke();
     m_scrollIncreaseClickRevoker.revoke();
+    m_addButtonKeyDownRevoker.revoke();
 
     m_tabContentPresenter.set(nullptr);
     m_rightContentPresenter.set(nullptr);
@@ -943,6 +945,69 @@ void TabView::UpdateTabContent()
 
 void TabView::RequestCloseTab(winrt::TabViewItem const& container, bool updateTabWidths)
 {
+    // If the tab being closed is the currently focused tab, we'll move focus to the next tab
+    // when the tab closes.
+    bool tabIsFocused = false;
+    auto focusedElement{ winrt::FocusManager::GetFocusedElement() ? winrt::FocusManager::GetFocusedElement().try_as<winrt::DependencyObject>() : nullptr };
+
+    while (focusedElement)
+    {
+        if (focusedElement == container)
+        {
+            tabIsFocused = true;
+            break;
+        }
+
+        focusedElement = winrt::VisualTreeHelper::GetParent(focusedElement);
+    }
+
+    winrt::UIElement::LosingFocus_revoker losingFocusRevoker{};
+
+    if (tabIsFocused)
+    {
+        // If the tab specified both is focused and loses focus, then we'll move focus to an adjacent focusable tab, if one exists.
+        losingFocusRevoker = container.LosingFocus(winrt::auto_revoke, [&](const winrt::IInspectable&, const winrt::LosingFocusEventArgs& args)
+            {
+                if (!args.Cancel() && !args.Handled())
+                {
+                    int focusedIndex = IndexFromContainer(container);
+                    winrt::DependencyObject newFocusedElement{ nullptr };
+
+                    for (int i = focusedIndex + 1; i < GetItemCount(); i++)
+                    {
+                        auto candidateElement = ContainerFromIndex(i);
+
+                        if (IsFocusable(candidateElement))
+                        {
+                            newFocusedElement = candidateElement;
+                            break;
+                        }
+                    }
+
+                    if (!newFocusedElement)
+                    {
+                        for (int i = focusedIndex - 1; i >= 0; i--)
+                        {
+                            auto candidateElement = ContainerFromIndex(i);
+
+                            if (IsFocusable(candidateElement))
+                            {
+                                newFocusedElement = candidateElement;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!newFocusedElement)
+                    {
+                        newFocusedElement = m_addButton.get();
+                    }
+
+                    args.Handled(args.TrySetNewFocusedElement(newFocusedElement));
+                }
+            });
+    }
+
     if (auto&& listView = m_listView.get())
     {
         auto args = winrt::make_self<TabViewTabCloseRequestedEventArgs>(listView.ItemFromContainer(container), container);
@@ -1232,18 +1297,123 @@ int TabView::GetItemCount()
     }
 }
 
-bool TabView::SelectNextTab(int increment)
+bool TabView::MoveFocus(bool moveForward)
 {
-    bool handled = false;
-    const int itemsSize = GetItemCount();
-    if (itemsSize > 1)
+    auto focusedControl = winrt::FocusManager::GetFocusedElement() ? winrt::FocusManager::GetFocusedElement().try_as<winrt::Control>() : nullptr;
+
+    // If there's no focused control, then we have nothing to do.
+    if (!focusedControl)
     {
-        auto index = SelectedIndex();
-        index = (index + increment + itemsSize) % itemsSize;
-        SelectedIndex(index);
-        handled = true;
+        return false;
     }
-    return handled;
+
+    // Focus goes in this order:
+    //
+    //    Tab 1 -> Tab 1 close button -> Tab 2 -> Tab 2 close button -> ... -> Tab N -> Tab N close button -> Add tab button -> Tab 1
+    //
+    // Any element that's not focusable is skipped.
+    //
+    std::vector<winrt::Control> focusOrderList;
+
+    for (int i = 0; i < GetItemCount(); i++)
+    {
+        if (auto tab = ContainerFromIndex(i).try_as<winrt::TabViewItem>())
+        {
+            if (IsFocusable(tab, false /* checkTabStop */))
+            {
+                focusOrderList.push_back(tab);
+
+                if (auto closeButton = winrt::get_self<TabViewItem>(tab)->GetCloseButton())
+                {
+                    if (IsFocusable(closeButton, false /* checkTabStop */))
+                    {
+                        focusOrderList.push_back(closeButton);
+                    }
+                }
+            }
+        }
+    }
+
+    if (auto&& addButton = m_addButton.get())
+    {
+        if (IsFocusable(addButton, false /* checkTabStop */))
+        {
+            focusOrderList.push_back(addButton);
+        }
+    }
+
+    auto position = std::find(focusOrderList.begin(), focusOrderList.end(), focusedControl);
+
+    // The focused control is not in the focus order list - nothing for us to do here either.
+    if (position == focusOrderList.end())
+    {
+        return false;
+    }
+
+    // At this point, we know that the focused control is indeed in the focus list, so we'll move focus to the next or previous control in the list.
+
+    int sourceIndex = static_cast<int>(position - focusOrderList.begin());
+    const int listSize = static_cast<int>(focusOrderList.size());
+    const int increment = moveForward ? 1 : -1;
+    int nextIndex = sourceIndex + increment;
+
+    if (nextIndex < 0)
+    {
+        nextIndex = listSize - 1;
+    }
+    else if (nextIndex >= listSize)
+    {
+        nextIndex = 0;
+    }
+
+    // We have to do a bit of a dance for the close buttons - we don't want users to be able to give them focus when tabbing through an app,
+    // since we only want to tab into the TabView once and then tab out on the next tab press.  However, IsTabStop also controls keyboard
+    // focusability in general - we can't give keyboard focus to a control with IsTabStop = false.  To work around this, we'll temporarily set
+    // IsTabStop = true before calling Focus(), and then set it back to false if it was previously false.
+
+    auto&& control = focusOrderList[nextIndex];
+    const bool originalIsTabStop = control.IsTabStop();
+
+    auto scopeGuard = gsl::finally([control, originalIsTabStop]()
+        {
+            control.IsTabStop(originalIsTabStop);
+        });
+
+    control.IsTabStop(true);
+
+    // We checked focusability above, so we should never be in a situation where Focus() returns false.
+    MUX_ASSERT(control.Focus(winrt::FocusState::Keyboard));
+    return true;
+}
+
+bool TabView::MoveSelection(bool moveForward)
+{
+    const int originalIndex = SelectedIndex();
+    const int increment = moveForward ? 1 : -1;
+    int currentIndex = originalIndex + increment;
+    const int itemCount = GetItemCount();
+
+    while (currentIndex != originalIndex)
+    {
+        if (currentIndex < 0)
+        {
+            currentIndex = static_cast<int>(itemCount - 1);
+        }
+        else if (currentIndex >= itemCount)
+        {
+            currentIndex = 0;
+        }
+
+        if (IsFocusable(ContainerFromIndex(currentIndex)))
+        {
+            SelectedIndex(currentIndex);
+            return true;
+        }
+
+        currentIndex += increment;
+    }
+
+    return false;
 }
 
 bool TabView::RequestCloseCurrentTab()
@@ -1290,11 +1460,11 @@ void TabView::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 
                 if (isCtrlDown && !isShiftDown)
                 {
-                    args.Handled(SelectNextTab(1));
+                    args.Handled(MoveSelection(true /* moveForward */));
                 }
                 else if (isCtrlDown && isShiftDown)
                 {
-                    args.Handled(SelectNextTab(-1));
+                    args.Handled(MoveSelection(false /* moveForward */));
                 }
             }
         }
@@ -1308,10 +1478,47 @@ void TabView::OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const wi
 
 void TabView::OnCtrlTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args)
 {
-    args.Handled(SelectNextTab(1));
+    args.Handled(MoveSelection(true /* moveForward */));
 }
 
 void TabView::OnCtrlShiftTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args)
 {
-    args.Handled(SelectNextTab(-1));
+    args.Handled(MoveSelection(false /* moveForward */));
+}
+
+void TabView::OnAddButtonKeyDown(const winrt::IInspectable& sender, winrt::KeyRoutedEventArgs const& args)
+{
+    if (auto&& addButton = m_addButton.get())
+    {
+        if (args.Key() == winrt::VirtualKey::Right)
+        {
+            args.Handled(MoveFocus(addButton.FlowDirection() == winrt::FlowDirection::LeftToRight));
+        }
+        else if (args.Key() == winrt::VirtualKey::Left)
+        {
+            args.Handled(MoveFocus(addButton.FlowDirection() != winrt::FlowDirection::LeftToRight));
+        }
+    }
+}
+
+// Note that the parameter is a DependencyObject for convenience to allow us to call this on the return value of ContainerFromIndex.
+// There are some non-control elements that can take focus - e.g. a hyperlink in a RichTextBlock - but those aren't relevant for our purposes here.
+bool TabView::IsFocusable(winrt::DependencyObject const& object, bool checkTabStop)
+{
+    if (!object)
+    {
+        return false;
+    }
+
+    if (auto control = object.try_as<winrt::Control>())
+    {
+        return control &&
+            control.Visibility() == winrt::Visibility::Visible &&
+            (control.IsEnabled() || control.AllowFocusWhenDisabled()) &&
+            (control.IsTabStop() || !checkTabStop);
+    }
+    else
+    {
+        return false;
+    }
 }
