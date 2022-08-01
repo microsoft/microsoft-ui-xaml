@@ -23,7 +23,7 @@ namespace winrt
 #include <WebView2EnvironmentOptions.h>
 #pragma warning( pop )
 
- // for making async/await possible
+// for making async/await possible
 struct AsyncWebViewOperations final : public Awaitable
 {
     AsyncWebViewOperations() = default;
@@ -48,7 +48,7 @@ private:
 };
 
 template <typename D, typename T, typename ... I>
-struct __declspec(empty_bases) DeriveFromContentControlHelper_base : winrt::Windows::UI::Xaml::Controls::ContentControlT<D, winrt::default_interface<T>, winrt::composable, I...>
+struct __declspec(empty_bases)DeriveFromContentControlHelper_base : winrt::Windows::UI::Xaml::Controls::ContentControlT<D, winrt::default_interface<T>, winrt::composable, I...>
 {
     using composable = T;
     using class_type = typename T;
