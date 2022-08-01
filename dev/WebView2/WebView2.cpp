@@ -1138,50 +1138,6 @@ void WebView2::OnXamlPointerMessage(
     }
 }
 
-// The transform is not available in matrix form outside core windows so needed
-// information about the transformation needs to be reconstructed by applying
-// the transform directly to a known set of points.
-// It is assumed that no shear transform is applied and currently rotation is not supported.
-winrt::float4x4 WebView2::GetMatrixFromTransform() {
-    // Calculate transformation assuming 2D only.
-    // Calculate transformed values
-    auto generalTransform = TransformToVisual(nullptr);
-    winrt::Point initialOrigin = winrt::Point(0, 0);
-    winrt::Point translatedOrigin = generalTransform.TransformPoint(initialOrigin);
-
-    winrt::float4x4 outputMatrix{};
-
-    // Assign rotation
-    outputMatrix.m12 = 0.0f;
-    outputMatrix.m13 = 0.0f;
-    outputMatrix.m21 = 0.0f;
-    outputMatrix.m23 = 0.0f;
-    outputMatrix.m31 = 0.0f;
-    outputMatrix.m32 = 0.0f;
-
-    // Assign offsets/translation
-    // This should be the global physical pixel offset to the top left corner of the XAML HWND.
-    outputMatrix.m41 = (translatedOrigin.X * m_rasterizationScale); // X offset
-    outputMatrix.m42 = (translatedOrigin.Y * m_rasterizationScale); // Y offset
-    outputMatrix.m43 = 0.0f; // Z offset
-
-    // Assign scale values
-    // These values will just be 1.0 because Anaheim is getting their values in physical pixels,
-    // so they don't need to do any extra unscaling.
-    outputMatrix.m11 = 1.0f; // X Scale
-    outputMatrix.m22 = 1.0f; // Y Scale
-    outputMatrix.m33 = 1.0f; // Z scale
-
-    // Set to 0 (3D coordinate transform values)
-    outputMatrix.m14 = 0.0f;
-    outputMatrix.m24 = 0.0f;
-    outputMatrix.m34 = 0.0f;
-    // Set to 1 to maintain non-zero det.
-    outputMatrix.m44 = 1.0f;
-
-    return outputMatrix;
-}
-
 void WebView2::ResetMouseInputState()
 {
     m_isLeftMouseButtonPressed = false;
