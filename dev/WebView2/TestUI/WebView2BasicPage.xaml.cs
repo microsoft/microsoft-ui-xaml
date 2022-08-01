@@ -181,6 +181,7 @@ namespace MUXControlsTestApp
             ParentVisibilityTurnedOnTest,
             SpecificTouchTest,
             CursorUpdateTest,
+            CursorClickUpdateTest,
             WebView2CleanedUpTest,
             QueryCoreWebView2BasicTest,
             CoreWebView2InitializedTest,
@@ -208,18 +209,18 @@ namespace MUXControlsTestApp
             { TestList.BasicRenderingTest, 0 },
             { TestList.MouseLeftClickTest, 1 },
             { TestList.MouseMiddleClickTest, 1 },
-            { TestList.MouseRightClickTest, 1},
-            { TestList.MouseXButton1ClickTest, 1},
-            { TestList.MouseXButton2ClickTest, 1},
-            { TestList.MouseWheelScrollTest, 2},
-            { TestList.NavigationErrorTest, 0},
-            { TestList.Focus_BasicTabTest, 3},
-            { TestList.Focus_ReverseTabTest, 3},
-            { TestList.Focus_BackAndForthTabTest, 3},
-            { TestList.Focus_MouseActivateTest, 3},
-            { TestList.ExecuteScriptTest, 4},
-            { TestList.MultipleWebviews_BasicRenderingTest, 0},
-            { TestList.MultipleWebviews_FocusTest, 3},
+            { TestList.MouseRightClickTest, 1 },
+            { TestList.MouseXButton1ClickTest, 1 },
+            { TestList.MouseXButton2ClickTest, 1 },
+            { TestList.MouseWheelScrollTest, 2 },
+            { TestList.NavigationErrorTest, 0 },
+            { TestList.Focus_BasicTabTest, 3 },
+            { TestList.Focus_ReverseTabTest, 3 },
+            { TestList.Focus_BackAndForthTabTest, 3 },
+            { TestList.Focus_MouseActivateTest, 3 },
+            { TestList.ExecuteScriptTest, 4 },
+            { TestList.MultipleWebviews_BasicRenderingTest, 0 },
+            { TestList.MultipleWebviews_FocusTest, 3 },
             { TestList.MultipleWebviews_LanguageTest, 0 },
             { TestList.CopyPasteTest, 3 },
             { TestList.BasicKeyboardTest, 5 },
@@ -246,14 +247,15 @@ namespace MUXControlsTestApp
             { TestList.ParentVisibilityHiddenTest, 3 },
             { TestList.ParentVisibilityTurnedOnTest, 3 },
             { TestList.SpecificTouchTest, 6 },
-            { TestList.CursorUpdateTest, 1},
+            { TestList.CursorUpdateTest, 1 },
+            { TestList.CursorClickUpdateTest, 1 },
             { TestList.WebView2CleanedUpTest, 1 },
             { TestList.QueryCoreWebView2BasicTest, 0 },
             { TestList.CoreWebView2InitializedTest, 0 },
-            { TestList.CoreWebView2Initialized_FailedTest, 0},
+            { TestList.CoreWebView2Initialized_FailedTest, 0 },
             { TestList.WindowHiddenTest, 3 },
             { TestList.WindowlessPopupTest, 1 },
-            { TestList.PointerReleaseWithoutPressTest, 1},
+            { TestList.PointerReleaseWithoutPressTest, 1 },
             { TestList.HostNameToFolderMappingTest, 0 },
             { TestList.NavigateToVideoTest, 4 },
             { TestList.NavigateToLocalImageTest, 0 },
@@ -662,6 +664,7 @@ namespace MUXControlsTestApp
                     }
                     break;
                 case TestList.CursorUpdateTest:
+                case TestList.CursorClickUpdateTest:
                     {
                         // Remove existing WebView, we're going to replace it
                         Border parentBorder = RemoveExistingWebViewControl(MyWebView2);
@@ -1650,6 +1653,7 @@ namespace MUXControlsTestApp
                         break;
 
                     case TestList.CursorUpdateTest:
+                    case TestList.CursorClickUpdateTest:
                         {
                             WebView2WithCursor webviewWithCursor = MyWebView2 as WebView2WithCursor;
                             Windows.UI.Core.CoreCursor cursor = webviewWithCursor.WrappedProtectedCursor;
