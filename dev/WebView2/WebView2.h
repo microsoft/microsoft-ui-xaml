@@ -85,7 +85,6 @@ public:
     winrt::IUnknown GetProviderForHwnd(HWND hwnd);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void ResetPointerHelper(const winrt::PointerRoutedEventArgs& args);
     void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
 
@@ -246,9 +245,9 @@ private:
     winrt::AccessibilitySettings::HighContrastChanged_revoker m_highContrastChangedRevoker{};
 
     // Pointer handling for CoreWindow
+    void ResetPointerHelper(const winrt::PointerRoutedEventArgs& args);
     bool m_isPointerOver{};
     winrt::CoreCursor m_oldCursor{ nullptr };
-    winrt::CoreCursor m_requestedCursor{ nullptr };
 
     XamlFocusChangeInfo m_xamlFocusChangeInfo{};
 

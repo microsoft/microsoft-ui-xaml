@@ -325,6 +325,13 @@ void WebView2::HandlePointerExited(const winrt::Windows::Foundation::IInspectabl
     winrt::PointerDeviceType deviceType{ args.Pointer().PointerDeviceType() };
     UINT message;
 
+    if (m_isPointerOver)
+    {
+        m_isPointerOver = false;
+        winrt::CoreWindow::GetForCurrentThread().PointerCursor(m_oldCursor);
+        m_oldCursor = nullptr;
+    }
+
     if (deviceType == winrt::PointerDeviceType::Mouse)
     {
         message = WM_MOUSELEAVE;
@@ -365,13 +372,6 @@ void WebView2::HandlePointerCaptureLost(const winrt::Windows::Foundation::IInspe
 void WebView2::ResetPointerHelper(const winrt::PointerRoutedEventArgs& args)
 {
     winrt::PointerDeviceType deviceType{ args.Pointer().PointerDeviceType() };
-
-    if (m_isPointerOver)
-    {
-        m_isPointerOver = false;
-        winrt::CoreWindow::GetForCurrentThread().PointerCursor(m_oldCursor);
-        m_oldCursor = nullptr;
-    }
 
     if (deviceType == winrt::PointerDeviceType::Mouse)
     {
@@ -614,8 +614,6 @@ void WebView2::RegisterCoreEventHandlers()
     m_cursorChangedRevoker = m_coreWebViewCompositionController.CursorChanged(winrt::auto_revoke, {
         [this](auto const& controller, auto const& obj)
         {
-            m_requestedCursor = controller.Cursor();
-
             UpdateCoreWindowCursor();
         }});
 }
@@ -1034,9 +1032,9 @@ void WebView2::FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWe
 
 void WebView2::UpdateCoreWindowCursor()
 {
-    if (m_isPointerOver)
+    if (m_coreWebViewCompositionController && m_isPointerOver)
     {
-        winrt::CoreWindow::GetForCurrentThread().PointerCursor(m_requestedCursor);
+        winrt::CoreWindow::GetForCurrentThread().PointerCursor(m_coreWebViewCompositionController.Cursor());
     }
 }
 
