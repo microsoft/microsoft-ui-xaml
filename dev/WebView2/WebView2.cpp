@@ -893,7 +893,6 @@ void WebView2::FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWe
 {
     winrt::PointerPointProperties inputProperties{ inputPt.Properties() };
 
-    //DEVICE TYPE
     winrt::PointerDeviceType deviceType{ inputPt.PointerDevice().PointerDeviceType() };
 
     if (deviceType == winrt::PointerDeviceType::Pen)
@@ -925,10 +924,8 @@ void WebView2::FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWe
     outputPt.Time(static_cast<uint32_t>(inputPt.Timestamp() / 1000)); //microsecond to millisecond conversion (for tick count)
     outputPt.HistoryCount(args.GetIntermediatePoints(*this).Size());
 
-    //PERFORMANCE COUNT
     LARGE_INTEGER lpFrequency{};
-    bool res = QueryPerformanceFrequency(&lpFrequency);
-    if (res)
+    if (QueryPerformanceFrequency(&lpFrequency))
     {
         auto scale = 1000000;
         auto frequency = lpFrequency.QuadPart;
@@ -1008,17 +1005,14 @@ void WebView2::UpdateCoreWindowCursor()
     }
 }
 
-void WebView2::OnXamlPointerMessage(
-    UINT message,
-    const winrt::PointerRoutedEventArgs& args) noexcept
+void WebView2::OnXamlPointerMessage(UINT message, const winrt::PointerRoutedEventArgs& args) noexcept
 {
     // Set Handled to prevent ancestor actions such as ScrollViewer taking focus on PointerPressed/PointerReleased.
     args.Handled(true);
 
     if (!m_coreWebView || !m_coreWebViewCompositionController)
     {
-        // returning only because one can click within webview2 element even before it gets loaded
-        // in such scenarios, the input gets ignored
+        // nothing to forward input to
         return;
     }
 
@@ -1042,7 +1036,7 @@ void WebView2::OnXamlPointerMessage(
             const WPARAM l_param = WebView2Utility::PackIntoWin32StylePointerArgs_lparam(message, args, physicalPoint);
             const LPARAM w_param = WebView2Utility::PackIntoWin32StyleMouseArgs_wparam(message, args, logicalPointerPoint);
 
-            POINT coords_win32;
+            POINT coords_win32{};
             POINTSTOPOINT(coords_win32, l_param);
             winrt::Point coords{ static_cast<float>(coords_win32.x), static_cast<float>(coords_win32.y) };
 
@@ -1070,19 +1064,15 @@ void WebView2::OnXamlPointerMessage(
         const winrt::PointerPoint inputPt{ args.GetCurrentPoint(*this) };
         winrt::CoreWebView2PointerInfo outputPt = m_coreWebViewEnvironment.CreateCoreWebView2PointerInfo();
 
-        //PEN INPUT
         if (deviceType == winrt::PointerDeviceType::Pen)
         {
             FillPointerPenInfo(inputPt, outputPt);
         }
-
-        //TOUCH INPUT
-        if (deviceType == winrt::PointerDeviceType::Touch)
+        else if (deviceType == winrt::PointerDeviceType::Touch)
         {
             FillPointerTouchInfo(inputPt, outputPt);
         }
 
-        //GENERAL POINTER INPUT
         FillPointerInfo(inputPt, outputPt, args);
 
         m_coreWebViewCompositionController.SendPointerInput(winrt::CoreWebView2PointerEventKind{ static_cast<winrt::CoreWebView2PointerEventKind>(message) }, outputPt);
@@ -1209,7 +1199,6 @@ void WebView2::MoveFocusIntoCoreWebView(winrt::CoreWebView2MoveFocusReason reaso
         }
     }
 }
-
 
 // Since WebView takes HWND focus (via OnGotFocus -> MoveFocus) Xaml assumes
 // focus was lost for an external reason. When the next unhandled TAB KeyDown

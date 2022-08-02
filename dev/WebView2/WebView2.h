@@ -115,7 +115,6 @@ private:
     void OnManipulationModePropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
     void OnVisibilityPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
 
-    // EBWebView Event Handlers
     void FireNavigationStarting(const winrt::CoreWebView2NavigationStartingEventArgs& args);
     void FireNavigationCompleted(const winrt::CoreWebView2NavigationCompletedEventArgs& args);
     void FireWebMessageReceived(const winrt::CoreWebView2WebMessageReceivedEventArgs& args);
@@ -254,10 +253,10 @@ private:
 
     XamlFocusChangeInfo m_xamlFocusChangeInfo{};
 
-    // Tracks when Anaheim thinks it has focus.
+    // Tracks when Edge thinks it has focus.
     //
     // Xaml's CoreWindow hosting code swallows WM_KEYDOWN messages for VK_TAB that are expected to go to InputWindow HWND.
-    // When true, fill in this missing event manually via SendMessage so that TAB's can be processed in Anaheim.
+    // When true, fill in this missing event manually via SendMessage so that TAB's can be processed in Edge.
     bool m_webHasFocus{};
 
     bool m_isVisible{};
@@ -266,12 +265,12 @@ private:
 
     bool m_loaded{};
 
-    bool m_isCoreFailure_BrowserExited_State{};    // True after Anaheim ProcessFailed event w/ CORE_WEBVIEW2_PROCESS_FAILED_KIND_BROWSER_PROCESS_EXITED
+    bool m_isCoreFailure_BrowserExited_State{};    // True after Edge ProcessFailed event w/ CORE_WEBVIEW2_PROCESS_FAILED_KIND_BROWSER_PROCESS_EXITED
     bool m_isClosed{};    // True after WebView2::Close() has been called - no core objects can be created
 
     bool m_isImplicitCreationInProgress{};    // True while we are creating CWV2 due to Source property being set
     bool m_isExplicitCreationInProgress{};    // True while we are creating CWV2 due to EnsureCoreWebView2Async() being called
-    std::unique_ptr<AsyncWebViewOperations> m_creationInProgressAsync{ nullptr };      // Awaitable object for any currently active creation. There should be only one active operation at a time.
+    std::unique_ptr<AsyncWebViewOperations> m_creationInProgressAsync{ nullptr };    // Awaitable object for any currently active creation. There should be only one active operation at a time.
 
     float m_rasterizationScale{};
     // The last known WebView rect position, scaled for DPI
