@@ -909,17 +909,9 @@ void WebView2::FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWe
     outputPt.PointerFlags(GetPointerFlags(inputPt));
 
     outputPt.PixelLocation(ScalePoint(inputPt.Position()));
-
-    //HIMETRIC LOCATION (task 30544057 exists to finish this)
-    //auto himetricScale = 26.4583; //1 hiMetric = 0.037795280352161 PX
-    //winrt::Point outputPt_pointerHimetricLocation(static_cast<float>(inputPt.Position().X), static_cast<float>(inputPt.Position().Y));
-    //outputPt->HimetricLocation(outputPt_pointerHimetricLocation);
-
     outputPt.PixelLocationRaw(ScalePoint(inputPt.RawPosition()));
 
-    //RAW HIMETRIC LOCATION
-    //winrt::Point outputPt_pointerRawHimetricLocation = { static_cast<float>(inputPt.RawPosition().X), static_cast<float>(inputPt.RawPosition().Y) };
-    //outputPt.HimetricLocationRaw(outputPt_pointerRawHimetricLocation);
+    // TODO Task 30544057 - Himetric location and raw himetric location
 
     outputPt.Time(static_cast<uint32_t>(inputPt.Timestamp() / 1000)); //microsecond to millisecond conversion (for tick count)
     outputPt.HistoryCount(args.GetIntermediatePoints(*this).Size());
