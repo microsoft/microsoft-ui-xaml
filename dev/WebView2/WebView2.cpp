@@ -896,23 +896,8 @@ void WebView2::FillPointerTouchInfo(const winrt::PointerPoint& inputPt, winrt::C
     UINT32 outputPt_touchMask = TOUCH_MASK_CONTACTAREA | TOUCH_MASK_ORIENTATION | TOUCH_MASK_PRESSURE;
     outputPt.TouchMask(outputPt_touchMask);
 
-    //TOUCH CONTACT
-    float width = inputProperties.ContactRect().Width * m_rasterizationScale;
-    float height = inputProperties.ContactRect().Height * m_rasterizationScale;
-    float leftVal = inputProperties.ContactRect().X * m_rasterizationScale;
-    float topVal = inputProperties.ContactRect().Y * m_rasterizationScale;
-
-    winrt::Windows::Foundation::Rect outputPt_touchContact(static_cast<float>(leftVal), static_cast<float>(topVal), static_cast<float>(width), static_cast<float>(height));
-    outputPt.TouchContact(outputPt_touchContact);
-
-    //TOUCH CONTACT RAW
-    float widthRaw = inputProperties.ContactRectRaw().Width * m_rasterizationScale;
-    float heightRaw = inputProperties.ContactRectRaw().Height * m_rasterizationScale;
-    float leftValRaw = inputProperties.ContactRectRaw().X * m_rasterizationScale;
-    float topValRaw = inputProperties.ContactRectRaw().Y * m_rasterizationScale;
-
-    winrt::Windows::Foundation::Rect outputPt_touchContactRaw(static_cast<float>(leftValRaw), static_cast<float>(topValRaw), static_cast<float>(widthRaw), static_cast<float>(heightRaw));
-    outputPt.TouchContactRaw(outputPt_touchContactRaw);
+    outputPt.TouchContact(ScaleRect(inputProperties.ContactRect()));
+    outputPt.TouchContactRaw(ScaleRect(inputProperties.ContactRectRaw()));
 
     UINT32 outputPt_touchOrientation = static_cast<UINT32>(inputProperties.Orientation());
     outputPt.TouchOrientation(outputPt_touchOrientation);
@@ -1013,16 +998,14 @@ void WebView2::FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWe
 
     outputPt.PointerFlags(outputPt_pointerFlags);
 
-    winrt::Point outputPt_pointerPixelLocation(static_cast<float>(m_rasterizationScale * (inputPt.Position().X)), static_cast<float>(m_rasterizationScale * (inputPt.Position().Y)));
-    outputPt.PixelLocation(outputPt_pointerPixelLocation);
+    outputPt.PixelLocation(ScalePoint(inputPt.Position()));
 
     //HIMETRIC LOCATION (task 30544057 exists to finish this)
     //auto himetricScale = 26.4583; //1 hiMetric = 0.037795280352161 PX
     //winrt::Point outputPt_pointerHimetricLocation(static_cast<float>(inputPt.Position().X), static_cast<float>(inputPt.Position().Y));
     //outputPt->HimetricLocation(outputPt_pointerHimetricLocation);
 
-    winrt::Point outputPt_pointerRawPixelLocation(static_cast<float>(m_rasterizationScale * (inputPt.RawPosition().X)), static_cast<float>(m_rasterizationScale * (inputPt.RawPosition().Y)));
-    outputPt.PixelLocationRaw(outputPt_pointerRawPixelLocation);
+    outputPt.PixelLocationRaw(ScalePoint(inputPt.RawPosition()));
 
     //RAW HIMETRIC LOCATION
     //winrt::Point outputPt_pointerRawHimetricLocation = { static_cast<float>(inputPt.RawPosition().X), static_cast<float>(inputPt.RawPosition().Y) };
@@ -1049,6 +1032,21 @@ void WebView2::FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWe
     outputPt.ButtonChangeKind(outputPoint_pointerButtonChangeKind);
 }
 
+winrt::Rect WebView2::ScaleRect(winrt::Rect inputRect)
+{
+    float xVal = inputRect.X * m_rasterizationScale;
+    float yVal = inputRect.Y * m_rasterizationScale;
+    float width = inputRect.Width * m_rasterizationScale;
+    float height = inputRect.Height * m_rasterizationScale;
+
+    return winrt::Rect(xVal, yVal, width, height);
+}
+
+winrt::Point WebView2::ScalePoint(winrt::Point inputPoint)
+{
+    return winrt::Point(inputPoint.X * m_rasterizationScale, inputPoint.Y * m_rasterizationScale);
+}
+
 void WebView2::UpdateCoreWindowCursor()
 {
     if (m_coreWebViewCompositionController && m_isPointerOver)
@@ -1073,7 +1071,7 @@ void WebView2::OnXamlPointerMessage(
 
     winrt::PointerPoint logicalPointerPoint{ args.GetCurrentPoint(*this) };
     winrt::Windows::Foundation::Point logicalPoint{ logicalPointerPoint.Position() };
-    winrt::Windows::Foundation::Point physicalPoint{ logicalPoint.X * m_rasterizationScale, logicalPoint.Y * m_rasterizationScale };
+    winrt::Windows::Foundation::Point physicalPoint = ScalePoint(logicalPoint);
     winrt::Windows::Devices::Input::PointerDeviceType deviceType{ args.Pointer().PointerDeviceType() };
 
     if (deviceType == winrt::Windows::Devices::Input::PointerDeviceType::Mouse)

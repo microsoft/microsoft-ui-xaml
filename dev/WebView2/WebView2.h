@@ -107,6 +107,8 @@ private:
     void FillPointerPenInfo(const winrt::PointerPoint& inputPt, winrt::CoreWebView2PointerInfo outputPt);
     void FillPointerTouchInfo(const winrt::PointerPoint& inputPt, winrt::CoreWebView2PointerInfo outputPt);
     void FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWebView2PointerInfo outputPt, const winrt::PointerRoutedEventArgs& args);
+    winrt::Rect ScaleRect(winrt::Rect inputRect);
+    winrt::Point ScalePoint(winrt::Point inputPoint);
 
     void ResetMouseInputState();
     void OnManipulationModePropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
