@@ -852,39 +852,27 @@ winrt::Size WebView2::ArrangeOverride(winrt::Size const& finalSize)
 void WebView2::FillPointerPenInfo(const winrt::PointerPoint& inputPt, winrt::CoreWebView2PointerInfo outputPt)
 {
     winrt::PointerPointProperties inputProperties{ inputPt.Properties() };
-    UINT32 outputPt_penFlags{ PEN_FLAG_NONE };
 
+    UINT32 outputPt_penFlags{ PEN_FLAG_NONE };
     if (inputProperties.IsBarrelButtonPressed())
     {
         outputPt_penFlags |= PEN_FLAG_BARREL;
     }
-
     if (inputProperties.IsInverted())
     {
         outputPt_penFlags |= PEN_FLAG_INVERTED;
     }
-
     if (inputProperties.IsEraser())
     {
         outputPt_penFlags |= PEN_FLAG_ERASER;
     }
-
     outputPt.PenFlags(outputPt_penFlags);
 
-    UINT32 outputPt_penMask = PEN_MASK_PRESSURE | PEN_MASK_ROTATION | PEN_MASK_TILT_X | PEN_MASK_TILT_Y;
-    outputPt.PenMask(outputPt_penMask);
-
-    UINT32 outputPt_penPressure = static_cast<UINT32>(inputProperties.Pressure() * 1024);
-    outputPt.PenPressure(outputPt_penPressure);
-
-    UINT32 outputPt_penRotation = static_cast<UINT32>(inputProperties.Twist());
-    outputPt.PenRotation(outputPt_penRotation);
-
-    INT32 outputPt_penTiltX = static_cast<INT32>(inputProperties.XTilt());
-    outputPt.PenTiltX(outputPt_penTiltX);
-
-    INT32 outputPt_penTiltY = static_cast<INT32>(inputProperties.YTilt());
-    outputPt.PenTiltY(outputPt_penTiltY);
+    outputPt.PenMask(PEN_MASK_PRESSURE | PEN_MASK_ROTATION | PEN_MASK_TILT_X | PEN_MASK_TILT_Y);
+    outputPt.PenPressure(static_cast<uint32_t>(inputProperties.Pressure() * 1024));
+    outputPt.PenRotation(static_cast<uint32_t>(inputProperties.Twist()));
+    outputPt.PenTiltX(static_cast<int32_t>(inputProperties.XTilt()));
+    outputPt.PenTiltY(static_cast<int32_t>(inputProperties.YTilt()));
 }
 
 void WebView2::FillPointerTouchInfo(const winrt::PointerPoint& inputPt, winrt::CoreWebView2PointerInfo outputPt)
@@ -892,18 +880,13 @@ void WebView2::FillPointerTouchInfo(const winrt::PointerPoint& inputPt, winrt::C
     winrt::PointerPointProperties inputProperties{ inputPt.Properties() };
 
     outputPt.TouchFlags(TOUCH_FLAG_NONE);
-
-    UINT32 outputPt_touchMask = TOUCH_MASK_CONTACTAREA | TOUCH_MASK_ORIENTATION | TOUCH_MASK_PRESSURE;
-    outputPt.TouchMask(outputPt_touchMask);
+    outputPt.TouchMask(TOUCH_MASK_CONTACTAREA | TOUCH_MASK_ORIENTATION | TOUCH_MASK_PRESSURE);
 
     outputPt.TouchContact(ScaleRect(inputProperties.ContactRect()));
     outputPt.TouchContactRaw(ScaleRect(inputProperties.ContactRectRaw()));
 
-    UINT32 outputPt_touchOrientation = static_cast<UINT32>(inputProperties.Orientation());
-    outputPt.TouchOrientation(outputPt_touchOrientation);
-
-    UINT32 outputPt_touchPressure = static_cast<UINT32>(inputProperties.Pressure() * 1024);
-    outputPt.TouchPressure(outputPt_touchPressure);
+    outputPt.TouchOrientation(static_cast<uint32_t>(inputProperties.Orientation()));
+    outputPt.TouchPressure(static_cast<uint32_t>(inputProperties.Pressure() * 1024));
 }
 
 void WebView2::FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWebView2PointerInfo outputPt, const winrt::PointerRoutedEventArgs& args)
@@ -923,9 +906,7 @@ void WebView2::FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWe
     }
 
     outputPt.PointerId(args.Pointer().PointerId());
-
     outputPt.FrameId(inputPt.FrameId());
-
     outputPt.PointerFlags(GetPointerFlags(inputPt));
 
     outputPt.PixelLocation(ScalePoint(inputPt.Position()));
@@ -941,11 +922,8 @@ void WebView2::FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWe
     //winrt::Point outputPt_pointerRawHimetricLocation = { static_cast<float>(inputPt.RawPosition().X), static_cast<float>(inputPt.RawPosition().Y) };
     //outputPt.HimetricLocationRaw(outputPt_pointerRawHimetricLocation);
 
-    UINT32 outputPoint_pointerTime = static_cast<UINT32>(inputPt.Timestamp() / 1000); //microsecond to millisecond conversion(for tick count)
-    outputPt.Time(outputPoint_pointerTime);
-
-    auto outputPoint_pointerHistoryCount = static_cast<UINT32>(args.GetIntermediatePoints(*this).Size());
-    outputPt.HistoryCount(outputPoint_pointerHistoryCount);
+    outputPt.Time(static_cast<uint32_t>(inputPt.Timestamp() / 1000)); //microsecond to millisecond conversion (for tick count)
+    outputPt.HistoryCount(args.GetIntermediatePoints(*this).Size());
 
     //PERFORMANCE COUNT
     LARGE_INTEGER lpFrequency{};
@@ -954,12 +932,10 @@ void WebView2::FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWe
     {
         auto scale = 1000000;
         auto frequency = lpFrequency.QuadPart;
-        auto outputPoint_pointerPerformanceCount = (inputPt.Timestamp() * frequency) / scale;
-        outputPt.PerformanceCount(outputPoint_pointerPerformanceCount);
+        outputPt.PerformanceCount((inputPt.Timestamp() * frequency) / scale);
     }
 
-    auto outputPoint_pointerButtonChangeKind = static_cast<INT32>(inputProperties.PointerUpdateKind());
-    outputPt.ButtonChangeKind(outputPoint_pointerButtonChangeKind);
+    outputPt.ButtonChangeKind(static_cast<int32_t>(inputProperties.PointerUpdateKind()));
 }
 
 uint32_t WebView2::GetPointerFlags(const winrt::PointerPoint& inputPt)
