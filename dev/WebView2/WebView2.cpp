@@ -926,77 +926,7 @@ void WebView2::FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWe
 
     outputPt.FrameId(inputPt.FrameId());
 
-    //POINTER FLAGS
-    UINT32 outputPt_pointerFlags{ POINTER_FLAG_NONE };
-
-    if (inputProperties.IsInRange())
-    {
-        outputPt_pointerFlags |= POINTER_FLAG_INRANGE;
-    }
-
-    if (deviceType == winrt::PointerDeviceType::Touch)
-    {
-        if (inputPt.IsInContact())
-        {
-            outputPt_pointerFlags |= POINTER_FLAG_INCONTACT;
-            outputPt_pointerFlags |= POINTER_FLAG_FIRSTBUTTON;
-        }
-
-        if (inputProperties.PointerUpdateKind() == winrt::PointerUpdateKind::LeftButtonPressed)
-        {
-            outputPt_pointerFlags |= POINTER_FLAG_NEW;
-        }
-    }
-
-    if (deviceType == winrt::PointerDeviceType::Pen)
-    {
-        if (inputPt.IsInContact())
-        {
-            outputPt_pointerFlags |= POINTER_FLAG_INCONTACT;
-
-            if (!inputProperties.IsBarrelButtonPressed())
-            {
-                outputPt_pointerFlags |= POINTER_FLAG_FIRSTBUTTON;
-            }
-
-            else
-            {
-                outputPt_pointerFlags |= POINTER_FLAG_SECONDBUTTON;
-            }
-        } // POINTER_FLAG_NEW is currently omitted for pen input
-    }
-
-    if (inputProperties.IsPrimary())
-    {
-        outputPt_pointerFlags |= POINTER_FLAG_PRIMARY;
-    }
-
-    if (inputProperties.TouchConfidence())
-    {
-        outputPt_pointerFlags |= POINTER_FLAG_CONFIDENCE;
-    }
-
-    if (inputProperties.IsCanceled())
-    {
-        outputPt_pointerFlags |= POINTER_FLAG_CANCELED;
-    }
-
-    if (inputProperties.PointerUpdateKind() == winrt::PointerUpdateKind::LeftButtonPressed)
-    {
-        outputPt_pointerFlags |= POINTER_FLAG_DOWN;
-    }
-
-    if (inputProperties.PointerUpdateKind() == winrt::PointerUpdateKind::Other)
-    {
-        outputPt_pointerFlags |= POINTER_FLAG_UPDATE;
-    }
-
-    if (inputProperties.PointerUpdateKind() == winrt::PointerUpdateKind::LeftButtonReleased)
-    {
-        outputPt_pointerFlags |= POINTER_FLAG_UP;
-    }
-
-    outputPt.PointerFlags(outputPt_pointerFlags);
+    outputPt.PointerFlags(GetPointerFlags(inputPt));
 
     outputPt.PixelLocation(ScalePoint(inputPt.Position()));
 
@@ -1030,6 +960,53 @@ void WebView2::FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWe
 
     auto outputPoint_pointerButtonChangeKind = static_cast<INT32>(inputProperties.PointerUpdateKind());
     outputPt.ButtonChangeKind(outputPoint_pointerButtonChangeKind);
+}
+
+uint32_t WebView2::GetPointerFlags(const winrt::PointerPoint& inputPt)
+{
+    winrt::PointerPointProperties inputProperties{ inputPt.Properties() };
+    winrt::PointerDeviceType deviceType{ inputPt.PointerDevice().PointerDeviceType() };
+    uint32_t pointerFlags{ POINTER_FLAG_NONE };
+
+    if (deviceType == winrt::PointerDeviceType::Touch)
+    {
+        if (inputPt.IsInContact())
+        {
+            pointerFlags |= POINTER_FLAG_INCONTACT;
+            pointerFlags |= POINTER_FLAG_FIRSTBUTTON;
+        }
+
+        if (inputProperties.PointerUpdateKind() == winrt::PointerUpdateKind::LeftButtonPressed)
+        {
+            pointerFlags |= POINTER_FLAG_NEW;
+        }
+    }
+    else if (deviceType == winrt::PointerDeviceType::Pen)
+    {
+        if (inputPt.IsInContact())
+        {
+            pointerFlags |= POINTER_FLAG_INCONTACT;
+
+            if (!inputProperties.IsBarrelButtonPressed())
+            {
+                pointerFlags |= POINTER_FLAG_FIRSTBUTTON;
+            }
+            else
+            {
+                pointerFlags |= POINTER_FLAG_SECONDBUTTON;
+            }
+        } // POINTER_FLAG_NEW is currently omitted for pen input
+    }
+
+    if (inputProperties.IsInRange()) { pointerFlags |= POINTER_FLAG_INRANGE; }
+    if (inputProperties.IsPrimary()) { pointerFlags |= POINTER_FLAG_PRIMARY; }
+    if (inputProperties.IsCanceled()) { pointerFlags |= POINTER_FLAG_CANCELED; }
+    if (inputProperties.TouchConfidence()) { pointerFlags |= POINTER_FLAG_CONFIDENCE; }
+    if (inputProperties.PointerUpdateKind() == winrt::PointerUpdateKind::LeftButtonPressed) { pointerFlags |= POINTER_FLAG_DOWN; }
+    if (inputProperties.PointerUpdateKind() == winrt::PointerUpdateKind::LeftButtonReleased) { pointerFlags |= POINTER_FLAG_UP; }
+    if (inputProperties.PointerUpdateKind() == winrt::PointerUpdateKind::Other) { pointerFlags |= POINTER_FLAG_UPDATE; }
+
+    return pointerFlags;
 }
 
 winrt::Rect WebView2::ScaleRect(winrt::Rect inputRect)
