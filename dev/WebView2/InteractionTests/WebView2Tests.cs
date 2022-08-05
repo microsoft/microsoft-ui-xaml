@@ -643,6 +643,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        public void CursorClickUpdateTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                // On ChooseTest, replace the default webview with one that exposes the ProtectedCursor member
+                ChooseTest("CursorClickUpdateTest");
+
+                // Clear the cache so we can find the new webview
+                ElementCache.Clear();
+                var webview = FindElement.ById("MyWebView2");
+                Rectangle bounds = webview.BoundingRectangle;
+                Log.Comment("Bounds = X:{0}, Y:{1}, Width:{2}, Height:{3}", bounds.X, bounds.Y, bounds.Width, bounds.Height);
+
+                // Click somewhere in the webview that's not the button a few times
+                var centerOfWebView = new Point(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2);
+                PointerInput.Move(centerOfWebView);
+
+                PointerInput.Press(PointerButtons.Primary);
+                PointerInput.Release(PointerButtons.Primary);
+
+                PointerInput.Press(PointerButtons.Primary);
+                PointerInput.Release(PointerButtons.Primary);
+
+                PointerInput.Press(PointerButtons.Primary);
+                PointerInput.Release(PointerButtons.Primary);
+
+                var insideButton = new Point(bounds.X + 20, bounds.Y + 20);
+                PointerInput.Move(insideButton);
+                Wait.ForIdle();
+
+                // Checks that the ProtectedCursor type has changed to the one we expect
+                CompleteTestAndWaitForResult("CursorClickUpdateTest");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void NavigationErrorTest()
         {
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))

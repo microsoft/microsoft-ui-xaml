@@ -85,7 +85,6 @@ public:
     winrt::IUnknown GetProviderForHwnd(HWND hwnd);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void ResetPointerHelper(const winrt::PointerRoutedEventArgs& args);
     void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
 
@@ -110,7 +109,6 @@ private:
     void FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWebView2PointerInfo outputPt, const winrt::PointerRoutedEventArgs& args);
 
     winrt::float4x4 GetMatrixFromTransform();
-    void ResetMouseInputState();
     void OnManipulationModePropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
     void OnVisibilityPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
 
@@ -247,9 +245,9 @@ private:
     winrt::AccessibilitySettings::HighContrastChanged_revoker m_highContrastChangedRevoker{};
 
     // Pointer handling for CoreWindow
+    void ResetPointerHelper(const winrt::PointerRoutedEventArgs& args);
     bool m_isPointerOver{};
     winrt::CoreCursor m_oldCursor{ nullptr };
-    winrt::CoreCursor m_requestedCursor{ nullptr };
 
     XamlFocusChangeInfo m_xamlFocusChangeInfo{};
 

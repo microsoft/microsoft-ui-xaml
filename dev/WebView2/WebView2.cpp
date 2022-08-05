@@ -179,40 +179,33 @@ void WebView2::HandlePointerPressed(const winrt::Windows::Foundation::IInspectab
 
     if (deviceType == winrt::PointerDeviceType::Mouse)
     {
-        winrt::PointerPointProperties properties{ pointerPoint.Properties() };
         // WebView takes mouse capture to avoid missing pointer released events that occur outside of the element that
         // end pointer pressed state inside the webview. Example, scrollbar is being used and mouse is moved out
         // of webview bounds before being released, the webview will miss the released event and upon reentry into
         // the webview, the mouse will still cause the scrollbar to move as if selected.
         m_hasMouseCapture = this->CapturePointer(args.Pointer());
 
-        if (properties.IsLeftButtonPressed())
+        winrt::PointerPointProperties properties{ pointerPoint.Properties() };
+        auto updateKind = properties.PointerUpdateKind();
+
+        if (updateKind == winrt::PointerUpdateKind::LeftButtonPressed)
         {
             // Double Click is working as well with this code, presumably by being recognized on browser side from WM_LBUTTONDOWN/ WM_LBUTTONUP
             message = WM_LBUTTONDOWN;
-            m_isLeftMouseButtonPressed = true;
         }
-        else if (properties.IsMiddleButtonPressed())
+        else if (updateKind == winrt::PointerUpdateKind::MiddleButtonPressed)
         {
             message = WM_MBUTTONDOWN;
-            m_isMiddleMouseButtonPressed = true;
         }
-        else if (properties.IsRightButtonPressed())
+        else if (updateKind == winrt::PointerUpdateKind::RightButtonPressed)
         {
             message = WM_RBUTTONDOWN;
-            m_isRightMouseButtonPressed = true;
         }
-        else if (properties.IsXButton1Pressed())
+        else if (updateKind == winrt::PointerUpdateKind::XButton1Pressed
+            || updateKind == winrt::PointerUpdateKind::XButton2Pressed)
         {
             message = WM_XBUTTONDOWN;
-            m_isXButton1Pressed = true;
         }
-        else if (properties.IsXButton2Pressed())
-        {
-            message = WM_XBUTTONDOWN;
-            m_isXButton2Pressed = true;
-        }
-
         else
         {
             MUX_ASSERT(false);
@@ -257,30 +250,23 @@ void WebView2::HandlePointerReleased(const winrt::Windows::Foundation::IInspecta
 
     if (deviceType == winrt::PointerDeviceType::Mouse)
     {
-        if (m_isLeftMouseButtonPressed)
+        auto updateKind = properties.PointerUpdateKind();
+        if (updateKind == winrt::PointerUpdateKind::LeftButtonReleased)
         {
             message = WM_LBUTTONUP;
-            m_isLeftMouseButtonPressed = false;
         }
-        else if (m_isMiddleMouseButtonPressed)
+        else if (updateKind == winrt::PointerUpdateKind::MiddleButtonReleased)
         {
             message = WM_MBUTTONUP;
-            m_isMiddleMouseButtonPressed = false;
         }
-        else if (m_isRightMouseButtonPressed)
+        else if (updateKind == winrt::PointerUpdateKind::RightButtonReleased)
         {
             message = WM_RBUTTONUP;
-            m_isRightMouseButtonPressed = false;
         }
-        else if (m_isXButton1Pressed)
+        else if (updateKind == winrt::PointerUpdateKind::XButton1Released
+            || updateKind == winrt::PointerUpdateKind::XButton2Released)
         {
             message = WM_XBUTTONUP;
-            m_isXButton1Pressed = false;
-        }
-        else if (m_isXButton2Pressed)
-        {
-            message = WM_XBUTTONUP;
-            m_isXButton2Pressed = false;
         }
         else
         {
@@ -339,13 +325,16 @@ void WebView2::HandlePointerExited(const winrt::Windows::Foundation::IInspectabl
     winrt::PointerDeviceType deviceType{ args.Pointer().PointerDeviceType() };
     UINT message;
 
+    if (m_isPointerOver)
+    {
+        m_isPointerOver = false;
+        winrt::CoreWindow::GetForCurrentThread().PointerCursor(m_oldCursor);
+        m_oldCursor = nullptr;
+    }
+
     if (deviceType == winrt::PointerDeviceType::Mouse)
     {
         message = WM_MOUSELEAVE;
-        if (!m_hasMouseCapture)
-        {
-            ResetMouseInputState();
-        }
     }
     else
     {
@@ -384,21 +373,9 @@ void WebView2::ResetPointerHelper(const winrt::PointerRoutedEventArgs& args)
 {
     winrt::PointerDeviceType deviceType{ args.Pointer().PointerDeviceType() };
 
-    if (m_isPointerOver)
-    {
-        m_isPointerOver = false;
-        winrt::CoreWindow::GetForCurrentThread().PointerCursor(m_oldCursor);
-        m_oldCursor = nullptr;
-    }
-
     if (deviceType == winrt::PointerDeviceType::Mouse)
     {
         m_hasMouseCapture = false;
-        m_isLeftMouseButtonPressed = false;
-        m_isMiddleMouseButtonPressed = false;
-        m_isRightMouseButtonPressed = false;
-        m_isXButton1Pressed = false;
-        m_isXButton2Pressed = false;
     }
     else if (deviceType == winrt::PointerDeviceType::Touch)
     {
@@ -637,8 +614,6 @@ void WebView2::RegisterCoreEventHandlers()
     m_cursorChangedRevoker = m_coreWebViewCompositionController.CursorChanged(winrt::auto_revoke, {
         [this](auto const& controller, auto const& obj)
         {
-            m_requestedCursor = controller.Cursor();
-
             UpdateCoreWindowCursor();
         }});
 }
@@ -1058,9 +1033,9 @@ void WebView2::FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWe
 
 void WebView2::UpdateCoreWindowCursor()
 {
-    if (m_isPointerOver)
+    if (m_coreWebViewCompositionController && m_isPointerOver)
     {
-        winrt::CoreWindow::GetForCurrentThread().PointerCursor(m_requestedCursor);
+        winrt::CoreWindow::GetForCurrentThread().PointerCursor(m_coreWebViewCompositionController.Cursor());
     }
 }
 
@@ -1187,15 +1162,6 @@ winrt::float4x4 WebView2::GetMatrixFromTransform() {
     outputMatrix.m44 = 1.0f;
 
     return outputMatrix;
-}
-
-void WebView2::ResetMouseInputState()
-{
-    m_isLeftMouseButtonPressed = false;
-    m_isMiddleMouseButtonPressed = false;
-    m_isRightMouseButtonPressed = false;
-    m_isXButton1Pressed = false;
-    m_isXButton2Pressed = false;
 }
 
 void WebView2::FireNavigationStarting(const winrt::CoreWebView2NavigationStartingEventArgs& args)
