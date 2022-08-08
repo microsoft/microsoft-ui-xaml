@@ -186,25 +186,31 @@ void WebView2::HandlePointerPressed(const winrt::Windows::Foundation::IInspectab
         m_hasMouseCapture = this->CapturePointer(args.Pointer());
 
         winrt::PointerPointProperties properties{ pointerPoint.Properties() };
-        auto updateKind = properties.PointerUpdateKind();
-
-        if (updateKind == winrt::PointerUpdateKind::LeftButtonPressed)
+        if (properties.IsLeftButtonPressed())
         {
             // Double Click is working as well with this code, presumably by being recognized on browser side from WM_LBUTTONDOWN/ WM_LBUTTONUP
             message = WM_LBUTTONDOWN;
+            m_isLeftMouseButtonPressed = true;
         }
-        else if (updateKind == winrt::PointerUpdateKind::MiddleButtonPressed)
+        else if (properties.IsMiddleButtonPressed())
         {
             message = WM_MBUTTONDOWN;
+            m_isMiddleMouseButtonPressed = true;
         }
-        else if (updateKind == winrt::PointerUpdateKind::RightButtonPressed)
+        else if (properties.IsRightButtonPressed())
         {
             message = WM_RBUTTONDOWN;
+            m_isRightMouseButtonPressed = true;
         }
-        else if (updateKind == winrt::PointerUpdateKind::XButton1Pressed
-            || updateKind == winrt::PointerUpdateKind::XButton2Pressed)
+        else if (properties.IsXButton1Pressed())
         {
             message = WM_XBUTTONDOWN;
+            m_isXButton1Pressed = true;
+        }
+        else if (properties.IsXButton2Pressed())
+        {
+            message = WM_XBUTTONDOWN;
+            m_isXButton2Pressed = true;
         }
         else
         {
@@ -250,23 +256,30 @@ void WebView2::HandlePointerReleased(const winrt::Windows::Foundation::IInspecta
 
     if (deviceType == winrt::PointerDeviceType::Mouse)
     {
-        auto updateKind = properties.PointerUpdateKind();
-        if (updateKind == winrt::PointerUpdateKind::LeftButtonReleased)
+        if (m_isLeftMouseButtonPressed)
         {
             message = WM_LBUTTONUP;
+            m_isLeftMouseButtonPressed = false;
         }
-        else if (updateKind == winrt::PointerUpdateKind::MiddleButtonReleased)
+        else if (m_isMiddleMouseButtonPressed)
         {
             message = WM_MBUTTONUP;
+            m_isMiddleMouseButtonPressed = false;
         }
-        else if (updateKind == winrt::PointerUpdateKind::RightButtonReleased)
+        else if (m_isRightMouseButtonPressed)
         {
             message = WM_RBUTTONUP;
+            m_isRightMouseButtonPressed = false;
         }
-        else if (updateKind == winrt::PointerUpdateKind::XButton1Released
-            || updateKind == winrt::PointerUpdateKind::XButton2Released)
+        else if (m_isXButton1Pressed)
         {
             message = WM_XBUTTONUP;
+            m_isXButton1Pressed = false;
+        }
+        else if (m_isXButton2Pressed)
+        {
+            message = WM_XBUTTONUP;
+            m_isXButton2Pressed = false;
         }
         else
         {
@@ -335,6 +348,10 @@ void WebView2::HandlePointerExited(const winrt::Windows::Foundation::IInspectabl
     if (deviceType == winrt::PointerDeviceType::Mouse)
     {
         message = WM_MOUSELEAVE;
+        if (!m_hasMouseCapture)
+        {
+            ResetMouseInputState();
+        }
     }
     else
     {
@@ -376,6 +393,7 @@ void WebView2::ResetPointerHelper(const winrt::PointerRoutedEventArgs& args)
     if (deviceType == winrt::PointerDeviceType::Mouse)
     {
         m_hasMouseCapture = false;
+        ResetMouseInputState();
     }
     else if (deviceType == winrt::PointerDeviceType::Touch)
     {
@@ -1162,6 +1180,15 @@ winrt::float4x4 WebView2::GetMatrixFromTransform() {
     outputMatrix.m44 = 1.0f;
 
     return outputMatrix;
+}
+
+void WebView2::ResetMouseInputState()
+{
+    m_isLeftMouseButtonPressed = false;
+    m_isMiddleMouseButtonPressed = false;
+    m_isRightMouseButtonPressed = false;
+    m_isXButton1Pressed = false;
+    m_isXButton2Pressed = false;
 }
 
 void WebView2::FireNavigationStarting(const winrt::CoreWebView2NavigationStartingEventArgs& args)
