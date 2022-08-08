@@ -261,8 +261,6 @@ winrt::Size FlexboxLayout::ArrangeOverride(
     float crossOffsetForCurrentRow = 0;
     float usedInCurrentCrossAxis = 0;
 
-    // In reverse wrap mode we work our way from the bottom up
-    // TODO: Using finalSize here is causing us to right/bottom align, which probably isn't correct.
     if ((m_wrap == winrt::FlexboxWrap::WrapReverse) && (state->Rows.size() > 1))
     {
         crossOffsetForCurrentRow = CrossAxis(finalSize) - (state->Rows[state->Rows.size() - 1].CrossAxis);
@@ -285,7 +283,7 @@ winrt::Size FlexboxLayout::ArrangeOverride(
 
         if (usedInCurrentMainAxis + MainAxis(childDesiredSize) > MainAxis(finalSize))
         {
-            // If we're not wrapping just hide all the remaining elements
+            
             if (!IsWrapping())
             {
                 usedInCurrentMainAxis = MainAxis(finalSize);
@@ -310,7 +308,6 @@ winrt::Size FlexboxLayout::ArrangeOverride(
         float mainOffset = usedInCurrentMainAxis;
         float excessMainAxis = (MainAxis(finalSize) - info.MainAxis);
 
-        // Remove excess according to growing items
         float growSlice = 0.0;
         if (info.Grow > 0.0)
         {
@@ -318,7 +315,6 @@ winrt::Size FlexboxLayout::ArrangeOverride(
             excessMainAxis = 0.0;
         }
 
-        // Grow to take up leftover space according to the grow ratio
         float grow = static_cast<float>(GetGrow(child));
         if (grow > 0.0)
         {
@@ -450,8 +446,6 @@ winrt::Size FlexboxLayout::ArrangeOverride(
             break;
         }
 
-        // In Reversed mode we need to swap the coordinates so that items grom from right/bottom to left/top
-        // TODO: Using finalSize here means things will become right/bottom aligned, which doesn't seem right
         if (IsReversed())
         {
             mainOffset = MainAxis(finalSize) - mainOffset - MainAxis(childDesiredSize);

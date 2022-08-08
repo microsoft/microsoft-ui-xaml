@@ -8,7 +8,7 @@
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
+    <ScrollViewer> 
     <StackPanel>
         <StackPanel.Resources>
             <Style TargetType="TextBlock">
@@ -36,6 +36,9 @@
                 <Setter Property="Foreground" Value="Black"/>
                 <Setter Property="HorizontalAlignment" Value="Left"/>
             </Style>
+                <Style  x:Key="WebviewStyle" TargetType="controls:WebView2">
+                    <Setter Property="MinHeight" Value="700"></Setter>
+                </Style>
         </StackPanel.Resources>
 
         <TextBlock Style="{StaticResource HeaderStyle}">NoWrap</TextBlock>
@@ -70,6 +73,8 @@
             </Grid>
         </controls:LayoutPanel>
 
+            <controls:WebView2 Source="https://codepen.io/matthewmachuca/pen/poLLeGM" Style="{StaticResource }" ></controls:WebView2>
+        
         <TextBlock Style="{StaticResource HeaderStyle}">Wrap</TextBlock>
 
         <controls:LayoutPanel MaxWidth="500">
@@ -134,4 +139,5 @@
             </Grid>
         </controls:LayoutPanel>
     </StackPanel>
+    </ScrollViewer>
 </Page>
