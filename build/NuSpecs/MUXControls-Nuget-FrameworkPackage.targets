@@ -8,5 +8,4 @@
     <ItemGroup>
         <Reference Include="$(MSBuildThisFileDirectory)..\..\lib\uap10.0\Microsoft.UI.Xaml.winmd"/>
     </ItemGroup>
-  <Import Project="$(MSBuildThisFileDirectory)..\Microsoft.UI.Xaml.props"/>
 </Project>
