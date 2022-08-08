@@ -154,7 +154,7 @@ winrt::Size FlexboxLayout::MeasureOverride(
 
     unsigned int itemsInRow = 0;
     float growInRow = 0.0;
-    //shrink
+    
     float shrinkInRow = 0.0;
 
     float usedInCurrentMainAxis = 0;
@@ -162,7 +162,6 @@ winrt::Size FlexboxLayout::MeasureOverride(
 
     float usedMainAxis = 0;
     float usedCrossAxis = 0;
-    float basisInRow = 0;
 
     auto completeRow = [&]()
     {
@@ -172,13 +171,11 @@ winrt::Size FlexboxLayout::MeasureOverride(
         newRow.Count = itemsInRow;
         newRow.Grow = growInRow;
         newRow.Shrink = shrinkInRow;
-        //basis, do we need to save this inRow?
-        newRow.Basis = basisInRow;
         state->Rows.emplace_back(newRow);
 
         itemsInRow = 0;
         growInRow = 0.0;
-        //shrink
+        
         shrinkInRow = 0.0;
         usedMainAxis = std::max(usedMainAxis, usedInCurrentMainAxis);
         usedInCurrentMainAxis = 0;
@@ -192,6 +189,21 @@ winrt::Size FlexboxLayout::MeasureOverride(
     
 
     std::vector<winrt::UIElement> sortedChildren = ChildrenSortedByOrder(context.try_as<winrt::NonVirtualizingLayoutContext>());
+
+    // we need to find the total shrink ratio and main axis size before any other computations
+    //auto totalShrinkValues = 0;
+    //auto totalMainAxis = 0;
+    //auto testRowIndex = 0;
+    //auto state = context.LayoutState().as<FlexboxLayoutState>();
+    //for (winrt::UIElement const& child : sortedChildren)
+    //{
+    //    FlexboxLayoutState::RowMeasureInfo info = state->Rows[testRowIndex];
+
+
+    //    winrt::Size childDesiredSize = child.DesiredSize();
+
+    //}
+
     for (winrt::UIElement const& child : sortedChildren)
     {
         
@@ -202,6 +214,7 @@ winrt::Size FlexboxLayout::MeasureOverride(
         child.Measure(availableSize);
         winrt::Size childDesiredSize = child.DesiredSize();
 
+        shrinkInRow += float(GetShrink(child));
       //flexbasis
     //Asign initial size based on FlexBasis
 
@@ -213,29 +226,38 @@ winrt::Size FlexboxLayout::MeasureOverride(
             childDesiredSize = CreateSize(flexBasis, CrossAxis(childDesiredSize));
         }
 
+        auto test1 = shrinkInRow;
+        
 
-        if (usedInCurrentMainAxis + MainAxis(childDesiredSize) > MainAxis(availableSize))
-        {
-            // Not enough space, time for a new row
-            if (IsWrapping())
+
+        //retry here
+     
+
+
+
+            if (usedInCurrentMainAxis + MainAxis(childDesiredSize) > MainAxis(availableSize))
             {
-                completeRow();
-
-                // It's possible that even making a new row won't work. Sorry, you're not going to fit!
-                if (usedCrossAxis + CrossAxis(childDesiredSize) > CrossAxis(availableSize))
+                // Not enough space, time for a new row
+                if (IsWrapping() )
                 {
+                    completeRow();
+
+                    // It's possible that even making a new row won't work. Sorry, you're not going to fit!
+                    if (usedCrossAxis + CrossAxis(childDesiredSize) > CrossAxis(availableSize))
+                    {
+                        // TODO: What about flex-shrink?
+                        break;
+                    }
+                }
+                else
+                {
+                    // Without the ability to wrap, we just flat out can't fit this item
                     // TODO: What about flex-shrink?
-                    break;
+                   break;
                 }
             }
-            else
-            {
-                // Without the ability to wrap, we just flat out can't fit this item
-                // TODO: What about flex-shrink?
-                break;
-            }
-        }
-
+     
+       
         // Contribute our space
         usedInCurrentMainAxis += MainAxis(childDesiredSize);
         usedInCurrentCrossAxis = std::max(usedInCurrentCrossAxis, CrossAxis(childDesiredSize));
@@ -243,6 +265,9 @@ winrt::Size FlexboxLayout::MeasureOverride(
         // PORT_TODO
         //added growInRow += the double Getgrowchild -> float
         growInRow += float(GetGrow(child));
+
+        //shrink
+        shrinkInRow += float(GetShrink(child));
     }
 
     // Incorporate any contribution from the pending row into our total calculation
@@ -296,10 +321,16 @@ winrt::Size FlexboxLayout::ArrangeOverride(
 
             childDesiredSize = CreateSize(flexBasis, CrossAxis(childDesiredSize));
         }
-
+        //test vars
+        auto test1 = info.Shrink;
+        auto test2 = MainAxis(finalSize);
+        auto test3 = state->Rows[rowIndex];
+        auto test4 = test3.Shrink;
+        //need to check if flexshrink is not zero, if so this logic doesn't apply
         if (usedInCurrentMainAxis + MainAxis(childDesiredSize) > MainAxis(finalSize))
         {
             // If we're not wrapping just hide all the remaining elements
+            //lets edit to check for shrink
             if (!IsWrapping())
             {
                 usedInCurrentMainAxis = MainAxis(finalSize);
@@ -337,6 +368,26 @@ winrt::Size FlexboxLayout::ArrangeOverride(
         if (grow > 0.0)
         {
             childDesiredSize = CreateSize(MainAxis(childDesiredSize) + (grow * growSlice), CrossAxis(childDesiredSize));
+        }
+
+
+        //shrink logic
+
+        //
+        float overflowMainAxis = (info.MainAxis - MainAxis(finalSize));
+
+        //grab size of overflow
+        float shrinkSlice = 0.0;
+        if (info.Shrink > 0.0) {
+            shrinkSlice = info.Shrink / overflowMainAxis;
+            overflowMainAxis = 0.0;
+        };
+
+        // Shrink 
+        float shrink = float(GetShrink(child));
+        if (shrink > 0.0)
+        {
+            childDesiredSize = CreateSize(MainAxis(childDesiredSize) - (shrink * shrinkSlice), CrossAxis(childDesiredSize));
         }
 
         switch (m_justifyContent)

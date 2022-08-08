@@ -59,10 +59,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)Samples\flexDemoPageA.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Samples\ItemsSourceSamples\SortingAndFilteringPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -197,9 +193,6 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Samples\FlexboxWrapPage.xaml.cs">
       <DependentUpon>FlexboxWrapPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)Samples\flexDemoPageA.xaml.cs">
-      <DependentUpon>flexDemoPageA.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Samples\ItemsSourceSamples\SortingAndFilteringPage.xaml.cs">
       <DependentUpon>SortingAndFilteringPage.xaml</DependentUpon>

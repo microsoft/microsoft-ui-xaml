@@ -94,7 +94,7 @@ enum FlexboxDirection
     Row = 0,
     RowReverse = 1,
     Column = 2,
-    ColumnReverse = 2
+    ColumnReverse = 3
 };
 
 [MUX_PREVIEW]

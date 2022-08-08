@@ -9,7 +9,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-   <StackPanel>
+    <StackPanel>
         <StackPanel.Resources>
             <Style TargetType="TextBlock">
                 <Setter Property="Foreground" Value="White"/>
@@ -33,7 +33,6 @@
                 <Setter Property="HorizontalAlignment" Value="Left"/>
             </Style>
         </StackPanel.Resources>
-<!--
         <controls:LayoutPanel>
             <controls:LayoutPanel.Layout>
                 <controls:FlexboxLayout/>
@@ -87,30 +86,6 @@
                 <TextBlock>2</TextBlock>
             </Grid>
         </controls:LayoutPanel>
-    </StackPanel>
--->
-
-
-        <TextBlock Style="{StaticResource HeaderStyle}"> Work in progress</TextBlock>
-        <controls:LayoutPanel>
-            <controls:LayoutPanel.Layout>
-                <controls:FlexboxLayout/>
-            </controls:LayoutPanel.Layout>
-            <Grid controls:FlexboxLayout.Order="1">
-                <TextBlock>1</TextBlock>
-            </Grid>
-            <Grid controls:FlexboxLayout.Order="2">
-                <TextBlock>2</TextBlock>
-            </Grid>
-            <Grid controls:FlexboxLayout.Order="3">
-                <TextBlock>3</TextBlock>
-            </Grid>
-            <Grid controls:FlexboxLayout.Order="1">
-                <TextBlock>1</TextBlock>
-            </Grid>
-            <Grid controls:FlexboxLayout.Order="1">
-                <TextBlock>1</TextBlock>
-            </Grid>
-        </controls:LayoutPanel>
+        
     </StackPanel>
 </Page>

@@ -41,25 +41,38 @@
             <Grid controls:FlexboxLayout.Grow="0" controls:FlexboxLayout.Basis="100" >
                 <TextBlock>0</TextBlock>
             </Grid>
-            <Grid controls:FlexboxLayout.Grow="2" controls:FlexboxLayout.Basis="100">
-                <TextBlock>2</TextBlock>
+            <Grid controls:FlexboxLayout.Grow="1" controls:FlexboxLayout.Basis="100">
+                <TextBlock>1</TextBlock>
             </Grid>
             <Grid controls:FlexboxLayout.Grow="0" controls:FlexboxLayout.Basis="100">
                 <TextBlock>0</TextBlock>
             </Grid>
         </controls:LayoutPanel>
-
         <controls:LayoutPanel MinWidth="500">
             <controls:LayoutPanel.Layout>
                 <controls:FlexboxLayout/>
             </controls:LayoutPanel.Layout>
-            <Grid controls:FlexboxLayout.Basis="50">
-                <TextBlock>0</TextBlock>
+            <Grid controls:FlexboxLayout.Basis="50" >
+                <TextBlock>50</TextBlock>
             </Grid>
             <Grid controls:FlexboxLayout.Basis="100">
+                <TextBlock>100</TextBlock>
+            </Grid>
+            <Grid controls:FlexboxLayout.Basis="150">
+                <TextBlock>150</TextBlock>
+            </Grid>
+        </controls:LayoutPanel>
+        <controls:LayoutPanel MinWidth="500">
+            <controls:LayoutPanel.Layout>
+                <controls:FlexboxLayout/>
+            </controls:LayoutPanel.Layout>
+            <Grid controls:FlexboxLayout.Basis="50" controls:FlexboxLayout.Grow="3">
                 <TextBlock>0</TextBlock>
             </Grid>
-            <Grid  controls:FlexboxLayout.Basis="150">
+            <Grid controls:FlexboxLayout.Basis="100" controls:FlexboxLayout.Grow="2">
+                <TextBlock>0</TextBlock>
+            </Grid>
+            <Grid  controls:FlexboxLayout.Basis="150" controls:FlexboxLayout.Grow="1">
                 <TextBlock>0</TextBlock>
             </Grid>
         </controls:LayoutPanel>
