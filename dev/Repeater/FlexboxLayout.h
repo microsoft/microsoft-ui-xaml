@@ -35,10 +35,6 @@ public:
     winrt::FlexboxAlignContent AlignContent();
     void AlignContent(winrt::FlexboxAlignContent const& value);
 
-    //flexbasis
-   // winrt::FlexboxBasis FlexBasis();
-    //void FlexBasis(winrt::FlexboxBasis const& value);
-
 #pragma region INonVirtualizingLayoutOverrides
     void InitializeForContextCore(winrt::LayoutContext const& context);
     void UninitializeForContextCore(winrt::LayoutContext const& context);
@@ -59,11 +55,9 @@ private:
     bool IsWrapping();
     float MainAxis(winrt::Size const& value);
     float CrossAxis(winrt::Size const& value);
-   // int FlexBasis(winrt::Size const& value);
     winrt::Size CreateSize(float mainAxis, float crossAxis);
     winrt::Point CreatePoint(float mainAxis, float crossAxis);
     std::vector<winrt::UIElement> ChildrenSortedByOrder(winrt::NonVirtualizingLayoutContext const& context);
-    // testing for basis initial
     std::vector<winrt::UIElement> ChildrenInitial(winrt::NonVirtualizingLayoutContext const& ci);
 
     winrt::FlexboxWrap m_wrap;
