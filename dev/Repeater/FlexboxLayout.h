@@ -50,9 +50,9 @@ public:
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
-    bool IsHorizontal();
-    bool IsReversed();
-    bool IsWrapping();
+    bool IsHorizontal() const;
+    bool IsReversed() const;
+    bool IsWrapping() const;
     float MainAxis(winrt::Size const& value);
     float CrossAxis(winrt::Size const& value);
     winrt::Size CreateSize(float mainAxis, float crossAxis);

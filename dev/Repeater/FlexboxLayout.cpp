@@ -62,17 +62,17 @@ void FlexboxLayout::AlignContent(winrt::FlexboxAlignContent const& value)
     m_alignContent = value;
 }
 
-bool FlexboxLayout::IsHorizontal()
+bool FlexboxLayout::IsHorizontal() const
 {
     return (m_direction == winrt::FlexboxDirection::Row || m_direction == winrt::FlexboxDirection::RowReverse);
 }
 
-bool FlexboxLayout::IsReversed()
+bool FlexboxLayout::IsReversed() const
 {
     return (m_direction == winrt::FlexboxDirection::RowReverse || m_direction == winrt::FlexboxDirection::ColumnReverse);
 }
 
-bool FlexboxLayout::IsWrapping()
+bool FlexboxLayout::IsWrapping() const
 {
     return (m_wrap != winrt::FlexboxWrap::NoWrap);
 }
