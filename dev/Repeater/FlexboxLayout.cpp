@@ -122,7 +122,7 @@ std::vector<winrt::UIElement> FlexboxLayout::ChildrenSortedByOrder(winrt::NonVir
 void FlexboxLayout::InitializeForContextCore(winrt::LayoutContext const& context)
 {
     auto state = context.LayoutState();
-    winrt::com_ptr<FlexboxLayoutState> flexboxState = nullptr;
+    auto flexboxState = state.try_as<FlexboxLayoutState>();
     if (state)
     {
         flexboxState = state.as<FlexboxLayoutState>();
@@ -202,8 +202,6 @@ winrt::Size FlexboxLayout::MeasureOverride(
           
             childDesiredSize = CreateSize(flexBasis, CrossAxis(childDesiredSize));
         }
-
-
             if (usedInCurrentMainAxis + MainAxis(childDesiredSize) > MainAxis(availableSize))
             {
                 // Not enough space, time for a new row
@@ -224,24 +222,18 @@ winrt::Size FlexboxLayout::MeasureOverride(
                    break;
                 }
             }
-     
-       
         // Contribute our space
         usedInCurrentMainAxis += MainAxis(childDesiredSize);
         usedInCurrentCrossAxis = std::max(usedInCurrentCrossAxis, CrossAxis(childDesiredSize));
         itemsInRow++;
-        growInRow += float(GetGrow(child));
+        growInRow += static_cast<float>(GetGrow(child));
 
-        
     }
-
     // Incorporate any contribution from the pending row into our total calculation
     if (usedInCurrentMainAxis > 0)
     {
         completeRow();
     }
-
-    
 
     winrt::Size returnSize = CreateSize(
         usedMainAxis,

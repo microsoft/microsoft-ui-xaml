@@ -9,7 +9,6 @@ class FlexboxLayoutState :
 public:
     struct RowMeasureInfo
     {
-    public:
         float MainAxis;
         float CrossAxis;
         int Count;

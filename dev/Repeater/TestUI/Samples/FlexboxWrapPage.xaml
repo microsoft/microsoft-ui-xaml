@@ -73,7 +73,7 @@
             </Grid>
         </controls:LayoutPanel>
 
-            <controls:WebView2 Source="https://codepen.io/matthewmachuca/pen/poLLeGM" Style="{StaticResource }" ></controls:WebView2>
+            <controls:WebView2 Source="https://codepen.io/matthewmachuca/pen/poLLeGM" Style="{StaticResource WebviewStyle}" ></controls:WebView2>
         
         <TextBlock Style="{StaticResource HeaderStyle}">Wrap</TextBlock>
 
