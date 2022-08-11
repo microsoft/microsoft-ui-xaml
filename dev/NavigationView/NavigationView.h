@@ -189,10 +189,6 @@ private:
     void ClearNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
     void ClearAllNavigationViewItemRevokers() noexcept;
     void RevokeNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
-    std::set<winrt::NavigationViewItem> m_itemsWithRevokerObjects;
-    void SetNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
-    void ClearNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
-    void ClearAllNavigationViewItemRevokers();
     std::set<winrt::NavigationViewItem> m_itemsWithRevokerObjects{};
     std::once_flag s_NavigationViewItemRevokersPropertySet;
 
