@@ -40,6 +40,7 @@
     <file target="buildTransitive\Common.targets" src="MUXControls-Nuget-Common.targets"/>
     <file target="build\$ID$.props" src="MUXControls-Nuget-FrameworkPackage.props"/>
     <file target="buildTransitive\$ID$.props" src="MUXControls-Nuget-FrameworkPackage.props"/>
+    <file target="build\native\$ID$.props" src="MUXControls-Nuget-FrameworkPackage-Native.props"/>
     <file target="build\native\$ID$.targets" src="MUXControls-Nuget-FrameworkPackage.targets"/>
   </files>
 </package>
