@@ -44,7 +44,6 @@
   <Import Project="..\..\dev\PagerControl\InteractionTests\PagerControl_InteractionTests.projitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true'" />
   <Import Project="..\..\dev\PipsPager\InteractionTests\PipsPager_InteractionTests.projitems" Label="Shared" Condition="$(FeaturePipsPagerEnabled) == 'true'" />
   <Import Project="..\..\dev\ImageIcon\InteractionTests\ImageIcon_InteractionTests.projitems" Label="Shared" Condition="$(FeatureImageIconEnabled) == 'true'" />
-  <Import Project="..\..\dev\PipsPager\InteractionTests\PipsPager_InteractionTests.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
   <Import Project="..\..\dev\Breadcrumb\InteractionTests\Breadcrumb_InteractionTests.projitems" Label="Shared" Condition="$(FeatureBreadcrumbEnabled) == 'true'" />
   <Import Project="..\..\dev\InfoBadge\InteractionTests\InfoBadge_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInfoBadgeEnabled) == 'true'" />
   <Import Project="..\..\dev\WebView2\InteractionTests\WebView2_InteractionTests.projitems" Label="Shared" Condition="$(FeatureWebView2Enabled) == 'true'" />
