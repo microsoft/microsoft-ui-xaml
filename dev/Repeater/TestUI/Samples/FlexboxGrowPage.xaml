@@ -8,8 +8,8 @@
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
-    <StackPanel>
+    <ScrollViewer>
+        <StackPanel>
         <StackPanel.Resources>
             <Style TargetType="TextBlock">
                 <Setter Property="Foreground" Value="White"/>
@@ -32,8 +32,17 @@
                 <Setter Property="Margin" Value="0,0,0,20"/>
                 <Setter Property="HorizontalAlignment" Value="Left"/>
             </Style>
-        </StackPanel.Resources>
+            <Style  x:Key="WebviewStyle" TargetType="controls:WebView2">
+                <Setter Property="MinHeight" Value="700"></Setter>
+            </Style>
+            <Style x:Key="HeaderStyle" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+            </Style>
+            </StackPanel.Resources>
 
+            <TextBlock Style="{StaticResource HeaderStyle}">Flexbox Grow 100px 100px 100px</TextBlock>
+            
         <controls:LayoutPanel MinWidth="500">
             <controls:LayoutPanel.Layout>
                 <controls:FlexboxLayout/>
@@ -48,6 +57,10 @@
                 <TextBlock>0</TextBlock>
             </Grid>
         </controls:LayoutPanel>
+
+        <controls:WebView2 Source="https://codepen.io/matthewmachuca/pen/jOzvjXE" Style="{StaticResource WebviewStyle}" ></controls:WebView2>
+
+
         <controls:LayoutPanel MinWidth="500">
             <controls:LayoutPanel.Layout>
                 <controls:FlexboxLayout/>
@@ -122,5 +135,5 @@
             </Grid>
         </controls:LayoutPanel>
     </StackPanel>
-    
+</ScrollViewer>
 </Page>

@@ -122,10 +122,6 @@ namespace MUXControlsTestApp
                 Frame.NavigateWithoutAnimation(typeof(MUXControlsTestApp.Samples.ScaleAnimatedVerticalListDemo));
             };
 
-            flexboxDemo.Click += delegate {
-                Frame.NavigateWithoutAnimation(typeof(FlexboxAlignItemsPage));
-            };
-
             flexboxAlignContentPage.Click += delegate {
                 Frame.NavigateWithoutAnimation(typeof(FlexboxAlignContentPage));
             };

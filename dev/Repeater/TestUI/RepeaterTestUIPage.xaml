@@ -37,16 +37,15 @@
             <Button x:Name="pinterestLayoutDemo" AutomationProperties.Name="Pinterest Layout Demo">Pinterest Layout Demo</Button>
             <Button x:Name="flowLayoutDemo" AutomationProperties.Name="Flow Layout Demo">Flow Layout Demo</Button>
             <Button x:Name="storeDemo" AutomationProperties.Name="Store demo">Nested Scrolling in both directions demo</Button>
-            <Button x:Name="flexboxDemo">Flexbox Layout</Button>
-            <Button x:Name="flexboxAlignContentPage">flexboxAlignContentPage</Button>
-            <Button x:Name="flexboxAlignItemsPage">flexbox Items Page</Button>
-            <Button x:Name="flexboxAlignSelfPage">flexboxAlignSelfPage</Button>
-            <Button x:Name="flexboxDirectionPage">flexboxDirectionPage</Button>
-            <Button x:Name="flexboxGrowPage">flexboxGrowPage</Button>
-            <Button x:Name="flexboxJustifyContentPage">flexboxJustifyContentPage</Button>
-            <Button x:Name="flexboxOrderPage">flexboxOrderPage</Button>
-            <Button x:Name="flexboxShrink">flexboxShrink</Button>
-            <Button x:Name="flexboxWrap">flexboxWrap</Button>
+            <Button x:Name="flexboxGrowPage">Flexbox Grow Page</Button>
+            <Button x:Name="flexboxOrderPage">Flexbox Order Page</Button>
+            <Button x:Name="flexboxWrap">Flexbox Wrap</Button>
+            <Button x:Name="flexboxAlignContentPage">Flexbox AlignContent Page</Button>
+            <Button x:Name="flexboxAlignItemsPage">Flexbox Align Items Page</Button>
+            <Button x:Name="flexboxAlignSelfPage">Flexbox AlignSelf Page</Button>
+            <Button x:Name="flexboxDirectionPage">Flexbox Direction Page</Button>
+            <Button x:Name="flexboxJustifyContentPage">Flexbox Justify ContentPage</Button>
+            <Button x:Name="flexboxShrink">Flexbox Shrink</Button>
         </StackPanel>
 
         <StackPanel>

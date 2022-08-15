@@ -36,9 +36,9 @@
                 <Setter Property="Foreground" Value="Black"/>
                 <Setter Property="HorizontalAlignment" Value="Left"/>
             </Style>
-                <Style  x:Key="WebviewStyle" TargetType="controls:WebView2">
-                    <Setter Property="MinHeight" Value="700"></Setter>
-                </Style>
+            <Style  x:Key="WebviewStyle" TargetType="controls:WebView2">
+                <Setter Property="MinHeight" Value="700"></Setter>
+            </Style>
         </StackPanel.Resources>
 
         <TextBlock Style="{StaticResource HeaderStyle}">NoWrap</TextBlock>
