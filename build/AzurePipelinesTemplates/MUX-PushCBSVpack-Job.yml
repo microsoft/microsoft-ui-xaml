@@ -55,6 +55,8 @@ jobs:
   # Push the VPacks:
   - task: PkgESVPack@12
     displayName: 'Push VPack Microsoft.UI.Xaml'
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\WinUIVpack'
       githubToken: $(WinUI2GitHubToken)
@@ -63,6 +65,8 @@ jobs:
       version: $(vpackversion)
   - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInbox_x64'
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\x64'
       githubToken: $(WinUI2GitHubToken)
@@ -71,6 +75,8 @@ jobs:
       version: $(vpackversion)
   - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInbox_x86'
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\x86'
       githubToken: $(WinUI2GitHubToken)
@@ -79,6 +85,8 @@ jobs:
       version: $(vpackversion)
   - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInbox_arm'
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\arm'
       githubToken: $(WinUI2GitHubToken)
@@ -87,6 +95,8 @@ jobs:
       version: $(vpackversion)
   - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInbox_arm64'
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\arm64'
       githubToken: $(WinUI2GitHubToken)
@@ -95,6 +105,8 @@ jobs:
       version: $(vpackversion)
   - task: PkgESVPack@12
     displayName: 'Push VPack MicrosoftUIXamlInboxWinmd'
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       sourceDirectory: '$(System.ArtifactsDirectory)\drop\Release\CBS\winmd'
       githubToken: $(WinUI2GitHubToken)
