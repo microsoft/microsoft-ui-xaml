@@ -14,7 +14,7 @@ You can get an AppWindow from a Xaml Window by calling a COM API to get Xaml and
 
 ## Window.AppWindow property
 
-This newly introduced api will allow developers to use appwindow object directly within WinUI code.
+Gets the `AppWindow` associated with this `Window`.
 ```c#
 public Microsoft.UI.Windowing.AppWindow Window.AppWindow { get; }
 ```
