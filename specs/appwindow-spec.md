@@ -1,26 +1,23 @@
 Window.AppWindow api
 ===
-New api to simplify accessing [appwindow](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/windowing/windowing-overview) functionality through WinUI code
+New api to simplify accessing [appwindow](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/windowing/windowing-overview)
+functionality through WinUI code
 
 # Background
-Xaml has a [Window](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Window) API that internally wraps an hwnd. Windows has an [AppWindow](https://docs.microsoft.com/uwp/api/Windows.UI.WindowManagement.AppWindow) class that similarly wraps an hwnd in UWP. WinAppSDK has a new [AppWindow](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Windowing.AppWindow) which wraps an hwnd and works on Desktop.
+Xaml has a [Window](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Window) API that
+internally wraps an hwnd. Windows has an [AppWindow](https://docs.microsoft.com/uwp/api/Windows.UI.WindowManagement.AppWindow) class
+that similarly wraps an hwnd in UWP. WinAppSDK has a new [AppWindow](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Windowing.AppWindow) which wraps an hwnd and works on Desktop.
 
-You can get an AppWindow from a Xaml Window by calling a COM API to get Xaml and then a DLL export API to convert the hwnd to an AppWindow. This spec adds a simple `Window.AppWindow` property to make this much easier and more discoverable.
+You can get an AppWindow from a Xaml Window by calling a COM API to get Xaml and then
+a DLL export API to convert the hwnd to an AppWindow. This spec adds a simple `Window.AppWindow`
+property to make this much easier and more discoverable.
 
-[Xaml Window](https://docs.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.window) will expose AppWindow object directly to app developer through an api. Instead of writing a lot of boiler plate code everywhere, app developer can use this api, reducing code bloat, and making appwindow apis easily accessible from winui code.
+[Xaml Window](https://docs.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.window) will
+expose AppWindow object directly to app developer through an api. Instead of writing a lot of boiler plate
+code everywhere, app developer can use this api, reducing code bloat, and making appwindow apis easily
+accessible from winui code.
 
-
-# API Pages
-
-## Window.AppWindow property
-
-Gets the `AppWindow` associated with this `Window`.
-```c#
-public Microsoft.UI.Windowing.AppWindow Window.AppWindow { get; }
-```
-_Spec note: Mapping an hwnd to an AppWindow causes the hwnd to be subclassed, meaning that the timing of when [AppWindow.GetFromWindowId](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Windowing.AppWindow.GetFromWindowId) is first called can potentially have a behavioral side effect. To ensure this is predictable, the AppWindow for Xaml's hwnd will be created during the Xaml Window's construction. Note that this could potentially be an observable behavior change from the behavior before the introduction of this API._
 These *before* and *after* C# code examples illustrate how this api simplifies integrating appwindow apis in winui codebase.
-
 
 ### Before
 ```c#
@@ -45,6 +42,27 @@ xamlWindow.AppWindow.foo();
 ```
 Notice how `xamlWindow.AppWindow.foo()` doesn't require additional steps to call the function `foo`.
 
+
+# API Pages
+
+## Window.AppWindow property
+
+Gets the `AppWindow` associated with this `Window`.
+```c#
+public Microsoft.UI.Windowing.AppWindow Window.AppWindow { get; }
+```
+_Spec note: Mapping an hwnd to an AppWindow causes the hwnd to be subclassed, meaning that the timing of
+when [AppWindow.GetFromWindowId](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Windowing.AppWindow.GetFromWindowId)
+is first called can potentially have a behavioral side effect. To ensure this is predictable, the AppWindow
+for Xaml's hwnd will be created during the Xaml Window's construction. Note that this could potentially be
+an observable behavior change from the behavior before the introduction of this API.
+
+### Sample example
+```c#
+var xamlWindow = WindowHelper.GetWindowForElement(this);   
+auto windowSize = xamlWindow.AppWindow.Size;  
+```
+
 # API Details
 
 ```c# (but really MIDL3)
@@ -59,12 +77,16 @@ namespace Microsoft.UI.Xaml
 ```
 
 # Appendix
-- Window.AppWindow api returns reference to the same appwindow object every time. It gets created during xaml window object's creation.
+- Window.AppWindow api returns reference to the same appwindow object every time. It gets created
+  during xaml window object's creation.
 
+- Since AppWindow is just an abstraction for HWND, its lifetime will be same as that of HWND. The
+  api cannot return null as AppWindow will always be present if Window object is there. If called after
+  window has been closed, it will fail similarly to other winui apis and return a failure HRESULT. 
 
-- Since AppWindow is just an abstraction for HWND, its lifetime will be same as that of HWND. The api cannot return null as AppWindow will always be present if Window object is there. If called after window has been closed, it will fail similarly to other winui apis and return a failure HRESULT. 
+- There will be just one appwindow object per top level HWND, created during Window object creation.
+  No new appwindow objects are created for child windows. 
 
-- There will be just one appwindow object per top level HWND, created during Window object creation. No new appwindow objects are created for child windows. 
-
-- Future scope : Since this api is limited to top level HWND, there should be a way to get app window object for top level HWND from one of its nested children HWND which doesn’t require app developer writing a lot of code. 
+- Future scope : Since this api is limited to top level HWND, there should be a way to get app window object
+  for top level HWND from one of its nested children HWND which doesn’t require app developer writing a lot of code. 
 
