@@ -3,7 +3,9 @@ Window.AppWindow api
 New api to simplify accessing [appwindow](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/windowing/windowing-overview) functionality through WinUI code
 
 # Background
-AppWindow provides good set of functionalities for using HWNDs than dealing with win32 apis directly. It is already accessible to winui desktop apps via winappsdk runtime. Currently, users must write a lot of boiler plate code to get to appwindow object and use it. 
+Xaml has a [Window](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Window) API that internally wraps an hwnd. Windows has an [AppWindow](https://docs.microsoft.com/uwp/api/Windows.UI.WindowManagement.AppWindow) class that similarly wraps an hwnd in UWP. WinAppSDK has a new [AppWindow](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Windowing.AppWindow) which wraps an hwnd and works on Desktop.
+
+You can get an AppWindow from a Xaml Window by calling a COM API to get Xaml and then a DLL export API to convert the hwnd to an AppWindow. This spec adds a simple `Window.AppWindow` property to make this much easier and more discoverable.
 
 [Xaml Window](https://docs.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.window) will expose AppWindow object directly to app developer through an api. Instead of writing a lot of boiler plate code everywhere, app developer can use this api, reducing code bloat, and making appwindow apis easily accessible from winui code.
 
