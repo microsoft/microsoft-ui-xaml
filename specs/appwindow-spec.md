@@ -18,7 +18,7 @@ This newly introduced api will allow developers to use appwindow object directly
 ```c#
 public Microsoft.UI.Windowing.AppWindow Window.AppWindow { get; }
 ```
-
+_Spec note: Mapping an hwnd to an AppWindow causes the hwnd to be subclassed, meaning that the timing of when [AppWindow.GetFromWindowId](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Windowing.AppWindow.GetFromWindowId) is first called can potentially have a behavioral side effect. To ensure this is predictable, the AppWindow for Xaml's hwnd will be created during the Xaml Window's construction. Note that this could potentially be an observable behavior change from the behavior before the introduction of this API._
 These *before* and *after* C# code examples illustrate how this api simplifies integrating appwindow apis in winui codebase.
 
 
