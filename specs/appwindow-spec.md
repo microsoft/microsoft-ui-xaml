@@ -22,7 +22,7 @@ These *before* and *after* C# code examples illustrate how this api simplifies i
 ### Before
 ```c#
 // This is needed to get any Window from inside a Xaml control 
-var xamlWindow = WindowHelper.GetWindowForElement(this /* some Xaml UIElement */);   
+var xamlWindow = WindowHelper.GetWindowForElement(this); // api to get window object from UIElement (not a real api)  
 
 // unnecessary boiler plate code 
 var windowId = Win32Interop.GetWindowIdFromWindow(WindowNative.GetWindowHandle(xamlWindow)); 
@@ -35,7 +35,8 @@ appWindow.foo();
 ### After
 ```c#
 // This is needed to get any Window from inside a Xaml control 
-var xamlWindow = WindowHelper.GetWindowForElement(this /* some Xaml UIElement */);   
+var xamlWindow = WindowHelper.GetWindowForElement(this); // api to get window object from UIElement (not a real api)  
+   
 
 //calling function foo directly
 xamlWindow.AppWindow.foo();  
