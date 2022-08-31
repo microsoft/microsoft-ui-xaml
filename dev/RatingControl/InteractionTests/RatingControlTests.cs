@@ -126,6 +126,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // RatingControlTests.MaxRatingTest is unreliable #7668
         public void MaxRatingTest()
         {
             using (var setup = new TestSetupHelper("RatingControl Tests")) // This clicks the button corresponding to the test page, and navs there
