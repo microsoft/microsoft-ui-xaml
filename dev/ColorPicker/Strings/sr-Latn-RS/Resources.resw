@@ -138,15 +138,15 @@
     <comment>The automation name for the third-dimension slider when it's controlling saturation.</comment>
   </data>
   <data name="AutomationNameValueSlider" xml:space="preserve">
-    <value>Vrednost (svetlina)</value>
+    <value>Vrednost (osvetljenost)</value>
     <comment>The automation name for the third-dimension slider when it's controlling value.</comment>
   </data>
   <data name="TextBlueLabel" xml:space="preserve">
-    <value>Plavo</value>
+    <value>Plava</value>
     <comment>The label for the text box to edit the blue component of the current RGB color.</comment>
   </data>
   <data name="AutomationNameBlueTextBox" xml:space="preserve">
-    <value>Plavo</value>
+    <value>Plava</value>
     <comment>The automation name for the text box to edit the blue component of the current RGB color.</comment>
   </data>
   <data name="AutomationNameColorModelComboBox" xml:space="preserve">
@@ -158,11 +158,11 @@
     <comment>The automation name for the ColorSpectrum control.</comment>
   </data>
   <data name="TextGreenLabel" xml:space="preserve">
-    <value>Zeleno</value>
+    <value>Zelena</value>
     <comment>The label for the text box to edit the green component of the current RGB color.</comment>
   </data>
   <data name="AutomationNameGreenTextBox" xml:space="preserve">
-    <value>Zeleno</value>
+    <value>Zelena</value>
     <comment>The automation name for the text box to edit the green component of the current RGB color.</comment>
   </data>
   <data name="HelpTextColorSpectrum" xml:space="preserve">
@@ -170,7 +170,7 @@
     <comment>The help text associated with ColorSpectrum.</comment>
   </data>
   <data name="AutomationNameHexTextBox" xml:space="preserve">
-    <value>RGB Hex</value>
+    <value>RGB heksadecimalna vrednost</value>
     <comment>The automation name for the text box to edit the current RGB color as a hex value.</comment>
   </data>
   <data name="ContentHSVComboBoxItem" xml:space="preserve">
@@ -190,11 +190,11 @@
     <comment>The string to provide as the localized control type of the ColorSpectrum.</comment>
   </data>
   <data name="TextRedLabel" xml:space="preserve">
-    <value>Crveno</value>
+    <value>Crvena</value>
     <comment>The label for the text box to edit the red component of the current RGB color.</comment>
   </data>
   <data name="AutomationNameRedTextBox" xml:space="preserve">
-    <value>Crveno</value>
+    <value>Crvena</value>
     <comment>The automation name for the text box to edit the red component of the current RGB color.</comment>
   </data>
   <data name="ContentRGBComboBoxItem" xml:space="preserve">
@@ -246,7 +246,7 @@
     <comment>The string to provide as the UIA value of the third-dimension slider when it's controlling value and we're not including the friendly color name. %1 is the brightness value between 0 and 100.</comment>
   </data>
   <data name="AutomationNameValueTextBox" xml:space="preserve">
-    <value>Vrednost (svetlina)</value>
+    <value>Vrednost (osvetljenost)</value>
     <comment>The automation name for the text box to edit the value component of the current HSV color.</comment>
   </data>
   <data name="ToolTipStringAlphaSlider" xml:space="preserve">

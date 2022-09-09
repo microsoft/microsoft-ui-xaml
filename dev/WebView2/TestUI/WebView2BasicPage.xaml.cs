@@ -1,15 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using Windows.UI;
-using Windows.UI.Text;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Automation;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
+using Microsoft.UI.Xaml.Controls;
 
 using System;
 using System.Collections.Generic;
@@ -19,7 +11,15 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Globalization;
 using Windows.System;
-using Microsoft.UI.Xaml.Controls;
+using Windows.UI;
+using Windows.UI.Text;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Navigation;
 
 #if !BUILD_WINDOWS
 using Popup = Windows.UI.Xaml.Controls.Primitives.Popup;
@@ -181,6 +181,7 @@ namespace MUXControlsTestApp
             ParentVisibilityTurnedOnTest,
             SpecificTouchTest,
             CursorUpdateTest,
+            CursorClickUpdateTest,
             WebView2CleanedUpTest,
             QueryCoreWebView2BasicTest,
             CoreWebView2InitializedTest,
@@ -208,18 +209,18 @@ namespace MUXControlsTestApp
             { TestList.BasicRenderingTest, 0 },
             { TestList.MouseLeftClickTest, 1 },
             { TestList.MouseMiddleClickTest, 1 },
-            { TestList.MouseRightClickTest, 1},
-            { TestList.MouseXButton1ClickTest, 1},
-            { TestList.MouseXButton2ClickTest, 1},
-            { TestList.MouseWheelScrollTest, 2},
-            { TestList.NavigationErrorTest, 0},
-            { TestList.Focus_BasicTabTest, 3},
-            { TestList.Focus_ReverseTabTest, 3},
-            { TestList.Focus_BackAndForthTabTest, 3},
-            { TestList.Focus_MouseActivateTest, 3},
-            { TestList.ExecuteScriptTest, 4},
-            { TestList.MultipleWebviews_BasicRenderingTest, 0},
-            { TestList.MultipleWebviews_FocusTest, 3},
+            { TestList.MouseRightClickTest, 1 },
+            { TestList.MouseXButton1ClickTest, 1 },
+            { TestList.MouseXButton2ClickTest, 1 },
+            { TestList.MouseWheelScrollTest, 2 },
+            { TestList.NavigationErrorTest, 0 },
+            { TestList.Focus_BasicTabTest, 3 },
+            { TestList.Focus_ReverseTabTest, 3 },
+            { TestList.Focus_BackAndForthTabTest, 3 },
+            { TestList.Focus_MouseActivateTest, 3 },
+            { TestList.ExecuteScriptTest, 4 },
+            { TestList.MultipleWebviews_BasicRenderingTest, 0 },
+            { TestList.MultipleWebviews_FocusTest, 3 },
             { TestList.MultipleWebviews_LanguageTest, 0 },
             { TestList.CopyPasteTest, 3 },
             { TestList.BasicKeyboardTest, 5 },
@@ -246,14 +247,15 @@ namespace MUXControlsTestApp
             { TestList.ParentVisibilityHiddenTest, 3 },
             { TestList.ParentVisibilityTurnedOnTest, 3 },
             { TestList.SpecificTouchTest, 6 },
-            { TestList.CursorUpdateTest, 1},
+            { TestList.CursorUpdateTest, 1 },
+            { TestList.CursorClickUpdateTest, 1 },
             { TestList.WebView2CleanedUpTest, 1 },
             { TestList.QueryCoreWebView2BasicTest, 0 },
             { TestList.CoreWebView2InitializedTest, 0 },
-            { TestList.CoreWebView2Initialized_FailedTest, 0},
+            { TestList.CoreWebView2Initialized_FailedTest, 0 },
             { TestList.WindowHiddenTest, 3 },
             { TestList.WindowlessPopupTest, 1 },
-            { TestList.PointerReleaseWithoutPressTest, 1},
+            { TestList.PointerReleaseWithoutPressTest, 1 },
             { TestList.HostNameToFolderMappingTest, 0 },
             { TestList.NavigateToVideoTest, 4 },
             { TestList.NavigateToLocalImageTest, 0 },
@@ -662,6 +664,7 @@ namespace MUXControlsTestApp
                     }
                     break;
                 case TestList.CursorUpdateTest:
+                case TestList.CursorClickUpdateTest:
                     {
                         // Remove existing WebView, we're going to replace it
                         Border parentBorder = RemoveExistingWebViewControl(MyWebView2);
@@ -690,7 +693,6 @@ namespace MUXControlsTestApp
                     break;
                 case TestList.OffTreeWebViewInputTest:
                     {
-                        // Remove existing webview
                         Border parentBorder = RemoveExistingWebViewControl(MyWebView2);
                         parentBorder.BorderBrush = new SolidColorBrush(Colors.Pink);
                     }
@@ -703,14 +705,16 @@ namespace MUXControlsTestApp
                         parentStackPanel.Children.Remove(parentBorder);
 
                         // Create a new border that gets its size from the webview
-                        var newBorder = new Border() {
+                        var newBorder = new Border()
+                        {
                             BorderBrush = new SolidColorBrush(Colors.Red),
                             BorderThickness = new Thickness(5)
                         };
 
                         // Add a new, collapsed WebView2 into the tree
                         var uri = WebView2Common.GetTestPageUri(TestPageNames[TestInfoDictionary[test]]);
-                        var newWebView2 = new WebView2() {
+                        var newWebView2 = new WebView2()
+                        {
                             Name = "MyWebView2",
                             Margin = new Thickness(8, 8, 8, 8),
                             Width = 670,
@@ -732,7 +736,8 @@ namespace MUXControlsTestApp
                         parentStackPanel.Children.Remove(parentBorder);
 
                         // Create a new, collapsed border that gets its size from the webview
-                        var newBorder = new Border() {
+                        var newBorder = new Border()
+                        {
                             BorderBrush = new SolidColorBrush(Colors.Red),
                             BorderThickness = new Thickness(5),
                             Visibility = Visibility.Collapsed
@@ -740,7 +745,8 @@ namespace MUXControlsTestApp
 
                         // Add a new WebView2 into the tree
                         var uri = WebView2Common.GetTestPageUri(TestPageNames[TestInfoDictionary[test]]);
-                        var newWebView2 = new WebView2() {
+                        var newWebView2 = new WebView2()
+                        {
                             Name = "MyWebView2",
                             Margin = new Thickness(8, 8, 8, 8),
                             Width = 670,
@@ -963,6 +969,7 @@ namespace MUXControlsTestApp
         Border RemoveExistingWebViewControl(WebView2 webview)
         {
             RemoveWebViewEventHandlers(webview);
+            webview.Close();
             Border parentBorder = webview.Parent as Border;
             parentBorder.Child = null;
             return parentBorder;
@@ -1137,7 +1144,7 @@ namespace MUXControlsTestApp
                         break;
 
                     case TestList.NavigateToLocalImageTest:
-                        expectedStringResult = "Image loaded in iframe.";
+                        expectedStringResult = "Image loaded.";
                         break;
 
                     case TestList.ScaledTouchTest:
@@ -1317,6 +1324,10 @@ namespace MUXControlsTestApp
                                                          selectedTest.ToString(), wv2_name, wv2_language, wv2_expectedLanguage));
                         }
                         break;
+
+                    /*
+                        TestList.BasicKeyboardTest: Validated on testrunner side
+                    */
 
                     case TestList.MouseCaptureTest:
                         {
@@ -1642,6 +1653,7 @@ namespace MUXControlsTestApp
                         break;
 
                     case TestList.CursorUpdateTest:
+                    case TestList.CursorClickUpdateTest:
                         {
                             WebView2WithCursor webviewWithCursor = MyWebView2 as WebView2WithCursor;
                             Windows.UI.Core.CoreCursor cursor = webviewWithCursor.WrappedProtectedCursor;
@@ -1788,7 +1800,7 @@ namespace MUXControlsTestApp
                                 "Test {0}: Expected NotImplementedException but did not receive it.", selectedTest.ToString()));
 
                             // There is a interop we can use to access the method
-                            var interop = (ICoreWebView2Interop)(object)core_wv2;//core_wv2.As<ICoreWebView2Interop>();
+                            var interop = (ICoreWebView2Interop)(object)core_wv2;
                             try
                             {
                                 interop.AddHostObjectToScript("bridge", new Bridge());
@@ -1869,6 +1881,7 @@ namespace MUXControlsTestApp
                             border.Child = webView2;
                         }
                         break;
+
                     case TestList.HtmlDropdownTest:
                         {
                             var selctedOption = await MyWebView2.ExecuteScriptAsync("getSelectedOption();");
@@ -1877,6 +1890,7 @@ namespace MUXControlsTestApp
                                     selectedTest, selctedOption));;
                         }
                         break;
+
                     case TestList.HiddenThenVisibleTest:
                         {
                             logger.Verify(MyWebView2.Visibility == Visibility.Collapsed,
@@ -1891,12 +1905,13 @@ namespace MUXControlsTestApp
                                     selectedTest, MyWebView2.IsHitTestVisible));
                         }
                         break;
+
                     case TestList.ParentHiddenThenVisibleTest:
                         {
                             var parentBorder = MyWebView2.Parent as Border;
 
                             logger.Verify(parentBorder.Visibility == Visibility.Collapsed,
-                                 string.Format("Test {0}: Incorrect setup, Expected MyWebView2.Visibility to be Collapsed, was {1}",
+                                 string.Format("Test {0}: Incorrect setup, Expected parentBorder.Visibility to be Collapsed, was {1}",
                                     selectedTest, parentBorder.Visibility));
 
                             // Make WebView2's parent Border visible
@@ -1907,6 +1922,7 @@ namespace MUXControlsTestApp
                                     selectedTest, MyWebView2.IsHitTestVisible));
                         }
                         break;
+
                     case TestList.LifetimeTabTest:
                         {
                             MyWebView2.Close();
@@ -1915,7 +1931,6 @@ namespace MUXControlsTestApp
 
                     default:
                         break;
-
                 }
             }
         }
@@ -1969,18 +1984,24 @@ namespace MUXControlsTestApp
     }
 
     // Example classes from public documentation of CoreWebView2's AddHostObjectToScript
-    //[ClassInterface(ClassInterfaceType.AutoDual)]
+#pragma warning disable CS0618
+    // The.NET version of CoreWebView2.AddHostObjectToScript currently relies on the host object
+    // implementing IDispatch and so uses the deprecated ClassInterfaceType.AutoDual feature of.NET.
+    // This may change in the future, see https://github.com/MicrosoftEdge/WebView2Feedback/issues/517
+    // for more information
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+#pragma warning restore CS0618
     [ComVisible(true)]
-    //[Obsolete]
     public class BridgeAnotherClass
     {
         // Sample property.
         public string Prop { get; set; } = "Example property from host object";
     }
 
-    //[ClassInterface(ClassInterfaceType.AutoDual)]
+#pragma warning disable CS0618
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+#pragma warning restore CS0618
     [ComVisible(true)]
-    //[Obsolete]
     public class Bridge
     {
         public string Func(string param)

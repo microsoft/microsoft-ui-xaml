@@ -172,7 +172,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.Throws<COMException>(() => { infoBadge.Value = -10; });
+                Verify.Throws<Exception>(() => { infoBadge.Value = -10; });
             });
         }
     }

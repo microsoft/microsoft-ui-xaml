@@ -154,7 +154,7 @@
     <comment>The automation name for the color model selection combo box.</comment>
   </data>
   <data name="AutomationNameColorSpectrum" xml:space="preserve">
-    <value>Birač boje</value>
+    <value>Alat za odabir boja</value>
     <comment>The automation name for the ColorSpectrum control.</comment>
   </data>
   <data name="TextGreenLabel" xml:space="preserve">
@@ -170,7 +170,7 @@
     <comment>The help text associated with ColorSpectrum.</comment>
   </data>
   <data name="AutomationNameHexTextBox" xml:space="preserve">
-    <value>RGB heksadecimalno</value>
+    <value>RGB hex</value>
     <comment>The automation name for the text box to edit the current RGB color as a hex value.</comment>
   </data>
   <data name="ContentHSVComboBoxItem" xml:space="preserve">

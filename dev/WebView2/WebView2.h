@@ -21,7 +21,7 @@ namespace winrt
 #pragma warning( disable : 28251 26812)   // warning C28251: Inconsistent annotation for function: this instance has an error
 #include <webview2.h>
 #include <WebView2EnvironmentOptions.h>
-#pragma warning( pop ) 
+#pragma warning( pop )
 
  // for making async/await possible
 struct AsyncWebViewOperations final : public Awaitable
@@ -85,7 +85,6 @@ public:
     winrt::IUnknown GetProviderForHwnd(HWND hwnd);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void ResetPointerHelper(const winrt::PointerRoutedEventArgs& args);
     void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
 
@@ -122,7 +121,7 @@ private:
     void FireCoreProcessFailedEvent(const winrt::CoreWebView2ProcessFailedEventArgs& args);
     void FireCoreWebView2Initialized(winrt::hresult exception);
 
-    void UpdateDefaultBackgroundColor();
+    void UpdateDefaultVisualBackgroundColor();
 
     HWND GetHostHwnd() noexcept;
     HWND GetActiveInputWindowHwnd() noexcept;
@@ -175,6 +174,7 @@ private:
     void ResetProperties();
     void CloseInternal(bool inShutdownPath);
 
+    winrt::AccessibilitySettings GetAccessibilitySettings();
     bool SafeIsLoaded();
 
     void UpdateCoreWindowCursor();
@@ -208,9 +208,6 @@ private:
     HWND m_inputWindowHwnd{ nullptr };
     winrt::hstring m_stopNavigateOnUriChanged{};
     bool m_canGoPropSetInternally{};
-#if WINUI3
-    winrt::IExpSystemVisualBridge m_systemVisualBridge;
-#endif
     winrt::Windows::UI::Composition::SpriteVisual m_visual{ nullptr };
 
     winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker;
@@ -249,9 +246,9 @@ private:
     winrt::AccessibilitySettings::HighContrastChanged_revoker m_highContrastChangedRevoker{};
 
     // Pointer handling for CoreWindow
+    void ResetPointerHelper(const winrt::PointerRoutedEventArgs& args);
     bool m_isPointerOver{};
     winrt::CoreCursor m_oldCursor{ nullptr };
-    winrt::CoreCursor m_requestedCursor{ nullptr };
 
     XamlFocusChangeInfo m_xamlFocusChangeInfo{};
 
@@ -289,4 +286,5 @@ private:
     decltype(&DefWindowProcW) m_fnDefWindowProcW;
     decltype(&GetFocus) m_fnGetFocus;
     decltype(&RegisterClassW) m_fnRegisterClassW;
+    decltype(&DestroyWindow) m_fnDestroyWindow;
 };

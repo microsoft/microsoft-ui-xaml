@@ -170,7 +170,7 @@
     <comment>The help text associated with ColorSpectrum.</comment>
   </data>
   <data name="AutomationNameHexTextBox" xml:space="preserve">
-    <value>Hex RGB</value>
+    <value>Heks RGB</value>
     <comment>The automation name for the text box to edit the current RGB color as a hex value.</comment>
   </data>
   <data name="ContentHSVComboBoxItem" xml:space="preserve">
@@ -250,7 +250,7 @@
     <comment>The automation name for the text box to edit the value component of the current HSV color.</comment>
   </data>
   <data name="ToolTipStringAlphaSlider" xml:space="preserve">
-    <value>%1!u!%% tingkat keburaman</value>
+    <value>Tingkat keburaman %1!u!%%</value>
     <comment>The string to display in the tool tip for the alpha slider. %1 is the alpha value between 0 and 100.</comment>
   </data>
   <data name="ToolTipStringHueSliderWithColorName" xml:space="preserve">

@@ -15,7 +15,7 @@
     <iconUrl>https://aka.ms/winui_icon</iconUrl>
 
     <dependencies>
-      <dependency id="Microsoft.Web.WebView2" version="[1.0.1020.30,)" />
+      <dependency id="Microsoft.Web.WebView2" version="[1.0.1264.42,)" />
     </dependencies>  
   </metadata>
   <files>
@@ -36,8 +36,10 @@
     <file target="build\$ID$.targets" src="MUXControls-Nuget-Common.targets"/>
     <file target="buildTransitive\$ID$.targets" src="MUXControls-Nuget-Common.targets"/>
 
-    <!-- This is here for C++ based projects, see http://nugetdocsbeta.azurewebsites.net/ndocs/guides/create-uwp-packages -->
+    <!-- This is here for C++ based projects, see https://docs.microsoft.com/en-us/nuget/guides/create-uwp-packages -->
     <file target="build\native\$ID$.targets" src="MUXControls-Nuget-Native.targets"/>
+    <file target="build\native\$ID$.props" src="MUXControls-Nuget-Native.props"/>
     <file target="buildTransitive\native\$ID$.targets" src="MUXControls-Nuget-Native.targets"/>
+    <file target="buildTransitive\native\$ID$.props" src="MUXControls-Nuget-Native.props"/>
   </files>
 </package>

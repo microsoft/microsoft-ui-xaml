@@ -3,16 +3,17 @@
 <head>
     <title>Simple Page With Text</title>
     <style>
-
-        h1 {
-            background-color: #0080ff
-        }
-
-        h2 {
-            background-color: #00ff80
-        }
+    h1 {
+        background-color: #0080ff
+    }
+    h2 {
+        background-color: #00ff80
+    }
     </style>
-    <script>// it updates the countdown timer value by 1 to 1000
+    <script>
+        "use strict";
+
+        // Updates the countdown timer value by 1 to 1000
         var timer = () => {
             var textBlock = document.getElementById("timer");
             const countdown_limit = 1000;

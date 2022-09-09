@@ -154,7 +154,7 @@
     <comment>The automation name for the color model selection combo box.</comment>
   </data>
   <data name="AutomationNameColorSpectrum" xml:space="preserve">
-    <value>Spalvos parinkiklis</value>
+    <value>Spalvų parinkiklis</value>
     <comment>The automation name for the ColorSpectrum control.</comment>
   </data>
   <data name="TextGreenLabel" xml:space="preserve">
@@ -170,7 +170,7 @@
     <comment>The help text associated with ColorSpectrum.</comment>
   </data>
   <data name="AutomationNameHexTextBox" xml:space="preserve">
-    <value>RGB šešioliktainė</value>
+    <value>RGB šešioliktainis</value>
     <comment>The automation name for the text box to edit the current RGB color as a hex value.</comment>
   </data>
   <data name="ContentHSVComboBoxItem" xml:space="preserve">

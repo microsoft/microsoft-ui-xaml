@@ -22,11 +22,11 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 using Button = Microsoft.Windows.Apps.Test.Foundation.Controls.Button;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -74,37 +74,52 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             // 1. Get installed Edge browser (or WebView2 Runtime) build version info.
             int browserBuildVersion = GetInstalledBrowserVersion();
 
-            // 2. Get WebView2Loader.dll Build version info.
-            int loaderBuildVersion = GetLoaderBuildVersion();
+            // 2. Get Microsoft.Web.WebView2.Core.dll build version info.
+            int sdkBuildVersion = GetSdkBuildVersion();
 
-            // 3. If a runtime isn't installed or the SDK and runtime aren't compatible, install a compatible runtime.
-            bool hasCompatibleRuntimeInstalled = GetHasCompatibleRuntimeInstalled(browserBuildVersion, loaderBuildVersion);
+            // 3. Check if a runtime is already installed, and if it's compatible.
+            bool hasCompatibleRuntimeInstalled = GetHasCompatibleRuntimeInstalled(browserBuildVersion, sdkBuildVersion);
 
-            if (!hasCompatibleRuntimeInstalled)
+            // 4a. If we have a compatible runtime installed, continue on to the tests!
+            if (hasCompatibleRuntimeInstalled)
             {
-                // Print if there are any Edge processes running that might interfere with installation
-                // (specifically, MicrosoftEdge<Version> or MicrosoftEdgeUpdate).
-                foreach (var process in Process.GetProcesses())
-                {
-                    if (process.ProcessName.ToLower().ToString().Contains("edge"))
-                    {
-                        Log.Comment("Note: process '{0}' ({1}) is running", process.ProcessName, process.Id);
-                    }
-                }
+                return;
+            }
 
-                // This installation can sometimes fail, so we'll try a number of times before failing out.
-                int attemptsLeft = 5;
-                bool successfullyInstalled = false;
-                while (attemptsLeft > 0)
+            // 4b. If we don't have a compatible runtime, try to install one.
+
+            // 5. Before installing, check if Edge is already installing/updating. We can't run the standalone installer if it is.
+            bool didWait = WaitForEdgeIfAlreadyInstalling();
+
+            if (didWait && IsEdgeAlreadyInstalling())
+            {
+                Log.Error("WebView2Tests Init: Edge took more than 3 minutes to install, give up.");
+            }
+            else if (didWait)
+            {
+                // If we waited for Edge to finish installing/updating and it finished, check the versions again
+                browserBuildVersion = GetInstalledBrowserVersion();
+                hasCompatibleRuntimeInstalled = GetHasCompatibleRuntimeInstalled(browserBuildVersion, sdkBuildVersion);
+                if (hasCompatibleRuntimeInstalled)
                 {
-                    attemptsLeft--;
-                    successfullyInstalled = TryInstallingBrowser(attemptsLeft);
-                    if (successfullyInstalled) break;
+                    return;
                 }
-                if (attemptsLeft == 0 && !successfullyInstalled)
-                {
-                    Log.Error("WebView2Tests Init: Browser installation failed, out of retries.");
-                }
+            }
+
+            // 6. If Edge wasn't already installing/updating, or it was but installed something old (unlikely),
+            // run the standalone installer to install it.
+            // This installation can sometimes fail, so we'll try a number of times before failing out.
+            int attemptsLeft = 5;
+            bool successfullyInstalled = false;
+            while (attemptsLeft > 0)
+            {
+                attemptsLeft--;
+                successfullyInstalled = TryInstallingBrowser(attemptsLeft);
+                if (successfullyInstalled) break;
+            }
+            if (attemptsLeft == 0 && !successfullyInstalled)
+            {
+                Log.Error("WebView2Tests Init: Browser installation failed, out of retries.");
             }
         }
 
@@ -155,45 +170,76 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return browserBuildVersion;
         }
 
-        private static int GetLoaderBuildVersion()
+        private static int GetSdkBuildVersion()
         {
-            int loaderBuildVersion = 0;
-            string loaderPath = Path.Combine(Environment.CurrentDirectory, NativeMethods.LoaderName);
+            int sdkBuildVersion = 0;
+            string dllName = "Microsoft.Web.WebView2.Core.dll";
+            string dllPath = Path.Combine(Environment.CurrentDirectory, dllName);
 
             try
             {
-                FileVersionInfo loaderVersionInfo = FileVersionInfo.GetVersionInfo(loaderPath);
-                loaderBuildVersion = loaderVersionInfo.ProductBuildPart;
+                FileVersionInfo sdkVersionInfo = FileVersionInfo.GetVersionInfo(dllPath);
+                sdkBuildVersion = sdkVersionInfo.ProductBuildPart;
                 Log.Comment("WebView2Tests Init: Found {0}: version {1} [build version: {2}] (file: {3})",
-                            NativeMethods.LoaderName,
-                            loaderVersionInfo.ProductVersion,
-                            loaderBuildVersion,
-                            loaderVersionInfo.FileName
-                            );
+                            dllName,
+                            sdkVersionInfo.ProductVersion,
+                            sdkBuildVersion,
+                            sdkVersionInfo.FileName);
             }
             catch (Exception e)
             {
-                Log.Error("WebView2Tests Init: could not find loader at {0} [exception: {1}]", loaderPath, e.ToString());
+                Log.Error("WebView2Tests Init: could not find loader at {0} [exception: {1}]", dllPath, e.ToString());
             }
-            return loaderBuildVersion;
+            return sdkBuildVersion;
         }
 
-        private static bool GetHasCompatibleRuntimeInstalled(int browserBuildVersion, int loaderBuildVersion)
+        private static bool GetHasCompatibleRuntimeInstalled(int browserBuildVersion, int sdkBuildVersion)
         {
             bool hasCompatibleRuntime = false;
             // The full versions of browser/runtime and WebView2 SDK are not directly comparable: 
             // Browser/Runtime version ex: 80.0.361.48
             // WebView2 SDK version ex: 0.8.355
             // Webview2Loader compares the build versions (361 and 355 in above example), we do so here as well
-            if (browserBuildVersion >= loaderBuildVersion ||
-                // [1/26/21]: Special case: For SDK 1.0.721-prerelease, can use browser 88.0.705.0
-                (loaderBuildVersion == 721 && browserBuildVersion >= 705)
-               )
+            if (browserBuildVersion >= sdkBuildVersion)
             {
                 Log.Comment("WebView2Tests Init: Installed Edge build will be used for testing... ");
                 hasCompatibleRuntime = true;
             }
             return hasCompatibleRuntime;
+        }
+
+        private static bool WaitForEdgeIfAlreadyInstalling()
+        {
+            bool didWait = false;
+            int curWait = 0;
+            int maxWait = 180; // wait for 3 minutes, should finish in 1-2
+            while (IsEdgeAlreadyInstalling() && curWait < maxWait)
+            {
+                Log.Comment("Note: Edge is updating, wait up to 180 seconds for it to finish. Waited {0} seconds so far, wait another 10...", curWait);
+                Wait.ForSeconds(10);
+                curWait += 10;
+                didWait = true;
+            }
+            return didWait;
+        }
+
+        private static bool IsEdgeAlreadyInstalling()
+        {
+            bool edgeUpdateIsRunning = false;
+            // Print if there are any Edge processes running that might interfere with installation
+            // (specifically, MicrosoftEdge<Version> or MicrosoftEdgeUpdate).
+            foreach (var process in Process.GetProcesses())
+            {
+                if (process.ProcessName.ToLower().ToString().Contains("edge"))
+                {
+                    Log.Comment("Note: process '{0}' ({1}) is running", process.ProcessName, process.Id);
+                    if (process.ProcessName.ToString().Equals("MicrosoftEdgeUpdate"))
+                    {
+                        edgeUpdateIsRunning = true;
+                    }
+                }
+            }
+            return edgeUpdateIsRunning;
         }
 
         private static bool TryInstallingBrowser(int attemptsLeft)
@@ -281,7 +327,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var waiter = check.GetToggledWaiter())
             {
                 // If the web message hasn't been received, wait for it
-                if (check.ToggleState != ToggleState.On && !waiter.TryWait(TimeSpan.FromSeconds(5)))
+                if (check.ToggleState != ToggleState.On && !waiter.TryWait())
                 {
                     Log.Error("Expected web message was never received.");
                 }
@@ -298,13 +344,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Button CompleteTestButton = new Button(FindElement.ById("CompleteTest"));
             string expectedValue = selectedTest + ": Passed []";
 
+            Log.Comment("Waiting for result...");
+            CompleteTestButton.Invoke();
+
             // If the web message hasn't been received, wait for it
             using (var waiter = check.GetToggledWaiter())
             {
-                Log.Comment("Waiting for result...");
-                CompleteTestButton.Invoke();
-
-                if (check.ToggleState != ToggleState.On && !waiter.TryWait(TimeSpan.FromSeconds(5)))
+                if (check.ToggleState != ToggleState.On && !waiter.TryWait())
                 {
                     Log.Error("Expected web message was never received.");
                 }
@@ -332,19 +378,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private static void WaitForTextBoxValue(Edit textbox, string expectedValue, bool match = true)
         {
-            using (var waiter = new ValueChangedEventWaiter(textbox, expectedValue))
+            // if value is empty, wait for it
+            if (textbox.Value == string.Empty)
             {
-                // if value is empty, wait for it
-                if (textbox.Value == string.Empty)
+                using (var waiter = new ValueChangedEventWaiter(textbox, expectedValue))
                 {
-                    try
-                    {
-                        waiter.Wait(TimeSpan.FromSeconds(120));
-                    }
-                    catch
-                    {
-                        Log.Comment("Wait timed out, textbox value is {0}", textbox.Value);
-                    }
+                    waiter.Wait();
                 }
             }
 
@@ -450,12 +489,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "A")]
         public void BasicRenderingTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("BasicRenderingTest");
@@ -469,12 +502,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private static void MouseClickTestCommon(PointerButtons mouseButton)
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 string selectedTest = "Invalid";
@@ -563,12 +590,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "A")]
         public void MouseWheelScrollTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("MouseWheelScrollTest");
@@ -594,12 +615,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "A")]
         public void CursorUpdateTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 // On ChooseTest, replace the default webview with one that exposes the ProtectedCursor member
@@ -628,14 +643,45 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        public void CursorClickUpdateTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                // On ChooseTest, replace the default webview with one that exposes the ProtectedCursor member
+                ChooseTest("CursorClickUpdateTest");
+
+                // Clear the cache so we can find the new webview
+                ElementCache.Clear();
+                var webview = FindElement.ById("MyWebView2");
+                Rectangle bounds = webview.BoundingRectangle;
+                Log.Comment("Bounds = X:{0}, Y:{1}, Width:{2}, Height:{3}", bounds.X, bounds.Y, bounds.Width, bounds.Height);
+
+                // Click somewhere in the webview that's not the button a few times
+                var centerOfWebView = new Point(bounds.X + bounds.Width / 2, bounds.Y + bounds.Height / 2);
+                PointerInput.Move(centerOfWebView);
+
+                PointerInput.Press(PointerButtons.Primary);
+                PointerInput.Release(PointerButtons.Primary);
+
+                PointerInput.Press(PointerButtons.Primary);
+                PointerInput.Release(PointerButtons.Primary);
+
+                PointerInput.Press(PointerButtons.Primary);
+                PointerInput.Release(PointerButtons.Primary);
+
+                var insideButton = new Point(bounds.X + 20, bounds.Y + 20);
+                PointerInput.Move(insideButton);
+                Wait.ForIdle();
+
+                // Checks that the ProtectedCursor type has changed to the one we expect
+                CompleteTestAndWaitForResult("CursorClickUpdateTest");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void NavigationErrorTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("NavigationErrorTest");
@@ -652,12 +698,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "A")]
         public void Focus_BasicTabTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("Focus_BasicTabTest");
@@ -697,12 +737,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "A")]
         public void Focus_ReverseTabTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("Focus_ReverseTabTest");
@@ -743,12 +777,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "A")]
         public void Focus_BackAndForthTabTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("Focus_BackAndForthTabTest");
@@ -796,18 +824,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "A")]
         public void Focus_MouseActivateTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("Focus_MouseActivateTest");
 
                 Button x1 = new Button(FindElement.ById("TabStopButton1"));     // Xaml TabStop 1
-                UIObject webviewControl = new UIObject(FindElement.ById("MyWebView2"));
 
                 Log.Comment("Test1: Focus on x1, Click on w1, Shift+Tab w2 -> w1, Click on x2");
                 Log.Comment("Focus on x1");
@@ -817,12 +838,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Click on w2");
 
-                Rectangle bounds = webviewControl.BoundingRectangle;
+                Rectangle bounds = FindElement.ById("MyWebView2").BoundingRectangle;
                 const int w2_offsetX = 100;
                 const int w2_offsetY = 200;
 
                 // top left coordinate (location of web button) relative from the center of webview
-                InputHelper.MoveMouse(webviewControl, -bounds.Width / 2 + w2_offsetX, -bounds.Height / 2 + w2_offsetY);
+                InputHelper.MoveMouse(FindElement.ById("MyWebView2"), -bounds.Width / 2 + w2_offsetX, -bounds.Height / 2 + w2_offsetY);
                 PointerInput.Press(PointerButtons.Primary);
                 PointerInput.Release(PointerButtons.Primary);
 
@@ -850,12 +871,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "A")]
         public void ExecuteScriptTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("ExecuteScriptTest");
@@ -867,12 +882,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "A")]
         public void MultipleWebviews_FocusTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("MultipleWebviews_FocusTest");
@@ -922,12 +931,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "B")]
         public void MultipleWebviews_BasicRenderingTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("MultipleWebviews_BasicRenderingTest");
@@ -943,12 +946,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Ignore", "True")] // TODO: Investigate why LanguageTest is failing on latest WebView2 runtime
         public void MultipleWebviews_LanguageTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("MultipleWebviews_LanguageTest");
@@ -967,12 +964,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Ignore", "True")] // Task 37000273
         public void CopyPasteTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("CopyPasteTest");
@@ -1042,12 +1033,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "B")]
         public void BasicKeyboardTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("BasicKeyboardTest");
@@ -1071,18 +1056,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Left);
                 KeyboardHelper.PressKey(Key.Left);
                 KeyboardHelper.PressKey(Key.Left);
-                
+
                 Log.Comment("Inject '123 '...");
                 TextInput.SendText("123 ");
-                
+
                 Log.Comment("Inject right arrow three times...");
                 KeyboardHelper.PressKey(Key.Right);
                 KeyboardHelper.PressKey(Key.Right);
                 KeyboardHelper.PressKey(Key.Right);
-                
+
                 Log.Comment("Inject 'ld'...");
                 TextInput.SendText("ld");
-                
+
                 Log.Comment("Test simultaneous keyboard inputs by injecting shift+left twice...");
                 KeyboardHelper.PressKey(Key.Left, ModifierKey.Shift);
                 KeyboardHelper.PressKey(Key.Left, ModifierKey.Shift);
@@ -1108,12 +1093,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "B")]
         public void WebMessageReceivedTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("WebMessageReceivedTest");
@@ -1135,16 +1114,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Task 32016751: [WebView2] Re-enable Focus_MouseActivateTest and MouseCaptureTest
         [TestProperty("TestSuite", "B")]
         public void MouseCaptureTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("MouseCaptureTest");
@@ -1170,6 +1142,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var outsidePoint = new Point(bounds.X + w2_offsetX + bounds.Width, bounds.Y + w2_offsetY);
 
                 PointerInput.Move(startPoint);
+
+                // Click once in edit box - this helps selection work in MITA, but is not necessary in manual testing
+                PointerInput.Press(PointerButtons.Primary);
+                PointerInput.Release(PointerButtons.Primary);
+
                 PointerInput.Press(PointerButtons.Primary);
                 PointerInput.Move(outsidePoint);
                 PointerInput.Release(PointerButtons.Primary);
@@ -1196,12 +1173,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "B")]
         public void ReloadTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("ReloadTest");
@@ -1213,12 +1184,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "B")]
         public void NavigateToStringTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("NavigateToStringTest");
@@ -1239,12 +1204,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "B")]
         public void SourceBindingTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("SourceBindingTest");
@@ -1281,12 +1240,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "B")]
         public void GoBackAndForwardTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("GoBackAndForwardTest");
@@ -1296,15 +1249,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
-        [TestProperty("Ignore", "True")] // TODO: Investigate why this test is not completing on 19H1
         public void NavigationStartingTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("NavigationStartingTest");
@@ -1327,12 +1273,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "B")]
         public void ResizeTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("ResizeTest");
@@ -1397,7 +1337,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.Flick(webview, 250, Direction.West);
                 */
                 Point center = new Point(bounds.Width / 2, bounds.Height / 2);
-                //InputHelper.Flick(webview, center, 300, Direction.West);
+                InputHelper.Flick(webview, 300, Direction.West);
                 WaitForWebMessageResult("BasicFlingTouchTest");
             }
         }
@@ -1436,7 +1376,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Warning("This test requires RS5+ functionality");
                 return;
             }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("BasicPanTouchTest");
@@ -1487,12 +1426,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "C")]
         public void ScaledTouchTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (IDisposable page1 = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("ScaledTouchTest");
@@ -1522,12 +1455,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "C")]
         public void MoveTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("MoveTest");
@@ -1539,12 +1466,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "C")]
         public void ReparentElementTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("ReparentElementTest");
@@ -1563,12 +1484,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "C")]
         public void SourceBeforeLoadTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("SourceBeforeLoadTest");
@@ -1580,12 +1495,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "C")]
         public void VisibilityHiddenTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("VisibilityHiddenTest");
@@ -1597,12 +1506,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "C")]
         public void VisibilityTurnedOnTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("VisibilityTurnedOnTest");
@@ -1619,12 +1522,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "C")]
         public void ParentVisibilityHiddenTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("ParentVisibilityHiddenTest");
@@ -1636,12 +1533,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "C")]
         public void ParentVisibilityTurnedOnTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("ParentVisibilityTurnedOnTest");
@@ -1659,12 +1550,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "C")]
         public void SpecificTouchTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("SpecificTouchTest");
@@ -1696,12 +1581,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "C")]
         public void QueryCoreWebView2BasicTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("QueryCoreWebView2BasicTest", false /* waitForLoadCompleted */);
@@ -1713,12 +1592,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "C")]
         public void CoreWebView2InitializedTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("CoreWebView2InitializedTest", false /* waitForLoadCompleted */);
@@ -1730,12 +1603,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "C")]
         public void CoreWebView2Initialized_FailedTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("CoreWebView2Initialized_FailedTest", false /* waitForLoadCompleted */);
@@ -1768,12 +1635,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Ignore", "True")] // Task 31425073: Unreliable tests: MenuBarTests.KeyboardNavigationWithArrowKeysTest and WebView2CleanedUpTest
         public void WebView2CleanedUpTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 // Go back a page (WebView2 should be cleaned up)
@@ -1818,16 +1679,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "D")]
         public void WindowHiddenTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("WindowHiddenTest");
 
+                var appFrameWindow = new Microsoft.Windows.Apps.Test.Foundation.Controls.Window(TestEnvironment.Application.ApplicationFrameWindow);
                 // If we got a visibility message when the web view first appeared, make sure we get it again
                 var check = new CheckBox(FindElement.ById("MessageReceived"));
                 check.Uncheck();
@@ -1835,8 +1691,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Minimize and restore the app to trigger the XamlRootChanged event. The CoreWebView2
                 // should be hidden and unhidden as well, each of which will send a web message. We 
                 // then listen for the second message.
-
-                var appFrameWindow = new Microsoft.Windows.Apps.Test.Foundation.Controls.Window(TestEnvironment.Application.ApplicationFrameWindow);
                 Log.Comment("Minimize window");
                 appFrameWindow.SetWindowVisualState(WindowVisualState.Minimized);
                 Wait.ForMilliseconds(1000);
@@ -1853,12 +1707,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "D")]
         public void WindowlessPopupTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 // Insert popup with empty webview
@@ -1896,12 +1744,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "D")]
         public void PointerReleaseWithoutPressTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("PointerReleaseWithoutPressTest");
@@ -1928,12 +1770,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "D")]
         public void HostNameToFolderMappingTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("HostNameToFolderMappingTest");
@@ -1960,12 +1796,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "D")]
         public void NavigateToVideoTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("NavigateToVideoTest");
@@ -1977,12 +1807,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "D")]
         public void NavigateToLocalImageTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("NavigateToLocalImageTest");
@@ -1995,12 +1819,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "D")]
         public void CloseThenDPIChangeTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("CloseThenDPIChangeTest");
@@ -2012,17 +1830,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod] // Test fails because .NET UWP doesn't support Object -> VARIANT marshalling.
+        [TestMethod]
         [TestProperty("TestSuite", "D")]
-        [TestProperty("Ignore", "True")]
+        [TestProperty("Ignore", "True")] // Test fails because .NET UWP doesn't support Object -> VARIANT marshalling.
         public void AddHostObjectToScriptTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("AddHostObjectToScriptTest");
@@ -2034,12 +1846,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "D")]
         public void UserAgentTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 ChooseTest("UserAgentTest");
@@ -2051,12 +1857,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "D")]
         public void NonAsciiUriTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
             {
                 // Navigate to a uri with a non-ascii characters
@@ -2209,7 +2009,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestSuite", "D")]
         public void LifetimeTabTest()
         {
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
@@ -2330,12 +2130,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "D")]
         public void BasicCoreObjectCreationAndDestructionTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToCoreObjectsWebView2" }))
             {
                 ChooseTest("BasicCoreObjectCreationAndDestructionTest", false /* waitForLoadCompleted */);
@@ -2732,12 +2526,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "D")]
         public void ConcurrentCreationRequestsTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             // Use two sources to test that concurrent creations/navigations end up in the expected state
             string source1_filename = "SimplePage.html";
             string source2_filename = "SimplePageWithButton.html";
@@ -2893,12 +2681,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "D")]
         public void EdgeProcessFailedTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-            {
-                Log.Warning("CoreWebView2 doesn't work RS2-RS4 yet");
-                return;
-            }
-
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToCoreObjectsWebView2" }))
             {
                 ChooseTest("EdgeProcessFailedTest", false /* waitForLoadCompleted */);

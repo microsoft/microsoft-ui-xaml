@@ -447,6 +447,7 @@
                                 Foreground="{ThemeResource AppBarButtonKeyboardAcceleratorTextForeground}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
+                                HorizontalTextAlignment="Right"
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw" />
                             <Grid x:Name="SubItemChevronPanel"

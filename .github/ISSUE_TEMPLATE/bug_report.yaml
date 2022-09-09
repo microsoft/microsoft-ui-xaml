@@ -35,32 +35,13 @@ body:
       label: NuGet package version
       description: If you are seeing your issue on older versions please try the latest release
       options:
-        - "WinUI 3 - Windows App SDK 1.1 Preview 3: 1.1.0-preview3"
-        - "WinUI 3 - Windows App SDK 1.1 Preview 2: 1.1.0-preview2"
-        - "WinUI 3 - Windows App SDK 1.1 Preview 1: 1.1.0-preview1"
-        - "WinUI 3 - Windows App SDK 1.0.3"
-        - "WinUI 3 - Windows App SDK 1.0.2"
-        - "WinUI 3 - Windows App SDK 1.0.1"
-        - "WinUI 3 - Windows App SDK 1.0"
+        - "WinUI 3 - Windows App SDK 1.2 Experimental: 1.2.220727.1-experimental1"
+        - "WinUI 3 - Windows App SDK 1.1.4"
+        - "WinUI 3 - Windows App SDK 1.0.4"
         - "WinUI 3 - Windows App SDK 1.0 Experimental: 1.0.0-experimental1"
-        - "WinUI 3 - Project Reunion 0.8: 0.8.8"
-        - "WinUI 3 - Project Reunion 0.8: 0.8.7"
-        - "WinUI 3 - Project Reunion 0.8 Preview 1: 0.8.7-preview1"
-        - "WinUI 3 - Project Reunion 0.8: 0.8.6"
-        - "WinUI 3 - Project Reunion 0.8 Preview 1: 0.8.6-preview1"
-        - "WinUI 3 - Project Reunion 0.8: 0.8.5"
-        - "WinUI 3 - Project Reunion 0.5: 0.5.7"
-        - "WinUI 3 - Project Reunion 0.5: 0.5.0"
-        - "WinUI 3 - Project Reunion 0.5 Preview: 0.5.0-prerelease"
-        - "Microsoft.WinUI 3.0.0-preview4.210210.4"
-        - "Microsoft.UI.Xaml 2.7.1"
-        - "Microsoft.UI.Xaml 2.7.0"
-        - "Microsoft.UI.Xaml 2.6.2"
-        - "Microsoft.UI.Xaml 2.6.1"
-        - "Microsoft.UI.Xaml 2.6.0"
-        - "Microsoft.UI.Xaml.2.6.0-prerelease.210430001"
-        - "Microsoft.UI.Xaml 2.5.0"
-        - "Microsoft.UI.Xaml 2.4.0"
+        - "WinUI 3 - Project Reunion 0.8.12"
+        - "Microsoft.UI.Xaml 2.8.0-prerelease.220712001"
+        - "Microsoft.UI.Xaml 2.8.0"
   - type: checkboxes
     attributes:
       label: Windows app type
@@ -85,17 +66,12 @@ body:
       multiple: true
       options:
         - "Windows Insider Build (xxxxx)"
+        - "Windows 11 (22H2): Build 22621"
         - "Windows 11 (21H2): Build 22000"
         - "Windows 10 (21H2): Build 19044"
         - "Windows 10 (21H1): Build 19043"
         - "Windows 10 (20H2): Build 19042"
-        - "Windows 10 (2004): Build 19041"
-        - "Windows 10 (1909): Build 18363"
-        - "Windows 10 (1903): Build 18362"
         - "Windows 10 (1809): Build 17763"
-        - "Windows 10 (1803): Build 17134"
-        - "Windows 10 (1709): Build 16299"
-        - "Windows 10 (1703): Build 15063"
   - type: textarea
     attributes:
       label: Additional context

@@ -25,5 +25,7 @@
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <GeneratedFilesDir>$(BaseIntermediateOutputPath)Generated Files\</GeneratedFilesDir>
     <GenerateProjectSpecificOutputFolder>True</GenerateProjectSpecificOutputFolder>
+    
+    <UwpUnitTestSdkPkgVersion>16.7.1</UwpUnitTestSdkPkgVersion>
   </PropertyGroup>
 </Project>

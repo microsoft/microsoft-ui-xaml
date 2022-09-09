@@ -538,6 +538,35 @@ void TabViewItem::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args
     RestoreLeftAdjacentTabSeparatorVisibility();
 }
 
+// Note that the ItemsView will handle the left and right arrow keys if we don't do so before it does,
+// so this needs to be handled below the items view. That's why we can't put this in TabView's OnKeyDown.
+void TabViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
+{
+    if (!args.Handled() && (args.Key() == winrt::VirtualKey::Left || args.Key() == winrt::VirtualKey::Right))
+    {
+        // Alt+Shift+Arrow reorders tabs, so we don't want to handle that combination.
+        // ListView also handles Alt+Arrow  (no Shift) by just doing regular XY focus,
+        // same as how it handles Arrow without any modifier keys, so in that case
+        // we do want to handle things so we get the improved keyboarding experience.
+        auto isAltDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Menu) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+        auto isShiftDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Shift) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+
+        if (!isAltDown || !isShiftDown)
+        {
+            const bool moveForward =
+                (FlowDirection() == winrt::FlowDirection::LeftToRight && args.Key() == winrt::VirtualKey::Right) ||
+                (FlowDirection() == winrt::FlowDirection::RightToLeft && args.Key() == winrt::VirtualKey::Left);
+
+            args.Handled(winrt::get_self<TabView>(GetParentTabView())->MoveFocus(moveForward));
+        }
+    }
+
+    if (!args.Handled())
+    {
+        __super::OnKeyDown(args);
+    }
+}
+
 void TabViewItem::OnIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     OnIconSourceChanged();

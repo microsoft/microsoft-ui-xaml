@@ -4,7 +4,7 @@ namespace MU_XC_NAMESPACE
 {
 
 [webhosthidden]
-[MUX_PREVIEW]
+[MUX_PUBLIC]
 runtimeclass CoreWebView2InitializedEventArgs
 {
     HRESULT Exception{ get; };
@@ -13,7 +13,7 @@ runtimeclass CoreWebView2InitializedEventArgs
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
-[MUX_PREVIEW]
+[MUX_PUBLIC]
 unsealed runtimeclass WebView2 : Windows.UI.Xaml.Controls.Control
 {
     WebView2();

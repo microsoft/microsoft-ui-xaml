@@ -494,6 +494,7 @@
                                 Foreground="{ThemeResource SystemControlBackgroundBaseMediumBrush}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
+                                HorizontalTextAlignment="Right"
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw" />
                         </Grid>
