@@ -195,7 +195,7 @@ foreach ($flavour in $buildFlavours)
 # $patch = $version[2]
 
 # $vpackversion = "$($major).$($minor).$($patch)"
-$vpackversion = "7.2208.15003"
+$vpackversion = "7.2208.15004"
 Write-Host "vpackversion=$vpackversion"
 
 $readmeFilePath = Join-Path $cbsFolder "readme.txt"
