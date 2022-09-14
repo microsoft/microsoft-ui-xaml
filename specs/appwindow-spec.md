@@ -70,7 +70,7 @@ New subclassing order with this new feature change:
   &darr;
 * AppWindow  
   &darr;
-* Xaml DesktopWindow (WinUI's main WndProc)  
+* Xaml Window
 &darr;
 * DefaultWndProc
 
