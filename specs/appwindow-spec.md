@@ -70,11 +70,10 @@ New subclassing order with this new feature change:
   &darr;
 * AppWindow  
   &darr;
-* Xaml Window
+* Xaml Window  
 &darr;
 * DefaultWndProc
 
-This order can change later.
 
 # API Details
 
