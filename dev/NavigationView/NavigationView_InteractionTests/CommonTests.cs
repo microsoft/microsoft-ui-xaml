@@ -1816,7 +1816,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
             {
-                Log.Comment("Verify MI19 does not have the child we are going to look for.");
+                Log.Comment("Verify MI19 does not have the child item we are going to look for.");
+
+                Log.Comment("Click on MI19.");
+                var menuItem19 = FindElement.ByName("Menu Item 19");
+                InputHelper.LeftClick(menuItem19);
+                Wait.ForIdle();
+
                 var childItem = FindElement.ByName("Child of MI19");
                 Verify.IsNull(childItem, "MI19 should not have this child item.");
 
@@ -1824,7 +1830,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 FindElement.ByName<Button>("Add Child Item to MenuItem19").Invoke();
 
                 Log.Comment("Expand MI19.");
-                var menuItem19 = FindElement.ByName("Menu Item 19");
                 InputHelper.LeftClick(menuItem19);
                 Wait.ForIdle();
 
