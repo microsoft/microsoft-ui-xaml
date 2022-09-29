@@ -139,19 +139,30 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
         // See if we're on the UI thread
         if(!self->IsOnThread())
         {
+            struct LoggingState
+            {
+                void* dispatcherQueueWhenLambdaRan{ nullptr };
+                std::atomic<int> runCount;
+            };
+            auto loggingState = std::make_shared<LoggingState>();
             // We're not on the UI thread
-            static_cast<ReferenceTracker<D, ImplT, I...>*>(self.get())->m_dispatcherHelper.RunAsync(
-                [instance = self.release()]()
+            auto instance = static_cast<ReferenceTracker<D, ImplT, I...>*>(self.release());
+            instance->m_dispatcherHelper.RunAsync(
+                [instance, loggingState](bool)
                 {
-                    delete instance;
+                    if (loggingState->runCount++ == 0)
+                    {
+                        loggingState->dispatcherQueueWhenLambdaRan = winrt::get_abi(instance->m_dispatcherHelper.DispatcherQueue());
+                        delete instance;
+                    }
+                    else
+                    {
+                        MUX_FAIL_FAST();
+                    }
                 },
-                true /*fallbackToThisThread*/);
-
-            queued = true;
+                true /* fallbackToThisThread */);
         }
-        
-
-        if (!queued)
+        else
         {
             self.reset();
         }

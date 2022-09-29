@@ -28,22 +28,42 @@ public:
         }
     }
 
-    void RunAsync(std::function<void()> func, bool fallbackToThisThread = false) const
+    // RunAsync for callers that only want to run on the UI thread
+    void RunAsync(std::function<void()> func) const
+    {
+        RunAsync(
+            [=](bool isOnUIThread) {
+                MUX_ASSERT(isOnUIThread);
+                func();
+            }
+        );
+    }
+
+    // RunAsync -- if callers want the option of always running, the parameter to the callback says whether we ran on the UI thread or not.
+    void RunAsync(std::function<void(bool /* isOnUIThread */)> func, bool fallbackToThisThread = false) const
     {
         if (dispatcherQueue)
         {
-            auto result = dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler(func));
+            auto result = dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler(
+                [=]()
+                {
+                    func(true);
+                }));
             if (!result)
             {
                 if (fallbackToThisThread)
                 {
-                    func();
+                    func(false);
                 }
             }
         }
         else if (coreDispatcher)
         {
-            auto asyncOp = coreDispatcher.TryRunAsync(winrt::CoreDispatcherPriority::Normal, winrt::DispatchedHandler(func));
+            auto asyncOp = coreDispatcher.TryRunAsync(winrt::CoreDispatcherPriority::Normal, winrt::DispatchedHandler(
+                [=]()
+                {
+                    func(true);
+                }));
 
             asyncOp.Completed([func, fallbackToThisThread](auto& asyncInfo, auto& asyncStatus)
             {
@@ -63,7 +83,7 @@ public:
 
                 if (reRunOnThisThread)
                 {
-                    func();
+                    func(false);
                 }
             });
         }
@@ -71,10 +91,12 @@ public:
         {
             if (fallbackToThisThread)
             {
-                func();
+                func(false);
             }
         }
     }
+
+    auto DispatcherQueue() { return dispatcherQueue; }
 
 private:
     winrt::Windows::System::DispatcherQueue dispatcherQueue{ nullptr };
