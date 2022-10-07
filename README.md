@@ -38,7 +38,7 @@ You can also build a WinUI package yourself from source. See [Contributing to th
 
 ## Documentation
 
-To find resources for Windows UI 2.8, like the [Figma design toolkit](aka.ms/figmatoolkit), Segoe UI Variable Font, and samples, visit [Design toolkits and samples for Windows apps](https://docs.microsoft.com/windows/apps/design/downloads/)
+To find resources for Windows UI 2.8, like the [Figma design toolkit](https://aka.ms/WinUI/3.0-figma-toolkit), Segoe UI Variable Font, and samples, visit [Design toolkits and samples for Windows apps](https://docs.microsoft.com/windows/apps/design/downloads/)
 
 If you find any issues with the Windows UI toolkit, you can file a bug [here](https://aka.ms/WinUIToolkitBug)
 
