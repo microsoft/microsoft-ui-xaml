@@ -134,14 +134,13 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
     // return false.  If we're off the UI thread but can't get to it, then do the DeleteInstance() here (asynchronously).
     static void DeleteInstanceOnUIThread(std::unique_ptr<D>&& self) noexcept
     {
-        bool queued = false;
-        
         // See if we're on the UI thread
         if(!self->IsOnThread())
         {
             struct LoggingState
             {
                 void* dispatcherQueueWhenLambdaRan{ nullptr };
+                void* coreDispatcherWhenLambdaRan{ nullptr };
                 std::atomic<int> runCount;
             };
             auto loggingState = std::make_shared<LoggingState>();
@@ -153,6 +152,7 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
                     if (loggingState->runCount++ == 0)
                     {
                         loggingState->dispatcherQueueWhenLambdaRan = winrt::get_abi(instance->m_dispatcherHelper.DispatcherQueue());
+                        loggingState->coreDispatcherWhenLambdaRan = winrt::get_abi(instance->m_dispatcherHelper.CoreDispatcher());
                         delete instance;
                     }
                     else
