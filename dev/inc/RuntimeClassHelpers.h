@@ -148,7 +148,7 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
             // We're not on the UI thread
             auto instance = static_cast<ReferenceTracker<D, ImplT, I...>*>(self.release());
             instance->m_dispatcherHelper.RunAsync(
-                [instance, loggingState](bool)
+                [instance, loggingState]()
                 {
                     if (loggingState->runCount++ == 0)
                     {
