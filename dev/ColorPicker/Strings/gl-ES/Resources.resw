@@ -170,7 +170,7 @@
     <comment>The help text associated with ColorSpectrum.</comment>
   </data>
   <data name="AutomationNameHexTextBox" xml:space="preserve">
-    <value>RGB hex</value>
+    <value>RGB hexadecimal</value>
     <comment>The automation name for the text box to edit the current RGB color as a hex value.</comment>
   </data>
   <data name="ContentHSVComboBoxItem" xml:space="preserve">
@@ -214,7 +214,7 @@
     <comment>The label for the text box to edit the value component of the current HSV color.</comment>
   </data>
   <data name="ValueStringColorSpectrumWithColorName" xml:space="preserve">
-    <value>%1!s!, matriz %2!u!, saturación %3!u!, valor %4!u!</value>
+    <value>%1!s!, matiz %2!u!, saturación %3!u!, valor %4!u!</value>
     <comment>The string to provide as the UIA value of the ColorSpectrum when we're including the friendly color name. %1 is the friendly name of the color; %2, %3, and %4 are the HSV values for the color between 0 and 359 (for hue) or 0 and 100 (for saturation or value).</comment>
   </data>
   <data name="ValueStringColorSpectrumWithoutColorName" xml:space="preserve">
@@ -250,7 +250,7 @@
     <comment>The automation name for the text box to edit the value component of the current HSV color.</comment>
   </data>
   <data name="ToolTipStringAlphaSlider" xml:space="preserve">
-    <value>%1!u!%% opacidade</value>
+    <value>Opacidade %1!u!%%</value>
     <comment>The string to display in the tool tip for the alpha slider. %1 is the alpha value between 0 and 100.</comment>
   </data>
   <data name="ToolTipStringHueSliderWithColorName" xml:space="preserve">

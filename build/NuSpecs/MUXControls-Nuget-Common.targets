@@ -8,8 +8,8 @@
       <MicrosoftUIXamlTargetPlatformMinCheckValue>$([System.Version]::Parse('$(TargetPlatformMinVersion)').Build)</MicrosoftUIXamlTargetPlatformMinCheckValue>
     </PropertyGroup>
     <Error 
-        Text="Microsoft.UI.Xaml nuget package requires TargetPlatformMinVersion &gt;= 10.0.15063.0 (current project is $(MicrosoftUIXamlTargetPlatformMinCheckValue))" 
-        Condition="$(MicrosoftUIXamlTargetPlatformMinCheckValue) &lt; 15063" />
+        Text="Microsoft.UI.Xaml nuget package requires TargetPlatformMinVersion &gt;= 10.0.17763.0 (current project is $(MicrosoftUIXamlTargetPlatformMinCheckValue))" 
+        Condition="$(MicrosoftUIXamlTargetPlatformMinCheckValue) &lt; 17763" />
     <PropertyGroup>
       <MicrosoftUIXamlTargetPlatformCheckValue>$([System.Version]::Parse('$(TargetPlatformVersion)').Build)</MicrosoftUIXamlTargetPlatformCheckValue>
     </PropertyGroup>
@@ -33,7 +33,6 @@
   <PropertyGroup>
     <XamlWinmdName>Microsoft.UI.Xaml.winmd</XamlWinmdName>
     <XamlCompactXbfName>Microsoft.UI.Xaml\DensityStyles\Compact.xbf</XamlCompactXbfName>
-    <WebView2UseWinRT Condition="'$(WebView2UseWinRT)' ==''">true</WebView2UseWinRT>
   </PropertyGroup>
   <Target Name="_FixWinmdCopyLocal" AfterTargets="ResolveNuGetPackageAssets">
     <ItemGroup>

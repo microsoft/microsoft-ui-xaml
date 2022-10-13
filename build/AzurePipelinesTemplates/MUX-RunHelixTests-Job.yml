@@ -107,7 +107,7 @@ jobs:
     parameters:
       condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
       testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
-      testFilePattern: 'MUXControlsTestApp.appx'
+      testFilePattern: 'MUXControlsTestApp.msix'
       outputProjFileName: 'RunTestsInHelix-ApiTests.proj'
       taefQuery: ${{ parameters.taefQuery }}
 
@@ -115,7 +115,7 @@ jobs:
     parameters:
       condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
       testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
-      testFilePattern: 'IXMPTestApp.appx'
+      testFilePattern: 'IXMPTestApp.msix'
       outputProjFileName: 'RunTestsInHelix-IXMPTestAppTests.proj'
       taefQuery: ${{ parameters.taefQuery }}
 

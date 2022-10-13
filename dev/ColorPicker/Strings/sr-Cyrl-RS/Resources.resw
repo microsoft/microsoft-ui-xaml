@@ -138,7 +138,7 @@
     <comment>The automation name for the third-dimension slider when it's controlling saturation.</comment>
   </data>
   <data name="AutomationNameValueSlider" xml:space="preserve">
-    <value>Вредност (светлина)</value>
+    <value>Вредност (осветљеност)</value>
     <comment>The automation name for the third-dimension slider when it's controlling value.</comment>
   </data>
   <data name="TextBlueLabel" xml:space="preserve">
@@ -190,11 +190,11 @@
     <comment>The string to provide as the localized control type of the ColorSpectrum.</comment>
   </data>
   <data name="TextRedLabel" xml:space="preserve">
-    <value>Црвена</value>
+    <value>црвена</value>
     <comment>The label for the text box to edit the red component of the current RGB color.</comment>
   </data>
   <data name="AutomationNameRedTextBox" xml:space="preserve">
-    <value>Црвена</value>
+    <value>црвена</value>
     <comment>The automation name for the text box to edit the red component of the current RGB color.</comment>
   </data>
   <data name="ContentRGBComboBoxItem" xml:space="preserve">
@@ -246,11 +246,11 @@
     <comment>The string to provide as the UIA value of the third-dimension slider when it's controlling value and we're not including the friendly color name. %1 is the brightness value between 0 and 100.</comment>
   </data>
   <data name="AutomationNameValueTextBox" xml:space="preserve">
-    <value>Вредност (светлина)</value>
+    <value>Вредност (осветљеност)</value>
     <comment>The automation name for the text box to edit the value component of the current HSV color.</comment>
   </data>
   <data name="ToolTipStringAlphaSlider" xml:space="preserve">
-    <value>%1!u!%% непрозирност</value>
+    <value>%1!u!%% непрозирности</value>
     <comment>The string to display in the tool tip for the alpha slider. %1 is the alpha value between 0 and 100.</comment>
   </data>
   <data name="ToolTipStringHueSliderWithColorName" xml:space="preserve">

@@ -1,7 +1,7 @@
 {
     "instanceUrl": "https://microsoft.visualstudio.com",
     "projectName": "os",
-    "areaPath": "OS\\WDX\\DXP\\WinDev\\Controls",
+    "areaPath": "OS\\Windows Client and Services\\ADEPT\\OWL (Open Windows pLatform)\\Controls",
     "iterationPath": "OS",
     "notificationAliases": [ "uxpct@microsoft.com" ],
     "ignoreBranchName": true,

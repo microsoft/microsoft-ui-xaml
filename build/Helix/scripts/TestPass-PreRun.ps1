@@ -53,6 +53,11 @@ $versionMajor = $versionData.GetElementsByTagName("MUXVersionMajor").'#text'
 $versionMinor = $versionData.GetElementsByTagName("MUXVersionMinor").'#text'
 UninstallTestApps("Microsoft.UI.Xaml.$versionMajor.$versionMinor")
 
+$certs = Get-ChildItem *.cer
+foreach($cert in $certs)
+{
+    certutil -addstore TrustedPeople $cert.Name
+}
 
 .\InstallTestAppDependencies.ps1
 

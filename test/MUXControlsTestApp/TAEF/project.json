@@ -3,13 +3,14 @@
     "DiffPlex": "1.2.1",
     "Microsoft.Net.Native.Compiler": "2.2.3",
     "Microsoft.NETCore.UniversalWindowsPlatform": "6.2.8",
-    "Microsoft.Web.WebView2": "1.0.1020.30",
+    "Microsoft.Web.WebView2": "1.0.1264.42",
     "MUXCustomBuildTasks": "1.0.74",
     "TAEF.Redist.Wlk": "10.31.180822002",
-    "Win2D.uwp": "1.22.0"
+    "Win2D.uwp": "1.22.0",
+    "Newtonsoft.Json": "13.0.1"
   },
   "frameworks": {
-    "uap10.0.15063": {}
+    "uap10.0.17763": {}
   },
   "runtimes": {
     "win10-x86": {},

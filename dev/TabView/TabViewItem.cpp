@@ -30,7 +30,30 @@ TabViewItem::TabViewItem()
 
 void TabViewItem::OnApplyTemplate()
 {
+    __super::OnApplyTemplate();
+
     winrt::IControlProtected controlProtected{ *this };
+
+    m_selectedBackgroundPathSizeChangedRevoker.revoke();
+    m_closeButtonClickRevoker.revoke();
+    m_tabDragStartingRevoker.revoke();
+    m_tabDragCompletedRevoker.revoke();
+
+    if (SharedHelpers::Is19H1OrHigher()) // UIElement.ActualOffset introduced in Win10 1903.
+    {
+        m_selectedBackgroundPath.set(GetTemplateChildT<winrt::Path>(L"SelectedBackgroundPath", controlProtected));
+
+        if (const auto selectedBackgroundPath = m_selectedBackgroundPath.get())
+        {
+            m_selectedBackgroundPathSizeChangedRevoker = selectedBackgroundPath.SizeChanged(winrt::auto_revoke,
+            {
+                [this](auto const&, auto const&)
+                {
+                    UpdateSelectedBackgroundPathTranslateTransform();
+                }
+            });
+        }
+    }
 
     m_headerContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"ContentPresenter", controlProtected));
 
@@ -115,14 +138,14 @@ void TabViewItem::UpdateTabGeometry()
 
     // Assumes 4px curving-out corners, which are hardcoded in the markup
     auto data = L"<Geometry xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>F1 M0,%f  a 4,4 0 0 0 4,-4  L 4,%f  a %f,%f 0 0 1 %f,-%f  l %f,0  a %f,%f 0 0 1 %f,%f  l 0,%f  a 4,4 0 0 0 4,4 Z</Geometry>";
-    
+
     WCHAR strOut[1024];
     StringCchPrintf(strOut, ARRAYSIZE(strOut), data,
-        height - 1.0f / scaleFactor,
+        height - 1.0,
         leftCorner, leftCorner, leftCorner, leftCorner, leftCorner,
         ActualWidth() - (leftCorner + rightCorner + 1.0f / scaleFactor),
         rightCorner, rightCorner, rightCorner, rightCorner,
-        height - (4 + rightCorner + 1.0f / scaleFactor));
+        height - (5.0 + rightCorner));
 
     const auto geometry = winrt::XamlReader::Load(strOut).try_as<winrt::Geometry>();
 
@@ -202,6 +225,33 @@ void TabViewItem::UpdateShadow()
         else
         {
             Shadow(nullptr);
+        }
+    }
+}
+
+void TabViewItem::UpdateSelectedBackgroundPathTranslateTransform()
+{
+    MUX_ASSERT(SharedHelpers::Is19H1OrHigher());
+
+    if (const auto selectedBackgroundPath = m_selectedBackgroundPath.get())
+    {
+        const auto selectedBackgroundPathActualOffset = selectedBackgroundPath.ActualOffset();
+        const auto roundedSelectedBackgroundPathActualOffsetY = std::round(selectedBackgroundPathActualOffset.y);
+
+        if (roundedSelectedBackgroundPathActualOffsetY > selectedBackgroundPathActualOffset.y)
+        {
+            // Move the SelectedBackgroundPath element down by a fraction of a pixel to avoid a faint gap line
+            // between the selected TabViewItem and its content.
+            winrt::TranslateTransform translateTransform;
+
+            translateTransform.Y(roundedSelectedBackgroundPathActualOffsetY - selectedBackgroundPathActualOffset.y);
+
+            selectedBackgroundPath.RenderTransform(translateTransform);
+        }
+        else if (selectedBackgroundPath.RenderTransform())
+        {
+            // Reset any TranslateTransform that may have been set above.
+            selectedBackgroundPath.RenderTransform(nullptr);
         }
     }
 }
@@ -427,7 +477,6 @@ void TabViewItem::HideLeftAdjacentTabSeparator()
         const auto index = internalTabView->IndexFromContainer(*this);
         internalTabView->SetTabSeparatorOpacity(index - 1, 0);
     }
-
 }
 
 void TabViewItem::RestoreLeftAdjacentTabSeparatorVisibility()
@@ -487,6 +536,35 @@ void TabViewItem::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args
     m_hasPointerCapture = false;
     m_isMiddlePointerButtonPressed = false;
     RestoreLeftAdjacentTabSeparatorVisibility();
+}
+
+// Note that the ItemsView will handle the left and right arrow keys if we don't do so before it does,
+// so this needs to be handled below the items view. That's why we can't put this in TabView's OnKeyDown.
+void TabViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
+{
+    if (!args.Handled() && (args.Key() == winrt::VirtualKey::Left || args.Key() == winrt::VirtualKey::Right))
+    {
+        // Alt+Shift+Arrow reorders tabs, so we don't want to handle that combination.
+        // ListView also handles Alt+Arrow  (no Shift) by just doing regular XY focus,
+        // same as how it handles Arrow without any modifier keys, so in that case
+        // we do want to handle things so we get the improved keyboarding experience.
+        auto isAltDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Menu) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+        auto isShiftDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Shift) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+
+        if (!isAltDown || !isShiftDown)
+        {
+            const bool moveForward =
+                (FlowDirection() == winrt::FlowDirection::LeftToRight && args.Key() == winrt::VirtualKey::Right) ||
+                (FlowDirection() == winrt::FlowDirection::RightToLeft && args.Key() == winrt::VirtualKey::Left);
+
+            args.Handled(winrt::get_self<TabView>(GetParentTabView())->MoveFocus(moveForward));
+        }
+    }
+
+    if (!args.Handled())
+    {
+        __super::OnKeyDown(args);
+    }
 }
 
 void TabViewItem::OnIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)

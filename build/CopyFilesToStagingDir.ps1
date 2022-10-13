@@ -38,10 +38,9 @@ PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\Generic.xaml $FullPubli
 PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml.Design\Microsoft.UI.Xaml.Design.dll $FullPublishDir\Microsoft.UI.Xaml.Design\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\Microsoft.UI.Xaml.FrameworkPackagePRI\Microsoft.UI.Xaml.pri $FullPublishDir\Microsoft.UI.Xaml.FrameworkPackagePRI\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\*.dll $FullPublishDir\Test\
-PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\WebView2Loader.dll $FullPublishDir\Test\
+PublishFile -IfExists $BuildOutputDir\$Configuration\$Platform\MUXControlsTestApp.TAEF\WebView2Loader.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.ReleaseTest.TAEF\MUXControls.ReleaseTest.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.ReleaseTest.TAEF\WebView2Loader.dll $FullPublishDir\Test\
-PublishFile -IfExists $FullBuildOutput\NugetPackageTestApp\WebView2Loader.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXExperimental.Test.TAEF\MUXExperimental.Test.dll $FullPublishDir\Test\
 
 PublishFile -IfExists $FullBuildOutput\Microsoft.Experimental.UI.Xaml\Microsoft.Experimental.UI.Xaml.dll $FullPublishDir\Microsoft.Experimental.UI.Xaml\

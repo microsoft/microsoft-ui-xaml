@@ -834,21 +834,28 @@ void AnimatedVisualPlayer::DestroyAnimations() {
     // Call RequestCommit to make sure that previous compositor calls complete before destroying animations.
     // RequestCommitAsync is available only for RS4+
     m_rootVisual.Compositor().RequestCommitAsync().Completed(
-        [&, createAnimationsCounter = m_createAnimationsCounter](auto, auto) {
+        [me_weak = get_weak(), createAnimationsCounter = m_createAnimationsCounter](auto, auto) {
+            auto me = me_weak.get();
+            
+            if (!me)
+            {
+                return;
+            }
+            
             // Check if there was any CreateAnimations call after DestroyAnimations.
             // We should not destroy animations in this case,
             // they will be destroyed by the following DestroyAnimations call.
-            if (createAnimationsCounter != m_createAnimationsCounter) {
+            if (createAnimationsCounter != me->m_createAnimationsCounter) {
                 return;
             }
 
             // Check if current animated visual supports destroyig animations.
-            if (const auto& animatedVisual = m_animatedVisual.get())
+            if (const auto& animatedVisual = me->m_animatedVisual.get())
             {
                 if (const auto& animatedVisual2 = animatedVisual.try_as<winrt::IAnimatedVisual2>())
                 {
                     animatedVisual2.DestroyAnimations();
-                    m_isAnimationsCreated = false;
+                    me->m_isAnimationsCreated = false;
                 }
             }
         }

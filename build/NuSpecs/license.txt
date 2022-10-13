@@ -9,6 +9,7 @@ These license terms are an agreement between you and Microsoft Corporation (or o
 1. INSTALLATION AND USE RIGHTS.
   a) General. You may install and use any number of copies of the software to develop and test your applications.
   b) Third Party Software. The software may include third party applications that are licensed to you under this agreement or under their own terms. License terms, notices, and acknowledgements, if any, for the third party applications may be accessible online at https://aka.ms/thirdpartynotices or in an accompanying notices file. Even if such applications are governed by other agreements, the disclaimer, limitations on, and exclusions of damages below also apply to the extent allowed by applicable law.
+  c) Included Microsoft Software. The software may include other Microsoft software components. These license terms apply to the included software components unless other license terms are provided with the included software components. Even if such software components are governed by other agreements, the disclaimer, limitations on, and exclusions of damages below also apply to the extent allowed by applicable law.
   
 2. DISTRIBUTABLE CODE. You are permitted to distribute (i.e. make available for third parties) software in applications you develop, as described in this Section. 
   a) Distribution Rights. You may copy, modify, and distribute object code; and

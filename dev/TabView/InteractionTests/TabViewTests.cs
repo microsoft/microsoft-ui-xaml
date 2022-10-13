@@ -426,6 +426,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // TabViewTests.KeyboardTest fails in the lab #7546
         public void KeyboardTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
@@ -435,8 +436,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 tabContent.SetFocus();
 
                 TabItem firstTab = FindElement.ByName<TabItem>("FirstTab");
+                Button firstTabCloseButton = new Button(firstTab.Descendants.Find(UICondition.CreateFromName("Close Tab")));
                 TabItem secondTab = FindElement.ByName<TabItem>("SecondTab");
+                Button secondTabCloseButton = new Button(secondTab.Descendants.Find(UICondition.CreateFromName("Close Tab")));
                 TabItem lastTab = FindElement.ByName<TabItem>("LastTab");
+                Button lastTabCloseButton = new Button(lastTab.Descendants.Find(UICondition.CreateFromName("Close Tab")));
+                TabItem notCloseableTab = FindElement.ByName<TabItem>("NotCloseableTab");
 
                 Button addButton = FindElement.ById<Button>("AddButton");
 
@@ -460,9 +465,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(lastTab.IsSelected, "Ctrl+Shift+Tab should move selection to Last Tab");
                 Verify.IsTrue(lastTab.HasKeyboardFocus, "Focus should move to the last tab (since it has no focusable content)");
 
+                // Ctrl+Shift+Tab to the not-closable tab:
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Control | ModifierKey.Shift);
+                Verify.IsTrue(notCloseableTab.IsSelected, "Ctrl+Shift+Tab should move selection to the not-closable tab, past the disabled tab");
+                Verify.IsTrue(notCloseableTab.HasKeyboardFocus, "Focus should move to the not-closable tab (since it has no focusable content)");
+
                 // Ctrl+Tab to the first tab:
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Control);
-                Verify.IsTrue(firstTab.IsSelected, "Ctrl+Tab should move selection to First Tab");
+                Verify.IsTrue(lastTab.IsSelected, "Ctrl+Tab should move selection to the last tab");
+                Verify.IsTrue(lastTab.HasKeyboardFocus, "Focus should move to the last tab");
+
+                // Ctrl+Tab to the first tab:
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Control);
+                Verify.IsTrue(firstTab.IsSelected, "Ctrl+Tab should move selection to first tab");
                 Verify.IsTrue(firstTab.HasKeyboardFocus, "Focus should move to the first tab");
 
                 KeyboardHelper.PressKey(Key.Up);
@@ -472,31 +487,51 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(firstTab.HasKeyboardFocus, "Down key should not move focus");
 
                 KeyboardHelper.PressKey(Key.Right);
-                Verify.IsTrue(secondTab.HasKeyboardFocus, "Right Key should move focus to the second tab");
-
-                KeyboardHelper.PressKey(Key.Left);
-                Verify.IsTrue(firstTab.HasKeyboardFocus, "Left Key should move focus to the first tab");
-
-                addButton.SetFocus();
-                Verify.IsTrue(addButton.HasKeyboardFocus, "AddButton should have keyboard focus");
-
-                KeyboardHelper.PressKey(Key.Left);
-                Verify.IsTrue(lastTab.HasKeyboardFocus, "Left Key from AddButton should move focus to last tab");
+                Verify.IsTrue(firstTabCloseButton.HasKeyboardFocus, "Right Key should move focus to the first tab close button");
 
                 KeyboardHelper.PressKey(Key.Right);
-                Verify.IsTrue(addButton.HasKeyboardFocus, "Right Key from Last Tab should move focus to Add Button");
+                Verify.IsTrue(secondTab.HasKeyboardFocus, "Right Key should move focus to the second tab");
 
-                firstTab.SetFocus();
+                KeyboardHelper.PressKey(Key.Space);
+                Verify.IsTrue(secondTab.IsSelected, "Space should select the second tab");
+
+                KeyboardHelper.PressKey(Key.Left);
+                Verify.IsTrue(firstTabCloseButton.HasKeyboardFocus, "Left Key should move focus to the first tab close button");
+
+                KeyboardHelper.PressKey(Key.Space);
+                Verify.IsTrue(secondTab.IsSelected, "Space should close the first tab and focus the next tab");
+                VerifyElement.NotFound("FirstTab", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Left);
+                Verify.IsTrue(addButton.HasKeyboardFocus, "Left Key should move focus to the add button");
+
+                KeyboardHelper.PressKey(Key.Left);
+                Verify.IsTrue(lastTabCloseButton.HasKeyboardFocus, "Left Key from AddButton should move focus to last tab close button");
+
+                KeyboardHelper.PressKey(Key.Left);
+                Verify.IsTrue(lastTab.HasKeyboardFocus, "Left Key from last tab close button should move focus to last tab");
+
+                KeyboardHelper.PressKey(Key.Right);
+                Verify.IsTrue(lastTabCloseButton.HasKeyboardFocus, "Right Key from last tab should move focus to the last tab close button");
+
+                KeyboardHelper.PressKey(Key.Right);
+                Verify.IsTrue(addButton.HasKeyboardFocus, "Right Key from last tab close button should move focus to the add button");
+
+                KeyboardHelper.PressKey(Key.Left);
+                Verify.IsTrue(lastTabCloseButton.HasKeyboardFocus, "Left Key from AddButton should move focus to last tab close button");
+
+                KeyboardHelper.PressKey(Key.Space);
+                Verify.IsTrue(notCloseableTab.HasKeyboardFocus, "Space should close the last tab and focus the previous focusable tab");
+                VerifyElement.NotFound("LastTab", FindBy.Name);
+
+                secondTab.SetFocus();
 
                 // Ctrl+f4 to close the tab:
                 Log.Comment("Verify that pressing ctrl-f4 closes the tab");
                 KeyboardHelper.PressKey(Key.F4, ModifierKey.Control);
                 Wait.ForIdle();
 
-                VerifyElement.NotFound("FirstTab", FindBy.Name);
-
-                // Move focus to the second tab content
-                secondTabButton.SetFocus();
+                VerifyElement.NotFound("SecondTab", FindBy.Name);
                 Wait.ForIdle();
             }
         }

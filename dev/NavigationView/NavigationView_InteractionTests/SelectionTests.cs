@@ -350,6 +350,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                 Verify.AreEqual("ItemWasInvokedSecomdTimeWithCorrectSelection", result.GetText());
             }
         }
+		
+        [TestMethod]
+        public void VerifySelectionItemPatternDoesInvoke()
+        {
+            // When using UIA SelectionItem pattern to select a navview item, this should also trigger an
+            // invoke on the item.
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                var musicItem = FindElement.ByName("Music");
+                var lvi = new ListViewItem(musicItem);
+
+                lvi.Select();
+                Wait.ForIdle();
+
+                Log.Comment("Verify item was invoked");
+                var result = new TextBlock(FindElement.ByName("InvokedItemState"));
+                Verify.AreEqual("ItemWasSelectedInItemInvoked", result.GetText());
+
+                Log.Comment("Verify item got selected");
+                Verify.IsTrue(Convert.ToBoolean(musicItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+            }
+        }
 
         [TestMethod]
         public void VerifyNavigationViewItemIsSelectedWorks()
