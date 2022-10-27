@@ -20,7 +20,7 @@ You can watch them online here on YouTube at the [Windows Developer channel](htt
 
 ## Using WinUI 3
 
-You can build new Windows apps using WinUI 3, which ships as a part of the Windows App SDK. The latest available stable release is the Windows App SDK 1.0 (previously called Project Reunion). With this release, you can ship production Desktop apps to the Microsoft Store.
+You can build new Windows apps using WinUI 3, which ships as a part of the Windows App SDK. The latest available stable release is the Windows App SDK 1.1 (previously called Project Reunion). With this release, you can ship production Desktop apps to the Microsoft Store.
 
 See the [installation instructions](https://docs.microsoft.com/windows/apps/windows-app-sdk/set-up-your-development-environment), and guidelines on [creating your first WinUI 3 app](https://docs.microsoft.com/windows/apps/winui/winui3/create-your-first-winui3-app). 
 
@@ -38,7 +38,7 @@ You can also build a WinUI package yourself from source. See [Contributing to th
 
 ## Documentation
 
-To find resources for Windows UI 2.8, like the [Figma design toolkit](aka.ms/figmatoolkit), Segoe UI Variable Font, and samples, visit [Design toolkits and samples for Windows apps](https://docs.microsoft.com/windows/apps/design/downloads/)
+To find resources for Windows UI 2.8, like the [Figma design toolkit](https://aka.ms/WinUI/3.0-figma-toolkit), Segoe UI Variable Font, and samples, visit [Design toolkits and samples for Windows apps](https://docs.microsoft.com/windows/apps/design/downloads/)
 
 If you find any issues with the Windows UI toolkit, you can file a bug [here](https://aka.ms/WinUIToolkitBug)
 
