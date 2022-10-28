@@ -490,7 +490,7 @@
 
                                 <VisualState x:Name="Selected">
                                     <VisualState.Setters>
-                                        <Setter Target="BottomBorderLine.Visibility" Value="Collapsed"/>
+                                        <Setter Target="BottomBorderLine.BorderBrush" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}"/>
                                         <Setter Target="RightRadiusRenderArc.Visibility" Value="Visible"/>
                                         <Setter Target="LeftRadiusRenderArc.Visibility" Value="Visible"/>
                                         <Setter Target="SelectedBackgroundPath.Visibility" Value="Visible"/>
@@ -511,7 +511,7 @@
 
                                 <VisualState x:Name="PointerOverSelected">
                                     <VisualState.Setters>
-                                        <Setter Target="BottomBorderLine.Visibility" Value="Collapsed"/>
+                                        <Setter Target="BottomBorderLine.BorderBrush" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}"/>
                                         <Setter Target="RightRadiusRenderArc.Visibility" Value="Visible"/>
                                         <Setter Target="LeftRadiusRenderArc.Visibility" Value="Visible"/>
                                         <Setter Target="SelectedBackgroundPath.Visibility" Value="Visible"/>
@@ -532,7 +532,7 @@
 
                                 <VisualState x:Name="PressedSelected">
                                     <VisualState.Setters>
-                                        <Setter Target="BottomBorderLine.Visibility" Value="Collapsed"/>
+                                        <Setter Target="BottomBorderLine.BorderBrush" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}"/>
                                         <Setter Target="RightRadiusRenderArc.Visibility" Value="Visible"/>
                                         <Setter Target="LeftRadiusRenderArc.Visibility" Value="Visible"/>
                                         <Setter Target="SelectedBackgroundPath.Visibility" Value="Visible"/>
@@ -725,11 +725,7 @@
                                         <Setter Target="BottomBorderLine.Margin" Value="2,0,0,0"/>
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="NoBottomBorderLine">
-                                    <VisualState.Setters>
-                                        <Setter Target="BottomBorderLine.Visibility" Value="Collapsed"/>
-                                    </VisualState.Setters>
-                                </VisualState>
+                                <VisualState x:Name="NoBottomBorderLine"/>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
