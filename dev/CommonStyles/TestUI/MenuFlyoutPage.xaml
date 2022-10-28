@@ -26,10 +26,10 @@
         </MenuFlyout>
     </local:TestPage.Resources>
     
-    <Grid Margin="12" ContextRequested="Grid_ContextRequested">
+    <Grid Margin="12" ContextRequested="Grid_ContextRequested" FlowDirection="RightToLeft">
 
         <Grid.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+            <!--<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                 <GradientStop Color="Red" Offset="0.000" />
                 <GradientStop Color="Red" Offset="0.166" />
                 <GradientStop Color="DarkOrange" Offset="0.167" />
@@ -42,7 +42,7 @@
                 <GradientStop Color="MediumBlue" Offset="0.832" />
                 <GradientStop Color="Indigo" Offset="0.833" />
                 <GradientStop Color="Indigo" Offset="1.000" />
-            </LinearGradientBrush>
+            </LinearGradientBrush>-->
         </Grid.Background>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
@@ -95,12 +95,14 @@
                         </MenuFlyoutItem>
                         <MenuFlyoutItem Text="Copy" Icon="Copy"/>
                         <MenuFlyoutItem Text="Delete" Icon="Delete"/>
-                        <ToggleMenuFlyoutItem Text="ToggleMenuFlyoutItem" Icon="Delete"/>
+                        <ToggleMenuFlyoutItem Text="ToggleMenuFlyoutItem" Icon="Delete" KeyboardAcceleratorTextOverride="Sentence here"/>
+                        <ToggleMenuFlyoutItem Text="ToggleMenuFlyoutItem" Icon="Delete" KeyboardAcceleratorTextOverride="Test"/>
                         <ToggleMenuFlyoutItem Text="ToggleMenuFlyoutItem" Icon="Delete">
-                            <ToggleMenuFlyoutItem.KeyboardAccelerators>
+                        <ToggleMenuFlyoutItem.KeyboardAccelerators>
                                 <KeyboardAccelerator Key="S" Modifiers="Control"/>
                             </ToggleMenuFlyoutItem.KeyboardAccelerators>
                         </ToggleMenuFlyoutItem>
+                        <ToggleMenuFlyoutItem Text="ToggleMenuFlyoutItem" Icon="Delete" KeyboardAcceleratorTextOverride="One more line"/>
                         <ToggleMenuFlyoutItem Text="ToggleMenuFlyoutItem" AccessKey="A" />
                         <MenuFlyoutSeparator/>
                         <muxc:RadioMenuFlyoutItem Text="Radio And Has Icon" Icon="Delete"/>

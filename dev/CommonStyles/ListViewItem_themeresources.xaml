@@ -58,6 +58,29 @@
             <SolidColorBrush x:Key="ListViewItemSelectedForegroundThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="ListViewItemSelectedPointerOverBackgroundThemeBrush" Color="#FF5F37BE" />
             <SolidColorBrush x:Key="ListViewItemSelectedPointerOverBorderThemeBrush" Color="#FF5F37BE" />
+
+            <StaticResource x:Key="MarkerListViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemBackgroundSelected" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemForegroundSelectedPressed" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBorderBrushSelected" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBorderBrushSelectedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBorderBrushSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemMarker" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="MarkerListViewItemMarkerPointerOver" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="MarkerListViewItemMarkerPressed" ResourceKey="AccentFillColorDefaultBrush" />
+            <Thickness x:Key="MarkerListViewItemBorderThickness">0</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="ListViewItemBorderBackground" ResourceKey="SystemControlHighlightListAccentLowBrush" />
@@ -112,6 +135,29 @@
             <SolidColorBrush x:Key="ListViewItemSelectedForegroundThemeBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
             <SolidColorBrush x:Key="ListViewItemSelectedPointerOverBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="ListViewItemSelectedPointerOverBorderThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+
+            <StaticResource x:Key="MarkerListViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBackgroundPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBackgroundSelected" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemForeground" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="MarkerListViewItemForegroundPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="MarkerListViewItemForegroundPressed" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="MarkerListViewItemForegroundSelected" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="MarkerListViewItemForegroundSelectedPointerOver" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="MarkerListViewItemForegroundSelectedPressed" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="MarkerListViewItemBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBorderBrushSelected" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="MarkerListViewItemBorderBrushSelectedPointerOver" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="MarkerListViewItemBorderBrushSelectedPressed" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="MarkerListViewItemMarker" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="MarkerListViewItemMarkerPointerOver" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="MarkerListViewItemMarkerPressed" ResourceKey="SystemColorWindowTextColorBrush" />
+            <Thickness x:Key="MarkerListViewItemBorderThickness">1</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <x:Double x:Key="ListViewItemContentOffsetX">-40.5</x:Double>
@@ -166,6 +212,29 @@
             <SolidColorBrush x:Key="ListViewItemSelectedForegroundThemeBrush" Color="#FF000000" />
             <SolidColorBrush x:Key="ListViewItemSelectedPointerOverBackgroundThemeBrush" Color="#FF5F37BE" />
             <SolidColorBrush x:Key="ListViewItemSelectedPointerOverBorderThemeBrush" Color="#FF5F37BE" />
+
+            <StaticResource x:Key="MarkerListViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemBackgroundSelected" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemForegroundSelectedPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemForegroundSelectedPressed" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="MarkerListViewItemBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBorderBrushPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBorderBrushPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBorderBrushSelected" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBorderBrushSelectedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemBorderBrushSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="MarkerListViewItemMarker" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="MarkerListViewItemMarkerPointerOver" ResourceKey="AccentFillColorDefaultBrush" />
+            <StaticResource x:Key="MarkerListViewItemMarkerPressed" ResourceKey="AccentFillColorDefaultBrush" />
+            <Thickness x:Key="MarkerListViewItemBorderThickness">0</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -222,6 +291,221 @@
                         VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                         ContentMargin="{TemplateBinding Padding}"
                         CheckMode="{ThemeResource ListViewItemCheckMode}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="MarkerListViewItemStyle" TargetType="ListViewItem">
+        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource MarkerListViewItemBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource MarkerListViewItemBorderThickness}" />
+        <Setter Property="Background" Value="{ThemeResource MarkerListViewItemBackground}" />
+        <Setter Property="Foreground" Value="{ThemeResource MarkerListViewItemForeground}" />
+        <Setter Property="TabNavigation" Value="Local" />
+        <Setter Property="IsHoldingEnabled" Value="True" />
+        <Setter Property="Padding" Value="12,0,12,0" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="MinWidth" Value="{ThemeResource ListViewItemMinWidth}" />
+        <Setter Property="MinHeight" Value="{ThemeResource ListViewItemMinHeight}" />
+        <Setter Property="AllowDrop" Value="False" />
+        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+        <Setter Property="FocusVisualMargin" Value="0" />
+        <Setter Property="contract7Present:CornerRadius" Value="{ThemeResource ControlCornerRadius}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListViewItem">
+                    <Grid
+                        x:Name="ContentBorder"
+                        Control.IsTemplateFocusTarget="True"
+                        FocusVisualMargin="{TemplateBinding FocusVisualMargin}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform>
+                            <ScaleTransform x:Name="ContentBorderScale" />
+                        </Grid.RenderTransform>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver">
+                                    <Storyboard>
+                                        <!--  Fill value changed TargetProperty updated  -->
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MarkerListViewItemBackgroundPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <!--  Added  -->
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="BorderBrush">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MarkerListViewItemBorderBrushPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MarkerListViewItemForegroundPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <Storyboard>
+                                        <!--  Fill value changed  -->
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MarkerListViewItemBackgroundPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <!--  Added  -->
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="BorderBrush">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MarkerListViewItemBorderBrushPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MarkerListViewItemForegroundPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Selected">
+                                    <Storyboard>
+                                        <!--  Fill value changed  -->
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MarkerListViewItemBackgroundSelected}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <!--  Added  -->
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="BorderBrush">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MarkerListViewItemBorderBrushSelected}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MarkerListViewItemForegroundSelected}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SelectedMarker" Storyboard.TargetProperty="Fill">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MarkerListViewItemMarker}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                    <VisualState.Setters>
+                                        <!--  Added  -->
+                                        <Setter Target="SelectedMarker.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="PointerOverSelected">
+                                    <Storyboard>
+                                        <!--  Fill value changed  -->
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MarkerListViewItemBackgroundSelectedPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <!--  Added  -->
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="BorderBrush">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MarkerListViewItemBorderBrushSelectedPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MarkerListViewItemForegroundSelectedPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SelectedMarker" Storyboard.TargetProperty="Fill">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MarkerListViewItemMarkerPointerOver}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                    <VisualState.Setters>
+                                        <!--  Added  -->
+                                        <Setter Target="SelectedMarker.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="PressedSelected">
+                                    <Storyboard>
+                                        <!--  Fill value changed  -->
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MarkerListViewItemBackgroundSelectedPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <!--  Added  -->
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderBackground" Storyboard.TargetProperty="BorderBrush">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MarkerListViewItemBorderBrushSelectedPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MarkerListViewItemForegroundSelectedPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SelectedMarker" Storyboard.TargetProperty="Fill">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource MarkerListViewItemMarkerPressed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                    <VisualState.Setters>
+                                        <!--  Added  -->
+                                        <Setter Target="SelectedMarker.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="DisabledStates">
+                                <VisualState x:Name="Enabled" />
+                                <VisualState x:Name="Disabled">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                               Storyboard.TargetName="ContentBorder"
+                                               Storyboard.TargetProperty="Opacity"
+                                               Duration="0"
+                                               To="{ThemeResource ListViewItemDisabledThemeOpacity}" />
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="DataVirtualizationStates">
+                                <VisualState x:Name="DataAvailable" />
+                                <VisualState x:Name="DataPlaceholder">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextBlock" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderRect" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <!--  Changed from Rectangle to Border  -->
+                        <Border
+                              x:Name="BorderBackground"
+                              IsHitTestVisible="False"
+                              Background="{TemplateBinding Background}"
+                              BorderThickness="{TemplateBinding BorderThickness}"
+                              CornerRadius="{TemplateBinding CornerRadius}"
+                              Control.IsTemplateFocusTarget="True" />
+                        <Grid
+                              x:Name="ContentPresenterGrid"
+                              Background="Transparent"
+                              Margin="0">
+                            <Grid.RenderTransform>
+                                <TranslateTransform x:Name="ContentPresenterTranslateTransform" />
+                            </Grid.RenderTransform>
+                            <ContentPresenter
+                                    x:Name="ContentPresenter"
+                                    ContentTransitions="{TemplateBinding ContentTransitions}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    Content="{TemplateBinding Content}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Margin="{TemplateBinding Padding}" />
+                        </Grid>
+                        <!-- The 'Xg' text simulates the amount of space one line of text will occupy.
+                             In the DataPlaceholder state, the Content is not loaded yet so we
+                              approximate the size of the item using placeholder text. -->
+                        <TextBlock
+                               x:Name="PlaceholderTextBlock"
+                               Opacity="0"
+                               Text="Xg"
+                               Foreground="{x:Null}"
+                               Margin="{TemplateBinding Padding}"
+                               IsHitTestVisible="False"
+                               AutomationProperties.AccessibilityView="Raw" />
+                        <Rectangle
+                               x:Name="PlaceholderRect"
+                               Visibility="Collapsed"
+                               Fill="{ThemeResource ListViewItemPlaceholderBackground}" />
+                        <!--  Rectangle added to template  -->
+                        <Rectangle
+                              x:Name="SelectedMarker"
+                              Width="3"
+                              MinHeight="32"
+                              Margin="1,12,0,12"
+                              RadiusX="1.5"
+                              RadiusY="1.5"
+                              Fill="{ThemeResource MarkerListViewItemMarker}"
+                              IsHitTestVisible="False"
+                              VerticalAlignment="Stretch"
+                              HorizontalAlignment="Left"
+                              Visibility="Collapsed" />
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
