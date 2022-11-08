@@ -10,7 +10,6 @@
 #include "PTRTracing.h"
 
 #define REFRESH_ANIMATION_DURATION 100ms
-#define REFRESH_VISUALIZER_OVERPAN_RATIO 0.4
 
 // Implementors of the IAdapterAnimationHandler interface are responsible for implementing the
 // 3 well defined component level animations in a PTR scenario. The three animations involved 
