@@ -234,9 +234,6 @@ private:
     static constexpr wstring_view s_maxThresholdPropertyName{ L"maxThreshold"sv };
     static inline const std::wstring maxThresholdPropertyName() { return s_maxThresholdPropertyName.data(); }
 
-    static constexpr wstring_view s_minPositionPropertyName{ L"minPosition"sv };
-    static constexpr wstring_view s_maxPositionPropertyName{ L"maxPosition"sv };
-
     static constexpr wstring_view s_leftInsetTargetName{ L"LeftInset"sv };
     static constexpr wstring_view s_rightInsetTargetName{ L"RightInset"sv };
     static constexpr wstring_view s_topInsetTargetName{ L"TopInset"sv };
