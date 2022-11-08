@@ -7,8 +7,6 @@
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
-static constexpr wstring_view c_IconPresenterName{ L"IconPresenter"sv };
-
 InfoBadge::InfoBadge()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_InfoBadge);
