@@ -38,7 +38,6 @@ static constexpr auto c_paneTitleFrameworkElement = L"PaneTitleTextBlock"sv;
 static constexpr auto c_rootSplitViewName = L"RootSplitView"sv;
 static constexpr auto c_menuItemsHost = L"MenuItemsHost"sv;
 static constexpr auto c_footerMenuItemsHost = L"FooterMenuItemsHost"sv;
-static constexpr auto c_selectionIndicatorName = L"SelectionIndicator"sv;
 static constexpr auto c_paneContentGridName = L"PaneContentGrid"sv;
 static constexpr auto c_rootGridName = L"RootGrid"sv;
 static constexpr auto c_contentGridName = L"ContentGrid"sv;
