@@ -14,7 +14,6 @@
 
 static constexpr wstring_view c_closeButtonName{ L"CloseButton"sv };
 static constexpr wstring_view c_iconTextBlockName{ L"StandardIcon"sv };
-static constexpr wstring_view c_contentRootName{ L"ContentRoot"sv };
 
 InfoBar::InfoBar()
 {
