@@ -35,12 +35,6 @@ constexpr auto c_nextPageButtonName = L"NextPageButton"sv;
 constexpr auto c_pipsPagerRepeaterName = L"PipsPagerItemsRepeater"sv;
 constexpr auto c_pipsPagerScrollViewerName = L"PipsPagerScrollViewer"sv;
 
-constexpr auto c_pipsPagerVerticalOrientationButtonWidthPropertyName = L"PipsPagerVerticalOrientationButtonWidth"sv;
-constexpr auto c_pipsPagerVerticalOrientationButtonHeightPropertyName = L"PipsPagerVerticalOrientationButtonHeight"sv;
-
-constexpr auto c_pipsPagerHorizontalOrientationButtonWidthPropertyName = L"PipsPagerHorizontalOrientationButtonWidth"sv;
-constexpr auto c_pipsPagerHorizontalOrientationButtonHeightPropertyName = L"PipsPagerHorizontalOrientationButtonHeight"sv;
-
 constexpr auto c_pipsPagerHorizontalOrientationVisualState = L"HorizontalOrientationView"sv;
 constexpr auto c_pipsPagerVerticalOrientationVisualState = L"VerticalOrientationView"sv;
 
