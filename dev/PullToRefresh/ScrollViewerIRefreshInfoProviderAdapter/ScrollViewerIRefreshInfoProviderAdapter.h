@@ -44,7 +44,6 @@ private:
     bool m_visualInteractionSourceIsAttached{ false };
 
     winrt::event_token m_scrollViewer_LoadedToken{};
-    winrt::event_token m_scrollViewer_PointerPressedToken{};
     winrt::event_token m_scrollViewer_DirectManipulationCompletedToken{};
     winrt::event_token m_scrollViewer_ViewChangingToken{};
     winrt::event_token m_infoProvider_RefreshStartedToken{};
