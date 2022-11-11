@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        For bugs related to UWP or the app models, please open a bug on the [Project Reunion repository](https://github.com/microsoft/ProjectReunion)
+        For bugs related to UWP or the app models, please open a bug on the [Windows App SDK repository](https://github.com/microsoft/WindowsAppSDK)
   - type: textarea
     validations:
       required: true
@@ -43,13 +43,6 @@ body:
         - "WinUI 3 - Project Reunion 0.8.12"
         - "Microsoft.UI.Xaml 2.8.0-prerelease.220712001"
         - "Microsoft.UI.Xaml 2.8.1"
-  - type: checkboxes
-    attributes:
-      label: Windows app type
-      description: If you are using WinUI 3, please specify for which Windows app type you have encountered the issue.
-      options:
-        - label: "UWP"
-        - label: "Win32"
   - type: dropdown
     attributes:
       label: Device form factor
