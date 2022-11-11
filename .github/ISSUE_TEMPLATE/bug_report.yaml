@@ -35,24 +35,10 @@ body:
       label: NuGet package version
       description: If you are seeing your issue on older versions please try the latest release
       options:
-        - "WinUI 3 - Windows App SDK 1.2 Preview 2: 1.2.220930.4-preview2"
-        - "WinUI 3 - Windows App SDK 1.2 Experimental 2: 1.2.220909.2-experimental2"
+        - "WinUI 3 - Windows App SDK 1.2.0"
         - "WinUI 3 - Windows App SDK 1.1.5"
-        - "WinUI 3 - Windows App SDK 1.0.4"
-        - "WinUI 3 - Windows App SDK 1.0 Experimental: 1.0.0-experimental1"
-        - "WinUI 3 - Project Reunion 0.8.12"
-        - "Microsoft.UI.Xaml 2.8.0-prerelease.220712001"
-        - "Microsoft.UI.Xaml 2.8.1"
-  - type: dropdown
-    attributes:
-      label: Device form factor
-      description: Which device form factors did you see the issue on?
-      multiple: true
-      options:
-        - "Desktop"
-        - "Xbox"
-        - "Surface Hub"
-        - "IoT"
+        - "WinUI 3 - Windows App SDK 1.2 Experimental: 1.2.220909.2-experimental2"
+        - "WinUI 2 - Microsoft.UI.Xaml 2.8.1"
   - type: dropdown
     attributes:
       label: Windows version
