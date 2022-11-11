@@ -170,7 +170,7 @@
     <comment>The help text associated with ColorSpectrum.</comment>
   </data>
   <data name="AutomationNameHexTextBox" xml:space="preserve">
-    <value>Hexadécimal RVB</value>
+    <value>Valeur RVB hexadécimale</value>
     <comment>The automation name for the text box to edit the current RGB color as a hex value.</comment>
   </data>
   <data name="ContentHSVComboBoxItem" xml:space="preserve">
