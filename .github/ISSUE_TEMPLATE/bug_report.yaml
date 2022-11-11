@@ -42,7 +42,7 @@ body:
         - "WinUI 3 - Windows App SDK 1.0 Experimental: 1.0.0-experimental1"
         - "WinUI 3 - Project Reunion 0.8.12"
         - "Microsoft.UI.Xaml 2.8.0-prerelease.220712001"
-        - "Microsoft.UI.Xaml 2.8.0"
+        - "Microsoft.UI.Xaml 2.8.1"
   - type: checkboxes
     attributes:
       label: Windows app type
