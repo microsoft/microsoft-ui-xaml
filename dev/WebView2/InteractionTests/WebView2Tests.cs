@@ -2679,6 +2679,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "D")]
+        [TestProperty("Ignore", "True")] // Bug 42203617
         public void EdgeProcessFailedTest()
         {
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToCoreObjectsWebView2" }))
