@@ -29,7 +29,13 @@ static constexpr wstring_view s_error_cwv2_not_present_closed{ L"Failed because 
 
 WebView2::WebView2()
 {
-    if (auto user32module = GetModuleHandleW(L"user32.dll"))
+    auto user32module = GetModuleHandleW(L"ext-ms-win-rtcore-webview-l1-1-0.dll");
+    if (!user32module)
+    {
+        user32module = GetModuleHandleW(L"user32.dll");
+    }
+
+    if (user32module)
     {
         m_fnClientToScreen = reinterpret_cast<decltype(m_fnClientToScreen)>(GetProcAddress(user32module, "ClientToScreen"));
         m_fnSendMessageW = reinterpret_cast<decltype(m_fnSendMessageW)>(GetProcAddress(user32module, "SendMessageW"));
