@@ -306,8 +306,8 @@
     <CornerRadius x:Key="NavigationViewMinimalContentGridCornerRadius">0</CornerRadius>
 
     <!-- The two resources below must be defined at the app level in order to take effect. -->
-    <Thickness x:Key="TopNavigationViewOverflowMenuPadding">0,8</Thickness>
-    <Thickness x:Key="NavigationViewItemChildrenMenuFlyoutPadding">0,8</Thickness>
+    <Thickness x:Key="TopNavigationViewOverflowMenuPadding">0,2</Thickness>
+    <Thickness x:Key="NavigationViewItemChildrenMenuFlyoutPadding">0,2</Thickness>
 
     <!-- The resource below must be defined at the app level in order to affect the expand/collapse chevron font size
          used in the Top NavigationView's Overflow menu. -->
@@ -1227,7 +1227,10 @@
                 <ControlTemplate TargetType="primitives:NavigationViewItemPresenter">
                     <Grid
                         x:Name="LayoutRoot"
-                        Height="36" 
+                        Height="36"
+                        Margin="{StaticResource NavigationViewItemButtonMargin}"
+                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                         Background="{TemplateBinding Background}"
                         Control.IsTemplateFocusTarget="True">
                         <Grid.Resources>
