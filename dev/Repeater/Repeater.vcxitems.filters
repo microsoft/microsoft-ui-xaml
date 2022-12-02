@@ -184,6 +184,12 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ChildrenInTabFocusOrderIterable.cpp">
       <Filter>ItemsRepeater</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)FlexboxLayout.cpp">
+      <Filter>Layouts\FlexboxLayout</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\FlexboxLayout.properties.cpp">
+      <Filter>Layouts\FlexboxLayout</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Layout.h">
@@ -369,6 +375,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ChildrenInTabFocusOrderIterable.h">
       <Filter>ItemsRepeater</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)FlexboxLayout.h">
+      <Filter>Layouts\FlexboxLayout</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)FlexboxLayoutState.h">
+      <Filter>Layouts\FlexboxLayout</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Automation">
@@ -406,6 +418,9 @@
     </Filter>
     <Filter Include="SelectionModel">
       <UniqueIdentifier>{09ee0419-018a-4432-b173-f6118789382f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Layouts\FlexboxLayout">
+      <UniqueIdentifier>{9ac741f7-e771-4747-9daf-7847278144fa}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -122,6 +122,42 @@ namespace MUXControlsTestApp
                 Frame.NavigateWithoutAnimation(typeof(MUXControlsTestApp.Samples.ScaleAnimatedVerticalListDemo));
             };
 
+            flexboxAlignContentPage.Click += delegate {
+                Frame.NavigateWithoutAnimation(typeof(FlexboxAlignContentPage));
+            };
+
+            flexboxAlignItemsPage.Click += delegate {
+                Frame.NavigateWithoutAnimation(typeof(FlexboxAlignItemsPage));
+            };
+
+            flexboxAlignSelfPage.Click += delegate {
+                Frame.NavigateWithoutAnimation(typeof(FlexboxAlignSelfPage));
+            };
+
+            flexboxDirectionPage.Click += delegate {
+                Frame.NavigateWithoutAnimation(typeof(FlexboxDirectionPage));
+            };
+
+            flexboxGrowPage.Click += delegate {
+                Frame.NavigateWithoutAnimation(typeof(FlexboxGrowPage));
+            };
+
+            flexboxJustifyContentPage.Click += delegate {
+                Frame.NavigateWithoutAnimation(typeof(FlexboxJustifyContentPage));
+            };
+
+            flexboxOrderPage.Click += delegate {
+                Frame.NavigateWithoutAnimation(typeof(FlexboxOrderPage));
+            };
+
+            flexboxShrink.Click += delegate {
+                Frame.NavigateWithoutAnimation(typeof(FlexboxShrinkPage));
+            };
+
+            flexboxWrap.Click += delegate {
+                Frame.NavigateWithoutAnimation(typeof(FlexboxWrapPage));
+            };
+
             noGroupingList.Click += delegate
             {
                 Frame.NavigateWithoutAnimation(typeof(ItemsViewWithDataPage),

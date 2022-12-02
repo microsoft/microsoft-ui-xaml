@@ -37,31 +37,43 @@
             <Button x:Name="pinterestLayoutDemo" AutomationProperties.Name="Pinterest Layout Demo">Pinterest Layout Demo</Button>
             <Button x:Name="flowLayoutDemo" AutomationProperties.Name="Flow Layout Demo">Flow Layout Demo</Button>
             <Button x:Name="storeDemo" AutomationProperties.Name="Store demo">Nested Scrolling in both directions demo</Button>
+            <Button x:Name="flexboxGrowPage">Flexbox Grow Page</Button>
+            <Button x:Name="flexboxOrderPage">Flexbox Order Page</Button>
+            <Button x:Name="flexboxWrap">Flexbox Wrap</Button>
+            <Button x:Name="flexboxAlignContentPage">Flexbox AlignContent Page</Button>
+            <Button x:Name="flexboxAlignItemsPage">Flexbox Align Items Page</Button>
+            <Button x:Name="flexboxAlignSelfPage">Flexbox AlignSelf Page</Button>
+            <Button x:Name="flexboxDirectionPage">Flexbox Direction Page</Button>
+            <Button x:Name="flexboxJustifyContentPage">Flexbox Justify ContentPage</Button>
+            <Button x:Name="flexboxShrink">Flexbox Shrink</Button>
         </StackPanel>
 
         <StackPanel>
             <TextBlock Text="Built in layouts" Style="{StaticResource SubheaderTextBlockStyle}" />
-            <StackPanel>
-                <TextBlock>ItemSpacing</TextBlock>
-                <TextBox x:Name="itemSpacing" Text="10"></TextBox>
-                <TextBlock>MinColumnSpacing</TextBlock>
-                <TextBox x:Name="lineSpacing" Text="10"></TextBox>
-                <TextBlock>LineAlignment</TextBlock>
-                <TextBlock>(Start/Center/End/SpaceEvenly/SpaceAround/SpaceBetween)</TextBlock>
-                <TextBox x:Name="lineAlignment" Text="Start"></TextBox>
-                <ToggleSwitch x:Name="orientation" OnContent="Horizontal" OffContent="Vertical">Scroll Orientation</ToggleSwitch>
+            <StackPanel HorizontalAlignment="Left">
+                <TextBox x:Name="itemSpacing" Text="10" Header="ItemSpacing"></TextBox>
+                <TextBox x:Name="lineSpacing" Text="10" Header="MinColumnSpacing"></TextBox>
+                <ComboBox x:Name="lineAlignment" Header="LineAlignment" SelectedIndex="0">
+                    <x:String>Start</x:String>
+                    <x:String>Center</x:String>
+                    <x:String>End</x:String>
+                    <x:String>SpaceEvenly</x:String>
+                    <x:String>SpaceAround</x:String>
+                    <x:String>SpaceBetween</x:String>
+                </ComboBox>
+                <ToggleSwitch x:Name="orientation" OnContent="Horizontal" OffContent="Vertical" Header="Scroll Orientation"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Spacing="4">
                 <Button x:Name="noGroupingList">Flat List</Button>
                 <Button x:Name="noGroupingGrid">Flat Grid</Button>
                 <Button x:Name="noGroupingFlow">Flat Flow</Button>
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Spacing="4">
                 <Button x:Name="groupedList">Grouped List</Button>
                 <Button x:Name="groupedGrid">Grouped Grid</Button>
                 <Button x:Name="groupedFlow">Grouped Flow</Button>
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal" Spacing="4">
                 <Button x:Name="nestedList">Nested List</Button>
                 <Button x:Name="nestedGrid">Nested Grid</Button>
                 <Button x:Name="nestedFlow">Nested Flow</Button>
