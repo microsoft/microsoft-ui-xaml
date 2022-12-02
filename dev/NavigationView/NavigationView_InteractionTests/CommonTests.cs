@@ -1812,6 +1812,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
+        public void VerifyAddingChildItemsToNavigationViewItem()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
+            {
+                Log.Comment("Verify MI19 does not have the child item we are going to look for.");
+
+                Log.Comment("Click on MI19.");
+                var menuItem19 = FindElement.ByName("Menu Item 19");
+                InputHelper.LeftClick(menuItem19);
+                Wait.ForIdle();
+
+                var childItem = FindElement.ByName("Child of MI19");
+                Verify.IsNull(childItem, "MI19 should not have this child item.");
+
+                Log.Comment("Programmatically add a child item to MI19.");
+                FindElement.ByName<Button>("Add Child Item to MenuItem19").Invoke();
+
+                Log.Comment("Expand MI19.");
+                InputHelper.LeftClick(menuItem19);
+                Wait.ForIdle();
+
+                Log.Comment("Verify MI19 has the child item we just added.");
+                var newChildItem = FindElement.ByName("Child of MI19");
+                Verify.IsNotNull(newChildItem, "MI19 should have a new child item.");
+            }
+        }
+
+        [TestMethod]
         public void VerifyNavigationViewItemInPaneFooterHasTemplateSettingBindings()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "PaneFooterTestPage" }))

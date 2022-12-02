@@ -330,6 +330,7 @@ void NavigationViewItem::OnInfoBadgePropertyChanged(const winrt::DependencyPrope
 void NavigationViewItem::OnMenuItemsVectorChanged(const winrt::Collections::IObservableVector<winrt::IInspectable>& sender, const winrt::Collections::IVectorChangedEventArgs& args)
 {
     LoadElementsForDisplayingChildren();
+    UpdateRepeaterItemsSource();
 }
 
 void NavigationViewItem::OnMenuItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
