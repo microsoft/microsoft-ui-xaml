@@ -1078,7 +1078,8 @@ void NavigationViewItem::ProcessPointerCanceled(const winrt::PointerRoutedEventA
     // What this flag tracks is complicated because of the NavigationView sub items and the m_capturedPointers that are being tracked..
     // We do this check because PointerCaptureLost can sometimes take the place of PointerReleased events.
     // In these cases we need to test if the pointer is over the item to maintain the proper state.
-    if (IsOutOfControlBounds(args.GetCurrentPoint(*this).Position()))
+    // In the case of touch input, we want to cancel anyway since there will be no pointer exited due to the pointer being cancelled.
+    if (IsOutOfControlBounds(args.GetCurrentPoint(*this).Position()) || args.Pointer().PointerDeviceType() == winrt::PointerDeviceType::Touch)
     {
         m_isPointerOver = false;
     }
