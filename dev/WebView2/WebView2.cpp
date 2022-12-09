@@ -882,8 +882,9 @@ void WebView2::FillPointerTouchInfo(const winrt::PointerPoint& inputPt, winrt::C
     outputPt.TouchFlags(TOUCH_FLAG_NONE);
     outputPt.TouchMask(TOUCH_MASK_CONTACTAREA | TOUCH_MASK_ORIENTATION | TOUCH_MASK_PRESSURE);
 
-    outputPt.TouchContact(ScaleRect(inputProperties.ContactRect()));
-    outputPt.TouchContactRaw(ScaleRect(inputProperties.ContactRectRaw()));
+    auto touchContact = ScaleRectToPhysicalPixels(inputProperties.ContactRect());
+    outputPt.TouchContact(touchContact);
+    outputPt.TouchContactRaw(touchContact);
 
     outputPt.TouchOrientation(static_cast<uint32_t>(inputProperties.Orientation()));
     outputPt.TouchPressure(static_cast<uint32_t>(inputProperties.Pressure() * 1024));
@@ -908,8 +909,9 @@ void WebView2::FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWe
     outputPt.FrameId(inputPt.FrameId());
     outputPt.PointerFlags(GetPointerFlags(inputPt));
 
-    outputPt.PixelLocation(ScalePoint(inputPt.Position()));
-    outputPt.PixelLocationRaw(ScalePoint(inputPt.RawPosition()));
+    auto pixelLocation = ScalePointToPhysicalPixels(inputPt.Position());
+    outputPt.PixelLocation(pixelLocation);
+    outputPt.PixelLocationRaw(pixelLocation);
 
     // TODO Task 30544057 - Himetric location and raw himetric location
 
@@ -974,7 +976,7 @@ uint32_t WebView2::GetPointerFlags(const winrt::PointerPoint& inputPt)
     return pointerFlags;
 }
 
-winrt::Rect WebView2::ScaleRect(winrt::Rect inputRect)
+winrt::Rect WebView2::ScaleRectToPhysicalPixels(winrt::Rect inputRect)
 {
     float xVal = inputRect.X * m_rasterizationScale;
     float yVal = inputRect.Y * m_rasterizationScale;
@@ -984,7 +986,7 @@ winrt::Rect WebView2::ScaleRect(winrt::Rect inputRect)
     return winrt::Rect(xVal, yVal, width, height);
 }
 
-winrt::Point WebView2::ScalePoint(winrt::Point inputPoint)
+winrt::Point WebView2::ScalePointToPhysicalPixels(winrt::Point inputPoint)
 {
     return winrt::Point(inputPoint.X * m_rasterizationScale, inputPoint.Y * m_rasterizationScale);
 }
@@ -1010,7 +1012,7 @@ void WebView2::OnXamlPointerMessage(UINT message, const winrt::PointerRoutedEven
 
     winrt::PointerPoint logicalPointerPoint{ args.GetCurrentPoint(*this) };
     winrt::Windows::Foundation::Point logicalPoint{ logicalPointerPoint.Position() };
-    winrt::Windows::Foundation::Point physicalPoint = ScalePoint(logicalPoint);
+    winrt::Windows::Foundation::Point physicalPoint = ScalePointToPhysicalPixels(logicalPoint);
     winrt::Windows::Devices::Input::PointerDeviceType deviceType{ args.Pointer().PointerDeviceType() };
 
     if (deviceType == winrt::Windows::Devices::Input::PointerDeviceType::Mouse)

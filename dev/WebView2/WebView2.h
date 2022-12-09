@@ -108,8 +108,8 @@ private:
     void FillPointerTouchInfo(const winrt::PointerPoint& inputPt, winrt::CoreWebView2PointerInfo outputPt);
     void FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWebView2PointerInfo outputPt, const winrt::PointerRoutedEventArgs& args);
     uint32_t GetPointerFlags(const winrt::PointerPoint& inputPt);
-    winrt::Rect ScaleRect(winrt::Rect inputRect);
-    winrt::Point ScalePoint(winrt::Point inputPoint);
+    winrt::Rect ScaleRectToPhysicalPixels(winrt::Rect inputRect);
+    winrt::Point ScalePointToPhysicalPixels(winrt::Point inputPoint);
 
     void ResetMouseInputState();
     void OnManipulationModePropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
