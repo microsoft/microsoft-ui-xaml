@@ -243,11 +243,11 @@ void WebView2::HandlePointerPressed(const winrt::Windows::Foundation::IInspectab
 
     if (IsTabStop() == true)
     {
-      winrt::FocusManager::TryFocusAsync(*this, winrt::FocusState::Pointer);
+        winrt::FocusManager::TryFocusAsync(*this, winrt::FocusState::Pointer);
     }
 
     OnXamlPointerMessage(message, args);
-  }
+}
 
 void WebView2::HandlePointerReleased(const winrt::Windows::Foundation::IInspectable&, const winrt::PointerRoutedEventArgs& args)
 {
@@ -513,27 +513,27 @@ void WebView2::RegisterCoreEventHandlers()
             // Update Uri without navigation
             UpdateSourceInternal();
             FireNavigationStarting(args);
-        }});
+        } });
 
     m_coreSourceChangedRevoker = m_coreWebView.SourceChanged(winrt::auto_revoke, {
         [this](auto const&, winrt::CoreWebView2SourceChangedEventArgs const& args)
         {
             // Update Uri without navigation
             UpdateSourceInternal();
-        }});
+        } });
 
     m_coreNavigationCompletedRevoker = m_coreWebView.NavigationCompleted(winrt::auto_revoke, {
         [this](auto const&, winrt::CoreWebView2NavigationCompletedEventArgs const& args)
         {
             FireNavigationCompleted(args);
-        }});
+        } });
 
     m_coreWebMessageReceivedRevoker = m_coreWebView.WebMessageReceived(winrt::auto_revoke, {
         [this](auto const&, winrt::CoreWebView2WebMessageReceivedEventArgs const& args)
         {
             // Fire the MUXC side NavigationCompleted event when the CoreWebView2 event is received.
             FireWebMessageReceived(args);
-        }});
+        } });
 
     m_coreMoveFocusRequestedRevoker = m_coreWebViewController.MoveFocusRequested(winrt::auto_revoke, {
         [this](auto const&, const winrt::CoreWebView2MoveFocusRequestedEventArgs& args)
@@ -604,7 +604,7 @@ void WebView2::RegisterCoreEventHandlers()
 
                 // If nextElement is null, focus is maintained in Anaheim by not marking Handled.
             }
-        }});
+        } });
 
     m_coreProcessFailedRevoker = m_coreWebView.ProcessFailed(winrt::auto_revoke, {
         [this](auto const&, winrt::CoreWebView2ProcessFailedEventArgs const& args)
@@ -626,20 +626,20 @@ void WebView2::RegisterCoreEventHandlers()
             }
 
             FireCoreProcessFailedEvent(args);
-        }});
+        } });
 
     m_coreLostFocusRevoker = m_coreWebViewController.LostFocus(winrt::auto_revoke, {
         [this](auto const&, auto const&)
         {
             // Unset our tracking of Edge focus when it is lost via something other than TAB navigation.
             m_webHasFocus = false;
-        }});
+        } });
 
     m_cursorChangedRevoker = m_coreWebViewCompositionController.CursorChanged(winrt::auto_revoke, {
         [this](auto const& controller, auto const& obj)
         {
             UpdateCoreWindowCursor();
-        }});
+        } });
 }
 
 void WebView2::UnregisterCoreEventHandlers()
@@ -703,7 +703,7 @@ winrt::IAsyncAction WebView2::CreateCoreObjects()
         }
     }
 
-   co_return;
+    co_return;
 }
 
 winrt::IAsyncAction WebView2::CreateCoreEnvironment() noexcept
@@ -858,39 +858,27 @@ winrt::Size WebView2::ArrangeOverride(winrt::Size const& finalSize)
 void WebView2::FillPointerPenInfo(const winrt::PointerPoint& inputPt, winrt::CoreWebView2PointerInfo outputPt)
 {
     winrt::PointerPointProperties inputProperties{ inputPt.Properties() };
-    UINT32 outputPt_penFlags{PEN_FLAG_NONE};
 
+    UINT32 outputPt_penFlags{ PEN_FLAG_NONE };
     if (inputProperties.IsBarrelButtonPressed())
     {
         outputPt_penFlags |= PEN_FLAG_BARREL;
     }
-
     if (inputProperties.IsInverted())
     {
         outputPt_penFlags |= PEN_FLAG_INVERTED;
     }
-
     if (inputProperties.IsEraser())
     {
         outputPt_penFlags |= PEN_FLAG_ERASER;
     }
-
     outputPt.PenFlags(outputPt_penFlags);
 
-    UINT32 outputPt_penMask = PEN_MASK_PRESSURE | PEN_MASK_ROTATION | PEN_MASK_TILT_X | PEN_MASK_TILT_Y;
-    outputPt.PenMask(outputPt_penMask);
-
-    UINT32 outputPt_penPressure = static_cast<UINT32>(inputProperties.Pressure()* 1024);
-    outputPt.PenPressure(outputPt_penPressure);
-
-    UINT32 outputPt_penRotation = static_cast<UINT32>(inputProperties.Twist());
-    outputPt.PenRotation(outputPt_penRotation);
-
-    INT32 outputPt_penTiltX = static_cast<INT32>(inputProperties.XTilt());
-    outputPt.PenTiltX(outputPt_penTiltX);
-
-    INT32 outputPt_penTiltY = static_cast<INT32>(inputProperties.YTilt());
-    outputPt.PenTiltY(outputPt_penTiltY);
+    outputPt.PenMask(PEN_MASK_PRESSURE | PEN_MASK_ROTATION | PEN_MASK_TILT_X | PEN_MASK_TILT_Y);
+    outputPt.PenPressure(static_cast<uint32_t>(inputProperties.Pressure() * 1024));
+    outputPt.PenRotation(static_cast<uint32_t>(inputProperties.Twist()));
+    outputPt.PenTiltX(static_cast<int32_t>(inputProperties.XTilt()));
+    outputPt.PenTiltY(static_cast<int32_t>(inputProperties.YTilt()));
 }
 
 void WebView2::FillPointerTouchInfo(const winrt::PointerPoint& inputPt, winrt::CoreWebView2PointerInfo outputPt)
@@ -898,40 +886,20 @@ void WebView2::FillPointerTouchInfo(const winrt::PointerPoint& inputPt, winrt::C
     winrt::PointerPointProperties inputProperties{ inputPt.Properties() };
 
     outputPt.TouchFlags(TOUCH_FLAG_NONE);
+    outputPt.TouchMask(TOUCH_MASK_CONTACTAREA | TOUCH_MASK_ORIENTATION | TOUCH_MASK_PRESSURE);
 
-    UINT32 outputPt_touchMask = TOUCH_MASK_CONTACTAREA | TOUCH_MASK_ORIENTATION | TOUCH_MASK_PRESSURE;
-    outputPt.TouchMask(outputPt_touchMask);
+    auto touchContact = ScaleRectToPhysicalPixels(inputProperties.ContactRect());
+    outputPt.TouchContact(touchContact);
+    outputPt.TouchContactRaw(touchContact);
 
-    //TOUCH CONTACT
-    float width = inputProperties.ContactRect().Width * m_rasterizationScale;
-    float height = inputProperties.ContactRect().Height * m_rasterizationScale;
-    float leftVal = inputProperties.ContactRect().X * m_rasterizationScale;
-    float topVal = inputProperties.ContactRect().Y * m_rasterizationScale;
-
-    winrt::Windows::Foundation::Rect outputPt_touchContact(static_cast<float>(leftVal), static_cast<float>(topVal), static_cast<float>(width), static_cast<float>(height));
-    outputPt.TouchContact(outputPt_touchContact);
-
-    //TOUCH CONTACT RAW
-    float widthRaw = inputProperties.ContactRectRaw().Width * m_rasterizationScale;
-    float heightRaw = inputProperties.ContactRectRaw().Height * m_rasterizationScale;
-    float leftValRaw = inputProperties.ContactRectRaw().X * m_rasterizationScale;
-    float topValRaw = inputProperties.ContactRectRaw().Y * m_rasterizationScale;
-
-    winrt::Windows::Foundation::Rect outputPt_touchContactRaw(static_cast<float>(leftValRaw), static_cast<float>(topValRaw), static_cast<float>(widthRaw), static_cast<float>(heightRaw));
-    outputPt.TouchContactRaw(outputPt_touchContactRaw);
-
-    UINT32 outputPt_touchOrientation = static_cast<UINT32>(inputProperties.Orientation());
-    outputPt.TouchOrientation(outputPt_touchOrientation);
-
-    UINT32 outputPt_touchPressure = static_cast<UINT32>(inputProperties.Pressure() * 1024);
-    outputPt.TouchPressure(outputPt_touchPressure);
+    outputPt.TouchOrientation(static_cast<uint32_t>(inputProperties.Orientation()));
+    outputPt.TouchPressure(static_cast<uint32_t>(inputProperties.Pressure() * 1024));
 }
 
 void WebView2::FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWebView2PointerInfo outputPt, const winrt::PointerRoutedEventArgs& args)
 {
     winrt::PointerPointProperties inputProperties{ inputPt.Properties() };
 
-    //DEVICE TYPE
     winrt::PointerDeviceType deviceType{ inputPt.PointerDevice().PointerDeviceType() };
 
     if (deviceType == winrt::PointerDeviceType::Pen)
@@ -944,115 +912,89 @@ void WebView2::FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWe
     }
 
     outputPt.PointerId(args.Pointer().PointerId());
-
     outputPt.FrameId(inputPt.FrameId());
+    outputPt.PointerFlags(GetPointerFlags(inputPt));
 
-    //POINTER FLAGS
-    UINT32 outputPt_pointerFlags{POINTER_FLAG_NONE};
+    auto pixelLocation = ScalePointToPhysicalPixels(inputPt.Position());
+    outputPt.PixelLocation(pixelLocation);
+    outputPt.PixelLocationRaw(pixelLocation);
 
-    if (inputProperties.IsInRange())
+    // TODO Task 30544057 - Himetric location and raw himetric location
+
+    outputPt.Time(static_cast<uint32_t>(inputPt.Timestamp() / 1000)); //microsecond to millisecond conversion (for tick count)
+    outputPt.HistoryCount(args.GetIntermediatePoints(*this).Size());
+
+    LARGE_INTEGER lpFrequency{};
+    if (QueryPerformanceFrequency(&lpFrequency))
     {
-        outputPt_pointerFlags |= POINTER_FLAG_INRANGE;
+        auto scale = 1000000;
+        auto frequency = lpFrequency.QuadPart;
+        outputPt.PerformanceCount((inputPt.Timestamp() * frequency) / scale);
     }
+
+    outputPt.ButtonChangeKind(static_cast<int32_t>(inputProperties.PointerUpdateKind()));
+}
+
+uint32_t WebView2::GetPointerFlags(const winrt::PointerPoint& inputPt)
+{
+    winrt::PointerPointProperties inputProperties{ inputPt.Properties() };
+    winrt::PointerDeviceType deviceType{ inputPt.PointerDevice().PointerDeviceType() };
+    uint32_t pointerFlags{ POINTER_FLAG_NONE };
 
     if (deviceType == winrt::PointerDeviceType::Touch)
     {
         if (inputPt.IsInContact())
         {
-            outputPt_pointerFlags |= POINTER_FLAG_INCONTACT;
-            outputPt_pointerFlags |= POINTER_FLAG_FIRSTBUTTON;
+            pointerFlags |= POINTER_FLAG_INCONTACT;
+            pointerFlags |= POINTER_FLAG_FIRSTBUTTON;
         }
 
         if (inputProperties.PointerUpdateKind() == winrt::PointerUpdateKind::LeftButtonPressed)
         {
-            outputPt_pointerFlags |= POINTER_FLAG_NEW;
+            pointerFlags |= POINTER_FLAG_NEW;
         }
     }
-
-    if (deviceType == winrt::PointerDeviceType::Pen)
+    else if (deviceType == winrt::PointerDeviceType::Pen)
     {
         if (inputPt.IsInContact())
         {
-            outputPt_pointerFlags |= POINTER_FLAG_INCONTACT;
+            pointerFlags |= POINTER_FLAG_INCONTACT;
 
             if (!inputProperties.IsBarrelButtonPressed())
             {
-                outputPt_pointerFlags |= POINTER_FLAG_FIRSTBUTTON;
+                pointerFlags |= POINTER_FLAG_FIRSTBUTTON;
             }
-
             else
             {
-                outputPt_pointerFlags |= POINTER_FLAG_SECONDBUTTON;
+                pointerFlags |= POINTER_FLAG_SECONDBUTTON;
             }
         } // POINTER_FLAG_NEW is currently omitted for pen input
     }
 
-    if (inputProperties.IsPrimary())
-    {
-        outputPt_pointerFlags |= POINTER_FLAG_PRIMARY;
-    }
+    if (inputProperties.IsInRange()) { pointerFlags |= POINTER_FLAG_INRANGE; }
+    if (inputProperties.IsPrimary()) { pointerFlags |= POINTER_FLAG_PRIMARY; }
+    if (inputProperties.IsCanceled()) { pointerFlags |= POINTER_FLAG_CANCELED; }
+    if (inputProperties.TouchConfidence()) { pointerFlags |= POINTER_FLAG_CONFIDENCE; }
+    if (inputProperties.PointerUpdateKind() == winrt::PointerUpdateKind::LeftButtonPressed) { pointerFlags |= POINTER_FLAG_DOWN; }
+    if (inputProperties.PointerUpdateKind() == winrt::PointerUpdateKind::LeftButtonReleased) { pointerFlags |= POINTER_FLAG_UP; }
+    if (inputProperties.PointerUpdateKind() == winrt::PointerUpdateKind::Other) { pointerFlags |= POINTER_FLAG_UPDATE; }
 
-    if (inputProperties.TouchConfidence())
-    {
-        outputPt_pointerFlags |= POINTER_FLAG_CONFIDENCE;
-    }
+    return pointerFlags;
+}
 
-    if (inputProperties.IsCanceled())
-    {
-        outputPt_pointerFlags |= POINTER_FLAG_CANCELED;
-    }
+winrt::Rect WebView2::ScaleRectToPhysicalPixels(winrt::Rect inputRect)
+{
+    float xVal = inputRect.X * m_rasterizationScale;
+    float yVal = inputRect.Y * m_rasterizationScale;
+    float width = inputRect.Width * m_rasterizationScale;
+    float height = inputRect.Height * m_rasterizationScale;
 
-    if (inputProperties.PointerUpdateKind() == winrt::PointerUpdateKind::LeftButtonPressed)
-    {
-        outputPt_pointerFlags |= POINTER_FLAG_DOWN;
-    }
+    return winrt::Rect(xVal, yVal, width, height);
+}
 
-    if (inputProperties.PointerUpdateKind() == winrt::PointerUpdateKind::Other)
-    {
-        outputPt_pointerFlags |= POINTER_FLAG_UPDATE;
-    }
-
-    if (inputProperties.PointerUpdateKind() == winrt::PointerUpdateKind::LeftButtonReleased)
-    {
-        outputPt_pointerFlags |= POINTER_FLAG_UP;
-    }
-
-    outputPt.PointerFlags(outputPt_pointerFlags);
-
-    winrt::Point outputPt_pointerPixelLocation(static_cast<float>(m_rasterizationScale * (inputPt.Position().X)), static_cast<float>(m_rasterizationScale * (inputPt.Position().Y)));
-    outputPt.PixelLocation(outputPt_pointerPixelLocation);
-
-    //HIMETRIC LOCATION (task 30544057 exists to finish this)
-    //auto himetricScale = 26.4583; //1 hiMetric = 0.037795280352161 PX
-    //winrt::Point outputPt_pointerHimetricLocation(static_cast<float>(inputPt.Position().X), static_cast<float>(inputPt.Position().Y));
-    //outputPt->HimetricLocation(outputPt_pointerHimetricLocation);
-
-    winrt::Point outputPt_pointerRawPixelLocation(static_cast<float>(m_rasterizationScale * (inputPt.RawPosition().X)), static_cast<float>(m_rasterizationScale * (inputPt.RawPosition().Y)));
-    outputPt.PixelLocationRaw(outputPt_pointerRawPixelLocation);
-
-    //RAW HIMETRIC LOCATION
-    //winrt::Point outputPt_pointerRawHimetricLocation = { static_cast<float>(inputPt.RawPosition().X), static_cast<float>(inputPt.RawPosition().Y) };
-    //outputPt.HimetricLocationRaw(outputPt_pointerRawHimetricLocation);
-
-    UINT32 outputPoint_pointerTime = static_cast<UINT32>(inputPt.Timestamp()/1000); //microsecond to millisecond conversion(for tick count)
-    outputPt.Time(outputPoint_pointerTime);
-
-    auto outputPoint_pointerHistoryCount = static_cast<UINT32>(args.GetIntermediatePoints(*this).Size());
-    outputPt.HistoryCount(outputPoint_pointerHistoryCount);
-
-    //PERFORMANCE COUNT
-    LARGE_INTEGER lpFrequency{};
-    bool res = QueryPerformanceFrequency(&lpFrequency);
-    if (res)
-    {
-        auto scale = 1000000;
-        auto frequency = lpFrequency.QuadPart;
-        auto outputPoint_pointerPerformanceCount = (inputPt.Timestamp() * frequency) / scale;
-        outputPt.PerformanceCount(outputPoint_pointerPerformanceCount);
-    }
-
-    auto outputPoint_pointerButtonChangeKind = static_cast<INT32>(inputProperties.PointerUpdateKind());
-    outputPt.ButtonChangeKind(outputPoint_pointerButtonChangeKind);
+winrt::Point WebView2::ScalePointToPhysicalPixels(winrt::Point inputPoint)
+{
+    return winrt::Point(inputPoint.X * m_rasterizationScale, inputPoint.Y * m_rasterizationScale);
 }
 
 void WebView2::UpdateCoreWindowCursor()
@@ -1063,41 +1005,38 @@ void WebView2::UpdateCoreWindowCursor()
     }
 }
 
-void WebView2::OnXamlPointerMessage(
-    UINT message,
-    const winrt::PointerRoutedEventArgs& args) noexcept
+void WebView2::OnXamlPointerMessage(UINT message, const winrt::PointerRoutedEventArgs& args) noexcept
 {
     // Set Handled to prevent ancestor actions such as ScrollViewer taking focus on PointerPressed/PointerReleased.
     args.Handled(true);
 
     if (!m_coreWebView || !m_coreWebViewCompositionController)
     {
-        // returning only because one can click within webview2 element even before it gets loaded
-        // in such scenarios, the input gets ignored
+        // nothing to forward input to
         return;
     }
 
     winrt::PointerPoint logicalPointerPoint{ args.GetCurrentPoint(*this) };
     winrt::Windows::Foundation::Point logicalPoint{ logicalPointerPoint.Position() };
-    winrt::Windows::Foundation::Point physicalPoint{ logicalPoint.X * m_rasterizationScale, logicalPoint.Y * m_rasterizationScale };
+    winrt::Windows::Foundation::Point physicalPoint = ScalePointToPhysicalPixels(logicalPoint);
     winrt::Windows::Devices::Input::PointerDeviceType deviceType{ args.Pointer().PointerDeviceType() };
 
-   if (deviceType == winrt::Windows::Devices::Input::PointerDeviceType::Mouse)
+    if (deviceType == winrt::Windows::Devices::Input::PointerDeviceType::Mouse)
     {
         if (message == WM_MOUSELEAVE)
         {
             m_coreWebViewCompositionController.SendMouseInput(
-                winrt::CoreWebView2MouseEventKind{static_cast<winrt::CoreWebView2MouseEventKind>(message)},
-                winrt::CoreWebView2MouseEventVirtualKeys{static_cast<winrt::CoreWebView2MouseEventVirtualKeys>(0)},
+                winrt::CoreWebView2MouseEventKind{ static_cast<winrt::CoreWebView2MouseEventKind>(message) },
+                winrt::CoreWebView2MouseEventVirtualKeys{ static_cast<winrt::CoreWebView2MouseEventVirtualKeys>(0) },
                 0,
-                winrt::Point{0, 0});
+                winrt::Point{ 0, 0 });
         }
         else
         {
             const WPARAM l_param = WebView2Utility::PackIntoWin32StylePointerArgs_lparam(message, args, physicalPoint);
             const LPARAM w_param = WebView2Utility::PackIntoWin32StyleMouseArgs_wparam(message, args, logicalPointerPoint);
 
-            POINT coords_win32;
+            POINT coords_win32{};
             POINTSTOPOINT(coords_win32, l_param);
             winrt::Point coords{ static_cast<float>(coords_win32.x), static_cast<float>(coords_win32.y) };
 
@@ -1125,67 +1064,19 @@ void WebView2::OnXamlPointerMessage(
         const winrt::PointerPoint inputPt{ args.GetCurrentPoint(*this) };
         winrt::CoreWebView2PointerInfo outputPt = m_coreWebViewEnvironment.CreateCoreWebView2PointerInfo();
 
-        //PEN INPUT
         if (deviceType == winrt::PointerDeviceType::Pen)
         {
             FillPointerPenInfo(inputPt, outputPt);
         }
-
-        //TOUCH INPUT
-        if (deviceType == winrt::PointerDeviceType::Touch)
+        else if (deviceType == winrt::PointerDeviceType::Touch)
         {
             FillPointerTouchInfo(inputPt, outputPt);
         }
 
-        //GENERAL POINTER INPUT
         FillPointerInfo(inputPt, outputPt, args);
 
         m_coreWebViewCompositionController.SendPointerInput(winrt::CoreWebView2PointerEventKind{ static_cast<winrt::CoreWebView2PointerEventKind>(message) }, outputPt);
     }
-}
-
-// The transform is not available in matrix form outside core windows so needed
-// information about the transformation needs to be reconstructed by applying
-// the transform directly to a known set of points.
-// It is assumed that no shear transform is applied and currently rotation is not supported.
-winrt::float4x4 WebView2::GetMatrixFromTransform() {
-    // Calculate transformation assuming 2D only.
-    // Calculate transformed values
-    auto generalTransform = TransformToVisual(nullptr);
-    winrt::Point initialOrigin = winrt::Point(0, 0);
-    winrt::Point translatedOrigin = generalTransform.TransformPoint(initialOrigin);
-
-    winrt::float4x4 outputMatrix{};
-
-    // Assign rotation
-    outputMatrix.m12 = 0.0f;
-    outputMatrix.m13 = 0.0f;
-    outputMatrix.m21 = 0.0f;
-    outputMatrix.m23 = 0.0f;
-    outputMatrix.m31 = 0.0f;
-    outputMatrix.m32 = 0.0f;
-
-    // Assign offsets/translation
-    // This should be the global physical pixel offset to the top left corner of the XAML HWND.
-    outputMatrix.m41 = (translatedOrigin.X * m_rasterizationScale); // X offset
-    outputMatrix.m42 = (translatedOrigin.Y * m_rasterizationScale); // Y offset
-    outputMatrix.m43 = 0.0f; // Z offset
-
-    // Assign scale values
-    // These values will just be 1.0 because Anaheim is getting their values in physical pixels,
-    // so they don't need to do any extra unscaling.
-    outputMatrix.m11 = 1.0f; // X Scale
-    outputMatrix.m22 = 1.0f; // Y Scale
-    outputMatrix.m33 = 1.0f; // Z scale
-
-    // Set to 0 (3D coordinate transform values)
-    outputMatrix.m14 = 0.0f;
-    outputMatrix.m24 = 0.0f;
-    outputMatrix.m34 = 0.0f;
-    // Set to 1 to maintain non-zero det.
-    outputMatrix.m44 = 1.0f;
-
-    return outputMatrix;
 }
 
 void WebView2::ResetMouseInputState()
@@ -1225,7 +1116,7 @@ void WebView2::FireWebMessageReceived(const winrt::CoreWebView2WebMessageReceive
 void WebView2::UpdateSourceInternal()
 {
     // Update Source to keep coherence between WebView2 and CoreWebView2.
-    winrt::hstring newUri{m_coreWebView.Source()};
+    winrt::hstring newUri{ m_coreWebView.Source() };
     m_stopNavigateOnUriChanged = newUri;
     Source(winrt::Uri(newUri));
     m_stopNavigateOnUriChanged.clear();
@@ -1268,7 +1159,7 @@ void WebView2::HandleGettingFocus(const winrt::Windows::Foundation::IInspectable
 {
     if (m_coreWebView)
     {
-        winrt::CoreWebView2MoveFocusReason moveFocusReason{winrt::CoreWebView2MoveFocusReason::Programmatic};
+        winrt::CoreWebView2MoveFocusReason moveFocusReason{ winrt::CoreWebView2MoveFocusReason::Programmatic };
 
         if (args.InputDevice() == winrt::FocusInputDeviceKind::Keyboard)
         {
@@ -1308,7 +1199,6 @@ void WebView2::MoveFocusIntoCoreWebView(winrt::CoreWebView2MoveFocusReason reaso
         }
     }
 }
-
 
 // Since WebView takes HWND focus (via OnGotFocus -> MoveFocus) Xaml assumes
 // focus was lost for an external reason. When the next unhandled TAB KeyDown
@@ -1943,7 +1833,7 @@ bool WebView2::AreAllAncestorsVisible()
     {
         winrt::IUIElement parentAsUIE = parentAsDO.as<winrt::IUIElement>();
         winrt::Visibility parentVisibility = parentAsUIE.Visibility();
-        if  (parentVisibility == winrt::Visibility::Collapsed)
+        if (parentVisibility == winrt::Visibility::Collapsed)
         {
             allAncestorsVisible = false;
             break;
@@ -1973,7 +1863,8 @@ void WebView2::UpdateRenderedSubscriptionAndVisibility()
         {
             if (!m_layoutUpdatedRevoker)
             {
-                m_layoutUpdatedRevoker = LayoutUpdated(winrt::auto_revoke, [this](auto&&...) {
+                m_layoutUpdatedRevoker = LayoutUpdated(winrt::auto_revoke, [this](auto&&...)
+                {
                     HandleRendered(nullptr, nullptr);
                 });
             }
