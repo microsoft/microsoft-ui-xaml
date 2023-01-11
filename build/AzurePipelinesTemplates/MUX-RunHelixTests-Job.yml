@@ -21,8 +21,8 @@ parameters:
     Release_x64:
       buildPlatform: 'x64'
       buildConfiguration: 'release'
-      openHelixTargetQueues: 'Windows.10.Amd64.Client21H1.Open.xaml'
-      closedHelixTargetQueues: 'Windows.10.Amd64.Client21H1.xaml'
+      openHelixTargetQueues: 'windows.10.amd64.client.open.reunion'
+      closedHelixTargetQueues: 'windows.10.amd64.client.reunion'
 
 jobs:
 - job: ${{ parameters.name }}
