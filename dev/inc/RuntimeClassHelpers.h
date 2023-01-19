@@ -144,8 +144,6 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
         }
         me->m_destroying = true;
 
-        bool queued = false;
-        
         // See if we're on the UI thread
         if(!self->IsOnThread())
         {
@@ -156,12 +154,8 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
                     delete instance;
                 },
                 true /*fallbackToThisThread*/);
-
-            queued = true;
         }
-        
-
-        if (!queued)
+        else
         {
             self.reset();
         }
