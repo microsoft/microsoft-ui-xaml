@@ -130,11 +130,22 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
         DeleteInstanceOnUIThread(std::move(self));
     }
 
+    static winrt::fire_and_forget DelayedDelete(ReferenceTracker<D, ImplT, I...>* instance)
+    {
+        co_await 120s;
+        co_await winrt::resume_foreground(instance->m_dispatcherHelper.DispatcherQueue());
+        instance->NonDelegatingAddRef(); // put m_references back to 1
+        delete instance;
+    }
+
     // Post a call to DeleteInstance() to the UI thread.  If we're already on the UI thread, then just
     // return false.  If we're off the UI thread but can't get to it, then do the DeleteInstance() here (asynchronously).
     static void DeleteInstanceOnUIThread(std::unique_ptr<D>&& self) noexcept
     {
         auto me = static_cast<ReferenceTracker<D, ImplT, I...>*>(self.get());
+
+        me->subtract_reference(); // m_references just got set to 1 before calling final_release, put it to 0.
+
         // Some sanity checks that we aren't running through this twice and that no one has modified some of our fields
         // that should always be non-zero.
         if (me->m_destroying || (me->m_owningThreadId == 0) || !me->m_dispatcherHelper.DispatcherQueue())
@@ -150,12 +161,13 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
             me->m_dispatcherHelper.RunAsync(
                 [instance = self.release()]()
                 {
-                    delete instance;
+                    DelayedDelete(instance);
                 },
                 true /*fallbackToThisThread*/);
         }
         else
         {
+            me->NonDelegatingAddRef(); // put m_references back to 1
             self.reset();
         }
     }
