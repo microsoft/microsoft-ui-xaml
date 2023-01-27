@@ -34,12 +34,43 @@ So it's a great feature and works, but it's difficult to use.
 The purpose of the new APIs here are to make backdrops much easier to use in a Xaml app,
 allowing you to simply set a backdrop as a property on a `Window`.
 
-# Conceptual pages
-
-
-
 
 # API Pages
+
+## Window.SystemBackdrop property
+
+_This also applies to `Popup.SystemBackdrop` and `FlyoutBase.SystemBackdrop` properties_
+
+Set a `SystemBackdrop` to this property to apply that backdrop to this `Window`.
+
+This backdrop is what will render behind the content specified in `Window.Content`.
+If the content is opaque, this backdrop will have no visible effect.
+
+The following example creates a Window with a Mica backdrop.
+
+```xml
+<Window
+    x:Class="App3.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" >
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop/>
+    </Window.SystemBackdrop>
+
+    <Grid ColumnDefinitions="Auto,*">
+
+        // This area has a transparent background, so the Mica backdrop will be mostly visible
+        // For example if there are buttons here, the backdrop will show up in the margins and gaps between the buttons
+        <local:NavigationControls/>
+
+        // This area has an opaque background, so the Mica backdrop won't be visible
+        <local:ContentArea Background="White"/>
+
+    </Grid>
+</Window>
+```
+
 
 ## MicaBackdrop class
 
@@ -60,63 +91,80 @@ For example:
 </Window>
 ```
 
+
 ## SystemBackdrop class
 
-This class is the base of system backdrop classes,
-such as `MicaBackdrop` and `DesktopAcrylicBackdrop`.
+Use this class to create a custom system backdrop.
+You don't create this class directly, but subclass it to add your custom support.
+
+This class is the base of system backdrop classes: `MicaBackdrop` and `DesktopAcrylicBackdrop`.
+
+Steps to implementing a custom system backdrop as a subclass of `SystemBackdrop`:
+
+* Override `OnTargetConnected` and `OnTargetDisconnected` to learn when
+  the backdrop has been set, for example as the value of `Window.SystemBackdrop`
+* 
+
+The following example shows a custom system backdrop class that's implemented using
+[MicaController](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Composition.SystemBackdrops.MicaController).
 
 
+```cs
+public class MicaSystemBackdrop : SystemBackdrop
+{
+    MicaController _micaController;
+
+    // When set as the value of a backdrop property, such as `Window.SystemBackdrop`,
+    // create and set up a `MicaController` 
+    protected override void OnTargetConnected(ICompositionSupportsSystemBackdrop connectedTarget, XamlRoot xamlRoot)
+    {
+        base.OnTargetConnected(connectedTarget, xamlRoot);
+
+        // This implementation doesn't support sharing -- using the same instance on multiple elements.
+        // If it did, it would maintain multiple Mica controllers, one for each target.
+        if(_micaController != null)
+        {
+            throw new Exception("This controller cannot be shared");
+        }
+
+        // Get a `SystemBackdropConfiguration` from the pass class that's required for the `MicaController`
+        var config = GetSystemBackdropConfiguration(connectedTarget, xamlRoot);
+
+        //Create, configure, and set the `MicaController`
+        _micaController = new MicaController();
+        _micaController.SetSystemBackdropConfiguration(config);
+        _micaController.AddSystemBackdropTarget(connectedTarget);
+    }
+
+    // When cleared from the backdrop property, clean up the MicaController
+    protected override void OnTargetDisconnected(ICompositionSupportsSystemBackdrop disconnectedTarget)
+    {
+        base.OnTargetDisconnected(disconnectedTarget);
+
+        _micaController.RemoveSystemBackdropTarget(disconnectedTarget);
+        _micaController = null;
+    }
+}
+
+```
+
+## SystemBackdrop members
+
+| Member | Description |
+| - | - |
+| `OnTargetConnected` virtual method | Called when this object is attached to a Xaml element |
+| `OnTargetDisconnected` virtual method | Called when this object is cleared from a Xaml element |
+| `Changed` event | Raised when the configuration has changed, indicating that the `GetSystemBackdropConfiguration` method will return a new value |
 
 
 ## SystemBackdropChangedEventArgs
 
-## Window.SystemBackdrop property
-
-_This also applies to `Popup.SystemBackdrop` and `FlyoutBase.SystemBackdrop` properties_
-
+Event args for the `SystemBackrop.Changed` event.
+Provides an updated `ICompositionSupportsSystemBackdrop` and `XamlRoot`.
 
 
 
 
-## MyExample class
-
-Brief description of this class.
-
-Introduction to one or more example usages of a MyExample class:
-
-```c#
-void SampleMethod() 
-{
-  var show = new MyExample();
-  show.SomeMembers = AndWhyItMight(be, interesting)
-}
-```
-Remarks about the MyExample class. For example,
-APIs should only throw exceptions in exceptional conditions; basically,
-only when there's a bug in the caller, such as argument exception.  But if for some
-reason it's necessary for a caller to catch an exception from an API, call that
-out with an explanation either here or in the Examples
-
-## MyExample.PropertyOne property
-
-Brief description of the MyExample.PropertyOne property.
-
-Paragraph with more detail about the property.
-
-_Spec note: internal comment about this property that won't go into the public docs._
-
-Introduction to one or more usages of the MyExample.PropertyOne property.
-
-```c#
-...
-```
-
-## Other MyExample members
-
-| Name | Description |
-|-|-|
-| PropertyTwo | Brief description of the PropertyTwo property (defaults to ...) |
-| MethodOne | Brief description of the MethodOne method |
 
 # API Details
 
@@ -156,6 +204,7 @@ namespace Microsoft.UI.Xaml.Media
           Microsoft.UI.Xaml.XamlRoot xamlRoot);
 
       overridable void OnTargetConnected(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop connectedTarget, Microsoft.UI.Xaml.XamlRoot xamlRoot);
+
       overridable void OnTargetDisconnected(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop disconnectedTarget);
   };
 
