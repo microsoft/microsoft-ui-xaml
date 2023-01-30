@@ -15,7 +15,7 @@ For example the Desktop Acrylic backdrop lets you set as the background of your 
 [More info](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic).
 
 
-These Mica and Desktop Acrylic controllers allow you to set the backdrops onto a
+These existing Mica and Desktop Acrylic controllers allow you to set the backdrops onto a
 [WindowId](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.WindowId),
 and there's currently only an awkward way to get a `WindowId` from a Xaml
 [Window](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Xaml.Window).
@@ -26,7 +26,7 @@ coordinate with the
 [Loaded](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Xaml.FrameworkElement.Loaded)
 event, and check
 [IsSupported](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Composition.SystemBackdrops.MicaController.IsSupported)
-to see if you need to provide a fallback.
+to see if you need to provide a fallback (Mica isn't supported on Windows 10).
 
 So it's a great feature and works, but it's difficult to use.
 [Here's a full code example of the current solution](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/system-backdrop-controller#example-use-mica-in-a-windows-appsdkwinui-3-app).
@@ -41,7 +41,7 @@ allowing you to simply set a backdrop as a property on a `Window`.
 
 _This also applies to `Popup.SystemBackdrop` and `FlyoutBase.SystemBackdrop` properties_
 
-Set a `SystemBackdrop` to this property to apply that backdrop to this `Window`.
+Set a `SystemBackdrop` to apply that backdrop to this `Window`.
 
 This backdrop is what will render behind the content specified in `Window.Content`.
 If the content is opaque, this backdrop will have no visible effect.
@@ -79,6 +79,7 @@ _Same description applies to `DesktopAcrylicBackdrop` class_
 _See also the base class: `SystemBackdrop`_
 
 Use this class to set a backdrop on your `Window` or similar objects.
+
 For example:
 
 ```xml
@@ -98,12 +99,6 @@ Use this class to create a custom system backdrop.
 You don't create this class directly, but subclass it to add your custom support.
 
 This class is the base of system backdrop classes: `MicaBackdrop` and `DesktopAcrylicBackdrop`.
-
-Steps to implementing a custom system backdrop as a subclass of `SystemBackdrop`:
-
-* Override `OnTargetConnected` and `OnTargetDisconnected` to learn when
-  the backdrop has been set, for example as the value of `Window.SystemBackdrop`
-* 
 
 The following example shows a custom system backdrop class that's implemented using
 [MicaController](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Composition.SystemBackdrops.MicaController).
@@ -152,8 +147,8 @@ public class MicaSystemBackdrop : SystemBackdrop
 
 | Member | Description |
 | - | - |
-| `OnTargetConnected` virtual method | Called when this object is attached to a Xaml element |
-| `OnTargetDisconnected` virtual method | Called when this object is cleared from a Xaml element |
+| `OnTargetConnected` virtual method | Called when this object is attached to an object, for example when set on `Window.SystemBackdrop` |
+| `OnTargetDisconnected` virtual method | Called when this object is cleared from an object |
 | `Changed` event | Raised when the configuration has changed, indicating that the `GetSystemBackdropConfiguration` method will return a new value |
 
 
