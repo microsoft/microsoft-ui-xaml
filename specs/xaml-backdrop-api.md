@@ -7,17 +7,16 @@ Xaml Backdrop APIs
 
 Composition in WinAppSDK has a general
 [ISystemBackdropController](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Composition.SystemBackdrops.ISystemBackdropController)
-API that's concretely implemented by
+interface that's concretely implemented by
 [MicaController](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Composition.SystemBackdrops.MicaController)
 and [DesktopAcrylicController](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Composition.SystemBackdrops.DesktopAcrylicController).
 A backdrop is a visual effect you can use as the background for your window (or island).
 For example the Desktop Acrylic backdrop lets you set as the background of your window the desktop wallpaper behind it, but visually modified.
 [More info](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic).
 
-
 These existing Mica and Desktop Acrylic controllers allow you to set the backdrops onto a
 [WindowId](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.WindowId),
-and there's currently only an awkward way to get a `WindowId` from a Xaml
+and there's currently only an awkward way to get a `WindowId` from a Xaml object such as
 [Window](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Xaml.Window).
 
 The awkwardness only begins there; you also need to work with a _system_
@@ -39,12 +38,12 @@ allowing you to simply set a backdrop as a property on a `Window`.
 
 ## Window.SystemBackdrop property
 
-_This also applies to `Popup.SystemBackdrop` and `FlyoutBase.SystemBackdrop` properties_
+_This description also applies to `Popup.SystemBackdrop` and `FlyoutBase.SystemBackdrop` properties_
 
-Set a `SystemBackdrop` to apply that backdrop to this `Window`.
+Sets a `SystemBackdrop` to apply that backdrop to this `Window`.
 
 This backdrop is what will render behind the content specified in `Window.Content`.
-If the content is opaque, this backdrop will have no visible effect.
+If all of the content is fully opaque, this backdrop will have no visible effect.
 
 The following example creates a Window with a Mica backdrop.
 
@@ -61,7 +60,8 @@ The following example creates a Window with a Mica backdrop.
     <Grid ColumnDefinitions="Auto,*">
 
         // This area has a transparent background, so the Mica backdrop will be mostly visible
-        // For example if there are buttons here, the backdrop will show up in the margins and gaps between the buttons
+        // For example if there are buttons here, the backdrop will show up in
+        // the margins and gaps between the button text
         <local:NavigationControls/>
 
         // This area has an opaque background, so the Mica backdrop won't be visible
@@ -78,7 +78,11 @@ _Same description applies to `DesktopAcrylicBackdrop` class_
 
 _See also the base class: `SystemBackdrop`_
 
-Use this class to set a backdrop on your `Window` or similar objects.
+Use this class to set a backdrop on a
+[Window](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Xaml.Window),
+[Popup](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Xaml.Controls.Primitives.Popup),
+or [FlyoutBase](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase)
+(such as a `Flyout` or `MenuFlyout`).
 
 For example:
 
@@ -91,6 +95,9 @@ For example:
 
 </Window>
 ```
+
+Note that `MicaBackdrop` isn't supported on all systems.
+In such cases a solid color will be used instead of the Mica effect.
 
 
 ## SystemBackdrop class
@@ -109,29 +116,21 @@ public class MicaSystemBackdrop : SystemBackdrop
 {
     MicaController _micaController;
 
-    // When set as the value of a backdrop property, such as `Window.SystemBackdrop`,
-    // create and set up a `MicaController` 
     protected override void OnTargetConnected(ICompositionSupportsSystemBackdrop connectedTarget, XamlRoot xamlRoot)
     {
         base.OnTargetConnected(connectedTarget, xamlRoot);
 
-        // This implementation doesn't support sharing -- using the same instance on multiple elements.
-        // If it did, it would maintain multiple Mica controllers, one for each target.
         if(_micaController != null)
         {
             throw new Exception("This controller cannot be shared");
         }
 
-        // Get a `SystemBackdropConfiguration` from the pass class that's required for the `MicaController`
-        var config = GetSystemBackdropConfiguration(connectedTarget, xamlRoot);
+        SetControllerConfig(connectedTarget, xamlRoot);
 
-        //Create, configure, and set the `MicaController`
         _micaController = new MicaController();
-        _micaController.SetSystemBackdropConfiguration(config);
         _micaController.AddSystemBackdropTarget(connectedTarget);
     }
 
-    // When cleared from the backdrop property, clean up the MicaController
     protected override void OnTargetDisconnected(ICompositionSupportsSystemBackdrop disconnectedTarget)
     {
         base.OnTargetDisconnected(disconnectedTarget);
@@ -139,25 +138,70 @@ public class MicaSystemBackdrop : SystemBackdrop
         _micaController.RemoveSystemBackdropTarget(disconnectedTarget);
         _micaController = null;
     }
+
+    void SetControllerConfig(ICompositionSupportsSystemBackdrop connectedTarget, XamlRoot xamlRoot)
+    {
+        var config = GetDefaultSystemBackdropConfiguration(connectedTarget, xamlRoot);
+        _micaController.SetSystemBackdropConfiguration(config);
+    }
+}
+```
+
+## SystemBackdrop.GetDefaultSystemBackdropConfiguration protected method
+
+Returns a
+[SystemBackdropConfiguration](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration)
+object that is set and maintained automatically, and can be passed to
+[ISystemBackdropControllerWithTargets.SetSystemBackdropConfiguration](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Composition.SystemBackdrops.ISystemBackdropControllerWithTargets.SetSystemBackdropConfiguration).
+
+The properties on `SystemBackdropConfiguration` you receive may change over time:
+
+* `Theme`: set based on the target element's
+[ElementTheme](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.ElementTheme)
+
+* `IsInputActive`: true if the target of the `SystemBackdrop` is in the active window.
+
+* `IsHighContrast`: true if the target of the `SystemBackdrop` is in high contrast mode.
+
+
+## SystemBackdrop.OnDefaultSystemBackdropConfigurationChanged protected method
+
+Override this method to be called when the object returned by `GetDefaultSystemBackdropConfiguration` has changed.
+
+This is useful if you're using a custom `SystemBackdropConfiguration`.
+The following example shows a `MicaBackdrop` similar to the previous example,
+but always forces the theme to be light.
+
+```cs
+protected override void OnSystemDefaultBackdropConfigurationChanged(SystemDefaultBackdropChangedEventArgs e)
+{
+    SetControllerConfig(e.ConnectedTarget, e.AssociatedRoot);
+}
+
+void SetControllerConfig(ICompositionSupportsSystemBackdrop connectedTarget, XamlRoot xamlRoot)
+{
+    var config = GetDefaultSystemBackdropConfiguration(connectedTarget, xamlRoot);
+    config.Theme = SystemBackdropTheme.Light;
+    _micaController.SetSystemBackdropConfiguration(config);
 }
 
 ```
 
-## SystemBackdrop members
+
+
+## Other `SystemBackdrop` members
 
 | Member | Description |
 | - | - |
 | `OnTargetConnected` virtual method | Called when this object is attached to an object, for example when set on `Window.SystemBackdrop` |
 | `OnTargetDisconnected` virtual method | Called when this object is cleared from an object |
-| `Changed` event | Raised when the configuration has changed, indicating that the `GetSystemBackdropConfiguration` method will return a new value |
 
 
-## SystemBackdropChangedEventArgs
 
-Event args for the `SystemBackrop.Changed` event.
+## SystemDefaultBackdropChangedEventArgs class
+
+Event args for the `OnSystemDefaultBackdropConfigurationChanged` virtual method.
 Provides an updated `ICompositionSupportsSystemBackdrop` and `XamlRoot`.
-
-
 
 
 
@@ -191,16 +235,19 @@ namespace Microsoft.UI.Xaml.Media
   {
       protected SystemBackdrop();
       
-      event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Media.SystemBackdrop,Microsoft.UI.Xaml.Media.SystemBackdropChangedEventArgs> Changed;
+      overridable void OnTargetConnected(
+        Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop connectedTarget,
+        Microsoft.UI.Xaml.XamlRoot xamlRoot);
+      overridable void OnTargetDisconnected(
+        Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop disconnectedTarget);
 
-      Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration 
-        GetSystemBackdropConfiguration(
+      protected Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration 
+        GetDefaultSystemBackdropConfiguration(
           Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop target, 
           Microsoft.UI.Xaml.XamlRoot xamlRoot);
 
-      overridable void OnTargetConnected(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop connectedTarget, Microsoft.UI.Xaml.XamlRoot xamlRoot);
-
-      overridable void OnTargetDisconnected(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop disconnectedTarget);
+        protected virtual void OnSystemDefaultBackdropConfigurationChanged(
+            SystemDefaultBackdropChangedEventArgs e)
   };
 
   [contract(Microsoft.UI.Xaml.WinUIContract, 4)]
@@ -210,7 +257,6 @@ namespace Microsoft.UI.Xaml.Media
       Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop ConnectedTarget{ get; };
       Microsoft.UI.Xaml.XamlRoot AssociatedRoot{ get; };
   };
-
 
 }
 
