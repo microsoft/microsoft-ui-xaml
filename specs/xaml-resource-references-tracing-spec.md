@@ -48,8 +48,7 @@ when you want to see the raw message.
 
 ## DebugSettings.IsXamlResourceReferenceTracingEnabled Property
 
-Gets or sets a value that indicates whether to engage the XAML resource reference tracing feature 
-of Microsoft Visual Studio when the app runs.
+Gets or sets a value that indicates whether to raise the `XamlResourceReferenceFailed` event when a Xaml resource lookup fails.
 
 ```c# 
 public bool IsXamlResourceReferenceTracingEnabled { get; set; }
