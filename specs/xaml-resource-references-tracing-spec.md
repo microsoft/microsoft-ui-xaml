@@ -38,7 +38,7 @@ XamlResourceReferenceFailed
 ### Remarks
 
 `IsXamlResourceReferenceTracingEnabled` must be `true` and there must be a debugger attached to 
-the app process in order for `XamlResourceReferenceFailed` to fire and for tracing to appear in 
+the app process in order for `XamlResourceReferenceFailed` to be raised and for tracing to appear in 
 debugger output. You don't need to handle the event in order to see tracing appear in a debugger. 
 The debugger output contains message information that goes to the **Output** window of the 
 debugger. Attaching a `XamlResourceReferenceFailed` handler yourself is an advanced scenario for 
