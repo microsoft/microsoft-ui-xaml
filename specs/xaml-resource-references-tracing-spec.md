@@ -4,7 +4,7 @@ Tracing XAML resource reference lookup failures
 # Background
 
 Failure to resolve a XAML resource reference (`{StaticResource}` or `{ThemeResource}`) is one of 
-the most common causes of app crashes. Such failures manifest as a stowed exception with the 
+the most common causes of app crashes. Such failures manifest in the _native code_ debug output with the 
 message "Cannot find a Resource with the Name/Key *foo*", and generally fall into one of two 
 buckets:
 
