@@ -1,0 +1,52 @@
+﻿<ResourceDictionary
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:local="using:Microsoft.UI.Xaml.Controls">
+
+	<Style BasedOn="{StaticResource DefaultSettingsCardStyle}" TargetType="local:SettingsCard" />
+
+	<Style x:Key="DefaultSettingsCardStyle" TargetType="local:SettingsCard">
+		<Style.Setters>
+			<Setter Property="Background" Value="{ThemeResource SettingsCardBackground}" />
+			<Setter Property="Foreground" Value="{ThemeResource SettingsCardForeground}" />
+			<Setter Property="BorderBrush" Value="{ThemeResource SettingsCardBorderBrush}" />
+			<Setter Property="BorderThickness" Value="{ThemeResource SettingsCardBorderThickness}" />
+			<Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+			<Setter Property="MinHeight" Value="{ThemeResource SettingsCardMinHeight}" />
+			<Setter Property="MinWidth" Value="{ThemeResource SettingsCardMinWidth}" />
+			<Setter Property="IsTabStop" Value="False" />
+			<Setter Property="HorizontalAlignment" Value="Stretch" />
+			<Setter Property="HorizontalContentAlignment" Value="Right" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
+			<Setter Property="Padding" Value="{ThemeResource SettingsCardPadding}" />
+			<Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+			<Setter Property="FontWeight" Value="Normal" />
+			<Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+			<Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+			<Setter Property="FocusVisualMargin" Value="-3" />
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="local:SettingsCard">
+						<Grid
+							x:Name="RootGrid"
+							MinWidth="{TemplateBinding MinWidth}"
+							MinHeight="{TemplateBinding MinHeight}"
+							MaxWidth="{TemplateBinding MaxWidth}"
+							Padding="{TemplateBinding Padding}"
+							HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+							VerticalAlignment="{TemplateBinding VerticalAlignment}"
+							local:AnimatedIcon.State="Normal"
+							Background="{TemplateBinding Background}"
+							BackgroundSizing="{TemplateBinding BackgroundSizing}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							CornerRadius="{TemplateBinding CornerRadius}">
+							<!--    -->
+						</Grid>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style.Setters>
+	</Style>
+</ResourceDictionary>
