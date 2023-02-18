@@ -101,7 +101,7 @@ The [Windows App SDK](https://github.com/microsoft/ProjectReunion) is a set of l
  
 Other Windows App SDK components are: [WebView2](https://docs.microsoft.com/microsoft-edge/webview2/),  [MSIX (MSIX-Core)](https://docs.microsoft.com/windows/msix/overview), [C++/WinRT](https://github.com/microsoft/cppwinrt), [Rust/WinRT](https://github.com/microsoft/winrt-rs), and [C#/WinRT](https://github.com/microsoft/cswinrt). If you'd like to learn more and contribute to Windows App SDK, or have **UWP/app model related questions**, visit our [Github repo](https://github.com/microsoft/WindowsAppSDK). 
 
-To see the Windows App SDK full roadmap and features that are under consideration (or to submit feature requests), [visit the productboard portal](https://portal.productboard.com/winappsdk/1-windows-app-sdk).
+For a detailed look at the features we're planning on releasing in WinAppSDK check out the [Windows App SDK feature roadmap](https://github.com/microsoft/WindowsAppSDK/blob/main/docs/roadmap.md).
 
 ## Data/Telemetry
 
