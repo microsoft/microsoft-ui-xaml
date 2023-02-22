@@ -18,6 +18,7 @@ which makes it difficult or, more often, outright impossible to debug. This spec
 API on the `DebugSettings` class that developers can use to access more detailed information about 
 the resource reference lookup failure.
 
+
 # API Pages
 
 _(Each of the following L2 sections correspond to a page that will be on docs.microsoft.com)_
@@ -25,6 +26,11 @@ _(Each of the following L2 sections correspond to a page that will be on docs.mi
 ## DebugSettings.XamlResourceReferenceFailed Event
 
 Occurs when a [XAML resource reference](https://learn.microsoft.com/en-us/windows/apps/design/style/xaml-resource-dictionary) cannot be resolved.
+
+This API is modeled on the `DebugSettings.BindingFailed` event. Like XAML resource references, 
+classic Bindings cannot be modeled solely through static evaluation, e.g. at compile-time, and so a run-time 
+event when a failure occurs is the best approach for providing developers with a means of determining the 
+root cause.
 
 _Spec note: is there a version of the 'ResourceDictionary and XAML resource references' article that 
 links to the Windows App SDK documentation for relevant APIs?_
@@ -37,10 +43,10 @@ XamlResourceReferenceFailed
 
 ### Remarks
 
-`IsXamlResourceReferenceTracingEnabled` must be `true` and there must be a debugger attached to 
-the app process in order for `XamlResourceReferenceFailed` to be raised and for tracing to appear in 
-debugger output. You don't need to handle the event in order to see tracing appear in a debugger. 
-The debugger output contains message information that goes to the **Output** window of the 
+`IsXamlResourceReferenceTracingEnabled` must be `true` in order for `XamlResourceReferenceFailed` 
+to be raised, and there must be a native debugger attached to  the app process for tracing to appear
+in debugger output. You don't need to handle the event in order to see tracing appear in a debugger. 
+The debugger output contains message information that goes to the **Output** window of the native
 debugger. Attaching a `XamlResourceReferenceFailed` handler yourself is an advanced scenario for 
 when you want to see the raw message.
 
@@ -56,11 +62,9 @@ public bool IsXamlResourceReferenceTracingEnabled { get; set; }
 
 ### Remarks
 
-This property is `true` by default, but for XAML resource reference tracing to work, you must also 
-enable **Native debugging** in Microsoft Visual Studio on the **Debug** page of the project designer.
-
-When XAML resource reference tracing is enabled and you run your app with the debugger attached, any 
-XAML resource reference errors appear in the **Output** window in Microsoft Visual Studio.
+This property is `true` by default. When XAML resource reference tracing is enabled and you 
+run your app with the native debugger attached, any  XAML resource reference errors appear 
+in the **Output** window in Microsoft Visual Studio.
 
 
 ## XamlResourceReferenceFailedEventArgs Class
@@ -73,10 +77,9 @@ public sealed class XamlResourceReferenceFailedEventArgs
 
 ### Remarks
 
-`XamlResourceReferenceFailedEventArgs` is used for debugging XAML resource references, using a 
-technique that you shouldn't include in production code. Wire the event handler using 
-`DebugSettings`, and use this data class as the result in your handler. You'll mainly be interested
-in the `Message` value, which you could log or send to **Debug** output.
+`XamlResourceReferenceFailedEventArgs` is used for debugging XAML resource references. Wire the event 
+handler using `DebugSettings`, and use this data class as the result in your handler. You'll mainly be 
+interested in the `Message` value, which you could log or send to **Debug** output.
 
 The message in the event data contains the following information about the failed XAML resource 
 reference:
@@ -157,8 +160,3 @@ namespace Microsoft.UI.Xaml
 }
 
 ```
-
-
-# Appendix
-
-This API is modeled on the existing `DebugSettings.BindingFailed` event. Like XAML resource references, classic Bindings cannot be modeled solely through static evaluation, e.g. at compile-time, and so a run-time event when a failure occurs is the best approach for providing developers with a means of determining the root cause.
