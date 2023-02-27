@@ -3,7 +3,24 @@ Tracing XAML resource reference lookup failures
 
 # Background
 
-Failure to resolve a XAML resource reference (`{StaticResource}` or `{ThemeResource}`) is one of 
+A XAML resource is an item in a 
+[ResourceDictionary](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Xaml.ResourceDictionary)
+that can be referenced in markup with a `{StaticResource}` or `{ThemeResourcd}` reference.
+For example:
+
+```xml
+<StackPanel >
+    <StackPanel.Resources>
+        <SolidColorBrush x:Key="myBrush" Color="Red"/>
+    </StackPanel.Resources>
+
+    <Rectangle Fill="{StaticResource myBrush}"/>
+```
+
+`ResourceDictionary`s can be defined in multiple places, so the resource reference is resolved
+as a search.
+
+Failure to resolve a XAML resource reference is one of 
 the most common causes of app crashes. Such failures manifest in the _native code_ debug output with the 
 message "Cannot find a Resource with the Name/Key *foo*", and generally fall into one of two 
 buckets:
@@ -14,23 +31,34 @@ the intended matching resource has not been added to the app.
 at run-time.
 
 Unfortunately, the stowed exception message is the *only* information provided about the error, 
-which makes it difficult or, more often, outright impossible to debug. This spec describes a new 
+which makes it difficult or, more often, outright impossible to debug.
+
+This spec describes a new 
 API on the `DebugSettings` class that developers can use to access more detailed information about 
 the resource reference lookup failure.
+The new APIs here are patterned after the existing
+[DebugSettings.BindingFailed](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Xaml.DebugSettings.BindingFailed)
+and
+[DebugSettings.IsBindingTracingEnabled](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Xaml.DebugSettings.IsBindingTracingEnabled)
+APIs.
 
 
 # API Pages
 
-_(Each of the following L2 sections correspond to a page that will be on docs.microsoft.com)_
+_(Updates to the 
+[DebugSettings](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Xaml.DebugSettings)
+class)_
 
 ## DebugSettings.XamlResourceReferenceFailed Event
 
-Occurs when a [XAML resource reference](https://learn.microsoft.com/en-us/windows/apps/design/style/xaml-resource-dictionary) cannot be resolved.
+Occurs when a
+[XAML resource reference](https://learn.microsoft.com/en-us/windows/apps/design/style/xaml-resource-dictionary)
+cannot be resolved.
 
-This API is modeled on the `DebugSettings.BindingFailed` event. Like XAML resource references, 
-classic Bindings cannot be modeled solely through static evaluation, e.g. at compile-time, and so a run-time 
+_Spec note: This API is similar to the `DebugSettings.BindingFailed` event. Like XAML resource references, 
+Bindings cannot be modeled solely through static evaluation, e.g. at compile-time, and so a run-time 
 event when a failure occurs is the best approach for providing developers with a means of determining the 
-root cause.
+root cause._
 
 _Spec note: is there a version of the 'ResourceDictionary and XAML resource references' article that 
 links to the Windows App SDK documentation for relevant APIs?_
@@ -43,18 +71,17 @@ XamlResourceReferenceFailed
 
 ### Remarks
 
-`IsXamlResourceReferenceTracingEnabled` must be `true` in order for `XamlResourceReferenceFailed` 
-to be raised, and there must be a native debugger attached to  the app process for tracing to appear
-in debugger output. You don't need to handle the event in order to see tracing appear in a debugger. 
-The debugger output contains message information that goes to the **Output** window of the native
-debugger. Attaching a `XamlResourceReferenceFailed` handler yourself is an advanced scenario for 
-when you want to see the raw message.
+`IsXamlResourceReferenceTracingEnabled` must be `true` in order for this event to be raised.
 
-
+Error information is also logged to the native debug output,
+so attaching a `XamlResourceReferenceFailed` handler yourself is an advanced scenario for 
+getting the raw message programmatically.
 
 ## DebugSettings.IsXamlResourceReferenceTracingEnabled Property
 
-Gets or sets a value that indicates whether to raise the `XamlResourceReferenceFailed` event when a Xaml resource lookup fails.
+Gets or sets a value indicating that when a XAML resource reference error occurs,
+the `XamlResourceReferenceFailed` event should be raised,
+and error information should be logged in the native debug output.
 
 ```c# 
 public bool IsXamlResourceReferenceTracingEnabled { get; set; }
