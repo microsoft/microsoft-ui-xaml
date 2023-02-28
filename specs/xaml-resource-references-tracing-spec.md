@@ -104,8 +104,8 @@ public sealed class XamlResourceReferenceFailedEventArgs
 
 ### Remarks
 
-`XamlResourceReferenceFailedEventArgs` is used for debugging XAML resource references. Wire the event 
-handler using `DebugSettings`, and use this data class as the result in your handler. You'll mainly be 
+`XamlResourceReferenceFailedEventArgs` is used for debugging XAML resource references. Register the event 
+handler using `DebugSettings`. It will receive a reference to this class. You'll mainly be 
 interested in the `Message` value, which you could log or send to **Debug** output.
 
 The message in the event data contains the following information about the failed XAML resource 
@@ -160,7 +160,7 @@ Finished search for resource with key 'OutputTextBlockStyl'.
 
 ## XamlResourceReferenceFailedEventArgs.Message Property
 
-Gets the explanation of the XAML resource reference failure.
+A human-readable explanation of the XAML resource reference failure.
 
 ```c#
 public string Message { get; }
