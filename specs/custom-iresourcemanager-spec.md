@@ -14,7 +14,7 @@ for WinUI 3 to use in lieu of its standard `ResourceManager`.
 
 _(Each of the following L2 sections correspond to a page that will be on docs.microsoft.com)_
 
-## Application.ResourceManagerInitializing Event
+## Application.ResourceManagerRequested Event
 
 Raised during startup of a new WinUI thread to give the app a chance to provide its own [`IResourceManager`](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.windows.applicationmodel.resources.iresourcemanager?view=windows-app-sdk-1.2)
 implementation to be used by the framework for resolving resource URIs.
@@ -23,8 +23,8 @@ _Spec note: is there a version of the 'ResourceDictionary and XAML resource refe
 links to the Windows App SDK documentation for relevant APIs?_
 
 ```c#
-public event TypedEventHandler<object,ResourceManagerInitializingEventArgs> 
-ResourceManagerInitializing
+public event TypedEventHandler<object,ResourceManagerRequestedEventArgs> 
+ResourceManagerRequested
 
 ```
 
@@ -38,27 +38,27 @@ if you wish to share the same instance between multiple threads.
 
 
 
-## ResourceManagerInitializingEventArgs Class
+## ResourceManagerRequestedEventArgs Class
 
-Provides event data for the `Application.ResourceManagerInitializing` event.
+Provides event data for the `Application.ResourceManagerRequested` event.
 
 ```c#
-public sealed class ResourceManagerInitializingEventArgs
+public sealed class ResourceManagerRequestedEventArgs
 ```
 
 ### Remarks
 
-`ResourceManagerInitializingEventArgs` is used to provide the WinUI 3 framework with a custom implementation
+`ResourceManagerRequestedEventArgs` is used to provide the WinUI 3 framework with a custom implementation
 of [`IResourceManager`](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.windows.applicationmodel.resources.iresourcemanager?view=windows-app-sdk-1.2)
 to be used for resolving resource URIs rather than the default `ResourceManager` instance that the framework
 creates. In the event handler, you should instantiate your custom `IResourceManager` and assign it to the
-`ResourceManagerInitializingEventArgs.ResourceManager` property. The value of this property is initially
+`ResourceManagerRequestedEventArgs.ResourceManager` property. The value of this property is initially
 `null`, and it is only checked by the framework once per event raise after all registered event handlers have
 been invoked. If the property value is still `null` then the framework will use the default `ResourceManager`
 instance.
 
 
-## ResourceManagerInitializingEventArgs.ResourceManager Property
+## ResourceManagerRequestedEventArgs.ResourceManager Property
 
 Gets the explanation of the XAML resource reference failure.
 
@@ -75,12 +75,11 @@ namespace Microsoft.UI.Xaml
   {
     // existing ...
 
-    event Windows.Foundation.TypedEventHandler<object,Microsoft.UI.Xaml.ResourceManagerInitializingEventArgs> ResourceManagerInitializing;
+    event Windows.Foundation.TypedEventHandler<object,Microsoft.UI.Xaml.ResourceManagerRequestedEventArgs> ResourceManagerRequested;
   };
 
-  runtimeclass ResourceManagerInitializingEventArgs
+  runtimeclass ResourceManagerRequestedEventArgs
   {
-    ResourceManagerInitializingEventArgs();
     object ResourceManager { get; set; };
   };
 }
@@ -90,12 +89,12 @@ namespace Microsoft.UI.Xaml
 
 # Appendix
 
-- Currently, `ResourceManagerInitializingEventArgs.ResourceManager` is last writer wins; if there are multiple event handlers
+- Currently, `ResourceManagerRequestedEventArgs.ResourceManager` is last writer wins; if there are multiple event handlers
 registered for the event then the last one to set the property value is the one whose action is respected by the framework.
 There is concern that this could lead to difficult-to-debug errors; should we explicitly block this possibility by throwing an
 exception if the developer attempts to register more than one event handler?
 
-- Should `ResourceManagerInitializingEventArgs.ResourceManager` be pre-populated with the default `ResourceManager` instance
+- Should `ResourceManagerRequestedEventArgs.ResourceManager` be pre-populated with the default `ResourceManager` instance
 rather than `null`? This would simplify things a little bit for developers who wish to handle the `ResourceManager.ResourceNotFound`
 event but otherwise rely on the default resource URI resolution behavior but does add a very small amount of overhead (allocation of
 the default `ResourceManager`) even if the developer ultimately decides to provide their own `IResourceManager`.
