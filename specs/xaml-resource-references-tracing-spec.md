@@ -73,7 +73,7 @@ XamlResourceReferenceFailed
 
 `IsXamlResourceReferenceTracingEnabled` must be `true` in order for this event to be raised.
 
-Error information is also logged to the native debug output,
+Error information is also logged to the native debug output when the event is raised,
 so attaching a `XamlResourceReferenceFailed` handler yourself is an advanced scenario for 
 getting the raw message programmatically.
 
@@ -181,7 +181,6 @@ namespace Microsoft.UI.Xaml
 
   runtimeclass XamlResourceReferenceFailedEventArgs
   {
-    XamlResourceReferenceFailedEventArgs();
     String Message{ get; };
   };
 }
