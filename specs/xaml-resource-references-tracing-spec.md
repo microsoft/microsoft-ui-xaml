@@ -5,7 +5,7 @@ Tracing XAML resource reference lookup failures
 
 A XAML resource is an item in a 
 [ResourceDictionary](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Xaml.ResourceDictionary)
-that can be referenced in markup with a `{StaticResource}` or `{ThemeResourcd}` reference.
+that can be referenced in markup with a `{StaticResource}` or `{ThemeResource}` reference.
 For example:
 
 ```xml
