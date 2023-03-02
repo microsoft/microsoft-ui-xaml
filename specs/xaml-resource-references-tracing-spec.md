@@ -163,7 +163,7 @@ Finished search for resource with key 'OutputTextBlockStyl'.
 
 ## XamlResourceReferenceFailedEventArgs.Message Property
 
-A human-readable (in English) explanation of the XAML resource reference failure.
+A human-readable explanation (in English) of the XAML resource reference failure.
 
 ```c#
 public string Message { get; }
