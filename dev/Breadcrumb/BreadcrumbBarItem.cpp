@@ -537,6 +537,8 @@ void BreadcrumbBarItem::InstantiateFlyout()
             winrt::AutomationProperties::SetName(ellipsisItemsRepeater, s_ellipsisItemsRepeaterAutomationName);
             ellipsisItemsRepeater.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
 
+            ellipsisItemsRepeater.Layout(winrt::StackLayout());
+
             m_ellipsisElementFactory = winrt::make_self<BreadcrumbElementFactory>();
             ellipsisItemsRepeater.ItemTemplate(*m_ellipsisElementFactory);
 
