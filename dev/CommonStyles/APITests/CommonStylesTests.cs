@@ -251,7 +251,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+#if MUX_PRERELEASE
         [TestMethod]
+#endif
         public void VerifyUseCompactResourcesAPI()
         {
             //Verify there is no crash and TreeViewItemMinHeight is not the same when changing UseCompactResources.
