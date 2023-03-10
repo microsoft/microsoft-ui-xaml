@@ -569,44 +569,6 @@ void BreadcrumbBar::OnChildPreviewKeyDown(const winrt::IInspectable&, const winr
             }
         }
     }
-    else if (args.Key() == winrt::VirtualKey::Down)
-    {
-        if (args.OriginalKey() != winrt::VirtualKey::GamepadDPadDown)
-        {
-            if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Right, GetFindNextElementOptions()))
-            {
-                args.Handled(true);
-                return;
-            }
-        }
-        else
-        {
-            if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Right))
-            {
-                args.Handled(true);
-                return;
-            }
-        }
-    }
-    else if (args.Key() == winrt::VirtualKey::Up)
-    {
-        if (args.OriginalKey() != winrt::VirtualKey::GamepadDPadUp)
-        {
-            if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Left, GetFindNextElementOptions()))
-            {
-                args.Handled(true);
-                return;
-            }
-        }
-        else
-        {
-            if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Left))
-            {
-                args.Handled(true);
-                return;
-            }
-        }
-    }
 }
 
 void BreadcrumbBar::OnAccessKeyInvoked(const winrt::UIElement&, const winrt::AccessKeyInvokedEventArgs& args)
