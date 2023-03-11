@@ -83,7 +83,7 @@ namespace Microsoft.UI.Xaml
   {
     // existing ...
 
-    event Windows.Foundation.TypedEventHandler<object,Microsoft.UI.Xaml.ResourceManagerRequestedEventArgs> 
+    event Windows.Foundation.TypedEventHandler<Application,Microsoft.UI.Xaml.ResourceManagerRequestedEventArgs> 
         ResourceManagerRequested;
   };
 
