@@ -3,11 +3,13 @@ Providing a custom MRT Core `IResourceManager` for WinUI 3 to use
 
 # Background
 
-The WinUI 3 framework instantiates an MRT Core [`ResourceManager`](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.windows.applicationmodel.resources.resourcemanager?view=windows-app-sdk-1.2)
+The WinUI 3 framework instantiates an MRT Core
+[`ResourceManager`](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.windows.applicationmodel.resources.resourcemanager?view=windows-app-sdk-1.2)
 in order to resolve resource URIs. While this default `ResourceManager` is generally sufficient, 
 there are some scenarios in which an app needs non-standard behavior in order to resolve a
 particular resource URI. In order to address this requirement, this document describes a new
-API that would allow an app to provide its own custom implementation of the [`IResourceManager`](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.windows.applicationmodel.resources.iresourcemanager?view=windows-app-sdk-1.2)
+API that would allow an app to provide its own custom implementation of the
+[`IResourceManager`](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.windows.applicationmodel.resources.iresourcemanager?view=windows-app-sdk-1.2)
 for WinUI 3 to use in lieu of its standard `ResourceManager`.
 
 # API Pages
@@ -16,14 +18,15 @@ _(Each of the following L2 sections correspond to a page that will be on docs.mi
 
 ## Application.ResourceManagerRequested Event
 
-Raised during startup of a new WinUI thread to give the app a chance to provide its own [`IResourceManager`](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.windows.applicationmodel.resources.iresourcemanager?view=windows-app-sdk-1.2)
+Raised during startup of a new WinUI thread to give the app a chance to provide its own
+[`IResourceManager`](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.windows.applicationmodel.resources.iresourcemanager?view=windows-app-sdk-1.2)
 implementation to be used by the framework for resolving resource URIs.
 
 _Spec note: is there a version of the 'ResourceDictionary and XAML resource references' article that 
 links to the Windows App SDK documentation for relevant APIs?_
 
 ```c#
-public event TypedEventHandler<object,ResourceManagerRequestedEventArgs> 
+public event TypedEventHandler<Application, ResourceManagerRequestedEventArgs> 
 ResourceManagerRequested
 
 ```
@@ -60,7 +63,12 @@ instance.
 
 ## ResourceManagerRequestedEventArgs.ResourceManager Property
 
-Gets the explanation of the XAML resource reference failure.
+Gets and sets the explanation of the XAML resource reference failure.
+
+_Spec note: The type of this property should be `IResourceManager`,
+but there's an issue with the cswinrt projection where it gets confused
+about there being an existing internal interface by the same name behind the Windows
+[ResourceManager](https://docs.microsoft.com/uwp/api/Windows.ApplicationModel.Resources.Core.ResourceManager)._
 
 ```c#
 public object ResourceManager { get; set; }
@@ -75,7 +83,8 @@ namespace Microsoft.UI.Xaml
   {
     // existing ...
 
-    event Windows.Foundation.TypedEventHandler<object,Microsoft.UI.Xaml.ResourceManagerRequestedEventArgs> ResourceManagerRequested;
+    event Windows.Foundation.TypedEventHandler<object,Microsoft.UI.Xaml.ResourceManagerRequestedEventArgs> 
+        ResourceManagerRequested;
   };
 
   runtimeclass ResourceManagerRequestedEventArgs
