@@ -91,6 +91,8 @@ function CompareRevisions ( $version1, $version2 )
 
 function GetForkPoint ( $pgoBranch )
 {
+    Write-Host "!!!! git log --oneline -n 100"
+    git log --oneline -n 100
     Write-Host "!!!! git fetch origin"
     git fetch origin
     Write-Host "!!!! done"

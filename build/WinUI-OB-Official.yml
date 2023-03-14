@@ -35,7 +35,6 @@ variables:
   REPOROOT: $(Build.SourcesDirectory)
   OUTPUTROOT: $(REPOROOT)\out
   NUGET_XMLDOC_MODE: none
-  ob_git_fetchDepth: 100
 
   # Docker image which is used to build the project https://aka.ms/obpipelines/containers
   WindowsContainerImage: 'onebranch.azurecr.io/windows/ltsc2019/vse2022:latest' 
@@ -57,9 +56,6 @@ extends:
             
     cloudvault: # Please refer the wiki for more information: https://aka.ms/obpipelines/cloudvault
       enabled: false
-
-    git:
-      fetchDepth: 101
     
     globalSdl: # Refer the wiki for more options in this parameter: https://aka.ms/obpipelines/sdl
       tsa:
