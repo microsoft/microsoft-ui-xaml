@@ -57,6 +57,9 @@ extends:
             
     cloudvault: # Please refer the wiki for more information: https://aka.ms/obpipelines/cloudvault
       enabled: false
+
+    git:
+      fetchDepth: 101
     
     globalSdl: # Refer the wiki for more options in this parameter: https://aka.ms/obpipelines/sdl
       tsa:
@@ -108,6 +111,7 @@ extends:
           # this directory is uploaded to pipeline artifacts. More info at https://aka.ms/obpipelines/artifacts
           ob_outputDirectory: $(build.artifactStagingDirectory)
           ob_artifactSuffix: _$(buildPlatform)_$(buildConfiguration)
+          ob_git_fetchDepth: 105
           
 
         steps:
