@@ -450,7 +450,7 @@ bool BreadcrumbBar::MoveFocus(int indexIncrement)
         {
             auto focusedIndex = itemsRepeater.GetElementIndex(focusedElement);
 
-            if (focusedIndex >= 0)
+            if (focusedIndex >= 0 && indexIncrement != 0)
             {
                 focusedIndex += indexIncrement;
                 auto const itemCount = itemsRepeater.ItemsSourceView().Count();
@@ -520,37 +520,6 @@ bool BreadcrumbBar::MoveFocusNext()
     return MoveFocus(movementNext);
 }
 
-// If we haven't handled the key yet and the original source was the first(for up and left)
-// or last(for down and right) element in the repeater we need to handle the key so
-// BreadcrumbBarItem doesn't, which would result in the behavior.
-bool BreadcrumbBar::HandleEdgeCaseFocus(bool first, const winrt::IInspectable& source)
-{
-    if (auto const& itemsRepeater = m_itemsRepeater.get())
-    {
-        if (auto const& sourceAsUIElement = source.try_as<winrt::UIElement>())
-        {
-            auto const index = [first, itemsRepeater]()
-            {
-                if (first)
-                {
-                    return 0;
-                }
-                if (auto const& itemsSourceView = itemsRepeater.ItemsSourceView())
-                {
-                    return itemsSourceView.Count() - 1;
-                }
-                return -1;
-            }();
-
-            if (itemsRepeater.GetElementIndex(sourceAsUIElement) == index)
-            {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 winrt::FindNextElementOptions BreadcrumbBar::GetFindNextElementOptions()
 {
     auto const& findNextElementOptions = winrt::FindNextElementOptions{};
@@ -581,7 +550,6 @@ void BreadcrumbBar::OnChildPreviewKeyDown(const winrt::IInspectable&, const winr
                 return;
             }
         }
-        args.Handled(HandleEdgeCaseFocus(false, args.OriginalSource()));
     }
     // Moving to previous element
     else if ((flowDirectionIsLTR && keyIsLeft) || (!flowDirectionIsLTR && keyIsRight))
@@ -600,47 +568,6 @@ void BreadcrumbBar::OnChildPreviewKeyDown(const winrt::IInspectable&, const winr
                 return;
             }
         }
-        args.Handled(HandleEdgeCaseFocus(true, args.OriginalSource()));
-    }
-    else if (args.Key() == winrt::VirtualKey::Down)
-    {
-        if (args.OriginalKey() != winrt::VirtualKey::GamepadDPadDown)
-        {
-            if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Right, GetFindNextElementOptions()))
-            {
-                args.Handled(true);
-                return;
-            }
-        }
-        else
-        {
-            if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Right))
-            {
-                args.Handled(true);
-                return;
-            }
-        }
-        args.Handled(HandleEdgeCaseFocus(false, args.OriginalSource()));
-    }
-    else if (args.Key() == winrt::VirtualKey::Up)
-    {
-        if (args.OriginalKey() != winrt::VirtualKey::GamepadDPadUp)
-        {
-            if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Left, GetFindNextElementOptions()))
-            {
-                args.Handled(true);
-                return;
-            }
-        }
-        else
-        {
-            if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Left))
-            {
-                args.Handled(true);
-                return;
-            }
-        }
-        args.Handled(HandleEdgeCaseFocus(true, args.OriginalSource()));
     }
 }
 
