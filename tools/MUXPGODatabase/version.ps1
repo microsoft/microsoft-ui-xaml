@@ -92,10 +92,7 @@ function CompareRevisions ( $version1, $version2 )
 function GetForkPoint ( $pgoBranch )
 {
     Write-Host "!!!! git log --oneline -n 100"
-    (git log --oneline -n 100 --decorate=full) | ForEach-Object 
-    {
-        Write-Host $_
-    }
+    Write-Host (git log --oneline -n 100 --decorate=full)
     
     # Write-Host "!!!! git fetch origin"
     # git fetch origin

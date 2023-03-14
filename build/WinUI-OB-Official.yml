@@ -57,6 +57,7 @@ extends:
     cloudvault: # Please refer the wiki for more information: https://aka.ms/obpipelines/cloudvault
       enabled: false
     
+    # TODO - set to true
     globalSdl: # Refer the wiki for more options in this parameter: https://aka.ms/obpipelines/sdl
       tsa:
         enabled: false # onebranch publish all sdl results to TSA. If TSA is disabled all SDL tools will forced into 'break' build mode.  Please provide TSAOptions.json.
