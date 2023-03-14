@@ -91,6 +91,9 @@ function CompareRevisions ( $version1, $version2 )
 
 function GetForkPoint ( $pgoBranch )
 {
+    Write-Host "!!!! git fetch origin"
+    git fetch origin
+    Write-Host "!!!! done"
     $forkSHA = $( git merge-base origin/$pgoBranch HEAD )
 
     if ( $LastExitCode -ne 0 )
