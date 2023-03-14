@@ -107,7 +107,7 @@ extends:
           # this directory is uploaded to pipeline artifacts. More info at https://aka.ms/obpipelines/artifacts
           ob_outputDirectory: $(build.artifactStagingDirectory)
           ob_artifactSuffix: _$(buildPlatform)_$(buildConfiguration)
-          ob_git_fetchDepth: 105
+          ob_git_fetchDepth: 0
           
 
         steps:
