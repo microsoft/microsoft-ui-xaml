@@ -477,7 +477,7 @@ extends:
                 ]
 
       - job: vpack
-        condition: false
+        # condition: false
         pool:
           type: windows  
         variables:
@@ -575,7 +575,7 @@ extends:
 
       - job: pushvpack
         dependsOn: vpack
-        condition: false
+        # condition: false
         pool:
           type: windows  
         strategy:
@@ -613,7 +613,7 @@ extends:
           # ob_createvpack_propsFile: true
           ob_createvpack_provData: true
           ob_createvpack_versionAs: string
-          ob_createvpack_version: 1.2.3-kmahonetest1
+          ob_createvpack_version: 1.2.3-kmahonetest2
           # ob_createvpack_versionAs: parts
           # ob_createvpack_majorVer: X
           # ob_createvpack_minorVer: Y
