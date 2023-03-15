@@ -603,6 +603,7 @@ extends:
           publishDir: $(Build.SourcesDirectory)\publish
           vpackDir: $(publishDir)\$(sourceSubDir)
           ob_outputDirectory: $(vpackDir)
+          ob_artifactSuffix: _$(vpackName)
           
 
           # createVPack: # information for Vpack (Learn more: https://www.osgwiki.com/wiki/OneBranch_Windows_Undocked_Pipelines)
@@ -640,6 +641,13 @@ extends:
               ls env:
             displayName: 'display env vars'
             continueOnError: true
+            
+          - task: UseDotNet@2
+            displayName: 'Use .NET Core sdk'
+            inputs:
+              packageType: sdk
+              version: 3.1.415
+              installationPath: $(Agent.ToolsDirectory)/dotnet
 
           - task: DownloadPipelineArtifact@2
             inputs:
