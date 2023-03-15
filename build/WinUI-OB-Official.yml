@@ -340,7 +340,7 @@ extends:
             continueOnError: true
 
     - stage: pack
-      dependsOn: build
+      # dependsOn: build
       jobs:
       - job: nupkg
         condition: false
@@ -640,7 +640,7 @@ extends:
               ls env:
             displayName: 'display env vars'
             continueOnError: true
-            
+
           - task: DownloadPipelineArtifact@2
             inputs:
               artifactName: drop_pack_vpack
