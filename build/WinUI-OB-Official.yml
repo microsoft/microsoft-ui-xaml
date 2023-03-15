@@ -74,7 +74,7 @@ extends:
 
     stages:
     - stage: build
-      # condition: false
+      condition: false
       jobs:
       - job: main
         pool:
@@ -184,7 +184,7 @@ extends:
             displayName: 'Build solution MUXControls.sln'
             inputs:
               solution: '$(Build.SourcesDirectory)\MUXControls.sln'
-              vsVersion: 16.0
+              vsVersion: 17.0
               platform: $(buildPlatform)
               configuration: $(buildConfiguration)
               msbuildArgs: '/restore /p:AppxPackageDir=$(appxPackageDir) /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false /binaryLogger:$(Build.ArtifactStagingDirectory)/MUXControls.$(buildPlatform).$(buildConfiguration).binlog /p:MUXVersionBuild=$(builddate_yymm) /p:MUXVersionRevision=$(builddate_dd)$(buildrevision) /p:VCToolsInstallDir="$(VCToolsInstallDir)\" /p:PGOBuildMode=$(PGOBuildMode)'
@@ -343,7 +343,7 @@ extends:
       dependsOn: build
       jobs:
       - job: nupkg
-        # condition: false
+        condition: false
         pool:
           type: windows  
         variables:
@@ -501,8 +501,6 @@ extends:
 
           - task: NuGetAuthenticate@0
 
-          # - task: NodeTool@0
-
           - task: DownloadPipelineArtifact@2
             inputs:
               artifactName: drop_build_main_x64_Release
@@ -512,7 +510,7 @@ extends:
               project: $(System.TeamProjectId)
               definition: $(System.DefinitionId)
               buildVersionToDownload: 'specific'
-              pipelineId : 66256335 
+              pipelineId : 66416380 
 
           - task: DownloadPipelineArtifact@2
             inputs:
@@ -523,7 +521,7 @@ extends:
               project: $(System.TeamProjectId)
               definition: $(System.DefinitionId)
               buildVersionToDownload: 'specific'
-              pipelineId : 66256335 
+              pipelineId : 66416380 
 
           - task: DownloadPipelineArtifact@2
             inputs:
@@ -534,7 +532,7 @@ extends:
               project: $(System.TeamProjectId)
               definition: $(System.DefinitionId)
               buildVersionToDownload: 'specific'
-              pipelineId : 66256335 
+              pipelineId : 66416380 
 
           - task: DownloadPipelineArtifact@2
             inputs:
@@ -545,7 +543,7 @@ extends:
               project: $(System.TeamProjectId)
               definition: $(System.DefinitionId)
               buildVersionToDownload: 'specific'
-              pipelineId : 66256335 
+              pipelineId : 66416380 
 
           # This contains the OS internal version of windows.winmd which is required for us to re-merge our winmd so that it can be used from OS repo.
           - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
@@ -565,6 +563,7 @@ extends:
           - script: |
               $(Build.SourcesDirectory)\build\CreateCBSVPack.cmd -releaseFolder $(Build.SourcesDirectory)\Artifacts\drop\Release -publicsRoot $(Build.SourcesDirectory)\packages\Microsoft.Internal.WinUI.WindowsPublicsWinmd.$(windowsPublicsWinmdVersion) -publishDir $(publishDir)
             displayName: CreateCBSVPack.cmd
+            name: createvpack
             failOnStderr: true
             # Note: This task sets the 'vpackversion' variable that is used below.
 
@@ -581,18 +580,21 @@ extends:
         strategy:
           maxParallel: 10
           matrix:
-            # CBS_x86:
-            #   buildPlatform: 'x86'
-            #   buildConfiguration: 'Release'
-            # CBS_x64:
-            #   buildPlatform: 'x64'
-            #   buildConfiguration: 'Release'
-            # CBS_Arm:
-            #   buildPlatform: 'arm'
-            #   buildConfiguration: 'Release'
-            # CBS_Winmd:
-            #   buildPlatform: 'arm64'
-            #   buildConfiguration: 'Release'
+            CBS_x86:
+              vpackName: MicrosoftUIXamlInbox_x86
+              sourceSubDir: CBS\x86
+            CBS_x64:
+              vpackName: MicrosoftUIXamlInbox_x64
+              sourceSubDir: CBS\x64
+            CBS_Arm:
+              vpackName: MicrosoftUIXamlInbox_arm
+              sourceSubDir: CBS\arm
+            CBS_Arm64:
+              vpackName: MicrosoftUIXamlInbox_arm64
+              sourceSubDir: CBS\arm64
+            CBS_Winmd:
+              vpackName: MicrosoftUIXamlInboxWinmd
+              sourceSubDir: CBS\winmd
             WinUI:
               vpackName: Microsoft.UI.Xaml.kmahonetest
               sourceSubDir: WinUIVpack
@@ -601,6 +603,7 @@ extends:
           publishDir: $(Build.SourcesDirectory)\publish
           vpackDir: $(publishDir)\$(sourceSubDir)
           ob_outputDirectory: $(vpackDir)
+          
 
           # createVPack: # information for Vpack (Learn more: https://www.osgwiki.com/wiki/OneBranch_Windows_Undocked_Pipelines)
           ob_createvpack_enabled: true
@@ -613,7 +616,11 @@ extends:
           # ob_createvpack_propsFile: true
           ob_createvpack_provData: true
           ob_createvpack_versionAs: string
-          ob_createvpack_version: 1.2.3-kmahonetest2
+
+          # ob_createvpack_version: 1.2.3-kmahonetest3
+          vpackversion: $[ dependencies.vpack.outputs['createvpack.vpackversion'] ]
+          ob_createvpack_version: $(vpackversion)-kmahonetest3
+
           # ob_createvpack_versionAs: parts
           # ob_createvpack_majorVer: X
           # ob_createvpack_minorVer: Y
@@ -624,10 +631,16 @@ extends:
           # ob_createvpack_metadata: METADATA
           ob_createvpack_failOnStdErr: true
           ob_createvpack_taskLogVerbosity: Detailed
-          # ob_createvpack_verbose: true
+          
 
 
         steps:
+
+          - powershell: |
+              ls env:
+            displayName: 'display env vars'
+            continueOnError: true
+            
           - task: DownloadPipelineArtifact@2
             inputs:
               artifactName: drop_pack_vpack
@@ -637,7 +650,7 @@ extends:
               # project: $(System.TeamProjectId)
               # definition: $(System.DefinitionId)
               # buildVersionToDownload: 'specific'
-              # pipelineId : 66125519 
+              # pipelineId : 66416380 
 
 
           - powershell: |
