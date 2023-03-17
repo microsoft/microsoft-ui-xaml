@@ -1,0 +1,104 @@
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+variables:
+  minimumExpectedTestsExecutedCount: 2000  # Sanity check for minimum expected tests to be reported
+  rerunPassesRequiredToAvoidFailure: 5
+jobs:
+
+- job: Build
+  pool: 
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPoolOSS-L
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPool-L
+    demands: ImageOverride -equals WinDevVS16-9
+  timeoutInMinutes: 120
+
+  variables:
+    foo : bar
+  steps:
+
+
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      artifactName: drop_build_main_x64_Release
+      targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+      buildType: specific
+      project: $(System.TeamProjectId)
+      definition: 98255
+      buildVersionToDownload: 'specific'
+      pipelineId : 66448233 
+
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      artifactName: drop_build_main_x86_Release
+      targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+      buildType: specific
+      project: $(System.TeamProjectId)
+      definition: 98255
+      buildVersionToDownload: 'specific'
+      pipelineId : 66448233 
+
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      artifactName: drop_build_main_arm_Release
+      targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+      buildType: specific
+      project: $(System.TeamProjectId)
+      definition: 98255
+      buildVersionToDownload: 'specific'
+      pipelineId : 66448233 
+
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      artifactName: drop_build_main_arm64_Release
+      targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+      buildType: specific
+      project: $(System.TeamProjectId)
+      definition: 98255
+      buildVersionToDownload: 'specific'
+      pipelineId : 66448233 
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish artifact: drop'
+    inputs:
+      PathtoPublish: $(Build.SourcesDirectory)\Artifacts\drop
+      artifactName: drop
+
+
+
+# - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
+#   parameters:
+#     name: 'RunTestsInHelix'
+#     dependsOn: Build
+#     condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+#     testSuite: 'DevTestSuite'
+#     rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
+
+# # Build solution that depends on nuget package
+# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#   parameters:
+#     buildJobName: 'BuildNugetPkgTests'
+#     buildArtifactName: 'NugetPkgTestsDrop'
+#     runTestJobName: 'RunNugetPkgTestsInHelix'
+#     helixType: 'test/nuget'
+#     dependsOn: CreateNugetPackage
+#     useFrameworkPkg: false
+
+# # Framework package tests
+# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#   parameters:
+#     buildJobName: 'BuildFrameworkPkgTests'
+#     buildArtifactName: 'FrameworkPkgTestsDrop'
+#     runTestJobName: 'RunFrameworkPkgTestsInHelix'
+#     helixType: 'test/frpkg'
+#     dependsOn: CreateNugetPackage
+#     useFrameworkPkg: true
+
+# - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+#   parameters:
+#     dependsOn:
+#     - RunTestsInHelix
+#     - RunNugetPkgTestsInHelix
+#     - RunFrameworkPkgTestsInHelix
+#     rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
+#     minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
