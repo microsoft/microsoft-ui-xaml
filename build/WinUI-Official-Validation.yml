@@ -58,6 +58,16 @@ jobs:
       buildVersionToDownload: 'specific'
       pipelineId : 66448233 
 
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      artifactName: drop_pack_nupkg
+      targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+      buildType: specific
+      project: $(System.TeamProjectId)
+      definition: 98255
+      buildVersionToDownload: 'specific'
+      pipelineId : 66448233 
+
   - task: PublishBuildArtifacts@1
     displayName: 'Publish artifact: drop'
     inputs:
@@ -66,39 +76,39 @@ jobs:
 
 
 
-# - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
-#   parameters:
-#     name: 'RunTestsInHelix'
-#     dependsOn: Build
-#     condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
-#     testSuite: 'DevTestSuite'
-#     rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
+- template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
+  parameters:
+    name: 'RunTestsInHelix'
+    dependsOn: Build
+    condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+    testSuite: 'DevTestSuite'
+    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
 
-# # Build solution that depends on nuget package
-# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-#   parameters:
-#     buildJobName: 'BuildNugetPkgTests'
-#     buildArtifactName: 'NugetPkgTestsDrop'
-#     runTestJobName: 'RunNugetPkgTestsInHelix'
-#     helixType: 'test/nuget'
-#     dependsOn: CreateNugetPackage
-#     useFrameworkPkg: false
+# Build solution that depends on nuget package
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    buildJobName: 'BuildNugetPkgTests'
+    buildArtifactName: 'NugetPkgTestsDrop'
+    runTestJobName: 'RunNugetPkgTestsInHelix'
+    helixType: 'test/nuget'
+    dependsOn: Build
+    useFrameworkPkg: false
 
-# # Framework package tests
-# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-#   parameters:
-#     buildJobName: 'BuildFrameworkPkgTests'
-#     buildArtifactName: 'FrameworkPkgTestsDrop'
-#     runTestJobName: 'RunFrameworkPkgTestsInHelix'
-#     helixType: 'test/frpkg'
-#     dependsOn: CreateNugetPackage
-#     useFrameworkPkg: true
+# Framework package tests
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    buildJobName: 'BuildFrameworkPkgTests'
+    buildArtifactName: 'FrameworkPkgTestsDrop'
+    runTestJobName: 'RunFrameworkPkgTestsInHelix'
+    helixType: 'test/frpkg'
+    dependsOn: Build
+    useFrameworkPkg: true
 
-# - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
-#   parameters:
-#     dependsOn:
-#     - RunTestsInHelix
-#     - RunNugetPkgTestsInHelix
-#     - RunFrameworkPkgTestsInHelix
-#     rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
-#     minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
+- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+  parameters:
+    dependsOn:
+    - RunTestsInHelix
+    - RunNugetPkgTestsInHelix
+    - RunFrameworkPkgTestsInHelix
+    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
+    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
