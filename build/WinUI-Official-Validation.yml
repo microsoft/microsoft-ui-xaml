@@ -14,7 +14,12 @@ resources:
   pipelines:
   - pipeline: WinUI-OB-Official
     source: OneBranch\microsoft-ui-xaml-staging\WinUI2-Internal-OB-Official
-    trigger: true 
+    trigger: 
+      branches:
+        include: 
+        - release/*
+        - main
+        - user/kmahone/ob
 
 jobs:
 
