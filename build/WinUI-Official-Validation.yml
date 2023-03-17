@@ -1,10 +1,10 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
-parameters:
-- name: BuildIdToTestParam
-  displayName: Build Id To Test
-  type: string
-  default: ''
+# parameters:
+# - name: BuildIdToTestParam
+#   displayName: Build Id To Test
+#   type: string
+#   default: ''
 
 variables:
   minimumExpectedTestsExecutedCount: 2000  # Sanity check for minimum expected tests to be reported
@@ -25,11 +25,11 @@ jobs:
   timeoutInMinutes: 120
 
   variables:
-    foo : bar
-    ${{ if ne(parameters.BuildIdToTestParam, '') }}:
-      buildIdToTest: ${{ parameters.BuildIdToTestParam }}
-    ${{ if eq(parameters.BuildIdToTestParam, '') }}:
-      buildIdToTest: $(resources.pipeline.WinUI-OB-Official.runID)
+    buildIdToTest: $(resources.pipeline.WinUI-OB-Official.runID)
+    # ${{ if ne(parameters.BuildIdToTestParam, '') }}:
+    #   buildIdToTest: ${{ parameters.BuildIdToTestParam }}
+    # ${{ if eq(parameters.BuildIdToTestParam, '') }}:
+    #   buildIdToTest: $(resources.pipeline.WinUI-OB-Official.runID)
 
   steps:
 
