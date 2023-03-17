@@ -1,7 +1,7 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
 parameters:
-- name: BuildIdToTest
+- name: BuildIdToTestParam
   displayName: Build Id To Test
   type: string
   default: ''
@@ -26,15 +26,15 @@ jobs:
 
   variables:
     foo : bar
-    ${{ if ne(parameters.BuildIdToTest, '') }}:
+    ${{ if ne(parameters.BuildIdToTestParam, '') }}:
       buildIdToTest: ${{ parameters.BuildIdToTest }}
-    ${{ if eq(parameters.BuildIdToTest, '') }}:
+    ${{ if eq(parameters.BuildIdToTestParam, '') }}:
       buildIdToTest: $(resources.pipeline.WinUI-OB-Official.runID)
 
   steps:
 
   - powershell: |
-      ls env:
+      cmd.exe /c set
     displayName: 'display env vars'
     continueOnError: true
 
@@ -70,7 +70,7 @@ jobs:
       buildType: specific
       project: $(System.TeamProjectId)
       definition: 98255
-      buildVersionToDownload: 'specific'
+      buildVersionToDownload: specific
       pipelineId : $(buildIdToTest)
 
   - task: DownloadPipelineArtifact@2
@@ -80,7 +80,7 @@ jobs:
       buildType: specific
       project: $(System.TeamProjectId)
       definition: 98255
-      buildVersionToDownload: 'specific'
+      buildVersionToDownload: specific
       pipelineId : $(buildIdToTest)
 
   - task: DownloadPipelineArtifact@2
@@ -90,7 +90,7 @@ jobs:
       buildType: specific
       project: $(System.TeamProjectId)
       definition: 98255
-      buildVersionToDownload: 'specific'
+      buildVersionToDownload: specific
       pipelineId : $(buildIdToTest)
 
   - task: DownloadPipelineArtifact@2
@@ -100,7 +100,7 @@ jobs:
       buildType: specific
       project: $(System.TeamProjectId)
       definition: 98255
-      buildVersionToDownload: 'specific'
+      buildVersionToDownload: specific
       pipelineId : $(buildIdToTest)
 
   - task: DownloadPipelineArtifact@2
@@ -110,7 +110,7 @@ jobs:
       buildType: specific
       project: $(System.TeamProjectId)
       definition: 98255
-      buildVersionToDownload: 'specific'
+      buildVersionToDownload: specific
       pipelineId : $(buildIdToTest)
 
   - task: PublishBuildArtifacts@1
