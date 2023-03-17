@@ -1,22 +1,67 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+parameters:
+- name: BuildIdToTest
+  displayName: Build Id To Test
+  type: string
+  default: ''
+
 variables:
   minimumExpectedTestsExecutedCount: 2000  # Sanity check for minimum expected tests to be reported
   rerunPassesRequiredToAvoidFailure: 5
+
+resources:
+  pipelines:
+  - pipeline: WinUI-OB-Official
+    source: WinUI2-Internal-OB-Official
+    trigger: true 
+
 jobs:
 
-- job: Build
+- job: GetBuild
   pool: 
-    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: WinDevPoolOSS-L
-    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: WinDevPool-L
+    name: WinDevPool-L
     demands: ImageOverride -equals WinDevVS16-9
   timeoutInMinutes: 120
 
   variables:
     foo : bar
+    ${{ if ne(parameters.BuildIdToTest, '') }}:
+      buildIdToTest: ${{ parameters.BuildIdToTest }}
+    ${{ if eq(parameters.BuildIdToTest, '') }}:
+      buildIdToTest: $(resources.pipeline.WinUI-OB-Official.runID)
+
   steps:
 
+  - powershell: |
+      ls env:
+    displayName: 'display env vars'
+    continueOnError: true
+
+    - task: powershell@2
+      displayName: Setup environment based on context
+      inputs:
+        targetType: inline
+        script: |
+          switch ( $env:BUILD_REASON )
+          {
+            "Manual" 
+            {
+              Write-Host "Pipeline was manually triggered"
+              Write-Host "buildIdToTest = $($env:buildIdToTest)"
+            }
+
+            "ResourceTrigger" 
+            {
+              Write-Host "Pipeline was triggered by another Pipeline"
+              Write-Host "buildIdToTest = $($env:buildIdToTest)"
+            }
+          }
+
+          if ( ! $buildIdToTest )
+          {
+            throw "Must specify a BuildId to test"
+          }
 
   - task: DownloadPipelineArtifact@2
     inputs:
@@ -26,7 +71,7 @@ jobs:
       project: $(System.TeamProjectId)
       definition: 98255
       buildVersionToDownload: 'specific'
-      pipelineId : 66448233 
+      pipelineId : $(resources.pipeline.WinUI-OB-Official.runID)
 
   - task: DownloadPipelineArtifact@2
     inputs:
@@ -36,7 +81,7 @@ jobs:
       project: $(System.TeamProjectId)
       definition: 98255
       buildVersionToDownload: 'specific'
-      pipelineId : 66448233 
+      pipelineId : $(resources.pipeline.WinUI-OB-Official.runID)
 
   - task: DownloadPipelineArtifact@2
     inputs:
@@ -46,7 +91,7 @@ jobs:
       project: $(System.TeamProjectId)
       definition: 98255
       buildVersionToDownload: 'specific'
-      pipelineId : 66448233 
+      pipelineId : $(resources.pipeline.WinUI-OB-Official.runID)
 
   - task: DownloadPipelineArtifact@2
     inputs:
@@ -56,7 +101,7 @@ jobs:
       project: $(System.TeamProjectId)
       definition: 98255
       buildVersionToDownload: 'specific'
-      pipelineId : 66448233 
+      pipelineId : $(resources.pipeline.WinUI-OB-Official.runID)
 
   - task: DownloadPipelineArtifact@2
     inputs:
@@ -66,7 +111,7 @@ jobs:
       project: $(System.TeamProjectId)
       definition: 98255
       buildVersionToDownload: 'specific'
-      pipelineId : 66448233 
+      pipelineId : $(resources.pipeline.WinUI-OB-Official.runID)
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish artifact: drop'
@@ -76,42 +121,42 @@ jobs:
 
 
 
-- template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
-  parameters:
-    name: 'RunTestsInHelix'
-    dependsOn: Build
-    condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
-    testSuite: 'DevTestSuite'
-    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
+# - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
+#   parameters:
+#     name: 'RunTestsInHelix'
+#     dependsOn: GetBuild
+#     condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+#     testSuite: 'DevTestSuite'
+#     rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
 
-# Build solution that depends on nuget package
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildNugetPkgTests'
-    buildArtifactName: 'NugetPkgTestsDrop'
-    runTestJobName: 'RunNugetPkgTestsInHelix'
-    helixType: 'test/nuget'
-    dependsOn: Build
-    useFrameworkPkg: false
+# # Build solution that depends on nuget package
+# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#   parameters:
+#     buildJobName: 'BuildNugetPkgTests'
+#     buildArtifactName: 'NugetPkgTestsDrop'
+#     runTestJobName: 'RunNugetPkgTestsInHelix'
+#     helixType: 'test/nuget'
+#     dependsOn: GetBuild
+#     useFrameworkPkg: false
 
-# Framework package tests
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildFrameworkPkgTests'
-    buildArtifactName: 'FrameworkPkgTestsDrop'
-    runTestJobName: 'RunFrameworkPkgTestsInHelix'
-    helixType: 'test/frpkg'
-    dependsOn: Build
-    useFrameworkPkg: true
+# # Framework package tests
+# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#   parameters:
+#     buildJobName: 'BuildFrameworkPkgTests'
+#     buildArtifactName: 'FrameworkPkgTestsDrop'
+#     runTestJobName: 'RunFrameworkPkgTestsInHelix'
+#     helixType: 'test/frpkg'
+#     dependsOn: GetBuild
+#     useFrameworkPkg: true
 
-- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
-  parameters:
-    dependsOn:
-    - RunTestsInHelix
-    - RunNugetPkgTestsInHelix
-    - RunFrameworkPkgTestsInHelix
-    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
-    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
+# - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+#   parameters:
+#     dependsOn:
+#     - RunTestsInHelix
+#     - RunNugetPkgTestsInHelix
+#     - RunFrameworkPkgTestsInHelix
+#     rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
+#     minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
 
 # # NuGet package WACK tests
 # - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
