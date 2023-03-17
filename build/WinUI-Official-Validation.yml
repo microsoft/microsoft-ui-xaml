@@ -27,7 +27,7 @@ jobs:
   variables:
     foo : bar
     ${{ if ne(parameters.BuildIdToTestParam, '') }}:
-      buildIdToTest: ${{ parameters.BuildIdToTest }}
+      buildIdToTest: ${{ parameters.BuildIdToTestParam }}
     ${{ if eq(parameters.BuildIdToTestParam, '') }}:
       buildIdToTest: $(resources.pipeline.WinUI-OB-Official.runID)
 
