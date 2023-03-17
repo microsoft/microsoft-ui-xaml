@@ -112,3 +112,17 @@ jobs:
     - RunFrameworkPkgTestsInHelix
     rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
     minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
+
+# # NuGet package WACK tests
+# - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+#   parameters:
+#     name: 'NugetPkgWACKTests'
+#     dependsOn: BuildNugetPkgTests
+#     artifactName: 'NugetPkgTestsDrop'
+
+# # Framework package WACK tests
+# - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+#   parameters:
+#     name: 'FrameworkPkgWACKTests'
+#     dependsOn: BuildFrameworkPkgTests
+#     artifactName: 'FrameworkPkgTestsDrop'
