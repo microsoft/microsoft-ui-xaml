@@ -38,30 +38,30 @@ jobs:
     displayName: 'display env vars'
     continueOnError: true
 
-    - task: powershell@2
-      displayName: Setup environment based on context
-      inputs:
-        targetType: inline
-        script: |
-          switch ( $env:BUILD_REASON )
+  - task: powershell@2
+    displayName: Setup environment based on context
+    inputs:
+      targetType: inline
+      script: |
+        switch ( $env:BUILD_REASON )
+        {
+          "Manual" 
           {
-            "Manual" 
-            {
-              Write-Host "Pipeline was manually triggered"
-              Write-Host "buildIdToTest = $($env:buildIdToTest)"
-            }
-
-            "ResourceTrigger" 
-            {
-              Write-Host "Pipeline was triggered by another Pipeline"
-              Write-Host "buildIdToTest = $($env:buildIdToTest)"
-            }
+            Write-Host "Pipeline was manually triggered"
+            Write-Host "buildIdToTest = $($env:buildIdToTest)"
           }
 
-          if ( ! $buildIdToTest )
+          "ResourceTrigger" 
           {
-            throw "Must specify a BuildId to test"
+            Write-Host "Pipeline was triggered by another Pipeline"
+            Write-Host "buildIdToTest = $($env:buildIdToTest)"
           }
+        }
+
+        if ( ! $buildIdToTest )
+        {
+          throw "Must specify a BuildId to test"
+        }
 
   - task: DownloadPipelineArtifact@2
     inputs:
