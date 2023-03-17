@@ -39,7 +39,7 @@ jobs:
     continueOnError: true
 
   - task: powershell@2
-    displayName: Setup environment based on context
+    displayName: Validate BuildID
     inputs:
       targetType: inline
       script: |
@@ -58,7 +58,7 @@ jobs:
           }
         }
 
-        if ( ! $buildIdToTest )
+        if ( ! ($env:buildIdToTest) )
         {
           throw "Must specify a BuildId to test"
         }
