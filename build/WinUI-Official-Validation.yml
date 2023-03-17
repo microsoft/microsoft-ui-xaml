@@ -71,7 +71,7 @@ jobs:
       project: $(System.TeamProjectId)
       definition: 98255
       buildVersionToDownload: 'specific'
-      pipelineId : $(resources.pipeline.WinUI-OB-Official.runID)
+      pipelineId : $(buildIdToTest)
 
   - task: DownloadPipelineArtifact@2
     inputs:
@@ -81,7 +81,7 @@ jobs:
       project: $(System.TeamProjectId)
       definition: 98255
       buildVersionToDownload: 'specific'
-      pipelineId : $(resources.pipeline.WinUI-OB-Official.runID)
+      pipelineId : $(buildIdToTest)
 
   - task: DownloadPipelineArtifact@2
     inputs:
@@ -91,7 +91,7 @@ jobs:
       project: $(System.TeamProjectId)
       definition: 98255
       buildVersionToDownload: 'specific'
-      pipelineId : $(resources.pipeline.WinUI-OB-Official.runID)
+      pipelineId : $(buildIdToTest)
 
   - task: DownloadPipelineArtifact@2
     inputs:
@@ -101,7 +101,7 @@ jobs:
       project: $(System.TeamProjectId)
       definition: 98255
       buildVersionToDownload: 'specific'
-      pipelineId : $(resources.pipeline.WinUI-OB-Official.runID)
+      pipelineId : $(buildIdToTest)
 
   - task: DownloadPipelineArtifact@2
     inputs:
@@ -111,7 +111,7 @@ jobs:
       project: $(System.TeamProjectId)
       definition: 98255
       buildVersionToDownload: 'specific'
-      pipelineId : $(resources.pipeline.WinUI-OB-Official.runID)
+      pipelineId : $(buildIdToTest)
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish artifact: drop'
