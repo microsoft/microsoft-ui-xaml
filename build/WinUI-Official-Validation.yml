@@ -13,7 +13,7 @@ variables:
 resources:
   pipelines:
   - pipeline: WinUI-OB-Official
-    source: WinUI2-Internal-OB-Official
+    source: OneBranch\microsoft-ui-xaml-staging\WinUI2-Internal-OB-Official
     trigger: true 
 
 jobs:
