@@ -21,6 +21,17 @@ resources:
         - main
         - user/kmahone/ob
 
+  - pipeline: WinUI2-Internal-CI
+    source: WinUI2-Internal\WinUI2-Internal-CI
+    trigger: 
+      branches:
+        include: 
+        - release/*
+        - main
+        - user/kmahone/ob
+
+
+
 jobs:
 
 - job: GetBuild
