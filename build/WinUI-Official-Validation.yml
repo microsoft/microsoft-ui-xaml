@@ -1,11 +1,5 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
-# parameters:
-# - name: BuildIdToTestParam
-#   displayName: Build Id To Test
-#   type: string
-#   default: ''
-
 variables:
   minimumExpectedTestsExecutedCount: 2000  # Sanity check for minimum expected tests to be reported
   rerunPassesRequiredToAvoidFailure: 5
@@ -21,17 +15,6 @@ resources:
         - main
         - user/kmahone/ob
 
-  - pipeline: WinUI2-Internal-CI
-    source: WinUI2-Internal\WinUI2-Internal-CI
-    trigger: 
-      branches:
-        include: 
-        - release/*
-        - main
-        - user/kmahone/ob
-
-
-
 jobs:
 
 - job: GetBuild
@@ -42,10 +25,6 @@ jobs:
 
   variables:
     buildIdToTest: $(resources.pipeline.WinUI-OB-Official.runID)
-    # ${{ if ne(parameters.BuildIdToTestParam, '') }}:
-    #   buildIdToTest: ${{ parameters.BuildIdToTestParam }}
-    # ${{ if eq(parameters.BuildIdToTestParam, '') }}:
-    #   buildIdToTest: $(resources.pipeline.WinUI-OB-Official.runID)
 
   steps:
 
@@ -53,31 +32,6 @@ jobs:
       cmd.exe /c set
     displayName: 'display env vars'
     continueOnError: true
-
-  - task: powershell@2
-    displayName: Validate BuildID
-    inputs:
-      targetType: inline
-      script: |
-        switch ( $env:BUILD_REASON )
-        {
-          "Manual" 
-          {
-            Write-Host "Pipeline was manually triggered"
-            Write-Host "buildIdToTest = $($env:buildIdToTest)"
-          }
-
-          "ResourceTrigger" 
-          {
-            Write-Host "Pipeline was triggered by another Pipeline"
-            Write-Host "buildIdToTest = $($env:buildIdToTest)"
-          }
-        }
-
-        if ( ! ($env:buildIdToTest) )
-        {
-          throw "Must specify a BuildId to test"
-        }
 
   - task: DownloadPipelineArtifact@2
     inputs:
