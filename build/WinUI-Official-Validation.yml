@@ -153,3 +153,6 @@ jobs:
     name: 'FrameworkPkgWACKTests'
     dependsOn: BuildFrameworkPkgTests
     artifactName: 'FrameworkPkgTestsDrop'
+
+
+    
