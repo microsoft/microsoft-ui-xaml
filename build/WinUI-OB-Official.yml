@@ -88,16 +88,16 @@ extends:
               buildPlatform: 'x86'
               buildConfiguration: 'Release'
               PGOBuildMode: 'Optimize'
-            # Release_x64:
-            #   buildPlatform: 'x64'
-            #   buildConfiguration: 'Release'
-            #   PGOBuildMode: 'Optimize'
-            # Release_Arm:
-            #   buildPlatform: 'arm'
-            #   buildConfiguration: 'Release'
-            # Release_Arm64:
-            #   buildPlatform: 'arm64'
-            #   buildConfiguration: 'Release'
+            Release_x64:
+              buildPlatform: 'x64'
+              buildConfiguration: 'Release'
+              PGOBuildMode: 'Optimize'
+            Release_Arm:
+              buildPlatform: 'arm'
+              buildConfiguration: 'Release'
+            Release_Arm64:
+              buildPlatform: 'arm64'
+              buildConfiguration: 'Release'
         
         variables:
           
@@ -117,466 +117,466 @@ extends:
 
           - template: build\AzurePipelinesTemplates\MUX-InstallNuget-Steps.yml@self
 
-    #       - task: UseDotNet@2
-    #         displayName: 'Use .NET Core sdk'
-    #         inputs:
-    #           packageType: sdk
-    #           version: 3.1.415
-    #           installationPath: $(Agent.ToolsDirectory)/dotnet
+          - task: UseDotNet@2
+            displayName: 'Use .NET Core sdk'
+            inputs:
+              packageType: sdk
+              version: 3.1.415
+              installationPath: $(Agent.ToolsDirectory)/dotnet
 
-    #       - powershell: |
-    #           ls env:
-    #         displayName: 'display env vars'
-    #         continueOnError: true
+          - powershell: |
+              ls env:
+            displayName: 'display env vars'
+            continueOnError: true
 
-    #       - powershell: |
-    #           ls "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows Kits\Installed Roots"
-    #         displayName: 'List SDKS'
-    #         continueOnError: true
+          - powershell: |
+              ls "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows Kits\Installed Roots"
+            displayName: 'List SDKS'
+            continueOnError: true
 
-    #       # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
-    #       - task: DownloadPackage@1
-    #         displayName: 'Download Microsoft.Telemetry.Inbox.Native'
-    #         inputs:
-    #           feed: '/3415933f-ac0d-4766-8c0a-3f4c247c25f5'                         # 0
-    #           view: 'ef61a1c1-003b-4a27-bde5-beec8301021b'                          # Release
-    #           definition: '2fe60c09-c66f-4275-ae2d-f015c7170c72'                    # Microsoft.Telemetry.Inbox.Native
-    #           version: '10.0.18362.1-190318-1202.19h1-release.amd64fre'             # latest version
-    #           downloadPath: '$(System.DefaultWorkingDirectory)'                     # download and extract to repo root
+          # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
+          - task: DownloadPackage@1
+            displayName: 'Download Microsoft.Telemetry.Inbox.Native'
+            inputs:
+              feed: '/3415933f-ac0d-4766-8c0a-3f4c247c25f5'                         # 0
+              view: 'ef61a1c1-003b-4a27-bde5-beec8301021b'                          # Release
+              definition: '2fe60c09-c66f-4275-ae2d-f015c7170c72'                    # Microsoft.Telemetry.Inbox.Native
+              version: '10.0.18362.1-190318-1202.19h1-release.amd64fre'             # latest version
+              downloadPath: '$(System.DefaultWorkingDirectory)'                     # download and extract to repo root
 
-    #       # Replace the stubbed MicrosoftTelemetry.h with the real one
-    #       # Delete the existing stubbed MicrosoftTelemetry.h first, to ensure that if it is no longer at the expected path that the task, and build, fails
-    #       - script: |
-    #           del $(System.DefaultWorkingDirectory)\dev\telemetry\MicrosoftTelemetry.h
-    #           move /Y $(System.DefaultWorkingDirectory)\build\native\inc\MicrosoftTelemetry.h $(System.DefaultWorkingDirectory)\dev\telemetry\
-    #         failOnStderr: true
-    #         displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
+          # Replace the stubbed MicrosoftTelemetry.h with the real one
+          # Delete the existing stubbed MicrosoftTelemetry.h first, to ensure that if it is no longer at the expected path that the task, and build, fails
+          - script: |
+              del $(System.DefaultWorkingDirectory)\dev\telemetry\MicrosoftTelemetry.h
+              move /Y $(System.DefaultWorkingDirectory)\build\native\inc\MicrosoftTelemetry.h $(System.DefaultWorkingDirectory)\dev\telemetry\
+            failOnStderr: true
+            displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
 
-    #       # The environment variable VCToolsInstallDir isn't defined on lab machines, so we need to retrieve it ourselves.
-    #       - script: |
-    #           "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -Latest -requires Microsoft.Component.MSBuild -property InstallationPath > %TEMP%\vsinstalldir.txt
-    #           set /p _VSINSTALLDIR15=<%TEMP%\vsinstalldir.txt
-    #           del %TEMP%\vsinstalldir.txt
-    #           call "%_VSINSTALLDIR15%\Common7\Tools\VsDevCmd.bat"
-    #           echo VCToolsInstallDir = %VCToolsInstallDir%
-    #           echo ##vso[task.setvariable variable=VCToolsInstallDir]%VCToolsInstallDir%
-    #         displayName: 'Retrieve VC tools directory'
+          # The environment variable VCToolsInstallDir isn't defined on lab machines, so we need to retrieve it ourselves.
+          - script: |
+              "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -Latest -requires Microsoft.Component.MSBuild -property InstallationPath > %TEMP%\vsinstalldir.txt
+              set /p _VSINSTALLDIR15=<%TEMP%\vsinstalldir.txt
+              del %TEMP%\vsinstalldir.txt
+              call "%_VSINSTALLDIR15%\Common7\Tools\VsDevCmd.bat"
+              echo VCToolsInstallDir = %VCToolsInstallDir%
+              echo ##vso[task.setvariable variable=VCToolsInstallDir]%VCToolsInstallDir%
+            displayName: 'Retrieve VC tools directory'
 
-    #       - task: powershell@2
-    #         displayName: 'Restore PGO database'
-    #         condition: eq(variables['PGOBuildMode'], 'Optimize')
-    #         inputs:
-    #           targetType: filePath
-    #           workingDirectory: $(Build.SourcesDirectory)\tools\MUXPGODatabase
-    #           filePath: $(Build.SourcesDirectory)\tools\MUXPGODatabase\restore-pgodb.ps1
-    #           arguments: -NuGetConfigPath $(Build.SourcesDirectory)\nuget.config
+          - task: powershell@2
+            displayName: 'Restore PGO database'
+            condition: eq(variables['PGOBuildMode'], 'Optimize')
+            inputs:
+              targetType: filePath
+              workingDirectory: $(Build.SourcesDirectory)\tools\MUXPGODatabase
+              filePath: $(Build.SourcesDirectory)\tools\MUXPGODatabase\restore-pgodb.ps1
+              arguments: -NuGetConfigPath $(Build.SourcesDirectory)\nuget.config
 
-    #       - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-    #         displayName: 'NuGet restore MUXControls.sln'
-    #         inputs:
-    #           restoreSolution: $(Build.SourcesDirectory)\MUXControls.sln
-    #           feedsToUse: config
-    #           nugetConfigPath: nuget.config
+          - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+            displayName: 'NuGet restore MUXControls.sln'
+            inputs:
+              restoreSolution: $(Build.SourcesDirectory)\MUXControls.sln
+              feedsToUse: config
+              nugetConfigPath: nuget.config
 
-    #       - task: VSBuild@1
-    #         displayName: 'Build solution MUXControls.sln'
-    #         inputs:
-    #           solution: '$(Build.SourcesDirectory)\MUXControls.sln'
-    #           vsVersion: 17.0
-    #           platform: $(buildPlatform)
-    #           configuration: $(buildConfiguration)
-    #           msbuildArgs: '/restore /p:AppxPackageDir=$(appxPackageDir) /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false /binaryLogger:$(Build.ArtifactStagingDirectory)/MUXControls.$(buildPlatform).$(buildConfiguration).binlog /p:MUXVersionBuild=$(builddate_yymm) /p:MUXVersionRevision=$(builddate_dd)$(buildrevision) /p:VCToolsInstallDir="$(VCToolsInstallDir)\" /p:PGOBuildMode=$(PGOBuildMode)'
+          - task: VSBuild@1
+            displayName: 'Build solution MUXControls.sln'
+            inputs:
+              solution: '$(Build.SourcesDirectory)\MUXControls.sln'
+              vsVersion: 17.0
+              platform: $(buildPlatform)
+              configuration: $(buildConfiguration)
+              msbuildArgs: '/restore /p:AppxPackageDir=$(appxPackageDir) /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false /binaryLogger:$(Build.ArtifactStagingDirectory)/MUXControls.$(buildPlatform).$(buildConfiguration).binlog /p:MUXVersionBuild=$(builddate_yymm) /p:MUXVersionRevision=$(builddate_dd)$(buildrevision) /p:VCToolsInstallDir="$(VCToolsInstallDir)\" /p:PGOBuildMode=$(PGOBuildMode)'
 
-    #       - powershell: |
-    #           Get-ChildItem -Recurse $(Build.SourcesDirectory)\BuildOutput
-    #         displayName: 'list contents of BuildOutput'
-    #         continueOnError: true
+          - powershell: |
+              Get-ChildItem -Recurse $(Build.SourcesDirectory)\BuildOutput
+            displayName: 'list contents of BuildOutput'
+            continueOnError: true
 
-    #       - task: onebranch.pipeline.signing@1 # https://aka.ms/obpipelines/signing
-    #         displayName: 'Sign output (BuildOutput)'
-    #         inputs:
-    #           command: 'sign'
-    #           signing_environment: 'azure-ado'
-    #           files_to_sign: '**/*.dll;**/*.winmd;**/*.ps1;**/*.psd1;**/*.msix;**/*.appx'
-    #           search_root: $(Build.SourcesDirectory)\BuildOutput\$(buildConfiguration)
-    #           signing_profile: external_distribution
+          - task: onebranch.pipeline.signing@1 # https://aka.ms/obpipelines/signing
+            displayName: 'Sign output (BuildOutput)'
+            inputs:
+              command: 'sign'
+              signing_environment: 'azure-ado'
+              files_to_sign: '**/*.dll;**/*.winmd;**/*.ps1;**/*.psd1;**/*.msix;**/*.appx'
+              search_root: $(Build.SourcesDirectory)\BuildOutput\$(buildConfiguration)
+              signing_profile: external_distribution
 
-    #       - task: onebranch.pipeline.signing@1
-    #         displayName: 'Sign output (appxPackageDir)'
-    #         inputs:
-    #           command: 'sign'
-    #           signing_environment: 'azure-ado'
-    #           files_to_sign: '**/*.dll;**/*.winmd;**/*.ps1;**/*.psd1;**/*.msix;**/*.appx'
-    #           search_root: $(appxPackageDir)
-    #           signing_profile: external_distribution
+          - task: onebranch.pipeline.signing@1
+            displayName: 'Sign output (appxPackageDir)'
+            inputs:
+              command: 'sign'
+              signing_environment: 'azure-ado'
+              files_to_sign: '**/*.dll;**/*.winmd;**/*.ps1;**/*.psd1;**/*.msix;**/*.appx'
+              search_root: $(appxPackageDir)
+              signing_profile: external_distribution
 
-    #       - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-    #         displayName: 'Install Microsoft.Debugging.Tools.PdbStr'
-    #         inputs:
-    #           command: custom
-    #           arguments: 'install Microsoft.Debugging.Tools.PdbStr -NonInteractive -Version 20230202.1638.0 -Source https://api.nuget.org/v3/index.json -OutputDirectory packages -PackageSaveMode nupkg'
+          - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+            displayName: 'Install Microsoft.Debugging.Tools.PdbStr'
+            inputs:
+              command: custom
+              arguments: 'install Microsoft.Debugging.Tools.PdbStr -NonInteractive -Version 20230202.1638.0 -Source https://api.nuget.org/v3/index.json -OutputDirectory packages -PackageSaveMode nupkg'
 
-    #       - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-    #         displayName: 'Install Microsoft.Debugging.Tools.SrcTool'
-    #         inputs:
-    #           command: custom
-    #           arguments: 'install Microsoft.Debugging.Tools.SrcTool -NonInteractive -Version 20230202.1638.0 -Source https://api.nuget.org/v3/index.json -OutputDirectory packages -PackageSaveMode nupkg'
+          - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+            displayName: 'Install Microsoft.Debugging.Tools.SrcTool'
+            inputs:
+              command: custom
+              arguments: 'install Microsoft.Debugging.Tools.SrcTool -NonInteractive -Version 20230202.1638.0 -Source https://api.nuget.org/v3/index.json -OutputDirectory packages -PackageSaveMode nupkg'
 
-    #       - task: powershell@2
-    #         displayName: 'Source Index PDBs'
-    #         continueOnError: true
-    #         inputs:
-    #           targetType: filePath
-    #           filePath: build\SourceIndexing\IndexPdbs.ps1
-    #           arguments: -SearchDir '$(buildOutputDir)\$(buildConfiguration)' -SourceRoot '$(Build.SourcesDirectory)' -recursive -Verbose -CommitId $(Build.SourceVersion)
-    #           errorActionPreference: silentlyContinue
+          - task: powershell@2
+            displayName: 'Source Index PDBs'
+            continueOnError: true
+            inputs:
+              targetType: filePath
+              filePath: build\SourceIndexing\IndexPdbs.ps1
+              arguments: -SearchDir '$(buildOutputDir)\$(buildConfiguration)' -SourceRoot '$(Build.SourcesDirectory)' -recursive -Verbose -CommitId $(Build.SourceVersion)
+              errorActionPreference: silentlyContinue
 
-    #       # - task: PublishSymbols@2  # Publish symbols to public Microsoft Symbol Server
-    #       #   displayName: 'Publish symbols (public)'
-    #       #   continueOnError: true
-    #       #   inputs:
-    #       #     SearchPattern: $(buildOutputDir)/$(buildConfiguration)/$(buildPlatform)/**/*.pdb
-    #       #     SymbolServerType: 'TeamServices'
-    #       #   env:
-    #       #     ArtifactServices_Symbol_AccountName: microsoftpublicsymbols
-    #       #     ArtifactServices_Symbol_PAT: $(WinUILab-Pipeline-PAT)
-    #       - task: PublishSymbols@2 # Publish symbols to internal symweb
-    #         continueOnError: true
-    #         displayName: 'Publish symbols (internal)'
-    #         inputs:
-    #           SearchPattern: $(buildOutputDir)/$(buildConfiguration)/$(buildPlatform)/**/*.pdb
-    #           SymbolServerType: 'TeamServices'
+          # - task: PublishSymbols@2  # Publish symbols to public Microsoft Symbol Server
+          #   displayName: 'Publish symbols (public)'
+          #   continueOnError: true
+          #   inputs:
+          #     SearchPattern: $(buildOutputDir)/$(buildConfiguration)/$(buildPlatform)/**/*.pdb
+          #     SymbolServerType: 'TeamServices'
+          #   env:
+          #     ArtifactServices_Symbol_AccountName: microsoftpublicsymbols
+          #     ArtifactServices_Symbol_PAT: $(WinUILab-Pipeline-PAT)
+          - task: PublishSymbols@2 # Publish symbols to internal symweb
+            continueOnError: true
+            displayName: 'Publish symbols (internal)'
+            inputs:
+              SearchPattern: $(buildOutputDir)/$(buildConfiguration)/$(buildPlatform)/**/*.pdb
+              SymbolServerType: 'TeamServices'
 
-    #       - template: build\AzurePipelinesTemplates\MUX-MakeFrameworkPackages-Steps.yml@self
-    #         parameters:
-    #           buildOutputDir: $(buildOutputDir)
-    #           signOutput: true
+          - template: build\AzurePipelinesTemplates\MUX-MakeFrameworkPackages-Steps.yml@self
+            parameters:
+              buildOutputDir: $(buildOutputDir)
+              signOutput: true
 
-    #       - task: powershell@2
-    #         displayName: 'Copy files to staging dir'
-    #         inputs:
-    #           targetType: filePath
-    #           filePath: build\CopyFilesToStagingDir.ps1
-    #           arguments: -BuildOutputDir '$(buildOutputDir)' -PublishDir '$(Build.ArtifactStagingDirectory)' -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
+          - task: powershell@2
+            displayName: 'Copy files to staging dir'
+            inputs:
+              targetType: filePath
+              filePath: build\CopyFilesToStagingDir.ps1
+              arguments: -BuildOutputDir '$(buildOutputDir)' -PublishDir '$(Build.ArtifactStagingDirectory)' -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
 
-    #       - powershell: |
-    #           Get-ChildItem -Recurse $(Build.ArtifactStagingDirectory)
-    #         displayName: 'list contents of ArtifactStagingDirectory'
-    #         continueOnError: true
+          - powershell: |
+              Get-ChildItem -Recurse $(Build.ArtifactStagingDirectory)
+            displayName: 'list contents of ArtifactStagingDirectory'
+            continueOnError: true
 
-    # - stage: pack
-    #   dependsOn: build
-    #   jobs:
-    #   - job: nupkg
-    #     # condition: false
-    #     pool:
-    #       type: windows  
-    #     variables:
-    #       MUXFinalRelease: false
-    #       useReleaseTag: '$(MUXFinalRelease)'
-    #       nupkgdir: '$(build.artifactStagingDirectory)'
-    #       primaryBuildArch: x86
-    #       ob_outputDirectory: $(build.artifactStagingDirectory)
+    - stage: pack
+      dependsOn: build
+      jobs:
+      - job: nupkg
+        # condition: false
+        pool:
+          type: windows  
+        variables:
+          MUXFinalRelease: false
+          useReleaseTag: '$(MUXFinalRelease)'
+          nupkgdir: '$(build.artifactStagingDirectory)'
+          primaryBuildArch: x86
+          ob_outputDirectory: $(build.artifactStagingDirectory)
 
-    #     steps:
-    #       - powershell: |
-    #           # Some builds have "-branchname" appended, but when this happens the environment variable 
-    #           # TFS_BUILDNUMBER has the un-modified version.
-    #           if ($env:TFS_BUILDNUMBER)
-    #           {
-    #             $env:BUILD_BUILDNUMBER = $env:TFS_BUILDNUMBER
-    #           }
-    #           $yymm = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 10, 4)
-    #           $dd = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 5, 2)
-    #           $revision = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 3, 3)
-    #           Write-Host "##vso[task.setvariable variable=builddate]$yymm$dd"
-    #           Write-Host "##vso[task.setvariable variable=builddate_yymm]$yymm"
-    #           Write-Host "##vso[task.setvariable variable=builddate_dd]$dd"
-    #           Write-Host "##vso[task.setvariable variable=buildrevision]$revision"
+        steps:
+          - powershell: |
+              # Some builds have "-branchname" appended, but when this happens the environment variable 
+              # TFS_BUILDNUMBER has the un-modified version.
+              if ($env:TFS_BUILDNUMBER)
+              {
+                $env:BUILD_BUILDNUMBER = $env:TFS_BUILDNUMBER
+              }
+              $yymm = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 10, 4)
+              $dd = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 5, 2)
+              $revision = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 3, 3)
+              Write-Host "##vso[task.setvariable variable=builddate]$yymm$dd"
+              Write-Host "##vso[task.setvariable variable=builddate_yymm]$yymm"
+              Write-Host "##vso[task.setvariable variable=builddate_dd]$dd"
+              Write-Host "##vso[task.setvariable variable=buildrevision]$revision"
 
-    #           Write-Host builddate=$yymm$dd
-    #           Write-Host builddate_yymm=$yymm
-    #           Write-Host builddate_dd=$dd
-    #           Write-Host buildrevision=$revision
-    #         displayName: 'Get build revision number'
+              Write-Host builddate=$yymm$dd
+              Write-Host builddate_yymm=$yymm
+              Write-Host builddate_dd=$dd
+              Write-Host buildrevision=$revision
+            displayName: 'Get build revision number'
 
-    #       - powershell: |
-    #           ls env:
-    #         displayName: 'display env vars'
-    #         continueOnError: true
+          - powershell: |
+              ls env:
+            displayName: 'display env vars'
+            continueOnError: true
 
-    #       - task: NuGetToolInstaller@0
-    #         displayName: 'Use NuGet 5.8.0'
-    #         inputs:
-    #           versionSpec: 5.8.0
+          - task: NuGetToolInstaller@0
+            displayName: 'Use NuGet 5.8.0'
+            inputs:
+              versionSpec: 5.8.0
 
-    #       - task: DownloadPipelineArtifact@2
-    #         inputs:
-    #           artifactName: drop_build_main_x64_Release
-    #           targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: drop_build_main_x64_Release
+              targetPath: $(Build.SourcesDirectory)\Artifacts\drop
 
-    #           # buildType: specific
-    #           # project: $(System.TeamProjectId)
-    #           # definition: $(System.DefinitionId)
-    #           # buildVersionToDownload: 'specific'
-    #           # pipelineId : 66256335 
+              # buildType: specific
+              # project: $(System.TeamProjectId)
+              # definition: $(System.DefinitionId)
+              # buildVersionToDownload: 'specific'
+              # pipelineId : 66256335 
 
-    #       - task: DownloadPipelineArtifact@2
-    #         inputs:
-    #           artifactName: drop_build_main_x86_Release
-    #           targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: drop_build_main_x86_Release
+              targetPath: $(Build.SourcesDirectory)\Artifacts\drop
               
-    #           # buildType: specific
-    #           # project: $(System.TeamProjectId)
-    #           # definition: $(System.DefinitionId)
-    #           # buildVersionToDownload: 'specific'
-    #           # pipelineId : 66256335 
+              # buildType: specific
+              # project: $(System.TeamProjectId)
+              # definition: $(System.DefinitionId)
+              # buildVersionToDownload: 'specific'
+              # pipelineId : 66256335 
 
-    #       - task: DownloadPipelineArtifact@2
-    #         inputs:
-    #           artifactName: drop_build_main_arm_Release
-    #           targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: drop_build_main_arm_Release
+              targetPath: $(Build.SourcesDirectory)\Artifacts\drop
               
-    #           # buildType: specific
-    #           # project: $(System.TeamProjectId)
-    #           # definition: $(System.DefinitionId)
-    #           # buildVersionToDownload: 'specific'
-    #           # pipelineId : 66256335 
+              # buildType: specific
+              # project: $(System.TeamProjectId)
+              # definition: $(System.DefinitionId)
+              # buildVersionToDownload: 'specific'
+              # pipelineId : 66256335 
 
-    #       - task: DownloadPipelineArtifact@2
-    #         inputs:
-    #           artifactName: drop_build_main_arm64_Release
-    #           targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: drop_build_main_arm64_Release
+              targetPath: $(Build.SourcesDirectory)\Artifacts\drop
               
-    #           # buildType: specific
-    #           # project: $(System.TeamProjectId)
-    #           # definition: $(System.DefinitionId)
-    #           # buildVersionToDownload: 'specific'
-    #           # pipelineId : 66256335 
+              # buildType: specific
+              # project: $(System.TeamProjectId)
+              # definition: $(System.DefinitionId)
+              # buildVersionToDownload: 'specific'
+              # pipelineId : 66256335 
 
-    #       - powershell: |
-    #           Get-ChildItem -Recurse $(Build.SourcesDirectory)\Artifacts
-    #         displayName: 'list contents of Artifacts'
-    #         continueOnError: true
+          - powershell: |
+              Get-ChildItem -Recurse $(Build.SourcesDirectory)\Artifacts
+            displayName: 'list contents of Artifacts'
+            continueOnError: true
 
-    #       - powershell: |
-    #           $prereleaseTag = "prerelease"
-    #           if ("$(useReleaseTag)}" -eq [bool]::TrueString) { $prereleaseTag = "" }
+          - powershell: |
+              $prereleaseTag = "prerelease"
+              if ("$(useReleaseTag)}" -eq [bool]::TrueString) { $prereleaseTag = "" }
 
-    #           & "$env:Build_SourcesDirectory\build\NuSpecs\build-nupkg.ps1" `
-    #             -BuildOutput '$(Build.SourcesDirectory)\Artifacts\drop' `
-    #             -OutputDir '$(nupkgdir)' `
-    #             -prereleaseversion "$prereleaseTag" `
-    #             -DateOverride '$(builddate)' `
-    #             -Subversion '$(buildrevision)' `
-    #             -BuildArch $(primaryBuildArch) `
-    #             -BuildFlavor Release
+              & "$env:Build_SourcesDirectory\build\NuSpecs\build-nupkg.ps1" `
+                -BuildOutput '$(Build.SourcesDirectory)\Artifacts\drop' `
+                -OutputDir '$(nupkgdir)' `
+                -prereleaseversion "$prereleaseTag" `
+                -DateOverride '$(builddate)' `
+                -Subversion '$(buildrevision)' `
+                -BuildArch $(primaryBuildArch) `
+                -BuildFlavor Release
 
-    #         displayName: 'build-nupkg.ps1'
+            displayName: 'build-nupkg.ps1'
 
-    #       - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
-    #         displayName: 'CodeSign (nupkg)'
-    #         inputs:
-    #           ConnectedServiceName: WinUISigning
-    #           FolderPath: $(nupkgdir)
-    #           Pattern: |
-    #             **/Microsoft.UI.Xaml*.nupkg
-    #           UseMinimatch: true
-    #           signConfigType: inlineSignParams
-    #           inlineOperation: | 
-    #             [
-    #               {
-    #                   "KeyCode" : "CP-401405",
-    #                   "OperationCode" : "NuGetSign",
-    #                   "Parameters" : {},
-    #                   "ToolName" : "sign",
-    #                   "ToolVersion" : "1.0"
-    #               },
-    #               {
-    #                   "KeyCode" : "CP-401405",
-    #                   "OperationCode" : "NuGetVerify",
-    #                   "Parameters" : {},
-    #                   "ToolName" : "sign",
-    #                   "ToolVersion" : "1.0"
-    #               }
-    #             ]
+          - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+            displayName: 'CodeSign (nupkg)'
+            inputs:
+              ConnectedServiceName: WinUISigning
+              FolderPath: $(nupkgdir)
+              Pattern: |
+                **/Microsoft.UI.Xaml*.nupkg
+              UseMinimatch: true
+              signConfigType: inlineSignParams
+              inlineOperation: | 
+                [
+                  {
+                      "KeyCode" : "CP-401405",
+                      "OperationCode" : "NuGetSign",
+                      "Parameters" : {},
+                      "ToolName" : "sign",
+                      "ToolVersion" : "1.0"
+                  },
+                  {
+                      "KeyCode" : "CP-401405",
+                      "OperationCode" : "NuGetVerify",
+                      "Parameters" : {},
+                      "ToolName" : "sign",
+                      "ToolVersion" : "1.0"
+                  }
+                ]
 
-    #   - job: vpack
-    #     # condition: false
-    #     pool:
-    #       type: windows  
-    #     variables:
-    #       windowsPublicsWinmdVersion: 0.0.2
-    #       internalSDKFeedUrl: https://pkgs.dev.azure.com/microsoft/WinUI/_packaging/WinUIInternalWindowsSDK/nuget/v3/index.json
-    #       publishDir: $(Build.SourcesDirectory)\publish
-    #       ob_outputDirectory: $(publishDir)
+      - job: vpack
+        # condition: false
+        pool:
+          type: windows  
+        variables:
+          windowsPublicsWinmdVersion: 0.0.2
+          internalSDKFeedUrl: https://pkgs.dev.azure.com/microsoft/WinUI/_packaging/WinUIInternalWindowsSDK/nuget/v3/index.json
+          publishDir: $(Build.SourcesDirectory)\publish
+          ob_outputDirectory: $(publishDir)
 
-    #     steps:
-    #       - task: NuGetToolInstaller@0
-    #         displayName: 'Use NuGet 5.8.0'
-    #         inputs:
-    #           versionSpec: 5.8.0
+        steps:
+          - task: NuGetToolInstaller@0
+            displayName: 'Use NuGet 5.8.0'
+            inputs:
+              versionSpec: 5.8.0
 
-    #       - task: UseDotNet@2
-    #         displayName: 'Use .NET Core sdk'
-    #         inputs:
-    #           packageType: sdk
-    #           version: 3.1.415
-    #           installationPath: $(Agent.ToolsDirectory)/dotnet
+          - task: UseDotNet@2
+            displayName: 'Use .NET Core sdk'
+            inputs:
+              packageType: sdk
+              version: 3.1.415
+              installationPath: $(Agent.ToolsDirectory)/dotnet
 
-    #       - task: NuGetAuthenticate@0
+          - task: NuGetAuthenticate@0
 
-    #       - task: DownloadPipelineArtifact@2
-    #         inputs:
-    #           artifactName: drop_build_main_x64_Release
-    #           targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: drop_build_main_x64_Release
+              targetPath: $(Build.SourcesDirectory)\Artifacts\drop
 
-    #           # buildType: specific
-    #           # project: $(System.TeamProjectId)
-    #           # definition: $(System.DefinitionId)
-    #           # buildVersionToDownload: 'specific'
-    #           # pipelineId : 66416380 
+              # buildType: specific
+              # project: $(System.TeamProjectId)
+              # definition: $(System.DefinitionId)
+              # buildVersionToDownload: 'specific'
+              # pipelineId : 66416380 
 
-    #       - task: DownloadPipelineArtifact@2
-    #         inputs:
-    #           artifactName: drop_build_main_x86_Release
-    #           targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: drop_build_main_x86_Release
+              targetPath: $(Build.SourcesDirectory)\Artifacts\drop
               
-    #           # buildType: specific
-    #           # project: $(System.TeamProjectId)
-    #           # definition: $(System.DefinitionId)
-    #           # buildVersionToDownload: 'specific'
-    #           # pipelineId : 66416380 
+              # buildType: specific
+              # project: $(System.TeamProjectId)
+              # definition: $(System.DefinitionId)
+              # buildVersionToDownload: 'specific'
+              # pipelineId : 66416380 
 
-    #       - task: DownloadPipelineArtifact@2
-    #         inputs:
-    #           artifactName: drop_build_main_arm_Release
-    #           targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: drop_build_main_arm_Release
+              targetPath: $(Build.SourcesDirectory)\Artifacts\drop
               
-    #           # buildType: specific
-    #           # project: $(System.TeamProjectId)
-    #           # definition: $(System.DefinitionId)
-    #           # buildVersionToDownload: 'specific'
-    #           # pipelineId : 66416380 
+              # buildType: specific
+              # project: $(System.TeamProjectId)
+              # definition: $(System.DefinitionId)
+              # buildVersionToDownload: 'specific'
+              # pipelineId : 66416380 
 
-    #       - task: DownloadPipelineArtifact@2
-    #         inputs:
-    #           artifactName: drop_build_main_arm64_Release
-    #           targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: drop_build_main_arm64_Release
+              targetPath: $(Build.SourcesDirectory)\Artifacts\drop
               
-    #           # buildType: specific
-    #           # project: $(System.TeamProjectId)
-    #           # definition: $(System.DefinitionId)
-    #           # buildVersionToDownload: 'specific'
-    #           # pipelineId : 66416380 
+              # buildType: specific
+              # project: $(System.TeamProjectId)
+              # definition: $(System.DefinitionId)
+              # buildVersionToDownload: 'specific'
+              # pipelineId : 66416380 
 
-    #       # This contains the OS internal version of windows.winmd which is required for us to re-merge our winmd so that it can be used from OS repo.
-    #       - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-    #         displayName: 'nuget install Microsoft.Internal.WinUI.WindowsPublicsWinmd'
-    #         inputs:
-    #           command: custom
-    #           arguments: 'install Microsoft.Internal.WinUI.WindowsPublicsWinmd -NonInteractive -Version $(windowsPublicsWinmdVersion) -Source $(internalSDKFeedUrl) -OutputDirectory packages'
+          # This contains the OS internal version of windows.winmd which is required for us to re-merge our winmd so that it can be used from OS repo.
+          - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+            displayName: 'nuget install Microsoft.Internal.WinUI.WindowsPublicsWinmd'
+            inputs:
+              command: custom
+              arguments: 'install Microsoft.Internal.WinUI.WindowsPublicsWinmd -NonInteractive -Version $(windowsPublicsWinmdVersion) -Source $(internalSDKFeedUrl) -OutputDirectory packages'
 
-    #       - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-    #         displayName: 'NuGet restore dev\dll\packages.config'
-    #         inputs:
-    #           restoreSolution: dev\dll\packages.config
-    #           feedsToUse: config
-    #           nugetConfigPath: nuget.config
-    #           restoreDirectory: $(Build.SourcesDirectory)\packages
+          - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+            displayName: 'NuGet restore dev\dll\packages.config'
+            inputs:
+              restoreSolution: dev\dll\packages.config
+              feedsToUse: config
+              nugetConfigPath: nuget.config
+              restoreDirectory: $(Build.SourcesDirectory)\packages
 
-    #       - script: |
-    #           $(Build.SourcesDirectory)\build\CreateCBSVPack.cmd -releaseFolder $(Build.SourcesDirectory)\Artifacts\drop\Release -publicsRoot $(Build.SourcesDirectory)\packages\Microsoft.Internal.WinUI.WindowsPublicsWinmd.$(windowsPublicsWinmdVersion) -publishDir $(publishDir)
-    #         displayName: CreateCBSVPack.cmd
-    #         name: createvpack
-    #         failOnStderr: true
-    #         # Note: This task sets the 'vpackversion' variable that is used below.
+          - script: |
+              $(Build.SourcesDirectory)\build\CreateCBSVPack.cmd -releaseFolder $(Build.SourcesDirectory)\Artifacts\drop\Release -publicsRoot $(Build.SourcesDirectory)\packages\Microsoft.Internal.WinUI.WindowsPublicsWinmd.$(windowsPublicsWinmdVersion) -publishDir $(publishDir)
+            displayName: CreateCBSVPack.cmd
+            name: createvpack
+            failOnStderr: true
+            # Note: This task sets the 'vpackversion' variable that is used below.
 
-    #       - powershell: |
-    #           Get-ChildItem -Recurse $(publishDir)
-    #         displayName: 'list contents of publishDir'
-    #         continueOnError: true
+          - powershell: |
+              Get-ChildItem -Recurse $(publishDir)
+            displayName: 'list contents of publishDir'
+            continueOnError: true
 
-    #   - job: pushvpack
-    #     dependsOn: vpack
-    #     # condition: false
-    #     pool:
-    #       type: windows  
-    #     strategy:
-    #       maxParallel: 10
-    #       matrix:
-    #         CBS_x86:
-    #           vpackName: MicrosoftUIXamlInbox_x86
-    #           sourceSubDir: CBS\x86
-    #         CBS_x64:
-    #           vpackName: MicrosoftUIXamlInbox_x64
-    #           sourceSubDir: CBS\x64
-    #         CBS_Arm:
-    #           vpackName: MicrosoftUIXamlInbox_arm
-    #           sourceSubDir: CBS\arm
-    #         CBS_Arm64:
-    #           vpackName: MicrosoftUIXamlInbox_arm64
-    #           sourceSubDir: CBS\arm64
-    #         CBS_Winmd:
-    #           vpackName: MicrosoftUIXamlInboxWinmd
-    #           sourceSubDir: CBS\winmd
-    #         WinUI:
-    #           vpackName: Microsoft.UI.Xaml
-    #           sourceSubDir: WinUIVpack
-    #     variables:
+      - job: pushvpack
+        dependsOn: vpack
+        # condition: false
+        pool:
+          type: windows  
+        strategy:
+          maxParallel: 10
+          matrix:
+            CBS_x86:
+              vpackName: MicrosoftUIXamlInbox_x86
+              sourceSubDir: CBS\x86
+            CBS_x64:
+              vpackName: MicrosoftUIXamlInbox_x64
+              sourceSubDir: CBS\x64
+            CBS_Arm:
+              vpackName: MicrosoftUIXamlInbox_arm
+              sourceSubDir: CBS\arm
+            CBS_Arm64:
+              vpackName: MicrosoftUIXamlInbox_arm64
+              sourceSubDir: CBS\arm64
+            CBS_Winmd:
+              vpackName: MicrosoftUIXamlInboxWinmd
+              sourceSubDir: CBS\winmd
+            WinUI:
+              vpackName: Microsoft.UI.Xaml
+              sourceSubDir: WinUIVpack
+        variables:
           
-    #       publishDir: $(Build.SourcesDirectory)\publish
-    #       vpackDir: $(publishDir)\$(sourceSubDir)
-    #       ob_outputDirectory: $(vpackDir)
-    #       ob_artifactSuffix: _$(vpackName)
-          
-
-    #       # createVPack: # information for Vpack (Learn more: https://www.osgwiki.com/wiki/OneBranch_Windows_Undocked_Pipelines)
-    #       ob_createvpack_enabled: true
-    #       ob_createvpack_packagename: $(vpackName)
-    #       ob_createvpack_owneralias: kmahone
-    #       ob_createvpack_description: $(vpackName)
-    #       ob_createvpack_provData: true
-
-    #       ob_createvpack_versionAs: string
-    #       vpackversion: $[ dependencies.vpack.outputs['createvpack.vpackversion'] ]
-    #       ob_createvpack_version: $(vpackversion)-kmahonetest4
-
-    #       ob_createvpack_verbose: true
-    #       ob_createvpack_topLevelRetries: 0
-    #       ob_createvpack_failOnStdErr: true
-    #       ob_createvpack_taskLogVerbosity: Detailed
+          publishDir: $(Build.SourcesDirectory)\publish
+          vpackDir: $(publishDir)\$(sourceSubDir)
+          ob_outputDirectory: $(vpackDir)
+          ob_artifactSuffix: _$(vpackName)
           
 
+          # createVPack: # information for Vpack (Learn more: https://www.osgwiki.com/wiki/OneBranch_Windows_Undocked_Pipelines)
+          ob_createvpack_enabled: true
+          ob_createvpack_packagename: $(vpackName)
+          ob_createvpack_owneralias: kmahone
+          ob_createvpack_description: $(vpackName)
+          ob_createvpack_provData: true
 
-    #     steps:
+          ob_createvpack_versionAs: string
+          vpackversion: $[ dependencies.vpack.outputs['createvpack.vpackversion'] ]
+          ob_createvpack_version: $(vpackversion)-kmahonetest4
 
-    #       - powershell: |
-    #           ls env:
-    #         displayName: 'display env vars'
-    #         continueOnError: true
-
-    #       - task: UseDotNet@2
-    #         displayName: 'Use .NET Core sdk'
-    #         inputs:
-    #           packageType: sdk
-    #           version: 3.1.415
-    #           installationPath: $(Agent.ToolsDirectory)/dotnet
-
-    #       - task: DownloadPipelineArtifact@2
-    #         inputs:
-    #           artifactName: drop_pack_vpack
-    #           targetPath: $(publishDir)
-
-    #           # buildType: specific
-    #           # project: $(System.TeamProjectId)
-    #           # definition: $(System.DefinitionId)
-    #           # buildVersionToDownload: 'specific'
-    #           # pipelineId : 66416380 
+          ob_createvpack_verbose: true
+          ob_createvpack_topLevelRetries: 0
+          ob_createvpack_failOnStdErr: true
+          ob_createvpack_taskLogVerbosity: Detailed
+          
 
 
-    #       - powershell: |
-    #           Get-ChildItem -Recurse $(publishDir)
-    #         displayName: 'list contents of publishDir'
-    #         continueOnError: true
+        steps:
+
+          - powershell: |
+              ls env:
+            displayName: 'display env vars'
+            continueOnError: true
+
+          - task: UseDotNet@2
+            displayName: 'Use .NET Core sdk'
+            inputs:
+              packageType: sdk
+              version: 3.1.415
+              installationPath: $(Agent.ToolsDirectory)/dotnet
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: drop_pack_vpack
+              targetPath: $(publishDir)
+
+              # buildType: specific
+              # project: $(System.TeamProjectId)
+              # definition: $(System.DefinitionId)
+              # buildVersionToDownload: 'specific'
+              # pipelineId : 66416380 
+
+
+          - powershell: |
+              Get-ChildItem -Recurse $(publishDir)
+            displayName: 'list contents of publishDir'
+            continueOnError: true
               

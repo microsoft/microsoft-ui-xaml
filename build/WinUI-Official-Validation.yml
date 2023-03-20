@@ -89,55 +89,67 @@ jobs:
       PathtoPublish: $(Build.SourcesDirectory)\Artifacts\drop
       artifactName: drop
 
+  - task: PublishSymbols@2  # Publish symbols to public Microsoft Symbol Server
+    displayName: 'Publish symbols (public)'
+    continueOnError: true
+    inputs:
+      SymbolsFolder: $(Build.SourcesDirectory)\Artifacts\drop
+      SearchPattern: '**/Microsoft.UI.Xaml.pdb'
+      SymbolServerType: 'TeamServices'
+      IndexSources: false
+    env:
+      ArtifactServices_Symbol_AccountName: microsoftpublicsymbols
+      ArtifactServices_Symbol_PAT: $(WinUILab-Pipeline-PAT)
 
 
-# - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
-#   parameters:
-#     name: 'RunTestsInHelix'
-#     dependsOn: GetBuild
-#     condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
-#     testSuite: 'DevTestSuite'
-#     rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
 
-# # Build solution that depends on nuget package
-# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-#   parameters:
-#     buildJobName: 'BuildNugetPkgTests'
-#     buildArtifactName: 'NugetPkgTestsDrop'
-#     runTestJobName: 'RunNugetPkgTestsInHelix'
-#     helixType: 'test/nuget'
-#     dependsOn: GetBuild
-#     useFrameworkPkg: false
+- template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
+  parameters:
+    name: 'RunTestsInHelix'
+    dependsOn: GetBuild
+    condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+    testSuite: 'DevTestSuite'
+    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
 
-# # Framework package tests
-# - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-#   parameters:
-#     buildJobName: 'BuildFrameworkPkgTests'
-#     buildArtifactName: 'FrameworkPkgTestsDrop'
-#     runTestJobName: 'RunFrameworkPkgTestsInHelix'
-#     helixType: 'test/frpkg'
-#     dependsOn: GetBuild
-#     useFrameworkPkg: true
+# Build solution that depends on nuget package
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    buildJobName: 'BuildNugetPkgTests'
+    buildArtifactName: 'NugetPkgTestsDrop'
+    runTestJobName: 'RunNugetPkgTestsInHelix'
+    helixType: 'test/nuget'
+    dependsOn: GetBuild
+    useFrameworkPkg: false
 
-# - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
-#   parameters:
-#     dependsOn:
-#     - RunTestsInHelix
-#     - RunNugetPkgTestsInHelix
-#     - RunFrameworkPkgTestsInHelix
-#     rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
-#     minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
+# Framework package tests
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    buildJobName: 'BuildFrameworkPkgTests'
+    buildArtifactName: 'FrameworkPkgTestsDrop'
+    runTestJobName: 'RunFrameworkPkgTestsInHelix'
+    helixType: 'test/frpkg'
+    dependsOn: GetBuild
+    useFrameworkPkg: true
 
-# # NuGet package WACK tests
-# - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
-#   parameters:
-#     name: 'NugetPkgWACKTests'
-#     dependsOn: BuildNugetPkgTests
-#     artifactName: 'NugetPkgTestsDrop'
+- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+  parameters:
+    dependsOn:
+    - RunTestsInHelix
+    - RunNugetPkgTestsInHelix
+    - RunFrameworkPkgTestsInHelix
+    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
+    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
 
-# # Framework package WACK tests
-# - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
-#   parameters:
-#     name: 'FrameworkPkgWACKTests'
-#     dependsOn: BuildFrameworkPkgTests
-#     artifactName: 'FrameworkPkgTestsDrop'
+# NuGet package WACK tests
+- template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+  parameters:
+    name: 'NugetPkgWACKTests'
+    dependsOn: BuildNugetPkgTests
+    artifactName: 'NugetPkgTestsDrop'
+
+# Framework package WACK tests
+- template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+  parameters:
+    name: 'FrameworkPkgWACKTests'
+    dependsOn: BuildFrameworkPkgTests
+    artifactName: 'FrameworkPkgTestsDrop'
