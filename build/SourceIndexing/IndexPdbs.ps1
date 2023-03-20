@@ -8,32 +8,26 @@ Param(
     [switch]$recursive
 )
 
-# $debuggerPath = (Get-ItemProperty -path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows Kits\Installed Roots" -name WindowsDebuggersRoot10).WindowsDebuggersRoot10
-# $srcsrvPath = Join-Path $debuggerPath "x64\srcsrv"
-# $srctoolExe = Join-Path $srcsrvPath "srctool.exe"
-# $pdbstrExe = Join-Path $srcsrvPath "pdbstr.exe"
 
-$repoRoot = $script:MyInvocation.MyCommand.Path | Split-Path -Parent | Split-Path -Parent | Split-Path -Parent
+$repoRoot = Join-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path) "..\..\"
 $pdbstrExe = Join-Path $repoRoot "packages\Microsoft.Debugging.Tools.PdbStr.20230202.1638.0\content\amd64\pdbstr.exe"
 $srctoolExe = Join-Path $repoRoot "packages\Microsoft.Debugging.Tools.SrcTool.20230202.1638.0\content\amd64\srctool.exe"
 
-
-
-# E:\microsoft-ui-xaml-staging\packages\Microsoft.Debugging.Tools.PdbStr.20230202.1638.0\content\amd64\pdbstr.exe
-
-# Write-Host "debuggerPath = $debuggerPath"
-# Write-Host "srcsrvPath = $srcsrvPath"
 Write-Host "srctoolExe = $srctoolExe"
 Write-Host "pdbstrExe = $pdbstrExe"
 
 if(!(Test-Path $srctoolExe))
 {
-    Write-Host "Not found: $srctoolExe"
+    Write-Error "Not found: $srctoolExe"
+    Write-Error "Make sure to run nuget restore before running script"
+    return -1
 }
 
 if(!(Test-Path $pdbstrExe))
 {
-    Write-Host "Not found: $pdbstrExe"
+    Write-Error "Not found: $pdbstrExe"
+    Write-Error "Make sure to run nuget restore before running script"
+    return -1
 }
 
 $fileTable = @{}

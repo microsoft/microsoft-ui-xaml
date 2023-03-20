@@ -89,6 +89,17 @@ jobs:
       .\test\MUXControlsReleaseTest\updateUsedNugetPackageVersion.ps1 $newVersion
     displayName: Update proj files to use candidate nupkg.
 
+  - template: MUX-InstallWindowsSDK-Steps.yml
+
+  - template: MUX-InstallNuget-Steps.yml
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk'
+    inputs:
+      packageType: sdk
+      version: 3.1.415
+      installationPath: $(Agent.ToolsDirectory)/dotnet
+
   - template: MUX-BuildProject-Steps.yml
     parameters:
       solutionPath: test\MUXControlsReleaseTest\RuntimeComponentThatUsesMUX\RuntimeComponentThatUsesMUX.sln

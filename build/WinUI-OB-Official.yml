@@ -1,34 +1,14 @@
-#####################################################################################################################################
-#                                               OneBranch Pipelines - Official                                                      #
-#####################################################################################################################################
-#                                                                                                                                   #
-# This pipeline was created by EasyStart from a sample located at:                                                                  #
-#                               https://aka.ms/obpipelines/easystart/samples                                                        #
-#                                                                                                                                   #
-# Windows Undocked Wiki:        https://www.osgwiki.com/wiki/Windows_Undocked_Template                                              #
-# General OB Documentation:     https://aka.ms/obpipelines                                                                          #
-# Build MSBuild project:        https://dev.azure.com/onebranch/OneBranch/_wiki/wikis/OneBranch.wiki/6045/Build-MSBuild-project     #
-# Yaml Schema:                  https://aka.ms/obpipelines/yaml/schema                                                              #
-# Retail Tasks:                 https://aka.ms/obpipelines/tasks                                                                    #
-# Support:                      https://aka.ms/onebranchsup                                                                         #
-#                                                                                                                                   #
-#####################################################################################################################################
-
-# Add this for VPack versioning when using Package ES Setup task
-# name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
-# https://aka.ms/obpipelines/triggers
 trigger: none 
 
-parameters: # parameters are shown up in ADO UI in a build queue time
+parameters: 
 - name: 'debug'
   displayName: 'Enable debug output'
   type: boolean
   default: false
 
 variables:
-  CDP_DEFINITION_BUILD_COUNT: $[counter('', 0)] # needed for onebranch.pipeline.version task https://aka.ms/obpipelines/versioning
   system.debug: ${{ parameters.debug }}
   ENABLE_PRS_DELAYSIGN: 1
   ROOT: $(Build.SourcesDirectory)
@@ -52,25 +32,11 @@ extends:
   template: v2/Microsoft.Official.yml@templates # https://aka.ms/obpipelines/templates
   parameters:
     platform:
-      name: 'windows_undocked' # windows undocked
-            
-    cloudvault: # Please refer the wiki for more information: https://aka.ms/obpipelines/cloudvault
-      enabled: false
+      name: 'windows_undocked'
     
-    # TODO - set to true
     globalSdl: # Refer the wiki for more options in this parameter: https://aka.ms/obpipelines/sdl
       tsa:
-        enabled: false # onebranch publish all sdl results to TSA. If TSA is disabled all SDL tools will forced into 'break' build mode.  Please provide TSAOptions.json.
-      # suppression:
-      #   suppressionFile: $(Build.SourcesDirectory)\.gdn\global.gdnsuppress
-
-    #   updateOSManifest: # Information for updating OS Manifest OS repository (Learn more: https://www.osgwiki.com/wiki/OneBranch_Windows_Undocked_Pipelines)
-    #     enabled: true
-    #     osbranch: << Branch of the repo to fetch from >>
-    #     source: << Path to the file to fetch >>
-    #     destination: << Path to folder where file should be fetched to >>
-    #     manifest: << Path(s) to location of a vPack manifest to update the downloaded manifest from. >>
-    # ##    << Please refer wiki for more Update OS Manifest options >>
+        enabled: true 
 
     stages:
     - stage: build
@@ -78,7 +44,6 @@ extends:
       jobs:
       - job: main
         pool:
-          # read more about custom job pool types at https://aka.ms/obpipelines/yaml/jobs
           type: windows  
 
         strategy:
@@ -100,16 +65,11 @@ extends:
               buildConfiguration: 'Release'
         
         variables:
-          
           appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
           buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
-          # ob_outputDirectory: '$(REPOROOT)\out' 
-          # binaries scanning tools are run on this directory ( https://onebranch.visualstudio.com/OneBranch/_wiki/wikis/OneBranch.wiki/4634/SDL-(Static-Analysis)-for-Containerized-Workflows ) and 
-          # this directory is uploaded to pipeline artifacts. More info at https://aka.ms/obpipelines/artifacts
           ob_outputDirectory: $(build.artifactStagingDirectory)
           ob_artifactSuffix: _$(buildPlatform)_$(buildConfiguration)
-          ob_git_fetchDepth: 0
-          
+          ob_git_fetchDepth: 0 # This disables shallow git fetch. This is required for the restore-pgodb.ps1 script to work correctly.
 
         steps:
 
@@ -211,16 +171,12 @@ extends:
               signing_profile: external_distribution
 
           - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-            displayName: 'Install Microsoft.Debugging.Tools.PdbStr'
+            displayName: 'NuGet restore build\SourceIndexing\packages.config'
             inputs:
-              command: custom
-              arguments: 'install Microsoft.Debugging.Tools.PdbStr -NonInteractive -Version 20230202.1638.0 -Source https://api.nuget.org/v3/index.json -OutputDirectory packages -PackageSaveMode nupkg'
-
-          - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-            displayName: 'Install Microsoft.Debugging.Tools.SrcTool'
-            inputs:
-              command: custom
-              arguments: 'install Microsoft.Debugging.Tools.SrcTool -NonInteractive -Version 20230202.1638.0 -Source https://api.nuget.org/v3/index.json -OutputDirectory packages -PackageSaveMode nupkg'
+              restoreSolution: build/SourceIndexing/packages.config
+              feedsToUse: config
+              nugetConfigPath: nuget.config
+              restoreDirectory: $(Build.SourcesDirectory)/packages
 
           - task: powershell@2
             displayName: 'Source Index PDBs'
@@ -231,15 +187,6 @@ extends:
               arguments: -SearchDir '$(buildOutputDir)\$(buildConfiguration)' -SourceRoot '$(Build.SourcesDirectory)' -recursive -Verbose -CommitId $(Build.SourceVersion)
               errorActionPreference: silentlyContinue
 
-          # - task: PublishSymbols@2  # Publish symbols to public Microsoft Symbol Server
-          #   displayName: 'Publish symbols (public)'
-          #   continueOnError: true
-          #   inputs:
-          #     SearchPattern: $(buildOutputDir)/$(buildConfiguration)/$(buildPlatform)/**/*.pdb
-          #     SymbolServerType: 'TeamServices'
-          #   env:
-          #     ArtifactServices_Symbol_AccountName: microsoftpublicsymbols
-          #     ArtifactServices_Symbol_PAT: $(WinUILab-Pipeline-PAT)
           - task: PublishSymbols@2 # Publish symbols to internal symweb
             continueOnError: true
             displayName: 'Publish symbols (internal)'
@@ -371,7 +318,6 @@ extends:
                 -Subversion '$(buildrevision)' `
                 -BuildArch $(primaryBuildArch) `
                 -BuildFlavor Release
-
             displayName: 'build-nupkg.ps1'
 
           - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
@@ -490,7 +436,7 @@ extends:
             displayName: CreateCBSVPack.cmd
             name: createvpack
             failOnStderr: true
-            # Note: This task sets the 'vpackversion' variable that is used below.
+            # Note: This task sets the 'vpackversion' variable that is used in the Job below.
 
           - powershell: |
               Get-ChildItem -Recurse $(publishDir)
@@ -529,7 +475,6 @@ extends:
           vpackDir: $(publishDir)\$(sourceSubDir)
           ob_outputDirectory: $(vpackDir)
           ob_artifactSuffix: _$(vpackName)
-          
 
           # createVPack: # information for Vpack (Learn more: https://www.osgwiki.com/wiki/OneBranch_Windows_Undocked_Pipelines)
           ob_createvpack_enabled: true
@@ -537,17 +482,13 @@ extends:
           ob_createvpack_owneralias: kmahone
           ob_createvpack_description: $(vpackName)
           ob_createvpack_provData: true
-
           ob_createvpack_versionAs: string
           vpackversion: $[ dependencies.vpack.outputs['createvpack.vpackversion'] ]
           ob_createvpack_version: $(vpackversion)-kmahonetest4
-
           ob_createvpack_verbose: true
           ob_createvpack_topLevelRetries: 0
           ob_createvpack_failOnStdErr: true
           ob_createvpack_taskLogVerbosity: Detailed
-          
-
 
         steps:
 
@@ -573,7 +514,6 @@ extends:
               # definition: $(System.DefinitionId)
               # buildVersionToDownload: 'specific'
               # pipelineId : 66416380 
-
 
           - powershell: |
               Get-ChildItem -Recurse $(publishDir)

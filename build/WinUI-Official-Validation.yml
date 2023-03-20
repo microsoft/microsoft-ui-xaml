@@ -3,6 +3,7 @@ name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 variables:
   minimumExpectedTestsExecutedCount: 2000  # Sanity check for minimum expected tests to be reported
   rerunPassesRequiredToAvoidFailure: 5
+  
 
 resources:
   pipelines:
@@ -25,6 +26,7 @@ jobs:
 
   variables:
     buildIdToTest: $(resources.pipeline.WinUI-OB-Official.runID)
+    buildPipelineDefinition: 98255
 
   steps:
 
@@ -39,7 +41,7 @@ jobs:
       targetPath: $(Build.SourcesDirectory)\Artifacts\drop
       buildType: specific
       project: $(System.TeamProjectId)
-      definition: 98255
+      definition: $(buildPipelineDefinition)
       buildVersionToDownload: specific
       pipelineId : $(buildIdToTest)
 
@@ -49,7 +51,7 @@ jobs:
       targetPath: $(Build.SourcesDirectory)\Artifacts\drop
       buildType: specific
       project: $(System.TeamProjectId)
-      definition: 98255
+      definition: $(buildPipelineDefinition)
       buildVersionToDownload: specific
       pipelineId : $(buildIdToTest)
 
@@ -59,7 +61,7 @@ jobs:
       targetPath: $(Build.SourcesDirectory)\Artifacts\drop
       buildType: specific
       project: $(System.TeamProjectId)
-      definition: 98255
+      definition: $(buildPipelineDefinition)
       buildVersionToDownload: specific
       pipelineId : $(buildIdToTest)
 
@@ -69,7 +71,7 @@ jobs:
       targetPath: $(Build.SourcesDirectory)\Artifacts\drop
       buildType: specific
       project: $(System.TeamProjectId)
-      definition: 98255
+      definition: $(buildPipelineDefinition)
       buildVersionToDownload: specific
       pipelineId : $(buildIdToTest)
 
@@ -79,7 +81,7 @@ jobs:
       targetPath: $(Build.SourcesDirectory)\Artifacts\drop
       buildType: specific
       project: $(System.TeamProjectId)
-      definition: 98255
+      definition: $(buildPipelineDefinition)
       buildVersionToDownload: specific
       pipelineId : $(buildIdToTest)
 
@@ -100,7 +102,6 @@ jobs:
     env:
       ArtifactServices_Symbol_AccountName: microsoftpublicsymbols
       ArtifactServices_Symbol_PAT: $(WinUILab-Pipeline-PAT)
-
 
 
 - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
