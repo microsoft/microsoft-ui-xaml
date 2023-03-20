@@ -107,7 +107,6 @@ jobs:
   parameters:
     name: 'RunTestsInHelix'
     dependsOn: GetBuild
-    condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
     testSuite: 'DevTestSuite'
     rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
 
@@ -155,4 +154,3 @@ jobs:
     artifactName: 'FrameworkPkgTestsDrop'
 
 
-    
