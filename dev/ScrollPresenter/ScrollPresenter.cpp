@@ -930,7 +930,6 @@ winrt::Size ScrollPresenter::ArrangeOverride(winrt::Size const& finalSize)
     {
         // Ensure that this ScrollPresenter has a rectangular clip.
         winrt::RectangleGeometry newRectangleGeometry;
-        //newRectangleGeometry.Rect();
         Clip(newRectangleGeometry);
 
         rectangleGeometry = newRectangleGeometry;
@@ -6746,7 +6745,6 @@ void ScrollPresenter::ProcessOffsetsChange(
     }
 
     // For mouse-wheel scrolling, make sure the initial velocity is larger than the minimum effective velocity.
-    //if (operationTrigger == InteractionTrackerAsyncOperationTrigger::MouseWheel && m_state == winrt::ScrollingInteractionState::Idle)
      if (static_cast<int>(operationTrigger) & static_cast<int>(InteractionTrackerAsyncOperationTrigger::MouseWheel) && m_state == winrt::ScrollingInteractionState::Idle)
     {
         // Minimum absolute velocity. Any lower velocity has no effect.
@@ -6919,7 +6917,6 @@ void ScrollPresenter::ProcessZoomFactorChange(
     const winrt::float3 centerPoint(centerPoint2D.x - m_contentLayoutOffsetX, centerPoint2D.y - m_contentLayoutOffsetY, 0.0f);
 
     // For mouse-wheel zooming, make sure the initial velocity is larger than the minimum effective velocity.
-    //if (operationTrigger == InteractionTrackerAsyncOperationTrigger::MouseWheel && m_state == winrt::ScrollingInteractionState::Idle)
     if (static_cast<int>(operationTrigger) & static_cast<int>(InteractionTrackerAsyncOperationTrigger::MouseWheel) && m_state == winrt::ScrollingInteractionState::Idle)
     {
         // Minimum absolute velocity. Any lower velocity has no effect.

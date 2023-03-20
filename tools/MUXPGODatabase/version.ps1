@@ -91,10 +91,8 @@ function CompareRevisions ( $version1, $version2 )
 
 function GetForkPoint ( $pgoBranch )
 {
-    Write-Host "!!!! git log --oneline -n 100"
-    Write-Host (git log --oneline -n 100 --decorate=full)
-    
     $forkSHA = $( git merge-base origin/$pgoBranch HEAD )
+
     if ( $LastExitCode -ne 0 )
     {
         throw "FAILED: git merge-base"
@@ -107,19 +105,9 @@ function GetForkPoint ( $pgoBranch )
         throw "FAILED: Get forkDate"
     }
 
-    Write-Host "!!!!! DateString = $forkDate"
-    Write-Host "!!!!! BranchString = $($pgoBranch -replace "(/|\.|@|>|<)", "-" )"
-    Write-Host "!!!!! SHA = $forkSHA"
-
     return [PSCustomObject] @{
         DateString = $forkDate
         BranchString = ( $pgoBranch -replace "(/|\.|@|>|<)", "-" )
         SHA = $forkSHA
     }
-
-    # return [PSCustomObject] @{
-    #     DateString = "2303032151"
-    #     BranchString = "main"
-    #     SHA = "aa5cb617e2bdf08acd1e5523af4f7e740f1f2b7d"
-    # }
 }
