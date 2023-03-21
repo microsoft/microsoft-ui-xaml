@@ -231,7 +231,7 @@ extends:
 
           - powershell: |
               $prereleaseTag = "prerelease"
-              if ("$(useReleaseTag)}" -eq [bool]::TrueString) { $prereleaseTag = "" }
+              if ("$(useReleaseTag)" -eq [bool]::TrueString) { $prereleaseTag = "" }
 
               & "$env:Build_SourcesDirectory\build\NuSpecs\build-nupkg.ps1" `
                 -BuildOutput '$(Build.SourcesDirectory)\Artifacts\drop' `
