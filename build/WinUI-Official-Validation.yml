@@ -21,7 +21,7 @@ jobs:
 - job: GetBuild
   pool: 
     name: WinDevPool-L
-    demands: ImageOverride -equals WinDevVS16-9
+    demands: ImageOverride -equals WinDevVS17-latest
   timeoutInMinutes: 120
 
   variables:
@@ -91,6 +91,7 @@ jobs:
       PathtoPublish: $(Build.SourcesDirectory)\Artifacts\drop
       artifactName: drop
 
+  # We can't publish to the public Symbol Server from the main OneBranch build, so we do it here instead.
   - task: PublishSymbols@2  # Publish symbols to public Microsoft Symbol Server
     displayName: 'Publish symbols (public)'
     continueOnError: true

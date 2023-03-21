@@ -3,12 +3,18 @@ name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 trigger: none 
 
 parameters: 
+- name: 'MUXFinalRelease'
+  displayName: 'MUXFinalRelease'
+  type: boolean
+  default: false
+
 - name: 'debug'
   displayName: 'Enable debug output'
   type: boolean
   default: false
 
 variables:
+  MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
   system.debug: ${{ parameters.debug }}
   ENABLE_PRS_DELAYSIGN: 1
   ROOT: $(Build.SourcesDirectory)
@@ -40,7 +46,6 @@ extends:
 
     stages:
     - stage: build
-      # condition: false
       jobs:
       - job: main
         pool:
@@ -77,12 +82,7 @@ extends:
 
           - template: build\AzurePipelinesTemplates\MUX-InstallNuget-Steps.yml@self
 
-          - task: UseDotNet@2
-            displayName: 'Use .NET Core sdk'
-            inputs:
-              packageType: sdk
-              version: 3.1.415
-              installationPath: $(Agent.ToolsDirectory)/dotnet
+          - template: build\AzurePipelinesTemplates\MUX-InstallDotNetSDK-Steps.yml@self
 
           - powershell: |
               ls env:
@@ -112,24 +112,7 @@ extends:
             failOnStderr: true
             displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
 
-          # The environment variable VCToolsInstallDir isn't defined on lab machines, so we need to retrieve it ourselves.
-          - script: |
-              "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -Latest -requires Microsoft.Component.MSBuild -property InstallationPath > %TEMP%\vsinstalldir.txt
-              set /p _VSINSTALLDIR15=<%TEMP%\vsinstalldir.txt
-              del %TEMP%\vsinstalldir.txt
-              call "%_VSINSTALLDIR15%\Common7\Tools\VsDevCmd.bat"
-              echo VCToolsInstallDir = %VCToolsInstallDir%
-              echo ##vso[task.setvariable variable=VCToolsInstallDir]%VCToolsInstallDir%
-            displayName: 'Retrieve VC tools directory'
-
-          - task: powershell@2
-            displayName: 'Restore PGO database'
-            condition: eq(variables['PGOBuildMode'], 'Optimize')
-            inputs:
-              targetType: filePath
-              workingDirectory: $(Build.SourcesDirectory)\tools\MUXPGODatabase
-              filePath: $(Build.SourcesDirectory)\tools\MUXPGODatabase\restore-pgodb.ps1
-              arguments: -NuGetConfigPath $(Build.SourcesDirectory)\nuget.config
+          - template: build\AzurePipelinesTemplates\MUX-RestorePgo-Steps.yml@self
 
           - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
             displayName: 'NuGet restore MUXControls.sln'
@@ -161,6 +144,7 @@ extends:
               search_root: $(Build.SourcesDirectory)\BuildOutput\$(buildConfiguration)
               signing_profile: external_distribution
 
+          # The test apps build directly into appxPackageDir, so we sign there also.
           - task: onebranch.pipeline.signing@1
             displayName: 'Sign output (appxPackageDir)'
             inputs:
@@ -170,22 +154,9 @@ extends:
               search_root: $(appxPackageDir)
               signing_profile: external_distribution
 
-          - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-            displayName: 'NuGet restore build\SourceIndexing\packages.config'
-            inputs:
-              restoreSolution: build/SourceIndexing/packages.config
-              feedsToUse: config
-              nugetConfigPath: nuget.config
-              restoreDirectory: $(Build.SourcesDirectory)/packages
-
-          - task: powershell@2
-            displayName: 'Source Index PDBs'
-            continueOnError: true
-            inputs:
-              targetType: filePath
-              filePath: build\SourceIndexing\IndexPdbs.ps1
-              arguments: -SearchDir '$(buildOutputDir)\$(buildConfiguration)' -SourceRoot '$(Build.SourcesDirectory)' -recursive -Verbose -CommitId $(Build.SourceVersion)
-              errorActionPreference: silentlyContinue
+          - template: build\AzurePipelinesTemplates\MUX-SourceIndexPDBs-Steps.yml@self
+            parameters:
+              buildOutputDir: $(buildOutputDir)
 
           - task: PublishSymbols@2 # Publish symbols to internal symweb
             continueOnError: true
@@ -215,91 +186,43 @@ extends:
       dependsOn: build
       jobs:
       - job: nupkg
-        # condition: false
         pool:
           type: windows  
         variables:
-          MUXFinalRelease: false
           useReleaseTag: '$(MUXFinalRelease)'
           nupkgdir: '$(build.artifactStagingDirectory)'
           primaryBuildArch: x86
           ob_outputDirectory: $(build.artifactStagingDirectory)
 
         steps:
-          - powershell: |
-              # Some builds have "-branchname" appended, but when this happens the environment variable 
-              # TFS_BUILDNUMBER has the un-modified version.
-              if ($env:TFS_BUILDNUMBER)
-              {
-                $env:BUILD_BUILDNUMBER = $env:TFS_BUILDNUMBER
-              }
-              $yymm = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 10, 4)
-              $dd = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 5, 2)
-              $revision = $env:BUILD_BUILDNUMBER.substring($env:BUILD_BUILDNUMBER.length - 3, 3)
-              Write-Host "##vso[task.setvariable variable=builddate]$yymm$dd"
-              Write-Host "##vso[task.setvariable variable=builddate_yymm]$yymm"
-              Write-Host "##vso[task.setvariable variable=builddate_dd]$dd"
-              Write-Host "##vso[task.setvariable variable=buildrevision]$revision"
-
-              Write-Host builddate=$yymm$dd
-              Write-Host builddate_yymm=$yymm
-              Write-Host builddate_dd=$dd
-              Write-Host buildrevision=$revision
-            displayName: 'Get build revision number'
+          - template: build\AzurePipelinesTemplates\MUX-PopulateBuildDateAndRevision-Steps.yml@self
 
           - powershell: |
               ls env:
             displayName: 'display env vars'
             continueOnError: true
 
-          - task: NuGetToolInstaller@0
-            displayName: 'Use NuGet 5.8.0'
-            inputs:
-              versionSpec: 5.8.0
+          - template: build\AzurePipelinesTemplates\MUX-InstallNuget-Steps.yml@self
 
           - task: DownloadPipelineArtifact@2
             inputs:
               artifactName: drop_build_main_x64_Release
               targetPath: $(Build.SourcesDirectory)\Artifacts\drop
 
-              # buildType: specific
-              # project: $(System.TeamProjectId)
-              # definition: $(System.DefinitionId)
-              # buildVersionToDownload: 'specific'
-              # pipelineId : 66256335 
-
           - task: DownloadPipelineArtifact@2
             inputs:
               artifactName: drop_build_main_x86_Release
               targetPath: $(Build.SourcesDirectory)\Artifacts\drop
-              
-              # buildType: specific
-              # project: $(System.TeamProjectId)
-              # definition: $(System.DefinitionId)
-              # buildVersionToDownload: 'specific'
-              # pipelineId : 66256335 
 
           - task: DownloadPipelineArtifact@2
             inputs:
               artifactName: drop_build_main_arm_Release
               targetPath: $(Build.SourcesDirectory)\Artifacts\drop
-              
-              # buildType: specific
-              # project: $(System.TeamProjectId)
-              # definition: $(System.DefinitionId)
-              # buildVersionToDownload: 'specific'
-              # pipelineId : 66256335 
 
           - task: DownloadPipelineArtifact@2
             inputs:
               artifactName: drop_build_main_arm64_Release
               targetPath: $(Build.SourcesDirectory)\Artifacts\drop
-              
-              # buildType: specific
-              # project: $(System.TeamProjectId)
-              # definition: $(System.DefinitionId)
-              # buildVersionToDownload: 'specific'
-              # pipelineId : 66256335 
 
           - powershell: |
               Get-ChildItem -Recurse $(Build.SourcesDirectory)\Artifacts
@@ -348,7 +271,6 @@ extends:
                 ]
 
       - job: vpack
-        # condition: false
         pool:
           type: windows  
         variables:
@@ -358,17 +280,9 @@ extends:
           ob_outputDirectory: $(publishDir)
 
         steps:
-          - task: NuGetToolInstaller@0
-            displayName: 'Use NuGet 5.8.0'
-            inputs:
-              versionSpec: 5.8.0
+          - template: build\AzurePipelinesTemplates\MUX-InstallNuget-Steps.yml@self
 
-          - task: UseDotNet@2
-            displayName: 'Use .NET Core sdk'
-            inputs:
-              packageType: sdk
-              version: 3.1.415
-              installationPath: $(Agent.ToolsDirectory)/dotnet
+          - template: build\AzurePipelinesTemplates\MUX-InstallDotNetSDK-Steps.yml@self
 
           - task: NuGetAuthenticate@0
 
@@ -377,44 +291,20 @@ extends:
               artifactName: drop_build_main_x64_Release
               targetPath: $(Build.SourcesDirectory)\Artifacts\drop
 
-              # buildType: specific
-              # project: $(System.TeamProjectId)
-              # definition: $(System.DefinitionId)
-              # buildVersionToDownload: 'specific'
-              # pipelineId : 66416380 
-
           - task: DownloadPipelineArtifact@2
             inputs:
               artifactName: drop_build_main_x86_Release
               targetPath: $(Build.SourcesDirectory)\Artifacts\drop
-              
-              # buildType: specific
-              # project: $(System.TeamProjectId)
-              # definition: $(System.DefinitionId)
-              # buildVersionToDownload: 'specific'
-              # pipelineId : 66416380 
 
           - task: DownloadPipelineArtifact@2
             inputs:
               artifactName: drop_build_main_arm_Release
               targetPath: $(Build.SourcesDirectory)\Artifacts\drop
-              
-              # buildType: specific
-              # project: $(System.TeamProjectId)
-              # definition: $(System.DefinitionId)
-              # buildVersionToDownload: 'specific'
-              # pipelineId : 66416380 
 
           - task: DownloadPipelineArtifact@2
             inputs:
               artifactName: drop_build_main_arm64_Release
               targetPath: $(Build.SourcesDirectory)\Artifacts\drop
-              
-              # buildType: specific
-              # project: $(System.TeamProjectId)
-              # definition: $(System.DefinitionId)
-              # buildVersionToDownload: 'specific'
-              # pipelineId : 66416380 
 
           # This contains the OS internal version of windows.winmd which is required for us to re-merge our winmd so that it can be used from OS repo.
           - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
@@ -443,9 +333,10 @@ extends:
             displayName: 'list contents of publishDir'
             continueOnError: true
 
+      # In OneBranch, a single Job can only publish one vpack. So we have a separate Job 'pushvpack' to push each of the 
+      # vpacks created in the previous Job.
       - job: pushvpack
         dependsOn: vpack
-        # condition: false
         pool:
           type: windows  
         strategy:
@@ -497,23 +388,12 @@ extends:
             displayName: 'display env vars'
             continueOnError: true
 
-          - task: UseDotNet@2
-            displayName: 'Use .NET Core sdk'
-            inputs:
-              packageType: sdk
-              version: 3.1.415
-              installationPath: $(Agent.ToolsDirectory)/dotnet
+          - template: build\AzurePipelinesTemplates\MUX-InstallDotNetSDK-Steps.yml@self
 
           - task: DownloadPipelineArtifact@2
             inputs:
               artifactName: drop_pack_vpack
               targetPath: $(publishDir)
-
-              # buildType: specific
-              # project: $(System.TeamProjectId)
-              # definition: $(System.DefinitionId)
-              # buildVersionToDownload: 'specific'
-              # pipelineId : 66416380 
 
           - powershell: |
               Get-ChildItem -Recurse $(publishDir)

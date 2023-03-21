@@ -67,18 +67,6 @@ function Download-File
         }
     }
 
-    Write-Host "!!! Checking downloadDestTemp: $downloadDestTemp"
-    if (Test-Path $downloadDestTemp)
-    {
-        Write-Host "!!! Exists: $downloadDestTemp"
-        Get-ChildItem $downloadDestTemp
-    }
-    else
-    {
-        Write-Host "!!! Does not exist: $downloadDestTemp"
-    }
-    
-
     Unblock-File $downloadPath
 
     $downloadDestTemp = $downloadPath;
