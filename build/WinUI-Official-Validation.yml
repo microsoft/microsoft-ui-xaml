@@ -18,6 +18,8 @@ resources:
 
 jobs:
 
+# This job gets the build from the WinUI-OB-Official pipeline
+# The following jobs validate the build by running tests.
 - job: GetBuild
   pool: 
     name: WinDevPool-L
@@ -26,7 +28,7 @@ jobs:
 
   variables:
     buildIdToTest: $(resources.pipeline.WinUI-OB-Official.runID)
-    buildPipelineDefinition: 98255
+    buildPipelineDefinition: 98255 # This is WinUI-OB-Official
 
   steps:
 
