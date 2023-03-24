@@ -72,6 +72,9 @@
     <ClInclude Include="..\inc\tracker_ref.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="..\inc\StaticAssertFalse.h">
+      <Filter>inc</Filter>
+    </ClInclude>
     <ClInclude Include="XamlMetadataProviderGenerated.h" />
     <ClInclude Include="..\inc\TypeHelper.h">
       <Filter>inc</Filter>

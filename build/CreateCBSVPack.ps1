@@ -192,4 +192,4 @@ $contentString = "This is the contents of version '$($vpackversion)' of the Micr
 Set-Content -Path $readmeFilePath -Value $contentString 
 
 # This sets a Pipeline variable that the Job will use to push the created vpacks with the specified version.
-Write-Host "##vso[task.setvariable variable=vpackversion]$vpackversion"
+Write-Host "##vso[task.setvariable variable=vpackversion;isOutput=true;]$vpackversion"

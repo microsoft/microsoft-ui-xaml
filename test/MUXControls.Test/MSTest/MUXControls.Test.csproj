@@ -8,6 +8,8 @@
     <RuntimeIdentifiers>win-x86;win-x64;win-arm;win-arm64</RuntimeIdentifiers>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
+    <NoWarn>$(NoWarn);NU1505</NoWarn>
+    <DisableCheckingDuplicateNuGetItems>true</DisableCheckingDuplicateNuGetItems>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Axe.Windows" Version="1.0.4" />

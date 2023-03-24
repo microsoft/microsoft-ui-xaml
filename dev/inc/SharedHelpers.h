@@ -4,6 +4,7 @@
 #pragma once
 
 #include "AutoHandle.h"
+#include "StaticAssertFalse.h"
 
 class SharedHelpers
 {

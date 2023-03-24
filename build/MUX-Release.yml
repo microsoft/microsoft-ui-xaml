@@ -16,7 +16,7 @@ jobs:
 - job: Scanning
   pool: 
     name: WinDevPool-S
-    demands: ImageOverride -equals WinDevVS16-9
+    demands: ImageOverride -equals WinDevVS17-latest
 
   steps:
 
@@ -44,7 +44,7 @@ jobs:
     eq(variables['useBuildOutputFromBuildId'],'')
   pool: 
     name: WinDevPool-L
-    demands: ImageOverride -equals WinDevVS16-9
+    demands: ImageOverride -equals WinDevVS17-latest
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10

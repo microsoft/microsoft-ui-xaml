@@ -114,6 +114,7 @@
     <ClInclude Include="..\inc\RuntimeClassHelpers.h" />
     <ClInclude Include="..\inc\SharedHelpers.h" />
     <ClInclude Include="..\inc\tracker_ref.h" />
+    <ClInclude Include="..\inc\StaticAssertFalse.h" />
     <ClInclude Include="..\inc\TypeHelper.h" />
     <ClInclude Include="..\inc\CollectionHelper.h" />
     <ClInclude Include="MUXControlsFactory.h" />
