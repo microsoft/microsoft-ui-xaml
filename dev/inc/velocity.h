@@ -32,4 +32,10 @@ WI_DEFINE_FEATURE(
     WilStagingRequiresFeature(Feature_NWMTest1),
     WilStagingGroup("", R"()"));
 
+WI_DEFINE_FEATURE(
+    Feature_Crumbs, 40950262, DisabledByDefault,
+    WilStagingChangeTime(OnReboot),
+    WilStagingRequiresFeature(Feature_Crumbs),
+    WilStagingGroup("", R"()"));
+
 #pragma warning(pop)
