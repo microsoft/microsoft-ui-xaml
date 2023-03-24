@@ -9,7 +9,7 @@ jobs:
 - job: Build
   pool: 
     name: WinDevPool-L
-    demands: ImageOverride -equals WinDevVS16-9
+    demands: ImageOverride -equals WinDevVS17-latest
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
