@@ -141,7 +141,7 @@ public:
 
     explicit tracker_ref(nullptr_t)
     {
-        static_assert(false, "tracker_ref should only be used in ReferenceRuntimeClass-derived field members and 'this' should be passed for the owner");
+        static_assert_false("tracker_ref should only be used in ReferenceRuntimeClass-derived field members and 'this' should be passed for the owner");
     }
 
     ~tracker_ref()

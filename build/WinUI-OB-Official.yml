@@ -1,0 +1,402 @@
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+trigger: none 
+
+parameters: 
+- name: 'MUXFinalRelease'
+  displayName: 'MUXFinalRelease'
+  type: boolean
+  default: false
+
+- name: 'debug'
+  displayName: 'Enable debug output'
+  type: boolean
+  default: false
+
+variables:
+  MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+  system.debug: ${{ parameters.debug }}
+  ENABLE_PRS_DELAYSIGN: 1
+  ROOT: $(Build.SourcesDirectory)
+  REPOROOT: $(Build.SourcesDirectory)
+  OUTPUTROOT: $(REPOROOT)\out
+  NUGET_XMLDOC_MODE: none
+
+  # Docker image which is used to build the project https://aka.ms/obpipelines/containers
+  WindowsContainerImage: 'onebranch.azurecr.io/windows/ltsc2019/vse2022:latest' 
+
+  Codeql.Enabled: true #  CodeQL once every 3 days on the default branch for all languages its applicable to in that pipeline.
+
+resources:
+  repositories: 
+    - repository: templates
+      type: git
+      name: OneBranch.Pipelines/GovernedTemplates
+      ref: refs/heads/main
+
+extends:
+  template: v2/Microsoft.Official.yml@templates # https://aka.ms/obpipelines/templates
+  parameters:
+    platform:
+      name: 'windows_undocked'
+    
+    globalSdl: # Refer the wiki for more options in this parameter: https://aka.ms/obpipelines/sdl
+      tsa:
+        enabled: true 
+
+    stages:
+    - stage: build
+      jobs:
+      - job: main
+        pool:
+          type: windows  
+
+        strategy:
+          maxParallel: 10
+          matrix:
+            Release_x86:
+              buildPlatform: 'x86'
+              buildConfiguration: 'Release'
+              PGOBuildMode: 'Optimize'
+            Release_x64:
+              buildPlatform: 'x64'
+              buildConfiguration: 'Release'
+              PGOBuildMode: 'Optimize'
+            Release_Arm:
+              buildPlatform: 'arm'
+              buildConfiguration: 'Release'
+            Release_Arm64:
+              buildPlatform: 'arm64'
+              buildConfiguration: 'Release'
+        
+        variables:
+          appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+          buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
+          ob_outputDirectory: $(build.artifactStagingDirectory)
+          ob_artifactSuffix: _$(buildPlatform)_$(buildConfiguration)
+          ob_git_fetchDepth: 0 # This disables shallow git fetch. This is required for the restore-pgodb.ps1 script to work correctly.
+
+        steps:
+
+          - template: build\AzurePipelinesTemplates\MUX-PopulateBuildDateAndRevision-Steps.yml@self
+
+          - template: build\AzurePipelinesTemplates\MUX-InstallNuget-Steps.yml@self
+
+          - template: build\AzurePipelinesTemplates\MUX-InstallDotNetSDK-Steps.yml@self
+
+          - powershell: |
+              ls env:
+            displayName: 'display env vars'
+            continueOnError: true
+
+          - powershell: |
+              ls "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows Kits\Installed Roots"
+            displayName: 'List SDKS'
+            continueOnError: true
+
+          # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
+          - task: DownloadPackage@1
+            displayName: 'Download Microsoft.Telemetry.Inbox.Native'
+            inputs:
+              feed: '/3415933f-ac0d-4766-8c0a-3f4c247c25f5'                         # 0
+              view: 'ef61a1c1-003b-4a27-bde5-beec8301021b'                          # Release
+              definition: '2fe60c09-c66f-4275-ae2d-f015c7170c72'                    # Microsoft.Telemetry.Inbox.Native
+              version: '10.0.18362.1-190318-1202.19h1-release.amd64fre'             # latest version
+              downloadPath: '$(System.DefaultWorkingDirectory)'                     # download and extract to repo root
+
+          # Replace the stubbed MicrosoftTelemetry.h with the real one
+          # Delete the existing stubbed MicrosoftTelemetry.h first, to ensure that if it is no longer at the expected path that the task, and build, fails
+          - script: |
+              del $(System.DefaultWorkingDirectory)\dev\telemetry\MicrosoftTelemetry.h
+              move /Y $(System.DefaultWorkingDirectory)\build\native\inc\MicrosoftTelemetry.h $(System.DefaultWorkingDirectory)\dev\telemetry\
+            failOnStderr: true
+            displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
+
+          - template: build\AzurePipelinesTemplates\MUX-RestorePgo-Steps.yml@self
+
+          - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+            displayName: 'NuGet restore MUXControls.sln'
+            inputs:
+              restoreSolution: $(Build.SourcesDirectory)\MUXControls.sln
+              feedsToUse: config
+              nugetConfigPath: nuget.config
+
+          - task: VSBuild@1
+            displayName: 'Build solution MUXControls.sln'
+            inputs:
+              solution: '$(Build.SourcesDirectory)\MUXControls.sln'
+              vsVersion: 17.0
+              platform: $(buildPlatform)
+              configuration: $(buildConfiguration)
+              msbuildArgs: '/restore /p:AppxPackageDir=$(appxPackageDir) /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false /binaryLogger:$(Build.ArtifactStagingDirectory)/MUXControls.$(buildPlatform).$(buildConfiguration).binlog /p:MUXVersionBuild=$(builddate_yymm) /p:MUXVersionRevision=$(builddate_dd)$(buildrevision) /p:VCToolsInstallDir="$(VCToolsInstallDir)\" /p:PGOBuildMode=$(PGOBuildMode)'
+
+          - powershell: |
+              Get-ChildItem -Recurse $(Build.SourcesDirectory)\BuildOutput
+            displayName: 'list contents of BuildOutput'
+            continueOnError: true
+
+          - task: onebranch.pipeline.signing@1 # https://aka.ms/obpipelines/signing
+            displayName: 'Sign output (BuildOutput)'
+            inputs:
+              command: 'sign'
+              signing_environment: 'azure-ado'
+              files_to_sign: '**/*.dll;**/*.winmd;**/*.ps1;**/*.psd1;**/*.msix;**/*.appx'
+              search_root: $(Build.SourcesDirectory)\BuildOutput\$(buildConfiguration)
+              signing_profile: external_distribution
+
+          # The test apps build directly into appxPackageDir, so we sign there also.
+          - task: onebranch.pipeline.signing@1
+            displayName: 'Sign output (appxPackageDir)'
+            inputs:
+              command: 'sign'
+              signing_environment: 'azure-ado'
+              files_to_sign: '**/*.dll;**/*.winmd;**/*.ps1;**/*.psd1;**/*.msix;**/*.appx'
+              search_root: $(appxPackageDir)
+              signing_profile: external_distribution
+
+          - template: build\AzurePipelinesTemplates\MUX-SourceIndexPDBs-Steps.yml@self
+            parameters:
+              buildOutputDir: $(buildOutputDir)
+
+          - task: PublishSymbols@2 # Publish symbols to internal symweb
+            continueOnError: true
+            displayName: 'Publish symbols (internal)'
+            inputs:
+              SearchPattern: $(buildOutputDir)/$(buildConfiguration)/$(buildPlatform)/**/*.pdb
+              SymbolServerType: 'TeamServices'
+
+          - template: build\AzurePipelinesTemplates\MUX-MakeFrameworkPackages-Steps.yml@self
+            parameters:
+              buildOutputDir: $(buildOutputDir)
+              signOutput: true
+
+          - task: powershell@2
+            displayName: 'Copy files to staging dir'
+            inputs:
+              targetType: filePath
+              filePath: build\CopyFilesToStagingDir.ps1
+              arguments: -BuildOutputDir '$(buildOutputDir)' -PublishDir '$(Build.ArtifactStagingDirectory)' -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
+
+          - powershell: |
+              Get-ChildItem -Recurse $(Build.ArtifactStagingDirectory)
+            displayName: 'list contents of ArtifactStagingDirectory'
+            continueOnError: true
+
+    - stage: pack
+      dependsOn: build
+      jobs:
+      - job: nupkg
+        pool:
+          type: windows  
+        variables:
+          useReleaseTag: '$(MUXFinalRelease)'
+          nupkgdir: '$(build.artifactStagingDirectory)'
+          primaryBuildArch: x86
+          ob_outputDirectory: $(build.artifactStagingDirectory)
+
+        steps:
+          - template: build\AzurePipelinesTemplates\MUX-PopulateBuildDateAndRevision-Steps.yml@self
+
+          - powershell: |
+              ls env:
+            displayName: 'display env vars'
+            continueOnError: true
+
+          - template: build\AzurePipelinesTemplates\MUX-InstallNuget-Steps.yml@self
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: drop_build_main_x64_Release
+              targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: drop_build_main_x86_Release
+              targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: drop_build_main_arm_Release
+              targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: drop_build_main_arm64_Release
+              targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+
+          - powershell: |
+              Get-ChildItem -Recurse $(Build.SourcesDirectory)\Artifacts
+            displayName: 'list contents of Artifacts'
+            continueOnError: true
+
+          - powershell: |
+              $prereleaseTag = "prerelease"
+              if ("$(useReleaseTag)" -eq [bool]::TrueString) { $prereleaseTag = "" }
+
+              & "$env:Build_SourcesDirectory\build\NuSpecs\build-nupkg.ps1" `
+                -BuildOutput '$(Build.SourcesDirectory)\Artifacts\drop' `
+                -OutputDir '$(nupkgdir)' `
+                -prereleaseversion "$prereleaseTag" `
+                -DateOverride '$(builddate)' `
+                -Subversion '$(buildrevision)' `
+                -BuildArch $(primaryBuildArch) `
+                -BuildFlavor Release
+            displayName: 'build-nupkg.ps1'
+
+          - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+            displayName: 'CodeSign (nupkg)'
+            inputs:
+              ConnectedServiceName: WinUISigning
+              FolderPath: $(nupkgdir)
+              Pattern: |
+                **/Microsoft.UI.Xaml*.nupkg
+              UseMinimatch: true
+              signConfigType: inlineSignParams
+              inlineOperation: | 
+                [
+                  {
+                      "KeyCode" : "CP-401405",
+                      "OperationCode" : "NuGetSign",
+                      "Parameters" : {},
+                      "ToolName" : "sign",
+                      "ToolVersion" : "1.0"
+                  },
+                  {
+                      "KeyCode" : "CP-401405",
+                      "OperationCode" : "NuGetVerify",
+                      "Parameters" : {},
+                      "ToolName" : "sign",
+                      "ToolVersion" : "1.0"
+                  }
+                ]
+
+      - job: vpack
+        pool:
+          type: windows  
+        variables:
+          windowsPublicsWinmdVersion: 0.0.2
+          internalSDKFeedUrl: https://pkgs.dev.azure.com/microsoft/WinUI/_packaging/WinUIInternalWindowsSDK/nuget/v3/index.json
+          publishDir: $(Build.SourcesDirectory)\publish
+          ob_outputDirectory: $(publishDir)
+
+        steps:
+          - template: build\AzurePipelinesTemplates\MUX-InstallNuget-Steps.yml@self
+
+          - template: build\AzurePipelinesTemplates\MUX-InstallDotNetSDK-Steps.yml@self
+
+          - task: NuGetAuthenticate@0
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: drop_build_main_x64_Release
+              targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: drop_build_main_x86_Release
+              targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: drop_build_main_arm_Release
+              targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: drop_build_main_arm64_Release
+              targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+
+          # This contains the OS internal version of windows.winmd which is required for us to re-merge our winmd so that it can be used from OS repo.
+          - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+            displayName: 'nuget install Microsoft.Internal.WinUI.WindowsPublicsWinmd'
+            inputs:
+              command: custom
+              arguments: 'install Microsoft.Internal.WinUI.WindowsPublicsWinmd -NonInteractive -Version $(windowsPublicsWinmdVersion) -Source $(internalSDKFeedUrl) -OutputDirectory packages'
+
+          - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+            displayName: 'NuGet restore dev\dll\packages.config'
+            inputs:
+              restoreSolution: dev\dll\packages.config
+              feedsToUse: config
+              nugetConfigPath: nuget.config
+              restoreDirectory: $(Build.SourcesDirectory)\packages
+
+          - script: |
+              $(Build.SourcesDirectory)\build\CreateCBSVPack.cmd -releaseFolder $(Build.SourcesDirectory)\Artifacts\drop\Release -publicsRoot $(Build.SourcesDirectory)\packages\Microsoft.Internal.WinUI.WindowsPublicsWinmd.$(windowsPublicsWinmdVersion) -publishDir $(publishDir)
+            displayName: CreateCBSVPack.cmd
+            name: createvpack
+            failOnStderr: true
+            # Note: This task sets the 'vpackversion' variable that is used in the Job below.
+
+          - powershell: |
+              Get-ChildItem -Recurse $(publishDir)
+            displayName: 'list contents of publishDir'
+            continueOnError: true
+
+      # In OneBranch, a single Job can only publish one vpack. So we have a separate Job 'pushvpack' to push each of the 
+      # vpacks created in the previous Job.
+      - job: pushvpack
+        dependsOn: vpack
+        pool:
+          type: windows  
+        strategy:
+          maxParallel: 10
+          matrix:
+            CBS_x86:
+              vpackName: MicrosoftUIXamlInbox_x86
+              sourceSubDir: CBS\x86
+            CBS_x64:
+              vpackName: MicrosoftUIXamlInbox_x64
+              sourceSubDir: CBS\x64
+            CBS_Arm:
+              vpackName: MicrosoftUIXamlInbox_arm
+              sourceSubDir: CBS\arm
+            CBS_Arm64:
+              vpackName: MicrosoftUIXamlInbox_arm64
+              sourceSubDir: CBS\arm64
+            CBS_Winmd:
+              vpackName: MicrosoftUIXamlInboxWinmd
+              sourceSubDir: CBS\winmd
+            WinUI:
+              vpackName: Microsoft.UI.Xaml
+              sourceSubDir: WinUIVpack
+        variables:
+          
+          publishDir: $(Build.SourcesDirectory)\publish
+          vpackDir: $(publishDir)\$(sourceSubDir)
+          ob_outputDirectory: $(vpackDir)
+          ob_artifactSuffix: _$(vpackName)
+
+          # createVPack: # information for Vpack (Learn more: https://www.osgwiki.com/wiki/OneBranch_Windows_Undocked_Pipelines)
+          ob_createvpack_enabled: true
+          ob_createvpack_packagename: $(vpackName)
+          ob_createvpack_owneralias: kmahone
+          ob_createvpack_description: $(vpackName)
+          ob_createvpack_provData: true
+          ob_createvpack_versionAs: string
+          vpackversion: $[ dependencies.vpack.outputs['createvpack.vpackversion'] ]
+          ob_createvpack_version: $(vpackversion)-kmahonetest4
+          ob_createvpack_verbose: true
+          ob_createvpack_topLevelRetries: 0
+          ob_createvpack_failOnStdErr: true
+          ob_createvpack_taskLogVerbosity: Detailed
+
+        steps:
+
+          - powershell: |
+              ls env:
+            displayName: 'display env vars'
+            continueOnError: true
+
+          - template: build\AzurePipelinesTemplates\MUX-InstallDotNetSDK-Steps.yml@self
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: drop_pack_vpack
+              targetPath: $(publishDir)
+
+          - powershell: |
+              Get-ChildItem -Recurse $(publishDir)
+            displayName: 'list contents of publishDir'
+            continueOnError: true
+              

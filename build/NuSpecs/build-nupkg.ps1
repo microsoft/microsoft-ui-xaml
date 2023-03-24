@@ -12,6 +12,17 @@ Param(
     [switch]$SkipFrameworkPackage
 )
 
+Write-Host "BuildOutput = '$BuildOutput'"
+Write-Host "OutputDir = '$OutputDir'"
+Write-Host "VersionOverride = '$VersionOverride'"
+Write-Host "Subversion = '$Subversion'"
+Write-Host "DateOverride = '$DateOverride'"
+Write-Host "prereleaseversion = '$prereleaseversion'"
+Write-Host "BuildFlavor = '$BuildFlavor'"
+Write-Host "BuildArch = '$BuildArch'"
+Write-Host "NoDeleteTemp = '$NoDeleteTemp'"
+Write-Host "SkipFrameworkPackage = '$SkipFrameworkPackage'"
+
 #
 # Version is read from the VERSION file.
 #
@@ -154,42 +165,6 @@ if(-not $SkipFrameworkPackage)
         Write-Host "Nuget returned $lastexitcode"
         Exit $lastexitcode; 
     }
-}
-
-if (-not $NoDeleteTemp)
-{
-    Remove-Item -Recurse -Force "$($TempDir.FullName)"
-}
-
-$nupkgtitle = "Microsoft.Experimental.UI.Xaml"
-$TempDir = New-TemporaryDirectory
-Write-Verbose "TempDir = $($TempDir.FullName)"
-
-$runtimesDir = "$($TempDir.FullName)\runtimes"
-$toolsDir = "$($TempDir.FullName)\tools"
-
-Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x86\Microsoft.Experimental.UI.Xaml\Microsoft.Experimental.UI.Xaml.dll "$runtimesDir\win10-x86\native"
-Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x86\Microsoft.Experimental.UI.Xaml\Microsoft.Experimental.UI.Xaml.pri "$runtimesDir\win10-x86\native"
-Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x64\Microsoft.Experimental.UI.Xaml\Microsoft.Experimental.UI.Xaml.dll "$runtimesDir\win10-x64\native"
-Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x64\Microsoft.Experimental.UI.Xaml\Microsoft.Experimental.UI.Xaml.pri "$runtimesDir\win10-x64\native"
-Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm\Microsoft.Experimental.UI.Xaml\Microsoft.Experimental.UI.Xaml.dll "$runtimesDir\win10-arm\native"
-Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm\Microsoft.Experimental.UI.Xaml\Microsoft.Experimental.UI.Xaml.pri "$runtimesDir\win10-arm\native"
-Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm64\Microsoft.Experimental.UI.Xaml\Microsoft.Experimental.UI.Xaml.dll "$runtimesDir\win10-arm64\native"
-Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm64\Microsoft.Experimental.UI.Xaml\Microsoft.Experimental.UI.Xaml.pri "$runtimesDir\win10-arm64\native"
-
-
-$CommonNugetArgs = "-properties `"BuildOutput=$BuildOutput``;ID=$nupkgtitle``;RUNTIMESDIR=$runtimesDir`;TOOLSDIR=$toolsDir`;BUILDFLAVOR=$($BuildFlavor)`;BUILDARCH=$($BuildArch)`""
-
-$NugetArgs = "$CommonNugetArgs -OutputDirectory $OutputDir"
-
-$nugetExe = "$scriptDirectory\..\..\tools\NugetWrapper.cmd"
-$NugetCmdLine = "$nugetExe pack Microsoft.Experimental.UI.Xaml.nuspec $NugetArgs -version $version"
-Write-Host $NugetCmdLine
-Invoke-Expression $NugetCmdLine
-if ($lastexitcode -ne 0)
-{
-    Write-Host "Nuget returned $lastexitcode"
-    Exit $lastexitcode; 
 }
 
 if (-not $NoDeleteTemp)
