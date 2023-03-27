@@ -1,4 +1,4 @@
-#ifndef __features_FeatureStaging_SampleFeature
+﻿#ifndef __features_FeatureStaging_SampleFeature
 #define __features_FeatureStaging_SampleFeature
 #endif
 
@@ -35,7 +35,6 @@ WI_DEFINE_FEATURE(
 WI_DEFINE_FEATURE(
     Feature_Crumbs, 40950262, DisabledByDefault,
     WilStagingChangeTime(OnReboot),
-    WilStagingRequiresFeature(Feature_Crumbs),
     WilStagingGroup("", R"()"));
 
 #pragma warning(pop)

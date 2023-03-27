@@ -443,7 +443,7 @@ void BreadcrumbBar::FocusElementAt(int index)
 
 bool BreadcrumbBar::MoveFocus(int indexIncrement)
 {
-    if(WI_IS_FEATURE_ENABLED(Feature_Crumbs) && indexIncrement == 0)
+    if(Feature_Crumbs::IsEnabled() && indexIncrement == 0)
     {
         return false;
     }
@@ -586,7 +586,7 @@ void BreadcrumbBar::OnChildPreviewKeyDown(const winrt::IInspectable&, const winr
                 return;
             }
         }
-        if(!WI_IS_FEATURE_ENABLED(Feature_Crumbs))
+        if(!Feature_Crumbs::IsEnabled())
         {
             args.Handled(HandleEdgeCaseFocus(false, args.OriginalSource()));
         }
@@ -608,12 +608,12 @@ void BreadcrumbBar::OnChildPreviewKeyDown(const winrt::IInspectable&, const winr
                 return;
             }
         }
-        if(!WI_IS_FEATURE_ENABLED(Feature_Crumbs))
+        if(!Feature_Crumbs::IsEnabled())
         {
             args.Handled(HandleEdgeCaseFocus(false, args.OriginalSource()));
         }
     }
-    else if(WI_IS_FEATURE_ENABLED(Feature_Crumbs))
+    else if(Feature_Crumbs::IsEnabled())
     {
         return;
     }
