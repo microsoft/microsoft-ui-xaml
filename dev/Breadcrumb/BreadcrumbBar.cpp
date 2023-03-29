@@ -610,7 +610,7 @@ void BreadcrumbBar::OnChildPreviewKeyDown(const winrt::IInspectable&, const winr
         }
         if(!Feature_Crumbs::IsEnabled())
         {
-            args.Handled(HandleEdgeCaseFocus(false, args.OriginalSource()));
+            args.Handled(HandleEdgeCaseFocus(true, args.OriginalSource()));
         }
     }
     else if(Feature_Crumbs::IsEnabled())
