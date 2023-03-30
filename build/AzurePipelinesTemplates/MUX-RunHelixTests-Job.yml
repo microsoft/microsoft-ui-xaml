@@ -22,7 +22,7 @@ parameters:
       buildPlatform: 'x64'
       buildConfiguration: 'release'
       openHelixTargetQueues: 'windows.10.amd64.client.open.reunion'
-      closedHelixTargetQueues: 'windows.10.amd64.client.reunion'
+      closedHelixTargetQueues: 'windows.10.amd64.client20h2.xaml'
 
 jobs:
 - job: ${{ parameters.name }}
