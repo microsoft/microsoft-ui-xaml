@@ -8,6 +8,7 @@
 #include "ItemTemplateWrapper.h"
 #include "BreadcrumbBar.h"
 #include "BreadcrumbBarItemAutomationPeer.h"
+#include "velocity.h"
 
 namespace winrt::Microsoft::UI::Xaml::Controls
 {
@@ -537,7 +538,10 @@ void BreadcrumbBarItem::InstantiateFlyout()
             winrt::AutomationProperties::SetName(ellipsisItemsRepeater, s_ellipsisItemsRepeaterAutomationName);
             ellipsisItemsRepeater.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
 
-            ellipsisItemsRepeater.Layout(winrt::StackLayout());
+            if(Feature_Crumbs::IsEnabled())
+            {
+                ellipsisItemsRepeater.Layout(winrt::StackLayout());
+            }
 
             m_ellipsisElementFactory = winrt::make_self<BreadcrumbElementFactory>();
             ellipsisItemsRepeater.ItemTemplate(*m_ellipsisElementFactory);
