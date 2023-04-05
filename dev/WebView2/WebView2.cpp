@@ -424,6 +424,8 @@ bool WebView2::ShouldNavigate(const winrt::Uri& uri)
 
 winrt::IAsyncAction WebView2::OnSourceChanged(winrt::Uri providedUri)
 {
+    auto strongThis = get_strong(); // ensure object lifetime during coroutines
+
     // Trigger / wait for CWV2 creation if one isn't yet ready
     if (!m_coreWebView)
     {
@@ -670,6 +672,8 @@ winrt::IAsyncAction WebView2::CreateCoreObjects()
     MUX_ASSERT((m_isImplicitCreationInProgress && !m_isExplicitCreationInProgress) ||
                (!m_isImplicitCreationInProgress && m_isExplicitCreationInProgress));
 
+    auto strongThis = get_strong(); // ensure object lifetime during coroutines
+
     if (m_isClosed)
     {
         throw winrt::hresult_error(RO_E_CLOSED, s_error_wv2_closed);
@@ -711,6 +715,8 @@ winrt::IAsyncAction WebView2::CreateCoreEnvironment() noexcept
     hstring browserInstall;
     hstring userDataFolder;
 
+    auto strongThis = get_strong(); // ensure object lifetime during coroutines
+
     if (!m_options)
     {
         // NOTE: To enable Anaheim logging, add: m_options.AdditionalBrowserArguments(L"--enable-logging=stderr --v=1");
@@ -739,6 +745,8 @@ winrt::IAsyncAction WebView2::CreateCoreEnvironment() noexcept
 
 winrt::IAsyncAction WebView2::CreateCoreWebViewFromEnvironment(HWND hwndParent)
 {
+    auto strongThis = get_strong(); // ensure object lifetime during coroutines
+
     if (!hwndParent)
     {
         hwndParent = EnsureTemporaryHostHwnd();
@@ -1319,6 +1327,8 @@ winrt::IUnknown WebView2::GetProviderForHwnd(HWND hwnd)
 
 winrt::IAsyncAction WebView2::EnsureCoreWebView2Async()
 {
+    auto strongThis = get_strong(); // ensure object lifetime during coroutines
+
     // If CWV2 exists already, return immediately/synchronously
     if (m_coreWebView)
     {
@@ -1475,6 +1485,7 @@ winrt::IAsyncOperation<winrt::hstring> WebView2::ExecuteScriptAsync(winrt::hstri
 {
     // TODO_WebView2: Consider recreating the core webview here if its process had failed,
     // allowing the app to use this API to recover from the error.
+    auto strongThis = get_strong(); // ensure object lifetime during coroutines
 
     winrt::hstring returnedValue{}; // initialized with default value
     if (m_coreWebView)
@@ -1803,7 +1814,7 @@ void WebView2::CheckAndUpdateVisibility(bool force)
 // To resolve this, we delay the call to hide CoreWV if the WebView is being hidden.
 void WebView2::UpdateCoreWebViewVisibility()
 {
-    auto strongThis = get_strong();
+    auto strongThis = get_strong(); // ensure object lifetime during coroutines
     auto updateCoreWebViewVisibilityAction = [strongThis]()
     {
         if (strongThis->m_coreWebViewController)
