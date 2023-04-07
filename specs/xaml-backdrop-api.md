@@ -166,43 +166,17 @@ The properties on `SystemBackdropConfiguration` you receive may change over time
 
 ## SystemBackdrop.OnDefaultSystemBackdropConfigurationChanged protected method
 
-Override this method to be called when the object returned by `GetDefaultSystemBackdropConfiguration` has changed.
+Override this method to be called when one of the properrties (described above) on the object returned by `GetDefaultSystemBackdropConfiguration` has changed.
 
-This is useful if you're using a custom `SystemBackdropConfiguration`.
-The following example shows a `MicaBackdrop` similar to the previous example,
-but always forces the theme to be light.
-
-```cs
-protected override void OnSystemDefaultBackdropConfigurationChanged(SystemDefaultBackdropChangedEventArgs e)
-{
-    SetControllerConfig(e.ConnectedTarget, e.AssociatedRoot);
-}
-
-void SetControllerConfig(ICompositionSupportsSystemBackdrop connectedTarget, XamlRoot xamlRoot)
-{
-    var config = GetDefaultSystemBackdropConfiguration(connectedTarget, xamlRoot);
-    config.Theme = SystemBackdropTheme.Light;
-    _micaController.SetSystemBackdropConfiguration(config);
-}
-
+This is useful when implementing a custom `SystemBackdropConfiguration` that incorporates some of the tracekd property states but is different in some way from the default policy. First, obtain a  `SystemBackdropConfiguration` object from `GetDefaultSystemBackdropConfiguration` as usual, but do not apply it via `CompositionContoller.SetSystemBackdropConfiguration`. Instead  create an additional `SystemBackdropConfiguration` object that is updated on `OnDefaultSystemBackdropConfigurationChanged` by applying custom logic to the tracked property (eg ignoring Theme change). The second `SystemBackdropConfiguration` object is hooked up to `CompositionContoller.SetSystemBackdropConfiguration`, applyign the custom policy.
 ```
-
-
 
 ## Other `SystemBackdrop` members
 
 | Member | Description |
 | - | - |
-| `OnTargetConnected` virtual method | Called when this object is attached to an object, for example when set on `Window.SystemBackdrop` |
-| `OnTargetDisconnected` virtual method | Called when this object is cleared from an object |
-
-
-
-## SystemDefaultBackdropChangedEventArgs class
-
-Event args for the `OnSystemDefaultBackdropConfigurationChanged` virtual method.
-Provides an updated `ICompositionSupportsSystemBackdrop` and `XamlRoot`.
-
+| `OnTargetConnected` virtual method | Called when this object is attached to a valid container, for example when set on `Window.SystemBackdrop` |
+| `OnTargetDisconnected` virtual method | Called when this object is cleared from its container |
 
 
 # API Details
@@ -230,34 +204,27 @@ namespace Microsoft.UI.Xaml.Media
 
   [contract(Microsoft.UI.Xaml.WinUIContract, 4)]
   [webhosthidden]
+  [constructor_name("Microsoft.UI.Xaml.Media.ISystemBackdropFactory")]
   unsealed runtimeclass SystemBackdrop
       : Microsoft.UI.Xaml.DependencyObject
   {
-      protected SystemBackdrop();
+      [method_name("CreateInstance")] protected SystemBackdrop();
       
       overridable void OnTargetConnected(
         Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop connectedTarget,
         Microsoft.UI.Xaml.XamlRoot xamlRoot);
+
       overridable void OnTargetDisconnected(
         Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop disconnectedTarget);
 
-      protected Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration 
-        GetDefaultSystemBackdropConfiguration(
-          Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop target, 
-          Microsoft.UI.Xaml.XamlRoot xamlRoot);
+      Microsoft.UI.Composition.SystemBackdrops.SystemBackdropConfiguration GetDefaultSystemBackdropConfiguration(
+        Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop target, 
+        Microsoft.UI.Xaml.XamlRoot xamlRoot);
 
-        protected virtual void OnSystemDefaultBackdropConfigurationChanged(
-            SystemDefaultBackdropChangedEventArgs e)
+      overridable void OnDefaultSystemBackdropConfigurationChanged(
+        Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop target, 
+        Microsoft.UI.Xaml.XamlRoot xamlRoot);
   };
-
-  [contract(Microsoft.UI.Xaml.WinUIContract, 4)]
-  [webhosthidden]
-  unsealed runtimeclass SystemBackdropChangedEventArgs
-  {
-      Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop ConnectedTarget{ get; };
-      Microsoft.UI.Xaml.XamlRoot AssociatedRoot{ get; };
-  };
-
 }
 
 namespace Microsoft.UI.Xaml
@@ -292,7 +259,6 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
         static Microsoft.UI.Xaml.DependencyProperty SystemBackdropProperty{ get; };
     }  
   }
-
 
   [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
   [webhosthidden]
