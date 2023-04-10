@@ -1462,8 +1462,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("TestSuite", "C")]
+        // Bug 44117609: WinUI2: WebView2Tests.ReparentElementTest is unreliable and has been disabled
+        // [TestMethod]
+        // [TestProperty("TestSuite", "C")]
         public void ReparentElementTest()
         {
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
