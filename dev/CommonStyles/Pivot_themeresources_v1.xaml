@@ -368,7 +368,7 @@
                                                 </VisualState>
                                             </VisualStateGroup>
                                         </VisualStateManager.VisualStateGroups>
-                                        <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="12" Foreground="{ThemeResource PivotNextButtonForeground}" Glyph="&#xE0E3;" HorizontalAlignment="Center" VerticalAlignment="Center" MirroredWhenRightToLeft="True" UseLayoutRounding="False" />
+                                        <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="12" Foreground="{ThemeResource PivotNextButtonForeground}" Glyph="&#xE76C;" HorizontalAlignment="Center" VerticalAlignment="Center" MirroredWhenRightToLeft="True" UseLayoutRounding="False" />
                                     </Border>
                                 </ControlTemplate>
                                 <ControlTemplate x:Key="PreviousTemplate" TargetType="Button">
@@ -404,7 +404,7 @@
                                                 </VisualState>
                                             </VisualStateGroup>
                                         </VisualStateManager.VisualStateGroups>
-                                        <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="12" Foreground="{ThemeResource PivotPreviousButtonForeground}" Glyph="&#xE0E2;" HorizontalAlignment="Center" VerticalAlignment="Center" MirroredWhenRightToLeft="True" UseLayoutRounding="False" />
+                                        <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="12" Foreground="{ThemeResource PivotPreviousButtonForeground}" Glyph="&#xE76B;" HorizontalAlignment="Center" VerticalAlignment="Center" MirroredWhenRightToLeft="True" UseLayoutRounding="False" />
                                     </Border>
                                 </ControlTemplate>
                             </Grid.Resources>

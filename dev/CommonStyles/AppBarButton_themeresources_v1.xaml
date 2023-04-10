@@ -418,7 +418,7 @@
                                 AutomationProperties.AccessibilityView="Raw" />
                             <FontIcon x:Name="SubItemChevron"
                                 Grid.Column="2"
-                                Glyph="&#xE0E3;"
+                                Glyph="&#xE76C;"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 FontSize="12"
                                 AutomationProperties.AccessibilityView="Raw"
