@@ -11,6 +11,8 @@
     <AppxBundle>Never</AppxBundle>
     <AppInstallerUpdateFrequency>1</AppInstallerUpdateFrequency>
     <AppInstallerCheckForUpdateFrequency>OnApplicationRun</AppInstallerCheckForUpdateFrequency>
+    <NoWarn>$(NoWarn);NU1505</NoWarn>
+    <DisableCheckingDuplicateNuGetItems>true</DisableCheckingDuplicateNuGetItems>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.VS.appxmanifest">
