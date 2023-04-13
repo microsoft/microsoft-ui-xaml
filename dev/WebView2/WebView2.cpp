@@ -335,7 +335,18 @@ void WebView2::HandlePointerWheelChanged(const winrt::Windows::Foundation::IInsp
 {
     // Chromium handles WM_MOUSEXXX for mouse, WM_POINTERXXX for touch
     winrt::PointerDeviceType deviceType{ args.Pointer().PointerDeviceType() };
-    UINT message = deviceType == winrt::PointerDeviceType::Mouse ? WM_MOUSEWHEEL : WM_POINTERWHEEL;
+    winrt::PointerPoint pointerPoint{ args.GetCurrentPoint(*this) };
+    winrt::PointerPointProperties properties{ pointerPoint.Properties() };
+    UINT message;
+
+    if (deviceType == winrt::PointerDeviceType::Mouse)
+    {
+        message = properties.IsHorizontalMouseWheel() ? WM_MOUSEHWHEEL : WM_MOUSEWHEEL;
+    }
+    else
+    {
+        message = WM_POINTERWHEEL;
+    }
     OnXamlPointerMessage(message, args);
 }
 
