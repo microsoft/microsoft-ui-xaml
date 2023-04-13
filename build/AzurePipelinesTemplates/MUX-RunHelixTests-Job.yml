@@ -175,7 +175,7 @@ jobs:
 #     parallel: 10
 
 #   variables:
-#     winuiHelixVersion: 0.0.5.7
+#     winuiHelixVersion: 0.5.7
 #     helixScriptPath: $(Build.SourcesDirectory)\build\Helix\packages\Microsoft.Internal.WinUI.Helix.$(winuiHelixVersion)\scripts\pipeline
 #     testOS: Win10-22H2
 #     workItemsProjNameFilter: *proj
