@@ -27,7 +27,8 @@ parameters:
 jobs:
 - job: ${{ parameters.name }}
   dependsOn: ${{ parameters.dependsOn }}
-  condition: ${{ parameters.condition }}
+  # condition: ${{ parameters.condition }}
+  condition: false
   pool:
     vmImage: 'windows-2019'
   timeoutInMinutes: 120
@@ -164,7 +165,7 @@ jobs:
 
 
 - job: RunTestsOnPipeline
-  dependsOn: ${{ parameters.name }}
+  # dependsOn: ${{ parameters.name }}
   condition: not(failed())
   pool:
     name: WinDevPoolOSS-Test
@@ -175,13 +176,14 @@ jobs:
   #   parallel: 10
 
   variables:
+    useBuildOutputFromBuildId: 448707
     winuiHelixVersion: 0.5.8
     helixScriptPath: $(Build.SourcesDirectory)\build\Helix\packages\Microsoft.Internal.WinUI.Helix.$(winuiHelixVersion)\scripts\pipeline
     testOS: Win10-22H2
     workItemsProjNameFilter: '*proj'
     buildPlatform: x86
     buildConfiguration: release
-    buildFlavor: $(buildConfiguration)$(buildPlatform)
+    buildFlavor: $(buildPlatform)$(buildConfiguration)
     workItemsProjDir: $(Build.SourcesDirectory)\TestWorkItems-${{ parameters.testSuite}}\$(buildFlavor)
     testPayloadDir: $(Build.SourcesDirectory)\TestPayload-${{ parameters.testSuite}}\$(buildConfiguration)\$(buildPlatform)
     uploadRoot: c:\uploadroot
@@ -211,22 +213,22 @@ jobs:
 
   - task: DownloadBuildArtifacts@0 
     inputs: 
-      # buildType: specific
-      # buildVersionToDownload: specific
-      # project: $(System.TeamProjectId)
-      # pipeline: $(_useBuildOutputFromPipeline)
-      # buildId: $(useBuildOutputFromBuildId)
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: $(System.DefinitionId)
+      buildId: $(useBuildOutputFromBuildId)
       artifactName: TestWorkItems-${{ parameters.testSuite}}
       downloadPath: $(Build.SourcesDirectory)
       # itemPattern: '**/$(buildFlavor)/**'
 
   - task: DownloadBuildArtifacts@0 
     inputs: 
-      # buildType: specific
-      # buildVersionToDownload: specific
-      # project: $(System.TeamProjectId)
-      # pipeline: $(_useBuildOutputFromPipeline)
-      # buildId: $(useBuildOutputFromBuildId)
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: $(System.DefinitionId)
+      buildId: $(useBuildOutputFromBuildId)
       artifactName: TestPayload-${{ parameters.testSuite}}
       downloadPath: $(Build.SourcesDirectory)
       # itemPattern: '**/$(buildConfiguration)/$(buildPlatform)**'
