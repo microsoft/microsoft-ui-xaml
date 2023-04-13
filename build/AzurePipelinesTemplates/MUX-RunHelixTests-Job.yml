@@ -189,7 +189,8 @@ jobs:
     testOutputArtifactName: TestOutput
     testRunTitlePrefix: ${{ parameters.testSuite }}$(testOS)$(buildFlavor)
     # testRunTitle: '$(testRunTitlePrefix)$(System.JobPositionInPhase)'
-    testRunTitle: '$(testRunTitlePrefix)
+    testRunTitle: '$(testRunTitlePrefix)'
+
   steps:
   - task: PowerShell@2
     displayName: 'Display OS version info'
