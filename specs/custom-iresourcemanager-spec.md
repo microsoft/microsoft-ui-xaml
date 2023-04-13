@@ -72,24 +72,19 @@ implementation of the
 [`IResourceManager`](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.windows.applicationmodel.resources.iresourcemanager?view=windows-app-sdk-1.2)
 interface to be used for resolving resource URIs rather than the default `ResourceManager` that the 
 framework creates. In the event handler, you should instantiate your custom `IResourceManager` and 
-assign it to the `ResourceManagerRequestedEventArgs.ResourceManager` property. The value of this 
+assign it to the `ResourceManagerRequestedEventArgs.CustomResourceManager` property. The value of this 
 property is initially `null`, and it is only checked by the framework once per event raise after 
 all registered event handlers have been invoked. If the property value is still `null` then the 
 framework will use the default `ResourceManager`.
 
 
-## ResourceManagerRequestedEventArgs.ResourceManager Property
+## ResourceManagerRequestedEventArgs.CustomResourceManager Property
 
 Sets the custom `IResourceManager` that should be used by WinUI to resolve MRT resources for the 
 current thread. If you leave the value `null` then the default `ResourceManager` will be used.
 
-_Spec note: The type of this property should be `IResourceManager`,
-but there's an issue with the cswinrt projection where it gets confused
-about there being an existing internal interface by the same name behind the Windows
-[ResourceManager](https://docs.microsoft.com/uwp/api/Windows.ApplicationModel.Resources.Core.ResourceManager)._
-
 ```c#
-public object ResourceManager { get; set; }
+public IResourceManager ResourceManager { get; set; }
 ```
 
 
@@ -107,16 +102,9 @@ namespace Microsoft.UI.Xaml
 
   runtimeclass ResourceManagerRequestedEventArgs
   {
-    object ResourceManager;
+    IResourceManager CustomResourceManager;
   };
 }
 
 ```
 
-
-# Appendix
-
-- Should `ResourceManagerRequestedEventArgs.ResourceManager` be pre-populated with the default `ResourceManager` instance
-rather than `null`? This would simplify things a little bit for developers who wish to handle the `ResourceManager.ResourceNotFound`
-event but otherwise rely on the default resource URI resolution behavior but does add a very small amount of overhead (allocation of
-the default `ResourceManager`) even if the developer ultimately decides to provide their own `IResourceManager`.
