@@ -178,7 +178,7 @@ jobs:
     winuiHelixVersion: 0.5.7
     helixScriptPath: $(Build.SourcesDirectory)\build\Helix\packages\Microsoft.Internal.WinUI.Helix.$(winuiHelixVersion)\scripts\pipeline
     testOS: Win10-22H2
-    workItemsProjNameFilter: *proj
+    workItemsProjNameFilter: '*proj'
     buildPlatform: x86
     buildConfiguration: release
     buildFlavor: $(buildConfiguration)$(buildPlatform)
@@ -189,18 +189,6 @@ jobs:
     testOutputArtifactName: TestOutput
     testRunTitlePrefix: ${{ parameters.testSuite }}$(testOS)$(buildFlavor)
     testRunTitle: '$(testRunTitlePrefix)$(System.JobPositionInPhase)'
-
-    # useBuildOutputFromBuildId: $(Build.BuildId)
-    # 
-    # buildConfiguration: ${{ parameters.buildConfiguration }}
-    # buildFlavor: '${{ parameters.buildPlatform }}${{ parameters.buildConfiguration }}'
-    # testPayloadDir: $(Build.SourcesDirectory)\$(testPayloadArtifact)\$(buildFlavor)
-    # 
-    
-    # 
-    
-
-
   steps:
   - task: PowerShell@2
     displayName: 'Display OS version info'
@@ -270,24 +258,24 @@ jobs:
       PathtoPublish: $(uploadRoot)
       artifactName: $(testOutputArtifactName)
 
-  - task: PublishTestResults@2
-    condition: always()
-    inputs:
-      testResultsFormat: xUnit
-      testResultsFiles: testResults-*.xml
-      searchFolder: $(Build.SourcesDirectory)\build\PipelineScripts
-      mergeTestResults: true
-      failTaskOnFailedTests: true 
-      testRunTitle: '$(testRunTitle)'
-      buildPlatform: $(buildPlatform)
-      buildConfiguration: $(buildConfiguration)
+  # - task: PublishTestResults@2
+  #   condition: always()
+  #   inputs:
+  #     testResultsFormat: xUnit
+  #     testResultsFiles: testResults-*.xml
+  #     searchFolder: $(Build.SourcesDirectory)\build\PipelineScripts
+  #     mergeTestResults: true
+  #     failTaskOnFailedTests: true 
+  #     testRunTitle: '$(testRunTitle)'
+  #     buildPlatform: $(buildPlatform)
+  #     buildConfiguration: $(buildConfiguration)
 
-  - task: powershell@2
-    displayName: 'UpdateUnreliableTests.ps1'
-    condition: always()
-    env:
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-    inputs:
-      targetType: filePath
-      filePath: $(helixScriptPath)\UpdateUnreliableTests-Pipeline.ps1
-      arguments: -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }} -TestRunTitle $(testRunTitle) -SubResultsDirPath $(uploadRootInner)
+  # - task: powershell@2
+  #   displayName: 'UpdateUnreliableTests.ps1'
+  #   condition: always()
+  #   env:
+  #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+  #   inputs:
+  #     targetType: filePath
+  #     filePath: $(helixScriptPath)\UpdateUnreliableTests-Pipeline.ps1
+  #     arguments: -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }} -TestRunTitle $(testRunTitle) -SubResultsDirPath $(uploadRootInner)
