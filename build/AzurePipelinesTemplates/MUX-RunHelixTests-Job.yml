@@ -239,7 +239,7 @@ jobs:
       # buildId: $(useBuildOutputFromBuildId)
       artifactName: TestPayload-${{ parameters.testSuite}}
       downloadPath: $(Build.SourcesDirectory)
-      itemPattern: '**/$(buildConfiguration)/$(buildPlatform)**'
+      # itemPattern: '**/$(buildConfiguration)/$(buildPlatform)**'
 
   # - task: powershell@2
   #   displayName: 'UpdateUnreliableTests.ps1'
@@ -252,6 +252,7 @@ jobs:
   #     filePath: $(helixScriptPath)\UpdateUnreliableTests.ps1
   #     arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}'
 
+# -JobPositionInPhase $(System.JobPositionInPhase) -TotalJobsInPhase $(System.TotalJobsInPhase)
   - task: powershell@2
     displayName: Run Tests
     timeoutInMinutes: 60
@@ -259,7 +260,6 @@ jobs:
       targetType: filePath
       filePath: $(helixScriptPath)\RunTestPassSliceOnBuildAgent.ps1
       arguments: -WorkItemProjFileNameFilter $(workItemsProjNameFilter) -WorkItemProjDir $(workItemsProjDir) -TestPayloadDir $(testPayloadDir) -UploadRoot $(uploadRootInner) -JobPositionInPhase 1 -TotalJobsInPhase 20 -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }}
-      # -JobPositionInPhase $(System.JobPositionInPhase) -TotalJobsInPhase $(System.TotalJobsInPhase)
       errorActionPreference: stop
       workingDirectory: $(helixScriptPath)
 
