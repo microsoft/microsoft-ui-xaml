@@ -23,7 +23,7 @@ jobs:
   #     eq(variables['useBuildOutputFromBuildId'],''),
   #     ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True')
   #   )
-  condition: eq(variables['useBuildOutputFromBuildId'],''),
+  condition: eq(variables['useBuildOutputFromBuildId'],'')
   pool: 
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
       name: WinDevPoolOSS-L
