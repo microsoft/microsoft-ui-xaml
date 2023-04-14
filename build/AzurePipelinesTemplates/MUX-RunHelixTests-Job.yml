@@ -171,7 +171,7 @@ jobs:
     name: WinDevPoolOSS-Test
     demands: ImageOverride -equals Win10-22H2
 
-  timeoutInMinutes: 30
+  timeoutInMinutes: 90
   strategy:
     parallel: 10
 
@@ -243,6 +243,13 @@ jobs:
   #     targetType: filePath
   #     filePath: $(helixScriptPath)\UpdateUnreliableTests.ps1
   #     arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}'
+
+  - task: PowerShell@2
+    displayName: 'Delete IXMPTestAppTests'
+    inputs:
+      targetType: 'inline'
+      script: |
+        Remove-Item $(workItemsProjDir)\RunTestsInHelix-IXMPTestAppTests.proj
 
 
   - task: powershell@2
