@@ -172,8 +172,8 @@ jobs:
     demands: ImageOverride -equals Win10-22H2
 
   timeoutInMinutes: 30
-  # strategy:
-  #   parallel: 10
+  strategy:
+    parallel: 10
 
   variables:
     useBuildOutputFromBuildId: 448707
@@ -190,8 +190,8 @@ jobs:
     uploadRootInner: $(uploadRoot)\$(testOS)\$(buildFlavor)
     testOutputArtifactName: TestOutput
     testRunTitlePrefix: ${{ parameters.testSuite }}$(testOS)$(buildFlavor)
-    # testRunTitle: '$(testRunTitlePrefix)$(System.JobPositionInPhase)'
-    testRunTitle: '$(testRunTitlePrefix)'
+    testRunTitle: '$(testRunTitlePrefix)$(System.JobPositionInPhase)'
+    # testRunTitle: '$(testRunTitlePrefix)'
 
   steps:
   - task: PowerShell@2
@@ -244,14 +244,14 @@ jobs:
   #     filePath: $(helixScriptPath)\UpdateUnreliableTests.ps1
   #     arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}'
 
-# -JobPositionInPhase $(System.JobPositionInPhase) -TotalJobsInPhase $(System.TotalJobsInPhase)
+
   - task: powershell@2
     displayName: Run Tests
     timeoutInMinutes: 60
     inputs:
       targetType: filePath
       filePath: $(helixScriptPath)\RunTestPassSliceOnBuildAgent.ps1
-      arguments: -WorkItemProjFileNameFilter $(workItemsProjNameFilter) -WorkItemProjDir $(workItemsProjDir) -TestPayloadDir $(testPayloadDir) -UploadRoot $(uploadRootInner) -JobPositionInPhase 1 -TotalJobsInPhase 20 -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }}
+      arguments: -WorkItemProjFileNameFilter $(workItemsProjNameFilter) -WorkItemProjDir $(workItemsProjDir) -TestPayloadDir $(testPayloadDir) -UploadRoot $(uploadRootInner) -JobPositionInPhase $(System.JobPositionInPhase) -TotalJobsInPhase $(System.TotalJobsInPhase) -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }}
       errorActionPreference: stop
       workingDirectory: $(helixScriptPath)
 
