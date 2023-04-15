@@ -3,6 +3,9 @@ parameters:
   dependsOn: ''
   testSuite: DevTestSuite
   rerunPassesRequiredToAvoidFailure: 5
+  testOS: Win10-RS5
+  buildPlatform: x86
+  buildConfiguration: release
 
 
 jobs:
@@ -12,7 +15,7 @@ jobs:
   condition: not(failed())
   pool:
     name: WinDevPoolOSS-Test
-    demands: ImageOverride -equals Win10-22H2
+    demands: ImageOverride -equals ${{ parameters.testOS }}
 
   timeoutInMinutes: 90
   strategy:
@@ -22,19 +25,21 @@ jobs:
     useBuildOutputFromBuildId: 448707
     winuiHelixVersion: 0.5.8
     helixScriptPath: $(Build.SourcesDirectory)\build\Helix\packages\Microsoft.Internal.WinUI.Helix.$(winuiHelixVersion)\scripts\pipeline
-    testOS: Win10-22H2
-    workItemsProjNameFilter: '*proj'
-    buildPlatform: x86
-    buildConfiguration: release
+
+    testSuite: ${{ parameters.testSuite }}
+    testOS: ${{ parameters.testOS }}
+    buildPlatform: ${{ parameters.buildPlatform }}
+    buildConfiguration: ${{ parameters.buildConfiguration }}
     buildFlavor: $(buildPlatform)$(buildConfiguration)
-    workItemsProjDir: $(Build.SourcesDirectory)\TestWorkItems-${{ parameters.testSuite}}\$(buildFlavor)
-    testPayloadDir: $(Build.SourcesDirectory)\TestPayload-${{ parameters.testSuite}}\$(buildConfiguration)\$(buildPlatform)
+
+    workItemsProjNameFilter: '*proj'
+    workItemsProjDir: $(Build.SourcesDirectory)\TestWorkItems-$(testSuite)\$(buildFlavor)
+    testPayloadDir: $(Build.SourcesDirectory)\TestPayload-$(testSuite)\$(buildConfiguration)\$(buildPlatform)
     uploadRoot: c:\uploadroot
     uploadRootInner: $(uploadRoot)\$(testOS)\$(buildFlavor)
-    testOutputArtifactName: TestOutput
-    testRunTitlePrefix: ${{ parameters.testSuite }}$(testOS)$(buildFlavor)
+    testOutputArtifactName: TestOutput-$(testSuite)
+    testRunTitlePrefix: $(testSuite)$(testOS)$(buildFlavor)
     testRunTitle: '$(testRunTitlePrefix)$(System.JobPositionInPhase)'
-    # testRunTitle: '$(testRunTitlePrefix)'
 
   steps:
   - task: PowerShell@2
@@ -61,7 +66,7 @@ jobs:
       project: $(System.TeamProjectId)
       pipeline: $(System.DefinitionId)
       buildId: $(useBuildOutputFromBuildId)
-      artifactName: TestWorkItems-${{ parameters.testSuite}}
+      artifactName: TestWorkItems-$(testSuite)
       downloadPath: $(Build.SourcesDirectory)
       # itemPattern: '**/$(buildFlavor)/**'
 
@@ -72,7 +77,7 @@ jobs:
       project: $(System.TeamProjectId)
       pipeline: $(System.DefinitionId)
       buildId: $(useBuildOutputFromBuildId)
-      artifactName: TestPayload-${{ parameters.testSuite}}
+      artifactName: TestPayload-$(testSuite)
       downloadPath: $(Build.SourcesDirectory)
       # itemPattern: '**/$(buildConfiguration)/$(buildPlatform)**'
 
