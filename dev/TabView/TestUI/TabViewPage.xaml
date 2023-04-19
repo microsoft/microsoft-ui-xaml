@@ -131,10 +131,8 @@
                 <controls:TabView
                     x:Name="Tabs"
                     TabWidthMode="Equal"
-                    CanDragTabs="True"
                     SelectionChanged="TabViewSelectionChanged"
                     TabCloseRequested="TabViewTabCloseRequested"
-                    TabDragStarting="OnTabDragStarting"
                     TabStripDragOver="OnTabStripDragOver"
                     TabStripDrop="OnTabStripDrop"
                     TabDroppedOutside="TabViewTabDroppedOutside"
@@ -238,7 +236,8 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <controls:TabView x:Name="DataBindingTabView" IsAddTabButtonVisible="false" Background="#66336699" SelectedIndex="2">
+                    <controls:TabView x:Name="DataBindingTabView" 
+                    CanDragTabs="True" IsAddTabButtonVisible="false" Background="#66336699" SelectedIndex="2">
                         <controls:TabView.Resources>
                             <ResourceDictionary>
                                 <StaticResource x:Key="TabViewItemHeaderBackgroundSelected" ResourceKey="SystemAccentColor"/>
@@ -273,6 +272,14 @@
                         <controls:TabView.TabItems>
 
                             <controls:TabViewItem x:Name="TabInSecondTabView" AutomationProperties.Name="TabInSecondTabView" Header="Hello">
+                                <controls:TabViewItem.IconSource>
+                                    <controls:SymbolIconSource Symbol="Placeholder"/>
+                                </controls:TabViewItem.IconSource>
+
+                                <TextBlock Padding="16" Text="Content"/>
+                            </controls:TabViewItem>
+
+                            <controls:TabViewItem x:Name="Tab2InSecondTabView" AutomationProperties.Name="Tab2InSecondTabView" Header="Hello">
                                 <controls:TabViewItem.IconSource>
                                     <controls:SymbolIconSource Symbol="Placeholder"/>
                                 </controls:TabViewItem.IconSource>
