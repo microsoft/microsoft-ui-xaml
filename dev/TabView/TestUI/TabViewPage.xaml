@@ -119,6 +119,11 @@
                         <Button x:Name="GetScrollIncreaseButtonToolTipButton" AutomationProperties.Name="GetScrollIncreaseButtonToolTipButton" Content="TooltipScrollIncreaseButton" Click="GetScrollIncreaseButtonToolTipButton_Click"/>
                         <TextBlock x:Name="ScrollIncreaseButtonToolTipTextBlock" AutomationProperties.Name="ScrollIncreaseButtonToolTipTextBlock" Margin="4,0,0,0" Text=""/>
                     </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock x:Name="TabsItemChangedEventArgsTextBlock" AutomationProperties.Name="TabsItemChangedEventArgsTextBlock" Margin="4,0,0,0" Text="" />
+                    <TextBlock x:Name="TabsItemChangedEventArgsIndexTextBlock" AutomationProperties.Name="TabsItemChangedEventArgsIndexTextBlock" Margin="4,0,0,0" Text="" />
+                    </StackPanel>
                 </StackPanel>
             </ScrollViewer>
             
@@ -131,8 +136,10 @@
                 <controls:TabView
                     x:Name="Tabs"
                     TabWidthMode="Equal"
+                    CanDragTabs="True"
                     SelectionChanged="TabViewSelectionChanged"
                     TabCloseRequested="TabViewTabCloseRequested"
+                    TabDragStarting="OnTabDragStarting"
                     TabStripDragOver="OnTabStripDragOver"
                     TabStripDrop="OnTabStripDrop"
                     TabDroppedOutside="TabViewTabDroppedOutside"
@@ -236,8 +243,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <controls:TabView x:Name="DataBindingTabView" 
-                    CanDragTabs="True" IsAddTabButtonVisible="false" Background="#66336699" SelectedIndex="2">
+                    <controls:TabView x:Name="DataBindingTabView" IsAddTabButtonVisible="false" Background="#66336699" SelectedIndex="2">
                         <controls:TabView.Resources>
                             <ResourceDictionary>
                                 <StaticResource x:Key="TabViewItemHeaderBackgroundSelected" ResourceKey="SystemAccentColor"/>
@@ -272,14 +278,6 @@
                         <controls:TabView.TabItems>
 
                             <controls:TabViewItem x:Name="TabInSecondTabView" AutomationProperties.Name="TabInSecondTabView" Header="Hello">
-                                <controls:TabViewItem.IconSource>
-                                    <controls:SymbolIconSource Symbol="Placeholder"/>
-                                </controls:TabViewItem.IconSource>
-
-                                <TextBlock Padding="16" Text="Content"/>
-                            </controls:TabViewItem>
-
-                            <controls:TabViewItem x:Name="Tab2InSecondTabView" AutomationProperties.Name="Tab2InSecondTabView" Header="Hello">
                                 <controls:TabViewItem.IconSource>
                                     <controls:SymbolIconSource Symbol="Placeholder"/>
                                 </controls:TabViewItem.IconSource>

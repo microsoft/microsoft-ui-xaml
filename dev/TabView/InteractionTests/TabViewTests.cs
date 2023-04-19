@@ -406,6 +406,66 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void DragTabOverflowTest()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            {
+                // TODO 19727004: Re-enable this on versions below RS5 after fixing the bug where mouse click-and-drag doesn't work.
+                Log.Warning("This test relies on touch input, the injection of which is only supported in RS5 and up. Test is disabled.");
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                // Navigate to TabView TabItemSource Page
+                Button tabItemsSourcePageButton = FindElement.ByName<Button>("TabViewTabItemsSourcePageButton");
+                tabItemsSourcePageButton.InvokeAndWait();
+
+                Button addButton = FindElement.ByName<Button>("Add New Tab");
+                Verify.IsNotNull(addButton);
+
+                Log.Comment("Add 10 tabs so scroll buttons appear.");
+
+                for (var i = 0; i < 9; i++)
+                {
+                    addButton.DoubleClick();
+                }
+
+                Verify.IsTrue(AreScrollButtonsVisible(), "Scroll buttons should appear");
+
+                UIObject sourceTab = null;
+                int attempts = 0;
+
+                do
+                {
+                    Wait.ForMilliseconds(100);
+                    ElementCache.Refresh();
+
+                    sourceTab = FindElement.ByName("tabViewItem0");
+                    attempts++;
+                }
+                while (sourceTab == null && attempts < 4);
+
+                Verify.IsNotNull(sourceTab);
+
+                UIObject dropTab = FindElement.ByName("tabViewItem10");
+                Verify.IsNotNull(dropTab);
+
+                Log.Comment("Reordering tabs with drag-drop operation...");
+                InputHelper.DragToTarget(sourceTab, dropTab, -10);
+                Wait.ForIdle();
+                ElementCache.Refresh();
+                Log.Comment("...reordering done. Expecting a TabView.TabItemsChanged event was raised with CollectionChange=ItemInserted and Index=1.");
+
+                TextBlock tblIVectorChangedEventArgsCollectionChange = FindElement.ByName<TextBlock>("tblIVectorChangedEventArgsCollectionChange");
+                Verify.AreEqual("ItemInserted", tblIVectorChangedEventArgsCollectionChange.DocumentText);
+
+                TextBlock tblIVectorChangedEventArgsIndex = FindElement.ByName<TextBlock>("tblIVectorChangedEventArgsIndex");
+                Verify.AreEqual("1", tblIVectorChangedEventArgsIndex.DocumentText);
+            }
+        }
+
+        [TestMethod]
         public void AddButtonTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
