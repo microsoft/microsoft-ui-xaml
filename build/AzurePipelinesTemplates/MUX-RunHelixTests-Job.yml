@@ -109,12 +109,12 @@ jobs:
         taefQuery: ${{ parameters.taefQuery }}
 
   - ${{ if in(parameters.testSuite, 'nupkg', 'fwpkg') }}:
-  - template: MUX-CreateHelixProjFile-Steps.yml
-    parameters:
-      testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
-      testFilePattern: 'MUXControls.ReleaseTest.dll'
-      outputProjFileName: 'RunTestsInHelix-NugetTests.proj'
-      taefQuery: ${{ parameters.taefQuery }}
+    - template: MUX-CreateHelixProjFile-Steps.yml
+      parameters:
+        testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
+        testFilePattern: 'MUXControls.ReleaseTest.dll'
+        outputProjFileName: 'RunTestsInHelix-NugetTests.proj'
+        taefQuery: ${{ parameters.taefQuery }}
 
   - task: CopyFiles@2
     displayName: 'Copy helix work item proj files'
