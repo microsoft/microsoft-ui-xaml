@@ -19,7 +19,7 @@ parameters:
       buildConfiguration: 'release'
 
 jobs:
-- job: CreateTestPayload
+- job: CreateTestPayload_${{ parameters.testSuite }}
   dependsOn: ${{ parameters.dependsOn }}
   condition: ${{ parameters.condition }}
   pool:
@@ -131,7 +131,7 @@ jobs:
 - template: MUX-RunTestsOnPipeline-Job.yml
   parameters:
     runTestJobName: RunTestsRS5_${{ parameters.testSuite }}
-    dependsOn: CreateTestPayload
+    dependsOn: CreateTestPayload_${{ parameters.testSuite }}
     testSuite: ${{ parameters.testSuite }}
     testOS: Win10-RS5
     buildPlatform: x86
@@ -140,7 +140,7 @@ jobs:
 - template: MUX-RunTestsOnPipeline-Job.yml
   parameters:
     runTestJobName: RunTests22H2_${{ parameters.testSuite }}
-    dependsOn: CreateTestPayload
+    dependsOn: CreateTestPayload_${{ parameters.testSuite }}
     testSuite: ${{ parameters.testSuite }}
     testOS: Win10-22H2
     buildPlatform: x64
