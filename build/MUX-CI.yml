@@ -49,8 +49,7 @@ stages:
   - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
     parameters:
       name: 'RunTestsInHelix'
-      dependsOn: Build
-      condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+      # condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
       testSuite: 'DevTestSuite'
       rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
 
