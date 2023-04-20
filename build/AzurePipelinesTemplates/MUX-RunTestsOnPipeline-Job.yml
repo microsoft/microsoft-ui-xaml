@@ -3,14 +3,13 @@ parameters:
   dependsOn: ''
   testSuite: DevTestSuite
   rerunPassesRequiredToAvoidFailure: 5
-  testOS: Win10-RS5
+  testOS: Win10-22H2
   buildPlatform: x86
   buildConfiguration: release
 
-
 jobs:
 
-- job: ${{ parameters.runTestJobName }}
+- job: ${{ parameters.runTestJobName }}-${{ parameters.testOS }}
   dependsOn: ${{ parameters.dependsOn }}
   condition: not(failed())
   pool:
@@ -22,7 +21,8 @@ jobs:
     parallel: 10
 
   variables:
-    useBuildOutputFromBuildId: 448707
+    useBuildOutputFromBuildId: $(Build.BuildId)
+    # useBuildOutputFromBuildId: 448707
     winuiHelixVersion: 0.5.8
     helixScriptPath: $(Build.SourcesDirectory)\build\Helix\packages\Microsoft.Internal.WinUI.Helix.$(winuiHelixVersion)\scripts\pipeline
 
@@ -38,8 +38,8 @@ jobs:
     uploadRoot: c:\uploadroot
     uploadRootInner: $(uploadRoot)\$(testOS)\$(buildFlavor)
     testOutputArtifactName: TestOutput-$(testSuite)
-    testRunTitlePrefix: $(testSuite)$(testOS)$(buildFlavor)
-    testRunTitle: '$(testRunTitlePrefix)$(System.JobPositionInPhase)'
+    testRunTitlePrefix: $(testSuite)-$(testOS)-$(buildFlavor)
+    testRunTitle: '$(testRunTitlePrefix)-$(System.JobPositionInPhase)'
 
   steps:
   - task: PowerShell@2

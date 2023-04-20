@@ -1,7 +1,7 @@
 parameters:
   name: 'RunTestsInHelix'
   dependsOn: ''
-  condition: ''
+  condition: succeeded()
   testSuite: DevTestSuite
   helixType: test/devtest
   # If a Pipeline runs this template more than once, this parameter should be unique per build flavor to differentiate the
@@ -11,7 +11,7 @@ parameters:
   rerunPassesRequiredToAvoidFailure: 5
   taefQuery: ''
   # if 'useBuildOutputFromBuildId' is set, we will default to using a build from this pipeline:
-  useBuildOutputFromPipeline: $(System.DefinitionId)
+  
   matrix: 
     Release_x86:
       buildPlatform: 'x86'
@@ -23,8 +23,7 @@ parameters:
 jobs:
 - job: ${{ parameters.name }}
   dependsOn: ${{ parameters.dependsOn }}
-  # condition: ${{ parameters.condition }}
-  condition: false
+  condition: ${{ parameters.condition }}
   pool:
     vmImage: 'windows-2019'
   timeoutInMinutes: 120
@@ -33,8 +32,9 @@ jobs:
     matrix: ${{ parameters.matrix }}
   variables:
     artifactsDir: $(Build.SourcesDirectory)\Artifacts
+    useBuildOutputFromPipeline: $(System.DefinitionId)
+    useBuildOutputFromBuildId: ''
 
-      
   steps:
   - task: CmdLine@1
     displayName: 'Display build machine environment variables'
@@ -65,7 +65,7 @@ jobs:
       buildType: specific
       buildVersionToDownload: specific
       project: $(System.TeamProjectId)
-      pipeline: ${{ parameters.useBuildOutputFromPipeline }}
+      pipeline: $(useBuildOutputFromPipeline)
       buildId: $(useBuildOutputFromBuildId)
       artifactName: ${{ parameters.artifactName }} 
       downloadPath: '$(artifactsDir)'
@@ -136,5 +136,16 @@ jobs:
 
 - template: MUX-RunTestsOnPipeline-Job.yml
   parameters:
-    runTestJobName: RunTests22H2
+    runTestJobName: RunTestsRS5
     dependsOn: ${{ parameters.name }}
+    testOS: Win10-RS5
+    buildPlatform: x86
+    buildConfiguration: release
+
+- template: MUX-RunTestsOnPipeline-Job.yml
+  parameters:
+    runTestJobName: RunTestsRS5
+    dependsOn: ${{ parameters.name }}
+    testOS: Win10-22H2
+    buildPlatform: x64
+    buildConfiguration: release
