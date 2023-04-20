@@ -9,7 +9,7 @@ parameters:
 
 jobs:
 
-- job: ${{ parameters.runTestJobName }}-${{ parameters.testOS }}
+- job: ${{ parameters.runTestJobName }}_${{ parameters.testOS }}
   dependsOn: ${{ parameters.dependsOn }}
   condition: not(failed())
   pool:
