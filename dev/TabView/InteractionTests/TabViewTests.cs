@@ -392,7 +392,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(dropTab);
 
                 Log.Comment("Reordering tabs with drag-drop operation...");
-                InputHelper.DragToTarget(sourceTab, dropTab);
+                InputHelper.DragToTarget(sourceTab, dropTab, -5);
                 Wait.ForIdle();
                 ElementCache.Refresh();
                 Log.Comment("...reordering done. Expecting a TabView.TabItemsChanged event was raised with CollectionChange=ItemInserted and Index=1.");
