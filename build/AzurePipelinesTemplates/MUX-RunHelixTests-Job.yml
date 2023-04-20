@@ -144,7 +144,7 @@ jobs:
 
 - template: MUX-RunTestsOnPipeline-Job.yml
   parameters:
-    runTestJobName: RunTestsRS5
+    runTestJobName: RunTests22H2
     dependsOn: ${{ parameters.name }}
     testOS: Win10-22H2
     buildPlatform: x64
