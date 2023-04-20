@@ -1,9 +1,7 @@
 parameters:
-  name: 'RunTestsInHelix'
   dependsOn: ''
   condition: succeeded()
-  testSuite: DevTestSuite
-  helixType: test/devtest
+  testSuite: devtest 
   # If a Pipeline runs this template more than once, this parameter should be unique per build flavor to differentiate the
   # the different test runs:
   artifactName: 'drop'
@@ -21,7 +19,7 @@ parameters:
       buildConfiguration: 'release'
 
 jobs:
-- job: ${{ parameters.name }}
+- job: CreateTestPayload
   dependsOn: ${{ parameters.dependsOn }}
   condition: ${{ parameters.condition }}
   pool:
@@ -84,39 +82,35 @@ jobs:
       arguments: '/s $(Build.SourcesDirectory)\HelixPayload'
 
   - task: PublishBuildArtifacts@1
-    displayName: 'Publish artifact: TestPayload'
+    displayName: 'Publish artifact: TestPayload-${{ parameters.testSuite}}'
     inputs:
       PathtoPublish: $(Build.SourcesDirectory)\HelixPayload
       artifactName: TestPayload-${{ parameters.testSuite}}
 
 
-  - template: MUX-CreateHelixProjFile-Steps.yml
-    parameters:
-      condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
-      testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
-      testFilePattern: 'MUXControls.Test.dll'
-      outputProjFileName: 'RunTestsInHelix-InteractionTests.proj'
-      taefQuery: ${{ parameters.taefQuery }}
+  - ${{ if eq(parameters.testSuite, 'devtest') }}:
+    - template: MUX-CreateHelixProjFile-Steps.yml
+      parameters:
+        testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
+        testFilePattern: 'MUXControls.Test.dll'
+        outputProjFileName: 'RunTestsInHelix-InteractionTests.proj'
+        taefQuery: ${{ parameters.taefQuery }}
+    - template: MUX-CreateHelixProjFile-Steps.yml
+      parameters:
+        testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
+        testFilePattern: 'MUXControlsTestApp.msix'
+        outputProjFileName: 'RunTestsInHelix-ApiTests.proj'
+        taefQuery: ${{ parameters.taefQuery }}
+    - template: MUX-CreateHelixProjFile-Steps.yml
+      parameters:
+        testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
+        testFilePattern: 'IXMPTestApp.msix'
+        outputProjFileName: 'RunTestsInHelix-IXMPTestAppTests.proj'
+        taefQuery: ${{ parameters.taefQuery }}
 
+  - ${{ if in(parameters.testSuite, 'nupkg', 'fwpkg') }}:
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
-      condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
-      testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
-      testFilePattern: 'MUXControlsTestApp.msix'
-      outputProjFileName: 'RunTestsInHelix-ApiTests.proj'
-      taefQuery: ${{ parameters.taefQuery }}
-
-  - template: MUX-CreateHelixProjFile-Steps.yml
-    parameters:
-      condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
-      testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
-      testFilePattern: 'IXMPTestApp.msix'
-      outputProjFileName: 'RunTestsInHelix-IXMPTestAppTests.proj'
-      taefQuery: ${{ parameters.taefQuery }}
-
-  - template: MUX-CreateHelixProjFile-Steps.yml
-    parameters:
-      condition: and(succeeded(),eq('${{ parameters.testSuite }}','NugetTestSuite'))
       testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
       testFilePattern: 'MUXControls.ReleaseTest.dll'
       outputProjFileName: 'RunTestsInHelix-NugetTests.proj'
@@ -136,16 +130,18 @@ jobs:
 
 - template: MUX-RunTestsOnPipeline-Job.yml
   parameters:
-    runTestJobName: RunTestsRS5
-    dependsOn: ${{ parameters.name }}
+    runTestJobName: RunTestsRS5_${{ parameters.testSuite }}
+    dependsOn: CreateTestPayload
+    testSuite: ${{ parameters.testSuite }}
     testOS: Win10-RS5
     buildPlatform: x86
     buildConfiguration: release
 
 - template: MUX-RunTestsOnPipeline-Job.yml
   parameters:
-    runTestJobName: RunTests22H2
-    dependsOn: ${{ parameters.name }}
+    runTestJobName: RunTests22H2_${{ parameters.testSuite }}
+    dependsOn: CreateTestPayload
+    testSuite: ${{ parameters.testSuite }}
     testOS: Win10-22H2
     buildPlatform: x64
     buildConfiguration: release

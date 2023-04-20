@@ -4,7 +4,6 @@ parameters:
   runTestJobName: 'RunNugetPkgTestsInHelix'
   dependsOn: ''
   runTests: 'true'
-  helixType: 'test/nuget'
   test_matrix: ''
   useFrameworkPkg: false
   taefQuery: ''
@@ -122,10 +121,11 @@ jobs:
 - ${{if eq(parameters.runTests, 'true')}}:
   - template: MUX-RunHelixTests-Job.yml
     parameters:
-      name: ${{ parameters.runTestJobName }}
       dependsOn: ${{ parameters.buildJobName }}
-      testSuite: 'NugetTestSuite'
-      helixType: ${{ parameters.helixType }}
+      ${{if eq(parameters.useFrameworkPkg, 'false')}}:
+        testSuite: 'nupkg'
+      ${{if eq(parameters.useFrameworkPkg, 'true')}}:
+        testSuite: 'fwPkg'
       artifactName: ${{ parameters.buildArtifactName }}
       ${{if eq(parameters.useFrameworkPkg, 'true')}}:
         taefQuery: "(not (@NugetPkgTestsOnly = 'true'))"
