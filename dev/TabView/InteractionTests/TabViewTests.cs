@@ -392,7 +392,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(dropTab);
 
                 Log.Comment("Reordering tabs with drag-drop operation...");
-                InputHelper.DragToTarget(sourceTab, dropTab, -5);
+                InputHelper.DragToTarget(sourceTab, dropTab);
                 Wait.ForIdle();
                 ElementCache.Refresh();
                 Log.Comment("...reordering done. Expecting a TabView.TabItemsChanged event was raised with CollectionChange=ItemInserted and Index=1.");
@@ -406,7 +406,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void DragTabOverflowTest()
+        public void ItemChangedEventOnDragTest()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
             {
@@ -417,51 +417,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
-                // Navigate to TabView TabItemSource Page
-                Button tabItemsSourcePageButton = FindElement.ByName<Button>("TabViewTabItemsSourcePageButton");
-                tabItemsSourcePageButton.InvokeAndWait();
-
                 Button addButton = FindElement.ByName<Button>("Add New Tab");
                 Verify.IsNotNull(addButton);
 
-                Log.Comment("Add 10 tabs so scroll buttons appear.");
-
-                for (var i = 0; i < 9; i++)
-                {
-                    addButton.DoubleClick();
-                }
+                Log.Comment("Add tab so scroll buttons appear.");
+                addButton.InvokeAndWait();
 
                 Verify.IsTrue(AreScrollButtonsVisible(), "Scroll buttons should appear");
 
-                UIObject sourceTab = null;
-                int attempts = 0;
-
-                do
-                {
-                    Wait.ForMilliseconds(100);
-                    ElementCache.Refresh();
-
-                    sourceTab = FindElement.ByName("tabViewItem0");
-                    attempts++;
-                }
-                while (sourceTab == null && attempts < 4);
+                UIObject sourceTab =  FindElement.ByName("FirstTab");
 
                 Verify.IsNotNull(sourceTab);
 
-                UIObject dropTab = FindElement.ByName("tabViewItem10");
+                UIObject dropTab = FindElement.ByName("LastTab");
                 Verify.IsNotNull(dropTab);
 
-                Log.Comment("Reordering tabs with drag-drop operation...");
-                InputHelper.DragToTarget(sourceTab, dropTab, -10);
+                Log.Comment("Dragging tab to the last overflow tab...");
+                InputHelper.DragToTarget(sourceTab, dropTab);
                 Wait.ForIdle();
                 ElementCache.Refresh();
-                Log.Comment("...reordering done. Expecting a TabView.TabItemsChanged event was raised with CollectionChange=ItemInserted and Index=1.");
 
-                TextBlock tblIVectorChangedEventArgsCollectionChange = FindElement.ByName<TextBlock>("tblIVectorChangedEventArgsCollectionChange");
-                Verify.AreEqual("ItemInserted", tblIVectorChangedEventArgsCollectionChange.DocumentText);
+                Log.Comment("...reordering done. Expecting a TabView.TabItemsChanged event to be raised with CollectionChange=ItemInserted and Index=5.");
 
-                TextBlock tblIVectorChangedEventArgsIndex = FindElement.ByName<TextBlock>("tblIVectorChangedEventArgsIndex");
-                Verify.AreEqual("1", tblIVectorChangedEventArgsIndex.DocumentText);
+                TextBlock tabsItemChangedEventArgsTextBlock = FindElement.ByName<TextBlock>("TabsItemChangedEventArgsTextBlock");
+                Verify.AreEqual("ItemInserted", tabsItemChangedEventArgsTextBlock.DocumentText);
+
+                TextBlock tabsItemChangedEventArgsIndexTextBlock = FindElement.ByName<TextBlock>("TabsItemChangedEventArgsIndexTextBlock");
+                Verify.AreEqual("5", tabsItemChangedEventArgsIndexTextBlock.DocumentText);
             }
         }
 
