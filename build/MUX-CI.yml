@@ -50,7 +50,6 @@ stages:
     parameters:
       name: 'RunTestsInHelix'
       # condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
-      testSuite: 'DevTestSuite'
       rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
 
   # Create Nuget Package

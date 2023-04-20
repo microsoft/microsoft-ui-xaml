@@ -59,7 +59,6 @@ stages:
   jobs:
   - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
     parameters:
-      testSuite: 'DevTestSuite'
       rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
 
 # Create Nuget Package
