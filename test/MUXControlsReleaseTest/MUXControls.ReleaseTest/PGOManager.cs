@@ -31,10 +31,10 @@ namespace MUXControls.ReleaseTest
                 using (var process = Process.Start(startInfo))
                 {
                     var output = new StringBuilder();
-                    while (!process.HasExited)
+                    do
                     {
                         Log.Comment(process.StandardOutput.ReadToEnd());
-                    }
+                    } while (!process.HasExited)
                 }
             }
             catch (Exception ex)

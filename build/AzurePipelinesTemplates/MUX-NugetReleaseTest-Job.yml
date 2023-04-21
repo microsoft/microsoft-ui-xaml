@@ -8,24 +8,24 @@ parameters:
   useFrameworkPkg: false
   taefQuery: ''
   matrix:
-    Debug_x86:
-      buildPlatform: 'x86'
-      buildConfiguration: 'Debug'
+    # Debug_x86:
+    #   buildPlatform: 'x86'
+    #   buildConfiguration: 'Debug'
     Release_x86:
       buildPlatform: 'x86'
       buildConfiguration: 'Release'
-    Debug_x64:
-      buildPlatform: 'x64'
-      buildConfiguration: 'Debug'
+    # Debug_x64:
+    #   buildPlatform: 'x64'
+    #   buildConfiguration: 'Debug'
     Release_x64:
       buildPlatform: 'x64'
       buildConfiguration: 'Release'
-    Release_arm:
-      buildPlatform: 'arm'
-      buildConfiguration: 'Release'
-    Release_arm64:
-      buildPlatform: 'arm64'
-      buildConfiguration: 'Release'
+    # Release_arm:
+    #   buildPlatform: 'arm'
+    #   buildConfiguration: 'Release'
+    # Release_arm64:
+    #   buildPlatform: 'arm64'
+    #   buildConfiguration: 'Release'
 
 jobs:
 - job: ${{ parameters.buildJobName }}
@@ -62,6 +62,12 @@ jobs:
       artifactName: drop
       downloadPath: $(artifactDownloadPath)
       itemPattern: '**\*.nupkg'
+
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: $(System.DefinitionId)
+      buildId: 68962011
 
   - task: powershell@2
     displayName: GenerateTestPFX.ps1

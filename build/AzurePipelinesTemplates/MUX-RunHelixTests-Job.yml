@@ -134,7 +134,8 @@ jobs:
     dependsOn: CreateTestPayload_${{ parameters.testSuite }}
     parallel: ${{ parameters.maxParallel }}
     testSuite: ${{ parameters.testSuite }}
-    testOS: Win10-RS5
+    # testOS: Win10-RS5
+    testOS: Win10-22H2
     buildPlatform: x86
     buildConfiguration: release
 
@@ -144,6 +145,7 @@ jobs:
     dependsOn: CreateTestPayload_${{ parameters.testSuite }}
     parallel: ${{ parameters.maxParallel }}
     testSuite: ${{ parameters.testSuite }}
-    testOS: Win10-22H2
+    # testOS: Win10-22H2
+    testOS: Win10-RS5
     buildPlatform: x64
     buildConfiguration: release
