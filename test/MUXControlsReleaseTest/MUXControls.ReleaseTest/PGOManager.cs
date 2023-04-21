@@ -26,7 +26,8 @@ namespace MUXControls.ReleaseTest
                     FileName = "pgosweep.exe",
                     Arguments = "microsoft.ui.xaml.dll " + pgcFileName + ".pgc",
                     UseShellExecute = false,
-                    RedirectStandardOutput = true
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
                 };
                 using (var process = Process.Start(startInfo))
                 {
@@ -37,12 +38,11 @@ namespace MUXControls.ReleaseTest
                     }
                     while (!process.HasExited);
 
+                    Log.Comment("!!!!ExitCode:" + process.ExitCode);
+
                     Log.Comment("!!!!Errors:");
                     Log.Comment(process.StandardError.ReadToEnd());
                     Log.Comment("!!!!Done.");
-
-                    Log.Comment("!!!!ExitCode:" + process.ExitCode);
-                    
                 }
             }
             catch (Exception ex)
