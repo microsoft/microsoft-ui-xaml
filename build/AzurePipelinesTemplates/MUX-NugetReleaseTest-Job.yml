@@ -130,6 +130,7 @@ jobs:
       ${{if eq(parameters.useFrameworkPkg, 'true')}}:
         taefQuery: "(not (@NugetPkgTestsOnly = 'true'))"
       rerunPassesRequiredToAvoidFailure: 5
-      ${{if ne(parameters.test_matrix, '') }}:
-        matrix: ${{ parameters.test_matrix }}
-      parallel: 2
+      # todo: fix
+      # ${{if ne(parameters.test_matrix, '') }}:
+      #   matrix: ${{ parameters.test_matrix }}
+      maxParallel: 2

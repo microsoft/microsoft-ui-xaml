@@ -5,7 +5,7 @@ parameters:
   # If a Pipeline runs this template more than once, this parameter should be unique per build flavor to differentiate the
   # the different test runs:
   artifactName: 'drop'
-  maxParallel: 4
+  maxParallel: 10
   rerunPassesRequiredToAvoidFailure: 5
   taefQuery: ''
   # if 'useBuildOutputFromBuildId' is set, we will default to using a build from this pipeline:
@@ -26,7 +26,7 @@ jobs:
     vmImage: 'windows-2019'
   timeoutInMinutes: 120
   strategy:
-    maxParallel: ${{ parameters.maxParallel }}
+    maxParallel: 10
     matrix: ${{ parameters.matrix }}
   variables:
     artifactsDir: $(Build.SourcesDirectory)\Artifacts
@@ -141,6 +141,7 @@ jobs:
   parameters:
     runTestJobName: RunTests22H2_${{ parameters.testSuite }}
     dependsOn: CreateTestPayload_${{ parameters.testSuite }}
+    parallel: ${{ parameters.maxParallel }}
     testSuite: ${{ parameters.testSuite }}
     testOS: Win10-22H2
     buildPlatform: x64
