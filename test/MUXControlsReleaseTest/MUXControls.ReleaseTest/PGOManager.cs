@@ -37,11 +37,11 @@ namespace MUXControls.ReleaseTest
                     }
                     while (!process.HasExited);
 
-                    Log.Comment("!!!!Errors:")
+                    Log.Comment("!!!!Errors:");
                     Log.Comment(process.StandardError.ReadToEnd());
-                    Log.Comment("!!!!Done.")
+                    Log.Comment("!!!!Done.");
 
-                    Log.Comment("!!!!ExitCode:" + process.ExitCode)
+                    Log.Comment("!!!!ExitCode:" + process.ExitCode);
                     
                 }
             }
