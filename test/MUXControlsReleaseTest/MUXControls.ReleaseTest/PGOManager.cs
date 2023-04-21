@@ -34,7 +34,8 @@ namespace MUXControls.ReleaseTest
                     do
                     {
                         Log.Comment(process.StandardOutput.ReadToEnd());
-                    } while (!process.HasExited)
+                    }
+                    while (!process.HasExited);
                 }
             }
             catch (Exception ex)
