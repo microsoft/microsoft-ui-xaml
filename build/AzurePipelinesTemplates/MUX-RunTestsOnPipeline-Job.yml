@@ -6,6 +6,7 @@ parameters:
   testOS: Win10-22H2
   buildPlatform: x86
   buildConfiguration: release
+  parallel: 10
 
 jobs:
 
@@ -18,7 +19,7 @@ jobs:
 
   timeoutInMinutes: 90
   strategy:
-    parallel: 10
+    parallel: ${{ parameters.parallel }}
 
   variables:
     useBuildOutputFromBuildId: $(Build.BuildId)
