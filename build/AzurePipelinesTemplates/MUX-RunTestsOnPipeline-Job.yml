@@ -81,12 +81,14 @@ jobs:
       downloadPath: $(Build.SourcesDirectory)
       # itemPattern: '**/$(buildConfiguration)/$(buildPlatform)**'
 
-  - task: PowerShell@2
-    displayName: 'Delete IXMPTestAppTests'
-    inputs:
-      targetType: 'inline'
-      script: |
-        Remove-Item $(workItemsProjDir)\RunTestsInHelix-IXMPTestAppTests.proj
+  # TODO: fix
+  # - task: PowerShell@2
+  #   displayName: 'Delete IXMPTestAppTests'
+  #   continueOnError: true
+  #   inputs:
+  #     targetType: 'inline'
+  #     script: |
+  #       Remove-Item $(workItemsProjDir)\RunTestsInHelix-IXMPTestAppTests.proj
 
 
   - task: powershell@2
