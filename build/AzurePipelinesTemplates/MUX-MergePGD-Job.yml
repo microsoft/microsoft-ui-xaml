@@ -27,8 +27,15 @@ jobs:
 
   - task: DownloadBuildArtifacts@0
     inputs:
-      artifactName: ${{ parameters.pgoArtifact }}
-      downloadPath: $(artifactsPath)
+      artifactName: TestOutput-fwPkg
+      downloadPath: $(artifactsPath)\pgo
+
+  - task: powershell@2
+    displayName: CopyPGOFiles.ps1
+    inputs:
+      targetType: filePath
+      filePath: build\Helix\CopyPGOFiles.ps1
+      arguments: -SourceFolder '$(artifactsPath)\pgo\Win10-22H2\$(buildPlatform)$(buildConfiguration)' -OutputFolder '$(Build.ArtifactStagingDirectory)'
 
   - script: |
       cd $(buildPlatform)
