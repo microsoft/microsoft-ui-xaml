@@ -14,7 +14,10 @@ jobs:
   dependsOn: ${{ parameters.dependsOn }}
   condition: not(failed())
   pool:
-    name: WinDevPoolOSS-Test
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPoolOSS-Test
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPool-Test
     demands: ImageOverride -equals ${{ parameters.testOS }}
 
   timeoutInMinutes: 90
