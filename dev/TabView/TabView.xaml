@@ -735,7 +735,6 @@
 
                         <Border x:Name="BottomBorderLine" BorderBrush="{ThemeResource TabViewBorderBrush}" BorderThickness="1" Height="1" Grid.ColumnSpan="3" VerticalAlignment="Bottom"/>
 
-
                         <Path x:Name="LeftRadiusRenderArc"
                             x:Load="False"
                             Fill="{ThemeResource TabViewBorderBrush}"
