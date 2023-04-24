@@ -127,9 +127,6 @@ void TabViewItem::OnApplyTemplate()
 void TabViewItem::UpdateTabGeometry()
 {
     auto const templateSettings = winrt::get_self<TabViewItemTemplateSettings>(TabViewTemplateSettings());
-    auto const scaleFactor = SharedHelpers::Is19H1OrHigher() ?
-        static_cast<float>(XamlRoot().RasterizationScale()) :
-        static_cast<float>(winrt::DisplayInformation::GetForCurrentView().RawPixelsPerViewPixel());
 
     auto const height = ActualHeight();
     auto const popupRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(*this, box_value(c_overlayCornerRadiusKey)));
@@ -141,11 +138,11 @@ void TabViewItem::UpdateTabGeometry()
 
     WCHAR strOut[1024];
     StringCchPrintf(strOut, ARRAYSIZE(strOut), data,
-        height - 1.0,
+        height,
         leftCorner, leftCorner, leftCorner, leftCorner, leftCorner,
-        ActualWidth() - (leftCorner + rightCorner + 1.0f / scaleFactor),
+        ActualWidth() - (leftCorner + rightCorner),
         rightCorner, rightCorner, rightCorner, rightCorner,
-        height - (5.0 + rightCorner));
+        height - (4.0f + rightCorner));
 
     const auto geometry = winrt::XamlReader::Load(strOut).try_as<winrt::Geometry>();
 
