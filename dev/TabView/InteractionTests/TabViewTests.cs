@@ -429,11 +429,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.IsNotNull(sourceTab);
 
-                UIObject dropTab = FindElement.ByName("New Tab 1");
+                UIObject dropTab = FindElement.ByName("LastTab");
                 Verify.IsNotNull(dropTab);
 
                 Log.Comment("Dragging tab to the last overflow tab...");
-                InputHelper.DragToTarget(sourceTab, dropTab);
+                InputHelper.DragToTarget(sourceTab, dropTab, 25);
                 Wait.ForIdle();
                 ElementCache.Refresh();
 
