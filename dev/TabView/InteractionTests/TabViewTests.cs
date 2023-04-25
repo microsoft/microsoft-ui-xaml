@@ -412,7 +412,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(dropTab);
 
                 Log.Comment("Dragging tab to the last overflow tab...");
-                InputHelper.DragToTarget(sourceTab, dropTab, 50);
+                InputHelper.DragToTarget(sourceTab, dropTab, 40);
                 Wait.ForIdle();
                 ElementCache.Refresh();
 
