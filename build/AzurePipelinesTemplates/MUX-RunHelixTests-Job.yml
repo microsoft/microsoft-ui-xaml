@@ -135,7 +135,7 @@ jobs:
     parallel: ${{ parameters.maxParallel }}
     testSuite: ${{ parameters.testSuite }}
     # testOS: Win10-RS5
-    testOS: Win10-22H2
+    testOS: Win10-RS5
     buildPlatform: x86
     buildConfiguration: release
 
