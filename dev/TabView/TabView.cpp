@@ -1174,7 +1174,7 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths, bool fillAllAvailableSpac
                 }
                 else
                 {
-                    // Case: TabWidthMode "Compact" or "FitToContent"
+                    // Case: TabWidthMode "Compact" or "SizeToContent"
                     tabColumn.MaxWidth(availableWidth);
                     tabColumn.Width(winrt::GridLengthHelper::FromValueAndType(1.0, winrt::GridUnitType::Auto));
                     if (auto&& listview = m_listView.get())
