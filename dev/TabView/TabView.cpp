@@ -720,11 +720,6 @@ void TabView::BringSelectedTabIntoView()
 
 void TabView::OnItemsChanged(winrt::IInspectable const& item)
 {
-    if (m_isDragging)
-    {
-        return;
-    }
-
     if (auto args = item.as<winrt::IVectorChangedEventArgs>())
     {
         m_tabItemsChangedEventSource(*this, args);
@@ -863,11 +858,13 @@ void TabView::OnListViewDragItemsCompleted(const winrt::IInspectable& sender, co
 {
     m_isDragging = false;
 
-    // Selection change was disabled during drag, update SelectedIndex now
+    // Selection may have changed during drag if dragged outside, so we update SelectedIndex again.
     if (auto&& listView = m_listView.get())
     {
         SelectedIndex(listView.SelectedIndex());
         SelectedItem(listView.SelectedItem());
+
+        BringSelectedTabIntoView();
     }
 
     auto item = args.Items().GetAt(0);

@@ -47,6 +47,8 @@ namespace MUXControlsTestApp
             _iconSource = new SymbolIconSource();
             _iconSource.Symbol = Symbol.Placeholder;
 
+            Tabs.TabItemsChanged += Tabs_TabItemsChanged;
+
             ObservableCollection<TabDataItem> itemSource = new ObservableCollection<TabDataItem>();
             for (int i = 0; i < 5; i++)
             {
@@ -61,6 +63,12 @@ namespace MUXControlsTestApp
             backgroundColorCache = BackgroundGrid.Background;
             activeTabContentBackgroundBrushCache = FirstTabContent.Background;
             CacheFirstTabSelectedBackgroundPathFill();
+        }
+
+        private void Tabs_TabItemsChanged(TabView sender, Windows.Foundation.Collections.IVectorChangedEventArgs args)
+        {
+            TabsItemChangedEventArgsTextBlock.Text = args.CollectionChange.ToString();
+            TabsItemChangedEventArgsIndexTextBlock.Text = args.Index.ToString();
         }
 
         private Brush backgroundColorCache;
