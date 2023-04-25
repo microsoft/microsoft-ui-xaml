@@ -30,12 +30,29 @@ jobs:
       artifactName: TestOutput-fwPkg
       downloadPath: $(artifactsPath)\pgo
 
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: $(System.DefinitionId)
+      buildId: 69200654
+
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      artifactName: ${{ parameters.pgoArtifact }}
+      downloadPath: $(artifactsPath)
+
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: $(System.DefinitionId)
+      buildId: 68962011
+
   - task: powershell@2
     displayName: CopyPGOFiles.ps1
     inputs:
       targetType: filePath
       filePath: build\Helix\CopyPGOFiles.ps1
-      arguments: -SourceFolder '$(artifactsPath)\pgo\TestOutput-fwPkg\Win10-RS5\$(buildPlatform)$(buildConfiguration)' -OutputFolder '$(Build.ArtifactStagingDirectory)'
+      arguments: -SourceFolder '$(artifactsPath)\pgo\TestOutput-fwPkg\Win10-RS5\$(buildPlatform)$(buildConfiguration)' -OutputFolder '$(artifactsPath)'
 
   - script: |
       cd $(buildPlatform)

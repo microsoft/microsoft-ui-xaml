@@ -50,26 +50,19 @@ stages:
 #       jobName: CreateNugetPackage
 #       prereleaseVersionTag: pgo
 
-- stage: Train
-  # dependsOn: Pack
-  jobs:
-  # Framework package tests
-  - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-    parameters:
-      buildJobName: 'BuildFrameworkPkgTests'
-      buildArtifactName: 'FrameworkPkgTestsDrop'
-      runTestJobName: 'RunFrameworkPkgTestsInHelix'
-      useFrameworkPkg: true
-
-  # - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
-  #   parameters:
-  #     dependsOn: RunFrameworkPkgTestsInHelix
-  #     rerunPassesRequiredToAvoidFailure: 5
-  #     minimumExpectedTestsExecutedCount: 10
-  #     pgoArtifact: $(pgoArtifact)
+# - stage: Train
+#   # dependsOn: Pack
+#   jobs:
+#   # Framework package tests
+#   - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#     parameters:
+#       buildJobName: 'BuildFrameworkPkgTests'
+#       buildArtifactName: 'FrameworkPkgTestsDrop'
+#       runTestJobName: 'RunFrameworkPkgTestsInHelix'
+#       useFrameworkPkg: true
 
 - stage: Merge
-  dependsOn: Train
+  # dependsOn: Train
   jobs:
   - template: AzurePipelinesTemplates\MUX-MergePGD-Job.yml
     parameters:
