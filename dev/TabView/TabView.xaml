@@ -755,7 +755,8 @@
                             Height="4"
                             Width="4"
                             Data="M0 0C0 1.19469 0.523755 2.26706 1.35418 3H4C2.34315 3 1 1.65685 1 0H0Z"/>
-                        
+
+                        <!-- This Path wrapped in a Canvas to prevent an infinite loop in calculating its width. -->
                         <Canvas>
                             <Path x:Name="SelectedBackgroundPath"
                                 x:Load="False"
