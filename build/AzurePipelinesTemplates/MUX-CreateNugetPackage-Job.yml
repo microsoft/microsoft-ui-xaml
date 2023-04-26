@@ -16,8 +16,13 @@ jobs:
   # dependsOn:
   #   - ${{ parameters.dependsOn }}
 
-  pool:
-    vmImage: 'windows-2019'
+  # pool:
+  #   vmImage: 'windows-2019'
+  pool: 
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPoolOSS-S
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPool-S
 
   steps:
 
