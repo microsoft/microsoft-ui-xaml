@@ -64,11 +64,11 @@ jobs:
       downloadPath: $(artifactDownloadPath)
       itemPattern: '**\*.nupkg'
 
-      buildType: specific
-      buildVersionToDownload: specific
-      project: $(System.TeamProjectId)
-      pipeline: $(System.DefinitionId)
-      buildId: 69297627
+      # buildType: specific
+      # buildVersionToDownload: specific
+      # project: $(System.TeamProjectId)
+      # pipeline: $(System.DefinitionId)
+      # buildId: 69297627
 
   - task: powershell@2
     displayName: GenerateTestPFX.ps1
