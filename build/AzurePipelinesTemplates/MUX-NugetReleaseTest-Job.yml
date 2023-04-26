@@ -64,11 +64,11 @@ jobs:
       downloadPath: $(artifactDownloadPath)
       itemPattern: '**\*.nupkg'
 
-      # buildType: specific
-      # buildVersionToDownload: specific
-      # project: $(System.TeamProjectId)
-      # pipeline: $(System.DefinitionId)
-      # buildId: 68962011
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: $(System.DefinitionId)
+      buildId: 69297627
 
   - task: powershell@2
     displayName: GenerateTestPFX.ps1
@@ -108,7 +108,9 @@ jobs:
       del %TEMP%\vsinstalldir.txt
       call "%_VSINSTALLDIR15%\Common7\Tools\VsDevCmd.bat"
       echo VCToolsInstallDir = %VCToolsInstallDir%
+      echo VCToolsRedistDir = %VCToolsRedistDir%
       echo ##vso[task.setvariable variable=VCToolsInstallDir]%VCToolsInstallDir%
+      echo ##vso[task.setvariable variable=VCToolsRedistDir]%VCToolsRedistDir%
     displayName: 'Retrieve VC tools directory'
 
   - template: MUX-BuildProject-Steps.yml
