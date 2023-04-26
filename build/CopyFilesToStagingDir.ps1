@@ -53,6 +53,10 @@ PublishFile -IfExists $FullBuildOutput\Microsoft.Experimental.UI.Xaml\Generic.xa
 PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\pgosweep.exe $FullPublishDir\Test\
 PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\vcruntime140.dll $FullPublishDir\Test\
 
+PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\vc_redist.arm64.exe $FullPublishDir\Test\
+PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\vc_redist.x64.exe $FullPublishDir\Test\
+PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\vc_redist.x86.exe $FullPublishDir\Test\
+
 PublishFile -IfExists $FullBuildOutput\FrameworkPackage\*.* $FullPublishDir\FrameworkPackage
 
 if ($PublishAppxFiles)
