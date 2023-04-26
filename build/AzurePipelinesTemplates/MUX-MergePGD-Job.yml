@@ -30,22 +30,23 @@ jobs:
       artifactName: TestOutput-fwPkg
       downloadPath: $(artifactsPath)\pgo
 
-      # buildType: specific
-      # buildVersionToDownload: specific
-      # project: $(System.TeamProjectId)
-      # pipeline: $(System.DefinitionId)
-      # buildId: 69200654
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: $(System.DefinitionId)
+      buildId: 69302438
+
 
   - task: DownloadBuildArtifacts@0
     inputs:
       artifactName: ${{ parameters.pgoArtifact }}
       downloadPath: $(artifactsPath)
 
-      # buildType: specific
-      # buildVersionToDownload: specific
-      # project: $(System.TeamProjectId)
-      # pipeline: $(System.DefinitionId)
-      # buildId: 68962011
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: $(System.DefinitionId)
+      buildId: 69297627
 
   - task: powershell@2
     displayName: CopyPGOFiles.ps1
