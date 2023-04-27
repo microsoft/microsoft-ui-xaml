@@ -7,7 +7,6 @@ parameters:
   test_matrix: ''
   useFrameworkPkg: false
   taefQuery: ''
-  forPgoTraining: false
   matrix:
     Debug_x86:
       buildPlatform: 'x86'
@@ -63,12 +62,6 @@ jobs:
       artifactName: drop
       downloadPath: $(artifactDownloadPath)
       itemPattern: '**\*.nupkg'
-
-      # buildType: specific
-      # buildVersionToDownload: specific
-      # project: $(System.TeamProjectId)
-      # pipeline: $(System.DefinitionId)
-      # buildId: 69297627
 
   - task: powershell@2
     displayName: GenerateTestPFX.ps1
@@ -131,7 +124,6 @@ jobs:
   - template: MUX-RunHelixTests-Job.yml
     parameters:
       dependsOn: ${{ parameters.buildJobName }}
-      forPgoTraining: ${{ parameters.forPgoTraining }}
       ${{if eq(parameters.useFrameworkPkg, 'false')}}:
         testSuite: 'nupkg'
       ${{if eq(parameters.useFrameworkPkg, 'true')}}:

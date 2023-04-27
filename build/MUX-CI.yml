@@ -49,7 +49,6 @@ stages:
   - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
     parameters:
       name: 'RunTestsInHelix'
-      # condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
       rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
 
   # Create Nuget Package
@@ -78,12 +77,3 @@ stages:
       runTestJobName: 'RunFrameworkPkgTestsInHelix'
       dependsOn: CreateNugetPackage
       useFrameworkPkg: true
-
-  # - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
-  #   parameters:
-  #     dependsOn:
-  #     - RunTestsInHelix
-  #     - RunNugetPkgTestsInHelix
-  #     - RunFrameworkPkgTestsInHelix
-  #     rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
-  #     minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)

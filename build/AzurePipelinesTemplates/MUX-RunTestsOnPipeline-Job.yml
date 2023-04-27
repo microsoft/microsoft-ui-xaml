@@ -26,7 +26,6 @@ jobs:
 
   variables:
     useBuildOutputFromBuildId: $(Build.BuildId)
-    # useBuildOutputFromBuildId: 448707
     winuiHelixVersion: 0.5.8
     helixScriptPath: $(Build.SourcesDirectory)\build\Helix\packages\Microsoft.Internal.WinUI.Helix.$(winuiHelixVersion)\scripts\pipeline
 
@@ -53,6 +52,9 @@ jobs:
       script: |
         Get-Item -Path 'HKLM:\Software\Microsoft\Windows NT\CurrentVersion'
 
+  - script: set
+    displayName: 'Display current environment variables'
+
   - template: MUX-InstallNuget-Steps.yml
 
   - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
@@ -72,7 +74,7 @@ jobs:
       buildId: $(useBuildOutputFromBuildId)
       artifactName: TestWorkItems-$(testSuite)
       downloadPath: $(Build.SourcesDirectory)
-      # itemPattern: '**/$(buildFlavor)/**'
+      itemPattern: '$(buildFlavor)/**'
 
   - task: DownloadBuildArtifacts@0 
     inputs: 
@@ -83,17 +85,7 @@ jobs:
       buildId: $(useBuildOutputFromBuildId)
       artifactName: TestPayload-$(testSuite)
       downloadPath: $(Build.SourcesDirectory)
-      # itemPattern: '**/$(buildConfiguration)/$(buildPlatform)**'
-
-  # TODO: fix
-  # - task: PowerShell@2
-  #   displayName: 'Delete IXMPTestAppTests'
-  #   continueOnError: true
-  #   inputs:
-  #     targetType: 'inline'
-  #     script: |
-  #       Remove-Item $(workItemsProjDir)\RunTestsInHelix-IXMPTestAppTests.proj
-
+      itemPattern: '$(buildConfiguration)/$(buildPlatform)/**'
 
   - task: powershell@2
     displayName: Run Tests

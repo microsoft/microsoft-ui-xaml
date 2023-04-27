@@ -60,7 +60,6 @@ stages:
       buildArtifactName: 'FrameworkPkgTestsDrop'
       runTestJobName: 'RunFrameworkPkgTestsInHelix'
       useFrameworkPkg: true
-      forPgoTraining: true
       matrix:
         Release_x86:
           buildPlatform: 'x86'
