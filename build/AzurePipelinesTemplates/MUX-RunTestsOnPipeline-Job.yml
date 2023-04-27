@@ -11,7 +11,7 @@ parameters:
 jobs:
 
 - job: ${{ parameters.runTestJobName }}
-  dependsOn: ${{ parameters.dependsOn }}
+  # dependsOn: ${{ parameters.dependsOn }}
   condition: not(failed())
   pool:
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
