@@ -141,12 +141,12 @@ jobs:
     buildPlatform: x86
     buildConfiguration: release
 
-  - template: MUX-RunTestsOnPipeline-Job.yml
-    parameters:
-      runTestJobName: RunTests22H2x64_${{ parameters.testSuite }}
-      dependsOn: CreateTestPayload_${{ parameters.testSuite }}
-      parallel: ${{ parameters.maxParallel }}
-      testSuite: ${{ parameters.testSuite }}
-      testOS: Win10-22H2
-      buildPlatform: x64
-      buildConfiguration: release
+- template: MUX-RunTestsOnPipeline-Job.yml
+  parameters:
+    runTestJobName: RunTests22H2x64_${{ parameters.testSuite }}
+    dependsOn: CreateTestPayload_${{ parameters.testSuite }}
+    parallel: ${{ parameters.maxParallel }}
+    testSuite: ${{ parameters.testSuite }}
+    testOS: Win10-22H2
+    buildPlatform: x64
+    buildConfiguration: release
