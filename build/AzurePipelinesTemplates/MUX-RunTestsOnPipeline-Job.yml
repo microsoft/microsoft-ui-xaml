@@ -25,7 +25,8 @@ jobs:
     parallel: ${{ parameters.parallel }}
 
   variables:
-    useBuildOutputFromBuildId: $(Build.BuildId)
+    # useBuildOutputFromBuildId: $(Build.BuildId)
+    useBuildOutputFromBuildId: 452211
     winuiHelixVersion: 0.5.8
     helixScriptPath: $(Build.SourcesDirectory)\build\Helix\packages\Microsoft.Internal.WinUI.Helix.$(winuiHelixVersion)\scripts\pipeline
 
@@ -74,7 +75,6 @@ jobs:
       buildId: $(useBuildOutputFromBuildId)
       artifactName: TestWorkItems-$(testSuite)
       downloadPath: $(Build.SourcesDirectory)
-      itemPattern: '$(buildFlavor)/**'
 
   - task: DownloadBuildArtifacts@0 
     inputs: 
@@ -85,7 +85,7 @@ jobs:
       buildId: $(useBuildOutputFromBuildId)
       artifactName: TestPayload-$(testSuite)
       downloadPath: $(Build.SourcesDirectory)
-      itemPattern: '$(buildConfiguration)/$(buildPlatform)/**'
+      itemPattern: '**/$(buildConfiguration)/$(buildPlatform)/**/*'
 
   - task: powershell@2
     displayName: Run Tests
