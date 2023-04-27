@@ -74,7 +74,6 @@ jobs:
       buildId: $(useBuildOutputFromBuildId)
       artifactName: TestWorkItems-$(testSuite)
       downloadPath: $(Build.SourcesDirectory)
-      itemPattern: '$(buildFlavor)/**'
 
   - task: DownloadBuildArtifacts@0 
     inputs: 
