@@ -1,5 +1,5 @@
-$pgoBranch           = "user/kmahone/1estest"
-$packageId           = "MUXPGODatabase-test3"
+$pgoBranch           = "main"
+$packageId           = "MUXPGODatabase"
 
 # Get release version
 [xml] $customProps   = ( Get-Content "..\..\version.props" )
