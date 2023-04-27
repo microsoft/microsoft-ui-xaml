@@ -11,7 +11,7 @@ parameters:
 jobs:
 
 - job: ${{ parameters.runTestJobName }}
-  # dependsOn: ${{ parameters.dependsOn }}
+  dependsOn: ${{ parameters.dependsOn }}
   condition: not(failed())
   pool:
     ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
@@ -25,8 +25,7 @@ jobs:
     parallel: ${{ parameters.parallel }}
 
   variables:
-    # useBuildOutputFromBuildId: $(Build.BuildId)
-    useBuildOutputFromBuildId: 452211
+    useBuildOutputFromBuildId: $(Build.BuildId)
     winuiHelixVersion: 0.5.8
     helixScriptPath: $(Build.SourcesDirectory)\build\Helix\packages\Microsoft.Internal.WinUI.Helix.$(winuiHelixVersion)\scripts\pipeline
 
@@ -75,6 +74,7 @@ jobs:
       buildId: $(useBuildOutputFromBuildId)
       artifactName: TestWorkItems-$(testSuite)
       downloadPath: $(Build.SourcesDirectory)
+      itemPattern: '$(buildFlavor)/**'
 
   - task: DownloadBuildArtifacts@0 
     inputs: 
