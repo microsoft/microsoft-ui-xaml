@@ -4,6 +4,7 @@
 #pragma once
 
 #include "AutoHandle.h"
+#include "StaticAssertFalse.h"
 
 class SharedHelpers
 {
@@ -17,6 +18,7 @@ public:
 
     // Logical OS version checks
     static bool Is21H1OrHigher();
+    static bool Is20H1OrHigher();
     static bool IsVanadiumOrHigher();
     static bool Is19H1OrHigher();
     static bool IsRS5OrHigher();
@@ -36,8 +38,6 @@ public:
     static bool IsCoreWindowActivationModeAvailable();
 
     static bool IsFlyoutShowOptionsAvailable();
-
-    static bool IsScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable();
 
     static bool IsScrollContentPresenterSizesContentToTemplatedParentAvailable();
 
@@ -61,10 +61,9 @@ public:
 
     static bool IsCompositionRadialGradientBrushAvailable();
 
-    static bool IsSelectionIndicatorModeAvailable();
-
     // Actual OS version checks
-    static bool IsAPIContractV13Available(); // 21H1
+    static bool IsAPIContractV14Available(); // 21H1
+    static bool IsAPIContractV10Available();  // 20H1
     static bool IsAPIContractV9Available();  // 19H2
     static bool IsAPIContractV8Available();  // 19H1
     static bool IsAPIContractV7Available();  // RS5
@@ -233,7 +232,7 @@ public:
 
     static winrt::hstring TryGetStringRepresentationFromObject(winrt::IInspectable obj);
 
-#ifdef ICONSOURCE_INCLUDED
+#if defined(ICONSOURCE_INCLUDED) || defined(TITLEBAR_INCLUDED)
     static winrt::IconElement MakeIconElementFrom(winrt::IconSource const& iconSource);
 #endif
 

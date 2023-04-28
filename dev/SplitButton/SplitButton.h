@@ -27,22 +27,25 @@ public:
     bool IsFlyoutOpen() { return m_isFlyoutOpen; };
     void OpenFlyout();
     void CloseFlyout();
-    virtual void OnClickPrimary(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     virtual bool InternalIsChecked() { return false; }
 
     void UpdateVisualStates(bool useTransitions = true);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-private:
-
-    void OnVisualPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    void Invoke();
 
 protected:
+    virtual void OnClickPrimary(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+
     bool m_hasLoaded{ false };
 
 private:
+    void ExecuteCommand();
+    void RegisterFlyoutEvents();
     void UnregisterEvents();
+
+    void OnVisualPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
     // Internal event handlers
     void OnClickSecondary(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -55,8 +58,6 @@ private:
     void OnPointerEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnSplitButtonKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnSplitButtonKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
-
-    void RegisterFlyoutEvents();
 
     tracker_ref<winrt::Button> m_primaryButton{ this };
     tracker_ref<winrt::Button> m_secondaryButton{ this };

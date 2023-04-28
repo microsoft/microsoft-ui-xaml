@@ -15,7 +15,7 @@ AnimatedVisualPlayer::AnimationPlay::AnimationPlay(
     float fromProgress,
     float toProgress,
     bool looped)
-    : m_owner{ owner }
+    : m_owner{ &owner }
     , m_fromProgress(fromProgress)
     , m_toProgress(toProgress)
     , m_looped(looped)
@@ -25,7 +25,7 @@ AnimatedVisualPlayer::AnimationPlay::AnimationPlay(
     // so the time is calculated as fromProgress..end + start..toProgress.
     const auto durationAsProgress = fromProgress > toProgress ? ((1 - fromProgress) + toProgress) : (toProgress - fromProgress);
     // NOTE: this relies on the Duration() being set on the owner.
-    m_playDuration = std::chrono::duration_cast<winrt::TimeSpan>(m_owner.Duration() * durationAsProgress);
+    m_playDuration = std::chrono::duration_cast<winrt::TimeSpan>(m_owner->Duration() * durationAsProgress);
 }
 
 float AnimatedVisualPlayer::AnimationPlay::FromProgress()
@@ -36,6 +36,8 @@ float AnimatedVisualPlayer::AnimationPlay::FromProgress()
 // REENTRANCE SIDE EFFECT: IsPlaying DP.
 void AnimatedVisualPlayer::AnimationPlay::Start()
 {
+    // m_owner should be alive since we are calling Start() from owner only
+    MUX_ASSERT(m_owner);
     MUX_ASSERT(!m_controller);
 
     // If the duration is really short (< 20ms) don't bother trying to animate.
@@ -43,14 +45,14 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
     {
         // Nothing to play. Jump to the from position.
         // This will have the side effect of completing this play immediately.
-        m_owner.SetProgress(m_fromProgress);
+        m_owner->SetProgress(m_fromProgress);
         // Do not do anything after calling SetProgress()... the AnimationPlay is destructed already.
         return;
     }
     else
     {
         // Create an animation to drive the Progress property.
-        auto compositor = m_owner.m_progressPropertySet.Compositor();
+        auto compositor = m_owner->m_progressPropertySet.Compositor();
         auto animation = compositor.CreateScalarKeyFrameAnimation();
         animation.Duration(m_playDuration);
         auto linearEasing = compositor.CreateLinearEasingFunction();
@@ -90,9 +92,9 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
             : compositor.CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
 
         // Start the animation and get the controller.
-        m_owner.m_progressPropertySet.StartAnimation(L"Progress", animation);
+        m_owner->m_progressPropertySet.StartAnimation(L"Progress", animation);
 
-        m_controller = m_owner.m_progressPropertySet.TryGetAnimationController(L"Progress");
+        m_controller = m_owner->m_progressPropertySet.TryGetAnimationController(L"Progress");
 
         if (m_isPaused || m_isPausedBecauseHidden)
         {
@@ -101,7 +103,7 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
         }
 
         // Set the playback rate.
-        const auto playbackRate = static_cast<float>(m_owner.PlaybackRate());
+        const auto playbackRate = static_cast<float>(m_owner->PlaybackRate());
         m_controller.PlaybackRate(playbackRate);
 
         if (playbackRate < 0)
@@ -115,6 +117,15 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
             // Subscribe to the batch completed event.
             m_batchCompletedToken = m_batch.Completed([this](winrt::IInspectable const&, winrt::CompositionBatchCompletedEventArgs const&)
                 {
+                    if (m_owner) 
+                    {
+                        // If optimization is set to Resources - destroy animations immediately after player stops.
+                        if (m_owner->AnimationOptimization() == winrt::PlayerAnimationOptimization::Resources)
+                        {
+                            m_owner->DestroyAnimations();
+                        }
+                    }
+
                     // Complete the play when the batch completes.
                     //
                     // The "this" pointer is guaranteed to be valid because:
@@ -135,13 +146,13 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
         }
 
         // WARNING - this may cause reentrance.
-        m_owner.IsPlaying(true);
+        m_owner->IsPlaying(true);
     }
 }
 
 bool AnimatedVisualPlayer::AnimationPlay::IsCurrentPlay()
 {
-    return m_owner.m_nowPlaying.get() == this;
+    return m_owner && m_owner->m_nowPlaying.get() == this;
 }
 
 void AnimatedVisualPlayer::AnimationPlay::SetPlaybackRate(float value)
@@ -223,6 +234,7 @@ void AnimatedVisualPlayer::AnimationPlay::Resume()
 //   - when any property is set that invalidates the current play, such as starting a new play or setting progress.
 //  * CompositionScopedBatch::BatchCompleted event
 //   - when a non-looping animation gets to it final keyframe.
+//  * ~AnimatedVisualPlayer - in owner's destructor
 // Do not do anything with this object after calling here... the object is destructed already.
 // REENTRANCE SIDE EFFECT: IsPlaying DP.
 void AnimatedVisualPlayer::AnimationPlay::Complete()
@@ -243,9 +255,14 @@ void AnimatedVisualPlayer::AnimationPlay::Complete()
     //     from the batch completion event.
     //    
 
-    // Grab a copy of the pointer so the object stays alive until
-    // the method returns.
-    auto me = m_owner.m_nowPlaying;
+    // Grab a copy of the pointer so the object stays alive until the method returns.
+    // We need to copy pointer only in case if owner is alive,
+    // because we are resetting only owner's pointer in this method
+    std::shared_ptr<AnimationPlay> me;
+    if (m_owner)
+    {
+        me = m_owner->m_nowPlaying;
+    }
 
     // Unsubscribe from batch.Completed.
     if (m_batch)
@@ -256,21 +273,28 @@ void AnimatedVisualPlayer::AnimationPlay::Complete()
 
     // If this play is the one that is currently associated with the player,
     // disassociate it from the player and update the player's IsPlaying property.
-    if (IsCurrentPlay())
+    if (m_owner && IsCurrentPlay())
     {
         // Disconnect this AnimationPlay from the player.
-        m_owner.m_nowPlaying.reset();
+        m_owner->m_nowPlaying.reset();
 
         // Update the IsPlaying state. Note that this is done
         // after being disconnected so that this AnimationPlay won't be
         // reentered, however the AnimatedVisualPlayer may be reentered.
         // WARNING - this may cause reentrance.
-        m_owner.IsPlaying(false);
+        m_owner->IsPlaying(false);
     }
 
     // Allow anything waiting on this awaitable to complete.
     // This will not cause reentrance because this signals an event and does not call out.
     CompleteAwaits();
+}
+
+// This is called in AnimatedVisualPlayer destructor to prevent
+// AnimationPlay accessing owner in case if it lives longer
+void AnimatedVisualPlayer::AnimationPlay::ResetOwner()
+{
+    m_owner = nullptr;
 }
 
 AnimatedVisualPlayer::AnimatedVisualPlayer()
@@ -342,10 +366,14 @@ AnimatedVisualPlayer::AnimatedVisualPlayer()
 AnimatedVisualPlayer::~AnimatedVisualPlayer()
 {
     // Ensure any outstanding play is stopped.
-    // NOTE: Stop() can cause reentrance when clients react to DP changes, but because
-    //       we're in the destructor we know that there aren't any clients who can reach
-    //       us, so reentrance is not a concern. 
-    Stop();
+    if (m_nowPlaying)
+    {
+        // To stop and destroy m_nowPlaying we need to call Complete()
+        // But we need to detach us (m_owner) from m_nowPlaying first so that AnimationPlay
+        // will not try to call us (m_owner), since we are already in the destructor
+        m_nowPlaying->ResetOwner();
+        m_nowPlaying->Complete();
+    }
 }
 
 void AnimatedVisualPlayer::OnLoaded(winrt::IInspectable const& /*sender*/, winrt::RoutedEventArgs const& /*args*/)
@@ -603,12 +631,20 @@ winrt::IAsyncAction AnimatedVisualPlayer::PlayAsync(double fromProgress, double 
         co_return;
     }
 
+    // Make sure that animations are created.
+    CreateAnimations();
+
     // Used to detect reentrance.
     const auto version = ++m_playAsyncVersion;
 
-    // Cause any other plays to return. 
+    // Complete m_nowPlaying if it is still running.
+    // Identical to Stop() call but without destroying the animations.
     // WARNING - this call may cause reentrance via the IsPlaying DP.
-    Stop();
+    if (m_nowPlaying)
+    {
+        m_progressPropertySet.InsertScalar(L"Progress", static_cast<float>(m_currentPlayFromProgress));
+        m_nowPlaying->Complete();
+    }
 
     if (version != m_playAsyncVersion)
     {
@@ -688,6 +724,9 @@ void AnimatedVisualPlayer::SetProgress(double progress)
         return;
     }
 
+    // Make sure that animations are created.
+    CreateAnimations();
+
     auto clampedProgress = std::clamp(static_cast<float>(progress), 0.0F, 1.0F);
 
     // WARNING: Reentrance via IsPlaying DP may occur from this point down to the end of the method
@@ -705,6 +744,11 @@ void AnimatedVisualPlayer::SetProgress(double progress)
     if (m_nowPlaying)
     {
         m_nowPlaying->Complete();
+    }
+
+    // If optimization is set to Resources - destroy annimations immediately.
+    if (AnimationOptimization() == winrt::PlayerAnimationOptimization::Resources) {
+        DestroyAnimations();
     }
 }
 
@@ -734,6 +778,88 @@ void AnimatedVisualPlayer::OnAutoPlayPropertyChanged(
         const auto looped = true;
         auto ignore = PlayAsync(from, to, looped);
     }
+}
+
+void AnimatedVisualPlayer::OnAnimationOptimizationPropertyChanged(
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    if (!SharedHelpers::IsRS5OrHigher())
+    {
+        return;
+    }
+
+    auto optimization = unbox_value<winrt::PlayerAnimationOptimization>(args.NewValue());
+
+    if (m_nowPlaying)
+    {
+        // If there is something in play right now we should not create/destroy animations.
+        return;
+    }
+
+    if (optimization == winrt::PlayerAnimationOptimization::Resources)
+    {
+        DestroyAnimations();
+    }
+    else if (optimization == winrt::PlayerAnimationOptimization::Latency)
+    {
+        CreateAnimations();
+    }
+}
+
+void AnimatedVisualPlayer::CreateAnimations() {
+    m_createAnimationsCounter++;
+
+    if (m_isAnimationsCreated || m_animatedVisual == nullptr || !SharedHelpers::IsRS5OrHigher())
+    {
+        return;
+    }
+
+    // Check if current animated visual supports creating animations and create them.
+    if (const auto& animatedVisual = m_animatedVisual.get())
+    {
+        if (const auto& animatedVisual2 = animatedVisual.try_as<winrt::IAnimatedVisual2>())
+        {
+            animatedVisual2.CreateAnimations();
+            m_isAnimationsCreated = true;
+        }
+    }
+}
+
+void AnimatedVisualPlayer::DestroyAnimations() {
+    if (!m_isAnimationsCreated || m_animatedVisual == nullptr || !SharedHelpers::IsRS5OrHigher())
+    {
+        return;
+    }
+
+    // Call RequestCommit to make sure that previous compositor calls complete before destroying animations.
+    // RequestCommitAsync is available only for RS4+
+    m_rootVisual.Compositor().RequestCommitAsync().Completed(
+        [me_weak = get_weak(), createAnimationsCounter = m_createAnimationsCounter](auto, auto) {
+            auto me = me_weak.get();
+            
+            if (!me)
+            {
+                return;
+            }
+            
+            // Check if there was any CreateAnimations call after DestroyAnimations.
+            // We should not destroy animations in this case,
+            // they will be destroyed by the following DestroyAnimations call.
+            if (createAnimationsCounter != me->m_createAnimationsCounter) {
+                return;
+            }
+
+            // Check if current animated visual supports destroyig animations.
+            if (const auto& animatedVisual = me->m_animatedVisual.get())
+            {
+                if (const auto& animatedVisual2 = animatedVisual.try_as<winrt::IAnimatedVisual2>())
+                {
+                    animatedVisual2.DestroyAnimations();
+                    me->m_isAnimationsCreated = false;
+                }
+            }
+        }
+    );
 }
 
 void AnimatedVisualPlayer::OnFallbackContentPropertyChanged(
@@ -826,8 +952,30 @@ void AnimatedVisualPlayer::UpdateContent()
     }
 
     winrt::IInspectable diagnostics{};
-    auto animatedVisual = source.TryCreateAnimatedVisual(m_rootVisual.Compositor(), diagnostics);
-    m_animatedVisual.set(animatedVisual);
+    winrt::IAnimatedVisual animatedVisual;
+
+    const bool createAnimations = AnimationOptimization() == winrt::PlayerAnimationOptimization::Latency;
+
+    if (auto source3 = source.try_as<winrt::IAnimatedVisualSource3>())
+    {
+        animatedVisual = source3.TryCreateAnimatedVisual(m_rootVisual.Compositor(), diagnostics, createAnimations);
+        m_isAnimationsCreated = createAnimations;
+        m_animatedVisual.set(animatedVisual);
+    }
+    else
+    {
+        animatedVisual = source.TryCreateAnimatedVisual(m_rootVisual.Compositor(), diagnostics);
+        m_isAnimationsCreated = true;
+
+        // m_animatedVisual should be updated before DestroyAnimations call
+        m_animatedVisual.set(animatedVisual);
+
+        // Destroy animations if we don't need them.
+        // Old IAnimatedVisualSource interface always creates them.
+        if (!createAnimations) {
+            DestroyAnimations();
+        }
+    }
 
     if (!animatedVisual)
     {

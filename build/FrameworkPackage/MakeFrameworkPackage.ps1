@@ -38,7 +38,7 @@ function ExecuteMakePri
     if ($LastExitCode -ne 0) { Exit 1 }
 }
 
-# only keep 21h1 themeresources, and set othe themeresources to " "
+# only keep 21h1 themeresources, and set other themeresources to " "
 # I didn't set it to "" because "" will change the `makepri dump` layout, but " " will not.
 function RepackCBSResourcesPri
 {
@@ -245,18 +245,11 @@ else
     $pstTime = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $pstZone)
     # Split version into yyMM.dd because appx versions can't be greater than 65535
     # Also store submission requires that the revision field stay 0, so our scheme is:
-    #    A.ByyMM.ddNNN
+    #    B.yyMM.ddNNN
     # compared to nuget version which is:
     #    A.B.yyMMddNN
     # We could consider dropping the B part out of the minor section if we need to because
-    # it's part of the package name, but we'll try to keep it in for now. We also omit the "B"
-    # part when it's 0 because the appx version doesn't allow the minor version to have a 0 prefix.
-    # Also note that we trim 0s off the beginning of the day because appx versions can't start with 0.
-    if ($versionMinor -eq 0)
-    {
-        $versionMinor = ""
-    }
-
+    # it's part of the package name, but we'll try to keep it in for now.
     if (-not $builddate_yymm)
     {
         $builddate_yymm = ($pstTime).ToString("yyMM")
@@ -269,7 +262,7 @@ else
     # Pad subversion up to 3 digits
     $subversionPadded = $subversion.ToString("000")
 
-    $version = "${versionMajor}.${versionMinor}" + $builddate_yymm + "." + $builddate_dd.TrimStart("0") + "$subversionPadded.0"
+    $version = "${versionMinor}." + $builddate_yymm + "." + $builddate_dd.TrimStart("0") + "$subversionPadded.0"
 
     Write-Verbose "Version = $version"
 }
@@ -324,7 +317,19 @@ $priOutputPath = [IO.Path]::GetFullPath("$fullOutputPath\resources.pri")
 $priCBSOutputPath = [IO.Path]::GetFullPath("$fullOutputPath\CBSresources.pri")
 $noiseAssetPath = [IO.Path]::GetFullPath("$fullOutputPath\Assets\NoiseAsset_256x256_PNG.png")
 $resourceContents = [IO.Path]::GetFullPath("$fullOutputPath\Resources")
-$pfxPath = [IO.Path]::GetFullPath("..\MSTest.pfx")
+
+$pfxPath = [IO.Path]::GetFullPath("MSTest.pfx")
+$CertificateFriendlyName = "MSTest"
+
+$cert = New-SelfSignedCertificate -Type Custom `
+    -Subject $Publisher `
+    -KeyUsage DigitalSignature `
+    -FriendlyName $CertificateFriendlyName `
+    -CertStoreLocation "Cert:\CurrentUser\My" `
+    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+
+$certificateBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pkcs12)
+[System.IO.File]::WriteAllBytes($pfxPath, $certificateBytes)
 
 pushd $fullOutputPath\PackageContents
 
@@ -362,24 +367,7 @@ Write-Host $makeappx
 cmd /c $makeappx
 if ($LastExitCode -ne 0) { Exit 1 }
 
-if ($env:TFS_ToolsDirectory -and ($env:BUILD_DEFINITIONNAME -match "release") -and $env:UseSimpleSign)
-{
-    # From MakeAppxBundle in the XES tools
-    $signToolPath = $env:TFS_ToolsDirectory + "\bin\SimpleSign.exe"
-    if (![System.IO.File]::Exists($signToolPath))
-    {
-       $signToolPath = "SimpleSign.exe"
-    }
-
-    # From here: https://osgwiki.com/wiki/Package_ES_Appx_Bundle#Code_sign_Appx_Bundle
-    $signCert = "136020001"
-
-    $signtool = "`"$signToolPath`" -i:`"$outputAppxFileFullPath`" -c:$signCert -s:`"CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US`""
-}
-else
-{
-    $signtool = "`"" + (Join-Path $WindowsSdkBinDir "signtool.exe") + "`" sign /a /v /fd SHA256 /f $pfxPath $outputAppxFileFullPath"
-}
+$signtool = "`"" + (Join-Path $WindowsSdkBinDir "signtool.exe") + "`" sign /a /v /fd SHA256 /f $pfxPath $outputAppxFileFullPath"
 Write-Host $signtool
 cmd /c $signtool
 if ($LastExitCode -ne 0) { Exit 1 }

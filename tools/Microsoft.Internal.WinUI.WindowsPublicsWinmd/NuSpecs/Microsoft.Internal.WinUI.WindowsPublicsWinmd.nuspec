@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.Internal.WinUI.WindowsPublicsWinmd</id>
+    <version>0.0.2</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Windows.winmd from Windows Publics for use in OS repo.</description>
+    <releaseNotes>For Microsoft internal use only.</releaseNotes>
+    <copyright>Copyright 2021</copyright>
+  </metadata>
+  <files>
+    <file target="onecoreuap\internal\buildmetadata\windows.winmd" src="$PublicsDir$\onecoreuap\internal\buildmetadata\windows.winmd"/>
+  </files>
+</package>

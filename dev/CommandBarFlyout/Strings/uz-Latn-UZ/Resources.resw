@@ -117,4 +117,110 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="CommandBarFlyoutCommandBarLocalizedControlType" xml:space="preserve">
+    <value>menyu</value>
+    <comment>The name of the control type for CommandBars inside CommandBarFlyouts to be reported to UIA clients.</comment>
+  </data>
+  <data name="CommandBarFlyoutAppBarButtonLocalizedControlType" xml:space="preserve">
+    <value>menyu elementi</value>
+    <comment>The name of the control type for AppBarButtons inside CommandBarFlyouts to be reported to UIA clients.</comment>
+  </data>
+  <data name="CommandBarFlyoutAppBarToggleButtonLocalizedControlType" xml:space="preserve">
+    <value>menyu elementi</value>
+    <comment>The name of the control type for AppBarToggleButtons inside CommandBarFlyouts to be reported to UIA clients.</comment>
+  </data>
+  <data name="ProofingMenuItemLabel" xml:space="preserve">
+    <value>Tekshirish</value>
+    <comment>The label for the text command bar flyout menu item that provides the proofing menu.</comment>
+  </data>
+  <data name="TextCommandDescriptionBold" xml:space="preserve">
+    <value>Belgilangan matnni qalinlashtirish</value>
+  </data>
+  <data name="TextCommandDescriptionCopy" xml:space="preserve">
+    <value>Belgilangan kontentni vaqtinchalik xotiraga nusxalash</value>
+  </data>
+  <data name="TextCommandDescriptionCut" xml:space="preserve">
+    <value>Belgilangan kontentni olib tashlash va buferga joylash</value>
+  </data>
+  <data name="TextCommandDescriptionItalic" xml:space="preserve">
+    <value>Belgilangan matnni qiya qilish</value>
+  </data>
+  <data name="TextCommandDescriptionPaste" xml:space="preserve">
+    <value>Shu joyga buferdagi kontentni joylash</value>
+  </data>
+  <data name="TextCommandDescriptionRedo" xml:space="preserve">
+    <value>Oxirgi bekor qilingan amalni takrorlash</value>
+  </data>
+  <data name="TextCommandDescriptionSelectAll" xml:space="preserve">
+    <value>Barcha kontentni belgilash</value>
+  </data>
+  <data name="TextCommandDescriptionUnderline" xml:space="preserve">
+    <value>Belgilangan matnning tagiga chizish</value>
+  </data>
+  <data name="TextCommandDescriptionUndo" xml:space="preserve">
+    <value>Eng oxirgi amalni bekor qilish</value>
+  </data>
+  <data name="TextCommandKeyboardAcceleratorKeyBold" xml:space="preserve">
+    <value>B</value>
+    <comment>{ValidChars="A-Z"}{MinLength=source}{MaxLength=source}Keyboard accelerator key for bolding - Ctrl+B. Must be unique with respect to every other keyboard accelerator in this file.</comment>
+  </data>
+  <data name="TextCommandKeyboardAcceleratorKeyCopy" xml:space="preserve">
+    <value>C</value>
+    <comment>{ValidChars="A-Z"}{MinLength=source}{MaxLength=source}Keyboard accelerator key for copying - Ctrl+C. Must be unique with respect to every other keyboard accelerator in this file.</comment>
+  </data>
+  <data name="TextCommandKeyboardAcceleratorKeyCut" xml:space="preserve">
+    <value>X</value>
+    <comment>{ValidChars="A-Z"}{MinLength=source}{MaxLength=source}Keyboard accelerator key for cutting - Ctrl+X. Must be unique with respect to every other keyboard accelerator in this file.</comment>
+  </data>
+  <data name="TextCommandKeyboardAcceleratorKeyItalic" xml:space="preserve">
+    <value>I</value>
+    <comment>{ValidChars="A-Z"}{MinLength=source}{MaxLength=source}Keyboard accelerator key for italicizing - Ctrl+I. Must be unique with respect to every other keyboard accelerator in this file.</comment>
+  </data>
+  <data name="TextCommandKeyboardAcceleratorKeyPaste" xml:space="preserve">
+    <value>V</value>
+    <comment>{ValidChars="A-Z"}{MinLength=source}{MaxLength=source}Keyboard accelerator key for pasting - Ctrl+V. Must be unique with respect to every other keyboard accelerator in this file.</comment>
+  </data>
+  <data name="TextCommandKeyboardAcceleratorKeyRedo" xml:space="preserve">
+    <value>Y</value>
+    <comment>{ValidChars="A-Z"}{MinLength=source}{MaxLength=source}Keyboard accelerator key for redoing - Ctrl+Y. Must be unique with respect to every other keyboard accelerator in this file.</comment>
+  </data>
+  <data name="TextCommandKeyboardAcceleratorKeySelectAll" xml:space="preserve">
+    <value>A</value>
+    <comment>{ValidChars="A-Z"}{MinLength=source}{MaxLength=source}Keyboard accelerator key for selecting all - Ctrl+A. Must be unique with respect to every other keyboard accelerator in this file.</comment>
+  </data>
+  <data name="TextCommandKeyboardAcceleratorKeyUnderline" xml:space="preserve">
+    <value>U</value>
+    <comment>{ValidChars="A-Z"}{MinLength=source}{MaxLength=source}Keyboard accelerator key for underlining - Ctrl+U. Must be unique with respect to every other keyboard accelerator in this file.</comment>
+  </data>
+  <data name="TextCommandKeyboardAcceleratorKeyUndo" xml:space="preserve">
+    <value>Z</value>
+    <comment>{ValidChars="A-Z"}{MinLength=source}{MaxLength=source}Keyboard accelerator key for undoing - Ctrl+Z. Must be unique with respect to every other keyboard accelerator in this file.</comment>
+  </data>
+  <data name="TextCommandLabelBold" xml:space="preserve">
+    <value>Qalin</value>
+  </data>
+  <data name="TextCommandLabelCopy" xml:space="preserve">
+    <value>Nusxa olish</value>
+  </data>
+  <data name="TextCommandLabelCut" xml:space="preserve">
+    <value>Qirqib olish</value>
+  </data>
+  <data name="TextCommandLabelItalic" xml:space="preserve">
+    <value>Qiya</value>
+  </data>
+  <data name="TextCommandLabelPaste" xml:space="preserve">
+    <value>Joylash</value>
+  </data>
+  <data name="TextCommandLabelRedo" xml:space="preserve">
+    <value>Qaytarish</value>
+  </data>
+  <data name="TextCommandLabelSelectAll" xml:space="preserve">
+    <value>Hammasini belgilash</value>
+  </data>
+  <data name="TextCommandLabelUnderline" xml:space="preserve">
+    <value>Tagiga chizilgan</value>
+  </data>
+  <data name="TextCommandLabelUndo" xml:space="preserve">
+    <value>Bekor qilish</value>
+  </data>
 </root>

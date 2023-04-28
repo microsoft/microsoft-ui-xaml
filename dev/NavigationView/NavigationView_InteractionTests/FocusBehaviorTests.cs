@@ -373,7 +373,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     UIObject item6 = FindElement.ByName("TV");
                     UIObject item7 = FindElement.ByName("Volume");
                     UIObject item8 = FindElement.ByName("Integer");
-                    UIObject item9 = FindElement.ByName("HasChildItem");
+                    UIObject item9 = FindElement.ByName("AcceptItem");
+                    UIObject item10 = FindElement.ByName("HasChildItem");
                     UIObject settingsItem = FindElement.ByName("Settings");
 
                     Log.Comment("Verify that tab from the TogglePaneButton goes to the search box");
@@ -419,6 +420,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     Wait.ForIdle();
                     Verify.IsTrue(item9.HasKeyboardFocus);
 
+                    KeyboardHelper.PressKey(Key.Down);
+                    Wait.ForIdle();
+                    Verify.IsTrue(item10.HasKeyboardFocus);
+
                     Log.Comment("Verify that tab thrice from the last menu item goes to the settings item");
                     KeyboardHelper.PressKey(Key.Tab, ModifierKey.None, 3);
                     Wait.ForIdle();
@@ -427,9 +432,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     Log.Comment("Verify that shift+tab thrice from the settings item goes to the last menu item");
                     KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 3);
                     Wait.ForIdle();
-                    Verify.IsTrue(item9.HasKeyboardFocus);
+                    Verify.IsTrue(item10.HasKeyboardFocus);
 
                     Log.Comment("Verify that up arrow can navigate through all items");
+                    KeyboardHelper.PressKey(Key.Up);
+                    Wait.ForIdle();
+                    Verify.IsTrue(item9.HasKeyboardFocus);
+
                     KeyboardHelper.PressKey(Key.Up);
                     Wait.ForIdle();
                     Verify.IsTrue(item8.HasKeyboardFocus);

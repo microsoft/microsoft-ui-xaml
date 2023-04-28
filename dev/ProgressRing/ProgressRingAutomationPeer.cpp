@@ -19,7 +19,14 @@ winrt::IInspectable ProgressRingAutomationPeer::GetPatternCore(winrt::PatternInt
 {
     if (patternInterface == winrt::PatternInterface::RangeValue)
     {
-        return *this;
+        if (GetImpl()->IsIndeterminate())
+        {
+            return nullptr;
+        }
+        else
+        {
+            return *this;
+        }
     }
 
     return __super::GetPatternCore(patternInterface);
@@ -41,7 +48,7 @@ winrt::hstring ProgressRingAutomationPeer::GetNameCore()
         {
             if (progressRing.IsIndeterminate())
             {
-                return winrt::hstring{ ResourceAccessor::GetLocalizedStringResource(SR_ProgressRingIndeterminateStatus) + name };
+                return winrt::hstring{ ResourceAccessor::GetLocalizedStringResource(SR_ProgressRingIndeterminateStatus) + L" " + name };
             }
             else
             {

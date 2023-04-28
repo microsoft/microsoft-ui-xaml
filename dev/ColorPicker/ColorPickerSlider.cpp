@@ -43,12 +43,10 @@ void ColorPickerSlider::OnApplyTemplate()
 
 void ColorPickerSlider::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 {
-    if ((Orientation() == winrt::Orientation::Horizontal &&
-            args.Key() != winrt::VirtualKey::Left &&
-            args.Key() != winrt::VirtualKey::Right) ||
-        (Orientation() == winrt::Orientation::Vertical &&
-            args.Key() != winrt::VirtualKey::Up &&
-            args.Key() != winrt::VirtualKey::Down))
+    if (args.Key() != winrt::VirtualKey::Left &&
+        args.Key() != winrt::VirtualKey::Right &&
+        args.Key() != winrt::VirtualKey::Up &&
+        args.Key() != winrt::VirtualKey::Down)
     {
         __super::OnKeyDown(args);
         return;
@@ -102,9 +100,9 @@ void ColorPickerSlider::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
     const bool shouldInvertHorizontalDirection = FlowDirection() == winrt::FlowDirection::RightToLeft && !IsDirectionReversed();
 
     const IncrementDirection direction =
-        ((args.Key() == winrt::VirtualKey::Left && !shouldInvertHorizontalDirection) ||
+        ((args.Key() == winrt::VirtualKey::Left && !shouldInvertHorizontalDirection)    ||
             (args.Key() == winrt::VirtualKey::Right && shouldInvertHorizontalDirection) ||
-            args.Key() == winrt::VirtualKey::Up) ?
+             args.Key() == winrt::VirtualKey::Down) ?
         IncrementDirection::Lower :
         IncrementDirection::Higher;
 

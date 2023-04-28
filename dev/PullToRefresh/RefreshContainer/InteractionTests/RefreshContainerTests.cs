@@ -267,13 +267,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        //Issue #6649 Some tests fail when run on OS 21H1 
         [TestMethod]
+        [TestProperty("Ignore", "True")]
         public void InteractionOnImageTest()
         {
             InteractionOnImageTestPrivate(withInfoProvider: false);
         }
 
+        //Issue #6649 Some tests fail when run on OS 21H1 
         [TestMethod]
+        [TestProperty("Ignore", "True")]
         public void InteractionOnImageWithInfoProviderTest()
         {
             InteractionOnImageTestPrivate(withInfoProvider: true);

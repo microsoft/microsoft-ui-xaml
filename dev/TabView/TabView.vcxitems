@@ -20,6 +20,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TabViewItemAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TabViewItemTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TabViewListView.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TabViewTrace.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TabView.properties.cpp" />

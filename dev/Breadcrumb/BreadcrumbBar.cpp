@@ -62,7 +62,7 @@ void BreadcrumbBar::OnApplyTemplate()
         itemsRepeater.Layout(*m_itemsRepeaterLayout);
         itemsRepeater.ItemsSource(winrt::make<Vector<IInspectable>>());
         itemsRepeater.ItemTemplate(*m_itemsRepeaterElementFactory);
-        
+
         m_itemsRepeaterElementPreparedRevoker = itemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &BreadcrumbBar::OnElementPreparedEvent });
         m_itemsRepeaterElementIndexChangedRevoker = itemsRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &BreadcrumbBar::OnElementIndexChangedEvent });
         m_itemsRepeaterElementClearingRevoker = itemsRepeater.ElementClearing(winrt::auto_revoke, { this, &BreadcrumbBar::OnElementClearingEvent });
@@ -148,7 +148,11 @@ void BreadcrumbBar::UpdateItemsRepeaterItemsSource()
     if (ItemsSource())
     {
         m_breadcrumbItemsSourceView = winrt::ItemsSourceView(ItemsSource());
-
+        if (const auto& itemsRepeater = m_itemsRepeater.get())
+        {
+            m_itemsIterable = winrt::make_self<BreadcrumbIterable>(ItemsSource());
+            itemsRepeater.ItemsSource(*m_itemsIterable);
+        }
         if (m_breadcrumbItemsSourceView)
         {
             m_itemsSourceChanged = m_breadcrumbItemsSourceView.CollectionChanged(winrt::auto_revoke, { this, &BreadcrumbBar::OnBreadcrumbBarItemsSourceCollectionChanged });
@@ -342,11 +346,20 @@ void BreadcrumbBar::ReIndexVisibleElementsForAccessibility() const
     if (auto const& itemsRepeater = m_itemsRepeater.get())
     {
         const uint32_t visibleItemsCount{ m_itemsRepeaterLayout->GetVisibleItemsCount() };
+        const auto isEllipsisRendered = m_itemsRepeaterLayout->EllipsisIsRendered();
         uint32_t firstItemToIndex{ 1 };
 
-        if (m_itemsRepeaterLayout->EllipsisIsRendered())
+        if (isEllipsisRendered)
         {
             firstItemToIndex = m_itemsRepeaterLayout->FirstRenderedItemIndexAfterEllipsis();
+        }
+
+        // In order to make the ellipsis inaccessible to accessbility tools when it's hidden,
+        // we set the accessibilityView to raw and restore it to content when it becomes visible.
+        if (const auto ellipsisItem = m_ellipsisBreadcrumbBarItem.get())
+        {
+            const auto accessibilityView = isEllipsisRendered ? winrt::AccessibilityView::Content : winrt::AccessibilityView::Raw;
+            ellipsisItem.SetValue(winrt::AutomationProperties::AccessibilityViewProperty(), box_value(accessibilityView));
         }
 
         const auto& itemsSourceView = itemsRepeater.ItemsSourceView();
@@ -401,7 +414,7 @@ void BreadcrumbBar::OnGettingFocus(const winrt::IInspectable&, const winrt::Gett
                             args.Handled(true);
                         }
                     }
-                }   
+                }
             }
 
             // Focus was already in the repeater: in RS3+ Selection follows focus unless control is held down.
@@ -437,7 +450,7 @@ bool BreadcrumbBar::MoveFocus(int indexIncrement)
         {
             auto focusedIndex = itemsRepeater.GetElementIndex(focusedElement);
 
-            if (focusedIndex >= 0)
+            if (focusedIndex >= 0 && indexIncrement != 0)
             {
                 focusedIndex += indexIncrement;
                 auto const itemCount = itemsRepeater.ItemsSourceView().Count();
@@ -507,37 +520,6 @@ bool BreadcrumbBar::MoveFocusNext()
     return MoveFocus(movementNext);
 }
 
-// If we haven't handled the key yet and the original source was the first(for up and left)
-// or last(for down and right) element in the repeater we need to handle the key so
-// BreadcrumbBarItem doesn't, which would result in the behavior.
-bool BreadcrumbBar::HandleEdgeCaseFocus(bool first, const winrt::IInspectable& source)
-{
-    if (auto const& itemsRepeater = m_itemsRepeater.get())
-    {
-        if (auto const& sourceAsUIElement = source.try_as<winrt::UIElement>())
-        {
-            auto const index = [first, itemsRepeater]()
-            {
-                if (first)
-                {
-                    return 0;
-                }
-                if (auto const& itemsSourceView = itemsRepeater.ItemsSourceView())
-                {
-                    return itemsSourceView.Count() - 1;
-                }
-                return -1;
-            }();
-
-            if (itemsRepeater.GetElementIndex(sourceAsUIElement) == index)
-            {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 winrt::FindNextElementOptions BreadcrumbBar::GetFindNextElementOptions()
 {
     auto const& findNextElementOptions = winrt::FindNextElementOptions{};
@@ -559,8 +541,8 @@ void BreadcrumbBar::OnChildPreviewKeyDown(const winrt::IInspectable&, const winr
             args.Handled(true);
             return;
         }
-        else if ( (flowDirectionIsLTR && (args.OriginalKey() == winrt::VirtualKey::GamepadDPadRight)) ||
-                    (!flowDirectionIsLTR && (args.OriginalKey() == winrt::VirtualKey::GamepadDPadLeft)) )
+        else if ((flowDirectionIsLTR && (args.OriginalKey() == winrt::VirtualKey::GamepadDPadRight)) ||
+            (!flowDirectionIsLTR && (args.OriginalKey() == winrt::VirtualKey::GamepadDPadLeft)))
         {
             if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Next))
             {
@@ -568,7 +550,6 @@ void BreadcrumbBar::OnChildPreviewKeyDown(const winrt::IInspectable&, const winr
                 return;
             }
         }
-        args.Handled(HandleEdgeCaseFocus(false, args.OriginalSource()));
     }
     // Moving to previous element
     else if ((flowDirectionIsLTR && keyIsLeft) || (!flowDirectionIsLTR && keyIsRight))
@@ -579,7 +560,7 @@ void BreadcrumbBar::OnChildPreviewKeyDown(const winrt::IInspectable&, const winr
             return;
         }
         else if ((flowDirectionIsLTR && (args.OriginalKey() == winrt::VirtualKey::GamepadDPadLeft)) ||
-                    (!flowDirectionIsLTR && (args.OriginalKey() == winrt::VirtualKey::GamepadDPadRight)))
+            (!flowDirectionIsLTR && (args.OriginalKey() == winrt::VirtualKey::GamepadDPadRight)))
         {
             if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Previous))
             {
@@ -587,47 +568,6 @@ void BreadcrumbBar::OnChildPreviewKeyDown(const winrt::IInspectable&, const winr
                 return;
             }
         }
-        args.Handled(HandleEdgeCaseFocus(true, args.OriginalSource()));
-    }
-    else if (args.Key() == winrt::VirtualKey::Down)
-    {
-        if (args.OriginalKey() != winrt::VirtualKey::GamepadDPadDown)
-        {
-            if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Right, GetFindNextElementOptions()))
-            {
-                args.Handled(true);
-                return;
-            }
-        }
-        else
-        {
-            if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Right))
-            {
-                args.Handled(true);
-                return;
-            }
-        }
-        args.Handled(HandleEdgeCaseFocus(false, args.OriginalSource()));
-    }
-    else if (args.Key() == winrt::VirtualKey::Up)
-    {
-        if (args.OriginalKey() != winrt::VirtualKey::GamepadDPadUp)
-        {
-            if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Left, GetFindNextElementOptions()))
-            {
-                args.Handled(true);
-                return;
-            }
-        }
-        else
-        {
-            if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Left))
-            {
-                args.Handled(true);
-                return;
-            }
-        }
-        args.Handled(HandleEdgeCaseFocus(true, args.OriginalSource()));
     }
 }
 

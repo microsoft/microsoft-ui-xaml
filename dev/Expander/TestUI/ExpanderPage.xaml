@@ -33,43 +33,43 @@
                 <controls:Expander.Header>
                     <TextBlock Text="This expander is collapsed by default. This is a long title to test the header width. ext should be wrapping here." TextWrapping="Wrap" Margin="0,12,0,13"/>
                 </controls:Expander.Header>
-                <TextBlock AutomationProperties.AutomationId="CollapsedExpanderContent">Content</TextBlock>
+                <TextBlock AutomationProperties.AutomationId="CollapsedExpanderContent" Text="Content"/>
             </controls:Expander>
 
             <controls:Expander AutomationProperties.Name="ExpanderWithButtons" IsExpanded="False" Margin="12" MaxWidth="{ThemeResource FlyoutThemeMaxWidth}">
                 <controls:Expander.Header>
-                    <ToggleButton>This is a toggle button in the header</ToggleButton>
+                    <ToggleButton>This is a Togglebutton in the header</ToggleButton>
                 </controls:Expander.Header>
                 <StackPanel>
-                    <TextBlock TextWrapping="Wrap">Content. This is long content to test wrapping on the content section, this content should be wrapping after the control expands to max width.</TextBlock>
+                    <TextBlock TextWrapping="Wrap" Text="Content. This is long content to test wrapping on the content section, this content should be wrapping after the control expands to max width."/>
                 </StackPanel>
             </controls:Expander>
 
             <controls:Expander AutomationProperties.Name="ExpanderWithUpwardsDirection" ExpandDirection="Up" IsExpanded="False" Margin="12">
                 <controls:Expander.Header>
-                    <TextBlock Margin="0,0,0,1">This expander will expand upwards</TextBlock>
+                    <TextBlock Margin="0,0,0,1" Text="This expander will expand upwards"/>
                 </controls:Expander.Header>
                 <StackPanel>
-                    <TextBlock>Content</TextBlock>
+                    <TextBlock Text="Content"/>
                 </StackPanel>
             </controls:Expander>
 
             <controls:Expander IsEnabled="False" AutomationProperties.Name="ExpanderNotEnabled" ExpandDirection="Down" IsExpanded="False" Margin="12">
                 <controls:Expander.Header>
-                    <TextBlock Margin="0,0,0,1">This expander is not enabled</TextBlock>
+                    <TextBlock Margin="0,0,0,1" Text="This expander is not enabled"/>
                 </controls:Expander.Header>
                 <StackPanel>
-                    <TextBlock>Content</TextBlock>
+                    <TextBlock Text="Content"/>
                 </StackPanel>
             </controls:Expander>
 
             <local:TestControl IsTabStop="True" x:Name="CustomControl" AutomationProperties.Name="CustomControl" Margin="12">
                 <controls:Expander x:Name="ExpanderWithCustomEventsSource" ExpandDirection="Down" IsExpanded="False">
                     <controls:Expander.Header>
-                        <TextBlock Margin="0,0,0,1">This expander has a custom events source</TextBlock>
+                        <TextBlock Margin="0,0,0,1" Text="This expander has a custom events source"/>
                     </controls:Expander.Header>
                     <StackPanel>
-                        <TextBlock>Content</TextBlock>
+                        <TextBlock Text="Content"/>
                     </StackPanel>
                 </controls:Expander>
             </local:TestControl>
@@ -90,6 +90,25 @@
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                     <TextBlock TextWrapping="Wrap">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec id lacinia tellus. Integer eu mollis leo, ornare ultricies neque. Sed diam lectus, varius sed justo vel, malesuada condimentum lorem. Proin porttitor quis enim a facilisis. Suspendisse vehicula imperdiet egestas. Suspendisse imperdiet, ipsum in commodo cursus, mi nisl volutpat nulla, in interdum mi nulla a nulla. Cras feugiat odio ac eros ullamcorper suscipit. Praesent ultricies ligula eget efficitur tristique. Donec imperdiet ultrices dolor sollicitudin bibendum. In hac habitasse platea dictumst. Fusce vel lacinia purus. Sed tempor est sed suscipit luctus. Aenean laoreet tellus vitae efficitur scelerisque. Sed suscipit risus ac nisl rhoncus hendrerit.</TextBlock>
                 </ScrollViewer>
+            </controls:Expander>
+
+            <controls:Expander x:Name ="ExpanderWithToggleSwitch" AutomationProperties.Name="ExpanderWithToggleSwitch" IsExpanded="True" Margin="12" HorizontalAlignment="Left">
+                <controls:Expander.Header>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="80"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Margin="0,14,24,16">
+                            <TextBlock Text="This expander with ToggleSwitch is expanded by default."  Margin="0,0,0,4"/>
+                            <TextBlock Text="This is the second line of text." Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        </StackPanel>
+                        <ToggleSwitch AutomationProperties.Name="SettingsToggleSwitch" Grid.Column="1"/>
+                    </Grid>
+                    
+                </controls:Expander.Header>
+                <Button AutomationProperties.AutomationId="ExpandedExpanderContent">ExpanderWithToggleSwitch Content</Button>
             </controls:Expander>
             
         </StackPanel>

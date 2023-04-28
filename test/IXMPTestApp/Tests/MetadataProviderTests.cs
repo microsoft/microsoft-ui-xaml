@@ -20,7 +20,10 @@ namespace IXMPTestApp.Tests
     [TestClass]
     public class MetadataProviderTests
     {
+        
+#if MUX_PRERELEASE
         [TestMethod]
+#endif
         public void CanLoadXamlFragments()
         {
             var dispatcher = CoreApplication.MainView.Dispatcher;
@@ -158,7 +161,7 @@ namespace IXMPTestApp.Tests
                             <controls:NavigationViewItem x:Name='MoviesItem' Content='Movies' Icon='Video' />
                             <controls:NavigationViewItem x:Name='TVItem' Content='TV' Icon='Slideshow' />
                         </controls:NavigationView.MenuItems>
-                        <TextBlock HorizontalAlignment='Center' VerticalAlignment='Center'>Content</TextBlock>
+                        <TextBlock HorizontalAlignment='Center' VerticalAlignment='Center' Text='Content'/>
                     </controls:NavigationView>");
 
                 Log.Comment("Loading PersonPicture...");

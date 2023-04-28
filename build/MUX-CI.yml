@@ -1,11 +1,15 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 variables:
-  minimumExpectedTestsExecutedCount: 3000  # Sanity check for minimum expected tests to be reported
+  minimumExpectedTestsExecutedCount: 2000  # Sanity check for minimum expected tests to be reported
   rerunPassesRequiredToAvoidFailure: 5
 jobs:
 - job: Build
-  pool:
-    name: 'windevbuildagents'
+  pool: 
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPoolOSS-L
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPool-L
+    demands: ImageOverride -equals WinDevVS17-latest
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10

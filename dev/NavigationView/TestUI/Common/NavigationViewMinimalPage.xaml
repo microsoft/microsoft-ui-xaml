@@ -13,7 +13,7 @@
     <StackPanel>
         <StackPanel Orientation="Horizontal">
             <muxcontrols:NavigationView x:Name="NavView" AutomationProperties.Name="NavView" AutomationProperties.AutomationId="NavView"
-                                            IsBackEnabled="True" Header="LeftMinimal" PaneDisplayMode="LeftMinimal" Margin="10,0">
+                                            IsBackEnabled="True" Header="LeftMinimal" PaneDisplayMode="LeftMinimal" Margin="10,0" IsPaneToggleButtonVisible="False">
                 <StackPanel>
                     <TextBlock x:Name="NavViewActiveVisualStatesResult" AutomationProperties.Name="NavViewActiveVisualStatesResult"/>
                     <Button x:Name="GetNavViewActiveVisualStates" AutomationProperties.Name="GetNavViewActiveVisualStates" Content="GetNavViewActiveVisualStates" Click="GetNavViewActiveVisualStates_Click"/>
@@ -30,7 +30,7 @@
                 </StackPanel>
             </muxcontrols:NavigationView>
         </StackPanel>
-        <StackPanel>
+        <StackPanel Padding="10">
             <CheckBox
                 IsChecked="{Binding IsPaneOpen, ElementName=NavView, Mode=TwoWay}"
                 x:Name="IsLeftMinimalPaneOpenCheckBox"
@@ -43,6 +43,7 @@
                 IsChecked="{Binding IsPaneOpen, ElementName=NavViewAuto, Mode=TwoWay}"
                 x:Name="IsAutoPaneOpenCheckBox"
                 AutomationProperties.Name="IsPaneOpenCheckBox" >Toggle auto pane open</CheckBox>
+            <Button Content="Toggle pane open and button visible" Click="TogglePaneOpenButton_Click"/>
         </StackPanel>
     </StackPanel>
 </local:TestPage>

@@ -7,6 +7,7 @@ parameters:
   helixType: 'test/nuget'
   test_matrix: ''
   useFrameworkPkg: false
+  taefQuery: ''
   matrix:
     Debug_x86:
       buildPlatform: 'x86'
@@ -23,6 +24,9 @@ parameters:
     Release_arm:
       buildPlatform: 'arm'
       buildConfiguration: 'Release'
+    Release_arm64:
+      buildPlatform: 'arm64'
+      buildConfiguration: 'Release'
 
 jobs:
 - job: ${{ parameters.buildJobName }}
@@ -30,8 +34,12 @@ jobs:
     - ${{if parameters.dependsOn }}:
       - ${{ parameters.dependsOn }}
 
-  pool:
-    vmImage: 'windows-2019'
+  pool: 
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPoolOSS-S
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPool-S
+    demands: ImageOverride -equals WinDevVS16-9
   strategy:
     maxParallel: 10
     matrix: ${{ parameters.matrix }}
@@ -56,6 +64,12 @@ jobs:
       downloadPath: $(artifactDownloadPath)
       itemPattern: '**\*.nupkg'
 
+  - task: powershell@2
+    displayName: GenerateTestPFX.ps1
+    inputs:
+      targetType: filePath
+      filePath: GenerateTestPFX.ps1
+
   # Copy nupkg to localpackages and update proj file to point to it
   - powershell: |
       $pathToNupkg = "$($env:artifactDownloadPath)\drop"
@@ -74,6 +88,22 @@ jobs:
       Write-Host "New version: $newVersion"
       .\test\MUXControlsReleaseTest\updateUsedNugetPackageVersion.ps1 $newVersion
     displayName: Update proj files to use candidate nupkg.
+
+  - template: MUX-InstallWindowsSDK-Steps.yml
+
+  - template: MUX-InstallNuget-Steps.yml
+
+  - template: MUX-InstallDotNetSDK-Steps.yml
+
+  # The environment variable VCToolsInstallDir isn't defined on lab machines, so we need to retrieve it ourselves.
+  - script: |
+      "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -Latest -requires Microsoft.Component.MSBuild -property InstallationPath > %TEMP%\vsinstalldir.txt
+      set /p _VSINSTALLDIR15=<%TEMP%\vsinstalldir.txt
+      del %TEMP%\vsinstalldir.txt
+      call "%_VSINSTALLDIR15%\Common7\Tools\VsDevCmd.bat"
+      echo VCToolsInstallDir = %VCToolsInstallDir%
+      echo ##vso[task.setvariable variable=VCToolsInstallDir]%VCToolsInstallDir%
+    displayName: 'Retrieve VC tools directory'
 
   - template: MUX-BuildProject-Steps.yml
     parameters:
@@ -97,6 +127,8 @@ jobs:
       testSuite: 'NugetTestSuite'
       helixType: ${{ parameters.helixType }}
       artifactName: ${{ parameters.buildArtifactName }}
+      ${{if eq(parameters.useFrameworkPkg, 'true')}}:
+        taefQuery: "(not (@NugetPkgTestsOnly = 'true'))"
       rerunPassesRequiredToAvoidFailure: 5
       ${{if ne(parameters.test_matrix, '') }}:
         matrix: ${{ parameters.test_matrix }}

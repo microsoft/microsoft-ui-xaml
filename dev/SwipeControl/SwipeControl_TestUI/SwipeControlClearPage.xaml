@@ -87,7 +87,7 @@
         <StackPanel Grid.Row="0" Grid.Column="1">
             <Button Click="AddSwipeItemsButton_Click" x:Name="AddItemsButton" AutomationProperties.Name="AddItemsButton" Margin="0,0,0,8">Add SwipeItems</Button>
             <Button Click="ClearSwipeItemsButton_Click" x:Name="ClearItemsButton" AutomationProperties.Name="ClearItemsButton" Margin="0,0,0,8">Clear SwipeItems</Button>
-            <TextBlock x:Name="SwipeItemsChildSum" AutomationProperties.Name="SwipeItemsChildSum" ></TextBlock>
+            <TextBlock x:Name="SwipeItemsChildSum" AutomationProperties.Name="SwipeItemsChildSum"/>
         </StackPanel>
         
     </Grid>

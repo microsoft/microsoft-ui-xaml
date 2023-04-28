@@ -5,7 +5,7 @@
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   IgnorableNamespaces="uap mp">
-  <Identity Name="AppThatUsesMUXIndirectly" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" Version="1.0.0.0" />
+  <Identity Name="AppThatUsesMUXIndirectly" Publisher="CN=WinUITest" Version="1.0.0.0" />
   <mp:PhoneIdentity PhoneProductId="0e88f200-889f-43f3-9d3c-9fb5c36106c7" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
   <Properties>
     <DisplayName>AppThatUsesMUXIndirectly</DisplayName>

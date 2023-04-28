@@ -50,7 +50,7 @@
                             <Button>27</Button>
                             <Button>28</Button>
                             <Button>29</Button>
-                            <Button>30</Button>                            
+                            <Button>30</Button>
                         </local:UICollection>
                     </controls:ItemsRepeater.ItemsSource>
                 </controls:ItemsRepeater>

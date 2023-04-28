@@ -27,9 +27,9 @@ Include the following workloads:
 
 While WinUI is designed to work against many versions of Windows, you will need 
 a fairly recent SDK in order to build WinUI. It's required that you install the 
-17763 and 18362 SDKs. You can download these via Visual Studio (check 
+17763 and 22000 SDKs. You can download these via Visual Studio (check 
 all the boxes when prompted), or you can manually download them from here: 
-https://developer.microsoft.com/windows/downloads/windows-10-sdk
+https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/
 
 
 ## Building the repository
@@ -97,7 +97,8 @@ Example usage (running from the root of the repository folder):
 .\build\NuSpecs\build-nupkg.ps1 -BuildOutput "..\..\BuildOutput" -BuildFlavor "debug" -BuildArch "x64" -OutputDir "..\..\NugetPackage"
 ```
 
-> Note: To use debug build outputs as a NuGet package, you need to change [this line](https://github.com/microsoft/microsoft-ui-xaml/blob/7d2cd793a0154580f1dd0c9685c461198e05f207/dev/dll/Microsoft.UI.Xaml.vcxproj#L35) in `microsoft-ui-xaml/dev/dll/Microsoft.UI.Xaml.vcxproj` from
+> Note: To use debug build outputs as a NuGet package, you need to change the following line in 
+> [`microsoft-ui-xaml/dev/dll/Microsoft.UI.Xaml.Common.props`](../dev/dll/Microsoft.UI.Xaml.Common.props) from
 > ```xml
 > <DisableEmbeddedXbf Condition="'$(Configuration)'=='Release'">false</DisableEmbeddedXbf> 
 > ``` 
@@ -196,10 +197,16 @@ Windows, not just the most recent version. Your tests may need version or
 [IsApiPresent](https://docs.microsoft.com/uwp/api/windows.foundation.metadata.apiinformation.istypepresent) 
 checks in order to pass on all versions.
 
+#### Axe testing
+Axe tests are part of the interaction tests. [Axe.Windows](https://github.com/microsoft/axe-windows) is a library to run automated app scans and allows to detect accessibility issues.
+To add a new test page to use for Axe scanning, you can use the AxeTestPageAttribute which will add the test page to the list of test pages for Axe scanning. That way, other tests are not affected by the new test page.
+
+Running the Axe.Windows scan can be done using the `AxeTestHelper.TestForAxeIssues` method. If accessibility issues have been found, the method will throw an exception.
+
 #### Visual tree verification tests
 
 ##### Update visual tree verification files
-Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xaml/tree/master/test/MUXControlsTestApp/verification) and we use them as the baseline for visual tree verifications. If you make UI changes, visual tree verification tests may fail since the new dump no longer matches with previous verification files. The verification files need to be updated to include your latest changes. A visual verification test automatically captures the new visual tree and uploads the dump to the test pipeline's artifacts. Below are the steps to replace existing verification files with the updated ones.
+Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xaml/tree/main/test/MUXControlsTestApp/verification) and we use them as the baseline for visual tree verifications. If you make UI changes, visual tree verification tests may fail since the new dump no longer matches with previous verification files. The verification files need to be updated to include your latest changes. A visual verification test automatically captures the new visual tree and uploads the dump to the test pipeline's artifacts. Below are the steps to replace existing verification files with the updated ones.
 
 1. Find your test run
 
@@ -207,25 +214,15 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 
     ![test fail page2](images/test_fail_page2.png)
 
-2. Download new verification files
+2. Identify your buildId
 
-    First, open the published build artifacts:
+    The Build Id for the azure dev ops build associated with your test run can be found in this page's url.
     
-    ![released artifacts](images/test_fail_page3.png)
-    
-    ###### [For Microsoft employees]
-    
-    If you are a Microsoft employee, you can directly view the content of the created `drop` folder containing the updated verification files in Azure Pipelines. From here download the `UpdatedVisualTreeVerificationFiles` folder and extract it locally.
-    
-    ###### [For external contributors]
-    
-    If you are an external contributor, you cannot directly download the new verification files but instead have to download the entire generated **drop** archive and unpack it (its size can be around 1 GB):
-
-    ![drop folder](images/test_pipeline_drop.png) 
+    ![BuildId Location](images/ADO_Build_ID.png)
 
 3. Diff & replace
 
-    Open a powershell command prompt and navigate to the `tools` directory of your Winui 2 project.  Call the `GenerateVisualVerificationUpdates` script passing in the `UpdatedVisualTreeVerificationFiles` folder that you downloaded in step two (make sure this folder contains only .xml verification files).
+    Open a powershell command prompt and navigate to the `tools` directory of your Winui 2 project.  Call the `GenerateVisualVerificationUpdates` script passing in the `BuildId` number that you identified in step two.
 
     This script does the logic for determining the required verification file updates and publishes them to the VerificationFiles folder within the project. If preferred, they can be published to a different location by passing the desired location as a second optional argument.
 
@@ -236,7 +233,7 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 ##### Create new visual tree tests
 1. Write a new test
 
-    Write a new test using [VisualTreeTestHelper](https://github.com/microsoft/microsoft-ui-xaml/blob/master/test/MUXControlsTestApp/VisualTreeTestHelper.cs). Quick example [here](https://github.com/microsoft/microsoft-ui-xaml/blob/master/dev/AutoSuggestBox/APITests/AutoSuggestBoxTests.cs#L69-L74).
+    Write a new test using [VisualTreeTestHelper](https://github.com/microsoft/microsoft-ui-xaml/blob/main/test/MUXControlsTestApp/VisualTreeTestHelper.cs). Quick example [here](https://github.com/microsoft/microsoft-ui-xaml/blob/main/dev/AutoSuggestBox/APITests/AutoSuggestBoxTests.cs#L69-L74).
 
 2. Run the test locally
 

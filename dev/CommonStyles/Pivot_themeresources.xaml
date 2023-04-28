@@ -57,7 +57,7 @@
             <StaticResource x:Key="PivotHeaderItemForegroundSelectedPressed" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
             <StaticResource x:Key="PivotHeaderItemForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="PivotHeaderItemFocusPipeFill" ResourceKey="SystemControlHighlightAltAccentBrush" />
-            <StaticResource x:Key="PivotHeaderItemSelectedPipeFill" ResourceKey="SystemControlHighlightAltAccentBrush" />
+            <StaticResource x:Key="PivotHeaderItemSelectedPipeFill" ResourceKey="AccentFillColorDefaultBrush" />
             <SolidColorBrush x:Key="PivotForegroundThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="PivotHeaderBackgroundSelectedBrush" Color="Transparent" />
             <SolidColorBrush x:Key="PivotHeaderBackgroundUnselectedBrush" Color="Transparent" />
@@ -191,7 +191,7 @@
             <StaticResource x:Key="PivotHeaderItemForegroundSelectedPressed" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
             <StaticResource x:Key="PivotHeaderItemForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="PivotHeaderItemFocusPipeFill" ResourceKey="SystemControlHighlightAltAccentBrush" />
-            <StaticResource x:Key="PivotHeaderItemSelectedPipeFill" ResourceKey="SystemControlHighlightAltAccentBrush" />
+            <StaticResource x:Key="PivotHeaderItemSelectedPipeFill" ResourceKey="AccentFillColorDefaultBrush" />
             <SolidColorBrush x:Key="PivotForegroundThemeBrush" Color="#FF000000" />
             <SolidColorBrush x:Key="PivotHeaderBackgroundSelectedBrush" Color="Transparent" />
             <SolidColorBrush x:Key="PivotHeaderBackgroundUnselectedBrush" Color="Transparent" />
@@ -208,6 +208,8 @@
             <SolidColorBrush x:Key="PivotNavButtonPressedForegroundThemeBrush" Color="#FFFFFFFF" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
+
+    <CornerRadius x:Key="PivotHeaderItemSelectedPipeCornerRadius">1.5</CornerRadius>
 
     <Style TargetType="Pivot" BasedOn="{StaticResource DefaultPivotStyle}" />
 
@@ -510,7 +512,7 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="UseSystemFocusVisuals" Value="False" />
-        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource PivotHeaderItemSelectedPipeCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="PivotHeaderItem">
@@ -624,11 +626,11 @@
                         </Grid.RenderTransform>
 
                         <ContentPresenter x:Name="ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" FontSize="{TemplateBinding FontSize}" FontFamily="{TemplateBinding FontFamily}" FontWeight="{TemplateBinding FontWeight}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" OpticalMarginAlignment="TrimSideBearings" />
-                        <Rectangle x:Name="SelectedPipe" Fill="{ThemeResource PivotHeaderItemSelectedPipeFill}" Height="2" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Margin="0,0,0,2"
+                        <Rectangle x:Name="SelectedPipe" Fill="{ThemeResource PivotHeaderItemSelectedPipeFill}" Height="3" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Margin="0,0,0,2"
                                    contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                    contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
-                                   contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                   contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
+                                   contract7NotPresent:RadiusX="{Binding Source={ThemeResource PivotHeaderItemSelectedPipeCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                   contract7NotPresent:RadiusY="{Binding Source={ThemeResource PivotHeaderItemSelectedPipeCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
 
                     </Grid>
                 </ControlTemplate>

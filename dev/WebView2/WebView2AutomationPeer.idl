@@ -1,0 +1,11 @@
+﻿namespace MU_XAP_NAMESPACE
+{
+
+[webhosthidden]
+[MUX_PREVIEW]
+unsealed runtimeclass WebView2AutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    WebView2AutomationPeer(MU_XC_NAMESPACE.WebView2 owner);
+}
+
+}

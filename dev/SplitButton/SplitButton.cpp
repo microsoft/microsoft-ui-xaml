@@ -130,7 +130,10 @@ void SplitButton::UpdateVisualStates(bool useTransitions)
     // change visual state
     auto primaryButton = m_primaryButton.get();
     auto secondaryButton = m_secondaryButton.get();
-    if (primaryButton && secondaryButton)
+    if (!IsEnabled()) {
+        winrt::VisualStateManager::GoToState(*this, L"Disabled", useTransitions);
+    }
+    else if (primaryButton && secondaryButton)
     {
         if (m_isFlyoutOpen)
         {
@@ -239,6 +242,19 @@ void SplitButton::CloseFlyout()
     }
 }
 
+void SplitButton::ExecuteCommand()
+{
+    if (const auto& command = Command())
+    {
+        const auto& commandParameter = CommandParameter();
+
+        if (command.CanExecute(commandParameter))
+        {
+            command.Execute(commandParameter);
+        }
+    }
+}
+
 void SplitButton::OnFlyoutOpened(const winrt::IInspectable& sender, const winrt::IInspectable& args)
 {
     m_isFlyoutOpen = true;
@@ -272,6 +288,26 @@ void SplitButton::OnClickPrimary(const winrt::IInspectable& sender, const winrt:
 void SplitButton::OnClickSecondary(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
 {
     OpenFlyout();
+}
+
+void SplitButton::Invoke()
+{
+    bool invoked = false;
+
+    if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(m_primaryButton.get()))
+    {
+        if (winrt::IInvokeProvider invokeProvider = peer.GetPattern(winrt::PatternInterface::Invoke).try_as<winrt::IInvokeProvider>())
+        {
+            invokeProvider.Invoke();
+            invoked = true;
+        }
+    }
+
+    // If we don't have a primary button that provides an invoke provider, we'll fall back to calling OnClickPrimary manually.
+    if (!invoked)
+    {
+        OnClickPrimary(nullptr, nullptr);
+    }
 }
 
 void SplitButton::OnPointerEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
@@ -313,6 +349,7 @@ void SplitButton::OnSplitButtonKeyUp(const winrt::IInspectable& sender, const wi
         if (IsEnabled())
         {
             OnClickPrimary(nullptr, nullptr);
+            ExecuteCommand();
             args.Handled(true);
         }
     }

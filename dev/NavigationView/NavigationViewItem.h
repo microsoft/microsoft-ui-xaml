@@ -26,9 +26,12 @@ public:
     // IFrameworkElementOverrides
     void OnApplyTemplate() override;
 
+    void OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&);
+
     // Property change callbacks
     void OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnInfoBadgePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMenuItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMenuItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHasUnrealizedChildrenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -60,6 +63,8 @@ public:
     bool IsRepeaterVisible() const;
     void PropagateDepthToChildren(int depth);
     bool HasChildren();
+    // Needed for scenarios where the ItemsRepeater is not loaded (OnApplyTemplate) therefore we cannot guarantee a non-null MenuItemsSource actually contains items
+    bool HasPotentialChildren();
 
 private:
     winrt::UIElement const GetPresenterOrItem() const;
@@ -79,6 +84,8 @@ private:
     void OnPresenterPointerCanceled(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnPresenterPointerCaptureLost(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnIsEnabledChanged(const winrt::IInspectable& sender, const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnMenuItemsVectorChanged(const winrt::Collections::IObservableVector<winrt::IInspectable>& sender, const winrt::Collections::IVectorChangedEventArgs& args);
+
 
     void ResetTrackedPointerId();
     bool IgnorePointerId(const winrt::PointerRoutedEventArgs& args);
@@ -87,6 +94,7 @@ private:
     void UpdateIsClosedCompact();
 
     void UpdateVisualStateForIconAndContent(bool showIcon, bool showContent);
+    void UpdateVisualStateForInfoBadge();
     void UpdateVisualStateForNavigationViewPositionChange();
     void UpdateVisualStateForKeyboardFocusedState();
     void UpdateVisualStateForToolTip();
@@ -96,6 +104,7 @@ private:
 
     void UpdateVisualState(bool useTransitions);
     bool ShouldShowIcon();
+    bool ShouldShowInfoBadge();
     bool ShouldShowContent();
     bool ShouldEnableToolTip() const;
     bool IsOnLeftNav() const;
@@ -114,6 +123,10 @@ private:
     void UnhookInputEvents();
     void UnhookEventsAndClearFields();
 
+    void PrepNavigationViewItem(const winrt::SplitView& splitView);
+    void LoadElementsForDisplayingChildren();
+    void LoadMenuItemsHost();
+
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
     PropertyChanged_revoker m_splitViewCompactPaneLengthChangedRevoker{};
@@ -129,6 +142,7 @@ private:
     winrt::ItemsRepeater::ElementPrepared_revoker m_repeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_repeaterElementClearingRevoker{};
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceViewCollectionChangedRevoker{};
+    winrt::Collections::IObservableVector<winrt::IInspectable>::VectorChanged_revoker m_menuItemsVectorChangedRevoker{};
 
     winrt::FlyoutBase::Closing_revoker m_flyoutClosingRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
@@ -153,4 +167,6 @@ private:
     bool m_isPointerOver{ false };
 
     bool m_isRepeaterParentedToFlyout{ false };
+    // used to bypass all Chevron visual state logic in order to keep it unloaded 
+    bool m_hasHadChildren{ false };
 };

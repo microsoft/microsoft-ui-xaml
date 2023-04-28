@@ -41,7 +41,6 @@
             <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="TextControlForegroundDisabled" ResourceKey="TemporaryTextFillColorDisabled" />
-            <StaticResource x:Key="TextControlButtonForeground" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="TextFillColorTertiaryBrush" />
@@ -162,7 +161,6 @@
             <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="TextFillColorPrimaryBrush" />
             <StaticResource x:Key="TextControlForegroundDisabled" ResourceKey="TemporaryTextFillColorDisabled" />
-            <StaticResource x:Key="TextControlButtonForeground" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
             <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="TextFillColorTertiaryBrush" />
@@ -446,7 +444,7 @@
                             Grid.Row="1"
                             Grid.Column="0"
                             Grid.ColumnSpan="2"
-         		            contract5NotPresent:Foreground="{ThemeResource TextControlPlaceholderForeground}"
+                            contract5NotPresent:Foreground="{ThemeResource TextControlPlaceholderForeground}"
                             contract5Present:Foreground="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForeground}}"
                             Margin="{TemplateBinding BorderThickness}"
                             Padding="{TemplateBinding Padding}"

@@ -45,18 +45,27 @@ class RadioMenuFlyoutItem :
 
 public:
     RadioMenuFlyoutItem();
+    ~RadioMenuFlyoutItem();
 
     // IsChecked property is ambiguous with ToggleMenuFlyoutItem, lift up RadioMenuFlyoutItem::IsChecked to disambiguate.
     using RadioMenuFlyoutItemProperties::IsChecked;
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
+    static void OnAreCheckStatesEnabledPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args);
+
 private:
     void OnInternalIsCheckedChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
-    void UpdateSiblings();
+    void UpdateCheckedItemInGroup();
+
+    // Copies of IsChecked & GroupName to avoid using those dependency properties in the ~RadioMenuFlyoutItem() destructor which would lead to crashes.
+    bool m_isChecked{ false };
+    winrt::hstring m_groupName{ L"" };
 
     bool m_isSafeUncheck{ false };
 
     PropertyChanged_revoker m_InternalIsCheckedChangedRevoker{};
+
+    static thread_local std::unique_ptr<std::map<winrt::hstring, winrt::weak_ref<RadioMenuFlyoutItem>>> s_selectionMap;
 };

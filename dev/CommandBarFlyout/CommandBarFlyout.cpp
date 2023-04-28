@@ -14,9 +14,32 @@
 bool CommandBarFlyoutTrace::s_IsDebugOutputEnabled{ false };
 bool CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled{ false };
 
+// List of AppBarButton/AppBarToggleButton dependency properties being listened to for raising the CommandBarFlyoutCommandBar::OnCommandBarElementDependencyPropertyChanged notifications.
+// IsCompact and LabelPosition have no effect on an AppBarButton's rendering, when used as a secondary command, they are not present in the list.
+// These two arrays are initialized in the constructor instead of being statically initialized here because that would result in the initialization happening during
+// dllmain and it is not valid to call COM apis at that time.
+winrt::DependencyProperty CommandBarFlyout::s_appBarButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount]{ nullptr, nullptr, nullptr };
+winrt::DependencyProperty CommandBarFlyout::s_appBarToggleButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount]{ nullptr, nullptr, nullptr };
+
 CommandBarFlyout::CommandBarFlyout()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_CommandBarFlyout);
+
+    // Initialize s_appBarButtonDependencyProperties and s_appBarToggleButtonDependencyProperties if needed.
+    if (s_appBarButtonDependencyProperties[0] == nullptr)
+    {
+        s_appBarButtonDependencyProperties[0] = winrt::AppBarButton::IconProperty();
+        s_appBarButtonDependencyProperties[1] = winrt::AppBarButton::LabelProperty();
+
+        s_appBarToggleButtonDependencyProperties[0] = winrt::AppBarToggleButton::IconProperty();
+        s_appBarToggleButtonDependencyProperties[1] = winrt::AppBarToggleButton::LabelProperty();
+
+        if (SharedHelpers::IsRS4OrHigher())
+        {
+            s_appBarButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount - 1] = winrt::AppBarButton::KeyboardAcceleratorTextOverrideProperty();
+            s_appBarToggleButtonDependencyProperties[s_commandBarElementDependencyPropertiesCount - 1] = winrt::AppBarToggleButton::KeyboardAcceleratorTextOverrideProperty();
+        }
+    }
 
     if (winrt::IFlyoutBase6 thisAsFlyoutBase6 = *this)
     {
@@ -65,6 +88,17 @@ CommandBarFlyout::CommandBarFlyout()
                     auto button = element.try_as<winrt::AppBarButton>();
                     auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
 
+                    UnhookCommandBarElementDependencyPropertyChanges(index);
+
+                    if (button)
+                    {
+                        HookAppBarButtonDependencyPropertyChanges(button, index);
+                    }
+                    else if (toggleButton)
+                    {
+                        HookAppBarToggleButtonDependencyPropertyChanges(toggleButton, index);
+                    }
+
                     if (button && !button.Flyout())
                     {
                         m_secondaryButtonClickRevokerByIndexMap[index] = button.Click(winrt::auto_revoke, closeFlyoutFunc);
@@ -91,6 +125,15 @@ CommandBarFlyout::CommandBarFlyout()
                     auto button = element.try_as<winrt::AppBarButton>();
                     auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
 
+                    if (button)
+                    {
+                        HookAppBarButtonDependencyPropertyChanges(button, index);
+                    }
+                    else if (toggleButton)
+                    {
+                        HookAppBarToggleButtonDependencyPropertyChanges(toggleButton, index);
+                    }
+
                     if (button && !button.Flyout())
                     {
                         m_secondaryButtonClickRevokerByIndexMap[index] = button.Click(winrt::auto_revoke, closeFlyoutFunc);
@@ -103,12 +146,15 @@ CommandBarFlyout::CommandBarFlyout()
                     break;
                 }
                 case winrt::CollectionChange::ItemRemoved:
+                    UnhookCommandBarElementDependencyPropertyChanges(index);
+
                     SharedHelpers::EraseIfExists(m_secondaryButtonClickRevokerByIndexMap, index);
                     SharedHelpers::EraseIfExists(m_secondaryToggleButtonCheckedRevokerByIndexMap, index);
                     SharedHelpers::EraseIfExists(m_secondaryToggleButtonUncheckedRevokerByIndexMap, index);
                     break;
                 case winrt::CollectionChange::Reset:
                     SetSecondaryCommandsToCloseWhenExecuted();
+                    HookAllCommandBarElementDependencyPropertyChanges();
                     break;
                 default:
                     MUX_ASSERT(false);
@@ -127,22 +173,41 @@ CommandBarFlyout::CommandBarFlyout()
 
             if (auto commandBar = m_commandBar.get())
             {
-                // If we don't have IFlyoutBase5 available, then we assume a standard show mode.
-                if (!thisAsFlyoutBase5 || thisAsFlyoutBase5.ShowMode() == winrt::FlyoutShowMode::Standard)
-                {
-                    commandBar.IsOpen(true);
-                }
-
+                // If we are in AlwaysExpanded mode then we want to make sure we open in Standard ShowMode
+                // Otherwise the timing on the creation of the two drops shows is such that the primary items
+                // draw their shadow on top of the secondary items.
                 // When CommandBarFlyout is in AlwaysOpen state, don't show the overflow button
                 if (AlwaysExpanded())
                 {
-                    commandBar.IsOpen(true);
                     commandBar.OverflowButtonVisibility(winrt::Windows::UI::Xaml::Controls::CommandBarOverflowButtonVisibility::Collapsed);
+                    if (thisAsFlyoutBase5)
+                    {
+                        thisAsFlyoutBase5.ShowMode(winrt::FlyoutShowMode::Standard);
+                    }
                 }
                 else
                 {
                     commandBar.OverflowButtonVisibility(winrt::Windows::UI::Xaml::Controls::CommandBarOverflowButtonVisibility::Auto);
                 }
+                SharedHelpers::QueueCallbackForCompositionRendering(
+                    [strongThis = get_strong(), thisAsFlyoutBase5, commandBar]
+                    {
+                        if (auto const commandBarFlyoutCommandBar = winrt::get_self<CommandBarFlyoutCommandBar>(commandBar))
+                        {
+                            auto const scopeGuard = gsl::finally([commandBarFlyoutCommandBar]()
+                                {
+                                    commandBarFlyoutCommandBar->m_commandBarFlyoutIsOpening = false;
+                                });
+                            commandBarFlyoutCommandBar->m_commandBarFlyoutIsOpening = true;
+
+                            // If we don't have IFlyoutBase5 available, then we assume a standard show mode.
+                            if (!thisAsFlyoutBase5 || thisAsFlyoutBase5.ShowMode() == winrt::FlyoutShowMode::Standard)
+                            {
+                                commandBar.IsOpen(true);
+                            }
+                        }
+                    }
+                );
             }
 
             if (m_primaryCommands.Size() > 0)
@@ -162,6 +227,11 @@ CommandBarFlyout::CommandBarFlyout()
                     commandBar->PlayOpenAnimation();
                 }
             }
+
+            if (auto commandBarPeer = winrt::FrameworkElementAutomationPeer::FromElement(m_commandBar.get()))
+            {
+                commandBarPeer.RaiseAutomationEvent(winrt::AutomationEvents::MenuOpened);
+            }
         }
     });
 
@@ -170,13 +240,19 @@ CommandBarFlyout::CommandBarFlyout()
         {
             if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
             {
+                // We are not able to fade this shadow out with the V2 default opacity closing animition.
+                // Additionally we drop shadows doing play well with the clip animation of the V1 style.
+                // So we need to remove it in all cases.
                 RemoveDropShadow();
 
                 if (!m_isClosingAfterCloseAnimation && commandBar->HasCloseAnimation())
                 {
                     args.Cancel(true);
 
+                    const winrt::CommandBarFlyout commandBarFlyout = *this;
+
                     commandBar->PlayCloseAnimation(
+                        winrt::make_weak(commandBarFlyout),
                         [this]()
                         {
                             m_isClosingAfterCloseAnimation = true;
@@ -184,28 +260,35 @@ CommandBarFlyout::CommandBarFlyout()
                             m_isClosingAfterCloseAnimation = false;
                         });
                 }
+                else
+                {
+                    // If we don't have an animation, close the command bar and thus it's subflyouts.
+                    commandBar->IsOpen(false);
+                }
 
-                // Close commandbar and thus other associated flyouts
-                commandBar->IsOpen(false);
-
-                //CommandBarFlyoutCommandBar.Closed will be called when
-                //clicking the more (...) button, we clear the translations
-                //here
-                commandBar->ClearShadow();
+                //Drop shadows do not play nicely with clip animations, if we are using both, clear the shadow
+                if (SharedHelpers::Is21H1OrHigher() && commandBar->OpenAnimationKind() == CommandBarFlyoutOpenCloseAnimationKind::Clip)
+                {
+                    commandBar->ClearShadow();
+                }
             }
         }
     });
 
-    // If we didn't close the CommandBar in the Closing event, we want to do it here,
-    // in order to ensure that we're always starting from a known state when opening the flyout.
+    // Close the CommandBar in order to ensure that we're always starting from a known state when opening the flyout.
     Closed({
         [this](auto const&, auto const&)
         {
-            if (auto commandBar = m_commandBar.get())
+            if (auto& commandBar = m_commandBar.get())
             {
                 if (commandBar.IsOpen())
                 {
                     commandBar.IsOpen(false);
+                }
+
+                if (auto commandBarPeer = winrt::FrameworkElementAutomationPeer::FromElement(commandBar))
+                {
+                    commandBarPeer.RaiseAutomationEvent(winrt::AutomationEvents::MenuClosed);
                 }
             }
         }
@@ -216,6 +299,8 @@ CommandBarFlyout::~CommandBarFlyout()
 {
     m_primaryCommands.VectorChanged(m_primaryCommandsVectorChangedToken);
     m_secondaryCommands.VectorChanged(m_secondaryCommandsVectorChangedToken);
+
+    UnhookAllCommandBarElementDependencyPropertyChanges();
 }
 
 winrt::IObservableVector<winrt::ICommandBarElement> CommandBarFlyout::PrimaryCommands()
@@ -236,6 +321,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     SharedHelpers::CopyVector(m_secondaryCommands, commandBar->SecondaryCommands());
 
     SetSecondaryCommandsToCloseWhenExecuted();
+    HookAllCommandBarElementDependencyPropertyChanges();
 
     winrt::FlyoutPresenter presenter;
     presenter.Background(nullptr);
@@ -248,6 +334,10 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     presenter.BorderThickness(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Padding(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Content(*commandBar);
+    if (SharedHelpers::IsRS5OrHigher())
+    {
+        presenter.Translation({ 0.0f, 0.0f, 32.0f });
+    }
 
     // Disable the default shadow, as we'll be providing our own shadow.
     if (winrt::IFlyoutPresenter2 presenter2 = presenter)
@@ -271,10 +361,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
 
     if (SharedHelpers::Is21H1OrHigher())
     {
-        // Since DropShadows don't play well with the entrance animation for the presenter,
-        // we'll need to fade it in. This name helps us locate the element to set the fade in
-        // flag in the OS code.
-        presenter.Name(L"DropShadowFadeInTarget");
+        commandBar->SetPresenter(presenter);
 
         // We'll need to remove the presenter's drop shadow on the commandBar's Opening/Closing
         // because we need it to disappear during its expand/shrink animation when the Overflow is opened.
@@ -290,7 +377,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
                         // We'll only need to do the mid-animation remove/add when the "..." button is
                         // pressed to open/close the overflow. This means we shouldn't do it for AlwaysExpanded
                         // and if there's nothing in the overflow.
-                        if (!AlwaysExpanded() && m_secondaryCommands.Size() > 0)
+                        if (m_secondaryCommands.Size() > 0)
                         {
                             RemoveDropShadow();
                         }
@@ -371,4 +458,90 @@ void CommandBarFlyout::RemoveDropShadow()
 tracker_ref<winrt::FlyoutPresenter> CommandBarFlyout::GetPresenter()
 {
     return m_presenter;
+}
+
+void CommandBarFlyout::HookAppBarButtonDependencyPropertyChanges(winrt::AppBarButton const& appBarButton, int index)
+{
+    const auto commandBarElementDependencyPropertiesCount = SharedHelpers::IsRS4OrHigher() ? s_commandBarElementDependencyPropertiesCount : s_commandBarElementDependencyPropertiesCountRS3;
+
+    for (int commandBarElementDependencyPropertyIndex = 0; commandBarElementDependencyPropertyIndex < commandBarElementDependencyPropertiesCount; commandBarElementDependencyPropertyIndex++)
+    {
+        m_propertyChangedRevokersByIndexMap[index][commandBarElementDependencyPropertyIndex] =
+            RegisterPropertyChanged(
+                appBarButton,
+                s_appBarButtonDependencyProperties[commandBarElementDependencyPropertyIndex], { this, &CommandBarFlyout::OnCommandBarElementDependencyPropertyChanged });
+    }
+}
+
+void CommandBarFlyout::HookAppBarToggleButtonDependencyPropertyChanges(winrt::AppBarToggleButton const& appBarToggleButton, int index)
+{
+    const auto commandBarElementDependencyPropertiesCount = SharedHelpers::IsRS4OrHigher() ? s_commandBarElementDependencyPropertiesCount : s_commandBarElementDependencyPropertiesCountRS3;
+
+    for (int commandBarElementDependencyPropertyIndex = 0; commandBarElementDependencyPropertyIndex < commandBarElementDependencyPropertiesCount; commandBarElementDependencyPropertyIndex++)
+    {
+        m_propertyChangedRevokersByIndexMap[index][commandBarElementDependencyPropertyIndex] =
+            RegisterPropertyChanged(
+                appBarToggleButton,
+                s_appBarToggleButtonDependencyProperties[commandBarElementDependencyPropertyIndex], { this, &CommandBarFlyout::OnCommandBarElementDependencyPropertyChanged });
+    }
+}
+
+void CommandBarFlyout::HookAllCommandBarElementDependencyPropertyChanges()
+{
+    UnhookAllCommandBarElementDependencyPropertyChanges();
+
+    for (uint32_t i = 0; i < SecondaryCommands().Size(); i++)
+    {
+        auto element = SecondaryCommands().GetAt(i);
+        auto button = element.try_as<winrt::AppBarButton>();
+        auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
+
+        if (button)
+        {
+            HookAppBarButtonDependencyPropertyChanges(button, i);
+        }
+        else if (toggleButton)
+        {
+            HookAppBarToggleButtonDependencyPropertyChanges(toggleButton, i);
+        }
+    }
+}
+
+void CommandBarFlyout::UnhookCommandBarElementDependencyPropertyChanges(int index, bool eraseRevokers)
+{
+    const auto revokers = m_propertyChangedRevokersByIndexMap.find(index);
+    if (revokers != m_propertyChangedRevokersByIndexMap.end())
+    {
+        const auto commandBarElementDependencyPropertiesCount = SharedHelpers::IsRS4OrHigher() ? s_commandBarElementDependencyPropertiesCount : s_commandBarElementDependencyPropertiesCountRS3;
+
+        for (int commandBarElementDependencyPropertyIndex = 0; commandBarElementDependencyPropertyIndex < commandBarElementDependencyPropertiesCount; commandBarElementDependencyPropertyIndex++)
+        {
+            m_propertyChangedRevokersByIndexMap[index][commandBarElementDependencyPropertyIndex].revoke();
+        }
+
+        if (eraseRevokers)
+        {
+            m_propertyChangedRevokersByIndexMap.erase(revokers);
+        }
+    }
+}
+
+void CommandBarFlyout::UnhookAllCommandBarElementDependencyPropertyChanges()
+{
+    for (auto const& revokers : m_propertyChangedRevokersByIndexMap)
+    {
+        UnhookCommandBarElementDependencyPropertyChanges(revokers.first, false /*eraseRevokers*/);
+    }
+    m_propertyChangedRevokersByIndexMap.clear();
+}
+
+// Let the potential CommandBarFlyoutCommandBar know of the dependency property change so it can adjust its size.
+void CommandBarFlyout::OnCommandBarElementDependencyPropertyChanged(winrt::DependencyObject const& dependencyObject, winrt::DependencyProperty const& dependencyProperty)
+{
+    COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
+    if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
+    {
+        commandBar->OnCommandBarElementDependencyPropertyChanged();
+    }
 }

@@ -39,24 +39,6 @@ jobs:
       downloadPath: '$(Build.SourcesDirectory)\Artifacts'
 
   - template: MUX-InstallNuget-Steps.yml
-
-  - ${{if parameters.signConfig }}:
-    # Re-create framework packages because we made them in the build step against unsigned binaries.
-    - template: MUX-MakeFrameworkPackages-Steps.yml
-
-    # Copy the re-made framework packages into the same location in the artifact drop to be republished at the end of the job.
-    - task: CopyFiles@2
-      inputs:
-        targetFolder: '${{ parameters.nupkgdir }}'
-        sourceFolder: '$(Build.SourcesDirectory)\Artifacts\drop'
-        Contents: '**\Microsoft.UI.Xaml*.appx'
-
-    # Copy the CBS packages into the same location in the artifact drop to be republished at the end of the job.
-    - task: CopyFiles@2
-      inputs:
-        targetFolder: '${{ parameters.nupkgdir }}'
-        sourceFolder: '$(Build.SourcesDirectory)\Artifacts\drop'
-        Contents: '**\CBS*'
         
   - powershell: |
       $prereleaseTag = "${{ parameters.prereleaseVersionTag }}"
@@ -81,6 +63,7 @@ jobs:
         FolderPath: '${{ parameters.nupkgdir }}'
         Pattern: |
           **/Microsoft.UI.Xaml*.nupkg
+          **/Microsoft.Experimental.UI.Xaml*.nupkg
         UseMinimatch: true
         signConfigType: inlineSignParams
         inlineOperation: | 

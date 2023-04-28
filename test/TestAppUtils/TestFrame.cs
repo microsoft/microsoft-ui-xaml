@@ -16,6 +16,13 @@ namespace MUXControlsTestApp
 {
     public sealed class TestFrame : Frame
     {
+        public UIElement CustomElement
+        {
+            get { return (UIElement)GetValue(CustomElementProperty); }
+            set { SetValue(CustomElementProperty, value); }
+        }
+
+        public static DependencyProperty CustomElementProperty = DependencyProperty.Register("CustomElement", typeof(UIElement), typeof(TestFrame), null);
 
         private Viewbox _rootViewbox = null;
         private Grid _rootGrid = null;
@@ -24,13 +31,18 @@ namespace MUXControlsTestApp
         private Button _goFullScreenInvokerButton = null;
         private Button _toggleThemeButton = null;
         private ToggleButton _innerFrameInLabDimensions = null;
+        private ToggleButton _enableRTL = null;
         private TextBlock _currentPageTextBlock = null;
         private Type _mainPageType = null;
         private ContentPresenter _pagePresenter = null;
         private CheckBox _keyInputReceived = null;
+        public Grid BackupThemeBackground { get; private set; }
 
         public TestFrame(Type mainPageType)
         {
+            // This value is cached, so reset it when the app launches
+            Windows.ApplicationModel.Core.CoreApplication.GetCurrentView().TitleBar.ExtendViewIntoTitleBar = false;
+
             _mainPageType = mainPageType;
             this.DefaultStyleKey = typeof(TestFrame);
 
@@ -67,9 +79,7 @@ namespace MUXControlsTestApp
                 _currentPageTextBlock.Text = (e.Parameter is string ? e.Parameter as string : "");
             }
 
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
+            GarbageCollection_Click(null, null);
         }
 
         protected override void OnApplyTemplate()
@@ -80,6 +90,7 @@ namespace MUXControlsTestApp
 
             _rootViewbox = (Viewbox)GetTemplateChild("RootViewbox");
             _rootGrid = (Grid)GetTemplateChild("RootGrid");
+            BackupThemeBackground = (Grid)GetTemplateChild("BackupThemeBackground");
 
             // The root grid is in a Viewbox, which lays out its child with infinite
             // available size, so set the grid's dimensions to match the window's.
@@ -111,6 +122,18 @@ namespace MUXControlsTestApp
                 _innerFrameInLabDimensions_Unchecked(null, null);
             }
 
+            _enableRTL = (ToggleButton)GetTemplateChild("EnableRTL");
+            _enableRTL.Checked += _enableRTL_Checked;
+            _enableRTL.Unchecked += _enableRTL_Unchecked;
+            if (_enableRTL.IsChecked == true)
+            {
+                _enableRTL_Checked(null, null);
+            }
+            else
+            {
+                _enableRTL_Unchecked(null, null);
+            }
+
             _goBackInvokerButton = (Button)GetTemplateChild("GoBackInvokerButton");
             _goBackInvokerButton.Click += GoBackInvokerButton_Click;
 
@@ -120,22 +143,6 @@ namespace MUXControlsTestApp
             _goFullScreenInvokerButton = (Button)GetTemplateChild("FullScreenInvokerButton");
             _goFullScreenInvokerButton.Click += GoFullScreenInvokeButton_Click;
             _keyInputReceived = (CheckBox)GetTemplateChild("KeyInputReceived");
-        }
-
-        private void _innerFrameInLabDimensions_Click(object sender, RoutedEventArgs e)
-        {
-            if(double.IsInfinity(_pagePresenter.MaxWidth))
-            {
-                // Not CI mode, so enter it now
-                _pagePresenter.MaxWidth = 1024;
-                _pagePresenter.MaxHeight = 664;
-            }
-            else
-            {
-                // We are already in "CI mode"
-                _pagePresenter.ClearValue(MaxWidthProperty);
-                _pagePresenter.ClearValue(MaxHeightProperty);
-            }
         }
 
         private void _innerFrameInLabDimensions_Checked(object sender, RoutedEventArgs e)
@@ -152,6 +159,16 @@ namespace MUXControlsTestApp
             _pagePresenter.ClearValue(MaxHeightProperty);
         }
 
+        private void _enableRTL_Checked(object sender, RoutedEventArgs e)
+        {
+            _pagePresenter.FlowDirection = FlowDirection.RightToLeft;
+        }
+
+        private void _enableRTL_Unchecked(object sender, RoutedEventArgs e)
+        {
+            _pagePresenter.FlowDirection = FlowDirection.LeftToRight;
+        }
+
         private void ToggleThemeButton_Click(object sender,RoutedEventArgs e)
         {
             var contentAsFrameworkElement = Window.Current.Content as FrameworkElement;
@@ -162,6 +179,13 @@ namespace MUXControlsTestApp
             }
             // Invert theme
             contentAsFrameworkElement.RequestedTheme = (contentAsFrameworkElement.RequestedTheme == ElementTheme.Light) ? ElementTheme.Dark : ElementTheme.Light;
+        }
+
+        private void GarbageCollection_Click(object sender, RoutedEventArgs e)
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
         }
 
         private void GoFullScreenInvokeButton_Click(object sender, RoutedEventArgs e)

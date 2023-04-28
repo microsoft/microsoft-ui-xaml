@@ -47,7 +47,7 @@
             </muxc:NavigationView.AutoSuggestBox>
 
             <muxc:NavigationView.PaneFooter>
-                <muxc:NavigationViewItem Content="Footer item"/>
+                <muxc:NavigationViewItem Content="Footer item" Icon="Accept"/>
             </muxc:NavigationView.PaneFooter>
             
             <muxc:NavigationView.Content>
