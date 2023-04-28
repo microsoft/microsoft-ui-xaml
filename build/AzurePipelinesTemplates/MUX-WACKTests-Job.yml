@@ -18,8 +18,11 @@ parameters:
 jobs:
 - job: ${{ parameters.name }}
   dependsOn: ${{ parameters.dependsOn }}
-  pool:
-    vmImage: windows-latest
+  pool: 
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPoolOSS-S
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPool-S
   strategy:
     maxParallel: 10
     matrix: ${{ parameters.matrix }}

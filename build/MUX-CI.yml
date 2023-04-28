@@ -2,84 +2,78 @@ name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 variables:
   minimumExpectedTestsExecutedCount: 2000  # Sanity check for minimum expected tests to be reported
   rerunPassesRequiredToAvoidFailure: 5
-jobs:
-- job: Build
-  pool: 
-    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: WinDevPoolOSS-L
-    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: WinDevPool-L
-    demands: ImageOverride -equals WinDevVS17-latest
-  timeoutInMinutes: 120
-  strategy:
-    maxParallel: 10
-    matrix:
-      Debug_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Debug'
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-        PGOBuildMode: 'Optimize'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-        PGOBuildMode: 'Optimize'
-      Release_Arm:
-        buildPlatform: 'arm'
-        buildConfiguration: 'Release'
-      Release_Arm64:
-        buildPlatform: 'arm64'
-        buildConfiguration: 'Release'
 
-  variables:
-    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
-    buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
-    publishDir : $(Build.ArtifactStagingDirectory)
-  steps:
-  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
-  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    pool: 
+      ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+        name: WinDevPoolOSS-L
+      ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+        name: WinDevPool-L
+      demands: ImageOverride -equals WinDevVS17-latest
+    timeoutInMinutes: 120
+    strategy:
+      maxParallel: 10
+      matrix:
+        Debug_x86:
+          buildPlatform: 'x86'
+          buildConfiguration: 'Debug'
+        Release_x86:
+          buildPlatform: 'x86'
+          buildConfiguration: 'Release'
+          PGOBuildMode: 'Optimize'
+        Release_x64:
+          buildPlatform: 'x64'
+          buildConfiguration: 'Release'
+          PGOBuildMode: 'Optimize'
+        Release_Arm:
+          buildPlatform: 'arm'
+          buildConfiguration: 'Release'
+        Release_Arm64:
+          buildPlatform: 'arm64'
+          buildConfiguration: 'Release'
 
-- template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
-  parameters:
-    name: 'RunTestsInHelix'
-    dependsOn: Build
-    condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
-    testSuite: 'DevTestSuite'
-    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
+    variables:
+      appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+      buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
+      publishDir : $(Build.ArtifactStagingDirectory)
+    steps:
+    - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+    - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
-# Create Nuget Package
-- template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
-  parameters:
-    jobName: CreateNugetPackage
-    dependsOn: Build
-    prereleaseVersionTag: ci
+- stage: Test
+  dependsOn: Build
+  jobs:
+  - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
+    parameters:
+      name: 'RunTestsInHelix'
+      rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
 
-# Build solution that depends on nuget package
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildNugetPkgTests'
-    buildArtifactName: 'NugetPkgTestsDrop'
-    runTestJobName: 'RunNugetPkgTestsInHelix'
-    helixType: 'test/nuget'
-    dependsOn: CreateNugetPackage
-    useFrameworkPkg: false
+  # Create Nuget Package
+- stage: Pack
+  dependsOn: Build
+  jobs:
+  - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+    parameters:
+      jobName: CreateNugetPackage
+      prereleaseVersionTag: ci
 
-# Framework package tests
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildFrameworkPkgTests'
-    buildArtifactName: 'FrameworkPkgTestsDrop'
-    runTestJobName: 'RunFrameworkPkgTestsInHelix'
-    helixType: 'test/frpkg'
-    dependsOn: CreateNugetPackage
-    useFrameworkPkg: true
+  # Build solution that depends on nuget package
+  - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+    parameters:
+      buildJobName: 'BuildNugetPkgTests'
+      buildArtifactName: 'NugetPkgTestsDrop'
+      runTestJobName: 'RunNugetPkgTestsInHelix'
+      dependsOn: CreateNugetPackage
+      useFrameworkPkg: false
 
-- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
-  parameters:
-    dependsOn:
-    - RunTestsInHelix
-    - RunNugetPkgTestsInHelix
-    - RunFrameworkPkgTestsInHelix
-    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
-    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
+  # Framework package tests
+  - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+    parameters:
+      buildJobName: 'BuildFrameworkPkgTests'
+      buildArtifactName: 'FrameworkPkgTestsDrop'
+      runTestJobName: 'RunFrameworkPkgTestsInHelix'
+      dependsOn: CreateNugetPackage
+      useFrameworkPkg: true

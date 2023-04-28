@@ -5,95 +5,86 @@ variables:
   pgdFile: $(module).pgd
   pgoArtifact: PGO
 
-jobs:
-- job: Build
-  pool: 
-    name: WinDevPool-L
-    demands: ImageOverride -equals WinDevVS17-latest
-  timeoutInMinutes: 120
-  strategy:
-    maxParallel: 10
-    matrix:
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-  variables:
-    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
-    buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
-    publishDir : $(Build.ArtifactStagingDirectory)
-    PGOBuildMode: 'Instrument'
-  steps:
-  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
-  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
-  - task: CopyFiles@2
-    inputs:
-      sourceFolder: $(buildOutputDir)\$(buildConfiguration)\$(buildPlatform)\$(module)
-      contents: $(pgdFile)
-      targetFolder: $(Build.ArtifactStagingDirectory)\$(pgoArtifact)\$(buildPlatform)
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish pgd files'
-    inputs:
-      PathtoPublish: $(Build.ArtifactStagingDirectory)\$(pgoArtifact)
-      artifactName: $(pgoArtifact)
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    pool: 
+      name: WinDevPool-L
+      demands: ImageOverride -equals WinDevVS17-latest
+    timeoutInMinutes: 120
+    strategy:
+      maxParallel: 10
+      matrix:
+        Release_x86:
+          buildPlatform: 'x86'
+          buildConfiguration: 'Release'
+        Release_x64:
+          buildPlatform: 'x64'
+          buildConfiguration: 'Release'
+    variables:
+      appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+      buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
+      publishDir : $(Build.ArtifactStagingDirectory)
+      PGOBuildMode: 'Instrument'
+    steps:
+    - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+    - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
+    - task: CopyFiles@2
+      inputs:
+        sourceFolder: $(buildOutputDir)\$(buildConfiguration)\$(buildPlatform)\$(module)
+        contents: $(pgdFile)
+        targetFolder: $(Build.ArtifactStagingDirectory)\$(pgoArtifact)\$(buildPlatform)
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish pgd files'
+      inputs:
+        PathtoPublish: $(Build.ArtifactStagingDirectory)\$(pgoArtifact)
+        artifactName: $(pgoArtifact)
 
-# Create Nuget Package
-- template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
-  parameters:
-    jobName: CreateNugetPackage
-    dependsOn: Build
-    prereleaseVersionTag: pgo
+- stage: Pack
+  dependsOn: Build
+  jobs:
+  # Create Nuget Package
+  - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+    parameters:
+      jobName: CreateNugetPackage
+      prereleaseVersionTag: pgo
 
-# Framework package tests
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildFrameworkPkgTests'
-    buildArtifactName: 'FrameworkPkgTestsDrop'
-    runTestJobName: 'RunFrameworkPkgTestsInHelix'
-    helixType: 'test/frpkg'
-    dependsOn: CreateNugetPackage
-    useFrameworkPkg: true
-    matrix:
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-    test_matrix:
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-        closedHelixTargetQueues: 'Windows.10.Amd64.Client21H1.xaml'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-        closedHelixTargetQueues: 'Windows.10.Amd64.Client21H1.xaml'
+- stage: Train
+  dependsOn: Pack
+  jobs:
+  # Framework package tests
+  - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+    parameters:
+      buildJobName: 'BuildFrameworkPkgTests'
+      buildArtifactName: 'FrameworkPkgTestsDrop'
+      runTestJobName: 'RunFrameworkPkgTestsInHelix'
+      useFrameworkPkg: true
+      matrix:
+        Release_x86:
+          buildPlatform: 'x86'
+          buildConfiguration: 'Release'
+        Release_x64:
+          buildPlatform: 'x64'
+          buildConfiguration: 'Release'
 
-- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
-  parameters:
-    dependsOn: RunFrameworkPkgTestsInHelix
-    rerunPassesRequiredToAvoidFailure: 5
-    minimumExpectedTestsExecutedCount: 10
-    pgoArtifact: $(pgoArtifact)
+- stage: Merge
+  dependsOn: Train
+  jobs:
+  - template: AzurePipelinesTemplates\MUX-MergePGD-Job.yml
+    parameters:
+      pgdFile: $(pgdFile)
+      pgoArtifact: $(pgoArtifact)
+      matrix:
+        Release_x86:
+          buildPlatform: 'x86'
+          buildConfiguration: 'Release'
+        Release_x64:
+          buildPlatform: 'x64'
+          buildConfiguration: 'Release'
 
-- template: AzurePipelinesTemplates\MUX-MergePGD-Job.yml
-  parameters:
-    dependsOn: ProcessTestResults
-    pgdFile: $(pgdFile)
-    pgoArtifact: $(pgoArtifact)
-    matrix:
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-
-- template: AzurePipelinesTemplates\MUX-BuildAndPublishPGONuGet-Job.yml
-  parameters:
-    dependsOn: MergePGD
-    pgdFile: $(pgdFile)
-    pgoArtifact: $(pgoArtifact)
+  - template: AzurePipelinesTemplates\MUX-BuildAndPublishPGONuGet-Job.yml
+    parameters:
+      dependsOn: MergePGD
+      pgdFile: $(pgdFile)
+      pgoArtifact: $(pgoArtifact)

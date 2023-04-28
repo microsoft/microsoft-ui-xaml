@@ -2,94 +2,84 @@ name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 variables:
   minimumExpectedTestsExecutedCount: 2000  # Sanity check for minimum expected tests to be reported
   rerunPassesRequiredToAvoidFailure: 5
-jobs:
-- job: Setup
-  pool:
-    vmImage: 'windows-latest'
-  steps:
-    - task: powershell@2
-      name: checkPayload
-      displayName: 'Check if build is required for this PR'
-      inputs:
-        targetType: filePath
-        filePath: build\ShouldSkipPRBuild.ps1
+  useBuildOutputFromBuildId: ''
 
-- job: Build
+stages:
+- stage: Setup
+  jobs:
+  - job: Setup
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+      - task: powershell@2
+        name: checkPayload
+        displayName: 'Check if build is required for this PR'
+        inputs:
+          targetType: filePath
+          filePath: build\ShouldSkipPRBuild.ps1
+
+- stage: Build
   dependsOn: Setup
   condition: |
-    and
-    (
-      eq(variables['useBuildOutputFromBuildId'],''),
-      ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True')
-    )
-  pool: 
-    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: WinDevPoolOSS-L
-    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
-      name: WinDevPool-L
-    demands: ImageOverride -equals WinDevVS17-latest
-  timeoutInMinutes: 120
-  strategy:
-    maxParallel: 10
-    matrix:
-      Debug_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Debug'
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-        PGOBuildMode: 'Optimize'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-        PGOBuildMode: 'Optimize'
-  variables:
-    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
-    buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
-    publishDir : $(Build.ArtifactStagingDirectory)
-  steps:
-  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
-  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
+      ne(stageDependencies.Setup.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True')
+  jobs:
+  - job: Build
+    condition: eq(variables['useBuildOutputFromBuildId'],'')
+    pool: 
+      ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+        name: WinDevPoolOSS-L
+      ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+        name: WinDevPool-L
+      demands: ImageOverride -equals WinDevVS17-latest
+    timeoutInMinutes: 120
+    strategy:
+      maxParallel: 10
+      matrix:
+        Debug_x86:
+          buildPlatform: 'x86'
+          buildConfiguration: 'Debug'
+        Release_x86:
+          buildPlatform: 'x86'
+          buildConfiguration: 'Release'
+          PGOBuildMode: 'Optimize'
+        Release_x64:
+          buildPlatform: 'x64'
+          buildConfiguration: 'Release'
+          PGOBuildMode: 'Optimize'
+    variables:
+      appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+      buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
+      publishDir : $(Build.ArtifactStagingDirectory)
+    steps:
+    - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+    - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
-- template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
-  parameters:
-    name: 'RunTestsInHelix'
-    dependsOn:
-    - Setup
-    - Build
-    condition: |
-      and
-      (
-        ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True'),
-        in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
-      )
-    testSuite: 'DevTestSuite'
-    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
+- stage: Test
+  dependsOn: Build
+  jobs:
+  - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
+    parameters:
+      rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
 
 # Create Nuget Package
-- template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
-  parameters:
-    jobName: CreateNugetPackage
-    dependsOn: Build
-    primaryBuildArch: x64
-    prereleaseVersionTag: pr
+- stage: Pack
+  dependsOn: Build
+  jobs:
+  - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+    parameters:
+      jobName: CreateNugetPackage
+      primaryBuildArch: x64
+      prereleaseVersionTag: pr
 
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    dependsOn: CreateNugetPackage
-    useFrameworkPkg: false
-    runTests: 'false'
-    matrix:
-      Debug_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Debug'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-
-- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
-  parameters:
-    dependsOn: RunTestsInHelix
-    rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
-    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
-    checkJobAttempt: true
+  - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+    parameters:
+      dependsOn: CreateNugetPackage
+      useFrameworkPkg: false
+      runTests: 'false'
+      matrix:
+        Debug_x64:
+          buildPlatform: 'x64'
+          buildConfiguration: 'Debug'
+        Release_x64:
+          buildPlatform: 'x64'
+          buildConfiguration: 'Release'

@@ -6,6 +6,17 @@ if(!$Platform)
     $Platform = "x86"
 }
 
+Write-Host "Installing VC Redist"
+if(Test-Path ./vc_redist.x64.exe)
+{
+    & ./vc_redist.x64.exe /install /quiet /norestart
+} 
+else 
+{
+    Write-Host "Not found: vc_redist.x64.exe"
+}
+
+
 function UninstallTestApps {
     Param([string[]]$appsToUninstall)
 

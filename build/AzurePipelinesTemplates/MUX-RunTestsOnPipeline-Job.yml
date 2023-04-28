@@ -1,0 +1,127 @@
+parameters:
+  runTestJobName: RunTestsOnPipeline
+  dependsOn: ''
+  testSuite: DevTestSuite
+  rerunPassesRequiredToAvoidFailure: 5
+  testOS: Win10-22H2
+  buildPlatform: x86
+  buildConfiguration: release
+  parallel: 10
+
+jobs:
+
+- job: ${{ parameters.runTestJobName }}
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: not(failed())
+  pool:
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPoolOSS-Test
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPool-Test
+    demands: ImageOverride -equals ${{ parameters.testOS }}
+
+  timeoutInMinutes: 90
+  strategy:
+    parallel: ${{ parameters.parallel }}
+
+  variables:
+    useBuildOutputFromBuildId: $(Build.BuildId)
+    winuiHelixVersion: 0.5.8
+    helixScriptPath: $(Build.SourcesDirectory)\build\Helix\packages\Microsoft.Internal.WinUI.Helix.$(winuiHelixVersion)\scripts\pipeline
+
+    testSuite: ${{ parameters.testSuite }}
+    testOS: ${{ parameters.testOS }}
+    buildPlatform: ${{ parameters.buildPlatform }}
+    buildConfiguration: ${{ parameters.buildConfiguration }}
+    buildFlavor: $(buildPlatform)$(buildConfiguration)
+
+    workItemsProjNameFilter: '*proj'
+    workItemsProjDir: $(Build.SourcesDirectory)\TestWorkItems-$(testSuite)\$(buildFlavor)
+    testPayloadDir: $(Build.SourcesDirectory)\TestPayload-$(testSuite)\$(buildConfiguration)\$(buildPlatform)
+    uploadRoot: c:\uploadroot
+    uploadRootInner: $(uploadRoot)\$(testOS)\$(buildFlavor)
+    testOutputArtifactName: TestOutput-$(testSuite)
+    testRunTitlePrefix: $(testSuite)-$(testOS)-$(buildFlavor)
+    testRunTitle: '$(testRunTitlePrefix)-$(System.JobPositionInPhase)'
+
+  steps:
+  - task: PowerShell@2
+    displayName: 'Display OS version info'
+    inputs:
+      targetType: 'inline'
+      script: |
+        Get-Item -Path 'HKLM:\Software\Microsoft\Windows NT\CurrentVersion'
+
+  - script: set
+    displayName: 'Display current environment variables'
+
+  - template: MUX-InstallNuget-Steps.yml
+
+  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+    displayName: 'NuGet restore build/Helix/packages.config'
+    inputs:
+      restoreSolution: build/Helix/packages.config
+      feedsToUse: config
+      nugetConfigPath: nuget.config
+      restoreDirectory: packages
+
+  - task: DownloadBuildArtifacts@0 
+    inputs: 
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: $(System.DefinitionId)
+      buildId: $(useBuildOutputFromBuildId)
+      artifactName: TestWorkItems-$(testSuite)
+      downloadPath: $(Build.SourcesDirectory)
+
+  - task: DownloadBuildArtifacts@0 
+    inputs: 
+      buildType: specific
+      buildVersionToDownload: specific
+      project: $(System.TeamProjectId)
+      pipeline: $(System.DefinitionId)
+      buildId: $(useBuildOutputFromBuildId)
+      artifactName: TestPayload-$(testSuite)
+      downloadPath: $(Build.SourcesDirectory)
+      itemPattern: '**/$(buildConfiguration)/$(buildPlatform)/**/*'
+
+  - task: powershell@2
+    displayName: Run Tests
+    timeoutInMinutes: 60
+    inputs:
+      targetType: filePath
+      filePath: $(helixScriptPath)\RunTestPassSliceOnBuildAgent.ps1
+      arguments: -WorkItemProjFileNameFilter $(workItemsProjNameFilter) -WorkItemProjDir $(workItemsProjDir) -TestPayloadDir $(testPayloadDir) -UploadRoot $(uploadRootInner) -JobPositionInPhase $(System.JobPositionInPhase) -TotalJobsInPhase $(System.TotalJobsInPhase) -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }}
+      errorActionPreference: stop
+      workingDirectory: $(helixScriptPath)
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish TestOutput artifact'
+    condition: always()
+    inputs:
+      PathtoPublish: $(uploadRoot)
+      artifactName: $(testOutputArtifactName)
+
+  - task: PublishTestResults@2
+    condition: always()
+    inputs:
+      testResultsFormat: xUnit
+      testResultsFiles: testResults-*.xml
+      searchFolder: $(helixScriptPath)
+      mergeTestResults: true
+      failTaskOnFailedTests: true 
+      testRunTitle: '$(testRunTitle)'
+      buildPlatform: $(buildPlatform)
+      buildConfiguration: $(buildConfiguration)
+
+  - task: powershell@2
+    displayName: 'UpdateUnreliableTests.ps1'
+    condition: always()
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    inputs:
+      targetType: filePath
+      filePath: $(helixScriptPath)\UpdateUnreliableTests-Pipeline.ps1
+      arguments: -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }} -TestRunTitle $(testRunTitle) -SubResultsDirPath $(uploadRootInner)
+      
