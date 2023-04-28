@@ -4,7 +4,6 @@ parameters:
   runTestJobName: 'RunNugetPkgTestsInHelix'
   dependsOn: ''
   runTests: 'true'
-  helixType: 'test/nuget'
   test_matrix: ''
   useFrameworkPkg: false
   taefQuery: ''
@@ -102,7 +101,9 @@ jobs:
       del %TEMP%\vsinstalldir.txt
       call "%_VSINSTALLDIR15%\Common7\Tools\VsDevCmd.bat"
       echo VCToolsInstallDir = %VCToolsInstallDir%
+      echo VCToolsRedistDir = %VCToolsRedistDir%
       echo ##vso[task.setvariable variable=VCToolsInstallDir]%VCToolsInstallDir%
+      echo ##vso[task.setvariable variable=VCToolsRedistDir]%VCToolsRedistDir%
     displayName: 'Retrieve VC tools directory'
 
   - template: MUX-BuildProject-Steps.yml
@@ -122,13 +123,13 @@ jobs:
 - ${{if eq(parameters.runTests, 'true')}}:
   - template: MUX-RunHelixTests-Job.yml
     parameters:
-      name: ${{ parameters.runTestJobName }}
       dependsOn: ${{ parameters.buildJobName }}
-      testSuite: 'NugetTestSuite'
-      helixType: ${{ parameters.helixType }}
+      ${{if eq(parameters.useFrameworkPkg, 'false')}}:
+        testSuite: 'nupkg'
+      ${{if eq(parameters.useFrameworkPkg, 'true')}}:
+        testSuite: 'fwPkg'
       artifactName: ${{ parameters.buildArtifactName }}
       ${{if eq(parameters.useFrameworkPkg, 'true')}}:
         taefQuery: "(not (@NugetPkgTestsOnly = 'true'))"
       rerunPassesRequiredToAvoidFailure: 5
-      ${{if ne(parameters.test_matrix, '') }}:
-        matrix: ${{ parameters.test_matrix }}
+      maxParallel: 2

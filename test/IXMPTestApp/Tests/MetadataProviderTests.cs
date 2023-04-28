@@ -21,11 +21,12 @@ namespace IXMPTestApp.Tests
     public class MetadataProviderTests
     {
         
-#if MUX_PRERELEASE
+
         [TestMethod]
-#endif
+
         public void CanLoadXamlFragments()
         {
+#if MUX_PRERELEASE
             var dispatcher = CoreApplication.MainView.Dispatcher;
             dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
@@ -173,6 +174,8 @@ namespace IXMPTestApp.Tests
                                     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'/>");
 
             }).AsTask().Wait();
+
+#endif
         }
     }
 }
