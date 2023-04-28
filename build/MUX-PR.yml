@@ -20,8 +20,7 @@ stages:
 
 - stage: Build
   dependsOn: Setup
-  condition: |
-      ne(stageDependencies.Setup.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True')
+  condition: ne(dependencies.Setup.outputs['Setup.checkPayload.shouldSkipPRBuild'],'True')
   jobs:
   - job: Build
     condition: eq(variables['useBuildOutputFromBuildId'],'')
@@ -51,35 +50,37 @@ stages:
       buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
       publishDir : $(Build.ArtifactStagingDirectory)
     steps:
-    - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
-    - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
+    - script: set
+      displayName: 'Display current environment variables'
+    # - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+    # - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
-- stage: Test
-  dependsOn: Build
-  jobs:
-  - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
-    parameters:
-      rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
+# - stage: Test
+#   dependsOn: Build
+#   jobs:
+#   - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
+#     parameters:
+#       rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
 
-# Create Nuget Package
-- stage: Pack
-  dependsOn: Build
-  jobs:
-  - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
-    parameters:
-      jobName: CreateNugetPackage
-      primaryBuildArch: x64
-      prereleaseVersionTag: pr
+# # Create Nuget Package
+# - stage: Pack
+#   dependsOn: Build
+#   jobs:
+#   - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+#     parameters:
+#       jobName: CreateNugetPackage
+#       primaryBuildArch: x64
+#       prereleaseVersionTag: pr
 
-  - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-    parameters:
-      dependsOn: CreateNugetPackage
-      useFrameworkPkg: false
-      runTests: 'false'
-      matrix:
-        Debug_x64:
-          buildPlatform: 'x64'
-          buildConfiguration: 'Debug'
-        Release_x64:
-          buildPlatform: 'x64'
-          buildConfiguration: 'Release'
+#   - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+#     parameters:
+#       dependsOn: CreateNugetPackage
+#       useFrameworkPkg: false
+#       runTests: 'false'
+#       matrix:
+#         Debug_x64:
+#           buildPlatform: 'x64'
+#           buildConfiguration: 'Debug'
+#         Release_x64:
+#           buildPlatform: 'x64'
+#           buildConfiguration: 'Release'
