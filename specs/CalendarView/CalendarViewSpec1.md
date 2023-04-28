@@ -87,6 +87,15 @@ _Spec note: `BlackoutForeground` is an existing property, the other three are ne
 _Spec note: how to set a blackout date isn't documented very well,
 [issue](https://github.com/MicrosoftDocs/winrt-api/issues/1989)._
 
+_Spec note:_
+_"Not Brush" properties:_
+_Background, BlackoutForeground, CalendarItemBackground, CalendarItemForeground, ContentLinkBackgroundColor, ContentLinkForegroundColor, Disabled, DragBackground, DragForeground, Effect, Enabled, Fill, Foreground, HeaderBackground, HeaderForeground, Mask, OutOfScopeBackground, OutOfScopeForeground, PaneBackground, PlaceholderBackground, PlaceholderForeground, PointerOverBackground, PointerOverForeground, PressedBackground, PressedForeground, RevealBackground, SelectedBackground, SelectedDisabledBackground, SelectedForeground, SelectedPointerOverBackground, SelectedPressedBackground, SelectionHighlightColor, SelectionHighlightColorWhenNotFocused, Source, Stroke, SystemBackdrop, TodayForeground_
+
+_"Brush" properties:_
+_ActualImageBrush, BorderBrush, Brush, CalendarItemBorderBrush, CheckBoxBorderBrush, CheckBoxBrush, CheckBoxDisabledBorderBrush, CheckBoxDisabledBrush, CheckBoxPointerOverBorderBrush, CheckBoxPointerOverBrush, CheckBoxPressedBorderBrush, CheckBoxPressedBrush, CheckBoxSelectedBrush, CheckBoxSelectedDisabledBrush, CheckBoxSelectedPointerOverBrush, CheckBoxSelectedPressedBrush, CheckBrush, CheckDisabledBrush, CheckHintBrush, CheckPressedBrush, CheckSelectingBrush, CompositionBrush, FillBrush, FocusBorderBrush, FocusSecondaryBorderBrush, FocusVisualPrimaryBrush, FocusVisualSecondaryBrush, GlyphBrush, HoverBorderBrush, PointerOverBorderBrush, PressedBorderBrush, RevealBorderBrush, SelectedBorderBrush, SelectedBrush, SelectedDisabledBorderBrush, SelectedHoverBorderBrush, SelectedInnerBorderBrush, SelectedPointerOverBorderBrush, SelectedPressedBorderBrush, SelectionIndicatorBrush, SelectionIndicatorDisabledBrush, SelectionIndicatorPointerOverBrush, SelectionIndicatorPressedBrush, StrokeBrush_
+
+_TODO: See if we can describe a pattern to follow going forward._
+
 ### Showcasing the TodayBlackoutBackground and TodayBlackoutForeground properties
 
 `TodayBlackoutForeground` takes precedence over the `BlackoutForeground` value, and `TodayBlackoutBackground` takes precedence over the `BlackoutBackground` value.
@@ -99,7 +108,9 @@ _Spec note: how to set a blackout date isn't documented very well,
 
 ### Showcasing the BlackoutStrikethroughBrush property
 
-This example sets the color of the strikethrough on the text of backed out days.
+This example sets the color of the strikethrough on the text of blacked out days.
+
+The `BlackoutStrikethroughBrush` property only applies to non-Today days. For Today, the `TodayBlackoutForeground` brush is used for the strikethrough line.
 
 ![Blacked Out Sundays.](images/BlackoutStrikethroughBrush.png)
 
@@ -157,7 +168,7 @@ The current date in the month view uses the `TodayHoverBackground` and `TodayPre
 
 This example sets the
 [Brush](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Media.Brush)
-to use as the background when a pointer moves over any calendar item.
+to use as the background when a pointer moves over any non-Today calendar item.
 
 ```xml
 <CalendarView CalendarItemHoverBackground='{StaticResource SubtleFillColorSecondaryBrush}'/>
@@ -169,7 +180,7 @@ to use as the background when a pointer moves over any calendar item.
 
 This example sets the
 [Brush](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Media.Brush)
-to use as the background when a calendar item is pressed.
+to use as the background when a non-Today calendar item is pressed.
 
 ```xml
 <CalendarView CalendarItemPressedBackground='{StaticResource SubtleFillColorTertiaryBrush}'/>
@@ -201,6 +212,8 @@ calendarView1.IsEnabled = false;
 
 ![A disabled CalendarView.](images/DisabledCalendarView.png)
 
+Note that the current date's text still uses the `TodayForeground` brush.
+
 ## Day item positioning
 
 The `CalendarView`'s `DayItemMargin`, `MonthYearMargin`, `FirstOfMonthLabelMargin`,
@@ -213,7 +226,7 @@ allow positioning the day, month, year, first-of-month and first-of-year labels 
 Here the Month view has
 [CalendarView.IsGroupLabelVisible](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.CalendarView.IsGroupLabelVisible)
 set to True and the group and main labels do not overlap because 
-`CalendarView.DayItemMargin.Top` is set to 6 pixels.
+`CalendarView.DayItemMargin.Top` is set to the default 6 pixels.
 
 ``` csharp
 calendarView1.DayItemMargin = new Thickness(0, 6, 0, 0);
@@ -224,6 +237,10 @@ calendarView1.IsGroupLabelVisible = true;
 April 1st is selected and May 1st is hovered.
 
 ![A month view with visible group labels.](images/MonthViewWithVisibleGroupLabels.png)
+
+_Spec note:_
+_Recommend: draw a margin/anatomy diagram._
+_https://user-images.githubusercontent.com/12550607/117088217-a388e980-ad06-11eb-9b91-5d1bb7a06a52.png_
 
 ### Showcasing the MonthYearMargin and FirstOfYearDecadeLabelMargin properties
 
@@ -282,7 +299,7 @@ The new properties in this spec have default values according to new resources:
 
 _Spec note: the following remarks apply to each of the new properties_
 
-This property is only used by the `CalendarView` control when a boolean resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True in the
+This property is used by the `CalendarView` control only when a boolean resource named `CalendarViewBaseItemRoundedChromeEnabled` is set to True in the
 [Application.Resources](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Application.Resources).
 
 ```xml
@@ -318,11 +335,11 @@ Gets or sets the margin applied to the main label inside a calendar month or yea
 
 Gets or sets the margin used to display the first-of-month banner in the calendar.
 
-## CalendarView.FirstOfyearDecadeLabelMargin
+## CalendarView.FirstOfYearDecadeLabelMargin
 
 `public Windows.UI.Xaml.Thickness FirstOfYearDecadeLabelMargin { get; set; }`
 
-Gets or sets the margin used to display the first-of-year banner in the calendar.
+Gets or sets the margin used to display the first of year/decade banner in the calendar.
 
 ## CalendarView.CalendarItemCornerRadius
 
@@ -405,6 +422,14 @@ Gets or sets a brush that provides the background of a calendar item while it's 
 `public Windows.UI.Xaml.Media.Brush OutOfScopeHoverForeground { get; set; }`
 
 Gets or sets a brush that provides the foreground of calendar items that are outside the current scope (month, year, or decade) while the pointer is over them.
+
+_Spec note:_
+_Specify precedence order:_
+_Today+Blackout
+Today
+Blackout
+OutOfScope
+Normal item_
 
 ## CalendarView.OutOfScopePressedForeground
 
