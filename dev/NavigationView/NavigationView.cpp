@@ -1386,7 +1386,7 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
 void NavigationView::OnSizeChanged(winrt::IInspectable const& /*sender*/, winrt::SizeChangedEventArgs const& args)
 {
     const auto width = args.NewSize().Width;
-    UpdateOpenPaneWidth(width);
+    UpdateOpenPaneLength(width);
     UpdateAdaptiveLayout(width);
     UpdateTitleBarPadding();
     UpdateBackAndCloseButtonsVisibility();
@@ -1398,14 +1398,14 @@ void NavigationView::OnItemsContainerSizeChanged(const winrt::IInspectable& send
     UpdatePaneLayout();
 }
 
-void NavigationView::UpdateOpenPaneWidth(double width)
+void NavigationView::UpdateOpenPaneLength(double width)
 {
     if (!IsTopNavigationView() && m_rootSplitView)
     {
-        m_openPaneWidth = std::max(0.0, std::min(width, OpenPaneLength()));
+        m_OpenPaneLength = std::max(0.0, std::min(width, OpenPaneLength()));
 
         const auto templateSettings = GetTemplateSettings();
-        templateSettings->OpenPaneWidth(m_openPaneWidth);
+        templateSettings->OpenPaneLength(m_OpenPaneLength);
     }
 }
 
@@ -4096,7 +4096,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     }
     else if (property == s_OpenPaneLengthProperty)
     {
-        UpdateOpenPaneWidth(ActualWidth());
+        UpdateOpenPaneLength(ActualWidth());
     }
 }
 
@@ -4456,13 +4456,13 @@ void NavigationView::UpdatePaneToggleSize()
             {
                 if (splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay && IsPaneOpen())
                 {
-                    width = m_openPaneWidth;
-                    togglePaneButtonWidth = m_openPaneWidth - ((ShouldShowBackButton() || ShouldShowCloseButton()) ? c_backButtonWidth : 0);
+                    width = m_OpenPaneLength;
+                    togglePaneButtonWidth = m_OpenPaneLength - ((ShouldShowBackButton() || ShouldShowCloseButton()) ? c_backButtonWidth : 0);
                 }
                 else if (!(splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay && !IsPaneOpen()))
                 {
-                    width = m_openPaneWidth;
-                    togglePaneButtonWidth = m_openPaneWidth;
+                    width = m_OpenPaneLength;
+                    togglePaneButtonWidth = m_OpenPaneLength;
                 }
             }
 
@@ -4944,11 +4944,11 @@ void NavigationView::UpdatePaneShadow()
         // Ensure shadow is as wide as the pane when it is open
         if (DisplayMode() == winrt::NavigationViewDisplayMode::Compact)
         {
-            shadowReceiver.Width(m_openPaneWidth);
+            shadowReceiver.Width(m_OpenPaneLength);
         }
         else
         {
-            shadowReceiver.Width(m_openPaneWidth - shadowReceiverMargin.Right);
+            shadowReceiver.Width(m_OpenPaneLength - shadowReceiverMargin.Right);
         }
         shadowReceiver.Margin(shadowReceiverMargin);
     }

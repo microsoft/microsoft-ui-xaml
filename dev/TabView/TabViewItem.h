@@ -38,6 +38,9 @@ public:
     void OnPointerCanceled(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
 
+    // Control
+    void OnKeyDown(winrt::KeyRoutedEventArgs const& e);
+
     void RaiseRequestClose(TabViewTabCloseRequestedEventArgs const& args);
     void OnTabViewWidthModeChanged(winrt::TabViewWidthMode const& mode);
     void OnCloseButtonOverlayModeChanged(winrt::TabViewCloseButtonOverlayMode const& mode);
@@ -46,6 +49,8 @@ public:
     void SetParentTabView(winrt::TabView const& tabView);
 
     void StartBringTabIntoView();
+
+    winrt::Button GetCloseButton() { return m_closeButton.get(); }
 
 private:
     void UpdateCloseButton();

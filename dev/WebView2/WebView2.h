@@ -21,9 +21,9 @@ namespace winrt
 #pragma warning( disable : 28251 26812)   // warning C28251: Inconsistent annotation for function: this instance has an error
 #include <webview2.h>
 #include <WebView2EnvironmentOptions.h>
-#pragma warning( pop ) 
+#pragma warning( pop )
 
- // for making async/await possible
+// for making async/await possible
 struct AsyncWebViewOperations final : public Awaitable
 {
     AsyncWebViewOperations() = default;
@@ -48,7 +48,7 @@ private:
 };
 
 template <typename D, typename T, typename ... I>
-struct __declspec(empty_bases) DeriveFromContentControlHelper_base : winrt::Windows::UI::Xaml::Controls::ContentControlT<D, winrt::default_interface<T>, winrt::composable, I...>
+struct __declspec(empty_bases)DeriveFromContentControlHelper_base : winrt::Windows::UI::Xaml::Controls::ContentControlT<D, winrt::default_interface<T>, winrt::composable, I...>
 {
     using composable = T;
     using class_type = typename T;
@@ -85,7 +85,6 @@ public:
     winrt::IUnknown GetProviderForHwnd(HWND hwnd);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void ResetPointerHelper(const winrt::PointerRoutedEventArgs& args);
     void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
 
@@ -108,13 +107,14 @@ private:
     void FillPointerPenInfo(const winrt::PointerPoint& inputPt, winrt::CoreWebView2PointerInfo outputPt);
     void FillPointerTouchInfo(const winrt::PointerPoint& inputPt, winrt::CoreWebView2PointerInfo outputPt);
     void FillPointerInfo(const winrt::PointerPoint& inputPt, winrt::CoreWebView2PointerInfo outputPt, const winrt::PointerRoutedEventArgs& args);
+    uint32_t GetPointerFlags(const winrt::PointerPoint& inputPt);
+    winrt::Rect ScaleRectToPhysicalPixels(winrt::Rect inputRect);
+    winrt::Point ScalePointToPhysicalPixels(winrt::Point inputPoint);
 
-    winrt::float4x4 GetMatrixFromTransform();
     void ResetMouseInputState();
     void OnManipulationModePropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
     void OnVisibilityPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
 
-    // EBWebView Event Handlers
     void FireNavigationStarting(const winrt::CoreWebView2NavigationStartingEventArgs& args);
     void FireNavigationCompleted(const winrt::CoreWebView2NavigationCompletedEventArgs& args);
     void FireWebMessageReceived(const winrt::CoreWebView2WebMessageReceivedEventArgs& args);
@@ -122,7 +122,7 @@ private:
     void FireCoreProcessFailedEvent(const winrt::CoreWebView2ProcessFailedEventArgs& args);
     void FireCoreWebView2Initialized(winrt::hresult exception);
 
-    void UpdateDefaultBackgroundColor();
+    void UpdateDefaultVisualBackgroundColor();
 
     HWND GetHostHwnd() noexcept;
     HWND GetActiveInputWindowHwnd() noexcept;
@@ -175,6 +175,7 @@ private:
     void ResetProperties();
     void CloseInternal(bool inShutdownPath);
 
+    winrt::AccessibilitySettings GetAccessibilitySettings();
     bool SafeIsLoaded();
 
     void UpdateCoreWindowCursor();
@@ -208,9 +209,6 @@ private:
     HWND m_inputWindowHwnd{ nullptr };
     winrt::hstring m_stopNavigateOnUriChanged{};
     bool m_canGoPropSetInternally{};
-#if WINUI3
-    winrt::IExpSystemVisualBridge m_systemVisualBridge;
-#endif
     winrt::Windows::UI::Composition::SpriteVisual m_visual{ nullptr };
 
     winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker;
@@ -249,16 +247,16 @@ private:
     winrt::AccessibilitySettings::HighContrastChanged_revoker m_highContrastChangedRevoker{};
 
     // Pointer handling for CoreWindow
+    void ResetPointerHelper(const winrt::PointerRoutedEventArgs& args);
     bool m_isPointerOver{};
     winrt::CoreCursor m_oldCursor{ nullptr };
-    winrt::CoreCursor m_requestedCursor{ nullptr };
 
     XamlFocusChangeInfo m_xamlFocusChangeInfo{};
 
-    // Tracks when Anaheim thinks it has focus.
+    // Tracks when Edge thinks it has focus.
     //
     // Xaml's CoreWindow hosting code swallows WM_KEYDOWN messages for VK_TAB that are expected to go to InputWindow HWND.
-    // When true, fill in this missing event manually via SendMessage so that TAB's can be processed in Anaheim.
+    // When true, fill in this missing event manually via SendMessage so that TAB's can be processed in Edge.
     bool m_webHasFocus{};
 
     bool m_isVisible{};
@@ -267,12 +265,12 @@ private:
 
     bool m_loaded{};
 
-    bool m_isCoreFailure_BrowserExited_State{};    // True after Anaheim ProcessFailed event w/ CORE_WEBVIEW2_PROCESS_FAILED_KIND_BROWSER_PROCESS_EXITED
+    bool m_isCoreFailure_BrowserExited_State{};    // True after Edge ProcessFailed event w/ CORE_WEBVIEW2_PROCESS_FAILED_KIND_BROWSER_PROCESS_EXITED
     bool m_isClosed{};    // True after WebView2::Close() has been called - no core objects can be created
 
     bool m_isImplicitCreationInProgress{};    // True while we are creating CWV2 due to Source property being set
     bool m_isExplicitCreationInProgress{};    // True while we are creating CWV2 due to EnsureCoreWebView2Async() being called
-    std::unique_ptr<AsyncWebViewOperations> m_creationInProgressAsync{ nullptr };      // Awaitable object for any currently active creation. There should be only one active operation at a time.
+    std::unique_ptr<AsyncWebViewOperations> m_creationInProgressAsync{ nullptr };    // Awaitable object for any currently active creation. There should be only one active operation at a time.
 
     float m_rasterizationScale{};
     // The last known WebView rect position, scaled for DPI
@@ -289,4 +287,5 @@ private:
     decltype(&DefWindowProcW) m_fnDefWindowProcW;
     decltype(&GetFocus) m_fnGetFocus;
     decltype(&RegisterClassW) m_fnRegisterClassW;
+    decltype(&DestroyWindow) m_fnDestroyWindow;
 };

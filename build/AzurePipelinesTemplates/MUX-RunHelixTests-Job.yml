@@ -21,8 +21,8 @@ parameters:
     Release_x64:
       buildPlatform: 'x64'
       buildConfiguration: 'release'
-      openHelixTargetQueues: 'Windows.10.Amd64.Client21H1.Open.xaml'
-      closedHelixTargetQueues: 'Windows.10.Amd64.Client21H1.xaml'
+      openHelixTargetQueues: 'windows.10.amd64.client.open.reunion'
+      closedHelixTargetQueues: 'windows.10.amd64.client20h2.xaml'
 
 jobs:
 - job: ${{ parameters.name }}
@@ -93,14 +93,6 @@ jobs:
       testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
       testFilePattern: 'MUXControls.Test.dll'
       outputProjFileName: 'RunTestsInHelix-InteractionTests.proj'
-      taefQuery: ${{ parameters.taefQuery }}
-
-  - template: MUX-CreateHelixProjFile-Steps.yml
-    parameters:
-      condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
-      testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload\$(buildConfiguration)\$(buildPlatform)'
-      testFilePattern: 'MUXExperimental.Test.dll'
-      outputProjFileName: 'RunTestsInHelix-ExperimentalInteractionTests.proj'
       taefQuery: ${{ parameters.taefQuery }}
 
   - template: MUX-CreateHelixProjFile-Steps.yml

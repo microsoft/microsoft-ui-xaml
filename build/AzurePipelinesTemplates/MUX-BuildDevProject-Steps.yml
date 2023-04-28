@@ -2,6 +2,15 @@ parameters:
   signOutput: false
 
 steps:
+
+  - template: MUX-InstallDotNetSDK-Steps.yml
+
+  - template: MUX-InstallWindowsSDK-Steps.yml
+
+  - template: MUX-InstallNuget-Steps.yml
+
+  - template: MUX-RestorePgo-Steps.yml
+
   - template: MUX-BuildProject-Steps.yml
     parameters:
       solutionPath: MUXControls.sln

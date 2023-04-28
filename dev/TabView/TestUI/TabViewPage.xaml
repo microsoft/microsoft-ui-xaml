@@ -119,6 +119,11 @@
                         <Button x:Name="GetScrollIncreaseButtonToolTipButton" AutomationProperties.Name="GetScrollIncreaseButtonToolTipButton" Content="TooltipScrollIncreaseButton" Click="GetScrollIncreaseButtonToolTipButton_Click"/>
                         <TextBlock x:Name="ScrollIncreaseButtonToolTipTextBlock" AutomationProperties.Name="ScrollIncreaseButtonToolTipTextBlock" Margin="4,0,0,0" Text=""/>
                     </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock x:Name="TabsItemChangedEventArgsTextBlock" AutomationProperties.Name="TabsItemChangedEventArgsTextBlock" Margin="4,0,0,0" Text="" />
+                    <TextBlock x:Name="TabsItemChangedEventArgsIndexTextBlock" AutomationProperties.Name="TabsItemChangedEventArgsIndexTextBlock" Margin="4,0,0,0" Text="" />
+                    </StackPanel>
                 </StackPanel>
             </ScrollViewer>
             

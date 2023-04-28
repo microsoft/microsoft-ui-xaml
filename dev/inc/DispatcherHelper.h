@@ -76,6 +76,8 @@ public:
         }
     }
 
+    auto DispatcherQueue() { return dispatcherQueue; }
+
 private:
     winrt::Windows::System::DispatcherQueue dispatcherQueue{ nullptr };
     winrt::CoreDispatcher coreDispatcher{ nullptr };

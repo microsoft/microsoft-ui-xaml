@@ -8,23 +8,22 @@
     <RuntimeIdentifiers>win-x86;win-x64;win-arm;win-arm64</RuntimeIdentifiers>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
+    <NoWarn>$(NoWarn);NU1505</NoWarn>
+    <DisableCheckingDuplicateNuGetItems>true</DisableCheckingDuplicateNuGetItems>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Axe.Windows" Version="1.0.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1264.42" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.7.0" />
     <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181205002" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.1.2" />
     <PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="System.Diagnostics.Process" Version="4.3.0" />
+    <PackageReference Include="System.Drawing.Common" Version="4.7.2" />
     <PackageReference Include="System.Drawing.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Web.WebView2">
-      <Version>1.0.1020.30</Version>
-    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\testinfra\MUXTestInfra\MSTest\MUXTestInfra.MSTest.csproj" />

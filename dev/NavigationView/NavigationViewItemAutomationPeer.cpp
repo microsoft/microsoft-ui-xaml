@@ -46,6 +46,9 @@ winrt::hstring NavigationViewItemAutomationPeer::GetNameCore()
 
 winrt::IInspectable NavigationViewItemAutomationPeer::GetPatternCore(winrt::PatternInterface const& pattern)
 {
+    // Note: We are intentionally not supporting Invoke Pattern, since supporting both SelectionItem and Invoke was
+    // causing problems. 
+    // See this Issue for more details: https://github.com/microsoft/microsoft-ui-xaml/issues/2702
     if (pattern == winrt::PatternInterface::SelectionItem ||
         // Only provide expand collapse pattern if we have children!
         (pattern == winrt::PatternInterface::ExpandCollapse && HasChildren()))
@@ -365,6 +368,11 @@ void NavigationViewItemAutomationPeer::RemoveFromSelection()
 
 void NavigationViewItemAutomationPeer::ChangeSelection(bool isSelected)
 {
+    // If the item is being selected, we trigger an invoke as if the user had clicked on the item:
+    if(isSelected)
+    {
+        Invoke();
+    }
     if (auto nvi = Owner().try_as<winrt::NavigationViewItem>())
     {
         nvi.IsSelected(isSelected);

@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        For bugs related to UWP or the app models, please open a bug on the [Project Reunion repository](https://github.com/microsoft/ProjectReunion)
+        For bugs related to UWP or the app models, please open a bug on the [Windows App SDK repository](https://github.com/microsoft/WindowsAppSDK)
   - type: textarea
     validations:
       required: true
@@ -35,29 +35,10 @@ body:
       label: NuGet package version
       description: If you are seeing your issue on older versions please try the latest release
       options:
-        - "WinUI 3 - Windows App SDK 1.1.1"
-        - "WinUI 3 - Windows App SDK 1.0.4"
-        - "WinUI 3 - Windows App SDK 1.0 Experimental: 1.0.0-experimental1"
-        - "WinUI 3 - Project Reunion 0.8.10"
-        - "Microsoft.UI.Xaml 2.8.0-prerelease.220601001"
-        - "Microsoft.UI.Xaml 2.7.1"
-  - type: checkboxes
-    attributes:
-      label: Windows app type
-      description: If you are using WinUI 3, please specify for which Windows app type you have encountered the issue.
-      options:
-        - label: "UWP"
-        - label: "Win32"
-  - type: dropdown
-    attributes:
-      label: Device form factor
-      description: Which device form factors did you see the issue on?
-      multiple: true
-      options:
-        - "Desktop"
-        - "Xbox"
-        - "Surface Hub"
-        - "IoT"
+        - "WinUI 3 - Windows App SDK 1.3.0: 1.3.230331000"
+        - "WinUI 3 - Windows App SDK Preview 1: 1.3.230228005-preview1"
+        - "WinUI 3 - Windows App SDK 1.3 Experimental 1: 1.3.230202101-experimental1"
+        - "WinUI 2 - Microsoft.UI.Xaml 2.8.2"
   - type: dropdown
     attributes:
       label: Windows version
