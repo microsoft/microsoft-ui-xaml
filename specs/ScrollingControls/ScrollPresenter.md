@@ -45,6 +45,9 @@ employs custom UI widgets to control the translation and scale in lieu of two sc
 </UserControl>
 ```
 
+_Spec note:_
+_Mike: "What's a ScrollController?"_
+
 It can be used as a top level element too, as in the following example.
 
 ```xml
@@ -110,6 +113,7 @@ for example the basic `<ScrollView/>` is configured for vertical scrolling.
 ## Snap points examples
 
 The `ScrollPresenter` element exposes three collections to set scroll and zoom snap points.
+(A snap point is a position that is a natural stopping place for scrolling or zooming to land on.)
 
 | **Type**                                                    | **Snap points collection** |
 |-------------------------------------------------------------|----------------------------|
@@ -117,8 +121,9 @@ The `ScrollPresenter` element exposes three collections to set scroll and zoom s
 | Windows.Foundation.Collections.IVector<ScrollSnapPointBase> | VerticalSnapPoints         |
 | Windows.Foundation.Collections.IVector<ZoomSnapPointBase>   | ZoomSnapPoints             |
 
-At the end of a scroll inertia, the `ScrollPresenter`'s HorizontalOffset property will land at
-a value which depends on the HorizontalSnapPoints collection (same for VerticalOffset and VerticalSnapPoints). 
+At the end of a scroll inertia (for example the scrolling that continues briefly after touch input), 
+the `ScrollPresenter`'s HorizontalOffset property will land at a value which depends on the 
+HorizontalSnapPoints collection (same for VerticalOffset and VerticalSnapPoints). 
 Likewise, at the end of a zoom inertia, the `ScrollPresenter`'s ZoomFactor property will land at
 a value which depends on the ZoomSnapPoints collection.
 
@@ -130,6 +135,9 @@ The alignment enumeration of `Near`, `Center` or `Far` indicates where the snap 
 relation to the viewport.
 For example, for a horizontal snap point, the `Near` alignment corresponds to the left edge of the viewport.
 `Center` means the middle of the viewport, and finally `Far` means the right edge.
+
+_Spec note:_
+_Mike: "So in RTL and horizontal, "Near" means the right side?"_
 
 A `RepeatedScrollSnapPoint` defines multiple equidistant points.
 It is characterized by an alignment, an interval, an offset, a start and end.
@@ -155,6 +163,9 @@ The applicable ranges, or attraction zones, of the snap point values -10, 50, 11
 respectively \[10, 20\], \]20, 80\], \]80, 140\], \]140, 200\], \]200, 260\] and \]260, 270\].
 If an activated horizontal snap point value is out-of-bounds, i.e. smaller than 0 or greater than ScrollableWidth,
 the content will first animate to that out-of-bounds position then animate back to the closest in-bounds position.
+
+_Spec note:_
+_Mike: "Curious how much of this is ScrollPresenter and how much is InteractionTracker?"_
 
 ```csharp
 RepeatedScrollSnapPoint snapPoint = 
@@ -260,6 +271,9 @@ for (double snapPointValue = 0.15; snapPointValue < 10.0; snapPointValue *= 2.0)
 The `ScrollPresenter`'s HorizontalScrollController and VerticalScrollController properties allow to
 use custom scrollbar widgets instead of the default `ScrollBar` control.
 
+_Spec note:_
+_Mike: "What does "default" mean here? The ScrollPresenter doesn't have default scroll bars, does it?"_
+
 | **Type**                                                | **Scroll controller properties** |
 |---------------------------------------------------------|----------------------------------|
 | Microsoft.UI.Xaml.Controls.Primitives.IScrollController | HorizontalScrollController       |
@@ -282,6 +296,9 @@ ScrollPresenter myScrollPresenter = myScrollView.GetValue(ScrollView.ScrollPrese
 myScrollPresenter.VerticalScrollController = myTimelineScrubber;
 ```
 
+_Spec note:_
+_Mike: "Why using GetValue here, is this a DP with no property accessors?"_
+
 An alternate approach would be to use a custom control template for that `ScrollView` instance with a TimelineScrubber 
 named "PART_VerticalScrollBar" instead of a vertical `ScrollBar`.
 
@@ -290,10 +307,12 @@ named "PART_VerticalScrollBar" instead of a vertical `ScrollBar`.
 
 ## ScrollPresenter class
 
+Provides primitive scroll and zoom supports for content.
+
 ### ScrollPresenter.HorizontalSnapPoints property
 
 Gets the collection of snap points affecting the `ScrollPresenter.HorizontalOffset` property.
-That collection is empty by default.
+This collection is empty by default.
 Horizontal snap points cause the HorizontalOffset property to settle at deterministic values at the end of inertia.
 
 In this example, the `ScrollPresenter.HorizontalOffset` property lands at value 500.0 or 1500.0,
@@ -310,7 +329,7 @@ myScrollPresenter.HorizontalSnapPoints.Add(snapPoint2);
 ### ScrollPresenter.VerticalSnapPoints property
 
 Gets the collection of snap points affecting the `ScrollPresenter.VerticalOffset` property.
-That collection is empty by default.
+This collection is empty by default.
 Vertical snap points cause the VerticalOffset property to settle at deterministic values at the end of inertia.
 
 In this example, the `ScrollPresenter.VerticalOffset` property lands at value 500.0 or 1500.0,
@@ -327,7 +346,7 @@ myScrollPresenter.VerticalSnapPoints.Add(snapPoint2);
 ### ScrollPresenter.ZoomSnapPoints property
 
 Gets the collection of snap points affecting the `ScrollPresenter.ZoomFactor` property.
-That collection is empty by default.
+This collection is empty by default.
 Zoom snap points cause the ZoomFactor property to settle at deterministic values at the end of inertia.
 
 In this example, the `ScrollPresenter.ZoomFactor` property lands at value 2.5 or 5.0,
@@ -374,7 +393,7 @@ implementation samples.
 
 The `ScrollPresenter` exposes two read-write properties of type IScrollController representing optional 
 scrollbar-like widgets that can participate in setting the scrolling offsets of the content.
-Those widgets are the implemeters of the IScrollController interface, while the `ScrollController` 
+Those widgets are the implementers of the IScrollController interface, while the `ScrollController` 
 is the consumer.
 
 Throughout the remainder of this interface description, the term `ScrollPresenter` is used,
@@ -382,12 +401,13 @@ but the consumer of the IScrollController interface is not necessarily a ScrollP
 It may be some alternative scrolling control.
 
 
-| **Member** | **Type** | **Description** |
-|------------|----------|-----------------|
-
-## IScrollController AreInteractionsAllowed property (Boolean)
+## IScrollController.AreInteractionsAllowed property (Boolean)
 
 This read-only property indicates whether the scroll controller can perform user interactions or not.
+
+_Spec note:_
+_Mike: "How does the controller indicate that this has changed? Do we need a change event 
+that can be raised after the control gets disabled?"_
 
 The scroll controller returns False for example when it is a disabled control.
 
@@ -398,6 +418,9 @@ as well as the visibility of its scroll controller separator element (Template p
 For example, when the ScrollView.HorizontalScrollBarVisibility property is `ScrollingScrollBarVisibility.Auto` 
 and the horizontal IScrollController implementation's `AreInteractionsAllowed` property returns False,
 the `ComputedHorizontalScrollBarVisibility` dependency property is set to `Visibility.Collapsed`.
+
+_Spec note:_
+_Mike: "We usually use "ActualFoo" rather than "ComputedFoo""_
 
 ## IScrollController.IsInteracting property (Boolean)
 
@@ -411,9 +434,14 @@ property to return `True` though.
 It would prevent the user from being able to interrupt inertia from such a pan by touching the 
 `ScrollPresenter`'s content.
 
+_Spec note:_
+_Mike: "Are any of these APIs called from off the UI thread?"_
+
 The `ScrollView` control for example accesses this property to keep auto-hiding scroll controllers visible 
 during a user interaction.
-(That auto-hiding behavior is dependent on the IUISettings5.AutoHideScrollBars property evaluation.)
+(That auto-hiding behavior is dependent on the 
+[UISettings.AutoHideScrollBars](https://docs.microsoft.com/uwp/api/Windows.UI.ViewManagement.UISettings.AutoHideScrollBars) 
+property evaluation.)
 
 When returning True, this property prevents the `ScrollPresenter` from initiating a new pan of its content 
 when the user touches it.
@@ -423,6 +451,10 @@ when the user touches it.
 
 This read-only property returns a UIElement that can be panned with touch off the UI-thread like the 
 `ScrollPresenter`'s content.
+
+_Spec note:_
+_Mike: "Can't tell what this means? Is this saying that you could go from this element to a comp Visual 
+and do background input on it?"_
 
 A scroll controller can return null instead of a UIElement, indicating that none of its UI pieces can be 
 panned off the UI-thread.
@@ -489,11 +521,18 @@ turned on or not.
 For example, the `ScrollPresenter` uses 4 of its properties for these calls: 
 HorizontalScrollController.SetScrollMode(HorizontalScrollMode) and VerticalScrollController.SetScrollMode(VerticalScrollMode).
 
+_Spec note:_
+_Mike: "I'm confused about what this sentence is saying. Uses which 4 properties for those SetScrollMode 
+calls? (Or do I need to understand the number of properties?)"_
+
 ## IScrollController.SetValues
 
 ```cs
 void SetValues(Double minOffset, Double maxOffset, Double offset, Double viewport)
 ```
+
+_Spec note:_
+_Mike: "A more meaningful name? SetDimensionValues?"_
 
 This method is invoked by the `ScrollPresenter` to provide dimension information to the scroll controller.
 
@@ -571,6 +610,9 @@ event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerAd
 The scroll controller can request a scroll by adding velocity to the `ScrollPresenter` content through 
 the AddScrollVelocityRequested event.
 
+_Spec note:_
+_Mike: "Don't understand what this means. Is this the case where we're in inertia and the pointer touches again?"_
+
 ## IScrollController.InteractionRequested event
 
 ```cs
@@ -579,9 +621,16 @@ event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerIn
 
 This event can be raised by the scroll controller when the user attempts to initiate a UI-thread-independent pan,
 with touch or a pen, using the UIElement returned by the InteractionElement property.
+
+_Spec note:_
+_Mike: "It's only for the off thread case? So the controller raises the event off thread?"_
+
 The `ScrollPresenter` sets the ScrollControllerInteractionRequestedEventArgs.Handled property to True when
 it successfully initiated such a pan. This event is not meant to be raised when the InteractionElement property 
 returns null.
+
+_Spec note:_
+_Mike: "The event is named "interaction" but the description says "pan". Is it just for panning?"_
 
 ## IScrollController.InteractionInfoChanged event 
 
@@ -592,6 +641,8 @@ event Windows.Foundation.TypedEventHandler<IScrollController, Object> Interactio
 This event is raised by the scroll controller after any of its properties AreInteractionsAllowed, IsInteracting,
 IsInteractionElementRailEnabled, InteractionElement, or InteractionElementScrollOrientation changed.
 
+_Spec note:_
+_Mike: "Can we leave off the list of properties and just say "any of its properties"?"_
 
 ## ScrollControllerScrollToRequestedEventArgs class
 
@@ -718,6 +769,10 @@ enum ScrollingSnapPointsMode
 };
 ```
 
+_Spec note:_
+_Mike: "I don't see any explanation for any of these three enums. 
+A one/two-liner comment on top of each enum would be good"_
+
 ## `ScrollPresenter` enumeration
 
 ```csharp
@@ -798,6 +853,11 @@ runtimeclass Microsoft.UI.Xaml.Controls.ScrollingAnchorRequestedEventArgs
 }
 ```
 
+_Spec note:_
+_Mike: "ScrollingZoomAnimationStartingEventArgs.CenterPoint: Why Vector2 rather than Point?"_
+_Mike: "BringingIntoView: Name this BringIntoViewRequested to match UIElement.BringIntoViewRequested?"_
+_Mike: "ScrollingBringingIntoViewEventArgs: No explanation for this. Odd that it has a property of another args type."_
+
 ## Snap points related classes
 
 ```csharp
@@ -867,6 +927,10 @@ unsealed runtimeclass Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoin
     Double End { get; };
 }
 ```
+
+_Spec note:_
+_Mike: "SnapPointBase: Why is this a DependencyObject?"_
+
 
 ## `IScrollController` interface and related classes
 
@@ -949,6 +1013,12 @@ runtimeclass Microsoft.UI.Xaml.Controls.Primitives.ScrollingViewChangeRequestedE
     Single TargetZoomFactor { get; };
 }
 ```
+
+_Spec note:_
+_Mike: "ScrollControllerScrollToRequestedEventArgs(Double offset, Microsoft.UI.Xaml.Controls.ScrollingScrollOptions options):
+Why a constructor for the first two properties but not the CorrelationId? Is that not commonly used?
+It might be easier to leave off the constructors; it's not that hard to set properties."_
+_Mike: "Single OffsetVelocity { get; }: Is it valid for this to be negative?"_
 
 ## `ScrollPresenter` class
 
@@ -1066,7 +1136,24 @@ unsealed runtimeclass Microsoft.UI.Xaml.Controls.Primittives.ScrollPresenter
 }
 ```
 
+_Spec note:_
+_Mike: "Microsoft.UI.Composition.CompositionPropertySet ExpressionAnimationSources { get; }:
+No explanation of what this is (it's fine to doc it as a comment)"_
+_Mike: "Double ScrollableWidth { get; }: See 
+[ScrollViewer.ScrollableWidth](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.ScrollViewer.ScrollableWidth)"_
+_Mike: "ScrollingInteractionState State { get; }: "State" is too ambiguous, 
+should be either ScrollingInterationState or InteractionState."_
+_Mike: "ScrollCompleted, ZoomCompleted, BringingIntoView, AnchorRequested, ViewChangeRequested:
+Is ScrollView going to listen to all of these events anyway? Would it be easier to make it a 
+callback interface? We usually prefer events to that, but if the use case is to listen to everything, 
+then it's more efficient."_
+
 # Sample IScrollController implementations
+
+_Spec note:_
+_Mike: "These last samples are great, but long and I don't want reviewers to feel compelled to 
+provide feedback on this much content. Also I think this would go into the samples repo rather 
+than the docs. Could you keep them but put them in the appendix?"_
 
 ## IScrollController implementation without interaction element
 

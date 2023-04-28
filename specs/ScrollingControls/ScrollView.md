@@ -8,6 +8,10 @@ Xaml has a [ScrollViewer](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Con
 for scrolling content, using scroll bars and panning, etc. Typical uses are as the root of a page whose 
 content might not fit; and a ListView, which internally uses a ScrollViewer for its list of items. 
 
+_Spec note:_
+_Mike: "Do we need this paragraph/example? ScrollView vs ScrollViewer is confusing, and dwelling on 
+ScrollViewer (which is not the subject of this spec) just adds to the confusion."_
+
 For example the following shows a large text block that wraps horizontally and scrolls vertically:
 
 ```xml
@@ -65,6 +69,12 @@ A few key points:
 
 
 # Overview
+
+_Spec note:_
+_Mike: "This conceptual overview could include more of ScrollView info, and then be the same 
+in both docs (or one references the other would be OK in this case).
+In the end on the public docs, we'll have API pages for ScrollPresenter and ScrollView, 
+and then a separate page with this section's content (some new version of today's)."_
 
 `ScrollView` is a container control that lets the user scroll (and pan), and zoom its content.
 
