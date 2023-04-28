@@ -70,7 +70,7 @@
 #     $shouldSkipBuild = AllChangedFilesAreSkippable($files)
 # }
 
-$shouldSkipBuild = $true
+$shouldSkipBuild = $false
 
 Write-Host "shouldSkipBuild = $shouldSkipBuild"
 
