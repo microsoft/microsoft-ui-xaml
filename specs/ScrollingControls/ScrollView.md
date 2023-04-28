@@ -4,7 +4,9 @@
 
 (Full Summary, Rationale, and High-Level Plan in the proposal on GitHub: [A more flexible ScrollViewer](https://github.com/Microsoft/microsoft-ui-xaml/issues/108))
 
-Xaml has a [ScrollViewer](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.ScrollViewer) control for scrolling content, using scroll bars and panning, etc. Typical uses are as the root of a page whose content might not fit; and a ListView, which internally uses a ScrollViewer for its list of items. 
+Xaml has a [ScrollViewer](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.ScrollViewer) control 
+for scrolling content, using scroll bars and panning, etc. Typical uses are as the root of a page whose 
+content might not fit; and a ListView, which internally uses a ScrollViewer for its list of items. 
 
 For example the following shows a large text block that wraps horizontally and scrolls vertically:
 
@@ -16,13 +18,22 @@ For example the following shows a large text block that wraps horizontally and s
 </Page>
 ```
 
-The touch support in ScrollViewer is implemented with [DirectManipulation](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/directmanipulation/direct-manipulation-portal), and has a lot of complicated history and implementation and dev experience. And DirectManipulation is deprecated, replaced by [InteractionTracker](https://docs.microsoft.com/en-us/uwp/api/Windows.UI.Composition.Interactions.InteractionTracker). (See also [Benefits of InteractionTracker](#Benefits-of-InteractionTracker) later in this document.)
+The touch support in ScrollViewer is implemented with [DirectManipulation](https://docs.microsoft.com/en-us/previous-versions/windows/desktop/directmanipulation/direct-manipulation-portal), 
+and has a lot of complicated history and implementation and dev experience. And DirectManipulation is deprecated, 
+replaced by [InteractionTracker](https://docs.microsoft.com/en-us/uwp/api/Windows.UI.Composition.Interactions.InteractionTracker). 
+(See also [Benefits of InteractionTracker](#Benefits-of-InteractionTracker) later in this document.)
 
-This spec describes a new ScrollViewer control named `ScrollView`. This new control is highly aligned in behavior and API with the existing ScrollViewer control, but is based on InteractionTracker, has new features such as animation-driven view changes, and is also designed to ensure full functionality of [ItemsRepeater](https://docs.microsoft.com/uwp/api/Microsoft.UI.Xaml.Controls.ItemsRepeater).
+This spec describes a new ScrollViewer control named `ScrollView`. This new control is highly aligned 
+in behavior and API with the existing ScrollViewer control, but is based on InteractionTracker, has 
+new features such as animation-driven view changes, and is also designed to ensure full functionality 
+of [ItemsRepeater](https://docs.microsoft.com/uwp/api/Microsoft.UI.Xaml.Controls.ItemsRepeater).
 
-`ScrollView` is not yet a full replacement for ScrollViewer. So the latter is not yet being deprecated. `ScrollView` will continue to be developed (in open source) after its first release as part of the WinUI framework package.
+`ScrollView` is not yet a full replacement for ScrollViewer. So the latter is not yet being deprecated. 
+`ScrollView` will continue to be developed (in open source) after its first release as part of the 
+WinUI framework package.
 
-In order to avoid naming conflicts since the old and new controls are in the same Microsoft.UI.Xaml.Controls namespace, the new control is called `ScrollView`. 
+In order to avoid naming conflicts since the old and new controls are in the same Microsoft.UI.Xaml.Controls 
+namespace, the new control is called `ScrollView`. 
 
 The above example becomes (simply renaming the control):
 
@@ -36,9 +47,14 @@ The above example becomes (simply renaming the control):
 ```
 
 A few key points:
-  - `ScrollView` performs scrolling, panning, and zooming. There's no good word that covers that, and given the existing ScrollViewer naming, this is being called just *Scrolling*View. And the word "scroll" implies "pan" throughout.
+  - `ScrollView` performs scrolling, panning, and zooming. There's no good word that covers that, and 
+  given the existing ScrollViewer naming, this is being called just *Scrolling*View. And the word 
+  "scroll" implies "pan" throughout.
   - This new API will largely mirror the existing control to minimize barriers to adoption.
-  - The API will differ in key areas that we believe will address top points of developer confusion with the existing control and/or provide meaningful improvements. For each scenario in this spec the code for both the new `ScrollView` (new control) and the existing ScrollViewer (existing control) are provided if different.
+  - The API will differ in key areas that we believe will address top points of developer confusion 
+  with the existing control and/or provide meaningful improvements. For each scenario in this spec 
+  the code for both the new `ScrollView` (new control) and the existing ScrollViewer (existing control) 
+  are provided if different.
 
 # Table of Contents
 
@@ -52,17 +68,28 @@ A few key points:
 
 `ScrollView` is a container control that lets the user scroll (and pan), and zoom its content.
 
-A `ScrollView` enables content to be displayed in a smaller area than its actual size. When the content of the `ScrollView` is not entirely visible, it displays scrollbars that the user can use to move the content area that is visible. The user can use touch to pan and zoom the content, keyboard and mouse to scroll the content (scroll bars or mouse wheel), and mouse wheel and keyboard to zoom the content.
+A `ScrollView` enables content to be displayed in a smaller area than its actual size. When the content 
+of the `ScrollView` is not entirely visible, it displays scrollbars that the user can use to move the 
+content area that is visible. The user can use touch to pan and zoom the content, keyboard and mouse 
+to scroll the content (scroll bars or mouse wheel), and mouse wheel and keyboard to zoom the content.
 
-The area that includes all of the content of the `ScrollView` is the *extent*. The visible area of the content is the *viewport*.
+The area that includes all of the content of the `ScrollView` is the *extent*. The visible area of the 
+content is the *viewport*.
 
 ![Viewport and Extent](images/ViewportAndExtent.png)
 
-A second kind of scrolling element, the `ScrollPresenter`, is more primitive, providing just clipping and translation of content, and not providing scroll bars and other features found in a `ScrollView`. A `ScrollView` typically uses a `ScrollPresenter` as part of its implementation (in its ControlTemplate). `ScrollPresenter` is in a [separate spec](ScrollPresenter.md).
+A second kind of scrolling element, the `ScrollPresenter`, is more primitive, providing just clipping 
+and translation of content, and not providing scroll bars and other features found in a `ScrollView`. 
+A `ScrollView` typically uses a `ScrollPresenter` as part of its implementation (in its ControlTemplate). 
+`ScrollPresenter` is in a [separate spec](ScrollPresenter.md).
 
-The `ScrollView` adds the default user interaction widgets (scrollbars, scroll indicator, etc.) and policy. As a Control it can be templated and can receive keyboard focus. It has the built-in logic to decide whether to scroll the viewport or move focus in response to a key event. It sets the properties on its `ScrollPresenter` to values chosen to match common usage, for example the basic `<ScrollView/>` is configured for vertical scrolling. 
+The `ScrollView` adds the default user interaction widgets (scrollbars, scroll indicator, etc.) and policy. 
+As a Control it can be templated and can receive keyboard focus. It has the built-in logic to decide whether 
+to scroll the viewport or move focus in response to a key event. It sets the properties on its `ScrollPresenter` 
+to values chosen to match common usage, for example the basic `<ScrollView/>` is configured for vertical scrolling. 
 
-Most of the time you simply wrap content with a `ScrollView` to enable a default scrolling experience when the content is too large to fit in the user visible area.
+Most of the time you simply wrap content with a `ScrollView` to enable a default scrolling experience when 
+the content is too large to fit in the user visible area.
 
 ```xml
 <mux:ScrollView>
@@ -76,7 +103,8 @@ This section focuses on properties that let you define the visual layout of the 
 
 ## Setting the scrollable content
 
-This example sets a `Rectangle` as the content of the `ScrollView` control. The user only sees a 500x400 portion of that rectangle and can scroll to see the rest of it.
+This example sets a `Rectangle` as the content of the `ScrollView` control. The user only sees a 
+500x400 portion of that rectangle and can scroll to see the rest of it.
 
 *`ScrollView` (new control)*
 
@@ -97,11 +125,17 @@ This example sets a `Rectangle` as the content of the `ScrollView` control. The 
 
 ## Vertical layout
 
-The layout of the `ScrollView`'s content can be vertical, horizontal, both, or neither (for an example of neither, see the later Photo Viewer example). 
+The layout of the `ScrollView`'s content can be vertical, horizontal, both, or neither (for an example of 
+neither, see the later Photo Viewer example). 
 
-By default the `ScrollView`'s content layout (orientation) is set to Vertical, which means that the user can scroll the content up and down. Horizontal means left and right.
+By default the `ScrollView`'s content layout (orientation) is set to Vertical, which means that the user 
+can scroll the content up and down. Horizontal means left and right.
 
-In the following example, the `ContentOrientation` property is left at its default value of Vertical, with an ItemsRepeater as the `ScrollView`'s Content. The UniformGridLayout for the ItemsRepeater positions the items horizontally in a row until it runs out of space (500px in this example), then positions the next item on the next row. The ItemsRepeater may then be taller than the 400px that the user can see, but the user can then scroll the content vertically.
+In the following example, the `ContentOrientation` property is left at its default value of Vertical, 
+with an ItemsRepeater as the `ScrollView`'s Content. The UniformGridLayout for the ItemsRepeater positions 
+the items horizontally in a row until it runs out of space (500px in this example), then positions 
+the next item on the next row. The ItemsRepeater may then be taller than the 400px that the user can see, 
+but the user can then scroll the content vertically.
 
 **`ScrollView` markup (new)**
 
@@ -121,7 +155,8 @@ Identical to above.
 
 ## Horizontal layout
 
-In this example the content is a StackPanel that is laying out its items horizontally. The `ScrollView`'s ContentOrientation property is set to Horizontal to allow the content to grow horizontally as much as needed.
+In this example the content is a StackPanel that is laying out its items horizontally. The `ScrollView`'s 
+ContentOrientation property is set to Horizontal to allow the content to grow horizontally as much as needed.
 
 *`ScrollView` (new)*
 
@@ -154,9 +189,13 @@ In this example the content is a StackPanel that is laying out its items horizon
 
 ## Two-dimensional (unconstrained) layout
 
-In this example the ContentOrientation is set to Both, indicating that the content can be scrolled both horizontally and vertically. The content's layout is unconstrained, meaning that it can be as wide and high as it wants to be, though the user will only be able to see what fits into the 500x400 viewport.
+In this example the ContentOrientation is set to Both, indicating that the content can be scrolled 
+both horizontally and vertically. The content's layout is unconstrained, meaning that it can be as 
+wide and high as it wants to be, though the user will only be able to see what fits into the 
+500x400 viewport.
 
-The Image's natural size may be 2880 x 1800 and would be rendered using that size, but only 500x400 of the image would be displayed at a time.
+The Image's natural size may be 2880 x 1800 and would be rendered using that size, but only 500x400 
+of the image would be displayed at a time.
 
 
 *`ScrollView` (new)*
@@ -180,8 +219,10 @@ The Image's natural size may be 2880 x 1800 and would be rendered using that siz
 In this example the image will scale to fill the viewport while preserving its aspect ratio. 
 
 This is accomplished by:
-- Setting the ContentOrientation to None, indicating that the content should be constrained to fit within the `ScrollView`'s space
-- Setting the Image's Stretch to Uniform, indicating that it should stretch up or down to fill its space without changing shape. 
+- Setting the ContentOrientation to None, indicating that the content should be constrained to fit 
+within the `ScrollView`'s space
+- Setting the Image's Stretch to Uniform, indicating that it should stretch up or down to fill its 
+space without changing shape. 
 
 Since ZoomMode is enabled, the user can zoom in and then scroll.
 
@@ -196,7 +237,8 @@ Since ZoomMode is enabled, the user can zoom in and then scroll.
 
 The following example is similar but uses a Viewbox control rather than an Image.
 
-Or more generally for any XAML content a [Viewbox](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Viewbox) could  be used. The content will be scaled to fit into the viewport, but the user can then zoom in and scroll through it.
+Or more generally for any XAML content a [Viewbox](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Viewbox) 
+could  be used. The content will be scaled to fit into the viewport, but the user can then zoom in and scroll through it.
 
 ```xml
 <mux:ScrollView ContentOrientation="None" ZoomMode="Enabled">
@@ -208,8 +250,9 @@ Or more generally for any XAML content a [Viewbox](https://docs.microsoft.com/uw
 
 *ScrollViewer (existing)*
 
-In the past this required inserting a Viewbox and binding its MaxHeight/MaxWidth to the ViewportHeight/ViewportWidth of the ScrollViewer which is just trying to constrain 
-the layout of Viewbox to the size of the viewport. Having a "None" option on the `ScrollView`'s 'ContentOrientation enables the same thing in a more performant way with less markup/code.
+In the past this required inserting a Viewbox and binding its MaxHeight/MaxWidth to the ViewportHeight/ViewportWidth 
+of the ScrollViewer which is just trying to constrain the layout of Viewbox to the size of the viewport. Having a "None" 
+option on the `ScrollView`'s 'ContentOrientation enables the same thing in a more performant way with less markup/code.
 
 ```xml
 <ScrollViewer x:Name="outputScrollViewer" HorizontalScrollBarVisibility="Auto">
@@ -222,24 +265,30 @@ the layout of Viewbox to the size of the viewport. Having a "None" option on the
 
 ## Controlling the presence of scroll bars
 
-By default, a `ScrollView` has [ScrollBar](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.ScrollBar) controls that allow the user to move the content within the `ScrollView` using the mouse or pen. A `ScrollBar` does not support touch-based user interactions though.
+By default, a `ScrollView` has [ScrollBar](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.ScrollBar) 
+controls that allow the user to move the content within the `ScrollView` using the mouse or pen. 
+A `ScrollBar` does not support touch-based user interactions though.
 
 ### Using the default Auto settings
 
-The default value of the Horizontal/VerticalScrollBarVisibility properties is 'Auto'. The following pictures show examples of this default behavior for the scroll bars in a `ScrollView`. 
+The default value of the Horizontal/VerticalScrollBarVisibility properties is 'Auto'. The following 
+pictures show examples of this default behavior for the scroll bars in a `ScrollView`. 
 
-1.  The `ScrollView`'s content is arranged to stay within the width of the viewport but not the height. Only the vertical scroll bar appears.
+1.  The `ScrollView`'s content is arranged to stay within the width of the viewport but not the height. 
+Only the vertical scroll bar appears.
 
 ![vertical scroll bar](images/VerticalScrollBar.png)
 
-2.  Because the `ScrollView`'s content is arranged larger than the viewport in both directions, the two scroll bars and their separator appear.
+2.  Because the `ScrollView`'s content is arranged larger than the viewport in both directions, 
+the two scroll bars and their separator appear.
 
 ![both scroll bars and separator](images/BothScrollBars.png)
 
 
 ### Hiding both scroll bars
 
-In this example the scroll bars are hidden, meaning that it won't be possible to scroll the content with scroll bars. Scrolling by other means is still permitted.
+In this example the scroll bars are hidden, meaning that it won't be possible to scroll the content 
+with scroll bars. Scrolling by other means is still permitted.
 
 *`ScrollView` (new)*
 
@@ -268,7 +317,8 @@ In this example the scroll bars are hidden, meaning that it won't be possible to
 This section focuses on properties that let you define the user interaction capabilities with the `ScrollView`.
 
 ## Controlling user's ability to zoom
-Enable zooming through user interaction using the `ZoomMode` property (which is Disabled by default). Changes to the ZoomMode property take effect immediately and may affect an on-going user interaction.
+Enable zooming through user interaction using the `ZoomMode` property (which is Disabled by default). 
+Changes to the ZoomMode property take effect immediately and may affect an on-going user interaction.
 
 *`ScrollView` (new)*
 
@@ -287,7 +337,8 @@ Enable zooming through user interaction using the `ZoomMode` property (which is 
 ```
 
 ## Controlling the Minimum and Maximum Zoom Factor
-Use the `MinZoomFactor` and `MaxZoomFactor` properties to control the amount the user may zoom the content. These properties are effective for both user interactions and programmatic API calls.
+Use the `MinZoomFactor` and `MaxZoomFactor` properties to control the amount the user may zoom the content. 
+These properties are effective for both user interactions and programmatic API calls.
 
 *`ScrollView` (new)*
 
@@ -310,17 +361,23 @@ Use the `MinZoomFactor` and `MaxZoomFactor` properties to control the amount the
 
 ## Controlling the user's ability to scroll
 
-The `ScrollView`'s HorizontalScrollMode and VerticalScrollMode properties affect the user interactivity of the control. They do not affect its layout.
+The `ScrollView`'s HorizontalScrollMode and VerticalScrollMode properties affect the user interactivity 
+of the control. They do not affect its layout.
 
-HorizontalScrollMode determines whether the user can interact with the control with touch, mouse wheel, scroll bar, etc. to scroll the content horizontally. Similarly VerticalScrollMode is for the vertical direction. The content can still be scrolled programatically though.
+HorizontalScrollMode determines whether the user can interact with the control with touch, mouse wheel, 
+scroll bar, etc. to scroll the content horizontally. Similarly VerticalScrollMode is for the vertical 
+direction. The content can still be scrolled programatically though.
 
 The possible values are Enabled and Disabled, and the default value for both directions is Enabled.
 
-When the scroll mode is Enabled and the content is smaller than the viewport, the user can still wiggle (overpan) the content with touch input.
+When the scroll mode is Enabled and the content is smaller than the viewport, the user can still 
+wiggle (overpan) the content with touch input.
 
-Changes to the HorizontalScrollMode and VerticalScrollMode properties take effect immediately and may affect an on-going user interaction.
+Changes to the HorizontalScrollMode and VerticalScrollMode properties take effect immediately and 
+may affect an on-going user interaction.
 
-This example shows vertical-only scrolling. Even though the content is wider than the viewport, the user cannot scroll horizontally.
+This example shows vertical-only scrolling. Even though the content is wider than the viewport, 
+the user cannot scroll horizontally.
 
 *`ScrollView` (new)*
 
@@ -334,7 +391,8 @@ This example shows vertical-only scrolling. Even though the content is wider tha
 </mux:ScrollView>
 ```
 
-This example shows horizontal-only scrolling. Even if the content is taller than the viewport, the user cannot scroll vertically.
+This example shows horizontal-only scrolling. Even if the content is taller than the viewport, 
+the user cannot scroll vertically.
 
 *`ScrollView` (new)*
 
@@ -350,7 +408,9 @@ This example shows horizontal-only scrolling. Even if the content is taller than
 
 ## Turning off built-in MouseWheel support
 
-In this example the mouse wheel is disabled from scrolling the `ScrollView`. This allows the PointerWheelChanged events to be processed to respond to mouse-wheel input in a custom way while still leaving Pen and Touch inputs active for the `ScrollView`.
+In this example the mouse wheel is disabled from scrolling the `ScrollView`. This allows the PointerWheelChanged 
+events to be processed to respond to mouse-wheel input in a custom way while still leaving Pen and Touch inputs 
+active for the `ScrollView`.
 
 *`ScrollView` (new)*
 
@@ -362,15 +422,22 @@ In this example the mouse wheel is disabled from scrolling the `ScrollView`. Thi
 </mux:ScrollView>
 ```
 
-The most common scenario is an experience like the Microsoft Store application where several horizontally scrollable lists are stacked vertically. By default the mouse wheel will scroll an inner horizontal list, but the user expects it to vertically scroll the outer list.
+The most common scenario is an experience like the Microsoft Store application where several horizontally 
+scrollable lists are stacked vertically. By default the mouse wheel will scroll an inner horizontal list, 
+but the user expects it to vertically scroll the outer list.
 
 ![Xbox Store](images/MicrosoftStore.jpg)
 
-In this example, the orange rectangle represents an inner `ScrollView` for a horizontal ListView. The red rectangle represents an outer vertical `ScrollView`. By default, the inner `ScrollView` would scroll horizontally with the mouse-wheel, but in this case the app wants the outer vertical `ScrollView` to scroll instead. So instead set innerScrollView.IgnoredInputKinds = ScrollingInputKinds.MouseWheel.
+In this example, the orange rectangle represents an inner `ScrollView` for a horizontal ListView. The red 
+rectangle represents an outer vertical `ScrollView`. By default, the inner `ScrollView` would scroll 
+horizontally with the mouse-wheel, but in this case the app wants the outer vertical `ScrollView` to 
+scroll instead. So instead set innerScrollView.IgnoredInputKinds = ScrollingInputKinds.MouseWheel.
 
 ## Turning off built-in Pen support
 
-In this example from a canvas-based design app, pen input is being used to directly draw on the scrollable surface or perform lasso selection instead of scrolling it. MouseWheel, Touch, etc. inputs remain active for scrolling.
+In this example from a canvas-based design app, pen input is being used to directly draw on the scrollable 
+surface or perform lasso selection instead of scrolling it. MouseWheel, Touch, etc. inputs remain active 
+for scrolling.
 
 ![Fonte app](images/FonteApp.png)
 
@@ -391,17 +458,22 @@ N/A. Non-intuitive (and even non-trivial) code would be needed to achieve these.
 
 ## Disabling scroll chaining
 
-A `ScrollView` can be in the content of (nested within) another `ScrollView`. In this configuration, scrolling can be "chained". For example, once the user scrolls the inner `ScrollView` up to the top, the outer `ScrollView` starts to scroll up.
+A `ScrollView` can be in the content of (nested within) another `ScrollView`. In this configuration, 
+scrolling can be "chained". For example, once the user scrolls the inner `ScrollView` up to the top, 
+the outer `ScrollView` starts to scroll up.
 
 Chaining can be disabled, though, as shown in the following examples.
 
-This example shows a UI with a horizontal pivot control of pages. The first page's content also contains a horizontally scrolling list that a user should be able to scroll left/right. When the user reaches the end of the horizontal list it should **not** cause the page to change.
+This example shows a UI with a horizontal pivot control of pages. The first page's content also 
+contains a horizontally scrolling list that a user should be able to scroll left/right. When the 
+user reaches the end of the horizontal list it should **not** cause the page to change.
 
 ![enter image description here](images/HScrollInsidePivot.png)
 
 > **Credit**: Scenario and image taken from [this StackOverflow question](https://stackoverflow.com/questions/35207827/disable-pivot-swipe-during-scrolling-on-uwp-app/35765990#35765990)
 
-This behavior is achieved by disabling horizontal scroll chaining on the page's `ScrollView` (the inner `ScrollView`).
+This behavior is achieved by disabling horizontal scroll chaining on the page's `ScrollView` 
+(the inner `ScrollView`).
 
 *`ScrollView` (new)*
 
@@ -435,7 +507,8 @@ This behavior is achieved by disabling horizontal scroll chaining on the page's 
 
 ## Controlling zoom chaining between nested scrollers
 
-Zoom chaining is similar to scroll chaining. For example once the inner control is zoomed out to its maximum, the outer control is zoomed out.
+Zoom chaining is similar to scroll chaining. For example once the inner control is zoomed out to 
+its maximum, the outer control is zoomed out.
 
 In the following example zoom chaining is disabled.
 
@@ -471,7 +544,10 @@ In the following example zoom chaining is disabled.
 
 ## Controlling railing behavior
 
-When touch panning is enabled in both vertical and horizontal directions, by default the user can pan in one direction at a time, but not both at the same time (the user can't pan diagonally). This can be controlled with the `Horizontal/VerticalScrollRailMode` properties. Both properties default to Enabled.
+When touch panning is enabled in both vertical and horizontal directions, by default the user can 
+pan in one direction at a time, but not both at the same time (the user can't pan diagonally). 
+This can be controlled with the `Horizontal/VerticalScrollRailMode` properties. Both properties 
+default to Enabled.
 
 In this example, all railing is turned off, so the user can always pan in all directions.
 
@@ -502,11 +578,15 @@ In this example, all railing is turned off, so the user can always pan in all di
 
 When the content of a `ScrollView` changes, it may or may not be desirable to change the content offset.
 
-For example, a `ScrollView` can be used to make a list of items scrollable, and the list of items could change. Maybe an item is added which is earlier than what is currently displayed (lower viewport offset), or maybe later. Often, for either case, you want the content being shown not to change.
+For example, a `ScrollView` can be used to make a list of items scrollable, and the list of items could 
+change. Maybe an item is added which is earlier than what is currently displayed (lower viewport offset), 
+or maybe later. Often, for either case, you want the content being shown not to change.
 
-In the following example, the element in the middle of the viewport, in the vertical list, remains anchored vertically when the source collection is modified.
+In the following example, the element in the middle of the viewport, in the vertical list, remains 
+anchored vertically when the source collection is modified.
 
-Note that this behavior depends on the [UIElement.CanBeScrollAnchor](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.UIElement.CanBeScrollAnchor) being set, which is handled by the ItemsRepeater.
+Note that this behavior depends on the [UIElement.CanBeScrollAnchor](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.UIElement.CanBeScrollAnchor) 
+being set, which is handled by the ItemsRepeater.
 
 *`ScrollView` (new)*
 
@@ -530,13 +610,16 @@ Identical to above.
 
 # Using Layout-centric Properties and Events in Code
 
-The samples in this section focus on using properties and events that relate to the layout aspects of the `ScrollView` control.
+The samples in this section focus on using properties and events that relate to the layout aspects 
+of the `ScrollView` control.
 
 ![ScrollView Properties](images/ScrollViewProps.png)
 
 ## Shrink the extents by a certain percentage of the current factor
 
-This example defines a DecreaseZoomFactor method that decreases the content's zoom factor by the provided percentage. For instance, if the current zoom factor is 5, calling DecreaseZoomFactor(0.1) reduces the zoom factor by 10%, to 4.5, using the content's center in the scaling operation.
+This example defines a DecreaseZoomFactor method that decreases the content's zoom factor by the 
+provided percentage. For instance, if the current zoom factor is 5, calling DecreaseZoomFactor(0.1) 
+reduces the zoom factor by 10%, to 4.5, using the content's center in the scaling operation.
 
 *`ScrollView` (new)*
 
@@ -563,7 +646,8 @@ private void DecreaseZoomFactor(float percent)
 
 ## Incrementally load more data
 
-In this example more data is loaded when the user has scrolled off 90% of the content. It uses the `ScrollView`'s ViewChanged event which gets raised whenever the _view_ changed. 
+In this example more data is loaded when the user has scrolled off 90% of the content. It uses 
+the `ScrollView`'s ViewChanged event which gets raised whenever the _view_ changed. 
 The HorizontalOffset, VerticalOffset and ZoomFactor trio constitute the view.
 
 *`ScrollView` (new)*
@@ -626,7 +710,9 @@ private void ScrollViewer_DirectManipulationCompleted(object sender, object args
 
 ### Immediately Jumping to an Offset 
 
-In this example the `ScrollView` control is used in a word processor which allows the user to search for a term in the text document. The application can jump to scrolling offsets in order to bring the searched term into view using the `ScrollTo` method.
+In this example the `ScrollView` control is used in a word processor which allows the user to search 
+for a term in the text document. The application can jump to scrolling offsets in order to bring the 
+searched term into view using the `ScrollTo` method.
 
 *`ScrollView` (new)*
 
@@ -665,11 +751,14 @@ private void JumpToFirstSearchTermOccurrence(string searchTerm)
 
 ### Animating to an offset
 
-In this example a custom list control with a `ScrollView` in its control template animates the vertical offset to special values when processing the Home and End keystrokes.
+In this example a custom list control with a `ScrollView` in its control template animates the 
+vertical offset to special values when processing the Home and End keystrokes.
 
-More precisely, the Home key animates to the top of the content excluding the top header and presenving the current horizontal offset. Thus the top header ends up being scrolled off.
+More precisely, the Home key animates to the top of the content excluding the top header and presenving 
+the current horizontal offset. Thus the top header ends up being scrolled off.
 
-The End key similarly animates to the bottom of the content exclusing the bottom header and presenving the current horizontal offset. 
+The End key similarly animates to the bottom of the content exclusing the bottom header and presenving 
+the current horizontal offset. 
 
 *`ScrollView` (new)*
 
@@ -717,9 +806,12 @@ protected override void OnKeyUp(KeyRoutedEventArgs e)
 
 ### Jump by some delta of the current offset (no animation)
 
-A custom horizontal list control with a `ScrollView` in its control template jumps the horizontal offset by special values when processing the Left and Right Arrow keystrokes, for a FlipView-like experience.
+A custom horizontal list control with a `ScrollView` in its control template jumps the horizontal offset 
+by special values when processing the Left and Right Arrow keystrokes, for a FlipView-like experience.
 
-Both provided offsets are clamped by the ScrollBy method according to the content's extent. Thus the `ScrollView` will not jump to offsets beyond the boundaries of its content - instead it will jump to the clamped offsets.
+Both provided offsets are clamped by the ScrollBy method according to the content's extent. Thus the 
+`ScrollView` will not jump to offsets beyond the boundaries of its content - instead it will jump to 
+the clamped offsets.
 
 *`ScrollView` (new)*
 
@@ -771,14 +863,22 @@ protected override void OnKeyUp(KeyRoutedEventArgs e)
 
 ### Animating with a custom curve to a new offset by some delta of the current
 
-The changes to the Value of a Slider trigger the animation of the `ScrollView`'s VerticalOffset, using custom animation durations.
+The changes to the Value of a Slider trigger the animation of the `ScrollView`'s VerticalOffset, 
+using custom animation durations.
 
-When animating, rather than jumping like in the prior example, the provided offsets are not clamped according to the current content extent. The content may first animate to an out-of-bounds target and then animate back to the closest in-bounds offsets.
+When animating, rather than jumping like in the prior example, the provided offsets are not clamped 
+according to the current content extent. The content may first animate to an out-of-bounds target and 
+then animate back to the closest in-bounds offsets.
 
-When ScrollBy or ScrollTo triggers an animation (as opposed to a jump), the ScrollAnimationStarting event is raised asynchronously just before the animation starts. In that event handler, the animation curve can be customized.
+When ScrollBy or ScrollTo triggers an animation (as opposed to a jump), the ScrollAnimationStarting 
+event is raised asynchronously just before the animation starts. In that event handler, the animation 
+curve can be customized.
 
-The ScrollingScrollAnimationStartingEventArgs.Animation provided in the ScrollAnimationStarting event is always of type Vector3KeyFrameAnimation, but it can be overwritten in that event handler to any type of CompositionAnimation. Or it can be customized as is done in this example.
-The `ScrollView`'s HorizontalOffset and VerticalOffset properties will land on values according to that custom animation, whether they are the original target values or not.
+The ScrollingScrollAnimationStartingEventArgs.Animation provided in the ScrollAnimationStarting event 
+is always of type Vector3KeyFrameAnimation, but it can be overwritten in that event handler to any type 
+of CompositionAnimation. Or it can be customized as is done in this example.
+The `ScrollView`'s HorizontalOffset and VerticalOffset properties will land on values according to that 
+custom animation, whether they are the original target values or not.
 
 *`ScrollView` (new)*
 
@@ -812,7 +912,10 @@ Not supported
 
 ### Animating the Offsets with Additional Velocity
 
-In this example the `ScrollView`'s scrolling velocity is driven by a bi-dimensional joystick widget. The more the joystick is off-center, the higher the `ScrollView`'s scrolling velocity (in both directions). You can also think of the "joystick" here as the compass-like cursor you might see when clicking the mouse-wheel to initiate a scrolling mode.
+In this example the `ScrollView`'s scrolling velocity is driven by a bi-dimensional joystick widget. 
+The more the joystick is off-center, the higher the `ScrollView`'s scrolling velocity (in both directions). 
+You can also think of the "joystick" here as the compass-like cursor you might see when clicking the 
+mouse-wheel to initiate a scrolling mode.
 
 *`ScrollView` (new)*
 
@@ -892,7 +995,8 @@ private void ZoomFactorSlider_ValueChanged(object sender, RangeBaseValueChangedE
 
 ### Animating to zoom factor
 
-A custom map control with a `ScrollView` in its control template animates the zoom factor to special values when processing the Ctrl+Home and Ctrl+End keystrokes.
+A custom map control with a `ScrollView` in its control template animates the zoom factor to special 
+values when processing the Ctrl+Home and Ctrl+End keystrokes.
 
 *`ScrollView` (new)*
 
@@ -952,7 +1056,8 @@ protected override void OnKeyUp(KeyRoutedEventArgs e)
 
 ### Jumping by zoom factor delta
 
-A custom map control with a `ScrollView` in its control template jumps immediately (no animation) the zoom factor by special values when processing the Ctrl+Minus and Ctrl+Plus keystrokes.
+A custom map control with a `ScrollView` in its control template jumps immediately (no animation) 
+the zoom factor by special values when processing the Ctrl+Minus and Ctrl+Plus keystrokes.
 
 *`ScrollView` (new)*
 
@@ -1015,8 +1120,11 @@ protected override void OnKeyUp(KeyRoutedEventArgs e)
 
 A Slider's Value changes are used to animate the `ScrollView`'s ZoomFactor, using custom animations.
 
-The ScrollingZoomAnimationStartingEventArgs.Animation provided in the ZoomAnimationStarting event is always of type ScalarKeyFrameAnimation. It can be customized or completely overwritten (to any type of CompositionAnimation) as it is done in this example.
-The `ScrollView`'s ZoomFactor property will land on a value according to that custom animation, whether it is the original target value or not.
+The ScrollingZoomAnimationStartingEventArgs.Animation provided in the ZoomAnimationStarting event 
+is always of type ScalarKeyFrameAnimation. It can be customized or completely overwritten (to any 
+type of CompositionAnimation) as it is done in this example.
+The `ScrollView`'s ZoomFactor property will land on a value according to that custom animation, 
+whether it is the original target value or not.
 
 *`ScrollView` (new)*
 
@@ -1045,7 +1153,8 @@ Not supported
 
 ### Animate zoom factor with additional velocity
 
-A `ScrollView`'s zooming velocity is animated by a unidimensional joystick widget. The more the joystick is off-center, the higher the `ScrollView`'s zooming velocity.
+A `ScrollView`'s zooming velocity is animated by a unidimensional joystick widget. The more the joystick is 
+off-center, the higher the `ScrollView`'s zooming velocity.
 
 *`ScrollView` (new)*
 
@@ -1093,12 +1202,16 @@ Not supported
 
 ## Customizing the bring-into-view participation
 
-When the framework raises a FrameworkElement.RequestBringIntoView event, `ScrollView` instances in the parent chain attempt to participate. Just before a `ScrollView` launches an animation for its participation, it raises its BringingIntoView event so the listener can customize that participation.
+When the framework raises a FrameworkElement.RequestBringIntoView event, `ScrollView` instances in the 
+parent chain attempt to participate. Just before a `ScrollView` launches an animation for its participation, 
+it raises its BringingIntoView event so the listener can customize that participation.
 
 ###  Adjust target offset for sticky headers
 
-This example shows a list control that supports sticky headers. Vertically sticky headers are group headers that stick at the top of the scrolling surface as long as items of that group are displayed. 
-The `ScrollView`'s BringingIntoView event is handled to adjust the target vertical offset to account for the sticky header's presence which the `ScrollView` is unaware of.
+This example shows a list control that supports sticky headers. Vertically sticky headers are group headers 
+that stick at the top of the scrolling surface as long as items of that group are displayed. 
+The `ScrollView`'s BringingIntoView event is handled to adjust the target vertical offset to account for the 
+sticky header's presence which the `ScrollView` is unaware of.
 
 *`ScrollView` (new)*
 
@@ -1116,14 +1229,19 @@ Not supported
 
 ### Detect end of bring-into-view contribution
 
-This example shows how you can know when a bring-into-view contribution starts and ends in order to temporarily turn off user interactions during the contribution.
+This example shows how you can know when a bring-into-view contribution starts and ends in order to temporarily 
+turn off user interactions during the contribution.
 
-A bring-into-view animation, if allowed to proceed in the BringingIntoView event handler, will cancel any scroll or zoom animation that might be in progress.
+A bring-into-view animation, if allowed to proceed in the BringingIntoView event handler, will cancel any scroll 
+or zoom animation that might be in progress.
 
-The BringingIntoView event is raised even when the default `ScrollView` contribution is nil because the targeted area is already in view.
+The BringingIntoView event is raised even when the default `ScrollView` contribution is nil because the targeted 
+area is already in view.
 
-The ScrollingBringingIntoViewEventArgs instance provided to the event handler exposes a correlation ID. This is the beginning of that correlation ID's lifetime.
-It ends in the subsequent ScrollCompleted event where it is exposed for a last time in the provided ScrollingScrollCompletedEventArgs instance.
+The ScrollingBringingIntoViewEventArgs instance provided to the event handler exposes a correlation ID. This is 
+the beginning of that correlation ID's lifetime.
+It ends in the subsequent ScrollCompleted event where it is exposed for a last time in the provided 
+ScrollingScrollCompletedEventArgs instance.
 
 *`ScrollView` (new)*
 
@@ -1150,14 +1268,18 @@ Not supported
 
 ## Customize the anchor selection
 
-The anchor element in a `ScrollView` is used to maintain the content of the viewport when the scrolling content changes. For example in a list, the center item's position on screen can be maintained when items earlier in the list are removed.
+The anchor element in a `ScrollView` is used to maintain the content of the viewport when the scrolling 
+content changes. For example in a list, the center item's position on screen can be maintained when items 
+earlier in the list are removed.
 
 The `ScrollView` raises its AnchorRequested event to allow handlers to influence the anchor selection. 
-AnchorRequested is raised within the `ScrollView`'s arrange pass, before its content is arranged and its properties are updated.
+AnchorRequested is raised within the `ScrollView`'s arrange pass, before its content is arranged and 
+its properties are updated.
 
 ### Set an explicit anchor element
 
-This example shows a Grid in a `ScrollView`, and uses a custom algorithm to select an anchor based on an internal currency element in the Grid.
+This example shows a Grid in a `ScrollView`, and uses a custom algorithm to select an anchor based on 
+an internal currency element in the Grid.
 
 *`ScrollView` (new)*
 
@@ -1174,13 +1296,19 @@ Same as above
 
 ### Populate the anchor candidates collection
 
-This example shows an application with a vertical StackPanel in a `ScrollView`. The AnchorCandidates collection is populated with all the children in the StackPanel and the `ScrollView` picks an anchor based on the VerticalAnchorRatio property.
+This example shows an application with a vertical StackPanel in a `ScrollView`. The AnchorCandidates 
+collection is populated with all the children in the StackPanel and the `ScrollView` picks an anchor 
+based on the VerticalAnchorRatio property.
 
-Note that you can instead set the UIElement.CanBeScrollAnchor boolean property to True for all StackPanel children.
-Indeed, the `ScrollPresenter` inner component of the `ScrollView` implements the IScrollAnchorProvider interface and thus the XAML framework automatically calls its IScrollAnchorProvider.RegisterAnchorCandidate method for all UIElement children, direct or not, that have their CanBeScrollAnchor property set to True.
+Note that you can instead set the UIElement.CanBeScrollAnchor boolean property to True for all 
+StackPanel children.
+Indeed, the `ScrollPresenter` inner component of the `ScrollView` implements the IScrollAnchorProvider 
+interface and thus the XAML framework automatically calls its IScrollAnchorProvider.RegisterAnchorCandidate 
+method for all UIElement children, direct or not, that have their CanBeScrollAnchor property set to True.
 The `ScrollPresenter` and `ScrollViewer` elements are treated and behave the same way in that regard.
 
-`ScrollView` also has public RegisterAnchorCandidate/UnregisterAnchorCandidate methods that delegate to the inner `ScrollPresenter`’s methods.
+`ScrollView` also has public RegisterAnchorCandidate/UnregisterAnchorCandidate methods that delegate 
+to the inner `ScrollPresenter`’s methods.
 
 *`ScrollView` (new)*
 
@@ -1201,9 +1329,11 @@ Same as above
 
 ## Consuming the `ScrollView`'s Properties in Animations 
 
-The `ScrollView` exposes a read-only property called ExpressionAnimationSources of type Microsoft.UI.CompositionPropertySet. It can provide inputs to Composition expressions.
+The `ScrollView` exposes a read-only property called ExpressionAnimationSources of type 
+Microsoft.UI.CompositionPropertySet. It can provide inputs to Composition expressions.
 
-Note that the inner ScrollPresenter class has the same property and the `ScrollView` just returns the ScrollPresenter's value.
+Note that the inner ScrollPresenter class has the same property and the `ScrollView` just returns 
+the ScrollPresenter's value.
 
 ### Vertical offset drives opacity
 
@@ -1255,11 +1385,15 @@ private void ScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
 
 # Default `ScrollView` control template
 
-`ScrollView` uses a `ScrollPresenter` ([defined in this spec](.\ScrollPresenter.md)), two ScrollBars, a Border, all inside a Grid.
+`ScrollView` uses a `ScrollPresenter` ([defined in this spec](.\ScrollPresenter.md)), two ScrollBars, 
+a Border, all inside a Grid.
 
-The horizontal scroll bar must be named PART_HorizontalScrollBar (similar for vertical). That element can either be a ScrollBar control or implement Microsoft.UI.Xaml.Controls.Primitives.IScrollController.
+The horizontal scroll bar must be named PART_HorizontalScrollBar (similar for vertical). That element 
+can either be a ScrollBar control or implement Microsoft.UI.Xaml.Controls.Primitives.IScrollController.
 
-An element that implements Microsoft.UI.Xaml.Controls.Primitives.IScrollController can provide richer user experiences than a ScrollBar. It can include inertia-driven offset changes and UI-thread independent scrolling through touch/pen.
+An element that implements Microsoft.UI.Xaml.Controls.Primitives.IScrollController can provide richer 
+user experiences than a ScrollBar. It can include inertia-driven offset changes and UI-thread independent 
+scrolling through touch/pen.
 
 
 ```xml
@@ -1344,7 +1478,9 @@ An element that implements Microsoft.UI.Xaml.Controls.Primitives.IScrollControll
 ### ScrollView.Content property
 Gets or sets the scrollable/zoomable content.
 
-The `ScrollView.Content` property is the Xaml markup content property, as indicated by `ScrollView` having the `[ContentProperty("Content")]` attribute set. This means that the following shorthand markup is equivalent to the subsequent markup syntax:
+The `ScrollView.Content` property is the Xaml markup content property, as indicated by `ScrollView` having 
+the `[ContentProperty("Content")]` attribute set. This means that the following shorthand markup is equivalent 
+to the subsequent markup syntax:
 
 ```xml
 <mux:ScrollView>
@@ -1365,9 +1501,13 @@ Gets or sets the preferred content orientation. Defaults to Vertical.
 
 The ContentOrientation property affects the ScrollPresenter's MeasureOverride behavior:
 
-When the Vertical orientation is applied, the ScrollPresenter.Content's available width is set to the ScrollPresenter's available width. Otherwise, the ScrollPresenter.Content's available width is infinity.
+When the Vertical orientation is applied, the ScrollPresenter.Content's available width is set to 
+the ScrollPresenter's available width. Otherwise, the ScrollPresenter.Content's available width is 
+infinity.
 
-When the Horizontal orientation is applied, the ScrollPresenter.Content's available height is set to the ScrollPresenter's available height. Otherwise, the ScrollPresenter.Content's available height is infinity.
+When the Horizontal orientation is applied, the ScrollPresenter.Content's available height is set to 
+the ScrollPresenter's available height. Otherwise, the ScrollPresenter.Content's available height is 
+infinity.
 
 ### ScrollView.HorizontalScrollMode (and VerticalScrollMode) property
 Gets or sets the ability to scroll horizontally/vertically through user input. Defaults to Enabled.
@@ -1376,23 +1516,28 @@ When set to Disabled, the user will not be able to scroll through user input.
 
 When HorizontalScrollMode is set to Enabled, the user will be able to pan horizontally with touch and a pen. 
 
-The user can also scroll horizontally with the mouse wheel and scroll bar as long as the ScrollableWidth property is strictly positive.
+The user can also scroll horizontally with the mouse wheel and scroll bar as long as the ScrollableWidth 
+property is strictly positive.
 
 When VerticalScrollMode is set to Enabled, the user will be able to pan vertically with touch and a pen. 
 
-The user can also scroll vertically with the mouse wheel and scroll bar as long as the ScrollableHeight property is strictly positive.
+The user can also scroll vertically with the mouse wheel and scroll bar as long as the ScrollableHeight 
+property is strictly positive.
 
 ### ScrollView.IgnoredInputKinds property
 Gets or sets the kinds of user input the control does not respond to. Defaults to None.
 
-Each input kind affects both scrolling and zooming capabilities. For instance, if the Pen flag is included, the user can no longer scroll nor zoom using the pen.
+Each input kind affects both scrolling and zooming capabilities. For instance, if the Pen flag is included, 
+the user can no longer scroll nor zoom using the pen.
 
 
 ### ScrollView.HorizontalScrollChainMode (and VerticalScrollChainMode) property
 
-Gets or sets the ability to chain horizontal scrolling to an outer `ScrollViewer` or `ScrollPresenter`. Defaults to Auto.
+Gets or sets the ability to chain horizontal scrolling to an outer `ScrollViewer` or `ScrollPresenter`. 
+Defaults to Auto.
 
-The outer component that picks up the scrolling through chaining can be either DirectManipulation-driven (example: `ScrollViewer`) or InteractionTracker-driven (example: `ScrollPresenter`).
+The outer component that picks up the scrolling through chaining can be either DirectManipulation-driven 
+(example: `ScrollViewer`) or InteractionTracker-driven (example: `ScrollPresenter`).
 
 | **Value** | **Meaning**                                                               |
 |-----------|---------------------------------------------------------------------------|
@@ -1403,9 +1548,11 @@ The outer component that picks up the scrolling through chaining can be either D
 
 ### ScrollView.ZoomChainMode property
 
-Gets or sets the ability to chain zooming to an outer `ScrollViewer` or `ScrollPresenter`. Defaults to Auto.
+Gets or sets the ability to chain zooming to an outer `ScrollViewer` or `ScrollPresenter`. 
+Defaults to Auto.
 
-The outer component that picks up the zooming through chaining can be either DirectManipulation-driven (example: `ScrollViewer`) or InteractionTracker-driven (example: `ScrollPresenter`).
+The outer component that picks up the zooming through chaining can be either DirectManipulation-driven 
+(example: `ScrollViewer`) or InteractionTracker-driven (example: `ScrollPresenter`).
 
 | **Value** | **Meaning**                                                               |
 |-----------|---------------------------------------------------------------------------|
@@ -1423,24 +1570,42 @@ Gets the most recently chosen UIElement for scroll anchoring after a layout pass
 
 Gets or sets ratio within the viewport where the anchor element is selected. Defaults to zero.
 
-When the HorizontalAnchorRatio is NaN, no horizontal anchoring is performed. Horizontal anchoring is performed when the property value is between 0 and 1.
-When it is 0.5, the middle of the anchor element is anchored to the middle of the viewport. That is the distance between the middle of the anchor and the middle of the viewport is kept constant.
-If the ScrollingAnchorRequestedEventArgs.Anchor property is set in the AnchorRequested event handler, it is picked as the anchor. Otherwise the `ScrollView` selects an anchor from the ScrollingAnchorRequestedEventArgs.AnchorCandidates collection which may have been altered in the event handler.
-For example when HorizontalAnchorRatio is 0.5, the selected anchor is the anchor candidate the closest to the middle of the viewport.
+When the HorizontalAnchorRatio is NaN, no horizontal anchoring is performed. Horizontal anchoring is 
+performed when the property value is between 0 and 1.
+When it is 0.5, the middle of the anchor element is anchored to the middle of the viewport. That is the 
+distance between the middle of the anchor and the middle of the viewport is kept constant.
+If the ScrollingAnchorRequestedEventArgs.Anchor property is set in the AnchorRequested event handler, 
+it is picked as the anchor. Otherwise the `ScrollView` selects an anchor from the 
+ScrollingAnchorRequestedEventArgs.AnchorCandidates collection which may have been altered in the event 
+handler.
+For example when HorizontalAnchorRatio is 0.5, the selected anchor is the anchor candidate the closest 
+to the middle of the viewport.
 
-0 and 1 have special meanings for the HorizontalAnchorRatio property. A value of 0 forces the HorizontalOffset to remain at 0 if it is already 0. Thus the left edge of the `ScrollView` content sticks to the left edge of the viewport.
-A value of 1 forces the HorizontalOffset to match the ScrollableWidth value if it is already equal to ScrollableWidth. Thus the right edge of the `ScrollView` content sticks to the right edge of the viewport.
-When HorizontalAnchorRatio has one of those two special values, the AnchorRequested event is not raised as no anchor is at play.
+0 and 1 have special meanings for the HorizontalAnchorRatio property. A value of 0 forces the HorizontalOffset 
+to remain at 0 if it is already 0. Thus the left edge of the `ScrollView` content sticks to the left edge 
+of the viewport.
+A value of 1 forces the HorizontalOffset to match the ScrollableWidth value if it is already equal to 
+ScrollableWidth. Thus the right edge of the `ScrollView` content sticks to the right edge of the viewport.
+When HorizontalAnchorRatio has one of those two special values, the AnchorRequested event is not raised 
+as no anchor is at play.
 
 
 ### ScrollView.AddScrollVelocity method
 
-Asynchronously adds scrolling velocity. The State property transitions to the ScrollingInteractionState.Inertia value during the resulting inertial scroll. Because it does not consume any CompositionAnimation, the ScrollAnimationStarting event is not raised.
+Asynchronously adds scrolling velocity. The State property transitions to the ScrollingInteractionState.Inertia 
+value during the resulting inertial scroll. Because it does not consume any CompositionAnimation, the 
+ScrollAnimationStarting event is not raised.
 
-By default the `ScrollView` control uses an inertia decay rate of (0.95, 0.95) for inertial scrolling operations. That default decay rate can be overwritten by providing a non-null inertiaDecayRate parameter to the AddScrollVelocity method.
-That custom decay rate is then applied during the duration of that scroll operation alone. If the inertial scroll is interrupted with a touch gesture or with a new AddScrollVelocity call, the application of that custom decay rate is cancelled. 
+By default the `ScrollView` control uses an inertia decay rate of (0.95, 0.95) for inertial scrolling operations. 
+That default decay rate can be overwritten by providing a non-null inertiaDecayRate parameter to the 
+AddScrollVelocity method.
+That custom decay rate is then applied during the duration of that scroll operation alone. If the inertial scroll 
+is interrupted with a touch gesture or with a new AddScrollVelocity call, the application of that custom decay 
+rate is cancelled. 
 
-Inertia decay rates affect the inertial velocity decrease (decay). Values must be between 0.0 and 1.0. The closer the value is to 1.0, the faster the deceleration. A value of 0.0 represents no decay and results in a constant velocity scroll.
+Inertia decay rates affect the inertial velocity decrease (decay). Values must be between 0.0 and 1.0. 
+The closer the value is to 1.0, the faster the deceleration. A value of 0.0 represents no decay and results 
+in a constant velocity scroll.
 
 ### ScrollView.ScrollableWidth (and ScrollableHeight) property
 
@@ -1459,32 +1624,53 @@ The same comments apply to the vertical dimension.
 
 ### ScrollView.AddZoomVelocity method
 
-Asynchronously adds zooming velocity. The State property transitions to the ScrollingInteractionState.Inertia value during the resulting inertial zoom. Because it does not consume any CompositionAnimation, the ZoomAnimationStarting event is not raised. 
+Asynchronously adds zooming velocity. The State property transitions to the ScrollingInteractionState.Inertia 
+value during the resulting inertial zoom. Because it does not consume any CompositionAnimation, the 
+ZoomAnimationStarting event is not raised. 
 
-When the centerPoint parameter is null, the methods ZoomTo, ZoomBy and AddZoomVelocity use the center of the viewport as the zoom center point.
+When the centerPoint parameter is null, the methods ZoomTo, ZoomBy and AddZoomVelocity use the center 
+of the viewport as the zoom center point.
 
-By default the `ScrollView` control uses an inertia decay rate of 0.95 for inertial zooming operations. That default decay rate can be overwritten by providing a non-null inertiaDecayRate parameter to the AddZoomVelocity method.
-That custom decay rate is then applied during the duration of that zoom operation alone. If the inertial zoom is interrupted with a touch gesture or with a new AddZoomVelocity call, the application of that custom decay rate is cancelled. 
+By default the `ScrollView` control uses an inertia decay rate of 0.95 for inertial zooming operations. 
+That default decay rate can be overwritten by providing a non-null inertiaDecayRate parameter to the 
+AddZoomVelocity method.
+That custom decay rate is then applied during the duration of that zoom operation alone. If the inertial 
+zoom is interrupted with a touch gesture or with a new AddZoomVelocity call, the application of that 
+custom decay rate is cancelled. 
 
-Inertia decay rates affect the inertial velocity decrease (decay). Values must be between 0.0 and 1.0. The closer the value is to 1.0, the faster the deceleration. A value of 0.0 represents no decay and results in a constant velocity zoom.
+Inertia decay rates affect the inertial velocity decrease (decay). Values must be between 0.0 and 1.0. 
+The closer the value is to 1.0, the faster the deceleration. A value of 0.0 represents no decay and 
+results in a constant velocity zoom.
 
-Changing the ZoomFactor does not affect the `ScrollView`'s ViewportWidth, ViewportHeight, ExtentWidth, ExtentHeight properties. It does potentially affect the HorizontalOffset, VerticalOffset, ScrollableWidth and ScrollableHeight properties.
+Changing the ZoomFactor does not affect the `ScrollView`'s ViewportWidth, ViewportHeight, ExtentWidth, 
+ExtentHeight properties. It does potentially affect the HorizontalOffset, VerticalOffset, ScrollableWidth 
+and ScrollableHeight properties.
 
-For instance, starting with HorizontalOffset=10, VerticalOffset=20, ZoomFactor=1 and changing the ZoomFactor to 2 with a centerPoint at (0, 0) results in HorizontalOffset=20, VerticalOffset=40.
+For instance, starting with HorizontalOffset=10, VerticalOffset=20, ZoomFactor=1 and changing the 
+ZoomFactor to 2 with a centerPoint at (0, 0) results in HorizontalOffset=20, VerticalOffset=40.
 
-The ScrollableWidth being defined as Max(0, ZoomFactor x ExtentWidth - ViewportWidth) is affected by the change too - it is increased.
+The ScrollableWidth being defined as Max(0, ZoomFactor x ExtentWidth - ViewportWidth) is affected by 
+the change too - it is increased.
 
-The ScrollableHeight being defined as Max(0, ZoomFactor x ExtentHeight - ViewportHeight) is affected by the change too - it is increased.
+The ScrollableHeight being defined as Max(0, ZoomFactor x ExtentHeight - ViewportHeight) is affected 
+by the change too - it is increased.
 
 
 ### ScrollView.AnchorRequested event
 
 Raised when the `ScrollView` is about to select an anchor element. 
 
-It exposes a ScrollingAnchorRequestedEventArgs.AnchorCandidates collection which is initialized with the elements that are registered as anchor candidates. That initial collection of candidates is populated with the `ScrollPresenter` children with the UIElement.CanBeScrollAnchor property set to True, and with elements explicitly registered with the ScrollView.RegisterAnchorCandidate method.
-The event handler can modify that collection to adjust the list of candidates for this anchor request. After it is executed, the `ScrollView` uses its HorizontalAnchorRatio and VerticalAnchorRatio properties to select an anchor among the final AnchorCandidates collection.
+It exposes a ScrollingAnchorRequestedEventArgs.AnchorCandidates collection which is initialized with 
+the elements that are registered as anchor candidates. That initial collection of candidates is 
+populated with the `ScrollPresenter` children with the UIElement.CanBeScrollAnchor property set to 
+True, and with elements explicitly registered with the ScrollView.RegisterAnchorCandidate method.
+The event handler can modify that collection to adjust the list of candidates for this anchor request. 
+After it is executed, the `ScrollView` uses its HorizontalAnchorRatio and VerticalAnchorRatio properties 
+to select an anchor among the final AnchorCandidates collection.
 
-Alternatively the AnchorRequested event handler can set the ScrollingAnchorRequestedEventArgs.Anchor property, initialized to null, to force the use of a particular element as the anchor. In that case the AnchorCandidates collection is ignored and the `ScrollView`'s selection process is skipped entirely. 
+Alternatively the AnchorRequested event handler can set the ScrollingAnchorRequestedEventArgs.Anchor 
+property, initialized to null, to force the use of a particular element as the anchor. In that case 
+the AnchorCandidates collection is ignored and the `ScrollView`'s selection process is skipped entirely. 
 
 
 ### ScrollView, additional properties
@@ -1553,7 +1739,8 @@ Alternatively the AnchorRequested event handler can set the ScrollingAnchorReque
 | CenterPoint | Gets the center point for the zoom factor change.
 | CorrelationId | Gets the correlation ID associated with the animated zoom factor change, previously returned by ZoomTo or ZoomBy.
 
-<br/>Used by the ZoomAnimationStarting event which is raised when a ZoomTo or ZoomBy call triggers an animation. Allows customization of that animation.
+Used by the ZoomAnimationStarting event which is raised when a ZoomTo or ZoomBy call triggers an 
+animation. Allows customization of that animation.
 
 
 ## ScrollingZoomCompletedEventArgs class
@@ -1562,28 +1749,37 @@ Alternatively the AnchorRequested event handler can set the ScrollingAnchorReque
 |------------|----------------------------------------------------------------------------|
 | CorrelationId | Gets the correlation ID associated with the zoom factor change, previously returned by ZoomTo, ZoomBy or AddZoomVelocity.
 
-<br/>Used by the ZooomCompleted event which is raised when the zoom factor changes caused by a ZoomTo, ZoomBy or AddZoomVelocity method call completed.
+Used by the ZooomCompleted event which is raised when the zoom factor changes caused by a ZoomTo, 
+ZoomBy or AddZoomVelocity method call completed.
 
 
 ## ScrollingBringingIntoViewEventArgs class
 
-Used by the BringingIntoView event which is raised when the `ScrollView` is about to participate in a bring-into-view request triggered by a FrameworkElement.RequestBringIntoView event. It allows customization of that participation.
+Used by the BringingIntoView event which is raised when the `ScrollView` is about to participate in 
+a bring-into-view request triggered by a FrameworkElement.RequestBringIntoView event. It allows 
+customization of that participation.
 
-Setting the SnapPointsMode property to ScrollngSnapPointsMode.Default causes the participating `ScrollView` to land on a mandatory snap point, if present.
+Setting the SnapPointsMode property to ScrollngSnapPointsMode.Default causes the participating 
+`ScrollView` to land on a mandatory snap point, if present.
 
 
 ### ScrollingBringingIntoViewEventArgs.Cancel
 
 Gets or sets a value indicating whether the participation must be cancelled or not.
 
-The BringingIntoView event handler can set the Cancel property to True to skip the participation of the `ScrollView` that raises the event. The request will still be processed potentially by parent ScrollViewer/ScrollView controls.
-Only the one participation that was about to start is cancelled.
+The BringingIntoView event handler can set the Cancel property to True to skip the participation 
+of the `ScrollView` that raises the event. The request will still be processed potentially by 
+parent ScrollViewer/ScrollView controls. Only the one participation that was about to start is cancelled.
 
-For example, the Cancel property can be set to True for a nested `ScrollView` that already has the target element partially in view, to prevent it from moving beyond that.
+For example, the Cancel property can be set to True for a nested `ScrollView` that already has the 
+target element partially in view, to prevent it from moving beyond that.
 Any outer `ScrollView` will still attempt to scroll the target element into its own view.
 
-On the other hand, setting BringIntoViewRequestedEventArgs.Handled to True stops the entire chain of participations.
-BringIntoViewRequestedEventArgs.Handled is typically set to True by a `ScrollViewer` or `ScrollView` control when it could not bring the target into its own viewport, not even partially. As a result potential parent participants do not try to bring the target into their view because it would be pointless.
+On the other hand, setting BringIntoViewRequestedEventArgs.Handled to True stops the entire chain 
+of participations.
+BringIntoViewRequestedEventArgs.Handled is typically set to True by a `ScrollViewer` or `ScrollView` 
+control when it could not bring the target into its own viewport, not even partially. As a result 
+potential parent participants do not try to bring the target into their view because it would be pointless.
 
 
 ### ScrollingBringingIntoViewEventArgs class, additional details
@@ -1599,8 +1795,10 @@ BringIntoViewRequestedEventArgs.Handled is typically set to True by a `ScrollVie
 
 ## ScrollingAnchorRequestedEventArgs class
 
-Used by the AnchorRequested event which is raised when the `ScrollView` is selecting an element to be anchored. Allows customization of that selection.
-If the event handler leaves the Anchor null, then the `ScrollView` selects an anchor from among the AnchorCandidates collection.
+Used by the AnchorRequested event which is raised when the `ScrollView` is selecting an element to 
+be anchored. Allows customization of that selection.
+If the event handler leaves the Anchor null, then the `ScrollView` selects an anchor from among the 
+AnchorCandidates collection.
 
 
 | **Member** | **Description**                                                            |
@@ -1608,15 +1806,23 @@ If the event handler leaves the Anchor null, then the `ScrollView` selects an an
 | AnchorCandidates | Gets the collection of anchor element candidates to pick from.
 | Anchor | Gets or sets the selected anchor element. Originally set to null.
 
-The AnchorCandidates collection is initialized with the elements that are registered as anchor candidates. That initial collection of candidates is populated with the `ScrollPresenter` children with the UIElement.CanBeScrollAnchor property set to True, and with elements explicitly registered with the ScrollView.RegisterAnchorCandidate method.
-The AnchorRequested event handler can modify that collection to adjust the list of candidates for the anchor request. After it is executed, the `ScrollView` uses its HorizontalAnchorRatio and VerticalAnchorRatio properties to select an anchor among the final AnchorCandidates collection.
+The AnchorCandidates collection is initialized with the elements that are registered as anchor 
+candidates. That initial collection of candidates is populated with the `ScrollPresenter` children 
+with the UIElement.CanBeScrollAnchor property set to True, and with elements explicitly registered 
+with the ScrollView.RegisterAnchorCandidate method.
+The AnchorRequested event handler can modify that collection to adjust the list of candidates for 
+the anchor request. After it is executed, the `ScrollView` uses its HorizontalAnchorRatio and 
+VerticalAnchorRatio properties to select an anchor among the final AnchorCandidates collection.
 
-Alternatively the AnchorRequested event handler can set the Anchor property, initialized to null, to force the use of a particular element as the anchor. In that case the AnchorCandidates collection is ignored and the `ScrollView`'s selection process is skipped entirely. 
+Alternatively the AnchorRequested event handler can set the Anchor property, initialized to null, 
+to force the use of a particular element as the anchor. In that case the AnchorCandidates collection 
+is ignored and the `ScrollView`'s selection process is skipped entirely. 
 
 
 ## ScrollingScrollOptions class
 
-When AnimationMode is Auto, the view change is animated when OS settings enable animations. When SnapPointsMode is Default, snap points are applied.
+When AnimationMode is Auto, the view change is animated when OS settings enable animations. 
+When SnapPointsMode is Default, snap points are applied.
 
 | **Member** | **Description**                                                            |
 |------------|----------------------------------------------------------------------------|
@@ -1626,7 +1832,8 @@ When AnimationMode is Auto, the view change is animated when OS settings enable 
 
 ## ScrollingScrollAnimationStartingEventArgs class
 
-Used by the ScrollAnimationStarting event which is raised when a ScrollTo or ScrollBy call triggers an animation. Allows customization of that animation.
+Used by the ScrollAnimationStarting event which is raised when a ScrollTo or ScrollBy call triggers 
+an animation. Allows customization of that animation.
 
 | **Member** | **Description**                                                            |
 |------------|----------------------------------------------------------------------------|
@@ -1638,7 +1845,8 @@ Used by the ScrollAnimationStarting event which is raised when a ScrollTo or Scr
 
 ## ScrollingScrollCompletedEventArgs class
 
-Used by the ScrollCompleted event which is raised when the offset changes caused by a ScrollTo, ScrollBy or AddScrollVelocity method call completed.
+Used by the ScrollCompleted event which is raised when the offset changes caused by a ScrollTo, 
+ScrollBy or AddScrollVelocity method call completed.
 
 | **Member** | **Description**                                                            |
 |------------|----------------------------------------------------------------------------|
@@ -1647,15 +1855,22 @@ Used by the ScrollCompleted event which is raised when the offset changes caused
 
 ## Correlation ID
 
-Each programmatic scroll or zoom change is associated with a particular correlation ID number. That number is provided when requesting a view change with ScrollTo, ScrollBy, AddScrollVelocity, ZoomTo, ZoomBy or AddZoomVelocity as a return value.
-A correlation ID is also provided in the BringingIntoView event raised at the beginning of a bring-into-view request participation. This marks the beginning of a correlation ID's lifetime.
+Each programmatic scroll or zoom change is associated with a particular correlation ID number. 
+That number is provided when requesting a view change with ScrollTo, ScrollBy, AddScrollVelocity, 
+ZoomTo, ZoomBy or AddZoomVelocity as a return value.
+A correlation ID is also provided in the BringingIntoView event raised at the beginning of a 
+bring-into-view request participation. This marks the beginning of a correlation ID's lifetime.
 
-That same number is then exposed in subsequent events like ScrollAnimationStarting and ScrollCompleted, or ZoomAnimationStarting and ZoomCompleted. This allows to match events with their triggering method call or request.
+That same number is then exposed in subsequent events like ScrollAnimationStarting and ScrollCompleted, 
+or ZoomAnimationStarting and ZoomCompleted. This allows to match events with their triggering method 
+call or request.
 
 The lifetime of a correlation ID always ends in a completion event: ScrollCompleted or ZoomCompleted.
 
-Note that lifetimes of correlation IDs can overlap. For example, two back-to-back ScrollTo calls will generate two correlation IDs with overlapping lifetimes.
-When a new view change is requested while an old one is still in progress, the old one is cancelled. That cancellation triggers a ScrollCompleted or ZoomCompleted event with the old CorrelationId.
+Note that lifetimes of correlation IDs can overlap. For example, two back-to-back ScrollTo calls will 
+generate two correlation IDs with overlapping lifetimes.
+When a new view change is requested while an old one is still in progress, the old one is cancelled. 
+That cancellation triggers a ScrollCompleted or ZoomCompleted event with the old CorrelationId.
 
 # API Details
 
@@ -1944,8 +2159,13 @@ unsealed runtimeclass Microsoft.UI.Xaml.Controls.ScrollView :
 
 ## Benefits of InteractionTracker
 
-Most ScrollViewer usage is indirect.  It happens simply because ScrollViewer is within another control's template. The old ScrollViewer works well enough for those scenarios.  However, when an app needs to directly use a ScrollViewer it can encounter the limitations that relate to what DManip supports.  A new InteractionTracker-based `ScrollView` could unlock a number of new capabilities that are otherwise not possible.
-These are benefits for an InteractionTracker-based scrolling/zooming control compared to the DirectManipulation-based WUX ScrollViewer.
+Most ScrollViewer usage is indirect.  It happens simply because ScrollViewer is within another 
+control's template. The old ScrollViewer works well enough for those scenarios.  However, when 
+an app needs to directly use a ScrollViewer it can encounter the limitations that relate to 
+what DManip supports.  A new InteractionTracker-based `ScrollView` could unlock a number of 
+new capabilities that are otherwise not possible.
+These are benefits for an InteractionTracker-based scrolling/zooming control compared to 
+the DirectManipulation-based WUX ScrollViewer.
 
 <table>
 <thead>
@@ -2009,9 +2229,11 @@ These are benefits for an InteractionTracker-based scrolling/zooming control com
 
 ### P1 Goals
 
-1.  Microsoft.UI.Xaml includes controls to support independent scrolling and zooming like the ScrollViewer/ScrollContentPresenter do in Windows.UI.Xaml and Microsoft.UI.Xaml.
+1.  Microsoft.UI.Xaml includes controls to support independent scrolling and zooming like the 
+crollViewer/ScrollContentPresenter do in Windows.UI.Xaml and Microsoft.UI.Xaml.
 
-2.  In the long term, these Microsoft.UI.Xaml scrolling/zooming controls can replace the ScrollViewer/ScrollContentPresenter used by some existing controls like the TextBox.
+2.  In the long term, these Microsoft.UI.Xaml scrolling/zooming controls can replace the 
+ScrollViewer/ScrollContentPresenter used by some existing controls like the TextBox.
 
 3.  App-developer-facing object models are similar to old ones to minimize adoption barrier.
 
@@ -2019,43 +2241,58 @@ These are benefits for an InteractionTracker-based scrolling/zooming control com
 
 ### P2 Goals
 
-1.  Get rid of internal hooks: As the individual controls are being lifted and shifted, we do not replicate the existing internal hooks they had with the ScrollViewer. Instead we add public API replacements.
+1.  Get rid of internal hooks: As the individual controls are being lifted and shifted, we do not 
+replicate the existing internal hooks they had with the ScrollViewer. Instead we add public API replacements.
 
 ### Non-Goals
 
-1.  100% API compatibility with MUX controls. Adjustments in existing object models are acceptable, including base type changes.
+1.  100% API compatibility with MUX controls. Adjustments in existing object models are acceptable, 
+including base type changes.
 
 2.  100% behavior compatibility with WUX controls.
 
-3.  Ability to transition to using a ScrollView for all existing controls that currently consume a ScrollViewer. For instance, not moving the Hub, Pivot, SemanticZoom controls is acceptable.
+3.  Ability to transition to using a ScrollView for all existing controls that currently consume a 
+ScrollViewer. For instance, not moving the Hub, Pivot, SemanticZoom controls is acceptable.
 
-4.  Preserve object models rarely exercised by app developers (i.e. object models rarely used by app developers, like ScrollContentPresenter, do not need to adhere as closely to the old object models).
+4.  Preserve object models rarely exercised by app developers (i.e. object models rarely used by app 
+developers, like ScrollContentPresenter, do not need to adhere as closely to the old object models).
 
 ## `ScrollView` responsibilities
 
-What are the `ScrollView`'s responsibilities and added values on top of its inner ScrollPresenter? Here's a list:
+What are the `ScrollView`'s responsibilities and added values on top of its inner ScrollPresenter? 
+Here's a list:
 
   - Default chrome
       - Today:
-          - Conscious scrollbars, scroll indicator and scroll indicators separator (The `ScrollView` shows the mouse-friendly scrollbars and their separator square as the mouse moves in, etc.).
-          - Implement an IScrollController wrapper around any scrollbar template part that does not implement it itself. Note that a scroll controller is a component, with or without UI, that can be associated with a `ScrollView` and can read and write its scroll offset for one dimension. 
-          A familiar scroll controller is the [ScrollBar](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.ScrollBar) control, in this case a UI widget. A scroll controller is characterized by its implementation of the new IScrollController interface.
-          It communicates with the inner `ScrollPresenter` through that interface. The scroller can have up to one controller for the horizontal dimension, and up to one for the vertical dimension.
+          - Conscious scrollbars, scroll indicator and scroll indicators separator (The `ScrollView` 
+          shows the mouse-friendly scrollbars and their separator square as the mouse moves in, etc.).
+          - Implement an IScrollController wrapper around any scrollbar template part that does not 
+          implement it itself. Note that a scroll controller is a component, with or without UI, 
+          that can be associated with a `ScrollView` and can read and write its scroll offset 
+          for one dimension. 
+          A familiar scroll controller is the [ScrollBar](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.ScrollBar) 
+          control, in this case a UI widget. A scroll controller is characterized by its implementation 
+          of the new IScrollController interface.
+          It communicates with the inner `ScrollPresenter` through that interface. The scroller can 
+          have up to one controller for the horizontal dimension, and up to one for the vertical dimension.
           The IScrollController interface is detailed in the [ScrollPresenter spec](./ScrollPresenter.md).
-          - Hand off IScrollController implementations to inner ScrollPresenter
+          - Hand off IScrollController implementations to inner ScrollPresenter.
       - Tomorrow:
-          - More mouse cursors (e.g. open/close hand for dragging in a PDF app, compass for panning based on pointer relative to middle mouse-wheel button click)
-          - Horizontal scrolling support via Shift + mousewheel
+          - More mouse cursors (e.g. open/close hand for dragging in a PDF app, compass for panning 
+          based on pointer relative to middle mouse-wheel button click).
+          - Horizontal scrolling support via Shift + mousewheel.
   - Default support for UI-thread bound keyboard and gamepad inputs
   - Default focus movement for gamepad and proper focus rect clipping
   - Default accessibility support
   - Default support to respect user's system settings (For instance disable conscious scrollbars)
-  - Ease-of-use for configuring snap points (The `ScrollView` consumes IScrollSnapPointsInfo implementations and forwards snap points to its inner ScrollPresenter).
+  - Ease-of-use for configuring snap points (The `ScrollView` consumes IScrollSnapPointsInfo 
+  implementations and forwards snap points to its inner ScrollPresenter).
 
 
 ## (Temporary) Down-Level Limitations
 
-The (MUX) `ScrollView` can be deployed and used down to RS2. Once the framework has been fully decoupled these limitations should disappear.
+The (MUX) `ScrollView` can be deployed and used down to RS2. Once the framework has been fully 
+decoupled these limitations should disappear.
 
 | **Capability**                                                                             | **RS2** | **RS3**       | **RS4**       | **RS5**              | **Notes**                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ------------------------------------------------------------------------------------------ | ------- | ------------- | ------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -2072,7 +2309,8 @@ These features have valid scenarios and should be considered for future releases
 
 ### Clipping suppression
 
-The old ScrollViewer has [this property](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.scrollviewer.cancontentrenderoutsidebounds) already. It would allow the inner ScrollPresenter to stop its clipping.
+The old ScrollViewer has [this property](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.scrollviewer.cancontentrenderoutsidebounds) 
+already. It would allow the inner ScrollPresenter to stop its clipping.
 
 ```csharp
 unsealed runtimeclass ScrollView : ...
@@ -2102,7 +2340,10 @@ unsealed runtimeclass ScrollView : ...
 
 ### Ability to define quadrants in content with various scrolling/zooming capabilities
 
-The old WUX ScrollViewer exposes UIElement read-write properties called TopLeftHeader, TopHeader and LeftHeader. These add headers around the primary Content to support an Excel-like experience where the TopLeftHeader cannot scroll, the LeftHeader cannot scroll horizontally and the TopHeader cannot scroll vertically.
+The old WUX ScrollViewer exposes UIElement read-write properties called TopLeftHeader, TopHeader and 
+LeftHeader. These add headers around the primary Content to support an Excel-like experience where 
+the TopLeftHeader cannot scroll, the LeftHeader cannot scroll horizontally and the TopHeader cannot 
+scroll vertically.
 
 The v1 MUX release does not support this scenario. The needed APIs have not been defined yet.
 
@@ -2111,13 +2352,19 @@ The v1 MUX release does not support this scenario. The needed APIs have not been
 
 Gets or sets the type of snap points to use on the horizontal scrolling direction. Defaults to None.
 
-By default, because HorizontalSnapPointsType and VerticalSnapPointsType are set to None, no scrolling snap points are applied.
+By default, because HorizontalSnapPointsType and VerticalSnapPointsType are set to None, no scrolling 
+snap points are applied.
 
-When HorizontalSnapPointsType is set to Mandatory (the only other option available for now), the `ScrollView` checks if its Content element implements the WUX <a href="https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.primitives.iscrollsnappointsinfo">IScrollSnapPointsInfo</a> interface.
+When HorizontalSnapPointsType is set to Mandatory (the only other option available for now), the 
+`ScrollView` checks if its Content element implements the WUX 
+<a href="https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.primitives.iscrollsnappointsinfo">IScrollSnapPointsInfo</a> 
+interface.
 
 If the content does not implement that interface, no horizontal snap points are applied.
 
-If the content does implement that interface, the `ScrollView` forwards the advertised snap points to its inner ScrollPresenter control, using its IVector&lt;Microsoft.UI.Xaml.Controls.ScrollSnapPointBase&gt; HorizontalSnapPoints { get; } property.
+If the content does implement that interface, the `ScrollView` forwards the advertised snap points 
+to its inner ScrollPresenter control, using its 
+IVector&lt;Microsoft.UI.Xaml.Controls.ScrollSnapPointBase&gt; HorizontalSnapPoints { get; } property.
 
 The same applies to the vertical direction, using the ScrollPresenter's VerticalSnapPoints property.
 
@@ -2182,11 +2429,13 @@ Similar to above (excluding the changes related to ContentOrientation).
 
 Gets or sets the type of snap points to use on the horizontal scrolling direction. Defaults to Near.
 
-By default, the left and top edges of the `ScrollView` viewport are the snapping locations for snap points, as seen in the HorizontalSnapPointsType/VerticalSnapPointsType section.
+By default, the left and top edges of the `ScrollView` viewport are the snapping locations for snap 
+points, as seen in the HorizontalSnapPointsType/VerticalSnapPointsType section.
 
 This corresponds to the Near alignment.
 
-The snapping location is moved to the center of the viewport when the Center alignment is picked. It is moved to the right and bottom edges when the Far alignment is picked.
+The snapping location is moved to the center of the viewport when the Center alignment is picked. 
+It is moved to the right and bottom edges when the Far alignment is picked.
 
 ScrollView-specific members to add:
 
@@ -2224,7 +2473,8 @@ Similar to above (excluding the changes related to ContentOrientation).
 
 ### Support for optional and single snap points
 
-The `ScrollPresenter` only supports one kind of snap points: mandatory. The old ScrollViewer supports 3 additional snap point types: optional, optional-single and madatory-single.
+The `ScrollPresenter` only supports one kind of snap points: mandatory. The old ScrollViewer supports 
+3 additional snap point types: optional, optional-single and madatory-single.
 
 ```csharp
 enum Microsoft.UI.Xaml.Controls.SnapPointsType
@@ -2273,11 +2523,14 @@ unsealed runtimeclass RepeatedZoomSnapPoint : ZoomSnapPointBase
 | ScrollInertiaDecayRate | Gets or sets the inertial deceleration of scrolling.           | (0.95, 0.95) |
 | ZoomInertiaDecayRate   | Gets or sets the inertial deceleration of zooming.             | 0.95         |
 
-<br/>Affects the inertial velocity decrease (decay). Values must be between 0.0 and 1.0. The closer the value is to 1.0, the faster the deceleration. A value of 0.0 represents no decay and results in a constant velocity scroll or zoom.
+Affects the inertial velocity decrease (decay). Values must be between 0.0 and 1.0. The closer 
+the value is to 1.0, the faster the deceleration. A value of 0.0 represents no decay and results in 
+a constant velocity scroll or zoom.
 
 #### Customizing the inertial scrolling decay
 
-In this example code from a game, a panned object's deceleration is simulated based on friction with its environment (space, atmosphere, water).
+In this example code from a game, a panned object's deceleration is simulated based on friction with 
+its environment (space, atmosphere, water).
 
 *`ScrollView` (new)*
 
@@ -2311,7 +2564,8 @@ N/A. Cannot be done.
 
 #### Customize the inertial zooming decay
 
-A geographical map browsing application needs the `ScrollView`'s zooming inertia to be shortened to avoid loading too many tiles.
+A geographical map browsing application needs the `ScrollView`'s zooming inertia to be shortened to 
+avoid loading too many tiles.
 
 *`ScrollView` (new)*
 
@@ -2324,7 +2578,8 @@ N/A. Cannot be done.
 
 ### Support for zoom snap points types
 
-ZoomSnapPointBase, RepeatedZoomSnapPoint and ZoomSnapPoint are already in the Microsoft.UI.Xaml.Controls.Primitives namespace.
+ZoomSnapPointBase, RepeatedZoomSnapPoint and ZoomSnapPoint are already in the 
+Microsoft.UI.Xaml.Controls.Primitives namespace.
 
 ```csharp
 unsealed runtimeclass ScrollView : ...
@@ -2336,13 +2591,17 @@ unsealed runtimeclass ScrollView : ...
 
 ### Consuming predicted end-of-inertia view
 
-The old ScrollViewer raises a ViewChanging event which exposes the expected end-of-inertia view in e.FinalView. The v1 MUX `ScrollView` does not yet have an equivalent event. The new API is still to be defined.
+The old ScrollViewer raises a ViewChanging event which exposes the expected end-of-inertia view in 
+e.FinalView. 
+The v1 MUX `ScrollView` does not yet have an equivalent event. The new API is still to be defined.
 
-This piece of information is particularly interesting in scenarios that use data virtualization so that final items can be pre-fetched ASAP.
+This piece of information is particularly interesting in scenarios that use data virtualization so 
+that final items can be pre-fetched ASAP.
 
 ### Support for Virtual Content Extents
 
-There is no way in the v1 release to define a virtual content extent. The content extent is always matching the ScrollPresenter.Content size.
+There is no way in the v1 release to define a virtual content extent. The content extent is always 
+matching the ScrollPresenter.Content size.
 
 It could be useful to have APIs like:
 
@@ -2411,7 +2670,8 @@ This featoure would add a ScrollSnapPoint constructor with an additional _applic
 
 The concept of custom applicable range allows the implementation of optional snap points.
 
-This example adds scrolling snap points at offsets 0, 100 and 200 for content that is 300 pixels large, with custom application ranges:
+This example adds scrolling snap points at offsets 0, 100 and 200 for content that is 300 pixels large, 
+with custom application ranges:
 
 ```csharp
 ScrollSnapPoint snapPoint1 = new ScrollSnapPoint(
@@ -2522,7 +2782,8 @@ unsealed runtimeclass ScrollPresenter : ...
 
 ### Viewport reduction for core input view occlusion
 
-The old ScrollViewer has [this property](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.scrollviewer.reduceviewportforcoreinputviewocclusions) already.
+The old ScrollViewer has [this property](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.scrollviewer.reduceviewportforcoreinputviewocclusions) 
+already.
 
 ```csharp
 unsealed runtimeclass ScrollView : ...
@@ -2542,7 +2803,8 @@ unsealed runtimeclass ScrollPresenter : ...
 
 ### Providing completion reason at the end of a view change
 
-ScrollingScrollCompletedEventArgs and ScrollingZoomCompletedEventArgs both get a read-only **Result** property of new type **ViewChangeResult enum**.
+ScrollingScrollCompletedEventArgs and ScrollingZoomCompletedEventArgs both get a read-only **Result** 
+property of new type **ViewChangeResult enum**.
 
 ```csharp
 enum Microsoft.UI.Xaml.Controls.ViewChangeResult
@@ -2579,7 +2841,8 @@ TIE: Touch Interaction Engine
 
 IT: InteractionTracker
 
-The old WUX ScrollViewer supports TIE / DManip mixed manipulations through the use of UIElement.ManipulationMode. A UIElement's ManipulationMode property can include System and TranslateX, TranslateY, Scale, etc. to use DManip for some manipulation and TIE for some other manipulation (with the UIElement.ManipulationStarting/Started/Delta/Completed events).
+The old WUX ScrollViewer supports TIE / DManip mixed manipulations through the use of UIElement.ManipulationMode. 
+A UIElement's ManipulationMode property can include System and TranslateX, TranslateY, Scale, etc. to use DManip 
+for some manipulation and TIE for some other manipulation (with the UIElement.ManipulationStarting/Started/Delta/Completed events).
 
 The v1 MUX `ScrollView` does not yet support TIE & IT manipulations.
-
