@@ -38,7 +38,8 @@ allowing you to simply set a backdrop as a property on a `Window`.
 
 ## Window.SystemBackdrop property
 
-_This description also applies to `Popup.SystemBackdrop` and `FlyoutBase.SystemBackdrop` properties_
+_This description will also apply to `SystemBackdrop` properties on `Popup`, `FlyoutBase`,
+and `DesktopWindowXamlSource`._
 
 Sets a `SystemBackdrop` to apply that backdrop to this `Window`.
 
