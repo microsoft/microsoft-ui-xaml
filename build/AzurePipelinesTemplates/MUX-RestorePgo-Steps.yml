@@ -18,4 +18,4 @@ steps:
       targetType: filePath
       workingDirectory: $(Build.SourcesDirectory)\tools\MUXPGODatabase
       filePath: $(Build.SourcesDirectory)\tools\MUXPGODatabase\restore-pgodb.ps1
-      arguments: -NuGetConfigPath $(Build.SourcesDirectory)\nuget.config
+      arguments: -NuGetConfigPath $(Build.SourcesDirectory)\nuget-pgo.config

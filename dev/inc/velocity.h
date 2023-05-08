@@ -18,6 +18,8 @@
 #pragma warning(disable : 26496)
 #pragma warning(disable : 26497)
 #pragma warning(disable : 26812)
+#pragma warning(disable : 28252)
+#pragma warning(disable : 28253)
 
 #include <wil/Staging.h>
 

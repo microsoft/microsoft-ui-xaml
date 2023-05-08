@@ -197,6 +197,8 @@ extends:
         steps:
           - template: build\AzurePipelinesTemplates\MUX-PopulateBuildDateAndRevision-Steps.yml@self
 
+          - template: build\AzurePipelinesTemplates\MUX-InstallDotNetSDK-Steps.yml@self
+
           - powershell: |
               ls env:
             displayName: 'display env vars'
@@ -375,7 +377,7 @@ extends:
           ob_createvpack_provData: true
           ob_createvpack_versionAs: string
           vpackversion: $[ dependencies.vpack.outputs['createvpack.vpackversion'] ]
-          ob_createvpack_version: $(vpackversion)-kmahonetest4
+          ob_createvpack_version: $(vpackversion)
           ob_createvpack_verbose: true
           ob_createvpack_topLevelRetries: 0
           ob_createvpack_failOnStdErr: true

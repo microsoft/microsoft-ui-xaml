@@ -6,6 +6,9 @@
 #include "ParallaxView.h"
 #include "RuntimeProfiler.h"
 
+#pragma warning(push) 
+#pragma warning(disable : 6031) // Return value ignored
+
 using namespace std;
 
 ParallaxView::~ParallaxView()
@@ -161,6 +164,7 @@ winrt::Size ParallaxView::ArrangeOverride(winrt::Size const& finalSize)
         {
             // Ensure that this ParallaxView has a rectangular clip.
             winrt::RectangleGeometry newRectangleGeometry;
+            newRectangleGeometry.Rect();
             Clip(newRectangleGeometry);
 
             rectangleGeometry = newRectangleGeometry;
@@ -814,3 +818,5 @@ void ParallaxView::UnhookChildPropertyChanged(bool isInDestructor)
         m_currentListeningChild.set(nullptr);
     }
 }
+
+#pragma warning(pop)

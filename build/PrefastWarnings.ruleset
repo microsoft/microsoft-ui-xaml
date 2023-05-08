@@ -48,11 +48,11 @@
     <Rule Id="C26451" Action="None" />
     <Rule Id="C26460" Action="Warning" />
     <Rule Id="C26461" Action="Warning" />
-    <Rule Id="C26462" Action="Warning" />
+    <Rule Id="C26462" Action="None" />
     <Rule Id="C26463" Action="Warning" />
     <Rule Id="C26464" Action="Warning" />
     <Rule Id="C26465" Action="Warning" />
-    <Rule Id="C26496" Action="Warning" />
+    <Rule Id="C26496" Action="None" />
     <Rule Id="C26497" Action="Warning" />
     <Rule Id="C26498" Action="Warning" />
     <Rule Id="C26500" Action="Warning" />
@@ -143,6 +143,8 @@
     <Rule Id="C28246" Action="Warning" />
     <Rule Id="C28248" Action="Warning" />
     <Rule Id="C28250" Action="Warning" />
+    <Rule Id="C28252" Action="None" />
+    <Rule Id="C28253" Action="None" />
     <Rule Id="C28254" Action="Warning" />
     <Rule Id="C28260" Action="Warning" />
     <Rule Id="C28262" Action="Warning" />

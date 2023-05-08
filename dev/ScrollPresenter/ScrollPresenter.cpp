@@ -16,6 +16,10 @@
 #include "Vector.h"
 #include "RegUtil.h"
 
+#pragma warning(push) 
+#pragma warning(disable : 6031) // Return value ignored
+#pragma warning(disable : 26813) // Use 'bitwise and' to check if a flag is set.
+
 // Change to 'true' to turn on debugging outputs in Output window
 bool ScrollPresenterTrace::s_IsDebugOutputEnabled{ false };
 bool ScrollPresenterTrace::s_IsVerboseDebugOutputEnabled{ false };
@@ -930,6 +934,7 @@ winrt::Size ScrollPresenter::ArrangeOverride(winrt::Size const& finalSize)
     {
         // Ensure that this ScrollPresenter has a rectangular clip.
         winrt::RectangleGeometry newRectangleGeometry;
+        newRectangleGeometry.Rect();
         Clip(newRectangleGeometry);
 
         rectangleGeometry = newRectangleGeometry;
@@ -6745,7 +6750,7 @@ void ScrollPresenter::ProcessOffsetsChange(
     }
 
     // For mouse-wheel scrolling, make sure the initial velocity is larger than the minimum effective velocity.
-     if (static_cast<int>(operationTrigger) & static_cast<int>(InteractionTrackerAsyncOperationTrigger::MouseWheel) && m_state == winrt::ScrollingInteractionState::Idle)
+    if (operationTrigger == InteractionTrackerAsyncOperationTrigger::MouseWheel && m_state == winrt::ScrollingInteractionState::Idle)
     {
         // Minimum absolute velocity. Any lower velocity has no effect.
         const float c_minVelocity = 30.0f;
@@ -6773,7 +6778,7 @@ void ScrollPresenter::ProcessOffsetsChange(
 
     // On pre-RS5 versions, the SnapPointBase::s_isInertiaFromImpulse boolean parameters of the snap points' composition expressions
     // depend on whether the request was triggere by the mouse wheel or not.
-    UpdateIsInertiaFromImpulse(static_cast<int>(operationTrigger) & static_cast<int>(InteractionTrackerAsyncOperationTrigger::MouseWheel) /*isInertiaFromImpulse*/);
+    UpdateIsInertiaFromImpulse(operationTrigger == InteractionTrackerAsyncOperationTrigger::MouseWheel /*isInertiaFromImpulse*/);
 
     SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_METH_STR, METH_NAME, this,
         L"TryUpdatePositionWithAdditionalVelocity", TypeLogging::Float2ToString(winrt::float2(offsetsVelocity)).c_str());
@@ -6917,7 +6922,7 @@ void ScrollPresenter::ProcessZoomFactorChange(
     const winrt::float3 centerPoint(centerPoint2D.x - m_contentLayoutOffsetX, centerPoint2D.y - m_contentLayoutOffsetY, 0.0f);
 
     // For mouse-wheel zooming, make sure the initial velocity is larger than the minimum effective velocity.
-    if (static_cast<int>(operationTrigger) & static_cast<int>(InteractionTrackerAsyncOperationTrigger::MouseWheel) && m_state == winrt::ScrollingInteractionState::Idle)
+    if (operationTrigger == InteractionTrackerAsyncOperationTrigger::MouseWheel && m_state == winrt::ScrollingInteractionState::Idle)
     {
         // Minimum absolute velocity. Any lower velocity has no effect.
         const float c_minVelocity = 0.05f;
@@ -6936,7 +6941,7 @@ void ScrollPresenter::ProcessZoomFactorChange(
 
     // On pre-RS5 versions, the SnapPointBase::s_isInertiaFromImpulse boolean parameters of the snap points' composition expressions
     // depend on whether the request was triggere by the mouse wheel or not.
-    UpdateIsInertiaFromImpulse(static_cast<int>(operationTrigger) & static_cast<int>(InteractionTrackerAsyncOperationTrigger::MouseWheel) /*isInertiaFromImpulse*/);
+    UpdateIsInertiaFromImpulse(operationTrigger == InteractionTrackerAsyncOperationTrigger::MouseWheel /*isInertiaFromImpulse*/);
 
     SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_METH_FLT_STR, METH_NAME, this,
         L"TryUpdateScaleWithAdditionalVelocity", zoomFactorVelocity, TypeLogging::Float2ToString(winrt::float2(centerPoint.x, centerPoint.y)).c_str());
@@ -8034,3 +8039,5 @@ winrt::hstring ScrollPresenter::DependencyPropertyToString(const winrt::IDepende
 }
 
 #endif
+
+#pragma warning(pop)

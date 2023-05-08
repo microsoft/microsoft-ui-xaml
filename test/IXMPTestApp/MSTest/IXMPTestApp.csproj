@@ -5,6 +5,8 @@
     <UnitTestPlatformVersion Condition="'$(UnitTestPlatformVersion)' == ''">$(VisualStudioVersion)</UnitTestPlatformVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <NoWarn>$(NoWarn);NU1505</NoWarn>
+    <DisableCheckingDuplicateNuGetItems>true</DisableCheckingDuplicateNuGetItems>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MUXCustomBuildTasks">

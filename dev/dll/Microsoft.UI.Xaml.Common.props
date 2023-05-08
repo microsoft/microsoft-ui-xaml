@@ -6,7 +6,7 @@
   <Import Project="..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props" Condition="Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props')" />
   <Import Project="..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props" Condition="Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props')" />
   <Import Project="..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.props" Condition="Exists('..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.props')" />
-  <Import Project="..\..\packages\Microsoft.Windows.Wil.Internal.0.2.105\build\native\Microsoft.Windows.Wil.Internal.targets" Condition="Exists('..\..\packages\Microsoft.Windows.Wil.Internal.0.2.105\build\native\Microsoft.Windows.Wil.Internal.targets')" />
+  <Import Project="..\..\packages\Microsoft.Windows.Wil.Internal.0.2.131\build\native\Microsoft.Windows.Wil.Internal.targets" Condition="Exists('..\..\packages\Microsoft.Windows.Wil.Internal.0.2.131\build\native\Microsoft.Windows.Wil.Internal.targets')" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\mux.controls.props" Condition="Exists('$(MSBuildProjectDirectory)\..\..\mux.controls.props')" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\environment.props" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\ProjectConfigurations.props" />
