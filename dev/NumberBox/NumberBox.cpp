@@ -175,7 +175,10 @@ void NumberBox::OnApplyTemplate()
         return textBox;
     }());
 
-    m_textBox.get().Loaded({ this, & NumberBox::OnTextBoxLoaded });
+    if (const auto textBox = m_textBox.get())
+    {
+        textBox.Loaded({ this, &NumberBox::OnTextBoxLoaded });
+    }
 
     m_popup.set(GetTemplateChildT<winrt::Popup>(c_numberBoxPopupName, controlProtected));
 
