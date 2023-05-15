@@ -40,7 +40,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\CopyPGOFiles.ps1
-      arguments: -SourceFolder '$(artifactsPath)\pgo\TestOutput-fwPkg\Win10-RS5\$(buildPlatform)$(buildConfiguration)' -OutputFolder '$(artifactsPath)'
+      arguments: -SourceFolder '$(artifactsPath)\pgo\TestOutput-fwPkg\$(testos)\$(buildPlatform)$(buildConfiguration)' -OutputFolder '$(artifactsPath)'
 
   - script: |
       cd $(buildPlatform)
