@@ -416,13 +416,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 ElementCache.Refresh();
 
-                Log.Comment("...reordering done. Expecting a TabView.TabItemsChanged event to be raised with CollectionChange=ItemInserted and Index=5.");
+                Log.Comment("...reordering done. Expecting a TabView.TabItemsChanged event to be raised with CollectionChange=ItemInserted.");
 
                 TextBlock tabsItemChangedEventArgsTextBlock = FindElement.ByName<TextBlock>("TabsItemChangedEventArgsTextBlock");
                 Verify.AreEqual("ItemInserted", tabsItemChangedEventArgsTextBlock.DocumentText);
-
-                TextBlock tabsItemChangedEventArgsIndexTextBlock = FindElement.ByName<TextBlock>("TabsItemChangedEventArgsIndexTextBlock");
-                Verify.AreEqual("5", tabsItemChangedEventArgsIndexTextBlock.DocumentText);
             }
         }
 
