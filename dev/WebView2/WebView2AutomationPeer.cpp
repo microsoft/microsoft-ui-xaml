@@ -42,17 +42,25 @@ winrt::Rect WebView2AutomationPeer::GetBoundingRectangleCore()
     return boundingRect;
 }
 
-#if WINUI3
 HRESULT WebView2AutomationPeer::GetRawElementProviderSimple(_Outptr_opt_ IRawElementProviderSimple** value)
 {
+    *value = nullptr;
+
     InitProvider();
-    m_provider.copy_to(value);
+
+    auto wrapperSimple = m_providerWrapper.try_as<IRawElementProviderSimple>();
+    if (wrapperSimple)
+    {
+        wrapperSimple.copy_to(value);
+    }
+
     return S_OK;
 }
 
 HRESULT WebView2AutomationPeer::IsCorrectPeerForHwnd(HWND hwnd, _Out_ bool* value)
 {
     *value = false;
+
     if (!InitProvider())
     {
         return S_OK;
@@ -63,9 +71,9 @@ HRESULT WebView2AutomationPeer::IsCorrectPeerForHwnd(HWND hwnd, _Out_ bool* valu
     {
         *value = true;
     }
+
     return S_OK;
 }
-#endif
 
 struct ProviderWrapper : winrt::implements<ProviderWrapper, winrt::IInspectable, ::IRawElementProviderSimple, ::IRawElementProviderSimple2, ::IRawElementProviderFragment, ::IRawElementProviderFragmentRoot>
 {
