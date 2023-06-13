@@ -1555,6 +1555,22 @@ void WebView2::TryCompleteInitialization()
             [this](auto&&, auto&&) { UpdateDefaultVisualBackgroundColor(); });
     }
 
+    if (!m_textScaleChangedRevoker)
+    {
+        m_textScaleChangedRevoker = GetUISettings().TextScaleFactorChanged(winrt::auto_revoke,
+            [weakThis{ get_weak() }](auto&&, auto&&)
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    // OnTextScaleFactorChanged happens in non-UI thread, use dispatcher to call UpdateCoreWebViewScale in UI thread.
+                    strongThis->m_dispatcherHelper.RunAsync([strongThis]()
+                        {
+                            strongThis->UpdateCoreWebViewScale();
+                        });
+                }
+            });
+    }
+
     // WebView2 in WinUI 2 is a ContentControl that either renders its web content to a SpriteVisual, or in the case that
     // the WebView2 Runtime is not installed, renders a message to that effect as its Content. In the case where the
     // WebView2 starts with Visibility.Collapsed, hit testing code has trouble seeing the WebView2 if it does not have
@@ -1706,6 +1722,15 @@ void WebView2::Reload()
     }
 }
 
+void WebView2::UpdateCoreWebViewScale()
+{
+    if (m_coreWebViewController)
+    {
+        auto textScaleFactor = m_uiSettings.TextScaleFactor();
+        m_coreWebViewController.RasterizationScale(static_cast<double>(m_rasterizationScale * textScaleFactor));
+    }
+}
+
 void WebView2::NavigateToString(winrt::hstring htmlContent)
 {
     if (m_coreWebView)
@@ -1759,10 +1784,7 @@ void WebView2::XamlRootChangedHelper(bool forceUpdate)
     {
         m_rasterizationScale = scale;
         m_isHostVisible = hostVisibility; // If we did forceUpdate we'll want to update host visibility here too
-        if (m_coreWebViewController)
-        {
-            m_coreWebViewController.RasterizationScale(static_cast<double>(scale));
-        }
+        UpdateCoreWebViewScale();
         SetCoreWebViewAndVisualSize(static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight()));
         CheckAndUpdateWebViewPosition();
         UpdateRenderedSubscriptionAndVisibility();
@@ -2025,4 +2047,13 @@ void WebView2::ResetProperties()
 {
     SetCanGoForward(false);
     SetCanGoBack(false);
+}
+
+winrt::UISettings WebView2::GetUISettings()
+{
+    if (m_uiSettings == nullptr)
+    {
+        m_uiSettings = winrt::UISettings();
+    }
+    return m_uiSettings;
 }
