@@ -15,6 +15,8 @@ namespace winrt
 
 #include "CoreWebView2InitializedEventArgs.g.h"
 
+#include "DispatcherHelper.h"
+
 #include "WebView2.g.h"
 #include "WebView2.properties.h"
 #pragma warning( push )
@@ -87,6 +89,8 @@ public:
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+
+    void UpdateCoreWebViewScale();
 
     winrt::IAsyncAction EnsureCoreWebView2Async();
     winrt::IAsyncOperation<winrt::hstring> ExecuteScriptAsync(winrt::hstring javascriptCode);
@@ -176,6 +180,8 @@ private:
     void CloseInternal(bool inShutdownPath);
 
     winrt::AccessibilitySettings GetAccessibilitySettings();
+    winrt::UISettings GetUISettings();
+
     bool SafeIsLoaded();
 
     void UpdateCoreWindowCursor();
@@ -245,6 +251,7 @@ private:
     winrt::FrameworkElement::ActualThemeChanged_revoker m_actualThemeChangedRevoker{};
     winrt::AccessibilitySettings m_accessibilitySettings;
     winrt::AccessibilitySettings::HighContrastChanged_revoker m_highContrastChangedRevoker{};
+    winrt::UISettings::TextScaleFactorChanged_revoker m_textScaleChangedRevoker{};
 
     // Pointer handling for CoreWindow
     void ResetPointerHelper(const winrt::PointerRoutedEventArgs& args);
@@ -279,6 +286,10 @@ private:
     winrt::Point m_webViewScaledSize{};
     // Last known position of the host window
     POINT m_hostWindowPosition{};
+
+    DispatcherHelper m_dispatcherHelper{ *this };
+
+    winrt::UISettings m_uiSettings;
 
     // Manually delay load functions to avoid WACK exceptions.
     decltype(&ClientToScreen) m_fnClientToScreen;
