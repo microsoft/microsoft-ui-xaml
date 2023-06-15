@@ -220,7 +220,10 @@ public:
     HRESULT STDMETHODCALLTYPE GetFocus(
         /* [retval][out] */ __RPC__deref_out_opt IRawElementProviderFragment** pRetVal) noexcept override
     {
-        return E_NOTIMPL;
+            // We don't answer the question about a current focus. We return NULL here since if we return
+            // an error UIA will bail out the entire focus operation rather than continueing its search.
+            *pRetVal = nullptr;
+            return S_OK;
     }
 
 private:
