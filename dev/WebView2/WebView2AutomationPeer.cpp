@@ -44,6 +44,8 @@ winrt::Rect WebView2AutomationPeer::GetBoundingRectangleCore()
 
 HRESULT WebView2AutomationPeer::GetRawElementProviderSimple(_Outptr_opt_ IRawElementProviderSimple** value)
 {
+    if (value == nullptr) return S_OK;
+    
     *value = nullptr;
 
     InitProvider();
