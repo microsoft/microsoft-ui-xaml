@@ -470,7 +470,7 @@
                             AutomationProperties.AccessibilityView="Raw"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             FontSize="20"
-                            Glyph="&#xE10C;"
+                            Glyph="&#xE712;"
                             Foreground="{TemplateBinding Foreground}"
                             IsHitTestVisible="False" />
                     </Grid>
@@ -538,7 +538,7 @@
                             AutomationProperties.AccessibilityView="Raw"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             FontSize="20"
-                            Glyph="&#xE10C;"
+                            Glyph="&#xE712;"
                             Foreground="{TemplateBinding Foreground}"
                             IsHitTestVisible="False" />
                     </Grid>

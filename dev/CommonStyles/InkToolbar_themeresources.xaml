@@ -267,7 +267,7 @@
         <Setter Property="Margin" Value="0,0,0,0" />
         <Setter Property="Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
         <Setter Property="Opacity" Value="0" />
-        <Setter Property="Text" Value="&#xE228;" />
+        <Setter Property="Text" Value="&#xE96E;" />
         <Setter Property="HighContrastAdjustment" Value="None" />
     </Style>
 
@@ -674,13 +674,13 @@
                             </Grid.RenderTransform>
                             <TextBlock x:Name="Content"
                                 Style="{StaticResource InkToolbarGlyphFontStyle}"
-                                Text="&#xE193;"
+                                Text="&#xE7E6;"
                                 AutomationProperties.AccessibilityView="Raw"
                                 Canvas.ZIndex="1"
                                 Foreground="{ThemeResource InkToolbarButtonForeground}" />
                             <TextBlock x:Name="CheckedContent"
                                 Style="{StaticResource InkToolbarGlyphFontStyle}"
-                                Text="&#xE193;"
+                                Text="&#xE7E6;"
                                 AutomationProperties.AccessibilityView="Raw"
                                 Canvas.ZIndex="1"
                                 Foreground="{ThemeResource InkToolbarButtonSelectedForegroundThemeBrush}"
