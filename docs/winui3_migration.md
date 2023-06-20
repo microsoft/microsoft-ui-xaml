@@ -8,7 +8,7 @@
 The purpose of the [try-convert WinUI3 feature](https://github.com/dotnet/try-convert/tree/feature/winui) is to create a porting solution to allow developers to convert WinUI2 projects to the new WinUI3 format.
 
 - WinUI is a native user experience (UX) framework for both Windows Desktop and UWP applications. WinUI ships as part of the Windows OS. 
-[More on WinUI](https://microsoft.github.io/microsoft-ui-xaml), [Docs](https://docs.microsoft.com/en-us/windows/apps/winui)
+[More on WinUI](http://aka.ms/winui), [Docs](https://docs.microsoft.com/en-us/windows/apps/winui)
 - WinUI3 is the next version of WinUI. It runs on the native Windows 10 UI platform and supports both Windows Desktop and UWP apps. WinUI3 ships as a NuGet package.
 [More on WinUI3](https://docs.microsoft.com/en-us/windows/apps/winui/winui3)
 
