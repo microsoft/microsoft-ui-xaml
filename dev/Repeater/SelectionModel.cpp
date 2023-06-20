@@ -190,7 +190,7 @@ winrt::IVectorView<winrt::IInspectable> SelectionModel::SelectedItems()
                     const unsigned int currentCount = node->SelectedCount();
                     if (index >= currentIndex && index < currentIndex + currentCount)
                     {
-                        cnst int targetIndex = node->SelectedIndices().at(index - currentIndex);
+                        const int targetIndex = node->SelectedIndices().at(index - currentIndex);
                         item = node->ItemsSourceView().GetAt(targetIndex);
                         break;
                     }
