@@ -323,8 +323,8 @@ void ColorPicker::OnColorChanged(winrt::DependencyPropertyChangedEventArgs const
         UpdateColorControls(ColorUpdateReason::ColorPropertyChanged);
     }
 
-    winrt::Color oldColor = unbox_value<winrt::Color>(args.OldValue());
-    winrt::Color newColor = unbox_value<winrt::Color>(args.NewValue());
+    const winrt::Color oldColor = unbox_value<winrt::Color>(args.OldValue());
+    const winrt::Color newColor = unbox_value<winrt::Color>(args.NewValue());
 
     if (oldColor.A != newColor.A ||
         oldColor.R != newColor.R ||

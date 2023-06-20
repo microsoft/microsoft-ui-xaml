@@ -189,7 +189,7 @@ void ScrollPresenter::ComputeElementAnchorPoint(
 
     if (m_anchorElement.get())
     {
-        winrt::Rect anchorElementBounds = isForPreArrange ? m_anchorElementBounds : GetDescendantBounds(Content(), m_anchorElement.get());
+        const winrt::Rect anchorElementBounds = isForPreArrange ? m_anchorElementBounds : GetDescendantBounds(Content(), m_anchorElement.get());
 
         ComputeAnchorPoint(anchorElementBounds, elementAnchorPointHorizontalOffset, elementAnchorPointVerticalOffset);
 

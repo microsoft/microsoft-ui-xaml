@@ -355,7 +355,7 @@ void SplitButton::OnSplitButtonKeyUp(const winrt::IInspectable& sender, const wi
     }
     else if (key == winrt::VirtualKey::Down)
     {
-        winrt::CoreVirtualKeyStates menuState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Menu);
+        const winrt::CoreVirtualKeyStates menuState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Menu);
         const bool menuKeyDown = (menuState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
 
         if (IsEnabled() && menuKeyDown)

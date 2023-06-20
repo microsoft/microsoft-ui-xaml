@@ -810,8 +810,8 @@ void ScrollView::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     SCROLLVIEW_TRACE_VERBOSE(nullptr, L"%s(property: %s)\n", METH_NAME, DependencyPropertyToString(dependencyProperty).c_str());
 #endif
 
-    bool horizontalChange = dependencyProperty == s_HorizontalScrollBarVisibilityProperty;
-    bool verticalChange = dependencyProperty == s_VerticalScrollBarVisibilityProperty;
+    const bool horizontalChange = dependencyProperty == s_HorizontalScrollBarVisibilityProperty;
+    const bool verticalChange = dependencyProperty == s_VerticalScrollBarVisibilityProperty;
 
     if (horizontalChange || verticalChange)
     {

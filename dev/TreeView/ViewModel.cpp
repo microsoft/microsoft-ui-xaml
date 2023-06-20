@@ -603,7 +603,7 @@ int ViewModel::AddNodeDescendantsToView(const winrt::TreeViewNode& value, unsign
 {
     if (value.IsExpanded())
     {
-        unsigned int size = value.Children().Size();
+        const unsigned int size = value.Children().Size();
         for (unsigned int i = 0; i < size; i++)
         {
             auto childNode = value.Children().GetAt(i).as<winrt::TreeViewNode>();
@@ -623,7 +623,7 @@ void ViewModel::RemoveNodeAndDescendantsFromView(const winrt::TreeViewNode& valu
     UINT32 valueIndex;
     if (value.IsExpanded())
     {
-        unsigned int size = value.Children().Size();
+        const unsigned int size = value.Children().Size();
         for (unsigned int i = 0; i < size; i++)
         {
             auto childNode = value.Children().GetAt(i).as<winrt::TreeViewNode>();
@@ -689,7 +689,7 @@ winrt::TreeViewNode ViewModel::GetRemovedChildTreeViewNodeByIndex(winrt::TreeVie
 int ViewModel::CountDescendants(const winrt::TreeViewNode& value)
 {
     int descendantCount = 0;
-    unsigned int size = value.Children().Size();
+    const unsigned int size = value.Children().Size();
     for (unsigned int i = 0; i < size; i++)
     {
         auto childNode = value.Children().GetAt(i).as<winrt::TreeViewNode>();
@@ -917,8 +917,8 @@ bool ViewModel::IndexOfNode(winrt::TreeViewNode const& targetNode, uint32_t& ind
 
 void ViewModel::TreeViewNodeVectorChanged(winrt::TreeViewNode const& sender, winrt::IInspectable const& args)
 {
-    winrt::CollectionChange collectionChange = args.as<winrt::IVectorChangedEventArgs>().CollectionChange();
-    unsigned int index = args.as<winrt::IVectorChangedEventArgs>().Index();
+    const winrt::CollectionChange collectionChange = args.as<winrt::IVectorChangedEventArgs>().CollectionChange();
+    const unsigned int index = args.as<winrt::IVectorChangedEventArgs>().Index();
 
     switch (collectionChange)
     {
@@ -1035,8 +1035,8 @@ void ViewModel::TreeViewNodeVectorChanged(winrt::TreeViewNode const& sender, win
 
 void ViewModel::SelectedNodeChildrenChanged(winrt::TreeViewNode const& sender, winrt::IInspectable const& args)
 {
-    winrt::CollectionChange collectionChange = args.as<winrt::IVectorChangedEventArgs>().CollectionChange();
-    unsigned int index = args.as<winrt::IVectorChangedEventArgs>().Index();
+    const winrt::CollectionChange collectionChange = args.as<winrt::IVectorChangedEventArgs>().CollectionChange();
+    const unsigned int index = args.as<winrt::IVectorChangedEventArgs>().Index();
     auto changingChildrenNode = sender.as<winrt::TreeViewNode>();
 
     switch (collectionChange)
