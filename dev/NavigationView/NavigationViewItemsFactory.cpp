@@ -129,7 +129,7 @@ void NavigationViewItemsFactory::RecycleElementCore(winrt::ElementFactoryRecycle
         }
 
         // Do not recycle SettingsItem
-        bool isSettingsItem = m_settingsItem && m_settingsItem == args.Element();
+        const bool isSettingsItem = m_settingsItem && m_settingsItem == args.Element();
         
         UnlinkElementFromParent(args);
         if (m_itemTemplateWrapper && !isSettingsItem)

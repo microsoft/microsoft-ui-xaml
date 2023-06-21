@@ -1646,10 +1646,10 @@ void SwipeControl::UpdateThresholdReached(float value)
 
 void SwipeControl::ThrowIfHasVerticalAndHorizontalContent(bool setIsHorizontal)
 {
-    bool hasLeftContent = LeftItems() && LeftItems().Size() > 0;
-    bool hasRightContent = RightItems() && RightItems().Size() > 0;
-    bool hasTopContent = TopItems() && TopItems().Size() > 0;
-    bool hasBottomContent = BottomItems() && BottomItems().Size() > 0;
+    const bool hasLeftContent = LeftItems() && LeftItems().Size() > 0;
+    const bool hasRightContent = RightItems() && RightItems().Size() > 0;
+    const bool hasTopContent = TopItems() && TopItems().Size() > 0;
+    const bool hasBottomContent = BottomItems() && BottomItems().Size() > 0;
     if (setIsHorizontal)
     {
         m_isHorizontal = hasLeftContent || hasRightContent || !(hasTopContent || hasBottomContent);

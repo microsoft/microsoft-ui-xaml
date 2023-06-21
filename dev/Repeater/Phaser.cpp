@@ -145,10 +145,10 @@ void Phaser::DoPhasedWorkCallback()
             {
                 // If the next element is oustide the visible window and there are elements in the visible window
                 // go back to the visible window.
-                bool nextItemIsVisible = SharedHelpers::DoRectsIntersect(visibleWindow, m_pendingElements[currentIndex].VirtInfo()->ArrangeBounds());
+                const bool nextItemIsVisible = SharedHelpers::DoRectsIntersect(visibleWindow, m_pendingElements[currentIndex].VirtInfo()->ArrangeBounds());
                 if (!nextItemIsVisible)
                 {
-                    bool haveVisibleItems = SharedHelpers::DoRectsIntersect(visibleWindow, m_pendingElements[pendingCount - 1].VirtInfo()->ArrangeBounds());
+                    const bool haveVisibleItems = SharedHelpers::DoRectsIntersect(visibleWindow, m_pendingElements[pendingCount - 1].VirtInfo()->ArrangeBounds());
                     if (haveVisibleItems)
                     {
                         currentIndex = pendingCount - 1;

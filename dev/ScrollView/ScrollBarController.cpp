@@ -550,7 +550,7 @@ bool ScrollBarController::RaiseScrollToRequested(
 
     m_scrollToRequested(*this, *scrollToRequestedEventArgs);
 
-    int32_t offsetChangeCorrelationId = scrollToRequestedEventArgs.as<winrt::ScrollControllerScrollToRequestedEventArgs>().CorrelationId();
+    const int32_t offsetChangeCorrelationId = scrollToRequestedEventArgs.as<winrt::ScrollControllerScrollToRequestedEventArgs>().CorrelationId();
 
     // Only increment m_operationsCount when the returned OffsetsChangeCorrelationId represents a new request that was not coalesced with a pending request. 
     if (offsetChangeCorrelationId != -1 && offsetChangeCorrelationId != m_lastOffsetChangeCorrelationIdForScrollTo)
@@ -583,7 +583,7 @@ bool ScrollBarController::RaiseScrollByRequested(
 
     m_scrollByRequested(*this, *scrollByRequestedEventArgs);
 
-    int32_t offsetChangeCorrelationId = scrollByRequestedEventArgs.as<winrt::ScrollControllerScrollByRequestedEventArgs>().CorrelationId();
+    const int32_t offsetChangeCorrelationId = scrollByRequestedEventArgs.as<winrt::ScrollControllerScrollByRequestedEventArgs>().CorrelationId();
 
     // Only increment m_operationsCount when the returned OffsetsChangeCorrelationId represents a new request that was not coalesced with a pending request. 
     if (offsetChangeCorrelationId != -1 && offsetChangeCorrelationId != m_lastOffsetChangeCorrelationIdForScrollBy)
@@ -623,7 +623,7 @@ bool ScrollBarController::RaiseAddScrollVelocityRequested(
 
     m_addScrollVelocityRequested(*this, *addScrollVelocityRequestedEventArgs);
 
-    int32_t offsetChangeCorrelationId = addScrollVelocityRequestedEventArgs.as<winrt::ScrollControllerAddScrollVelocityRequestedEventArgs>().CorrelationId();
+const int32_t offsetChangeCorrelationId = addScrollVelocityRequestedEventArgs.as<winrt::ScrollControllerAddScrollVelocityRequestedEventArgs>().CorrelationId();
 
     // Only increment m_operationsCount when the returned OffsetsChangeCorrelationId represents a new request that was not coalesced with a pending request. 
     if (offsetChangeCorrelationId != -1 && offsetChangeCorrelationId != m_lastOffsetChangeCorrelationIdForAddScrollVelocity)

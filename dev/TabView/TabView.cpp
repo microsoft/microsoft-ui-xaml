@@ -152,7 +152,7 @@ void TabView::OnApplyTemplate()
                 winrt::ThemeShadow shadow;
                 shadow.Receivers().Append(GetShadowReceiver());
 
-                double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
+                const double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
 
                 const auto currentTranslation = shadowCaster.Translation();
                 const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
@@ -228,8 +228,8 @@ void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const wi
         {
             if (auto&& listView = m_listView.get())
             {
-                bool oldItemIsFromThisTabView = listView.IndexFromContainer(oldItem) != -1;
-                bool newItemIsFromThisTabView = listView.IndexFromContainer(newItem) != -1;
+                const bool oldItemIsFromThisTabView = listView.IndexFromContainer(oldItem) != -1;
+                const bool newItemIsFromThisTabView = listView.IndexFromContainer(newItem) != -1;
                 if (oldItemIsFromThisTabView && newItemIsFromThisTabView)
                 {
                     const auto inputDevice = args.InputDevice();
@@ -365,7 +365,7 @@ void TabView::UpdateListViewItemContainerTransitions()
                 // Because the default ItemContainerTransitions collection is defined in the TabViewListView style, all ListView instances share the same
                 // collection by default. Thus to avoid one TabView affecting all other ones, a new ItemContainerTransitions collection is created
                 // when the original one contains an AddDeleteThemeTransition or ContentThemeTransition instance.
-                bool transitionCollectionHasAddDeleteOrContentThemeTransition = [listView]()
+                const bool transitionCollectionHasAddDeleteOrContentThemeTransition = [listView]()
                 {
                     if (auto itemContainerTransitions = listView.ItemContainerTransitions())
                     {
@@ -724,7 +724,7 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
     {
         m_tabItemsChangedEventSource(*this, args);
 
-        int numItems = static_cast<int>(TabItems().Size());
+        const int numItems = static_cast<int>(TabItems().Size());
         const auto listViewInnerSelectedIndex = m_listView.get().SelectedIndex();
         auto selectedIndex = SelectedIndex();
         
@@ -816,7 +816,7 @@ winrt::TabViewItem TabView::FindTabViewItemFromDragItem(const winrt::IInspectabl
     if (!tab)
     {
         // This is a fallback scenario for tabs without a data context
-        auto numItems = static_cast<int>(TabItems().Size());
+        const auto numItems = static_cast<int>(TabItems().Size());
         for (int i = 0; i < numItems; i++)
         {
             auto tabItem = ContainerFromIndex(i).try_as<winrt::TabViewItem>();
@@ -967,7 +967,7 @@ void TabView::RequestCloseTab(winrt::TabViewItem const& container, bool updateTa
             {
                 if (!args.Cancel() && !args.Handled())
                 {
-                    int focusedIndex = IndexFromContainer(container);
+                    const int focusedIndex = IndexFromContainer(container);
                     winrt::DependencyObject newFocusedElement{ nullptr };
 
                     for (int i = focusedIndex + 1; i < GetItemCount(); i++)
@@ -1136,7 +1136,7 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths, bool fillAllAvailableSpac
 
                     // Size tab column to needed size
                     tabColumn.MaxWidth(availableWidth + headerWidth + footerWidth);
-                    auto requiredWidth = tabWidth * TabItems().Size() + headerWidth + footerWidth;
+                    const auto requiredWidth = tabWidth * TabItems().Size() + headerWidth + footerWidth;
                     if (requiredWidth > availableWidth - (padding.Left + padding.Right))
                     {
                         tabColumn.Width(winrt::GridLengthHelper::FromPixels(availableWidth));
