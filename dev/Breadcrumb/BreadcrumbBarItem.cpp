@@ -732,7 +732,7 @@ bool BreadcrumbBarItem::IgnorePointerId(const winrt::PointerRoutedEventArgs& arg
 {
     MUX_ASSERT(m_isEllipsisDropDownItem);
 
-    uint32_t pointerId = args.Pointer().PointerId();
+    const uint32_t pointerId = args.Pointer().PointerId();
 
     if (m_trackedPointerId == 0)
     {

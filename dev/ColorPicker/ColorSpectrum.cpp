@@ -106,7 +106,7 @@ void ColorSpectrum::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
         return;
     }
 
-    bool isControlDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    const bool isControlDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
 
     winrt::ColorPickerHsvChannel incrementChannel = winrt::ColorPickerHsvChannel::Hue;
 

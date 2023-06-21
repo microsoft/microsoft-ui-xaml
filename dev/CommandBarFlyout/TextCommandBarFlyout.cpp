@@ -208,7 +208,7 @@ void TextCommandBarFlyout::UpdateButtons()
     
     winrt::MenuFlyout proofingMenuFlyout = proofingFlyout.try_as<winrt::MenuFlyout>();
     
-    bool shouldIncludeProofingMenu =
+    const bool shouldIncludeProofingMenu =
         static_cast<bool>(proofingFlyout) &&
         (!proofingMenuFlyout || proofingMenuFlyout.Items().Size() > 0);
         
@@ -323,7 +323,7 @@ void TextCommandBarFlyout::UpdateButtons()
     addRichEditButtonToCommandsIfPresent(TextControlButtons::Underline, PrimaryCommands(),
         [](winrt::ITextSelection textSelection)
     {
-        auto underline = textSelection.CharacterFormat().Underline();
+        const auto underline = textSelection.CharacterFormat().Underline();
         return (underline != winrt::UnderlineType::None) && (underline != winrt::UnderlineType::Undefined);
     });
 
@@ -554,7 +554,7 @@ TextControlButtons TextCommandBarFlyout::GetPasswordBoxButtonsToAdd(winrt::Passw
 bool TextCommandBarFlyout::IsButtonInPrimaryCommands(TextControlButtons button)
 {
     uint32_t buttonIndex = 0;
-    bool wasFound = PrimaryCommands().IndexOf(GetButton(button), buttonIndex);
+    const bool wasFound = PrimaryCommands().IndexOf(GetButton(button), buttonIndex);
     return wasFound;
 }
 

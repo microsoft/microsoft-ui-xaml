@@ -105,7 +105,7 @@ void TabViewItem::OnApplyTemplate()
                 }
                 m_shadow = shadow;
 
-                double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
+                const double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
 
                 const auto currentTranslation = Translation();
                 const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
@@ -422,7 +422,7 @@ void TabViewItem::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
         auto pointerPoint = args.GetCurrentPoint(*this);
         if (pointerPoint.Properties().IsLeftButtonPressed())
         {
-            auto isCtrlDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+            const auto isCtrlDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
             if (isCtrlDown)
             {
                 // Return here so the base class will not pick it up, but let it remain unhandled so someone else could handle it.
@@ -545,8 +545,8 @@ void TabViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
         // ListView also handles Alt+Arrow  (no Shift) by just doing regular XY focus,
         // same as how it handles Arrow without any modifier keys, so in that case
         // we do want to handle things so we get the improved keyboarding experience.
-        auto isAltDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Menu) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
-        auto isShiftDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Shift) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+        const auto isAltDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Menu) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+        const auto isShiftDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Shift) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
 
         if (!isAltDown || !isShiftDown)
         {

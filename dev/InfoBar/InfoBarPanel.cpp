@@ -132,7 +132,7 @@ winrt::Size InfoBarPanel::ArrangeOverride(winrt::Size const& finalSize)
                 auto const desiredSize = child.DesiredSize();
                 if (desiredSize.Width != 0 && desiredSize.Height != 0)
                 {
-                    auto horizontalMargin = winrt::InfoBarPanel::GetHorizontalOrientationMargin(child);
+                    const auto horizontalMargin = winrt::InfoBarPanel::GetHorizontalOrientationMargin(child);
 
                     horizontalOffset += hasPreviousElement ? (float)horizontalMargin.Left : 0;
                     if (i < childCount - 1)
