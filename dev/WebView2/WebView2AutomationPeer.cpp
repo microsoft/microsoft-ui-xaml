@@ -42,17 +42,27 @@ winrt::Rect WebView2AutomationPeer::GetBoundingRectangleCore()
     return boundingRect;
 }
 
-#if WINUI3
 HRESULT WebView2AutomationPeer::GetRawElementProviderSimple(_Outptr_opt_ IRawElementProviderSimple** value)
 {
+    if (value == nullptr) return S_OK;
+    
+    *value = nullptr;
+
     InitProvider();
-    m_provider.copy_to(value);
+
+    auto wrapperSimple = m_providerWrapper.try_as<IRawElementProviderSimple>();
+    if (wrapperSimple)
+    {
+        wrapperSimple.copy_to(value);
+    }
+
     return S_OK;
 }
 
 HRESULT WebView2AutomationPeer::IsCorrectPeerForHwnd(HWND hwnd, _Out_ bool* value)
 {
     *value = false;
+
     if (!InitProvider())
     {
         return S_OK;
@@ -63,9 +73,9 @@ HRESULT WebView2AutomationPeer::IsCorrectPeerForHwnd(HWND hwnd, _Out_ bool* valu
     {
         *value = true;
     }
+
     return S_OK;
 }
-#endif
 
 struct ProviderWrapper : winrt::implements<ProviderWrapper, winrt::IInspectable, ::IRawElementProviderSimple, ::IRawElementProviderSimple2, ::IRawElementProviderFragment, ::IRawElementProviderFragmentRoot>
 {
@@ -212,7 +222,10 @@ public:
     HRESULT STDMETHODCALLTYPE GetFocus(
         /* [retval][out] */ __RPC__deref_out_opt IRawElementProviderFragment** pRetVal) noexcept override
     {
-        return E_NOTIMPL;
+            // We don't answer the question about a current focus. We return NULL here since if we return
+            // an error UIA will bail out the entire focus operation rather than continueing its search.
+            *pRetVal = nullptr;
+            return S_OK;
     }
 
 private:
