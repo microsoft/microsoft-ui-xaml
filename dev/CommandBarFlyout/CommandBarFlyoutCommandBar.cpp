@@ -556,7 +556,7 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
 
         // If there isn't enough space to display the overflow below the command bar,
         // and if there is enough space above, then we'll display it above instead.
-        if (auto window = winrt::Window::Current() && !hadActualPlacement && m_secondaryItemsRoot)
+        if (const auto window = winrt::Window::Current() && !hadActualPlacement && m_secondaryItemsRoot)
         {
             double availableHeight = -1;
             const auto controlBounds = TransformToVisual(nullptr).TransformBounds({ 0, 0, static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight()) });
@@ -595,7 +595,7 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
         winrt::VisualStateManager::GoToState(*this, shouldExpandUp ? L"ExpandedUp" : L"ExpandedDown", useTransitions && !isForSizeChange);
 
         // Union of AvailableCommandsStates and ExpansionStates
-        bool hasPrimaryCommands = (PrimaryCommands().Size() != 0);
+        const bool hasPrimaryCommands = (PrimaryCommands().Size() != 0);
         if (hasPrimaryCommands)
         {
             if (shouldExpandUp)

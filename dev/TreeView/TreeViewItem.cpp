@@ -314,7 +314,7 @@ void TreeViewItem::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
     {
         if (property == s_IsExpandedProperty)
         {
-            bool value = unbox_value<bool>(args.NewValue());
+            const bool value = unbox_value<bool>(args.NewValue());
             if (node.IsExpanded() != value)
             {
                 UpdateNodeIsExpandedAsync(node, value);
@@ -327,7 +327,7 @@ void TreeViewItem::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
         }
         else if (property == s_HasUnrealizedChildrenProperty)
         {
-            bool value = unbox_value<bool>(args.NewValue());
+            const bool value = unbox_value<bool>(args.NewValue());
             node.HasUnrealizedChildren(value);
         }
     }
@@ -601,7 +601,7 @@ void TreeViewItem::HandleReorder(winrt::VirtualKey key)
 
     winrt::TreeViewNode parentNode = targetNode.Parent();
     const auto listControl = AncestorTreeView()->ListControl();
-    unsigned int position = listControl->IndexFromContainer(*this);
+    const unsigned int position = listControl->IndexFromContainer(*this);
     if (key == winrt::VirtualKey::Up || key == winrt::VirtualKey::Left && position != 0)
     {
         unsigned int childIndex;

@@ -209,7 +209,7 @@ namespace SystemBackdropComponentInternal
         else if (retryOnNextTick && !m_nextTickRevoker)
         {
             // We don't have a root yet so let's start with the system theme as the best we can do until the content appears.
-            auto systemTheme = winrt::Application::Current().RequestedTheme();
+            const auto systemTheme = winrt::Application::Current().RequestedTheme();
             m_actualTheme = (systemTheme == winrt::ApplicationTheme::Dark) ? winrt::ElementTheme::Dark : winrt::ElementTheme::Light;
             m_controller->UpdateTheme(m_actualTheme);
 

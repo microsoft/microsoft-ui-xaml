@@ -993,7 +993,7 @@ void NavigationView::RaiseItemInvokedForNavigationViewItem(const winrt::Navigati
     if (auto itemsSourceView = parentIR.ItemsSourceView())
     {
         auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(itemsSourceView));
-        auto itemIndex = parentIR.GetElementIndex(nvi);
+        const auto itemIndex = parentIR.GetElementIndex(nvi);
 
         // Check that index is NOT -1, meaning it is actually realized
         if (itemIndex != -1)
@@ -1005,7 +1005,7 @@ void NavigationView::RaiseItemInvokedForNavigationViewItem(const winrt::Navigati
 
     // Determine the recommeded transition direction.
     // Any transitions other than `Default` only apply in top nav scenarios.
-    auto recommendedDirection = [this, prevItem, nvi, parentIR]()
+    const auto recommendedDirection = [this, prevItem, nvi, parentIR]()
     {
         if (IsTopNavigationView() && nvi.SelectsOnInvoked())
         {
@@ -1209,7 +1209,7 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
         nvibImpl->IsTopLevelItem(IsTopLevelItem(nvib));
 
         // Visual state info propagation
-        auto position = [this, ir]()
+        const auto position = [this, ir]()
         {
             if (IsTopNavigationView())
             {
@@ -2350,7 +2350,7 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         // otherwise if prevItem is on left side of nextActualItem, transition is from left
         //           if prevItem is on right side of nextActualItem, transition is from right
         // click on Settings item is considered Default
-        auto recommendedDirection = [this, prevItem, nextItem]()
+        const auto recommendedDirection = [this, prevItem, nextItem]()
         {
             if (IsTopNavigationView())
             {
@@ -2943,7 +2943,7 @@ void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
         m_TabKeyPrecedesFocusChange = true;
         break;
     case winrt::VirtualKey::Left:
-        auto altState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Menu);
+        const auto altState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Menu);
         const bool isAltPressed = (altState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
 
         if (isAltPressed && IsPaneOpen() && IsLightDismissible())
@@ -4936,7 +4936,7 @@ void NavigationView::UpdatePaneShadow()
 
         // Shadow will get clipped if casting on the splitView.Content directly
         // Creating a canvas with negative margins as receiver to allow shadow to be drawn outside the content grid 
-        winrt::Thickness shadowReceiverMargin = { 0, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
+        const winrt::Thickness shadowReceiverMargin = { 0, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
 
         // Ensuring shadow is aligned to the left
         shadowReceiver.HorizontalAlignment(winrt::HorizontalAlignment::Left);

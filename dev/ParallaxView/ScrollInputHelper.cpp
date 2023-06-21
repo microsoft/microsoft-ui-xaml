@@ -366,7 +366,7 @@ void ScrollInputHelper::UpdateContentSize()
         return;
     }
 
-    int childrenCount = winrt::VisualTreeHelper::GetChildrenCount(itemsPresenter);
+    const int childrenCount = winrt::VisualTreeHelper::GetChildrenCount(itemsPresenter);
 
     if (childrenCount > 0)
     {
@@ -474,7 +474,7 @@ void ScrollInputHelper::UpdateViewportSize()
 
             if (itemsPresenter)
             {
-                int childrenCount = winrt::VisualTreeHelper::GetChildrenCount(itemsPresenter);
+                const int childrenCount = winrt::VisualTreeHelper::GetChildrenCount(itemsPresenter);
 
                 if (childrenCount > 0)
                 {
@@ -580,8 +580,8 @@ void ScrollInputHelper::UpdateIsTargetElementInSource()
 
     if (targetElement)
     {
-        bool sourceIsScrollViewer = m_scrollViewer != nullptr;
-        bool sourceIsScrollPresenter = m_scrollPresenter != nullptr;
+        const bool sourceIsScrollViewer = m_scrollViewer != nullptr;
+        const bool sourceIsScrollPresenter = m_scrollPresenter != nullptr;
 
         if (sourceIsScrollViewer || sourceIsScrollPresenter)
         {
@@ -820,7 +820,7 @@ bool ScrollInputHelper::IsScrollContentPresenterIScrollInfoProvider() const
 
             if (itemsPresenter)
             {
-                int childrenCount = winrt::VisualTreeHelper::GetChildrenCount(itemsPresenter);
+                const int childrenCount = winrt::VisualTreeHelper::GetChildrenCount(itemsPresenter);
 
                 if (childrenCount > 0)
                 {

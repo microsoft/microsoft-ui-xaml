@@ -88,7 +88,7 @@ void TabViewItemAutomationPeer::RemoveFromSelection()
 
 void TabViewItemAutomationPeer::Select()
 {
-    if (auto owner = Owner().try_as<TabViewItem>().get())
+    if (const auto* owner = Owner().try_as<TabViewItem>().get())
     {
         owner->IsSelected(true);
     }

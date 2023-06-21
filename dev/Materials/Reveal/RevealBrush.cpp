@@ -506,7 +506,7 @@ winrt::Windows::Graphics::Effects::IGraphicsEffect RevealBrush::CreateRevealHove
     //              </CompositeStepEffect>
     //          </ColorMatrixEffect>
     //      </ArithmeticCompositeEffect>
-    winrt::Color initBaseColor{ 0, 0, 0, 0 };
+    const winrt::Color initBaseColor{ 0, 0, 0, 0 };
 
     // (9) Noise image BorderEffect (infinitely tiles noise image)
     auto noiseBorderEffect = winrt::make_self<Microsoft::UI::Private::Composition::Effects::BorderEffect>();
@@ -881,8 +881,8 @@ bool RevealBrush::ValidatePublicRootAncestor()
     // Either Window.Content is a Canvas, in which case it's the immediate child of the root visual and we should set lights
     // on it directly, or it isn't, in which case we should have walked up to the RootScrollViewer and set lights there.
     auto ancestor = GetAncestor(windowRoot);
-    bool windowContentIsCanvas = static_cast<bool>(windowRoot.try_as<winrt::Canvas>());
-    bool walkedUpToScrollViewer = winrt::VisualTreeHelper::GetParent(windowRoot) &&
+    const bool windowContentIsCanvas = static_cast<bool>(windowRoot.try_as<winrt::Canvas>());
+    const bool walkedUpToScrollViewer = winrt::VisualTreeHelper::GetParent(windowRoot) &&
         static_cast<bool>(ancestor.try_as<winrt::FxScrollViewer>());
 
     // On MUX + RS3/RS4, it's possible XCB::OnConnected is called before visual tree is constructed and the ancestor walk returns a false elemenet.
@@ -1054,7 +1054,7 @@ void RevealBrush::OnIsContainerPropertyChanged(
 {
     if (auto elementSender = sender.try_as<winrt::IUIElement5>())
     {
-        bool isAdding = unbox_value<bool>(args.NewValue());
+        const bool isAdding = unbox_value<bool>(args.NewValue());
 
         auto lights = elementSender.Lights();
         int i = 0;

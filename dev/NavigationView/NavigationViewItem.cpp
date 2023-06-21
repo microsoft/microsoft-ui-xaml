@@ -847,7 +847,7 @@ void NavigationViewItem::PropagateDepthToChildren(int depth)
 {
     if (auto const repeater = m_repeater.get())
     {
-        auto itemsCount = repeater.ItemsSourceView().Count();
+        const auto itemsCount = repeater.ItemsSourceView().Count();
         for (int index = 0; index < itemsCount; index++)
         {
             if (auto const element = repeater.TryGetElement(index))
@@ -933,7 +933,7 @@ void NavigationViewItem::ResetTrackedPointerId()
 // Returns True when the provided pointer Id does not match the currently tracked Id.
 bool NavigationViewItem::IgnorePointerId(const winrt::PointerRoutedEventArgs& args)
 {
-    uint32_t pointerId = args.Pointer().PointerId();
+    const uint32_t pointerId = args.Pointer().PointerId();
 
     if (m_trackedPointerId == 0)
     {
