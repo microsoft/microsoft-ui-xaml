@@ -724,7 +724,7 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
     {
         m_tabItemsChangedEventSource(*this, args);
 
-        int numItems = static_cast<int>(TabItems().Size());
+        const int numItems = static_cast<int>(TabItems().Size());
         const auto listViewInnerSelectedIndex = m_listView.get().SelectedIndex();
         auto selectedIndex = SelectedIndex();
         

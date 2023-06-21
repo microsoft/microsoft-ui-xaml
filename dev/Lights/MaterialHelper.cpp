@@ -970,7 +970,7 @@ winrt::CompositionSurfaceBrush MaterialHelper::GetNoiseBrushImpl()
 
         try
         {
-            winrt::ResolutionScale resScale{ winrt::DisplayInformation::GetForCurrentView().ResolutionScale() };
+            const winrt::ResolutionScale resScale{ winrt::DisplayInformation::GetForCurrentView().ResolutionScale() };
             if (resScale != winrt::ResolutionScale::Invalid)
             {
                 resScaleInt = static_cast<int>(resScale);
