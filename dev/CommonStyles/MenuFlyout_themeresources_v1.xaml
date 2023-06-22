@@ -717,7 +717,7 @@
                             </Grid.ColumnDefinitions>
                             <FontIcon x:Name="CheckGlyph"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                Glyph="&#xE001;"
+                                Glyph="&#xE73E;"
                                 FontSize="16"
                                 Foreground="{ThemeResource ToggleMenuFlyoutItemCheckGlyphForeground}"
                                 Opacity="0"
@@ -861,7 +861,7 @@
                             <FontIcon
                                 x:Name="CheckGlyph"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                Glyph="&#xE001;"
+                                Glyph="&#xE73E;"
                                 FontSize="16"
                                 Foreground="{ThemeResource SystemControlForegroundBaseMediumHighBrush}"
                                 Opacity="0"
@@ -1006,7 +1006,7 @@
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                             <FontIcon x:Name="SubItemChevron"
                                 Grid.Column="1"
-                                Glyph="&#xE0E3;"
+                                Glyph="&#xE76C;"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 FontSize="12"
                                 AutomationProperties.AccessibilityView="Raw"
@@ -1160,7 +1160,7 @@
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                             <FontIcon x:Name="SubItemChevron"
                                 Grid.Column="1"
-                                Glyph="&#xE0E3;"
+                                Glyph="&#xE76C;"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 FontSize="12"
                                 AutomationProperties.AccessibilityView="Raw"

@@ -70,7 +70,7 @@ void RatingControl::UpdateCaptionMargins()
     // When text scale changes we need to update top margin to make the text follow start center.
     if (auto captionTextBlock = m_captionTextBlock.safe_get())
     {
-        double textScaleFactor = GetUISettings().TextScaleFactor();
+        const double textScaleFactor = GetUISettings().TextScaleFactor();
         winrt::Thickness margin = captionTextBlock.Margin();
         margin.Top = c_defaultCaptionTopMargin - (ActualRatingFontSize() * c_verticalScaleAnimationCenterPoint);
 
@@ -767,7 +767,7 @@ void RatingControl::OnPointerMovedOverBackgroundStackPanel(const winrt::IInspect
         if (ShouldEnableAnimation())
         {
             m_sharedPointerPropertySet.InsertScalar(L"starsScaleFocalPoint", xPosition);
-            auto deviceType = args.Pointer().PointerDeviceType();
+            const auto deviceType = args.Pointer().PointerDeviceType();
 
             switch (deviceType)
             {
@@ -914,7 +914,7 @@ void RatingControl::OnKeyDown(winrt::KeyRoutedEventArgs const& eventArgs)
             flowDirectionReverser *= -1.0;
         }
 
-        auto originalKey = eventArgs.as<winrt::KeyRoutedEventArgs>().OriginalKey();
+        const auto originalKey = eventArgs.as<winrt::KeyRoutedEventArgs>().OriginalKey();
 
         // Up down are right/left in keyboard only
         if (originalKey == winrt::VirtualKey::Up)
@@ -989,7 +989,7 @@ void RatingControl::OnPreviewKeyDown(winrt::KeyRoutedEventArgs const& eventArgs)
 
     if (!IsReadOnly() && IsFocusEngaged() && IsFocusEngagementEnabled())
     {
-        auto originalKey = eventArgs.as<winrt::KeyRoutedEventArgs>().OriginalKey();
+        const auto originalKey = eventArgs.as<winrt::KeyRoutedEventArgs>().OriginalKey();
         if (originalKey == winrt::VirtualKey::GamepadA)
         {
             m_shouldDiscardValue = false;
@@ -1024,7 +1024,7 @@ void RatingControl::OnPreviewKeyDown(winrt::KeyRoutedEventArgs const& eventArgs)
 
 void RatingControl::OnPreviewKeyUp(winrt::KeyRoutedEventArgs const& eventArgs)
 {
-    auto originalKey = eventArgs.as<winrt::KeyRoutedEventArgs>().OriginalKey();
+    const auto originalKey = eventArgs.as<winrt::KeyRoutedEventArgs>().OriginalKey();
 
     if (IsFocusEngagementEnabled() && originalKey == winrt::VirtualKey::GamepadA && m_disengagedWithA)
     {

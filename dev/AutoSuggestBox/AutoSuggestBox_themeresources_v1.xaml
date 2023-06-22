@@ -112,7 +112,7 @@
                                                     VerticalAlignment="Center"
                                                     HorizontalAlignment="Center"
                                                     FontStyle="Normal"
-                                                    Text="&#xE10A;"
+                                                    Text="&#xE894;"
                                                     FontSize="{ThemeResource AutoSuggestBoxIconFontSize}"
                                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                     AutomationProperties.AccessibilityView="Raw" />

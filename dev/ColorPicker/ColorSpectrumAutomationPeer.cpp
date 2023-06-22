@@ -89,7 +89,7 @@ winrt::hstring ColorSpectrumAutomationPeer::Value()
 void ColorSpectrumAutomationPeer::SetValue(winrt::hstring const& value)
 {
     winrt::ColorSpectrum colorSpectrumOwner = Owner().as<winrt::ColorSpectrum>();
-    winrt::Color color = unbox_value<winrt::Color>(winrt::XamlBindingHelper::ConvertValue({ winrt::hstring_name_of<winrt::Color>(), winrt::TypeKind::Metadata }, box_value(value)));
+    const winrt::Color color = unbox_value<winrt::Color>(winrt::XamlBindingHelper::ConvertValue({ winrt::hstring_name_of<winrt::Color>(), winrt::TypeKind::Metadata }, box_value(value)));
 
     colorSpectrumOwner.Color(color);
 

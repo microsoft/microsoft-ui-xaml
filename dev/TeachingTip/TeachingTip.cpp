@@ -1181,7 +1181,7 @@ bool TeachingTip::HandleF6Clicked(bool fromPopup)
 
     if (hasFocusInSubtree && fromPopup)
     {
-        bool setFocus = SetFocus(m_previouslyFocusedElement.get(), winrt::FocusState::Programmatic);
+        const bool setFocus = SetFocus(m_previouslyFocusedElement.get(), winrt::FocusState::Programmatic);
         m_previouslyFocusedElement = nullptr;
         return setFocus;
     }
@@ -1612,7 +1612,7 @@ void TeachingTip::CreateExpandAnimation()
 {
     auto const compositor = winrt::Window::Current().Compositor();
 
-    auto&& expandEasingFunction = [this, compositor]()
+    const auto&& expandEasingFunction = [this, compositor]()
     {
         if (!m_expandEasingFunction)
         {
@@ -1659,7 +1659,7 @@ void TeachingTip::CreateContractAnimation()
 {
     auto const compositor = winrt::Window::Current().Compositor();
 
-    auto&& contractEasingFunction = [this, compositor]()
+    const auto&& contractEasingFunction = [this, compositor]()
     {
         if (!m_contractEasingFunction)
         {

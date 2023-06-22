@@ -50,7 +50,7 @@ void TreeViewList::OnDragItemsStarting(const winrt::IInspectable& /*sender*/, co
         bool isMultipleDragging = false;
         if (IsMutiSelectWithSelectedItems())
         {
-            int selectedCount = ListViewModel()->GetSelectedNodes().Size();
+            const int selectedCount = ListViewModel()->GetSelectedNodes().Size();
             if (selectedCount > 1)
             {
                 auto settings = tvItem.as<winrt::TreeViewItem>().TreeViewItemTemplateSettings();
@@ -461,7 +461,7 @@ void TreeViewList::UpdateDropTargetDropEffect(bool forceUpdate, bool isLeaving, 
                 int insertIndex = -1;
                 int afterInsertIndex = -1;
                 int beforeInsertIndex = -1;
-                auto dragItemIndex = IndexFromContainer(dragItem);
+                const auto dragItemIndex = IndexFromContainer(dragItem);
 
                 if (keyboardReorderedContainer)
                 {
@@ -557,7 +557,7 @@ std::vector<winrt::TreeViewNode> TreeViewList::GetRootsOfSelectedSubtrees() cons
 int TreeViewList::FlatIndex(const winrt::TreeViewNode& node) const
 {
     unsigned int flatIndex = 0;
-    bool found = ListViewModel()->IndexOfNode(node, flatIndex);
+    const bool found = ListViewModel()->IndexOfNode(node, flatIndex);
     flatIndex = found ? flatIndex : -1;
     return flatIndex;
 }

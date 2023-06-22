@@ -857,7 +857,7 @@
                                     VerticalAlignment="Center"
                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                     FontSize="20"
-                                    Glyph="&#xE10C;"
+                                    Glyph="&#xE712;"
                                     Height="{ThemeResource AppBarExpandButtonCircleDiameter}" />
                             </Button>
                             <Popup x:Name="OverflowPopup">
@@ -1679,7 +1679,7 @@
                                     VerticalAlignment="Center"
                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                     FontSize="20"
-                                    Glyph="&#xE10C;"
+                                    Glyph="&#xE712;"
                                     Height="{ThemeResource AppBarExpandButtonCircleDiameter}" />
                             </Button>
                             <Popup x:Name="OverflowPopup">

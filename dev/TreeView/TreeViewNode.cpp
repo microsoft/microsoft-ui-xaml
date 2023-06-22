@@ -96,7 +96,7 @@ void TreeViewNode::UpdateDepth(int depth)
 
 void TreeViewNode::UpdateHasChildren()
 {
-    bool hasChildren = ((Children().Size() != 0) || m_HasUnrealizedChildren);
+    const bool hasChildren = ((Children().Size() != 0) || m_HasUnrealizedChildren);
     SetValue(s_HasChildrenProperty, box_value(hasChildren));
 }
 

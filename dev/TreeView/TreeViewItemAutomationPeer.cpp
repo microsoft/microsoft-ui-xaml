@@ -138,7 +138,7 @@ int32_t TreeViewItemAutomationPeer::GetSizeOfSetCore()
     {
         if (const auto targetParentNode = targetNode.Parent())
         {
-            UINT32 size = targetParentNode.Children().Size();
+            const UINT32 size = targetParentNode.Children().Size();
             setSize = static_cast<int>(size);
         }
     }

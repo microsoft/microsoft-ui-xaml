@@ -4339,7 +4339,7 @@ void ScrollPresenter::OnPointerWheelChangedHandler(
         return;
     }
 
-    winrt::CoreVirtualKeyStates ctrlState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Control);
+    const winrt::CoreVirtualKeyStates ctrlState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Control);
     winrt::PointerPoint pointerPoint = args.GetCurrentPoint(*this);
     winrt::PointerPointProperties pointerPointProperties = pointerPoint.Properties();
     const bool isHorizontalMouseWheel = pointerPointProperties.IsHorizontalMouseWheel();

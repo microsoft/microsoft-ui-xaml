@@ -403,7 +403,7 @@
 
     <Style x:Key="NavigationViewPaneSearchButtonStyle" TargetType="Button">
         <Setter Property="MinHeight" Value="40"/>
-        <Setter Property="Content" Value="&#xE11A;"/>
+        <Setter Property="Content" Value="&#xE721;"/>
         <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
         <Setter Property="BorderThickness" Value="{ThemeResource NavigationViewToggleBorderThickness}" />
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
@@ -470,7 +470,7 @@
                             AutomationProperties.AccessibilityView="Raw"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             FontSize="20"
-                            Glyph="&#xE10C;"
+                            Glyph="&#xE712;"
                             Foreground="{TemplateBinding Foreground}"
                             IsHitTestVisible="False" />
                     </Grid>
@@ -538,7 +538,7 @@
                             AutomationProperties.AccessibilityView="Raw"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             FontSize="20"
-                            Glyph="&#xE10C;"
+                            Glyph="&#xE712;"
                             Foreground="{TemplateBinding Foreground}"
                             IsHitTestVisible="False" />
                     </Grid>
