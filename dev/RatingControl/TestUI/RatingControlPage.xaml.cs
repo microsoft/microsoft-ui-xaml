@@ -496,7 +496,7 @@ namespace MUXControlsTestApp
 
         private void UnsetFallbackRating_Loaded(object sender, RoutedEventArgs e)
         {
-            PerformGlyphVerification(UnsetFallbackRating, "\uE00B" /* full heart */, UnsetFallbackTextBlock, "RatingBackgroundStackPanel");
+            PerformGlyphVerification(UnsetFallbackRating, "\uEB52" /* full heart */, UnsetFallbackTextBlock, "RatingBackgroundStackPanel");
         }
 
         private void PlaceholderFallbackRating_Loaded(object sender, RoutedEventArgs e)

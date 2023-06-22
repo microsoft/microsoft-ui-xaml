@@ -9,7 +9,7 @@ namespace CustomTasks
 {
     class Utils
     {
-        //The XmlWriter can't handle &#xE0E5 unless we escape/unescape the ampersand
+        //The XmlWriter can't handle &#xE70D unless we escape/unescape the ampersand
         public static string UnEscapeAmpersand(string s)
         {
             return s.Replace("&amp;", "&");

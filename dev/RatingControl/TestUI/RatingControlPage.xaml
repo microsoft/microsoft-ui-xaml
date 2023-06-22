@@ -136,7 +136,7 @@
                             </ResourceDictionary>
                         </muxcontrols:RatingControl.Resources>
                         <muxcontrols:RatingControl.ItemInfo>
-                            <muxcontrols:RatingItemFontInfo Glyph="&#xE00B;"/>
+                            <muxcontrols:RatingItemFontInfo Glyph="&#xEB52;"/>
                         </muxcontrols:RatingControl.ItemInfo>
                     </muxcontrols:RatingControl>
                     <TextBlock x:Name="UnsetFallbackTextBlock" Text="^" AutomationProperties.AutomationId="UnsetFallbackTextBlock"/>

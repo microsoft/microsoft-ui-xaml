@@ -21,7 +21,7 @@
                 <controls:AnimatedIcon>
                     <animatedvisuals:AnimatedFindVisualSource/>
                     <controls:AnimatedIcon.FallbackIconSource>
-                        <controls:FontIconSource Glyph="&#xE11A;" FontSize="12" FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
+                        <controls:FontIconSource Glyph="&#xE721;" FontSize="12" FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
                     </controls:AnimatedIcon.FallbackIconSource>
                 </controls:AnimatedIcon>
             </AutoSuggestBox.QueryIcon>

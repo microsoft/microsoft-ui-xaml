@@ -577,7 +577,7 @@
                         <FontIcon
                             x:Name="CheckGlyph"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                            Glyph="&#xE001;"
+                            Glyph="&#xE73E;"
                             FontSize="12"
                             Foreground="{ThemeResource MenuFlyoutSubItemChevron}"
                             Opacity="0"
@@ -1005,7 +1005,7 @@
 
                         <FontIcon x:Name="CheckGlyph"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                            Glyph="&#xE001;"
+                            Glyph="&#xE73E;"
                             FontSize="12"
                             Foreground="{ThemeResource ToggleMenuFlyoutItemCheckGlyphForeground}"
                             Opacity="0"

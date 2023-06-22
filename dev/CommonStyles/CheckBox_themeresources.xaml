@@ -368,7 +368,7 @@
     <x:Double x:Key="CheckBoxMinWidth">120</x:Double>
     <Thickness x:Key="CheckBoxPadding">8,5,0,0</Thickness>
     <Thickness x:Key="CheckBoxFocusVisualMargin">-7,-3,-7,-3</Thickness>
-    <x:String x:Key="CheckBoxCheckedGlyph">&#xE001;</x:String>
+    <x:String x:Key="CheckBoxCheckedGlyph">&#xE73E;</x:String>
     <x:String x:Key="CheckBoxIndeterminateGlyph">&#xE9AE;</x:String>
 
     <Style TargetType="CheckBox" BasedOn="{StaticResource DefaultCheckBoxStyle}" />
