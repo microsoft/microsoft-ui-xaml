@@ -582,7 +582,7 @@
                             <StackPanel.Resources>
                                 <controls:FontIconSource x:Name="MyFontIconSource" Glyph="{Binding ElementName=boundFallback, Path=FallbackGlyph}"/>
                             </StackPanel.Resources>
-                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}"  x:Name="boundFallback" Title="AnimatedFindVisualSource" Background="DarkSlateGray" FallbackGlyph="&#xE001;">
+                            <local:AnimatedIconHost Foreground="{StaticResource TestIconForeground}"  x:Name="boundFallback" Title="AnimatedFindVisualSource" Background="DarkSlateGray" FallbackGlyph="&#xE73E;">
                                 <local:AnimatedIconHost.IconSource>
                                     <controls:AnimatedIconSource FallbackIconSource="{StaticResource MyFontIconSource}"/>
                                 </local:AnimatedIconHost.IconSource>

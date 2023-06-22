@@ -379,7 +379,7 @@
                                                     HorizontalAlignment="Center"
                                                     FontStyle="Normal"
                                                     FontSize="{ThemeResource TextBoxIconFontSize}"
-                                                    Text="&#xE10A;"
+                                                    Text="&#xE894;"
                                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                     AutomationProperties.AccessibilityView="Raw" />
                                             </Grid>
