@@ -16,7 +16,7 @@
     </muxc:SwipeItems>
     
     <muxc:SymbolIconSource x:Key="SymbolIcon" Symbol="Camera"/>
-    <muxc:FontIconSource x:Key="FontIcon" Glyph="&#xE115;" FontWeight="Normal" />
+    <muxc:FontIconSource x:Key="FontIcon" Glyph="&#xE713;" FontWeight="Normal" />
     <muxc:BitmapIconSource x:Key="BitmapIcon" UriSource="ms-appx:///Assets/ingredient3.png" ShowAsMonochrome="False"/>
     <muxc:PathIconSource x:Key="PathIcon" Data="F1 M 16,12 20,2L 20,16 1,16"/>
     
