@@ -1,0 +1,47 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: configure
+      run: ./configure
+    - name: make
+      run: make
+    - name: make check
+      run: make check
+    - name: make distcheck
+      run: make distcheck
+
+- name: Setup Java JDK
+  uses: actions/setup-java@v1.4.4
+  with:
+    # The Java version to make available on the path. Takes a whole or semver Java version, or 1.x syntax (e.g. 1.8 => Java 8.x). Early access versions can be specified in the form of e.g. 14-ea, 14.0.0-ea, or 14.0.0-ea.28
+    java-version: 
+    # The package type (jre, jdk, jdk+fx)
+    java-package: # optional, default is jdk
+    # The architecture (x86, x64) of the package.
+    architecture: # optional, default is x64
+    # Path to where the compressed JDK is located. The path could be in your source repository or a local path on the agent.
+    jdkFile: # optional
+    # ID of the distributionManagement repository in the pom.xml file. Default is `github`
+    server-id: # optional, default is github
+    # Environment variable name for the username for authentication to the Apache Maven repository. Default is $GITHUB_ACTOR
+    server-username: # optional, default is GITHUB_ACTOR
+    # Environment variable name for password or token for authentication to the Apache Maven repository. Default is $GITHUB_TOKEN
+    server-password: # optional, default is GITHUB_TOKEN
+    # Path to where the settings.xml file will be written. Default is ~/.m2.
+    settings-path: # optional
+    # GPG private key to import. Default is empty string.
+    gpg-private-key: # optional
+    # Environment variable name for the GPG private key passphrase. Default is $GPG_PASSPHRASE.
+    gpg-passphrase: # optional
