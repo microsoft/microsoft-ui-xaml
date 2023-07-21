@@ -91,6 +91,8 @@ Blank -  Not available
 | Widgets                                                               |                    |                    |                |               | &#128994; | &#128994;
 | Media playback controls                                               |                    |                    |                |               | &#128994;  | &#128994;
 | InfoBadge and other updates from WinUI 2.8                            |                    |                    |                |               | &#128994; | &#128994;
+| Elevated Admin Support                                                |                    |                    |                |               |           |
+| Support PrintManager API                                              |                    |                    |                |               |           |
 
 [^1]: Supported on Visual Studio 2022 Preview 5 and above for packaged apps only 
 [^2]: Supported in 1.0.1 and above
