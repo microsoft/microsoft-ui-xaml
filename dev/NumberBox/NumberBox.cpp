@@ -36,8 +36,6 @@ NumberBox::NumberBox()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NumberBox);
 
-    Loaded({ this, &NumberBox::OnLoaded });
-
     NumberFormatter(GetRegionalSettingsAwareDecimalFormatter());
 
     PointerWheelChanged({ this, &NumberBox::OnNumberBoxScroll });
@@ -177,6 +175,11 @@ void NumberBox::OnApplyTemplate()
         return textBox;
     }());
 
+    if (const auto textBox = m_textBox.get())
+    {
+        textBox.Loaded({ this, &NumberBox::OnTextBoxLoaded });
+    }
+
     m_popup.set(GetTemplateChildT<winrt::Popup>(c_numberBoxPopupName, controlProtected));
 
     if (SharedHelpers::IsThemeShadowAvailable())
@@ -231,9 +234,9 @@ void NumberBox::OnApplyTemplate()
     }
 }
 
-void NumberBox::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
+void NumberBox::OnTextBoxLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
-    // This is done OnLoaded so TextBox VisualStates can be updated properly.
+    // Updating again once TextBox is loaded so its visual states are set properly.
     UpdateSpinButtonPlacement();
 }
 
@@ -654,6 +657,7 @@ void NumberBox::UpdateSpinButtonPlacement()
     }
 
     winrt::VisualStateManager::GoToState(*this, state, false);
+
     if (const auto textbox = m_textBox.get())
     {
         winrt::VisualStateManager::GoToState(textbox, state, false);
