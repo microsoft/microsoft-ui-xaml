@@ -11,6 +11,7 @@
     <MdMergeNamespaceMergeDepth>3</MdMergeNamespaceMergeDepth>
     <ProjectWinMDName>Microsoft.UI.winmd</ProjectWinMDName>
     <DependencyPropertyCodeGenOutputDirectory>$(MSBuildThisFileDirectory)..\Generated</DependencyPropertyCodeGenOutputDirectory>
+    <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
   <Import Condition="'$(Configuration)' == 'Release'" Project="$(MSBuildProjectDirectory)\..\..\PGO.compile.props" />
   <Import Condition="'$(PGOBuildMode)' == 'Optimize'" Project="$(MSBuildProjectDirectory)\..\..\tools\MUXPGODatabase\PGO.version.props" />

@@ -13,8 +13,8 @@ enum class NavigationViewSplitVectorID
     Size = 4
 };
 
-using SplitDataSourceT = typename SplitDataSourceBase<winrt::IInspectable, NavigationViewSplitVectorID, float>;
-using SplitVectorT = typename SplitVector<winrt::IInspectable, NavigationViewSplitVectorID>;
+using SplitDataSourceT = SplitDataSourceBase<winrt::IInspectable, NavigationViewSplitVectorID, float>;
+using SplitVectorT = SplitVector<winrt::IInspectable, NavigationViewSplitVectorID>;
 
 class TopNavigationViewDataProvider: public SplitDataSourceT
 {

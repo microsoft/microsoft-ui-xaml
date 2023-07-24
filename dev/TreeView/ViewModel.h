@@ -6,7 +6,7 @@
 #include "TreeViewNode.h"
 
 using TreeNodeSelectionState = TreeViewNode::TreeNodeSelectionState;
-using ViewModelVectorOptions = typename VectorOptionsFromFlag<winrt::IInspectable, MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>()>;
+using ViewModelVectorOptions = VectorOptionsFromFlag<winrt::IInspectable, MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>()>;
 
 class ViewModel : 
     public ReferenceTracker<
