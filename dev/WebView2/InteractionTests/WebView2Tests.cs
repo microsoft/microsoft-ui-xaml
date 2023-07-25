@@ -2523,7 +2523,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
 
-        [TestMethod]
+        //[TestMethod] Bug 45686914: WinUI2: WebView2Tests.ConcurrentCreationRequestsTest is failing in main.
         [TestProperty("TestSuite", "D")]
         public void ConcurrentCreationRequestsTest()
         {
