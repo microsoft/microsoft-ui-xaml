@@ -22,9 +22,13 @@ jobs:
     - uses: actions/stale@v5
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+        ascending: true # older issues first
         stale-issue-label: 'no-issue-activity'
         stale-issue-message: 'This issue is stale because it has been open 180 days with no activity. Remove stale label or comment or this will be closed in 5 days.'
         days-before-stale: 180
+        days-before-pr-stale: -1 # issues only
         days-before-close: 5
-        any-of-labels: 'discussion'
+        any-of-labels: documentation
+        exempt-issue-labels: 'feature proposal'
+        exempt-all-milestones: true
         debug-only: true
