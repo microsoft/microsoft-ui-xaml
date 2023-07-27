@@ -3,7 +3,7 @@
 # You can adjust the behavior by modifying this file.
 # For more information, see:
 # https://github.com/actions/stale
-name: Mark stale issues and pull requests
+name: Mark stale issues
 
 on:
   pull_request:
@@ -28,7 +28,8 @@ jobs:
         days-before-stale: 180
         days-before-pr-stale: -1 # issues only
         days-before-close: 5
-        any-of-labels: documentation
+        # any-of-labels: documentation
+        only-labels: documentation
         exempt-issue-labels: 'feature proposal'
         exempt-all-milestones: true
-        debug-only: true
+        debug-only: ${{ github.event_name == 'pull_request' }} # Dry-run changes to the workflow
