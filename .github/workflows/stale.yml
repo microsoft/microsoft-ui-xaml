@@ -28,7 +28,8 @@ jobs:
         days-before-stale: 180
         days-before-pr-stale: -1 # issues only
         days-before-close: 5
-        any-of-labels: 'code-vs-markup-mismatch, spec issue'
+        any-of-labels: 'code-vs-markup-mismatch, discussion, documentation, question, spec issue, test issue, wpf-vs-winui-mismatch'
         exempt-issue-labels: 'feature proposal'
         exempt-all-milestones: true
         debug-only: ${{ github.event_name == 'pull_request' }} # Dry-run changes to the workflow
+        operations-per-run: 500
