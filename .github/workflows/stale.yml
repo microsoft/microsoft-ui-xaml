@@ -32,4 +32,4 @@ jobs:
         exempt-issue-labels: 'feature proposal'
         exempt-all-milestones: true
         debug-only: ${{ github.event_name == 'pull_request' }} # Dry-run changes to the workflow
-        operations-per-run: 500
+        operations-per-run: 1000
