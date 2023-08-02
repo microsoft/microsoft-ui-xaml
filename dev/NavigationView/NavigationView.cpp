@@ -4294,21 +4294,30 @@ void NavigationView::UpdatePaneDisplayMode(winrt::NavigationViewPaneDisplayMode 
     // See #1702 and #1787
     if (!IsTopNavigationView())
     {
-        if (IsPaneOpen())
+        // In rare cases it is possible to end up in a state where two calls to OnPropertyChanged for PaneDisplayMode can end up on the stack
+        // Calls above to UpdatePaneDisplayMode() can result in further property updates.
+        // As a result of this reentrancy, we can end up with an incorrect result for IsPaneOpen as the later OnPropertyChanged for PaneDisplayMode
+        // will complete during the OnPropertyChanged of the earlier one. 
+        // To avoid this, we only call OpenPane()/ClosePane() if PaneDisplayMode has not changed.
+        if (newDisplayMode == PaneDisplayMode())
         {
-            if (newDisplayMode == winrt::NavigationViewPaneDisplayMode::LeftMinimal)
+            if (IsPaneOpen())
             {
-                ClosePane();
+                if (newDisplayMode == winrt::NavigationViewPaneDisplayMode::LeftMinimal)
+                {
+                    ClosePane();
+                }
+            }
+            else
+            {
+                if (oldDisplayMode == winrt::NavigationViewPaneDisplayMode::LeftMinimal
+                    && newDisplayMode == winrt::NavigationViewPaneDisplayMode::Left)
+                {
+                    OpenPane();
+                }
             }
         }
-        else
-        {
-            if (oldDisplayMode == winrt::NavigationViewPaneDisplayMode::LeftMinimal
-                && newDisplayMode == winrt::NavigationViewPaneDisplayMode::Left)
-            {
-                OpenPane();
-            }
-        }
+        
     }
 }
 
