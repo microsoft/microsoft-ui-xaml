@@ -79,9 +79,11 @@ stages:
         Release_x86:
           buildPlatform: 'x86'
           buildConfiguration: 'Release'
+          testOS: Win10-RS5
         Release_x64:
           buildPlatform: 'x64'
           buildConfiguration: 'Release'
+          testOS: Win10-22H2
 
   - template: AzurePipelinesTemplates\MUX-BuildAndPublishPGONuGet-Job.yml
     parameters:
