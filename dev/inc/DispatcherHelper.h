@@ -32,7 +32,7 @@ public:
     {
         if (dispatcherQueue)
         {
-            auto result = dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler(func));
+            const auto result = dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler(func));
             if (!result)
             {
                 if (fallbackToThisThread)
@@ -75,6 +75,8 @@ public:
             }
         }
     }
+
+    auto DispatcherQueue() { return dispatcherQueue; }
 
 private:
     winrt::Windows::System::DispatcherQueue dispatcherQueue{ nullptr };

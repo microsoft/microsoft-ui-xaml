@@ -3,7 +3,7 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <PlatformToolset>v141</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)' >= '16.0'">v142</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' >= '16.0'">v143</PlatformToolset>
     <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
     <CppTargetsFilePath>$(VCTargetsPath)\Microsoft.Cpp.targets</CppTargetsFilePath>
@@ -31,6 +31,9 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions);MUX_PRERELEASE</PreprocessorDefinitions>
     </Midl>
   </ItemDefinitionGroup>
+  <PropertyGroup Condition="$(MUXFinalRelease) == 'false'">
+    <DefineConstants>$(DefineConstants);MUX_PRERELEASE</DefineConstants>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="$(UseInsiderSDK) == 'true'">
     <ClCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);USE_INSIDER_SDK</PreprocessorDefinitions>

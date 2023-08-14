@@ -1,7 +1,6 @@
 parameters:
 # Extract the build revision number from Build.BuildNumber. This is needed to pass to build-nupkg
   jobName: ''
-  dependsOn: ''
   buildOutputDir: '$(Build.SourcesDirectory)\BuildOutput'
   nupkgdir: '$(build.artifactStagingDirectory)'
 # The "primary" build arch is the one that the nuspec gets its winmd, pri, and other neutral files from
@@ -13,11 +12,11 @@ parameters:
 
 jobs:
 - job: ${{ parameters.jobName }}
-  dependsOn:
-    - ${{ parameters.dependsOn }}
-
-  pool:
-    vmImage: 'windows-2019'
+  pool: 
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPoolOSS-S
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPool-S
 
   steps:
 

@@ -37,7 +37,7 @@ winrt::hstring InitialsGenerator::InitialsFromContactObject(const winrt::Contact
     // available, that is the data which should be used.
     if (!contact.FirstName().empty() && !contact.LastName().empty())
     {
-        CharacterType type = GetCharacterType(contact.FirstName());
+        const CharacterType type = GetCharacterType(contact.FirstName());
 
         // We'll attempt to make initials only if we recognize a name in the Standard character set.
         if (type == CharacterType::Standard)

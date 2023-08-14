@@ -1,0 +1,21 @@
+steps:
+  # The environment variable VCToolsInstallDir isn't defined on lab machines, so we need to retrieve it ourselves.
+  - script: |
+      "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -Latest -requires Microsoft.Component.MSBuild -property InstallationPath > %TEMP%\vsinstalldir.txt
+      set /p _VSINSTALLDIR15=<%TEMP%\vsinstalldir.txt
+      del %TEMP%\vsinstalldir.txt
+      call "%_VSINSTALLDIR15%\Common7\Tools\VsDevCmd.bat"
+      echo VCToolsInstallDir = %VCToolsInstallDir%
+      echo VCToolsRedistDir = %VCToolsRedistDir%
+      echo ##vso[task.setvariable variable=VCToolsInstallDir]%VCToolsInstallDir%
+      echo ##vso[task.setvariable variable=VCToolsRedistDir]%VCToolsRedistDir%
+    displayName: 'Retrieve VC tools directory'
+
+  - task: powershell@2
+    displayName: 'Restore PGO database'
+    condition: eq(variables['PGOBuildMode'], 'Optimize')
+    inputs:
+      targetType: filePath
+      workingDirectory: $(Build.SourcesDirectory)\tools\MUXPGODatabase
+      filePath: $(Build.SourcesDirectory)\tools\MUXPGODatabase\restore-pgodb.ps1
+      arguments: -NuGetConfigPath $(Build.SourcesDirectory)\nuget.config

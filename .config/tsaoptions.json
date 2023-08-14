@@ -1,0 +1,9 @@
+{
+    "instanceUrl": "https://microsoft.visualstudio.com",
+    "projectName": "os",
+    "areaPath": "OS\\Windows Client and Services\\ADEPT\\OWL (Open Windows pLatform)\\Controls",
+    "iterationPath": "OS",
+    "notificationAliases": [ "uxpct@microsoft.com" ],
+    "ignoreBranchName": true,
+    "codebaseName": "microsoft_microsoft-ui-xaml"
+}

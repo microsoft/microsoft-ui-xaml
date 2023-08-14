@@ -655,7 +655,7 @@
                                 contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"/>
                             <FontIcon x:Name="CheckGlyph"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                Glyph="&#xE001;"
+                                Glyph="&#xE73E;"
                                 FontSize="16"
                                 Foreground="{ThemeResource CheckBoxCheckGlyphForegroundUnchecked}"
                                 Opacity="0" />

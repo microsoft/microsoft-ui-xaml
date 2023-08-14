@@ -48,7 +48,6 @@ private:
     bool MoveFocus(int initialIndexIncrement);
     bool MoveFocusPrevious();
     bool MoveFocusNext();
-    bool HandleEdgeCaseFocus(bool first, const winrt::IInspectable& source);
     void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
 
     void UpdateItemsRepeaterItemsSource();

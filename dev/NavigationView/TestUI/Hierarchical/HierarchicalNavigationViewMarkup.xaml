@@ -86,6 +86,7 @@
                 <Button Content="Get Selected Item Label" x:Name="GetSelectedItemLabelButton" AutomationProperties.Name="GetSelectedItemLabelButton" Click="PrintSelectedItem"/>
                 <Button Content="Collapse Selected Item" Click="CollapseSelectedItem"/>
                 <Button Content="Remove Second MenuItem" Click="RemoveSecondMenuItem"/>
+                <Button Content="Add Child Item to MenuItem19" Click="AddChildItemToMI19"/>
                 <TextBlock x:Name="IsChildSelectedLabel" AutomationProperties.Name="IsChildSelectedLabel" Text="uninitialized"/>
                 <Button AutomationProperties.Name="PrintTopLevelIsChildSelectedItemsButton" Content="Print TopLevel IsChildSelected Items" Click="PrintTopLevelIsChildSelectedItems"/>
                 <Button Content="Select Second Item" Click="SelectSecondItem"/>

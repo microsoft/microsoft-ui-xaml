@@ -17,11 +17,10 @@ In these calls we’ll discuss the WinUI [roadmap](docs/roadmap.md), our status 
 
 You can watch them online here on YouTube at the [Windows Developer channel](https://www.youtube.com/channel/UCzLbHrU7U3cUDNQWWAqjceA).
 
-Add the event to your calendar: [ICS calendar file](docs/communitycalls/WinUICommunityCall.ics)
 
 ## Using WinUI 3
 
-You can build new Windows apps using WinUI 3, which ships as a part of the Windows App SDK. The latest available stable release is the Windows App SDK 1.0 (previously called Project Reunion). With this release, you can ship production Desktop apps to the Microsoft Store.
+You can build new Windows apps using WinUI 3, which ships as a part of the Windows App SDK. The latest available stable release is the Windows App SDK 1.3 (previously called Project Reunion). With this release, you can ship production Desktop apps to the Microsoft Store.
 
 See the [installation instructions](https://docs.microsoft.com/windows/apps/windows-app-sdk/set-up-your-development-environment), and guidelines on [creating your first WinUI 3 app](https://docs.microsoft.com/windows/apps/winui/winui3/create-your-first-winui3-app). 
 
@@ -32,14 +31,14 @@ You can download and use WinUI packages in your app using the NuGet package mana
 
 | NuGet Package | Build Status | Latest Versions | Documentation |
 | --- | --- | --- | --- |
-| [Microsoft.UI.Xaml](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> Controls and Fluent Design for UWP apps | [![Build Status](https://dev.azure.com/ms/microsoft-ui-xaml/_apis/build/status/WinUI-Public-MUX-CI?branchName=main)](https://dev.azure.com/ms/microsoft-ui-xaml/_build/latest?definitionId=20?branchName=main) | [![latest stable version](https://img.shields.io/nuget/v/Microsoft.UI.Xaml.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> [![latest prerelease version](https://img.shields.io/nuget/vpre/Microsoft.UI.Xaml.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml/absoluteLatest) | [2.7 release](https://docs.microsoft.com/windows/apps/winui/winui2/release-notes/winui-2.7) |
+| [Microsoft.UI.Xaml](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> Controls and Fluent Design for UWP apps | [![Build Status](https://dev.azure.com/ms/microsoft-ui-xaml/_apis/build/status/WinUI-Public-MUX-CI?branchName=main)](https://dev.azure.com/ms/microsoft-ui-xaml/_build/latest?definitionId=20?branchName=main) | [![latest stable version](https://img.shields.io/nuget/v/Microsoft.UI.Xaml.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> [![latest prerelease version](https://img.shields.io/nuget/vpre/Microsoft.UI.Xaml.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml/absoluteLatest) | [2.8 release](https://docs.microsoft.com/windows/apps/winui/winui2/release-notes/winui-2.8) |
 | [Microsoft.UI.Xaml.Core.Direct](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct) <br /> Low-level APIs for middleware components | | [![latest prerelease version](https://img.shields.io/nuget/vpre/Microsoft.UI.Xaml.Core.Direct.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct/absoluteLatest) | [2.0 prerelease](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.core.direct) |
 
 You can also build a WinUI package yourself from source. See [Contributing to the Windows UI Library](CONTRIBUTING.md) for more information on building and contributing to WinUI.
 
 ## Documentation
 
-To find resources for Windows UI 2.7, like the [Figma design toolkit](aka.ms/figmatoolkit), Segoe UI Variable Font, and samples, visit [Design toolkits and samples for Windows apps](https://docs.microsoft.com/windows/apps/design/downloads/)
+To find resources for Windows UI 2.8, like the [Figma design toolkit](https://aka.ms/WinUI/3.0-figma-toolkit), Segoe UI Variable Font, and samples, visit [Design toolkits and samples for Windows apps](https://docs.microsoft.com/windows/apps/design/downloads/)
 
 If you find any issues with the Windows UI toolkit, you can file a bug [here](https://aka.ms/WinUIToolkitBug)
 
@@ -83,11 +82,11 @@ You don't need version checks or conditional XAML markup to use WinUI controls o
 
 ### Version support
 
-The Microsoft.UI.Xaml 2.7 NuGet package requires your project to have TargetPlatformVersion &gt;= 10.0.18362.0 and TargetPlatformMinVersion &gt;= 10.0.15063.0 when building. 
+The Microsoft.UI.Xaml 2.8 NuGet package requires your project to have TargetPlatformVersion &gt;= 10.0.18362.0 and TargetPlatformMinVersion &gt;= 10.0.17763.0 when building. 
 
 Your app's users can be on any of the following supported Windows 10 versions:
 
-* Windows 10 1703 - Build 15063 (Creators Update aka "Redstone 2") and newer (including Windows Insider Previews)
+* Windows 10 1809 - Build 17763 (Creators Update aka "Redstone 5") and newer (including Windows Insider Previews)
 
 Some features may have a reduced or slightly different user experience on older versions.
 
@@ -102,7 +101,7 @@ The [Windows App SDK](https://github.com/microsoft/ProjectReunion) is a set of l
  
 Other Windows App SDK components are: [WebView2](https://docs.microsoft.com/microsoft-edge/webview2/),  [MSIX (MSIX-Core)](https://docs.microsoft.com/windows/msix/overview), [C++/WinRT](https://github.com/microsoft/cppwinrt), [Rust/WinRT](https://github.com/microsoft/winrt-rs), and [C#/WinRT](https://github.com/microsoft/cswinrt). If you'd like to learn more and contribute to Windows App SDK, or have **UWP/app model related questions**, visit our [Github repo](https://github.com/microsoft/WindowsAppSDK). 
 
-To see the Windows App SDK full roadmap and features that are under consideration (or to submit feature requests), [visit the productboard portal](https://portal.productboard.com/winappsdk/1-windows-app-sdk).
+For a detailed look at the features we're planning on releasing in WinAppSDK check out the [Windows App SDK feature roadmap](https://github.com/microsoft/WindowsAppSDK/blob/main/docs/roadmap.md).
 
 ## Data/Telemetry
 

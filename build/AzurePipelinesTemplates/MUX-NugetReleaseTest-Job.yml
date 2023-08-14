@@ -4,7 +4,6 @@ parameters:
   runTestJobName: 'RunNugetPkgTestsInHelix'
   dependsOn: ''
   runTests: 'true'
-  helixType: 'test/nuget'
   test_matrix: ''
   useFrameworkPkg: false
   taefQuery: ''
@@ -64,6 +63,12 @@ jobs:
       downloadPath: $(artifactDownloadPath)
       itemPattern: '**\*.nupkg'
 
+  - task: powershell@2
+    displayName: GenerateTestPFX.ps1
+    inputs:
+      targetType: filePath
+      filePath: GenerateTestPFX.ps1
+
   # Copy nupkg to localpackages and update proj file to point to it
   - powershell: |
       $pathToNupkg = "$($env:artifactDownloadPath)\drop"
@@ -83,6 +88,24 @@ jobs:
       .\test\MUXControlsReleaseTest\updateUsedNugetPackageVersion.ps1 $newVersion
     displayName: Update proj files to use candidate nupkg.
 
+  - template: MUX-InstallWindowsSDK-Steps.yml
+
+  - template: MUX-InstallNuget-Steps.yml
+
+  - template: MUX-InstallDotNetSDK-Steps.yml
+
+  # The environment variable VCToolsInstallDir isn't defined on lab machines, so we need to retrieve it ourselves.
+  - script: |
+      "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -Latest -requires Microsoft.Component.MSBuild -property InstallationPath > %TEMP%\vsinstalldir.txt
+      set /p _VSINSTALLDIR15=<%TEMP%\vsinstalldir.txt
+      del %TEMP%\vsinstalldir.txt
+      call "%_VSINSTALLDIR15%\Common7\Tools\VsDevCmd.bat"
+      echo VCToolsInstallDir = %VCToolsInstallDir%
+      echo VCToolsRedistDir = %VCToolsRedistDir%
+      echo ##vso[task.setvariable variable=VCToolsInstallDir]%VCToolsInstallDir%
+      echo ##vso[task.setvariable variable=VCToolsRedistDir]%VCToolsRedistDir%
+    displayName: 'Retrieve VC tools directory'
+
   - template: MUX-BuildProject-Steps.yml
     parameters:
       solutionPath: test\MUXControlsReleaseTest\RuntimeComponentThatUsesMUX\RuntimeComponentThatUsesMUX.sln
@@ -100,13 +123,13 @@ jobs:
 - ${{if eq(parameters.runTests, 'true')}}:
   - template: MUX-RunHelixTests-Job.yml
     parameters:
-      name: ${{ parameters.runTestJobName }}
       dependsOn: ${{ parameters.buildJobName }}
-      testSuite: 'NugetTestSuite'
-      helixType: ${{ parameters.helixType }}
+      ${{if eq(parameters.useFrameworkPkg, 'false')}}:
+        testSuite: 'nupkg'
+      ${{if eq(parameters.useFrameworkPkg, 'true')}}:
+        testSuite: 'fwPkg'
       artifactName: ${{ parameters.buildArtifactName }}
       ${{if eq(parameters.useFrameworkPkg, 'true')}}:
         taefQuery: "(not (@NugetPkgTestsOnly = 'true'))"
       rerunPassesRequiredToAvoidFailure: 5
-      ${{if ne(parameters.test_matrix, '') }}:
-        matrix: ${{ parameters.test_matrix }}
+      maxParallel: 2

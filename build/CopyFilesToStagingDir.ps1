@@ -37,25 +37,10 @@ PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\sdk\Microsoft.UI.Xaml.w
 PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\Generic.xaml $FullPublishDir\Microsoft.UI.Xaml\
 PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml.Design\Microsoft.UI.Xaml.Design.dll $FullPublishDir\Microsoft.UI.Xaml.Design\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\Microsoft.UI.Xaml.FrameworkPackagePRI\Microsoft.UI.Xaml.pri $FullPublishDir\Microsoft.UI.Xaml.FrameworkPackagePRI\
-PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\MUXControls.Test.dll $FullPublishDir\Test\
-PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\MUXTestInfra.TAEF.dll $FullPublishDir\Test\
-PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\Microsoft.Win32.Registry.dll $FullPublishDir\Test\
-PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\Axe.Windows.Actions.dll $FullPublishDir\Test\
-PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\Axe.Windows.Automation.dll $FullPublishDir\Test\
-PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\Axe.Windows.Core.dll $FullPublishDir\Test\
-PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\Axe.Windows.Desktop.dll $FullPublishDir\Test\
-PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\Axe.Windows.Rules.dll $FullPublishDir\Test\
-PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\Axe.Windows.RuleSelection.dll $FullPublishDir\Test\
-PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\Axe.Windows.SystemAbstractions.dll $FullPublishDir\Test\
-PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\Axe.Windows.Telemetry.dll $FullPublishDir\Test\
-PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\Axe.Windows.Win32.dll $FullPublishDir\Test\
-PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\Newtonsoft.Json.dll $FullPublishDir\Test\
-PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\System.Drawing.Common.dll $FullPublishDir\Test\
-PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\System.IO.Packaging.dll $FullPublishDir\Test\
-PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\WebView2Loader.dll $FullPublishDir\Test\
+PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test.TAEF\*.dll $FullPublishDir\Test\
+PublishFile -IfExists $BuildOutputDir\$Configuration\$Platform\MUXControlsTestApp.TAEF\WebView2Loader.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.ReleaseTest.TAEF\MUXControls.ReleaseTest.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.ReleaseTest.TAEF\WebView2Loader.dll $FullPublishDir\Test\
-PublishFile -IfExists $FullBuildOutput\NugetPackageTestApp\WebView2Loader.dll $FullPublishDir\Test\
 PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXExperimental.Test.TAEF\MUXExperimental.Test.dll $FullPublishDir\Test\
 
 PublishFile -IfExists $FullBuildOutput\Microsoft.Experimental.UI.Xaml\Microsoft.Experimental.UI.Xaml.dll $FullPublishDir\Microsoft.Experimental.UI.Xaml\
@@ -67,6 +52,8 @@ PublishFile -IfExists $FullBuildOutput\Microsoft.Experimental.UI.Xaml\Generic.xa
 # cx test app instead of releasetest.dll since these are architecture specific and the ReleaseTest assembly is AnyCPU.
 PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\pgosweep.exe $FullPublishDir\Test\
 PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\vcruntime140.dll $FullPublishDir\Test\
+PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\vc_redist.x64.exe $FullPublishDir\Test\
+PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\vc_redist.x86.exe $FullPublishDir\Test\
 
 PublishFile -IfExists $FullBuildOutput\FrameworkPackage\*.* $FullPublishDir\FrameworkPackage
 
@@ -94,7 +81,7 @@ $symbolsOutputDir = "$($FullPublishDir)\Symbols\"
 PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\Microsoft.Experimental.UI.Xaml\Microsoft.Experimental.UI.Xaml.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\IXMPTestApp.TAEF\IXMPTestApp.pdb $symbolsOutputDir
-PublishFile -IfExists $FullBuildOutput\MUXControls.Test\MUXControls.Test.pdb $symbolsOutputDir
+PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.Test\MUXControls.Test.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\MUXControlsTestApp.TAEF\MUXControlsTestApp.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\MUXControlsTestAppForIslands\MUXControlsTestAppForIslands.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\MUXControlsTestAppWPF\MUXControlsTestAppWPF.pdb $symbolsOutputDir

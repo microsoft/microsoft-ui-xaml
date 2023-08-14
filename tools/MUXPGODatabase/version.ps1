@@ -1,61 +1,95 @@
-function MakeVersion ( $major, $minor, $datetimeStamp )
+$REVISION_FMT = 'yyMMddHHmm'
+
+function MakeVersion ( $major, $minor, $patch, $prerelease, $revision, $branch )
 {
-    $revision, $branch = $datetimeStamp.Split("-")
-
-    if ( $branch -eq $null )
-    {
-        $branch = ""
-    }
-
     return [PSCustomObject] @{
-        Major = $major
-        Minor = $minor
-        Revision = $revision
-        Branch = $branch
+        Major = [int64] $major
+        Minor = [int64] $minor
+        Patch = [int64] $patch
+        Prerelease = [string] $prerelease
+        Revision = [string] $revision
+        Branch = [string] $branch
     }
 }
 
 function MakeVersionFromString ( $str )
 {
-    $parts = $str.Split(".")
-    return MakeVersion ( [int]::Parse($parts[0]) ) ( [int]::Parse($parts[1]) ) $parts[2]
+    $match = [Regex]::match($str, '^(?<major>0|[1-9]\d*)\.(?<minor>0|[1-9]\d*)\.(?<patch>0|[1-9]\d*)(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$')
+
+    if ( -not $match.Success )
+    {
+        throw "Failed to parse version string."
+    }
+
+    $REVISION_RE = '(?<revision>[0-9]{10})'
+    $BRANCH_RE   = '(?<branch>[a-zA-Z0-9-]+)'
+
+    $prereleaseMatch = [Regex]::match($match.Groups["prerelease"].Value, "^((?<actualprerelease>.*)-)?$REVISION_RE-$BRANCH_RE$")
+
+    if ( $prereleaseMatch.Success )
+    {
+        # new way: revision + branch encoded in prerelease tag
+        return MakeVersion $match.Groups["major"].Value `
+                           $match.Groups["minor"].Value `
+                           $match.Groups["patch"].Value `
+                           $prereleaseMatch.Groups["actualprerelease"].Value `
+                           $prereleaseMatch.Groups["revision"].Value `
+                           $prereleaseMatch.Groups["branch"].Value
+    }
+    else
+    {
+        # old way: revision in patch and branch is prerelease
+        $patchMatch = [Regex]::match($match.Groups["patch"].Value, "^$REVISION_RE$") 
+        $prereleaseMatch = [Regex]::match($match.Groups["prerelease"].Value, "^$BRANCH_RE$")
+
+        if ( -not ( $patchMatch.Success -and $prereleaseMatch.Success ) )
+        {
+            throw "Failed to parse fork point form version string."
+        }
+
+        return MakeVersion $match.Groups["major"].Value `
+                           $match.Groups["minor"].Value `
+                           0 `
+                           $null `
+                           $patchMatch.Groups["revision"].Value `
+                           $prereleaseMatch.Groups["branch"].Value
+    }
 }
 
 function FormatVersion ( $version )
 {
     $branch = ""
 
-    if ( $version.Branch -ne "" )
+    if ( $version.Branch -and $version.Branch -ne "" )
     {
         $branch = "-{0}" -f $version.Branch
     }
 
-    return "{0}.{1}.{2}{3}" -f $version.Major, $version.Minor, $version.Revision, $branch
-}
+    $prerelease = ""
 
-function CompareReleases ( $version1, $version2 )
-{
-    $cmpMajor = [Math]::Sign($version1.Major - $version2.Major)
-
-    if ( $cmpMajor -ne 0 )
+    if ( $version.Prerelease -and $version.Prerelease -ne "" )
     {
-        return $cmpMajor
+        $prerelease = "-{0}" -f $version.Prerelease
     }
 
-    return [Math]::Sign($version1.Minor - $version2.Minor)
+    return "{0}.{1}.{2}{3}-{4}{5}" -f $version.Major, $version.Minor, $version.Patch, $prerelease, $version.Revision, $branch
+}
+
+function CompareReleaseAndBranch ( $version1, $version2 )
+{
+    return ( $version1.Major -eq $version2.Major ) -and
+           ( $version1.Minor -eq $version2.Minor ) -and
+           ( $version1.Patch -eq $version2.Patch ) -and
+           ( $version1.Prerelease -like $version2.Prerelease ) -and
+           ( $version1.Branch -like $version2.Branch )
 }
 
 function CompareRevisions ( $version1, $version2 )
 {
-    return [Math]::Sign($version1.Revision - $version2.Revision)
+    return [DateTime]::ParseExact($version1.Revision, $REVISION_FMT, $null) - [DateTime]::ParseExact($version2.Revision, $REVISION_FMT, $null)
 }
 
-function CompareBranches ( $version1, $version2 )
-{
-    return $version1.Branch -eq $version2.Branch
-}
-
-function GetDatetimeStamp ( $pgoBranch )
+function GetForkPoint ( $pgoBranch )
 {
     $forkSHA = $( git merge-base origin/$pgoBranch HEAD )
 
@@ -64,12 +98,16 @@ function GetDatetimeStamp ( $pgoBranch )
         throw "FAILED: git merge-base"
     }
 
-    $forkDate = ( Get-Date -Date $( git log -1 $forkSHA --date=iso --pretty=format:"%ad" ) ).ToUniversalTime().ToString("yyMMddHHmm")
+    $forkDate = ( Get-Date -Date $( git log -1 $forkSHA --date=iso --pretty=format:"%ad" ) ).ToUniversalTime().ToString($REVISION_FMT)
 
     if ( $LastExitCode -ne 0 )
     {
         throw "FAILED: Get forkDate"
     }
 
-    return $forkDate + "-" + $pgoBranch.Replace("/", "_").Replace("-", "_").Replace(".", "_")
+    return [PSCustomObject] @{
+        DateString = $forkDate
+        BranchString = ( $pgoBranch -replace "(/|\.|@|>|<)", "-" )
+        SHA = $forkSHA
+    }
 }

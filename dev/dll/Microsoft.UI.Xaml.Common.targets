@@ -41,6 +41,11 @@
       <GenerateMapFile>true</GenerateMapFile>
       <LinkTimeCodeGeneration Condition="'$(Configuration)'=='Release'">UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <AdditionalOptions Condition="'$(Configuration)'=='Release'">/debugtype:cv,fixup %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Brepro %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_x64_Desktop)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_x86_Desktop)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='arm'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_arm_Desktop)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='arm64'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_arm64_Desktop)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
       <DisableSpecificWarnings>4100;4189;4467;4702;6326;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -70,7 +75,7 @@
         $(MiniWindowsSDKIncludePath);
       </AdditionalIncludeDirectories>
       <AdditionalOptions>/std:c++17 /bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions>/Wv:18 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Wv:18 /ZH:SHA_256 /Brepro %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)'=='Release'">%(AdditionalOptions) /d2FH4</AdditionalOptions>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -109,6 +114,7 @@
     <ClInclude Include="..\inc\RuntimeClassHelpers.h" />
     <ClInclude Include="..\inc\SharedHelpers.h" />
     <ClInclude Include="..\inc\tracker_ref.h" />
+    <ClInclude Include="..\inc\StaticAssertFalse.h" />
     <ClInclude Include="..\inc\TypeHelper.h" />
     <ClInclude Include="..\inc\CollectionHelper.h" />
     <ClInclude Include="MUXControlsFactory.h" />
@@ -422,7 +428,7 @@
     <Import Condition="'$(PGOBuildMode)' == 'Optimize' and '$(DisablePGO)' != 'True'" Project="..\..\packages\$(PGODatabaseId).$(PGODatabaseVersion)\build\PGO.targets" />
     <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Project="..\..\packages\MUXCustomBuildTasks.1.0.74\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\..\packages\MUXCustomBuildTasks.1.0.74\build\native\MUXCustomBuildTasks.targets')" />
-    <Import Project="..\..\packages\Microsoft.Web.WebView2.1.0.1018-prerelease\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1018-prerelease\build\native\Microsoft.Web.WebView2.targets')" />
+    <Import Project="..\..\packages\Microsoft.Web.WebView2.1.0.1264.42\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1264.42\build\native\Microsoft.Web.WebView2.targets')" />
   </ImportGroup>
   <PropertyGroup>
     <MergedWinmdDirectory>$(OutDir)Merged</MergedWinmdDirectory>
@@ -721,7 +727,7 @@
     <Error Condition="!Exists('..\..\packages\MUXCustomBuildTasks.1.0.74\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MUXCustomBuildTasks.1.0.74\build\native\MUXCustomBuildTasks.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.210309.3\build\native\Microsoft.Windows.CppWinRT.targets'))" />
-    <Error Condition="!Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1018-prerelease\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Web.WebView2.1.0.1018-prerelease\build\native\Microsoft.Web.WebView2.targets'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1264.42\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Web.WebView2.1.0.1264.42\build\native\Microsoft.Web.WebView2.targets'))" />
   </Target>
   <!-- We want to generate SourceLink urls to GitHub even if we build against the AzDO repo -->
   <Target Name="_TranslateAzureDevOpsUrlToGitHubUrl"
@@ -752,5 +758,13 @@
   <PropertyGroup>
     <!-- Tell CreateLCGFile to use the LCE file from RC.EXE -->
     <LCEFile>$(_LceFile)</LCEFile>
+
+    <!-- Generate the test pfx file before building -->
+    <GeneratePfxScript>$(MSBuildProjectDirectory)\..\..\GenerateTestPfx.ps1</GeneratePfxScript>
+    <PfxFile>$(MSBuildProjectDirectory)\..\..\build\WinUITest.pfx</PfxFile>
   </PropertyGroup>
+  <Target Name="GeneratePfx" BeforeTargets="PrepareForBuild" Condition="!Exists('$(PfxFile)')" >
+    <Message Text="Generate test .pfx file" />
+    <RunPowershellScript Path="$(GeneratePfxScript)" FilesWritten="$(PfxFile)" />
+  </Target>
 </Project>

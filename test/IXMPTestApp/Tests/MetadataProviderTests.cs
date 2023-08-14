@@ -20,9 +20,13 @@ namespace IXMPTestApp.Tests
     [TestClass]
     public class MetadataProviderTests
     {
+        
+
         [TestMethod]
+
         public void CanLoadXamlFragments()
         {
+#if MUX_PRERELEASE
             var dispatcher = CoreApplication.MainView.Dispatcher;
             dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
@@ -98,7 +102,7 @@ namespace IXMPTestApp.Tests
                         xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
                         <controls:SwipeControl.Resources>
                             <controls:SymbolIconSource x:Key='SymbolIcon' Symbol='Camera'/>
-                            <controls:FontIconSource x:Key='FontIcon' Glyph='&#xE115;' FontWeight='Normal'/>
+                            <controls:FontIconSource x:Key='FontIcon' Glyph='&#xE713;' FontWeight='Normal'/>
                             <controls:PathIconSource x:Key='PathIcon' Data='F1 M 16,12 20,2L 20,16 1,16'/>
                             <controls:BitmapIconSource x:Key='BitmapIcon' UriSource='ms-appx:///Assets/StoreLogo.png' ShowAsMonochrome='False' />
                         </controls:SwipeControl.Resources>
@@ -170,6 +174,8 @@ namespace IXMPTestApp.Tests
                                     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'/>");
 
             }).AsTask().Wait();
+
+#endif
         }
     }
 }

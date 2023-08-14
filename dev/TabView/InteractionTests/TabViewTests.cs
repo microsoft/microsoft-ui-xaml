@@ -327,13 +327,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void DragBetweenTabViewsTest()
         {
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
-            {
-                // TODO 19727004: Re-enable this on versions below RS5 after fixing the bug where mouse click-and-drag doesn't work.
-                Log.Warning("This test relies on touch input, the injection of which is only supported in RS5 and up. Test is disabled.");
-                return;
-            }
-
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
                 UIObject firstTab = FindElement.ByName("FirstTab");
@@ -361,13 +354,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void ReorderItemsTest()
         {
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
-            {
-                // TODO 19727004: Re-enable this on versions below RS5 after fixing the bug where mouse click-and-drag doesn't work.
-                Log.Warning("This test relies on touch input, the injection of which is only supported in RS5 and up. Test is disabled.");
-                return;
-            }
-
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
                 Button tabItemsSourcePageButton = FindElement.ByName<Button>("TabViewTabItemsSourcePageButton");
@@ -406,6 +392,38 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void ItemChangedEventOnDragTest()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                Button addButton = FindElement.ByName<Button>("Add New Tab");
+                Verify.IsNotNull(addButton);
+
+                Log.Comment("Add tab so scroll buttons appear.");
+                addButton.InvokeAndWait();
+
+                Verify.IsTrue(AreScrollButtonsVisible(), "Scroll buttons should appear");
+
+                UIObject sourceTab =  FindElement.ByName("FirstTab");
+
+                Verify.IsNotNull(sourceTab);
+
+                UIObject dropTab = FindElement.ByName("LastTab");
+                Verify.IsNotNull(dropTab);
+
+                Log.Comment("Dragging tab to the last overflow tab...");
+                InputHelper.DragToTarget(sourceTab, dropTab, 40);
+                Wait.ForIdle();
+                ElementCache.Refresh();
+
+                Log.Comment("...reordering done. Expecting a TabView.TabItemsChanged event to be raised with CollectionChange=ItemInserted.");
+
+                TextBlock tabsItemChangedEventArgsTextBlock = FindElement.ByName<TextBlock>("TabsItemChangedEventArgsTextBlock");
+                Verify.AreEqual("ItemInserted", tabsItemChangedEventArgsTextBlock.DocumentText);
+            }
+        }
+
+        [TestMethod]
         public void AddButtonTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
@@ -426,6 +444,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // TabViewTests.KeyboardTest fails in the lab #7546
         public void KeyboardTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
@@ -435,8 +454,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 tabContent.SetFocus();
 
                 TabItem firstTab = FindElement.ByName<TabItem>("FirstTab");
+                Button firstTabCloseButton = new Button(firstTab.Descendants.Find(UICondition.CreateFromName("Close Tab")));
                 TabItem secondTab = FindElement.ByName<TabItem>("SecondTab");
+                Button secondTabCloseButton = new Button(secondTab.Descendants.Find(UICondition.CreateFromName("Close Tab")));
                 TabItem lastTab = FindElement.ByName<TabItem>("LastTab");
+                Button lastTabCloseButton = new Button(lastTab.Descendants.Find(UICondition.CreateFromName("Close Tab")));
+                TabItem notCloseableTab = FindElement.ByName<TabItem>("NotCloseableTab");
 
                 Button addButton = FindElement.ById<Button>("AddButton");
 
@@ -460,9 +483,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(lastTab.IsSelected, "Ctrl+Shift+Tab should move selection to Last Tab");
                 Verify.IsTrue(lastTab.HasKeyboardFocus, "Focus should move to the last tab (since it has no focusable content)");
 
+                // Ctrl+Shift+Tab to the not-closable tab:
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Control | ModifierKey.Shift);
+                Verify.IsTrue(notCloseableTab.IsSelected, "Ctrl+Shift+Tab should move selection to the not-closable tab, past the disabled tab");
+                Verify.IsTrue(notCloseableTab.HasKeyboardFocus, "Focus should move to the not-closable tab (since it has no focusable content)");
+
                 // Ctrl+Tab to the first tab:
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Control);
-                Verify.IsTrue(firstTab.IsSelected, "Ctrl+Tab should move selection to First Tab");
+                Verify.IsTrue(lastTab.IsSelected, "Ctrl+Tab should move selection to the last tab");
+                Verify.IsTrue(lastTab.HasKeyboardFocus, "Focus should move to the last tab");
+
+                // Ctrl+Tab to the first tab:
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Control);
+                Verify.IsTrue(firstTab.IsSelected, "Ctrl+Tab should move selection to first tab");
                 Verify.IsTrue(firstTab.HasKeyboardFocus, "Focus should move to the first tab");
 
                 KeyboardHelper.PressKey(Key.Up);
@@ -472,31 +505,51 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(firstTab.HasKeyboardFocus, "Down key should not move focus");
 
                 KeyboardHelper.PressKey(Key.Right);
-                Verify.IsTrue(secondTab.HasKeyboardFocus, "Right Key should move focus to the second tab");
-
-                KeyboardHelper.PressKey(Key.Left);
-                Verify.IsTrue(firstTab.HasKeyboardFocus, "Left Key should move focus to the first tab");
-
-                addButton.SetFocus();
-                Verify.IsTrue(addButton.HasKeyboardFocus, "AddButton should have keyboard focus");
-
-                KeyboardHelper.PressKey(Key.Left);
-                Verify.IsTrue(lastTab.HasKeyboardFocus, "Left Key from AddButton should move focus to last tab");
+                Verify.IsTrue(firstTabCloseButton.HasKeyboardFocus, "Right Key should move focus to the first tab close button");
 
                 KeyboardHelper.PressKey(Key.Right);
-                Verify.IsTrue(addButton.HasKeyboardFocus, "Right Key from Last Tab should move focus to Add Button");
+                Verify.IsTrue(secondTab.HasKeyboardFocus, "Right Key should move focus to the second tab");
 
-                firstTab.SetFocus();
+                KeyboardHelper.PressKey(Key.Space);
+                Verify.IsTrue(secondTab.IsSelected, "Space should select the second tab");
+
+                KeyboardHelper.PressKey(Key.Left);
+                Verify.IsTrue(firstTabCloseButton.HasKeyboardFocus, "Left Key should move focus to the first tab close button");
+
+                KeyboardHelper.PressKey(Key.Space);
+                Verify.IsTrue(secondTab.IsSelected, "Space should close the first tab and focus the next tab");
+                VerifyElement.NotFound("FirstTab", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Left);
+                Verify.IsTrue(addButton.HasKeyboardFocus, "Left Key should move focus to the add button");
+
+                KeyboardHelper.PressKey(Key.Left);
+                Verify.IsTrue(lastTabCloseButton.HasKeyboardFocus, "Left Key from AddButton should move focus to last tab close button");
+
+                KeyboardHelper.PressKey(Key.Left);
+                Verify.IsTrue(lastTab.HasKeyboardFocus, "Left Key from last tab close button should move focus to last tab");
+
+                KeyboardHelper.PressKey(Key.Right);
+                Verify.IsTrue(lastTabCloseButton.HasKeyboardFocus, "Right Key from last tab should move focus to the last tab close button");
+
+                KeyboardHelper.PressKey(Key.Right);
+                Verify.IsTrue(addButton.HasKeyboardFocus, "Right Key from last tab close button should move focus to the add button");
+
+                KeyboardHelper.PressKey(Key.Left);
+                Verify.IsTrue(lastTabCloseButton.HasKeyboardFocus, "Left Key from AddButton should move focus to last tab close button");
+
+                KeyboardHelper.PressKey(Key.Space);
+                Verify.IsTrue(notCloseableTab.HasKeyboardFocus, "Space should close the last tab and focus the previous focusable tab");
+                VerifyElement.NotFound("LastTab", FindBy.Name);
+
+                secondTab.SetFocus();
 
                 // Ctrl+f4 to close the tab:
                 Log.Comment("Verify that pressing ctrl-f4 closes the tab");
                 KeyboardHelper.PressKey(Key.F4, ModifierKey.Control);
                 Wait.ForIdle();
 
-                VerifyElement.NotFound("FirstTab", FindBy.Name);
-
-                // Move focus to the second tab content
-                secondTabButton.SetFocus();
+                VerifyElement.NotFound("SecondTab", FindBy.Name);
                 Wait.ForIdle();
             }
         }

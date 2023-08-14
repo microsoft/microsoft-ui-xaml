@@ -41,7 +41,7 @@ public:
 
     // IFrameworkElement
     void OnApplyTemplate();
-    void OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&);
+    void OnTextBoxLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&);
 
     void OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHeaderTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -98,7 +98,7 @@ private:
     bool m_valueUpdating{ false };
     bool m_textUpdating{ false };
 
-    winrt::SignificantDigitsNumberRounder m_displayRounder{};
+    winrt::IncrementNumberRounder m_displayRounder{};
 
     tracker_ref<winrt::TextBox> m_textBox{ this };
     tracker_ref<winrt::ContentPresenter> m_headerPresenter{ this };

@@ -1031,21 +1031,6 @@
                                                 Padding=0,0,0,0
                                                 RenderSize=48,19
                                                 Visibility=Visible
-                                          [Windows.UI.Xaml.Controls.Grid]
-                                              Background=#00FFFFFF
-                                              BorderBrush=[NULL]
-                                              BorderThickness=0,0,0,0
-                                              CornerRadius=0,0,0,0
-                                              FocusVisualPrimaryBrush=#E4000000
-                                              FocusVisualPrimaryThickness=2,2,2,2
-                                              FocusVisualSecondaryBrush=#B3FFFFFF
-                                              FocusVisualSecondaryThickness=1,1,1,1
-                                              Margin=0,0,-14,0
-                                              Name=ExpandCollapseChevron
-                                              Padding=0,0,0,0
-                                              RenderSize=0,0
-                                              Visibility=Collapsed
-                                              Width=40
                                           [Windows.UI.Xaml.Controls.ContentPresenter]
                                               Background=[NULL]
                                               BorderBrush=[NULL]
@@ -1061,16 +1046,6 @@
                                               Padding=0,0,0,0
                                               RenderSize=0,0
                                               Visibility=Collapsed
-                                  [Microsoft.UI.Xaml.Controls.ItemsRepeater]
-                                      Background=[NULL]
-                                      FocusVisualPrimaryBrush=#E4000000
-                                      FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualSecondaryBrush=#B3FFFFFF
-                                      FocusVisualSecondaryThickness=1,1,1,1
-                                      Margin=0,0,0,0
-                                      Name=NavigationViewItemMenuItemsHost
-                                      RenderSize=0,0
-                                      Visibility=Collapsed
                               [Microsoft.UI.Xaml.Controls.NavigationViewItem]
                                   Background=#00FFFFFF
                                   BorderBrush=#00FFFFFF
@@ -1293,21 +1268,6 @@
                                                 Padding=0,0,0,0
                                                 RenderSize=48,19
                                                 Visibility=Visible
-                                          [Windows.UI.Xaml.Controls.Grid]
-                                              Background=#00FFFFFF
-                                              BorderBrush=[NULL]
-                                              BorderThickness=0,0,0,0
-                                              CornerRadius=0,0,0,0
-                                              FocusVisualPrimaryBrush=#E4000000
-                                              FocusVisualPrimaryThickness=2,2,2,2
-                                              FocusVisualSecondaryBrush=#B3FFFFFF
-                                              FocusVisualSecondaryThickness=1,1,1,1
-                                              Margin=0,0,-14,0
-                                              Name=ExpandCollapseChevron
-                                              Padding=0,0,0,0
-                                              RenderSize=0,0
-                                              Visibility=Collapsed
-                                              Width=40
                                           [Windows.UI.Xaml.Controls.ContentPresenter]
                                               Background=[NULL]
                                               BorderBrush=[NULL]
@@ -1323,16 +1283,6 @@
                                               Padding=0,0,0,0
                                               RenderSize=0,0
                                               Visibility=Collapsed
-                                  [Microsoft.UI.Xaml.Controls.ItemsRepeater]
-                                      Background=[NULL]
-                                      FocusVisualPrimaryBrush=#E4000000
-                                      FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualSecondaryBrush=#B3FFFFFF
-                                      FocusVisualSecondaryThickness=1,1,1,1
-                                      Margin=0,0,0,0
-                                      Name=NavigationViewItemMenuItemsHost
-                                      RenderSize=0,0
-                                      Visibility=Collapsed
                               [Microsoft.UI.Xaml.Controls.NavigationViewItemHeader]
                                   Background=[NULL]
                                   BorderBrush=[NULL]
@@ -1609,21 +1559,6 @@
                                                 Padding=0,0,0,0
                                                 RenderSize=48,19
                                                 Visibility=Visible
-                                          [Windows.UI.Xaml.Controls.Grid]
-                                              Background=#00FFFFFF
-                                              BorderBrush=[NULL]
-                                              BorderThickness=0,0,0,0
-                                              CornerRadius=0,0,0,0
-                                              FocusVisualPrimaryBrush=#E4000000
-                                              FocusVisualPrimaryThickness=2,2,2,2
-                                              FocusVisualSecondaryBrush=#B3FFFFFF
-                                              FocusVisualSecondaryThickness=1,1,1,1
-                                              Margin=0,0,-14,0
-                                              Name=ExpandCollapseChevron
-                                              Padding=0,0,0,0
-                                              RenderSize=0,0
-                                              Visibility=Collapsed
-                                              Width=40
                                           [Windows.UI.Xaml.Controls.ContentPresenter]
                                               Background=[NULL]
                                               BorderBrush=[NULL]
@@ -1639,16 +1574,6 @@
                                               Padding=0,0,0,0
                                               RenderSize=0,0
                                               Visibility=Collapsed
-                                  [Microsoft.UI.Xaml.Controls.ItemsRepeater]
-                                      Background=[NULL]
-                                      FocusVisualPrimaryBrush=#E4000000
-                                      FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualSecondaryBrush=#B3FFFFFF
-                                      FocusVisualSecondaryThickness=1,1,1,1
-                                      Margin=0,0,0,0
-                                      Name=NavigationViewItemMenuItemsHost
-                                      RenderSize=0,0
-                                      Visibility=Collapsed
                               [Microsoft.UI.Xaml.Controls.NavigationViewItem]
                                   Background=#00FFFFFF
                                   BorderBrush=#00FFFFFF
@@ -1871,21 +1796,6 @@
                                                 Padding=0,0,0,0
                                                 RenderSize=48,19
                                                 Visibility=Visible
-                                          [Windows.UI.Xaml.Controls.Grid]
-                                              Background=#00FFFFFF
-                                              BorderBrush=[NULL]
-                                              BorderThickness=0,0,0,0
-                                              CornerRadius=0,0,0,0
-                                              FocusVisualPrimaryBrush=#E4000000
-                                              FocusVisualPrimaryThickness=2,2,2,2
-                                              FocusVisualSecondaryBrush=#B3FFFFFF
-                                              FocusVisualSecondaryThickness=1,1,1,1
-                                              Margin=0,0,-14,0
-                                              Name=ExpandCollapseChevron
-                                              Padding=0,0,0,0
-                                              RenderSize=0,0
-                                              Visibility=Collapsed
-                                              Width=40
                                           [Windows.UI.Xaml.Controls.ContentPresenter]
                                               Background=[NULL]
                                               BorderBrush=[NULL]
@@ -1901,16 +1811,6 @@
                                               Padding=0,0,0,0
                                               RenderSize=0,0
                                               Visibility=Collapsed
-                                  [Microsoft.UI.Xaml.Controls.ItemsRepeater]
-                                      Background=[NULL]
-                                      FocusVisualPrimaryBrush=#E4000000
-                                      FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualSecondaryBrush=#B3FFFFFF
-                                      FocusVisualSecondaryThickness=1,1,1,1
-                                      Margin=0,0,0,0
-                                      Name=NavigationViewItemMenuItemsHost
-                                      RenderSize=0,0
-                                      Visibility=Collapsed
                               [Microsoft.UI.Xaml.Controls.NavigationViewItemSeparator]
                                   Background=[NULL]
                                   BorderBrush=[NULL]
@@ -2172,21 +2072,6 @@
                                                 Padding=0,0,0,0
                                                 RenderSize=48,19
                                                 Visibility=Visible
-                                          [Windows.UI.Xaml.Controls.Grid]
-                                              Background=#00FFFFFF
-                                              BorderBrush=[NULL]
-                                              BorderThickness=0,0,0,0
-                                              CornerRadius=0,0,0,0
-                                              FocusVisualPrimaryBrush=#E4000000
-                                              FocusVisualPrimaryThickness=2,2,2,2
-                                              FocusVisualSecondaryBrush=#B3FFFFFF
-                                              FocusVisualSecondaryThickness=1,1,1,1
-                                              Margin=0,0,-14,0
-                                              Name=ExpandCollapseChevron
-                                              Padding=0,0,0,0
-                                              RenderSize=0,0
-                                              Visibility=Collapsed
-                                              Width=40
                                           [Windows.UI.Xaml.Controls.ContentPresenter]
                                               Background=[NULL]
                                               BorderBrush=[NULL]
@@ -2202,16 +2087,6 @@
                                               Padding=0,0,0,0
                                               RenderSize=0,0
                                               Visibility=Collapsed
-                                  [Microsoft.UI.Xaml.Controls.ItemsRepeater]
-                                      Background=[NULL]
-                                      FocusVisualPrimaryBrush=#E4000000
-                                      FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualSecondaryBrush=#B3FFFFFF
-                                      FocusVisualSecondaryThickness=1,1,1,1
-                                      Margin=0,0,0,0
-                                      Name=NavigationViewItemMenuItemsHost
-                                      RenderSize=0,0
-                                      Visibility=Collapsed
                               [Microsoft.UI.Xaml.Controls.NavigationViewItem]
                                   Background=#00FFFFFF
                                   BorderBrush=#00FFFFFF
@@ -2434,21 +2309,6 @@
                                                 Padding=0,0,0,0
                                                 RenderSize=48,19
                                                 Visibility=Visible
-                                          [Windows.UI.Xaml.Controls.Grid]
-                                              Background=#00FFFFFF
-                                              BorderBrush=[NULL]
-                                              BorderThickness=0,0,0,0
-                                              CornerRadius=0,0,0,0
-                                              FocusVisualPrimaryBrush=#E4000000
-                                              FocusVisualPrimaryThickness=2,2,2,2
-                                              FocusVisualSecondaryBrush=#B3FFFFFF
-                                              FocusVisualSecondaryThickness=1,1,1,1
-                                              Margin=0,0,-14,0
-                                              Name=ExpandCollapseChevron
-                                              Padding=0,0,0,0
-                                              RenderSize=0,0
-                                              Visibility=Collapsed
-                                              Width=40
                                           [Windows.UI.Xaml.Controls.ContentPresenter]
                                               Background=[NULL]
                                               BorderBrush=[NULL]
@@ -2464,16 +2324,6 @@
                                               Padding=0,0,0,0
                                               RenderSize=0,0
                                               Visibility=Collapsed
-                                  [Microsoft.UI.Xaml.Controls.ItemsRepeater]
-                                      Background=[NULL]
-                                      FocusVisualPrimaryBrush=#E4000000
-                                      FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualSecondaryBrush=#B3FFFFFF
-                                      FocusVisualSecondaryThickness=1,1,1,1
-                                      Margin=0,0,0,0
-                                      Name=NavigationViewItemMenuItemsHost
-                                      RenderSize=0,0
-                                      Visibility=Collapsed
                               [Microsoft.UI.Xaml.Controls.NavigationViewItem]
                                   Background=#00FFFFFF
                                   BorderBrush=#00FFFFFF
@@ -2696,21 +2546,6 @@
                                                 Padding=0,0,0,0
                                                 RenderSize=48,19
                                                 Visibility=Visible
-                                          [Windows.UI.Xaml.Controls.Grid]
-                                              Background=#00FFFFFF
-                                              BorderBrush=[NULL]
-                                              BorderThickness=0,0,0,0
-                                              CornerRadius=0,0,0,0
-                                              FocusVisualPrimaryBrush=#E4000000
-                                              FocusVisualPrimaryThickness=2,2,2,2
-                                              FocusVisualSecondaryBrush=#B3FFFFFF
-                                              FocusVisualSecondaryThickness=1,1,1,1
-                                              Margin=0,0,-14,0
-                                              Name=ExpandCollapseChevron
-                                              Padding=0,0,0,0
-                                              RenderSize=0,0
-                                              Visibility=Collapsed
-                                              Width=40
                                           [Windows.UI.Xaml.Controls.ContentPresenter]
                                               Background=[NULL]
                                               BorderBrush=[NULL]
@@ -2726,16 +2561,6 @@
                                               Padding=0,0,0,0
                                               RenderSize=0,0
                                               Visibility=Collapsed
-                                  [Microsoft.UI.Xaml.Controls.ItemsRepeater]
-                                      Background=[NULL]
-                                      FocusVisualPrimaryBrush=#E4000000
-                                      FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualSecondaryBrush=#B3FFFFFF
-                                      FocusVisualSecondaryThickness=1,1,1,1
-                                      Margin=0,0,0,0
-                                      Name=NavigationViewItemMenuItemsHost
-                                      RenderSize=0,0
-                                      Visibility=Collapsed
                               [Microsoft.UI.Xaml.Controls.NavigationViewItem]
                                   Background=#00FFFFFF
                                   BorderBrush=#00FFFFFF
@@ -2958,21 +2783,6 @@
                                                 Padding=0,0,0,0
                                                 RenderSize=56,19
                                                 Visibility=Visible
-                                          [Windows.UI.Xaml.Controls.Grid]
-                                              Background=#00FFFFFF
-                                              BorderBrush=[NULL]
-                                              BorderThickness=0,0,0,0
-                                              CornerRadius=0,0,0,0
-                                              FocusVisualPrimaryBrush=#E4000000
-                                              FocusVisualPrimaryThickness=2,2,2,2
-                                              FocusVisualSecondaryBrush=#B3FFFFFF
-                                              FocusVisualSecondaryThickness=1,1,1,1
-                                              Margin=0,0,-14,0
-                                              Name=ExpandCollapseChevron
-                                              Padding=0,0,0,0
-                                              RenderSize=0,0
-                                              Visibility=Collapsed
-                                              Width=40
                                           [Windows.UI.Xaml.Controls.ContentPresenter]
                                               Background=[NULL]
                                               BorderBrush=[NULL]
@@ -2988,16 +2798,6 @@
                                               Padding=0,0,0,0
                                               RenderSize=0,0
                                               Visibility=Collapsed
-                                  [Microsoft.UI.Xaml.Controls.ItemsRepeater]
-                                      Background=[NULL]
-                                      FocusVisualPrimaryBrush=#E4000000
-                                      FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualSecondaryBrush=#B3FFFFFF
-                                      FocusVisualSecondaryThickness=1,1,1,1
-                                      Margin=0,0,0,0
-                                      Name=NavigationViewItemMenuItemsHost
-                                      RenderSize=0,0
-                                      Visibility=Collapsed
                               [Microsoft.UI.Xaml.Controls.NavigationViewItemHeader]
                                   Background=[NULL]
                                   BorderBrush=[NULL]
@@ -3274,21 +3074,6 @@
                                                 Padding=0,0,0,0
                                                 RenderSize=56,19
                                                 Visibility=Visible
-                                          [Windows.UI.Xaml.Controls.Grid]
-                                              Background=#00FFFFFF
-                                              BorderBrush=[NULL]
-                                              BorderThickness=0,0,0,0
-                                              CornerRadius=0,0,0,0
-                                              FocusVisualPrimaryBrush=#E4000000
-                                              FocusVisualPrimaryThickness=2,2,2,2
-                                              FocusVisualSecondaryBrush=#B3FFFFFF
-                                              FocusVisualSecondaryThickness=1,1,1,1
-                                              Margin=0,0,-14,0
-                                              Name=ExpandCollapseChevron
-                                              Padding=0,0,0,0
-                                              RenderSize=0,0
-                                              Visibility=Collapsed
-                                              Width=40
                                           [Windows.UI.Xaml.Controls.ContentPresenter]
                                               Background=[NULL]
                                               BorderBrush=[NULL]
@@ -3304,16 +3089,6 @@
                                               Padding=0,0,0,0
                                               RenderSize=0,0
                                               Visibility=Collapsed
-                                  [Microsoft.UI.Xaml.Controls.ItemsRepeater]
-                                      Background=[NULL]
-                                      FocusVisualPrimaryBrush=#E4000000
-                                      FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualSecondaryBrush=#B3FFFFFF
-                                      FocusVisualSecondaryThickness=1,1,1,1
-                                      Margin=0,0,0,0
-                                      Name=NavigationViewItemMenuItemsHost
-                                      RenderSize=0,0
-                                      Visibility=Collapsed
                               [Microsoft.UI.Xaml.Controls.NavigationViewItem]
                                   Background=#00FFFFFF
                                   BorderBrush=#00FFFFFF
@@ -3536,21 +3311,6 @@
                                                 Padding=0,0,0,0
                                                 RenderSize=56,19
                                                 Visibility=Visible
-                                          [Windows.UI.Xaml.Controls.Grid]
-                                              Background=#00FFFFFF
-                                              BorderBrush=[NULL]
-                                              BorderThickness=0,0,0,0
-                                              CornerRadius=0,0,0,0
-                                              FocusVisualPrimaryBrush=#E4000000
-                                              FocusVisualPrimaryThickness=2,2,2,2
-                                              FocusVisualSecondaryBrush=#B3FFFFFF
-                                              FocusVisualSecondaryThickness=1,1,1,1
-                                              Margin=0,0,-14,0
-                                              Name=ExpandCollapseChevron
-                                              Padding=0,0,0,0
-                                              RenderSize=0,0
-                                              Visibility=Collapsed
-                                              Width=40
                                           [Windows.UI.Xaml.Controls.ContentPresenter]
                                               Background=[NULL]
                                               BorderBrush=[NULL]
@@ -3566,16 +3326,6 @@
                                               Padding=0,0,0,0
                                               RenderSize=0,0
                                               Visibility=Collapsed
-                                  [Microsoft.UI.Xaml.Controls.ItemsRepeater]
-                                      Background=[NULL]
-                                      FocusVisualPrimaryBrush=#E4000000
-                                      FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualSecondaryBrush=#B3FFFFFF
-                                      FocusVisualSecondaryThickness=1,1,1,1
-                                      Margin=0,0,0,0
-                                      Name=NavigationViewItemMenuItemsHost
-                                      RenderSize=0,0
-                                      Visibility=Collapsed
                               [Microsoft.UI.Xaml.Controls.NavigationViewItemSeparator]
                                   Background=[NULL]
                                   BorderBrush=[NULL]
@@ -3837,21 +3587,6 @@
                                                 Padding=0,0,0,0
                                                 RenderSize=56,19
                                                 Visibility=Visible
-                                          [Windows.UI.Xaml.Controls.Grid]
-                                              Background=#00FFFFFF
-                                              BorderBrush=[NULL]
-                                              BorderThickness=0,0,0,0
-                                              CornerRadius=0,0,0,0
-                                              FocusVisualPrimaryBrush=#E4000000
-                                              FocusVisualPrimaryThickness=2,2,2,2
-                                              FocusVisualSecondaryBrush=#B3FFFFFF
-                                              FocusVisualSecondaryThickness=1,1,1,1
-                                              Margin=0,0,-14,0
-                                              Name=ExpandCollapseChevron
-                                              Padding=0,0,0,0
-                                              RenderSize=0,0
-                                              Visibility=Collapsed
-                                              Width=40
                                           [Windows.UI.Xaml.Controls.ContentPresenter]
                                               Background=[NULL]
                                               BorderBrush=[NULL]
@@ -3867,16 +3602,6 @@
                                               Padding=0,0,0,0
                                               RenderSize=0,0
                                               Visibility=Collapsed
-                                  [Microsoft.UI.Xaml.Controls.ItemsRepeater]
-                                      Background=[NULL]
-                                      FocusVisualPrimaryBrush=#E4000000
-                                      FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualSecondaryBrush=#B3FFFFFF
-                                      FocusVisualSecondaryThickness=1,1,1,1
-                                      Margin=0,0,0,0
-                                      Name=NavigationViewItemMenuItemsHost
-                                      RenderSize=0,0
-                                      Visibility=Collapsed
                           [Windows.UI.Xaml.Controls.Grid]
                               Background=[NULL]
                               BorderBrush=[NULL]
@@ -4753,21 +4478,6 @@
                                                 Padding=0,0,0,0
                                                 RenderSize=50,19
                                                 Visibility=Visible
-                                          [Windows.UI.Xaml.Controls.Grid]
-                                              Background=#00FFFFFF
-                                              BorderBrush=[NULL]
-                                              BorderThickness=0,0,0,0
-                                              CornerRadius=0,0,0,0
-                                              FocusVisualPrimaryBrush=#E4000000
-                                              FocusVisualPrimaryThickness=2,2,2,2
-                                              FocusVisualSecondaryBrush=#B3FFFFFF
-                                              FocusVisualSecondaryThickness=1,1,1,1
-                                              Margin=0,0,-14,0
-                                              Name=ExpandCollapseChevron
-                                              Padding=0,0,0,0
-                                              RenderSize=0,0
-                                              Visibility=Collapsed
-                                              Width=40
                                           [Windows.UI.Xaml.Controls.ContentPresenter]
                                               Background=[NULL]
                                               BorderBrush=[NULL]
@@ -4783,16 +4493,6 @@
                                               Padding=0,0,0,0
                                               RenderSize=0,0
                                               Visibility=Collapsed
-                                  [Microsoft.UI.Xaml.Controls.ItemsRepeater]
-                                      Background=[NULL]
-                                      FocusVisualPrimaryBrush=#E4000000
-                                      FocusVisualPrimaryThickness=2,2,2,2
-                                      FocusVisualSecondaryBrush=#B3FFFFFF
-                                      FocusVisualSecondaryThickness=1,1,1,1
-                                      Margin=0,0,0,0
-                                      Name=NavigationViewItemMenuItemsHost
-                                      RenderSize=0,0
-                                      Visibility=Collapsed
                           [Windows.UI.Xaml.Controls.Grid]
                               Background=[NULL]
                               BorderBrush=[NULL]

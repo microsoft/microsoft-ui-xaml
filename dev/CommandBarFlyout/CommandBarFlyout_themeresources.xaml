@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:contract4Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,4)"
+    xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,5)"
     xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)"
     xmlns:contract6NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,6)"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
@@ -334,6 +335,7 @@
                                 Foreground="{ThemeResource CommandBarFlyoutAppBarButtonKeyboardTextLabelForeground}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
+                                contract5Present:HorizontalTextAlignment="Right"
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw" />
                             <FontIcon x:Name="SubItemChevron"
@@ -547,7 +549,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <TextBlock x:Name="OverflowCheckGlyph"
-                                Text="&#xE0E7;"
+                                Text="&#xE73E;"
                                 Foreground="{ThemeResource CommandBarFlyoutAppBarButtonForeground}"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 FontSize="12"
@@ -588,6 +590,7 @@
                                 Foreground="{ThemeResource CommandBarFlyoutAppBarButtonKeyboardTextLabelForeground}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
+                                contract5Present:HorizontalTextAlignment="Right"
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw" />
                         </Grid>
@@ -1302,7 +1305,7 @@
                                             VerticalAlignment="Center"
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                             FontSize="16"
-                                            Glyph="&#xE10C;" />
+                                            Glyph="&#xE712;" />
                                     </Button>
                                 </Grid>
                                 <Popup x:Name="OverflowPopup" contract8Present:ShouldConstrainToRootBounds="False">

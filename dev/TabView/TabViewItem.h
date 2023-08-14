@@ -11,6 +11,7 @@
 #include "TabViewItem.properties.h"
 #include "TabViewItemAutomationPeer.h"
 #include "TabViewItemTemplateSettings.h"
+#include "TabViewTrace.h"
 
 class TabViewItem :
     public ReferenceTracker<TabViewItem, winrt::implementation::TabViewItemT>,
@@ -37,6 +38,9 @@ public:
     void OnPointerCanceled(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
 
+    // Control
+    void OnKeyDown(winrt::KeyRoutedEventArgs const& e);
+
     void RaiseRequestClose(TabViewTabCloseRequestedEventArgs const& args);
     void OnTabViewWidthModeChanged(winrt::TabViewWidthMode const& mode);
     void OnCloseButtonOverlayModeChanged(winrt::TabViewCloseButtonOverlayMode const& mode);
@@ -44,13 +48,11 @@ public:
     winrt::TabView GetParentTabView();
     void SetParentTabView(winrt::TabView const& tabView);
 
-private:
-    tracker_ref<winrt::Button> m_closeButton{ this };
-    tracker_ref<winrt::ToolTip> m_toolTip{ this };
-    tracker_ref<winrt::ContentPresenter> m_headerContentPresenter{ this };
-    winrt::TabViewWidthMode m_tabViewWidthMode{ winrt::TabViewWidthMode::Equal };
-    winrt::TabViewCloseButtonOverlayMode m_closeButtonOverlayMode{ winrt::TabViewCloseButtonOverlayMode::Auto };
+    void StartBringTabIntoView();
 
+    winrt::Button GetCloseButton() { return m_closeButton.get(); }
+
+private:
     void UpdateCloseButton();
     void UpdateForeground();
     void RequestClose();
@@ -60,12 +62,6 @@ private:
 
     void OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args);
     void UpdateTabGeometry();
-
-    bool m_firstTimeSettingToolTip{ true };
-
-    winrt::ButtonBase::Click_revoker m_closeButtonClickRevoker{};
-    winrt::TabView::TabDragStarting_revoker m_tabDragStartingRevoker{};
-    winrt::TabView::TabDragCompleted_revoker m_tabDragCompletedRevoker{};
 
     void OnCloseButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
@@ -78,12 +74,27 @@ private:
     void HideLeftAdjacentTabSeparator();
     void RestoreLeftAdjacentTabSeparatorVisibility();
 
+    void UpdateShadow();
+    void UpdateSelectedBackgroundPathTranslateTransform();
+
     bool m_hasPointerCapture = false;
     bool m_isMiddlePointerButtonPressed = false;
     bool m_isDragging = false;
     bool m_isPointerOver = false;
+    bool m_firstTimeSettingToolTip{ true };
 
-    void UpdateShadow();
+    tracker_ref<winrt::Path> m_selectedBackgroundPath{ this };
+    tracker_ref<winrt::Button> m_closeButton{ this };
+    tracker_ref<winrt::ToolTip> m_toolTip{ this };
+    tracker_ref<winrt::ContentPresenter> m_headerContentPresenter{ this };
+    winrt::TabViewWidthMode m_tabViewWidthMode{ winrt::TabViewWidthMode::Equal };
+    winrt::TabViewCloseButtonOverlayMode m_closeButtonOverlayMode{ winrt::TabViewCloseButtonOverlayMode::Auto };
+
+    winrt::FrameworkElement::SizeChanged_revoker m_selectedBackgroundPathSizeChangedRevoker{};
+    winrt::ButtonBase::Click_revoker m_closeButtonClickRevoker{};
+    winrt::TabView::TabDragStarting_revoker m_tabDragStartingRevoker{};
+    winrt::TabView::TabDragCompleted_revoker m_tabDragCompletedRevoker{};
+
     winrt::IInspectable m_shadow{ nullptr };
 
     winrt::weak_ref<winrt::TabView> m_parentTabView{ nullptr };

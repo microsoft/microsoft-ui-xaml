@@ -86,6 +86,6 @@ void SplitButtonAutomationPeer::Invoke()
 {
     if (auto splitButton = GetImpl())
     {
-        splitButton->OnClickPrimary(nullptr, nullptr);
+        splitButton->Invoke();
     }
 }

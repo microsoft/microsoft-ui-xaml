@@ -10,7 +10,7 @@ foreach($pgcFile in $pgcFiles)
     $flavorPath = $pgcFile.Name.Split('.')[0]
     $archPath = $pgcFile.Name.Split('.')[1]
     $fileName = $pgcFile.Name.Remove(0, $flavorPath.length + $archPath.length + 2)
-    $fullPath = "$OutputFolder\PGO\$flavorPath\$archPath"
+    $fullPath = "$OutputFolder\PGO\$archPath"
     $destination = "$fullPath\$fileName"
 
     Write-Host "Copying $($pgcFile.Name) to $destination"

@@ -14,8 +14,8 @@
     <!-- By default we use the publicly shipped SDK version which is 21H1 now -->
     <MuxSdkVersion Condition="$(UseInsiderSDK) != 'true'">$(SDKVersion21H1)</MuxSdkVersion>
 
-    <!-- Setting UseInsiderSDK will allow the code to build to the newest insider SDK 
-         In order to get this from a cmd prompt run 
+    <!-- Setting UseInsiderSDK will allow the code to build to the newest insider SDK
+         In order to get this from a cmd prompt run
          set UseInsiderSDK=true and then launch muxcontrols.sln from that cmd prompt -->
     <MuxSdkVersion Condition="$(UseInsiderSDK) == 'true'">$(SDKVersionInsider)</MuxSdkVersion>
   </PropertyGroup>

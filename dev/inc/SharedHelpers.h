@@ -4,6 +4,7 @@
 #pragma once
 
 #include "AutoHandle.h"
+#include "StaticAssertFalse.h"
 
 class SharedHelpers
 {
@@ -161,7 +162,7 @@ public:
 
     static winrt::FrameworkElement FindInVisualTree(winrt::FrameworkElement const& parent, std::function<bool(winrt::FrameworkElement element)> const& isMatch)
     {
-        int numChildren = winrt::VisualTreeHelper::GetChildrenCount(parent);
+        const int numChildren = winrt::VisualTreeHelper::GetChildrenCount(parent);
 
         winrt::FrameworkElement foundElement = parent;
         if (isMatch(foundElement))

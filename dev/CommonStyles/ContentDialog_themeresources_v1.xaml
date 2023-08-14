@@ -104,10 +104,6 @@
         <Setter Property="PrimaryButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
         <Setter Property="SecondaryButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
         <Setter Property="CloseButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
-        <Setter Property="MinWidth" Value="{ThemeResource ContentDialogMinWidth}" />
-        <Setter Property="MaxWidth" Value="{ThemeResource ContentDialogMaxWidth}" />
-        <Setter Property="MinHeight" Value="{ThemeResource ContentDialogMinHeight}" />
-        <Setter Property="MaxHeight" Value="{ThemeResource ContentDialogMaxHeight}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -291,10 +287,10 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                                 contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}"
-                                MinWidth="{TemplateBinding MinWidth}"
-                                MaxWidth="{TemplateBinding MaxWidth}"
-                                MinHeight="{TemplateBinding MinHeight}"
-                                MaxHeight="{TemplateBinding MaxHeight}"
+                                MinWidth="{ThemeResource ContentDialogMinWidth}"
+                                MaxWidth="{ThemeResource ContentDialogMaxWidth}"
+                                MinHeight="{ThemeResource ContentDialogMinHeight}"
+                                MaxHeight="{ThemeResource ContentDialogMaxHeight}"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 RenderTransformOrigin="0.5,0.5">
@@ -312,7 +308,7 @@
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="*" />
                                             </Grid.RowDefinitions>
-                                            <ContentControl x:Name="Title" Margin="{ThemeResource ContentDialogTitleMargin}" Content="{TemplateBinding Title}" ContentTemplate="{TemplateBinding TitleTemplate}" FontSize="20" FontFamily="XamlAutoFontFamily" FontWeight="Normal" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Left" VerticalAlignment="Top" IsTabStop="False">
+                                            <ContentControl x:Name="Title" Margin="{ThemeResource ContentDialogTitleMargin}" Content="{TemplateBinding Title}" ContentTemplate="{TemplateBinding TitleTemplate}" FontSize="20" FontFamily="{ThemeResource ContentControlThemeFontFamily}" FontWeight="Normal" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Left" VerticalAlignment="Top" IsTabStop="False">
                                                 <ContentControl.Template>
                                                     <ControlTemplate TargetType="ContentControl">
                                                         <ContentPresenter Content="{TemplateBinding Content}" MaxLines="2" TextWrapping="Wrap" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="{TemplateBinding Padding}" ContentTransitions="{TemplateBinding ContentTransitions}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />

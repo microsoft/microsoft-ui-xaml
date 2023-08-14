@@ -58,9 +58,12 @@ winrt::Size FlowLayoutAlgorithm::Measure(
         }
     }
 
-    m_elementManager.OnBeginMeasure(orientation);
+    if(!disableVirtualization)
+    {
+        m_elementManager.OnBeginMeasure(orientation);
+    }
 
-    const int anchorIndex = GetAnchorIndex(availableSize, isWrapping, minItemSpacing, layoutId);
+    const int anchorIndex = GetAnchorIndex(availableSize, isWrapping, minItemSpacing, disableVirtualization, layoutId);
     Generate(GenerateDirection::Forward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
     Generate(GenerateDirection::Backward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
     if (isWrapping && IsReflowRequired())
@@ -147,13 +150,14 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
     const winrt::Size& availableSize,
     bool isWrapping,
     double minItemSpacing,
+    const bool disableVirtualization,
     const wstring_view& layoutId)
 {
     int anchorIndex = -1;
     winrt::Point anchorPosition{};
     auto context = m_context.get();
 
-    if (!IsVirtualizingContext())
+    if (!IsVirtualizingContext() || disableVirtualization)
     {
         // Non virtualizing host, start generating from the element 0
         anchorIndex = context.ItemCountCore() > 0 ? 0 : -1;

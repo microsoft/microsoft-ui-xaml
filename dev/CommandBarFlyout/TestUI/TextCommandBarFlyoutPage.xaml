@@ -32,6 +32,7 @@
                         <ColumnDefinition />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBox x:Name="TextBox1" AutomationProperties.AutomationId="TextBox" Text="Lorem ipsum ergo sum" Margin="10" />
                     <TextBlock x:Name="TextBlock1" AutomationProperties.AutomationId="TextBlock" Text="Lorem ipsum ergo sum" Margin="10" IsTextSelectionEnabled="True" Grid.Row="1" />
@@ -54,6 +55,8 @@
                     <Button x:Name="TextBlockClearSelectionButton" AutomationProperties.AutomationId="TextBlockClearSelectionButton" Content="Clear selection" Click="OnTextBlockClearSelectionClicked" Grid.Row="1" Grid.Column="2" />
                     <Button x:Name="RichEditBoxClearSelectionButton" AutomationProperties.AutomationId="RichEditBoxClearSelectionButton" Content="Clear selection" Click="OnRichEditBoxClearSelectionClicked" Grid.Row="2" Grid.Column="2" />
                     <Button x:Name="RichTextBlockClearSelectionButton" AutomationProperties.AutomationId="RichTextBlockClearSelectionButton" Content="Clear selection" Click="OnRichTextBlockClearSelectionClicked" Grid.Row="3" Grid.Column="2" />
+                    <Button x:Name="TextBoxFillWithTextButton" AutomationProperties.AutomationId="TextBoxFillWithTextButton" Content="Fill with text" Click="OnTextBoxFillWithTextClicked" Grid.Column="3" />
+                    <Button x:Name="RichEditBoxFillWithTextButton" AutomationProperties.AutomationId="RichEditBoxFillWithTextButton" Content="Fill with text" Click="OnRichEditBoxFillWithTextClicked" Grid.Row="2" Grid.Column="3" />
                 </Grid>
                 <TextBlock Text="Show TextCommandBarFlyout in transient mode on..." HorizontalAlignment="Center" />
                 <VariableSizedWrapGrid Orientation="Horizontal">

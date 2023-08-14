@@ -27,7 +27,7 @@ RadioMenuFlyoutItem::RadioMenuFlyoutItem()
 RadioMenuFlyoutItem::~RadioMenuFlyoutItem()
 {
     // If this is the checked item, remove it from the lookup.
-    if (m_isChecked)
+    if (m_isChecked && s_selectionMap)
     {
         SharedHelpers::EraseIfExists(*s_selectionMap, m_groupName);
     }

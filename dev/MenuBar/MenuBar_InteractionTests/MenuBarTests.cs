@@ -158,11 +158,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 if (ApiInformation.IsTypePresent("Windows.UI.Xaml.IUIElement5")) // XYFocusNavigation is only availabe from IUElement5 foward
                 {
+                    KeyboardHelper.PressKey(Key.Left);
+                    VerifyElement.NotFound("Word Wrap", FindBy.Name);
+
+                    KeyboardHelper.PressKey(Key.Enter);
+                    VerifyElement.Found("Word Wrap", FindBy.Name);
+
+                    KeyboardHelper.PressKey(Key.Escape);
+                    KeyboardHelper.PressKey(Key.Right);
+
                     KeyboardHelper.PressKey(Key.Right);
                     VerifyElement.NotFound("Undo", FindBy.Name);
 
                     KeyboardHelper.PressKey(Key.Enter);
                     VerifyElement.Found("Undo", FindBy.Name);
+
+                    KeyboardHelper.PressKey(Key.Down);
+                    KeyboardHelper.PressKey(Key.Down);
+                    KeyboardHelper.PressKey(Key.Down);
+                    KeyboardHelper.PressKey(Key.Down);
+                    KeyboardHelper.PressKey(Key.Down);
+                    VerifyElement.NotFound("Item 1", FindBy.Name);
+
+                    KeyboardHelper.PressKey(Key.Right);
+                    VerifyElement.Found("Item 1", FindBy.Name);
+
                 }
             }
         }

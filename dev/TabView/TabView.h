@@ -12,6 +12,7 @@
 #include "TabViewTabDroppedOutsideEventArgs.g.h"
 #include "TabViewTabDragStartingEventArgs.g.h"
 #include "TabViewTabDragCompletedEventArgs.g.h"
+#include "TabViewTrace.h"
 #include "DispatcherHelper.h"
 
 static constexpr double c_tabShadowDepth = 16.0;
@@ -123,6 +124,8 @@ public:
     void SetTabSeparatorOpacity(int index, int opacityValue);
     void SetTabSeparatorOpacity(int index);
 
+    bool MoveFocus(bool moveForward);
+
 private:
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnScrollViewerLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -146,8 +149,11 @@ private:
     void OnCtrlTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
     void OnCtrlShiftTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
 
+    void OnAddButtonKeyDown(const winrt::IInspectable& sender, winrt::KeyRoutedEventArgs const& args);
+
     bool RequestCloseCurrentTab();
-    bool SelectNextTab(int increment);
+    bool MoveSelection(bool moveForward);
+    void BringSelectedTabIntoView();
 
     void UpdateSelectedItem();
     void UpdateSelectedIndex();
@@ -168,6 +174,8 @@ private:
     void UpdateTabBottomBorderLineVisualStates();
 
     winrt::TabViewItem FindTabViewItemFromDragItem(const winrt::IInspectable& item);
+
+    static bool IsFocusable(winrt::DependencyObject const& object, bool checkTabStop = false);
 
     bool m_updateTabWidthOnPointerLeave{ false };
     bool m_pointerInTabstrip{ false };
@@ -211,13 +219,15 @@ private:
     winrt::RepeatButton::Click_revoker m_scrollDecreaseClickRevoker{};
     winrt::RepeatButton::Click_revoker m_scrollIncreaseClickRevoker{};
 
+    winrt::Button::KeyDown_revoker m_addButtonKeyDownRevoker{};
+
     winrt::ItemsPresenter::SizeChanged_revoker m_itemsPresenterSizeChangedRevoker{};
 
     DispatcherHelper m_dispatcherHelper{ *this };
 
     winrt::hstring m_tabCloseButtonTooltipText{};
 
-    winrt::Size previousAvailableSize{};
+    winrt::Size m_previousAvailableSize{};
 
     bool m_isDragging{ false };
 };

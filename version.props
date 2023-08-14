@@ -2,8 +2,11 @@
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
+    <!-- When updating the Major or Minor version, also update:  -->
+    <!--   build\NuSpecs\MUXControls-Nuget-FrameworkPackage.props -->
+    <!--   dev\inc\BuildMacros.h -->
     <MUXVersionMajor>2</MUXVersionMajor>
-    <MUXVersionMinor>8</MUXVersionMinor>
+    <MUXVersionMinor>9</MUXVersionMinor>
     <MUXVersionPatch>0</MUXVersionPatch>
     <MUXVersionBuild Condition="$(MUXVersionBuild) == ''">0</MUXVersionBuild>
     <MUXVersionRevision Condition="$(MUXVersionRevision) == ''">0</MUXVersionRevision>

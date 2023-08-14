@@ -32,6 +32,7 @@
         <Button x:Name="navigateToScrollControllers" AutomationProperties.Name="navigateToScrollControllers" Margin="2" HorizontalAlignment="Stretch">ScrollView with IScrollControllers within template</Button>
         <Button x:Name="navigateToRTL" AutomationProperties.Name="navigateToRTL" Margin="2" HorizontalAlignment="Stretch">ScrollView with RightToLeft flow direction</Button>
         <Button x:Name="navigateToKeyboardAndGamepadNavigation" AutomationProperties.Name="navigateToKeyboardAndGamepadNavigation" Margin="2" HorizontalAlignment="Stretch">ScrollView navigation with Keyboard and Gamepad</Button>
+        <Button x:Name="navigateToBringIntoView" AutomationProperties.Name="navigateToBringIntoView" Margin="2" HorizontalAlignment="Stretch">Bring into view</Button>
         <Button x:Name="navigateToBlank" AutomationProperties.Name="navigateToBlank" Margin="2" HorizontalAlignment="Stretch">ScrollView in blank page</Button>
     </StackPanel>
 </local:TestPage>

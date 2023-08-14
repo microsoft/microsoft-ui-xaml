@@ -6,6 +6,7 @@ function AllChangedFilesAreSkippable
     Param($files)
 
     $skipExts = @(".md", ".png", ".PNG", ".jpg", ".ics")
+    $skipFiles = @(".github/ISSUE_TEMPLATE/bug_report.yaml")
     $allFilesAreSkippable = $true
 
     foreach($file in $files)
@@ -15,6 +16,11 @@ function AllChangedFilesAreSkippable
         {
             $ext = [System.IO.Path]::GetExtension($file)
             $fileIsSkippable = $ext -in $skipExts
+
+            if(!$fileIsSkippable)
+            {
+                $fileIsSkippable = $file -in $skipFiles
+            }
         }
         catch
         {

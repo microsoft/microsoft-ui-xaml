@@ -453,7 +453,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <TextBlock x:Name="OverflowCheckGlyph"
-                                Text="&#xE0E7;"
+                                Text="&#xE73E;"
                                 Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 FontSize="16"
@@ -494,6 +494,7 @@
                                 Foreground="{ThemeResource SystemControlBackgroundBaseMediumBrush}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
+                                HorizontalTextAlignment="Right"
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw" />
                         </Grid>
@@ -1107,7 +1108,7 @@
                                             VerticalAlignment="Center"
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                             FontSize="16"
-                                            Glyph="&#xE10C;" />
+                                            Glyph="&#xE712;" />
                                     </Button>
                                 </Grid>
                                 <Popup x:Name="OverflowPopup" contract8Present:ShouldConstrainToRootBounds="False">

@@ -3,6 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:media="using:Microsoft.UI.Xaml.Media"
+    xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,5)"
     xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
@@ -467,6 +468,7 @@
                             Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"
                             HorizontalAlignment="Right"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            contract5Present:HorizontalTextAlignment="Right"
                             Visibility="Collapsed"
                             AutomationProperties.AccessibilityView="Raw" />
                     </Grid>
@@ -577,7 +579,7 @@
                         <FontIcon
                             x:Name="CheckGlyph"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                            Glyph="&#xE001;"
+                            Glyph="&#xE73E;"
                             FontSize="12"
                             Foreground="{ThemeResource MenuFlyoutSubItemChevron}"
                             Opacity="0"
@@ -609,6 +611,7 @@
                                 Foreground="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForeground}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                contract5Present:HorizontalTextAlignment="Right"
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw" />
                     </Grid>
@@ -892,6 +895,7 @@
                             Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"
                             HorizontalAlignment="Right"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            contract5Present:HorizontalTextAlignment="Right"
                             Visibility="Collapsed"
                             AutomationProperties.AccessibilityView="Raw" />
 
@@ -1005,7 +1009,7 @@
 
                         <FontIcon x:Name="CheckGlyph"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                            Glyph="&#xE001;"
+                            Glyph="&#xE73E;"
                             FontSize="12"
                             Foreground="{ThemeResource ToggleMenuFlyoutItemCheckGlyphForeground}"
                             Opacity="0"
@@ -1035,6 +1039,7 @@
                             Foreground="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForeground}"
                             HorizontalAlignment="Right"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            contract5Present:HorizontalTextAlignment="Right"
                             Visibility="Collapsed"
                             AutomationProperties.AccessibilityView="Raw" />
                     </Grid>

@@ -12,6 +12,8 @@
 
 using TreeNodeSelectionState = TreeViewNode::TreeNodeSelectionState;
 
+#pragma warning(disable: 26813)  
+
 // When dragging an item over a collapsed folder, we expand the folder after 1s hovering.
 static int64_t const c_dragOverInterval = 1000 * 10000;
 

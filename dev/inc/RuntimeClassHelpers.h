@@ -79,7 +79,7 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
         return this->m_inner;
     }
 
-    HRESULT __stdcall NonDelegatingQueryInterface(GUID const& riid, void** value) noexcept
+    int32_t __stdcall NonDelegatingQueryInterface(winrt::guid const& riid, void** value) noexcept
     {
         // In order for the reference tracking mechanism to work, we actually need to hand out XAML's
         // implementation of IWeakReferenceSource. However there are some bugs on RS2 where XAML calls
@@ -113,8 +113,9 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
 
     // TEMP-BEGIN
 
-    HRESULT __stdcall QueryInterface(GUID const& id, void** object) noexcept
+    HRESULT __stdcall QueryInterface(GUID const& id_abi, void** object) noexcept
     {
+        auto& id = reinterpret_cast<winrt::guid const&>(id_abi);
         if (this->outer())
         {
             return this->outer()->QueryInterface(id, object);
@@ -134,24 +135,27 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
     // return false.  If we're off the UI thread but can't get to it, then do the DeleteInstance() here (asynchronously).
     static void DeleteInstanceOnUIThread(std::unique_ptr<D>&& self) noexcept
     {
-        bool queued = false;
-        
+        auto me = static_cast<ReferenceTracker<D, ImplT, I...>*>(self.get());
+        // Some sanity checks that we aren't running through this twice and that no one has modified some of our fields
+        // that should always be non-zero.
+        if (me->m_destroying || (me->m_owningThreadId == 0) || !me->m_dispatcherHelper.DispatcherQueue())
+        {
+            MUX_FAIL_FAST();
+        }
+        me->m_destroying = true;
+
         // See if we're on the UI thread
         if(!self->IsOnThread())
         {
             // We're not on the UI thread
-            static_cast<ReferenceTracker<D, ImplT, I...>*>(self.get())->m_dispatcherHelper.RunAsync(
+            me->m_dispatcherHelper.RunAsync(
                 [instance = self.release()]()
                 {
                     delete instance;
                 },
                 true /*fallbackToThisThread*/);
-
-            queued = true;
         }
-        
-
-        if (!queued)
+        else
         {
             self.reset();
         }
@@ -189,6 +193,7 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
 
 private:
     DWORD m_owningThreadId{};
+    bool m_destroying{};
 };
 
 #define CppWinRTActivatableClassWithFactory(className, factory) \

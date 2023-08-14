@@ -701,7 +701,7 @@
                             Foreground="{ThemeResource ComboBoxDropDownGlyphForeground}"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             FontSize="12"
-                            Glyph="&#xE0E5;"
+                            Glyph="&#xE70D;"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
                             AutomationProperties.AccessibilityView="Raw" />

@@ -76,6 +76,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             Wait.ForIdle();
         }
 
+        public static void LeftDoubleClick(UIObject obj)
+        {
+            Log.Comment("Left double-click on {0}.", obj.GetIdentifier());
+            obj.DoubleClick(PointerButtons.Primary);
+            Wait.ForIdle();
+        }
+
+        public static void LeftDoubleClick(UIObject obj, double offsetX, double offsetY)
+        {
+            Log.Comment("Left double-click on {0}, at ({1}, {2}).", obj.GetIdentifier(), offsetX, offsetY);
+            obj.DoubleClick(PointerButtons.Primary, offsetX, offsetY);
+            Wait.ForIdle();
+        }
+
         public static void RightClick(UIObject obj, int offsetX = 0, int offsetY = 0)
         {
             if (offsetX == 0 && offsetY == 0)
@@ -292,6 +306,58 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                     obj.TapAndHold(durationMs);
                 }
             }
+            Wait.ForIdle();
+        }
+
+        public static void DoubleTap(UIObject obj)
+        {
+            try
+            {
+                Log.Comment("Double-tap on {0}.", obj.GetIdentifier());
+                using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Tap))
+                {
+                    if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+                    {
+                        Log.Warning("Touch input is not available on OS versions less than RS5. Falling back to mouse input.");
+                        obj.DoubleClick(PointerButtons.Primary);
+                    }
+                    else
+                    {
+                        obj.DoubleTap();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Warning("Exception while double-tapping: " + e.Message);
+            }
+
+            Wait.ForIdle();
+        }
+
+        public static void DoubleTap(UIObject obj, double offsetX, double offsetY)
+        {
+            try
+            {
+                Log.Comment("Double-tap on {0} at ({1}, {2}).", obj.GetIdentifier(), offsetX, offsetY);
+                using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Tap))
+                {
+                    if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+                    {
+                        Log.Warning("Touch input is not available on OS versions less than RS5. Falling back to mouse input.");
+                        obj.DoubleClick(PointerButtons.Primary, offsetX, offsetY);
+                    }
+                    else
+                    {
+                        obj.DoubleTap(offsetX, offsetY);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Warning("Exception while double-tapping: " + e.Message);
+            }
+
             Wait.ForIdle();
         }
 

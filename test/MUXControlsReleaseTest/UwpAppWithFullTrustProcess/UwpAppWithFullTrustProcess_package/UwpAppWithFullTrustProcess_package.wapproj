@@ -51,7 +51,7 @@
     <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
     <GenerateAppxPackageOnBuild>True</GenerateAppxPackageOnBuild>
     <AppxPackageName>UwpAppWithFullTrustProcess_package</AppxPackageName>
-    <PackageCertificateKeyFile>..\..\..\..\build\MSTest.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>..\..\..\..\build\WinUITest.pfx</PackageCertificateKeyFile>
     <AppxBundle>Never</AppxBundle>
   </PropertyGroup>
   <ItemGroup>
