@@ -39,11 +39,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        [TestProperty("Ignore", "True")] // Ignored since the PagerControl is not fully accessible yet. See #6495
         public void VerifyAxeScanPasses()
         {
             using (var setup = new TestSetupHelper("PagerControl-Axe"))
             {
-                // AxeTestHelper.TestForAxeIssues();
+                AxeTestHelper.TestForAxeIssues();
             }
         }
 
