@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -10,6 +11,9 @@ using NavigationViewItemInvokedEventArgs = Microsoft.UI.Xaml.Controls.Navigation
 using NavigationViewItemExpandingEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewItemExpandingEventArgs;
 using NavigationViewItemCollapsedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewItemCollapsedEventArgs;
 using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode;
+using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
+using NavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
+using NavigationViewSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs;
 
 namespace MUXControlsTestApp
 {
@@ -35,6 +39,7 @@ namespace MUXControlsTestApp
     {
 
         ObservableCollection<Category> categories = new ObservableCollection<Category>();
+        ObservableCollection<Category> categories11 = new ObservableCollection<Category>();
 
         public HierarchicalNavigationViewDataBinding()
         {
@@ -71,12 +76,20 @@ namespace MUXControlsTestApp
 
             var categories10 = new ObservableCollection<Category>();
 
+            var categories111 = new ObservableCollection<Category>();
+            categories111.Add(new Category("Menu Item 21", "MI21", "Icon", null, true));
+            categories111.Add(new Category("Menu Item 22", "MI22", "Icon", null, true));
+
+            categories11.Add(new Category("Menu Item 20", "MI20", "Icon", null, true));
+            categories11.Add(new Category("Menu Item 23", "MI23", "Icon", categories111, true));
+            categories11.Add(new Category("Menu Item 24", "MI24", "Icon", null, true));
+
             categories.Add(new Category("Menu Item 1", "MI1", "Icon", categories2, false));
             categories.Add(new Category("Menu Item 6 (Selectable)", "MI6", "Icon", categories4, true));
             categories.Add(new Category("Menu Item 10", "MI10", "Icon", categories10, true));
             categories.Add(new Category("Menu Item 11", "MI11", "Icon", categories6, false));
             categories.Add(new Category("Menu Item 15", "MI15", "Icon", categories8, false));
-
+            categories.Add(new Category("Menu Item 19", "MI19", "Icon", categories11, false));
         }
 
         private void ClickedItem(object sender, NavigationViewItemInvokedEventArgs e)
@@ -102,6 +115,38 @@ namespace MUXControlsTestApp
         private void AddMenuItem(object sender, RoutedEventArgs e)
         {
             categories.Add(new Category("Menu Item G", "MIG", "Icon", null, true));
+        }
+
+        private int nextIndex = 25;
+
+        private void AddAndSelectSubMenuItem(object sender, RoutedEventArgs e)
+        {
+            Category newCategory = new Category($"Menu Item {nextIndex}", $"MI{nextIndex}", "Icon", null, true);
+            categories11.Add(newCategory);
+            navview.SelectedItem = newCategory;
+
+            nextIndex++;
+        }
+
+        private void AddShowAndSelectSubMenuItem(object sender, RoutedEventArgs e)
+        {
+            Category newCategory = new Category($"Menu Item {nextIndex}", $"MI{nextIndex}", "Icon", null, true);
+            categories11.Add(newCategory);
+            navview.SelectedItem = newCategory;
+
+            NavigationViewItem container = (NavigationViewItem)navview.ContainerFromMenuItem(categories.Last());
+
+            if (!container.IsExpanded)
+            {
+                navview.Expand(container);
+            }
+
+            nextIndex++;
+        }
+
+        private void SelectSubMenuItem(object sender, RoutedEventArgs e)
+        {
+            navview.SelectedItem = categories11[0];
         }
 
         private void RemoveSecondMenuItem(object sender, RoutedEventArgs e)
@@ -144,6 +189,14 @@ namespace MUXControlsTestApp
                 areItemAndContainerTheSame = "true";
             }
             TextblockCollapsedItemAndContainerMatch.Text = areItemAndContainerTheSame;
+        }
+
+        private void OnSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+            if (args.SelectedItemContainer != null)
+            {
+                args.SelectedItemContainer.StartBringIntoView();
+            }
         }
 
         private void PaneDisplayModeCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
