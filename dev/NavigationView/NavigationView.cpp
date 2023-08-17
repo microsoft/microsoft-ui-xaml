@@ -5783,7 +5783,7 @@ void NavigationView::OnSelectedItemLayoutUpdated(const winrt::IInspectable& send
         m_isSelectionChangedPending = false;
 
         auto item = m_pendingSelectionChangedItem;
-        auto direction = m_pendingSelectionChangedDirection;
+        auto const direction = m_pendingSelectionChangedDirection;
 
         m_pendingSelectionChangedItem = nullptr;
         m_pendingSelectionChangedDirection = NavigationRecommendedTransitionDirection::Default;
