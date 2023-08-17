@@ -110,8 +110,8 @@ private:
     static winrt::IInspectable GetItemFromIndex(const winrt::ItemsRepeater& ir, int index);
     winrt::IndexPath GetIndexPathOfItem(const winrt::IInspectable& data);
     winrt::UIElement GetContainerForIndex(int index, bool inFooter);
-    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& ip, bool lastVisible = false);
-    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool lastVisible);
+    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& ip, bool lastVisible = false, bool forceRealize = false);
+    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool lastVisible, bool forceRealize);
     winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::IndexPath& ip, bool forceRealize = false);
     winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool forceRealize = false);
     winrt::UIElement SearchEntireTreeForContainer(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data);

@@ -2311,6 +2311,7 @@ winrt::UIElement NavigationView::FindSelectionIndicator(const winrt::IInspectabl
                 // Indicator was not found, so maybe the layout hasn't updated yet.
                 // So let's do that now.
                 container.UpdateLayout();
+                container.ApplyTemplate();
                 return winrt::get_self<NavigationViewItem>(container)->GetSelectionIndicator();
             }
         }
@@ -2323,9 +2324,17 @@ void NavigationView::RaiseSelectionChangedEvent(winrt::IInspectable const& nextI
     auto eventArgs = winrt::make_self<NavigationViewSelectionChangedEventArgs>();
     eventArgs->SelectedItem(nextItem);
     eventArgs->IsSettingsSelected(isSettingsItem);
-    if (auto container = NavigationViewItemBaseOrSettingsContentFromData(nextItem))
+    if (nextItem)
     {
-        eventArgs->SelectedItemContainer(container);
+        if (auto container = NavigationViewItemBaseOrSettingsContentFromData(nextItem))
+        {
+            eventArgs->SelectedItemContainer(container);
+        }
+        else if (container = GetContainerForIndexPath(m_selectionModel.SelectedIndex(), false /* lastVisible */, true /* forceRealize */))
+        {
+            MUX_ASSERT(container.Content() == nextItem);
+            eventArgs->SelectedItemContainer(container);
+        }
     }
     eventArgs->RecommendedNavigationTransitionInfo(CreateNavigationTransitionInfo(recommendedDirection));
     m_selectionChangedEventSource(*this, *eventArgs);
@@ -2385,6 +2394,29 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         UnselectPrevItem(prevItem, nextItem);
         ChangeSelectStatusForItem(nextItem, true /*selected*/);
 
+        winrt::IndexPath indexPath{ nullptr };
+
+        if (auto container = NavigationViewItemBaseOrSettingsContentFromData(nextItem))
+        {
+            indexPath = GetIndexPathForContainer(container);
+        }
+        else
+        {
+            indexPath = GetIndexPathOfItem(nextItem);
+        }
+
+        if (indexPath && indexPath.GetSize() > 0)
+        {
+            // The SelectedItem property has already been updated. So we want to block any logic from executing
+            // in the SelectionModel selection changed callback.
+            auto scopeGuard = gsl::finally([this]()
+                {
+                    m_shouldIgnoreNextSelectionChange = false;
+                });
+            m_shouldIgnoreNextSelectionChange = true;
+            UpdateSelectionModelSelection(indexPath);
+        }
+
         {
             auto scopeGuard = gsl::finally([this]()
             {
@@ -2411,7 +2443,9 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         }
         
         RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
-        AnimateSelectionChanged(nextItem);
+        // The selected item may be in a collapsed repeater, so if so, we want to instead display
+        // the selection indicator on the first visible item.
+        AnimateSelectionChanged(FindLowestLevelContainerToDisplaySelectionIndicator());
 
         if (auto const nvi = NavigationViewItemOrSettingsContentFromData(nextItem))
         {
@@ -5106,6 +5140,11 @@ winrt::IndexPath NavigationView::SearchEntireTreeForIndexPath(const winrt::Navig
                         }
                     }
                 }
+                else
+                {
+                    // We found an unrealized child, so we'll want to manually realize and search if we don't find the item.
+                    areChildrenRealized = false;
+                }
             }
         }
     }
@@ -5310,7 +5349,7 @@ winrt::UIElement NavigationView::GetContainerForIndex(int index, bool inFooter)
     return nullptr;
 }
 
-winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::IndexPath& ip, bool lastVisible)
+winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::IndexPath& ip, bool lastVisible, bool forceRealize)
 {
     if (ip && ip.GetSize() > 0)
     {
@@ -5332,14 +5371,14 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const win
             // This will return nullptr if requesting children containers of
             // items in the primary list, or unrealized items in the overflow popup.
             // However this should not happen.
-            return GetContainerForIndexPath(container, ip, lastVisible);
+            return GetContainerForIndexPath(container, ip, lastVisible, forceRealize);
         }
     }
     return nullptr;
 }
 
 
-winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool lastVisible)
+winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool lastVisible, bool forceRealize)
 {
     auto container = firstContainer;
     if (ip.GetSize() > 2)
@@ -5356,7 +5395,8 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const win
 
                 if (auto const nviRepeater = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater())
                 {
-                    if (auto const nextContainer = nviRepeater.TryGetElement(ip.GetAt(i)))
+                    auto const index = ip.GetAt(i);
+                    if (auto const nextContainer = forceRealize ? nviRepeater.GetOrCreateElement(index) : nviRepeater.TryGetElement(index))
                     {
                         container = nextContainer;
                         succeededGettingNextContainer = true;
