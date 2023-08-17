@@ -319,6 +319,8 @@ private:
 
     void OnBackButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
+    void OnSelectedItemLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& obj);
+
     bool IsOverlay();
     bool IsLightDismissible();
     bool ShouldShowBackButton();
@@ -340,6 +342,8 @@ private:
     void SetDropShadow();
     void UnsetDropShadow();
     void ShadowCasterEaseOutStoryboard_Completed(const winrt::Grid& shadowCaster);
+
+    bool IsVisible(const winrt::DependencyObject& obj);
 
     com_ptr<NavigationViewItemsFactory> m_navigationViewItemsFactory{ nullptr };
 
@@ -454,6 +458,8 @@ private:
 
     winrt::Storyboard::Completed_revoker m_shadowCasterEaseOutStoryboardRevoker{};
 
+    winrt::NavigationViewItem::LayoutUpdated_revoker m_selectedItemLayoutUpdatedRevoker{};
+
     bool m_wasForceClosed{ false };
     bool m_isClosedCompact{ false };
     bool m_blockNextClosingEvent{ false };
@@ -466,6 +472,10 @@ private:
 
     winrt::ItemsSourceView m_menuItemsSource{ nullptr };
     winrt::ItemsSourceView m_footerItemsSource{ nullptr };
+
+    bool m_isSelectionChangedPending{ false };
+    winrt::IInspectable m_pendingSelectionChangedItem{ nullptr };
+    NavigationRecommendedTransitionDirection m_pendingSelectionChangedDirection{ NavigationRecommendedTransitionDirection::Default };
 
     bool m_appliedTemplate{ false };
 
