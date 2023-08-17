@@ -52,14 +52,14 @@ jobs:
       nugetConfigPath: nuget.config
       restoreDirectory: packages
 
-  - task: DownloadBuildArtifacts@0 
+  - task: DownloadBuildArtifacts@1 
     condition:
       and(succeeded(),eq(variables['useBuildOutputFromBuildId'],''))
     inputs: 
       artifactName: ${{ parameters.artifactName }} 
       downloadPath: '$(artifactsDir)'
 
-  - task: DownloadBuildArtifacts@0 
+  - task: DownloadBuildArtifacts@1 
     condition:
       and(succeeded(),ne(variables['useBuildOutputFromBuildId'],''))
     inputs: 
