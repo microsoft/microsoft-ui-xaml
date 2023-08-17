@@ -2483,7 +2483,7 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
 
                             m_isSelectionChangedPending = false;
 
-                            auto item = m_pendingSelectionChangedItem;
+                            auto const item = m_pendingSelectionChangedItem;
                             auto const direction = m_pendingSelectionChangedDirection;
 
                             m_pendingSelectionChangedItem = nullptr;
@@ -5782,7 +5782,7 @@ void NavigationView::OnSelectedItemLayoutUpdated(const winrt::IInspectable& send
     {
         m_isSelectionChangedPending = false;
 
-        auto item = m_pendingSelectionChangedItem;
+        auto const item = m_pendingSelectionChangedItem;
         auto const direction = m_pendingSelectionChangedDirection;
 
         m_pendingSelectionChangedItem = nullptr;
