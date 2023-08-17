@@ -117,7 +117,7 @@ jobs:
 
   - task: powershell@2
     displayName: 'UpdateUnreliableTests.ps1'
-    condition: always()
+    condition: eq(variables['System.PullRequest.IsFork'], false)
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
