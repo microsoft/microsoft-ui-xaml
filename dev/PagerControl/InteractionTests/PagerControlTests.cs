@@ -4,6 +4,7 @@
 using Common;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
+using MUXTestInfra.Shared.Infra;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -33,6 +34,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
+        }
+
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("Ignore", "True")] // Ignored since the PagerControl is not fully accessible yet. See #6495
+        public void VerifyAxeScanPasses()
+        {
+            using (var setup = new TestSetupHelper("PagerControl-Axe"))
+            {
+                AxeTestHelper.TestForAxeIssues();
+            }
         }
 
         [TestMethod]

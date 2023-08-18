@@ -24,6 +24,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls.Primitives;
 using ToggleButton = Microsoft.Windows.Apps.Test.Foundation.Controls.ToggleButton;
+using MUXTestInfra.Shared.Infra;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -43,6 +44,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
+        }
+
+
+        [TestMethod]
+        public void VerifyAxeScanPasses()
+        {
+            using (var setup = new TestSetupHelper("ProgressRing-Axe"))
+            {
+                AxeTestHelper.TestForAxeIssues();
+            }
         }
 
         [TestMethod]
