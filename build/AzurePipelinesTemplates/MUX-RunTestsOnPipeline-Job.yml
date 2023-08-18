@@ -65,7 +65,7 @@ jobs:
       nugetConfigPath: nuget.config
       restoreDirectory: packages
 
-  - task: DownloadBuildArtifacts@0 
+  - task: DownloadBuildArtifacts@1 
     inputs: 
       buildType: specific
       buildVersionToDownload: specific
@@ -75,7 +75,7 @@ jobs:
       artifactName: TestWorkItems-$(testSuite)
       downloadPath: $(Build.SourcesDirectory)
 
-  - task: DownloadBuildArtifacts@0 
+  - task: DownloadBuildArtifacts@1 
     inputs: 
       buildType: specific
       buildVersionToDownload: specific
