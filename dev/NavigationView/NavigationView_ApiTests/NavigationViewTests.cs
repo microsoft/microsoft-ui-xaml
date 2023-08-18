@@ -1389,9 +1389,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView = new NavigationView {
                     MenuItemsSource = categories,
                     MenuItemTemplate = (DataTemplate)XamlReader.Load(@"
-<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
-  <NavigationViewItem Content='{Binding Content}' Name='{Binding Name}' MenuItemsSource='{Binding Children}' SelectsOnInvoked='{Binding SelectsOnInvoked}'/>
-</DataTemplate>")
+                        <DataTemplate 
+                            xmlns ='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                            xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                            xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                                <controls:NavigationViewItem Content='{Binding Content}' Name='{Binding Name}' MenuItemsSource='{Binding Children}' SelectsOnInvoked='{Binding SelectsOnInvoked}'/>
+                        </DataTemplate>")
                 };
 
                 navView.Loaded += (sender, args) => loadedEvent.Set();
@@ -1475,9 +1478,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView = new NavigationView {
                     MenuItemsSource = categories,
                     MenuItemTemplate = (DataTemplate)XamlReader.Load(@"
-<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
-  <NavigationViewItem Content='{Binding Content}' Name='{Binding Name}' MenuItemsSource='{Binding Children}' SelectsOnInvoked='{Binding SelectsOnInvoked}'/>
-</DataTemplate>")
+                        <DataTemplate 
+                            xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                            xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                            xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                                <controls:NavigationViewItem Content='{Binding Content}' Name='{Binding Name}' MenuItemsSource='{Binding Children}' SelectsOnInvoked='{Binding SelectsOnInvoked}'/>
+                        </DataTemplate>")
                 };
 
                 navView.Loaded += (sender, args) => loadedEvent.Set();
@@ -1593,9 +1599,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView = new NavigationView {
                     MenuItemsSource = categories,
                     MenuItemTemplate = (DataTemplate)XamlReader.Load(@"
-<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
-  <NavigationViewItem Content='{Binding Content}' Name='{Binding Name}' MenuItemsSource='{Binding Children}' SelectsOnInvoked='{Binding SelectsOnInvoked}'/>
-</DataTemplate>")
+                    <DataTemplate 
+                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                            <controls:NavigationViewItem Content='{Binding Content}' Name='{Binding Name}' MenuItemsSource='{Binding Children}' SelectsOnInvoked='{Binding SelectsOnInvoked}'/>
+                    </DataTemplate>")
                 };
 
                 navView.Loaded += (sender, args) => loadedEvent.Set();
