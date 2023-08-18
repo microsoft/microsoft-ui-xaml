@@ -32,7 +32,7 @@ jobs:
       echo useReleaseTag=${{ parameters.useReleaseTag }}
     displayName: 'CreateNugetPackage: Display parameters'
 
-  - task: DownloadBuildArtifacts@0 
+  - task: DownloadBuildArtifacts@1 
     inputs: 
       artifactName: drop
       downloadPath: '$(Build.SourcesDirectory)\Artifacts'
