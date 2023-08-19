@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using Common;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation;
+using MUXTestInfra.Shared.Infra;
 #if USING_TAEF
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -32,6 +33,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        public void VerifyAxeScanPasses()
+        {
+            using (var setup = new TestSetupHelper("PipsPager-Axe"))
+            {
+                AxeTestHelper.TestForAxeIssues();
+            }
         }
 
         [TestMethod]

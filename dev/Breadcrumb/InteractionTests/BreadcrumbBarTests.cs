@@ -27,6 +27,7 @@ using Microsoft.Windows.Apps.Test.Automation.Text;
 using System.Drawing;
 using Windows.UI.Xaml.Controls.Primitives;
 using System.Runtime.InteropServices;
+using MUXTestInfra.Shared.Infra;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -111,6 +112,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        public void VerifyAxeScanPasses()
+        {
+            using (var setup = new TestSetupHelper("BreadcrumbBar-Axe"))
+            {
+                AxeTestHelper.TestForAxeIssues();
+            }
         }
 
         [TestMethod]
