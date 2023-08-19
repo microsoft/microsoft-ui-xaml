@@ -5,7 +5,7 @@
 The WinUI team manages issues and PRs in the repo using a process we call "triage". It helps us keep issues
 organized and focuses the attention of the different groups that work in our project.
 
-For more info about our strategy for triaging bugs, see how we [handle contributions](contribution_processes.md).
+For more info about our strategy for triaging bugs, see how we [handle contributions](contribution_handling.md).
 
 ### Triage labels
 

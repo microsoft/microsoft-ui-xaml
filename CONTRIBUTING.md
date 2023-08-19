@@ -8,7 +8,7 @@ Note that all community interactions must abide by the [Code of Conduct](CODE_OF
 
 ## How we work with contributions
 
-Contributions from the community in the form of feature requests and bugs are handled according to our [contribution handling](contribution_handling.md) guidelines.
+Contributions from the community in the form of feature requests and bugs are handled according to our [contribution handling](docs/contribution_handling.md) guidelines.
 
 ## New contributors
 
