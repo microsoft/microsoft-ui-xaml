@@ -6,13 +6,9 @@ This document contains general guidance. More specific guidance is included in t
 
 Note that all community interactions must abide by the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-## Issues
+## How we work with contributions
 
-We use GitHub issues to track bugs and features.
-
-For reporting security issues please see the [Security Policy](docs/SECURITY.md).
-
-For all other bugs and general issues please [file a new issue](https://github.com/Microsoft/microsoft-ui-xaml/issues/new/choose) using the Bug Report template.
+Contributions from the community in the form of feature requests and bugs are handled according to our [contribution handling](contribution_handling.md) guidelines.
 
 ## New contributors
 

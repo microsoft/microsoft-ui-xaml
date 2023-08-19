@@ -61,7 +61,9 @@ To view the WinUI controls in an interactive format, check out the Xaml Controls
 ## Contributing to WinUI
 The WinUI team welcomes feedback and contributions!
 
-For information on how to contribute please see [Contributing to the Windows UI Library](CONTRIBUTING.md).
+To understand how we handle incoming feature requests and bugs, please see our [contribution handling](contribution_handling.md) guidelines.
+
+For information on how to contribute, please see [Contributing to the Windows UI Library](CONTRIBUTING.md).
 
 For guidelines on making an impact on WinUI through non-code contributions, please see [Contributing ideas, feedback, and requests](CONTRIBUTING_feedback_and_requests.md).
 
