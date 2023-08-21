@@ -13,6 +13,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "AnimatedVisualPlayer.g.cpp"
 
+GlobalDependencyProperty AnimatedVisualPlayerProperties::s_AnimationOptimizationProperty{ nullptr };
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_AutoPlayProperty{ nullptr };
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_DiagnosticsProperty{ nullptr };
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_DurationProperty{ nullptr };
@@ -30,6 +31,17 @@ AnimatedVisualPlayerProperties::AnimatedVisualPlayerProperties()
 
 void AnimatedVisualPlayerProperties::EnsureProperties()
 {
+    if (!s_AnimationOptimizationProperty)
+    {
+        s_AnimationOptimizationProperty =
+            InitializeDependencyProperty(
+                L"AnimationOptimization",
+                winrt::name_of<winrt::PlayerAnimationOptimization>(),
+                winrt::name_of<winrt::AnimatedVisualPlayer>(),
+                false /* isAttached */,
+                ValueHelper<winrt::PlayerAnimationOptimization>::BoxValueIfNecessary(winrt::PlayerAnimationOptimization::Latency),
+                winrt::PropertyChangedCallback(&OnAnimationOptimizationPropertyChanged));
+    }
     if (!s_AutoPlayProperty)
     {
         s_AutoPlayProperty =
@@ -133,6 +145,7 @@ void AnimatedVisualPlayerProperties::EnsureProperties()
 
 void AnimatedVisualPlayerProperties::ClearProperties()
 {
+    s_AnimationOptimizationProperty = nullptr;
     s_AutoPlayProperty = nullptr;
     s_DiagnosticsProperty = nullptr;
     s_DurationProperty = nullptr;
@@ -142,6 +155,14 @@ void AnimatedVisualPlayerProperties::ClearProperties()
     s_PlaybackRateProperty = nullptr;
     s_SourceProperty = nullptr;
     s_StretchProperty = nullptr;
+}
+
+void AnimatedVisualPlayerProperties::OnAnimationOptimizationPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::AnimatedVisualPlayer>();
+    winrt::get_self<AnimatedVisualPlayer>(owner)->OnAnimationOptimizationPropertyChanged(args);
 }
 
 void AnimatedVisualPlayerProperties::OnAutoPlayPropertyChanged(
@@ -182,6 +203,19 @@ void AnimatedVisualPlayerProperties::OnStretchPropertyChanged(
 {
     auto owner = sender.as<winrt::AnimatedVisualPlayer>();
     winrt::get_self<AnimatedVisualPlayer>(owner)->OnStretchPropertyChanged(args);
+}
+
+void AnimatedVisualPlayerProperties::AnimationOptimization(winrt::PlayerAnimationOptimization const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_AnimationOptimizationProperty, ValueHelper<winrt::PlayerAnimationOptimization>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::PlayerAnimationOptimization AnimatedVisualPlayerProperties::AnimationOptimization()
+{
+    return ValueHelper<winrt::PlayerAnimationOptimization>::CastOrUnbox(static_cast<AnimatedVisualPlayer*>(this)->GetValue(s_AnimationOptimizationProperty));
 }
 
 void AnimatedVisualPlayerProperties::AutoPlay(bool value)

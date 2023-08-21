@@ -4,15 +4,17 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <SolidColorBrush x:Key="ScrollViewScrollBarsSeparatorBackground" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
+            <StaticResource x:Key="ScrollViewScrollBarsSeparatorBackground" ResourceKey="ControlFillColorTransparentBrush"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <SolidColorBrush x:Key="ScrollViewScrollBarsSeparatorBackground" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
+            <StaticResource x:Key="ScrollViewScrollBarsSeparatorBackground" ResourceKey="ControlFillColorTransparentBrush"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="ScrollViewScrollBarsSeparatorBackground" ResourceKey="SystemControlPageBackgroundChromeLowBrush" />
+            <StaticResource x:Key="ScrollViewScrollBarsSeparatorBackground" ResourceKey="SystemControlTransparentBrush"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
+
+    <Thickness x:Key="ScrollViewScrollBarsMargin">1</Thickness>
 
     <x:String x:Key="ScrollViewScrollBarsSeparatorExpandDelay">00:00:00</x:String>
     <x:String x:Key="ScrollViewScrollBarsSeparatorExpandDuration">00:00:00.1</x:String>

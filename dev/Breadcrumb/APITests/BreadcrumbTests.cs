@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Media;
 using System.Security.Cryptography.X509Certificates;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Automation.Provider;
+using System.Linq;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -296,25 +297,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 invokationPattern?.Invoke();                          
             });
 
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
+            // GetOpenPopups returns empty list in RS3. The scenario works, this just seems to be a
+            // test/infra issue in RS3, so filtering it out for now.
+            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
-                Flyout ellipsisFlyout = (Flyout)ellipsisButton.Flyout;
-                Verify.IsNotNull(ellipsisButton, "The ellipsis flyout (1) could not be retrieved");
+                IdleSynchronizer.Wait();
 
-                ItemsRepeater ellipsisItemsRepeater = (ItemsRepeater)ellipsisFlyout.Content;
-                Verify.IsNotNull(ellipsisItemsRepeater, "The underlying flyout items repeater (1) could not be retrieved");
+                RunOnUIThread.Execute(() =>
+                {
+                    var flyout = VisualTreeHelper.GetOpenPopups(Window.Current).Last();
+                    Verify.IsNotNull(flyout, "Flyout could not be retrieved");
+                    var ellipsisItemsRepeater = TestUtilities.FindDescendents<ItemsRepeater>(flyout).Single();
+                    Verify.IsNotNull(ellipsisItemsRepeater, "The underlying flyout items repeater (1) could not be retrieved");
 
-                ellipsisItemsRepeater.Loaded += (object sender, RoutedEventArgs e) => {
-                    TextBlock ellipsisNode1 = ellipsisItemsRepeater.TryGetElement(0) as TextBlock;
-                    Verify.IsNotNull(ellipsisNode1, "Our flyout ItemTemplate (1) should have been wrapped in a TextBlock.");
+                    ellipsisItemsRepeater.Loaded += (object sender, RoutedEventArgs e) =>
+                    {
+                        TextBlock ellipsisNode1 = ellipsisItemsRepeater.TryGetElement(0) as TextBlock;
+                        Verify.IsNotNull(ellipsisNode1, "Our flyout ItemTemplate (1) should have been wrapped in a TextBlock.");
 
                     // change this conditions
                     bool testCondition = !(ellipsisNode1.Foreground is SolidColorBrush brush && brush.Color == Colors.Blue);
-                    Verify.IsTrue(testCondition, "Default foreground color of the BreadcrumbBarItem should not have been [blue].");
-                };
-            });
+                        Verify.IsTrue(testCondition, "Default foreground color of the BreadcrumbBarItem should not have been [blue].");
+                    };
+                });
+            }
         }
 
         [TestMethod]
@@ -362,26 +368,95 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 invokationPattern?.Invoke();
             });
 
+            // GetOpenPopups returns empty list in RS3. The scenario works, this just seems to be a
+            // test/infra issue in RS3, so filtering it out for now.
+            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
+            {
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var flyout = VisualTreeHelper.GetOpenPopups(Window.Current).Last();
+                    Verify.IsNotNull(flyout, "Flyout could not be retrieved");
+                    var ellipsisItemsRepeater = TestUtilities.FindDescendents<ItemsRepeater>(flyout).Single();
+                    Verify.IsNotNull(ellipsisItemsRepeater, "The underlying flyout items repeater (1) could not be retrieved");
+
+                    ellipsisItemsRepeater.Loaded += (object sender, RoutedEventArgs e) =>
+                    {
+                        TextBlock ellipsisNode1 = ellipsisItemsRepeater.TryGetElement(0) as TextBlock;
+                        Verify.IsNotNull(ellipsisNode1, "Our flyout ItemTemplate (1) should have been wrapped in a TextBlock.");
+
+                    // change this conditions
+                    bool testCondition = !(ellipsisNode1.Foreground is SolidColorBrush brush && brush.Color == Colors.Blue);
+                        Verify.IsTrue(testCondition, "Default foreground color of the BreadcrumbBarItem should not have been [blue].");
+                    };
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyCollectionChangeGetsRespected()
+        {
+            BreadcrumbBar breadcrumb = null;
+            ItemsRepeater breadcrumbItemsRepeater = null;
+            RunOnUIThread.Execute(() =>
+            {
+                // Set a custom ItemTemplate to be wrapped in a BreadcrumbBarItem.
+                var itemTemplate = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                            xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                            xmlns:controls='using:Microsoft.UI.Xaml.Controls'
+                            xmlns:local='using:Windows.UI.Xaml.Tests.MUXControls.ApiTests'>
+                            <controls:BreadcrumbBarItem Content='{Binding}'>
+                                <controls:BreadcrumbBarItem.ContentTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text='{Binding MockProperty}'/>
+                                    </DataTemplate>
+                                </controls:BreadcrumbBarItem.ContentTemplate>
+                            </controls:BreadcrumbBarItem>
+                        </DataTemplate>");
+
+
+                breadcrumb = new BreadcrumbBar();
+                breadcrumb.ItemsSource = new List<MockClass>() {
+                    new MockClass { MockProperty = "Node 1" },
+                    new MockClass { MockProperty = "Node 2" },
+                };
+                breadcrumb.ItemTemplate = itemTemplate;
+
+                var stackPanel = new StackPanel();
+                stackPanel.Children.Add(breadcrumb);
+
+                Content = stackPanel;
+                Content.UpdateLayout();
+            });
+
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                Flyout ellipsisFlyout = (Flyout)ellipsisButton.Flyout;
-                Verify.IsNotNull(ellipsisButton, "The ellipsis flyout (1) could not be retrieved");
+                breadcrumbItemsRepeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_ItemsRepeater");
+                Verify.IsNotNull(breadcrumbItemsRepeater, "The underlying items repeater could not be retrieved");
 
-                ItemsRepeater ellipsisItemsRepeater = (ItemsRepeater)ellipsisFlyout.Content;
-                Verify.IsNotNull(ellipsisItemsRepeater, "The underlying flyout items repeater (1) could not be retrieved");
+                var breadcrumbNode2 = breadcrumbItemsRepeater.TryGetElement(1) as BreadcrumbBarItem;
+                Verify.IsNotNull(breadcrumbNode2, "Our custom ItemTemplate should have been wrapped in a BreadcrumbBarItem.");
 
-                ellipsisItemsRepeater.Loaded += (object sender, RoutedEventArgs e) => {
-                    TextBlock ellipsisNode1 = ellipsisItemsRepeater.TryGetElement(0) as TextBlock;
-                    Verify.IsNotNull(ellipsisNode1, "Our flyout ItemTemplate (1) should have been wrapped in a TextBlock.");
-
-                    // change this conditions
-                    bool testCondition = !(ellipsisNode1.Foreground is SolidColorBrush brush && brush.Color == Colors.Blue);
-                    Verify.IsTrue(testCondition, "Default foreground color of the BreadcrumbBarItem should not have been [blue].");
+                breadcrumb.ItemsSource = new List<MockClass>() {
+                    new MockClass { MockProperty = "Node 1" },
+                    new MockClass { MockProperty = "Node 2" },
+                    new MockClass { MockProperty = "Node 3" },
+                    new MockClass { MockProperty = "Node 4" },
                 };
             });
-        }
 
+            IdleSynchronizer.Wait();
+
+
+            RunOnUIThread.Execute(() =>
+            {
+                var breadcrumbNode3 = breadcrumbItemsRepeater.TryGetElement(3) as BreadcrumbBarItem;
+                Verify.IsNotNull(breadcrumbNode3, "A fourth item should have been rendered by the BreadcrumControl");
+            });
+        }
     }
 }

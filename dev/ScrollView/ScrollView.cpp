@@ -810,8 +810,8 @@ void ScrollView::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     SCROLLVIEW_TRACE_VERBOSE(nullptr, L"%s(property: %s)\n", METH_NAME, DependencyPropertyToString(dependencyProperty).c_str());
 #endif
 
-    bool horizontalChange = dependencyProperty == s_HorizontalScrollBarVisibilityProperty;
-    bool verticalChange = dependencyProperty == s_VerticalScrollBarVisibilityProperty;
+    const bool horizontalChange = dependencyProperty == s_HorizontalScrollBarVisibilityProperty;
+    const bool verticalChange = dependencyProperty == s_VerticalScrollBarVisibilityProperty;
 
     if (horizontalChange || verticalChange)
     {
@@ -1646,14 +1646,14 @@ bool ScrollView::IsInputKindIgnored(winrt::ScrollingInputKinds const& inputKind)
 
 bool ScrollView::AreAllScrollControllersCollapsed() const
 {
-    return (!m_horizontalScrollControllerElement || m_horizontalScrollControllerElement.get().Visibility() == winrt::Visibility::Collapsed) &&
-        (!m_verticalScrollControllerElement || m_verticalScrollControllerElement.get().Visibility() == winrt::Visibility::Collapsed);
+    return !SharedHelpers::IsAncestor(m_horizontalScrollControllerElement.try_as<winrt::DependencyObject>() /*child*/, static_cast<winrt::DependencyObject>(*this) /*parent*/, true /*checkVisibility*/) &&
+        !SharedHelpers::IsAncestor(m_verticalScrollControllerElement.try_as<winrt::DependencyObject>() /*child*/, static_cast<winrt::DependencyObject>(*this) /*parent*/, true /*checkVisibility*/);
 }
 
 bool ScrollView::AreBothScrollControllersVisible() const
 {
-    return m_horizontalScrollControllerElement && m_horizontalScrollControllerElement.get().Visibility() == winrt::Visibility::Visible &&
-        m_verticalScrollControllerElement && m_verticalScrollControllerElement.get().Visibility() == winrt::Visibility::Visible;
+    return SharedHelpers::IsAncestor(m_horizontalScrollControllerElement.try_as<winrt::DependencyObject>() /*child*/, static_cast<winrt::DependencyObject>(*this) /*parent*/, true /*checkVisibility*/) &&
+        SharedHelpers::IsAncestor(m_verticalScrollControllerElement.try_as<winrt::DependencyObject>() /*child*/, static_cast<winrt::DependencyObject>(*this) /*parent*/, true /*checkVisibility*/);
 }
 
 bool ScrollView::AreScrollControllersAutoHiding()

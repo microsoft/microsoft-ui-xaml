@@ -6,6 +6,7 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     AutomationProperties.AutomationId="MainPage">
 
@@ -13,7 +14,7 @@
         <local:NavigateToTestCommand x:Key="NavigateToTestCommand" Frame="{x:Bind Frame}"/>
     </Page.Resources>
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -60,7 +61,6 @@
         </ScrollViewer>
         <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center">
             <CheckBox x:Name="LongAnimationsDisabled" AutomationProperties.AutomationId="LongAnimationsDisabled" Content="Long Animations Disabled" Checked="LongAnimationsDisabled_Checked" Unchecked="LongAnimationsDisabled_Unchecked" Margin="10,0,0,0"/>
-
             <ComboBox
                 x:Name="LanguageChooser"
                 Header="Languages"
@@ -80,6 +80,17 @@
                 Header="ApplicationHighContrastAdjustment"
                 SelectionChanged="AppHighContrastAdjustmentChooser_SelectionChanged" />
 
+            <ScrollViewer MaxHeight="100">
+                <ItemsControl x:Name="AxeTestCaseSelection">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding Name}" AutomationProperties.Name="{Binding Name}"
+                                CommandParameter="{Binding}"
+                                Command="{StaticResource NavigateToTestCommand}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
         </StackPanel>
     </Grid>
 </Page>

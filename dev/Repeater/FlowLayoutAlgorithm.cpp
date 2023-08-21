@@ -58,9 +58,12 @@ winrt::Size FlowLayoutAlgorithm::Measure(
         }
     }
 
-    m_elementManager.OnBeginMeasure(orientation);
+    if(!disableVirtualization)
+    {
+        m_elementManager.OnBeginMeasure(orientation);
+    }
 
-    const int anchorIndex = GetAnchorIndex(availableSize, isWrapping, minItemSpacing, layoutId);
+    const int anchorIndex = GetAnchorIndex(availableSize, isWrapping, minItemSpacing, disableVirtualization, layoutId);
     Generate(GenerateDirection::Forward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
     Generate(GenerateDirection::Backward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
     if (isWrapping && IsReflowRequired())
@@ -147,13 +150,14 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
     const winrt::Size& availableSize,
     bool isWrapping,
     double minItemSpacing,
+    const bool disableVirtualization,
     const wstring_view& layoutId)
 {
     int anchorIndex = -1;
     winrt::Point anchorPosition{};
     auto context = m_context.get();
 
-    if (!IsVirtualizingContext())
+    if (!IsVirtualizingContext() || disableVirtualization)
     {
         // Non virtualizing host, start generating from the element 0
         anchorIndex = context.ItemCountCore() > 0 ? 0 : -1;
@@ -364,7 +368,9 @@ void FlowLayoutAlgorithm::Generate(
                 {
                     // Does not fit, wrap to the previous row
                     const auto availableSizeMinor = Minor(availableSize);
-                    MinorStart(currentBounds) = std::isfinite(availableSizeMinor) ? availableSizeMinor - Minor(desiredSize) : 0.0f;
+                    // If the last available size is finite, start from end and subtract our desired size.
+                    // Otherwise, look at the last extent and use that for positioning.
+                    MinorStart(currentBounds) = std::isfinite(availableSizeMinor) ? availableSizeMinor - Minor(desiredSize) : MinorSize(LastExtent()) - Minor(desiredSize);
                     MajorStart(currentBounds) = lineOffset - Major(desiredSize) - static_cast<float>(lineSpacing);
 
                     if (lineNeedsReposition)
@@ -474,9 +480,9 @@ bool FlowLayoutAlgorithm::ShouldContinueFillingUpSpace(
 
         // Ensure that both minor and major directions are taken into consideration so that if the scrolling direction
         // is the same as the flow direction we still stop at the end of the viewport rectangle.
-        shouldContinue =
-            (direction == GenerateDirection::Forward && elementMajorStart < rectMajorEnd && elementMinorStart < rectMinorEnd) ||
-            (direction == GenerateDirection::Backward && elementMajorEnd > rectMajorStart&& elementMinorEnd > rectMinorStart);
+        shouldContinue = direction == GenerateDirection::Forward
+            ? elementMajorStart < rectMajorEnd && elementMinorStart < rectMinorEnd
+            : elementMajorEnd > rectMajorStart && elementMinorEnd > rectMinorStart;
     }
 
     return shouldContinue;

@@ -29,8 +29,19 @@ TextCommandBarFlyout::TextCommandBarFlyout()
             // We'll just close the flyout in that case - nothing should be opening us
             // in this state anyway, but this makes sure we don't have a light-dismiss layer
             // with nothing visible to light dismiss.
+
+            winrt::IFlyoutBase5 thisAsFlyoutBase5 = *this;
+            auto const showModeIsStandard = [thisAsFlyoutBase5]()
+            {
+                if (thisAsFlyoutBase5)
+                {
+                    return thisAsFlyoutBase5.ShowMode() == winrt::FlyoutShowMode::Standard;
+                }
+                return true;
+            }();
+
             if (PrimaryCommands().Size() == 0 &&
-                (SecondaryCommands().Size() == 0 || !m_commandBar.get().IsOpen()))
+                (SecondaryCommands().Size() == 0 || (!m_commandBar.get().IsOpen() && !showModeIsStandard)))
             {
                 Hide();
             }
@@ -197,7 +208,7 @@ void TextCommandBarFlyout::UpdateButtons()
     
     winrt::MenuFlyout proofingMenuFlyout = proofingFlyout.try_as<winrt::MenuFlyout>();
     
-    bool shouldIncludeProofingMenu =
+    const bool shouldIncludeProofingMenu =
         static_cast<bool>(proofingFlyout) &&
         (!proofingMenuFlyout || proofingMenuFlyout.Items().Size() > 0);
         
@@ -312,7 +323,7 @@ void TextCommandBarFlyout::UpdateButtons()
     addRichEditButtonToCommandsIfPresent(TextControlButtons::Underline, PrimaryCommands(),
         [](winrt::ITextSelection textSelection)
     {
-        auto underline = textSelection.CharacterFormat().Underline();
+        const auto underline = textSelection.CharacterFormat().Underline();
         return (underline != winrt::UnderlineType::None) && (underline != winrt::UnderlineType::Undefined);
     });
 
@@ -543,7 +554,7 @@ TextControlButtons TextCommandBarFlyout::GetPasswordBoxButtonsToAdd(winrt::Passw
 bool TextCommandBarFlyout::IsButtonInPrimaryCommands(TextControlButtons button)
 {
     uint32_t buttonIndex = 0;
-    bool wasFound = PrimaryCommands().IndexOf(GetButton(button), buttonIndex);
+    const bool wasFound = PrimaryCommands().IndexOf(GetButton(button), buttonIndex);
     return wasFound;
 }
 

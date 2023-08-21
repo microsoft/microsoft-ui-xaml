@@ -12,10 +12,12 @@
 #include "TabViewTabDroppedOutsideEventArgs.g.h"
 #include "TabViewTabDragStartingEventArgs.g.h"
 #include "TabViewTabDragCompletedEventArgs.g.h"
+#include "TabViewTrace.h"
 #include "DispatcherHelper.h"
 
 static constexpr double c_tabShadowDepth = 16.0;
 static constexpr wstring_view c_tabViewShadowDepthName{ L"TabViewShadowDepth"sv };
+
 
 class TabViewTabCloseRequestedEventArgs :
     public winrt::implementation::TabViewTabCloseRequestedEventArgsT<TabViewTabCloseRequestedEventArgs>
@@ -30,6 +32,7 @@ private:
     winrt::IInspectable m_item{};
     winrt::TabViewItem m_tab{};
 };
+
 
 class TabViewTabDroppedOutsideEventArgs :
     public winrt::implementation::TabViewTabDroppedOutsideEventArgsT<TabViewTabDroppedOutsideEventArgs>
@@ -97,6 +100,7 @@ public:
     // From ListView
     winrt::DependencyObject ContainerFromItem(winrt::IInspectable const& item);
     winrt::DependencyObject ContainerFromIndex(int index);
+    int IndexFromContainer(winrt::DependencyObject const& container);
     winrt::IInspectable ItemFromContainer(winrt::DependencyObject const& container);
 
     // Control
@@ -112,11 +116,15 @@ public:
     void OnItemsChanged(winrt::IInspectable const& item);
     void UpdateTabContent();
 
-    void RequestCloseTab(winrt::TabViewItem const& item);
+    void RequestCloseTab(winrt::TabViewItem const& item,bool updateTabWidths);
 
     winrt::UIElement GetShadowReceiver() { return m_shadowReceiver.get(); }
 
     winrt::hstring GetTabCloseButtonTooltipText() { return m_tabCloseButtonTooltipText; }
+    void SetTabSeparatorOpacity(int index, int opacityValue);
+    void SetTabSeparatorOpacity(int index);
+
+    bool MoveFocus(bool moveForward);
 
 private:
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -129,6 +137,7 @@ private:
 
     void OnListViewLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnTabStripPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnTabStripPointerEntered(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
 
     void OnListViewDragItemsStarting(const winrt::IInspectable& sender, const winrt::DragItemsStartingEventArgs& args);
@@ -140,13 +149,16 @@ private:
     void OnCtrlTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
     void OnCtrlShiftTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
 
+    void OnAddButtonKeyDown(const winrt::IInspectable& sender, winrt::KeyRoutedEventArgs const& args);
+
     bool RequestCloseCurrentTab();
-    bool SelectNextTab(int increment);
+    bool MoveSelection(bool moveForward);
+    void BringSelectedTabIntoView();
 
     void UpdateSelectedItem();
     void UpdateSelectedIndex();
 
-    void UpdateTabWidths(bool shouldUpdateWidths=true, bool fillAllAvailableSpace=true);
+    void UpdateTabWidths(bool shouldUpdateWidths = true, bool fillAllAvailableSpace = true);
 
     void UpdateScrollViewerDecreaseAndIncreaseButtonsViewState();
     void UpdateListViewItemContainerTransitions();
@@ -158,9 +170,15 @@ private:
 
     int GetItemCount();
 
+    void UpdateBottomBorderLineVisualStates();
+    void UpdateTabBottomBorderLineVisualStates();
+
     winrt::TabViewItem FindTabViewItemFromDragItem(const winrt::IInspectable& item);
 
+    static bool IsFocusable(winrt::DependencyObject const& object, bool checkTabStop = false);
+
     bool m_updateTabWidthOnPointerLeave{ false };
+    bool m_pointerInTabstrip{ false };
 
     tracker_ref<winrt::ColumnDefinition> m_leftContentColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_tabColumn{ this };
@@ -181,6 +199,7 @@ private:
 
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
     winrt::ListView::PointerExited_revoker m_tabStripPointerExitedRevoker{};
+    winrt::ListView::PointerEntered_revoker m_tabStripPointerEnteredRevoker{};
     winrt::Selector::SelectionChanged_revoker m_listViewSelectionChangedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_listViewGettingFocusRevoker{};
 
@@ -200,11 +219,15 @@ private:
     winrt::RepeatButton::Click_revoker m_scrollDecreaseClickRevoker{};
     winrt::RepeatButton::Click_revoker m_scrollIncreaseClickRevoker{};
 
+    winrt::Button::KeyDown_revoker m_addButtonKeyDownRevoker{};
+
     winrt::ItemsPresenter::SizeChanged_revoker m_itemsPresenterSizeChangedRevoker{};
 
     DispatcherHelper m_dispatcherHelper{ *this };
 
     winrt::hstring m_tabCloseButtonTooltipText{};
 
-    winrt::Size previousAvailableSize{};
+    winrt::Size m_previousAvailableSize{};
+
+    bool m_isDragging{ false };
 };

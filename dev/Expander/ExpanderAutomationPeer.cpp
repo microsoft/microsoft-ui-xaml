@@ -11,7 +11,7 @@
 #include "ExpanderAutomationPeer.properties.cpp"
 
 // WPF ExpanderAutomationPeer:
-// https://github.com/dotnet/wpf/blob/master/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Automation/Peers/ExpanderAutomationPeer.cs
+// https://github.com/dotnet/wpf/blob/main/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/Automation/Peers/ExpanderAutomationPeer.cs
 
 ExpanderAutomationPeer::ExpanderAutomationPeer(winrt::Expander const& owner)
     : ReferenceTracker(owner)
@@ -102,6 +102,15 @@ winrt::IVector<winrt::AutomationPeer> ExpanderAutomationPeer::GetChildrenCore()
         if (peer.GetAutomationId() != L"ExpanderToggleButton")
         {
             peers.Append(peer);
+        }
+        else
+        {
+            // If it is ExpanderToggleButton, we want to exclude it but add its children into the peer 
+            auto expanderToggleButtonChildrenPeers = peer.GetChildrenCore();
+            for (auto expanderHeaderPeer : expanderToggleButtonChildrenPeers)
+            {
+                peers.Append(expanderHeaderPeer);
+            }
         }
     }
 

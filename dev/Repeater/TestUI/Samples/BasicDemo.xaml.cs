@@ -5,21 +5,19 @@ using Microsoft.UI.Xaml.Controls;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 using SelectTemplateEventArgs = Microsoft.UI.Xaml.Controls.SelectTemplateEventArgs;
 
 namespace MUXControlsTestApp.Samples
 {
-    public sealed partial class BasicDemo : Page
+    public sealed partial class BasicDemo : TestPage
     {
         public ObservableCollection<string> simpleStringsList = new ObservableCollection<string>();
 
         public BasicDemo()
         {
             this.InitializeComponent();
-            goBackButton.Click += delegate { Frame.GoBack(); };
             repeater.ItemTemplate = elementFactory;
             var stack = repeater.Layout as StackLayout;
             int numItems = (stack != null && stack.DisableVirtualization) ? 10 : 10000;

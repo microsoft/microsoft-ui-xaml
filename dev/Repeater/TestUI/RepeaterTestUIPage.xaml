@@ -48,7 +48,7 @@
                 <TextBox x:Name="lineSpacing" Text="10"></TextBox>
                 <TextBlock>LineAlignment</TextBlock>
                 <TextBlock>(Start/Center/End/SpaceEvenly/SpaceAround/SpaceBetween)</TextBlock>
-                <TextBox x:Name="lineAlingment" Text="Start"></TextBox>
+                <TextBox x:Name="lineAlignment" Text="Start"></TextBox>
                 <ToggleSwitch x:Name="orientation" OnContent="Horizontal" OffContent="Vertical">Scroll Orientation</ToggleSwitch>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
@@ -85,6 +85,7 @@
             <TextBlock Text="Other Samples" Style="{ThemeResource HeaderTextBlockStyle}"/>
             <Button x:Name="defaultDemo" AutomationProperties.Name="Default Demo" >Default Demo</Button>
             <Button x:Name="basicDemo" AutomationProperties.Name="Basic Demo">Basic Demo</Button>
+            <Button x:Name="uniformGridLayoutDemo" AutomationProperties.Name="UniformGridLayoutDemo">UniformGridLayout testing</Button>
         </StackPanel>
 
     </controls:LayoutPanel>

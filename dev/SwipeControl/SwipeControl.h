@@ -11,7 +11,7 @@
 enum class CreatedContent { Left, Top, Bottom, Right, None };
 
 class SwipeControl :
-    public ReferenceTracker<SwipeControl, winrt::implementation::SwipeControlT, winrt::cloaked<winrt::IInteractionTrackerOwner>>,
+    public ReferenceTracker<SwipeControl, winrt::implementation::SwipeControlT>,
     public SwipeControlProperties
 {
 public:
@@ -19,7 +19,6 @@ public:
     virtual ~SwipeControl();
 
 #pragma region ISwipeControl
-
 
     void Close();
 
@@ -32,31 +31,23 @@ public:
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
 #pragma endregion
 
-#pragma region IInteractionTrackerOwner
     void CustomAnimationStateEntered(
-        winrt::InteractionTracker const& sender,
         winrt::InteractionTrackerCustomAnimationStateEnteredArgs const& args);
 
     void RequestIgnored(
-        winrt::InteractionTracker const& sender,
         winrt::InteractionTrackerRequestIgnoredArgs const& args);
 
     void IdleStateEntered(
-        winrt::InteractionTracker const& sender,
         winrt::InteractionTrackerIdleStateEnteredArgs const& args);
 
     void InteractingStateEntered(
-        winrt::InteractionTracker const& sender,
         winrt::InteractionTrackerInteractingStateEnteredArgs const& args);
 
     void InertiaStateEntered(
-        winrt::InteractionTracker const& sender,
         winrt::InteractionTrackerInertiaStateEnteredArgs const& args);
 
     void ValuesChanged(
-        winrt::InteractionTracker const& sender,
         winrt::InteractionTrackerValuesChangedArgs const& args);
-#pragma endregion
 
     winrt::SwipeItems GetCurrentItems() { return m_currentItems.get(); }
 
@@ -74,7 +65,7 @@ private:
     void OnLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/);
 
     void AttachEventHandlers();
-    void DetachEventHandlers();
+    void DetachEventHandlers(bool useSafeGet);
     void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnSwipeContentStackPanelSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnPointerPressedEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
@@ -87,7 +78,6 @@ private:
     // Used on platforms where we have XamlRoot.
     void CurrentXamlRootChanged(const winrt::XamlRoot & sender, const winrt::XamlRootChangedEventArgs & args);
     
-
     // Used on platforms where we don't have XamlRoot.
     void DismissSwipeOnCoreWindowKeyDown(const winrt::CoreWindow & sender, const winrt::KeyEventArgs & args);
     void CurrentWindowSizeChanged(const winrt::IInspectable & sender, const winrt::WindowSizeChangedEventArgs& args);
@@ -140,6 +130,8 @@ private:
 
     winrt::SwipeControl GetThis();
 
+    winrt::IInteractionTrackerOwner m_interactionTrackerOwner{ nullptr };
+
     tracker_ref<winrt::Grid> m_rootGrid{ this };
     tracker_ref<winrt::Grid> m_content{ this };
     tracker_ref<winrt::Grid> m_inputEater{ this };
@@ -179,8 +171,7 @@ private:
     // Used on platforms where we have XamlRoot.
     RoutedEventHandler_revoker m_xamlRootPointerPressedEventRevoker{};
     RoutedEventHandler_revoker m_xamlRootKeyDownEventRevoker{};
-    winrt::IXamlRoot::Changed_revoker m_xamlRootChangedRevoker{};
-
+    XamlRootChanged_revoker m_xamlRootChangedRevoker{};
 
     // Used on platforms where we don't have XamlRoot.
     winrt::ICoreWindow::PointerPressed_revoker m_coreWindowPointerPressedRevoker;

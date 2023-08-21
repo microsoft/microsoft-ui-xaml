@@ -13,9 +13,10 @@
 // Derive from DeriveFromPanelHelper_base so that we get access to Children collection
 // in Panel. The Children collection holds the fallback content.
 struct AnimatedVisualPlayer:
-    public ReferenceTracker<AnimatedVisualPlayer, DeriveFromPanelHelper_base, winrt::AnimatedVisualPlayer>,
+    public ReferenceTracker<AnimatedVisualPlayer, DeriveFromPanelHelper_base, winrt::AnimatedVisualPlayer, winrt::IAnimatedVisualPlayer2>,
     public AnimatedVisualPlayerProperties
 {
+    using AnimatedVisualPlayerProperties::AnimationOptimization;
     friend class AnimatedVisualPlayerProperties;
 
     AnimatedVisualPlayer();
@@ -65,8 +66,10 @@ private:
         // Called to indicate that the play has been completed. Unblocks awaiters.
         void Complete();
 
+        void ResetOwner();
+
     private:
-        AnimatedVisualPlayer& m_owner;
+        AnimatedVisualPlayer* m_owner;
         const float m_fromProgress{};
         const float m_toProgress{};
         const bool m_looped{};
@@ -80,6 +83,8 @@ private:
     };
 
     void OnAutoPlayPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
+
+    void OnAnimationOptimizationPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
     void OnFallbackContentPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
@@ -101,6 +106,9 @@ private:
     void OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnHiding();
     void OnUnhiding();
+
+    void CreateAnimations();
+    void DestroyAnimations();
 
     //
     // Initialized by the constructor.
@@ -139,4 +147,7 @@ private:
     // This is used to differentiate the first Loaded event (when the element has never been
     // unloaded) from later Loaded events.
     bool m_isUnloaded{ false };
+
+    bool m_isAnimationsCreated{ false };
+    uint32_t m_createAnimationsCounter = 0;
 };

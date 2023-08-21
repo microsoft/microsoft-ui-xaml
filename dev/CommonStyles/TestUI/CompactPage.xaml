@@ -12,49 +12,58 @@
     <local:TestPage.Resources>
         <ResourceDictionary Source="ms-appx:///Compact.xaml" />
     </local:TestPage.Resources>
-    <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
         <TextBlock Text="Sample controls" Style="{ThemeResource StandardGroupHeader}"/>
-        <StackPanel Padding="4" BorderThickness="1" BorderBrush="{ThemeResource SystemChromeGrayColor}">
-            <Button Content="Toggle Compact In AppLevel For Manual Testing" Click="ToggleCompactInAppLevel_Click" Margin="0,0,0,8"/>
-            <muxc:NavigationView x:Name="Nav">
-                <muxc:NavigationView.MenuItems>
-                    <muxc:NavigationViewItem x:Name="NavItem1" Icon="Accept" Content="OK" />
-                    <muxc:NavigationViewItem Icon="Folder" Content="Folder" />
-                </muxc:NavigationView.MenuItems>
-            </muxc:NavigationView>
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Padding="4" BorderThickness="1" BorderBrush="{ThemeResource SystemChromeGrayColor}">
+                <Button Content="Toggle Compact In AppLevel For Manual Testing" Click="ToggleCompactInAppLevel_Click" Margin="0,0,0,8"/>
+                <muxc:NavigationView x:Name="Nav">
+                    <muxc:NavigationView.MenuItems>
+                        <muxc:NavigationViewItem x:Name="NavItem1" Icon="Accept" Content="OK" />
+                        <muxc:NavigationViewItem Icon="Folder" Content="Folder" />
+                    </muxc:NavigationView.MenuItems>
+                </muxc:NavigationView>
 
-            <TextBox x:Name="TextBox" Text="Density" Header="TextBox"/>
-            <PasswordBox x:Name="PasswordBox" Header="Password"/>
-            <AutoSuggestBox x:Name="AutoSuggestBox" Header="AutoSuggestBox" TextChanged="AutoSuggestBox_TextChanged" />
-            <RichEditBox x:Name="RichEditBox" Header="RichEditBox"/>
+                <TextBox x:Name="TextBox" Text="Density" Header="TextBox"/>
+                <PasswordBox x:Name="PasswordBox" Header="Password"/>
+                <AutoSuggestBox x:Name="AutoSuggestBox" Header="AutoSuggestBox" TextChanged="AutoSuggestBox_TextChanged" />
+                <RichEditBox x:Name="RichEditBox" Header="RichEditBox"/>
 
-            <ComboBox x:Name="ComboBox" Header="ComboBox">
-                <x:String>Blue</x:String>
-                <x:String>Green</x:String>
-            </ComboBox>
-            <DatePicker x:Name="DatePicker" Header="DatePicker"/>
-            <TimePicker x:Name="TimePicker" Header="TimePicker"/>
+                <ComboBox x:Name="ComboBox" Header="ComboBox">
+                    <x:String>Blue</x:String>
+                    <x:String>Green</x:String>
+                </ComboBox>
+                <DatePicker x:Name="DatePicker" Header="DatePicker"/>
+                <TimePicker x:Name="TimePicker" Header="TimePicker"/>
         
-            <ListView x:Name="ListView">
-                <x:String>Item 1</x:String>
-            </ListView>
-            <muxc:TreeView x:Name="TreeView">
-                <muxc:TreeView.RootNodes>
-                    <muxc:TreeViewNode Content="Flavors" IsExpanded="True">
-                        <muxc:TreeViewNode.Children>
-                            <muxc:TreeViewNode Content="Vanilla"/>
-                            <muxc:TreeViewNode Content="Strawberry"/>
-                            <muxc:TreeViewNode Content="Chocolate"/>
-                        </muxc:TreeViewNode.Children>
-                    </muxc:TreeViewNode>
-                </muxc:TreeView.RootNodes>
-            </muxc:TreeView>
-        </StackPanel>
-        <TextBlock Text="Validation"  Style="{ThemeResource StandardGroupHeader}"/>
-        <StackPanel Orientation="Horizontal">
+                <ListView x:Name="ListView">
+                    <x:String>Item 1</x:String>
+                </ListView>
+                <muxc:TreeView x:Name="TreeView">
+                    <muxc:TreeView.RootNodes>
+                        <muxc:TreeViewNode Content="Flavors" IsExpanded="True">
+                            <muxc:TreeViewNode.Children>
+                                <muxc:TreeViewNode Content="Vanilla"/>
+                                <muxc:TreeViewNode Content="Strawberry"/>
+                                <muxc:TreeViewNode Content="Chocolate"/>
+                            </muxc:TreeViewNode.Children>
+                        </muxc:TreeViewNode>
+                    </muxc:TreeView.RootNodes>
+                </muxc:TreeView>
+            </StackPanel>
+        </ScrollViewer>
+        <TextBlock Grid.Row="2" Text="Validation"  Style="{ThemeResource StandardGroupHeader}"/>
+        <StackPanel Grid.Row="3" Orientation="Horizontal">
             <Button x:Name="RunTest" Content="RunTest" Click="RunTest_Click" Margin="0,0,8,0"/>
             <TextBox x:Name="CompactTestResult" AutomationProperties.Name="CompactTestResult" Text="Result"/>
         </StackPanel>
-    </StackPanel>
+    </Grid>
 
 </local:TestPage>

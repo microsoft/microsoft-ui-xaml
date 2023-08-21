@@ -1,0 +1,24 @@
+﻿<Page
+    x:Class="MUXBaselineResourcesGenerator.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXBaselineResourcesGenerator"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Spacing="10">
+            <Button Content="Retrieve Baseline Resources from WinUI 2.5 stable" Name="RetrieveResources" Click="RetrieveResources_Click"/>
+            <Button Content="Copy" Name="Copy" Click="Copy_Click" />
+        </StackPanel>
+
+        <ScrollViewer VerticalScrollMode="Enabled" HorizontalScrollMode="Auto" Grid.Row="1">
+            <TextBlock Name="BaselineTextBox" />
+        </ScrollViewer>
+
+    </Grid>
+</Page>

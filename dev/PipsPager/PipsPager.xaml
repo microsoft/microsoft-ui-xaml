@@ -8,7 +8,7 @@
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
-        <Setter Property="AutomationProperties.LandmarkType" Value="Navigation"/>
+        <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="PreviousButtonStyle" Value="{StaticResource PipsPagerPreviousPageButtonStyle}"/>
         <Setter Property="NextButtonStyle" Value="{StaticResource PipsPagerNextPageButtonStyle}"/>
         <Setter Property="SelectedPipStyle" Value="{StaticResource PipsPagerSelectedPipButtonStyle}"/>
@@ -69,12 +69,14 @@
                                 <VisualState x:Name="HorizontalOrientationView">
                                     <VisualState.Setters>
                                         <Setter Target="RootPanel.Orientation" Value="Horizontal"/>
+                                        <Setter Target="PreviousPageButton.(ToolTipService.Placement)" Value="Left"/>
                                         <Setter Target="PreviousPageButton.RenderTransformOrigin" Value="0.5, 0.5"/>
                                         <Setter Target="PreviousPageButton.RenderTransform">
                                             <Setter.Value>
                                                 <RotateTransform Angle="-90"/>
                                             </Setter.Value>
                                         </Setter>
+                                        <Setter Target="NextPageButton.(ToolTipService.Placement)" Value="Right"/>
                                         <Setter Target="NextPageButton.RenderTransformOrigin" Value="0.5, 0.5"/>
                                         <Setter Target="NextPageButton.RenderTransform">
                                             <Setter.Value>
@@ -88,13 +90,21 @@
 
                         <Button x:Name="PreviousPageButton"
                                 ToolTipService.ToolTip="{Binding ElementName=PreviousPageButton, Path=(AutomationProperties.Name)}"
-                                Style="{TemplateBinding PreviousButtonStyle}"/>
+                                ToolTipService.Placement="Top"
+                                Style="{TemplateBinding PreviousButtonStyle}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
 
                         <ScrollViewer x:Name="PipsPagerScrollViewer"
                                       VerticalScrollBarVisibility="Hidden"
                                       VerticalScrollMode="Disabled"
                                       HorizontalScrollBarVisibility="Hidden"
-                                      HorizontalScrollMode="Disabled">
+                                      HorizontalScrollMode="Disabled"
+                                      IsHorizontalScrollChainingEnabled="False"
+                                      IsVerticalScrollChainingEnabled="False"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      >
                             <muxc:ItemsRepeater x:Name="PipsPagerItemsRepeater"
                                 ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.PipsPagerItems}">
                                 <muxc:ItemsRepeater.Layout>
@@ -110,7 +120,10 @@
 
                         <Button x:Name="NextPageButton"
                                 ToolTipService.ToolTip="{Binding ElementName=NextPageButton, Path=(AutomationProperties.Name)}"
-                                Style="{TemplateBinding NextButtonStyle}"/>
+                                ToolTipService.Placement="Bottom"
+                                Style="{TemplateBinding NextButtonStyle}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
                     </StackPanel>
                 </ControlTemplate>
             </Setter.Value>

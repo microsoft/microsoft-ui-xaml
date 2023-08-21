@@ -15,5 +15,6 @@ public:
     using SymbolIconSourceProperties::EnsureProperties;
     using SymbolIconSourceProperties::ClearProperties;
 
+    winrt::DependencyProperty GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty);
     winrt::IconElement CreateIconElementCore();
 };

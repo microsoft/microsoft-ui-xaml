@@ -34,6 +34,11 @@ namespace MUXControlsTestApp
                 Frame.NavigateWithoutAnimation(typeof(BasicDemo));
             };
 
+            uniformGridLayoutDemo.Click += delegate 
+            {
+                Frame.NavigateWithoutAnimation(typeof(UniformGridLayoutDemo));
+            };
+
             itemsSourceDemo.Click += delegate 
             {
                 Frame.NavigateWithoutAnimation(typeof(ElementsInItemsSourcePage));
@@ -224,6 +229,7 @@ namespace MUXControlsTestApp
                         Orientation = orientation.IsOn ? Orientation.Horizontal : Orientation.Vertical,
                     });
             };
+
         }
 
         private VirtualizingLayout GetStackLayout()
@@ -250,7 +256,7 @@ namespace MUXControlsTestApp
                     MinItemHeight = 150,
                     MinRowSpacing = double.Parse(itemSpacing.Text),
                     MinColumnSpacing = double.Parse(lineSpacing.Text),
-                    ItemsJustification = (UniformGridLayoutItemsJustification)Enum.Parse(typeof(UniformGridLayoutItemsJustification), lineAlingment.Text),
+                    ItemsJustification = (UniformGridLayoutItemsJustification)Enum.Parse(typeof(UniformGridLayoutItemsJustification), lineAlignment.Text),
                     Orientation = orientation.IsOn ?  Orientation.Vertical: Orientation.Horizontal,
                 };
             }
@@ -266,7 +272,7 @@ namespace MUXControlsTestApp
                 {
                     MinRowSpacing = double.Parse(itemSpacing.Text),
                     MinColumnSpacing = double.Parse(lineSpacing.Text),
-                    LineAlignment = (FlowLayoutLineAlignment)Enum.Parse(typeof(FlowLayoutLineAlignment), lineAlingment.Text),
+                    LineAlignment = (FlowLayoutLineAlignment)Enum.Parse(typeof(FlowLayoutLineAlignment), lineAlignment.Text),
                     Orientation = orientation.IsOn ? Orientation.Vertical : Orientation.Horizontal,
                 };
             }

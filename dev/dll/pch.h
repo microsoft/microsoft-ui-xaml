@@ -45,6 +45,7 @@
 // We can do so by making this define prior to including the header.
 #define CREATE_XAML_UI_PRESENTER_API
 #include <Windows.UI.Xaml.Hosting.ReferenceTracker.h>
+#include <Windows.Foundation.h>
 
 #include <WindowsNumerics.h>
 
@@ -205,7 +206,10 @@ void constexpr specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Media::RevealBrushState>>();
 #endif
  
+#ifndef MUX_EXPERIMENTAL
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::Foundation::IInspectable, struct winrt::Microsoft::UI::Private::Controls::MUXControlsTestHooksLoggingMessageEventArgs>>();
+#endif
+    
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Windows::Foundation::Collections::IKeyValuePair<struct winrt::hstring,struct winrt::Windows::UI::Xaml::DataTemplate> >>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Windows::Foundation::IInspectable>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Windows::UI::Composition::Interactions::CompositionConditionalValue>>();

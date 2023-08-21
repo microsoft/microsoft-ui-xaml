@@ -1,0 +1,35 @@
+#include <winresrc.h>
+#include "version.h"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION VER_FILE_VERSION
+ PRODUCTVERSION VER_PRODUCT_VERSION
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "Microsoft Corporation"
+            VALUE "FileDescription", "Microsoft.Experimental.UI.Xaml.dll"
+            VALUE "FileVersion", VER_FILE_VERSION_STR "\0"
+            VALUE "InternalName", "Microsoft.Experimental.UI.Xaml.dll"
+            VALUE "LegalCopyright", "Copyright (c) Microsoft Corporation. All rights reserved."
+            VALUE "OriginalFilename", "Microsoft.Experimental.UI.Xaml.dll"
+            VALUE "ProductName", "Microsoft.Experimental.UI.Xaml"
+            VALUE "ProductVersion", VER_PRODUCT_VERSION_STR "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

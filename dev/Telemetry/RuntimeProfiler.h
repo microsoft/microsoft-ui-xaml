@@ -55,6 +55,9 @@ namespace RuntimeProfiler
         ProfId_PipsPager,
         ProfId_ImageIcon,
         ProfId_AnimatedIcon,
+        ProfId_InfoBadge,
+        ProfId_WebView2,
+        ProfId_MicaController,
         ProfId_Size // ProfId_Size is the last always. 
     } ProfilerClassId;
 
@@ -91,5 +94,6 @@ namespace RuntimeProfiler
             RuntimeProfiler::RegisterMethod(RuntimeProfiler::PG_Class, (UINT16)typeindex, (UINT16)memberindex, &__RuntimeProfiler_Counter); \
         } \
     }
+
 
 

@@ -20,7 +20,7 @@ public:
 #pragma endregion
 
     // TODO: Bug 14901501: Figure out a better way to have reference tracking for types doing in-component derivation (e.g. RecyclingElementFactory : ElementFactory)
-    virtual HRESULT __stdcall NonDelegatingQueryInterface(const GUID& id, void** object)
+    virtual int32_t __stdcall NonDelegatingQueryInterface(const winrt::guid& id, void** object)
     {
         return __super::NonDelegatingQueryInterface(id, object);
     }

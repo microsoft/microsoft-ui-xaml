@@ -30,7 +30,7 @@ winrt::IInspectable CommandingHelpers::IconSourceToIconSourceElementConverter::C
         }
         else
         {
-            iconSource.CreateIconElement();
+            return SharedHelpers::MakeIconElementFrom(iconSource);
         }
     }
 

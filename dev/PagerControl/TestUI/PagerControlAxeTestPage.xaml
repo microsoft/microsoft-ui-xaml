@@ -1,0 +1,17 @@
+﻿<local:TestPage
+    x:Class="MUXControlsTestApp.PagerControlAxeTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel>
+        <muxc:PagerControl DisplayMode="ButtonPanel" NumberOfPages="20" />
+        <muxc:PagerControl DisplayMode="NumberBox" NumberOfPages="20" />
+        <muxc:PagerControl DisplayMode="ComboBox" NumberOfPages="20" />
+    </StackPanel>
+</local:TestPage>

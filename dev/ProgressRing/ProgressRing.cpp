@@ -31,6 +31,7 @@ ProgressRing::ProgressRing()
     SetValue(s_TemplateSettingsProperty, winrt::make<::ProgressRingTemplateSettings>());
 
     SizeChanged({ this, &ProgressRing::OnSizeChanged });
+    Loaded({ this, &ProgressRing::OnLoaded });
 }
 
 winrt::AutomationPeer ProgressRing::OnCreateAutomationPeer()
@@ -65,11 +66,16 @@ void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspe
     ApplyTemplateSettings();
 }
 
+void ProgressRing::OnLoaded(const winrt::IInspectable&, const winrt::IInspectable&)
+{
+    UpdateStates();
+}
+
 void ProgressRing::OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
     if (const auto foreground = Foreground().try_as<winrt::SolidColorBrush>())
     {
-        foreground.RegisterPropertyChangedCallback(winrt::SolidColorBrush::ColorProperty(), { this, &ProgressRing::OnForegroundColorPropertyChanged });
+        m_foregroundColorPropertyChangedRevoker = RegisterPropertyChanged(foreground, winrt::SolidColorBrush::ColorProperty(), { this, &ProgressRing::OnForegroundColorPropertyChanged });
     }
 
     OnForegroundColorPropertyChanged(nullptr, nullptr);
@@ -103,7 +109,7 @@ void ProgressRing::OnBackgroundPropertyChanged(const winrt::DependencyObject&, c
 {
     if (const auto background = Background().try_as<winrt::SolidColorBrush>())
     {
-        background.RegisterPropertyChangedCallback(winrt::SolidColorBrush::ColorProperty(), { this, &ProgressRing::OnBackgroundColorPropertyChanged });
+        m_backgroundColorPropertyChangedRevoker = RegisterPropertyChanged(background, winrt::SolidColorBrush::ColorProperty(), { this, &ProgressRing::OnBackgroundColorPropertyChanged });
     }
 
     OnBackgroundColorPropertyChanged(nullptr, nullptr);
@@ -341,7 +347,8 @@ void ProgressRing::UpdateStates()
             // Swap player source to determinate.
             SetAnimatedVisualPlayerSource();
             UpdateLottieProgress();
-        }   
+        }
+        winrt::AutomationProperties::SetAccessibilityView(*this, winrt::AccessibilityView::Content);
     }
     else
     {
@@ -351,6 +358,8 @@ void ProgressRing::UpdateStates()
         {
             player.Stop();
         }
+
+        winrt::AutomationProperties::SetAccessibilityView(*this, winrt::AccessibilityView::Raw);
     }
 }
 

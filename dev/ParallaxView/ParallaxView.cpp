@@ -161,7 +161,6 @@ winrt::Size ParallaxView::ArrangeOverride(winrt::Size const& finalSize)
         {
             // Ensure that this ParallaxView has a rectangular clip.
             winrt::RectangleGeometry newRectangleGeometry;
-            newRectangleGeometry.Rect();
             Clip(newRectangleGeometry);
 
             rectangleGeometry = newRectangleGeometry;

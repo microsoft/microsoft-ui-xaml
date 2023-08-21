@@ -14,6 +14,7 @@ public:
     BreadcrumbBarItemAutomationPeer(winrt::BreadcrumbBarItem const& owner);
 
     // IAutomationPeerOverrides
+    hstring GetLocalizedControlTypeCore();
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
     hstring GetClassNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();

@@ -6,6 +6,7 @@
 #include "RatingControl.h"
 #include "RatingControlAutomationPeer.h"
 #include "RuntimeProfiler.h"
+#include "XamlControlsResources.h"
 
 #include <RatingItemFontInfo.h>
 #include <RatingItemImageInfo.h>
@@ -69,7 +70,7 @@ void RatingControl::UpdateCaptionMargins()
     // When text scale changes we need to update top margin to make the text follow start center.
     if (auto captionTextBlock = m_captionTextBlock.safe_get())
     {
-        double textScaleFactor = GetUISettings().TextScaleFactor();
+        const double textScaleFactor = GetUISettings().TextScaleFactor();
         winrt::Thickness margin = captionTextBlock.Margin();
         margin.Top = c_defaultCaptionTopMargin - (ActualRatingFontSize() * c_verticalScaleAnimationCenterPoint);
 
@@ -543,7 +544,7 @@ void RatingControl::SetRatingTo(double newRating, bool originatedFromMouse)
             Value(c_noValueSetSentinel);
         }
 
-        if (SharedHelpers::IsRS1OrHigher() && IsFocusEngaged() && SharedHelpers::IsAnimationsEnabled())
+        if (SharedHelpers::IsRS1OrHigher() && IsFocusEngaged() && ShouldEnableAnimation())
         {
             const double focalPoint = CalculateStarCenter((int)(ratingValue - 1.0));
             m_sharedPointerPropertySet.InsertScalar(L"starsScaleFocalPoint", static_cast<float>(focalPoint));
@@ -639,12 +640,12 @@ void RatingControl::OnFontFamilyChanged(const winrt::DependencyObject& /*sender*
         for (int i = 0; i < MaxRating(); i++)
         {
             // FUTURE: handle image rating items
-            if (auto backgroundTB = m_backgroundStackPanel.get().Children().GetAt(i).as<winrt::TextBlock>())
+            if (auto backgroundTB = m_backgroundStackPanel.get().Children().GetAt(i).try_as<winrt::TextBlock>())
             {
                 CustomizeRatingItem(backgroundTB, RatingControlStates::Unset);
             }
 
-            if (auto foregroundTB = m_foregroundStackPanel.get().Children().GetAt(i).as<winrt::TextBlock>())
+            if (auto foregroundTB = m_foregroundStackPanel.get().Children().GetAt(i).try_as<winrt::TextBlock>())
             {
                 CustomizeRatingItem(foregroundTB, RatingControlStates::Set);
             }
@@ -763,10 +764,10 @@ void RatingControl::OnPointerMovedOverBackgroundStackPanel(const winrt::IInspect
     {
         const auto point = args.GetCurrentPoint(m_backgroundStackPanel.get());
         const float xPosition = point.Position().X;
-        if (SharedHelpers::IsAnimationsEnabled())
+        if (ShouldEnableAnimation())
         {
             m_sharedPointerPropertySet.InsertScalar(L"starsScaleFocalPoint", xPosition);
-            auto deviceType = args.Pointer().PointerDeviceType();
+            const auto deviceType = args.Pointer().PointerDeviceType();
 
             switch (deviceType)
             {
@@ -913,7 +914,7 @@ void RatingControl::OnKeyDown(winrt::KeyRoutedEventArgs const& eventArgs)
             flowDirectionReverser *= -1.0;
         }
 
-        auto originalKey = eventArgs.as<winrt::KeyRoutedEventArgs>().OriginalKey();
+        const auto originalKey = eventArgs.as<winrt::KeyRoutedEventArgs>().OriginalKey();
 
         // Up down are right/left in keyboard only
         if (originalKey == winrt::VirtualKey::Up)
@@ -988,7 +989,7 @@ void RatingControl::OnPreviewKeyDown(winrt::KeyRoutedEventArgs const& eventArgs)
 
     if (!IsReadOnly() && IsFocusEngaged() && IsFocusEngagementEnabled())
     {
-        auto originalKey = eventArgs.as<winrt::KeyRoutedEventArgs>().OriginalKey();
+        const auto originalKey = eventArgs.as<winrt::KeyRoutedEventArgs>().OriginalKey();
         if (originalKey == winrt::VirtualKey::GamepadA)
         {
             m_shouldDiscardValue = false;
@@ -1023,7 +1024,7 @@ void RatingControl::OnPreviewKeyDown(winrt::KeyRoutedEventArgs const& eventArgs)
 
 void RatingControl::OnPreviewKeyUp(winrt::KeyRoutedEventArgs const& eventArgs)
 {
-    auto originalKey = eventArgs.as<winrt::KeyRoutedEventArgs>().OriginalKey();
+    const auto originalKey = eventArgs.as<winrt::KeyRoutedEventArgs>().OriginalKey();
 
     if (IsFocusEngagementEnabled() && originalKey == winrt::VirtualKey::GamepadA && m_disengagedWithA)
     {
@@ -1031,6 +1032,12 @@ void RatingControl::OnPreviewKeyUp(winrt::KeyRoutedEventArgs const& eventArgs)
         m_disengagedWithA = false; // We want to do this regardless of handled
         eventArgs.Handled(true);
     }
+}
+
+bool RatingControl::ShouldEnableAnimation()
+{
+    // In ControlsResourceVersion2, animation is disabled.
+    return !XamlControlsResources::IsUsingControlsResourcesVersion2() && SharedHelpers::IsAnimationsEnabled();
 }
 
 void RatingControl::OnFocusEngaged(const winrt::Control& /*sender*/, const winrt::FocusEngagedEventArgs& /*args*/)
@@ -1090,7 +1097,7 @@ void RatingControl::EnterGamepadEngagementMode()
         winrt::ElementSoundPlayer::Play(winrt::ElementSoundKind::Invoke);
     }
     
-    if (SharedHelpers::IsAnimationsEnabled())
+    if (ShouldEnableAnimation())
     {
         const double focalPoint = CalculateStarCenter((int)(currentValue - 1.0));
         m_sharedPointerPropertySet.InsertScalar(L"starsScaleFocalPoint", static_cast<float>(focalPoint));

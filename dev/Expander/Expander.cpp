@@ -103,15 +103,27 @@ void Expander::RaiseCollapsedEvent(const winrt::Expander& container)
 
 void Expander::OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
 {
-    if (IsExpanded())
+    const auto isExpanded = IsExpanded();
+
+    if (isExpanded)
     {
         RaiseExpandingEvent(*this);
     }
     else
     {
+        // Available for a 'Collapsing' event
+    }
+
+    UpdateExpandState(true);
+
+    if (isExpanded)
+    {
+        // Available for an 'Expanded' event
+    }
+    else
+    {
         RaiseCollapsedEvent(*this);
     }
-    UpdateExpandState(true);
 }
 
 void Expander::OnExpandDirectionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)

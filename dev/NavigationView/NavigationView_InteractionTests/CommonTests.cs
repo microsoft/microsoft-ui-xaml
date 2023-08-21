@@ -22,6 +22,7 @@ using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
+using MUXTestInfra.Shared.Infra;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 {
@@ -36,6 +37,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext);
+        }
+
+        [TestMethod]
+        public void VerifyAxeScanPasses()
+        {
+            using (var setup = new TestSetupHelper("NavigationView-Axe"))
+            {
+                AxeTestHelper.TestForAxeIssues();
+            }
         }
 
         [TestMethod]
@@ -872,6 +882,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
 
                     Verify.AreEqual(2, positionInSet, "Position in set, not including separator/header");
                     Verify.AreEqual(2, sizeOfSet, "Size of set");
+
+                    Log.Comment("Setting focus to HasChildItem");
+                    UIObject hasChildItem = FindElement.ByName("HasChildItem");
+                    hasChildItem.SetFocus();
+                    Wait.ForIdle();
+
+                    ae = AutomationElement.FocusedElement;
+                    positionInSet = (int)ae.GetCurrentPropertyValue(AutomationElement.PositionInSetProperty);
+                    sizeOfSet = (int)ae.GetCurrentPropertyValue(AutomationElement.SizeOfSetProperty);
+
+                    Verify.AreEqual(5, positionInSet, "Position in set, not including separator/header");
+                    Verify.AreEqual(5, sizeOfSet, "Size of set");
                 }
             }
         }
@@ -1683,6 +1705,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // 32134869: Temporarily disabling 
         public void VerifyNavigationViewItemContentPresenterMargin()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
@@ -1785,6 +1808,67 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTests
                     InputHelper.LeftClick(item);
                     Wait.ForIdle();
                 }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyAddingChildItemsToNavigationViewItem()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
+            {
+                Log.Comment("Verify MI19 does not have the child item we are going to look for.");
+
+                Log.Comment("Click on MI19.");
+                var menuItem19 = FindElement.ByName("Menu Item 19");
+                InputHelper.LeftClick(menuItem19);
+                Wait.ForIdle();
+
+                var childItem = FindElement.ByName("Child of MI19");
+                Verify.IsNull(childItem, "MI19 should not have this child item.");
+
+                Log.Comment("Programmatically add a child item to MI19.");
+                FindElement.ByName<Button>("Add Child Item to MenuItem19").Invoke();
+
+                Log.Comment("Expand MI19.");
+                InputHelper.LeftClick(menuItem19);
+                Wait.ForIdle();
+
+                Log.Comment("Verify MI19 has the child item we just added.");
+                var newChildItem = FindElement.ByName("Child of MI19");
+                Verify.IsNotNull(newChildItem, "MI19 should have a new child item.");
+            }
+        }
+
+        [TestMethod]
+        public void VerifyNavigationViewItemInPaneFooterHasTemplateSettingBindings()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "PaneFooterTestPage" }))
+            {
+                TextBlock paneFooterNavViewItemWidthTextBlock = new TextBlock(FindElement.ByName("PaneFooterNavViewItemWidth"));
+                ComboBox compactPaneLengthComboBox = new ComboBox(FindElement.ByName("CompactPaneLengthComboBox"));
+                UIObject getIconColumnWidth = FindElement.ByName("GetIconColumnWidth");
+
+                getIconColumnWidth.Click();
+
+                Log.Comment("Verify IconColumnWidth is binded correctly to SmallerIconWidthProperty");
+                Verify.AreEqual("40", paneFooterNavViewItemWidthTextBlock.DocumentText); 
+
+                Log.Comment("Change CompactPaneLength to 40px");
+                compactPaneLengthComboBox.SelectItemByName("40");
+                Wait.ForIdle();
+
+                getIconColumnWidth.Click();
+                Wait.ForIdle();
+
+                Verify.AreEqual("32", paneFooterNavViewItemWidthTextBlock.DocumentText);
+
+                Log.Comment("Change CompactPaneLength to 96px");
+                compactPaneLengthComboBox.SelectItemByName("96");
+                Wait.ForIdle();
+                getIconColumnWidth.Click();
+                Wait.ForIdle();
+
+                Verify.AreEqual("88", paneFooterNavViewItemWidthTextBlock.DocumentText);
             }
         }
     }

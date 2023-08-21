@@ -1,8 +1,9 @@
 parameters:
   condition: ''
-  testFilePath: ''
+  testBinaryDirectoryPath: '$(Build.SourcesDirectory)\HelixPayload'
+  testFilePattern: ''
+  outputProjDir: $(Build.SourcesDirectory)\helixworkitems
   outputProjFileName: ''
-  testSuite: ''
   taefQuery: ''
 
 steps:
@@ -12,4 +13,4 @@ steps:
     inputs:
       targetType: filePath
       filePath: build\Helix\GenerateTestProjFile.ps1
-      arguments: -TestFile '${{ parameters.testFilePath }}' -OutputProjFile '$(Build.ArtifactStagingDirectory)\${{ parameters.outputProjFileName }}' -JobTestSuiteName '${{ parameters.testSuite }}' -TaefPath '$(Build.SourcesDirectory)\build\Helix\packages\taef.redist.wlk.10.31.180822002\build\Binaries\x86' -TaefQuery "${{ parameters.taefQuery }}"
+      arguments: -TestFilePattern '${{ parameters.testFilePattern }}' -TestBinaryDirectoryPath '${{ parameters.testBinaryDirectoryPath }}' -OutputProjFile '${{ parameters.outputProjDir }}\${{ parameters.outputProjFileName }}' -TaefQuery "${{ parameters.taefQuery }}" -TestNamePrefix $(buildConfiguration).$(buildPlatform)

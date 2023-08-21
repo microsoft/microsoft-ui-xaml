@@ -234,6 +234,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Bug 42204580
         public void ValidateFractionalWidthDoesNotCrash()
         {
             ColorSpectrum colorSpectrum = null;

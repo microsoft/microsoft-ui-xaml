@@ -46,6 +46,9 @@ winrt::hstring NavigationViewItemAutomationPeer::GetNameCore()
 
 winrt::IInspectable NavigationViewItemAutomationPeer::GetPatternCore(winrt::PatternInterface const& pattern)
 {
+    // Note: We are intentionally not supporting Invoke Pattern, since supporting both SelectionItem and Invoke was
+    // causing problems. 
+    // See this Issue for more details: https://github.com/microsoft/microsoft-ui-xaml/issues/2702
     if (pattern == winrt::PatternInterface::SelectionItem ||
         // Only provide expand collapse pattern if we have children!
         (pattern == winrt::PatternInterface::ExpandCollapse && HasChildren()))
@@ -80,38 +83,12 @@ winrt::AutomationControlType NavigationViewItemAutomationPeer::GetAutomationCont
 
 int32_t NavigationViewItemAutomationPeer::GetPositionInSetCore()
 {
-    int32_t positionInSet = 0;
-
-    if (IsOnTopNavigation() && !IsOnFooterNavigation())
-    {
-        positionInSet = GetPositionOrSetCountInTopNavHelper(AutomationOutput::Position);
-    }
-    else
-    {
-        positionInSet = GetPositionOrSetCountInLeftNavHelper(AutomationOutput::Position);
-    }
-
-    return positionInSet;
+    return GetPositionOrSetCountHelper(AutomationOutput::Position);
 }
 
 int32_t NavigationViewItemAutomationPeer::GetSizeOfSetCore()
 {
-    int32_t sizeOfSet = 0;
-
-    if (IsOnTopNavigation() && !IsOnFooterNavigation())
-    {
-        if (auto navview = GetParentNavigationView())
-        {
-            sizeOfSet = GetPositionOrSetCountInTopNavHelper(AutomationOutput::Size);
-
-        }
-    }
-    else
-    {
-        sizeOfSet = GetPositionOrSetCountInLeftNavHelper(AutomationOutput::Size);
-    }
-
-    return sizeOfSet;
+    return GetPositionOrSetCountHelper(AutomationOutput::Size);
 }
 
 int32_t NavigationViewItemAutomationPeer::GetLevelCore()
@@ -296,73 +273,10 @@ winrt::ItemsRepeater NavigationViewItemAutomationPeer::GetParentItemsRepeater()
     return nullptr;
 }
 
-
-// Get either the position or the size of the set for this particular item in the case of left nav. 
-// We go through all the items and then we determine if the listviewitem from the left listview can be a navigation view item header
-// or a navigation view item. If it's the former, we just reset the count. If it's the latter, we increment the counter.
-// In case of calculating the position, if this is the NavigationViewItemAutomationPeer we're iterating through we break the loop.
-int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(AutomationOutput automationOutput)
-{
-    int returnValue = 0;
-
-    if (auto const repeater = GetParentItemsRepeater())
-    {
-        if (auto const parent = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(repeater).try_as<winrt::AutomationPeer>())
-        {
-            if (auto const children = parent.GetChildren())
-            {
-                int index = 0;
-                bool itemFound = false;
-
-                for (auto const& child : children)
-                {
-                    if (auto dependencyObject = repeater.TryGetElement(index))
-                    {
-                        if (dependencyObject.try_as<winrt::NavigationViewItemHeader>())
-                        {
-                            if (automationOutput == AutomationOutput::Size && itemFound)
-                            {
-                                break;
-                            }
-                            else
-                            {
-                                returnValue = 0;
-                            }
-                        }
-                        else if (auto navviewItem = dependencyObject.try_as<winrt::NavigationViewItem>())
-                        {
-                            if (navviewItem.Visibility() == winrt::Visibility::Visible)
-                            {
-                                returnValue++;
-
-                                if (winrt::FrameworkElementAutomationPeer::FromElement(navviewItem) == static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
-                                {
-                                    if (automationOutput == AutomationOutput::Position)
-                                    {
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        itemFound = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    index++;
-                }
-            }
-        }
-    }
-
-    return returnValue;
-}
-
-// Get either the position or the size of the set for this particular item in the case of top nav (primary/overflow items). 
-// Basically, we do the same here as GetPositionOrSetCountInLeftNavHelper without dealing with the listview directly, because 
-// TopDataProvider provcides two methods: GetOverflowItems() and GetPrimaryItems(), so we can break the loop (in case of position) by 
-// comparing the value of the FrameworkElementAutomationPeer we can get from the item we're iterating through to this object.
-int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInTopNavHelper(AutomationOutput automationOutput)
+// Get either the position or the size of the set for this particular item by iterating through the children of the
+// parent items repeater and comparing the value of the FrameworkElementAutomationPeer we can get from the item
+// we're iterating through to this object.
+int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountHelper(AutomationOutput automationOutput)
 {
     int32_t returnValue = 0;
     bool itemFound = false;
@@ -454,6 +368,11 @@ void NavigationViewItemAutomationPeer::RemoveFromSelection()
 
 void NavigationViewItemAutomationPeer::ChangeSelection(bool isSelected)
 {
+    // If the item is being selected, we trigger an invoke as if the user had clicked on the item:
+    if(isSelected)
+    {
+        Invoke();
+    }
     if (auto nvi = Owner().try_as<winrt::NavigationViewItem>())
     {
         nvi.IsSelected(isSelected);

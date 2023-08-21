@@ -10,12 +10,19 @@
     <Import_RootNamespace>Breadcrumb_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)BreadcrumbBarAxeTestPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)BreadcrumbBarPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)BreadcrumbBarAxeTestPage.xaml.cs">
+      <DependentUpon>BreadcrumbBarAxeTestPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)BreadcrumbBarPage.xaml.cs">
       <DependentUpon>BreadcrumbBarPage.xaml</DependentUpon>
     </Compile>

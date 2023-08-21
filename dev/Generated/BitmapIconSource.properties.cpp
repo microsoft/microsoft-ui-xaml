@@ -33,7 +33,7 @@ void BitmapIconSourceProperties::EnsureProperties()
                 winrt::name_of<winrt::BitmapIconSource>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnShowAsMonochromePropertyChanged));
     }
     if (!s_UriSourceProperty)
     {
@@ -44,7 +44,7 @@ void BitmapIconSourceProperties::EnsureProperties()
                 winrt::name_of<winrt::BitmapIconSource>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Uri>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnUriSourcePropertyChanged));
     }
 }
 
@@ -53,6 +53,22 @@ void BitmapIconSourceProperties::ClearProperties()
     s_ShowAsMonochromeProperty = nullptr;
     s_UriSourceProperty = nullptr;
     IconSource::ClearProperties();
+}
+
+void BitmapIconSourceProperties::OnShowAsMonochromePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::BitmapIconSource>();
+    winrt::get_self<BitmapIconSource>(owner)->OnPropertyChanged(args);
+}
+
+void BitmapIconSourceProperties::OnUriSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::BitmapIconSource>();
+    winrt::get_self<BitmapIconSource>(owner)->OnPropertyChanged(args);
 }
 
 void BitmapIconSourceProperties::ShowAsMonochrome(bool value)

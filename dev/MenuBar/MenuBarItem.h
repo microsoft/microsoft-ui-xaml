@@ -39,6 +39,7 @@ private:
     void AttachEventHandlers();
     void DetachEventHandlers(bool useSafeGet = false);
     void OpenFlyoutFrom(FlyoutLocation location);
+    void MoveFocusTo(FlyoutLocation location);
 
     winrt::MenuBarItem FocusAndReturnNextFocusableItem(int index, int direction);
 

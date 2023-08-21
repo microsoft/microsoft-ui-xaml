@@ -236,6 +236,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private Button IncreaseNumberOfPagesButton;
 
+        public Button GetCheckIfButtonsHiddenButton()
+        {
+            return GetElement(ref CheckIfButtonsHiddenButton, "CheckIfButtonsHiddenButton");
+        }
+        private Button CheckIfButtonsHiddenButton;
+        public TextBlock GetCheckIfButtonsHiddenLabel()
+        {
+            return GetElement(ref CheckIfButtonsHiddenLabel, "CheckIfButtonsHiddenLabel");
+        }
+        private TextBlock CheckIfButtonsHiddenLabel;
+
         public Button GetEnterInfinityModeButton()
         {
             return GetElement(ref EnterInfinityModeButton, "NumberOfPagesInfinityButton");

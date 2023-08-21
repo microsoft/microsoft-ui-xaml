@@ -59,7 +59,7 @@ public:
     {
         for (auto& v : m_indexesInOriginalVector)
         {
-            if (v > indexInOriginalVector)
+            if (v >= indexInOriginalVector)
             {
                 v++;
             }

@@ -24,6 +24,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls.Primitives;
 using ToggleButton = Microsoft.Windows.Apps.Test.Foundation.Controls.ToggleButton;
+using MUXTestInfra.Shared.Infra;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -45,8 +46,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
+
         [TestMethod]
-         public void ChangeStateTest()
+        public void VerifyAxeScanPasses()
+        {
+            using (var setup = new TestSetupHelper("ProgressRing-Axe"))
+            {
+                AxeTestHelper.TestForAxeIssues();
+            }
+        }
+
+        [TestMethod]
+        public void ChangeStateTest()
         {
             using (var setup = new TestSetupHelper("ProgressRing Tests"))
             {
@@ -93,7 +104,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("IsActive set to false updates ProgressRing to Inactive state");
 
                 isActiveCheckBox.ToggleAndWait();
-                
+
                 Verify.AreEqual("Inactive", visualStateText.DocumentText);
 
                 Log.Comment("Verify Lottie animation is not playing when in Inactive state");
@@ -296,6 +307,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 double diff = Math.Abs(oldValue - newValue);
 
                 Verify.IsGreaterThan(diff, Convert.ToDouble(0), "Value of ProgressBar increments properly within range with decimal Minimum and Maximum");
+            }
+        }
+
+        [TestMethod]
+        public void VerifyIndeterminateProgressRingDoesNotImplementRangeValuePattern()
+        {
+            using (var setup = new TestSetupHelper("ProgressRing Tests"))
+            {
+                UIObject progressRing = FindElement.ByName("Busy TestProgressRing");
+
+                Verify.IsNotNull(progressRing);
+
+                RangeValueImplementation rangeValueImplementation = new RangeValueImplementation(progressRing);
+
+                Verify.IsFalse(rangeValueImplementation.IsAvailable);
             }
         }
     }

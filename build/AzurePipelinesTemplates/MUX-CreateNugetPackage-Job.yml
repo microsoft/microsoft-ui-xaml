@@ -1,7 +1,6 @@
 parameters:
 # Extract the build revision number from Build.BuildNumber. This is needed to pass to build-nupkg
   jobName: ''
-  dependsOn: ''
   buildOutputDir: '$(Build.SourcesDirectory)\BuildOutput'
   nupkgdir: '$(build.artifactStagingDirectory)'
 # The "primary" build arch is the one that the nuspec gets its winmd, pri, and other neutral files from
@@ -13,11 +12,11 @@ parameters:
 
 jobs:
 - job: ${{ parameters.jobName }}
-  dependsOn:
-    - ${{ parameters.dependsOn }}
-
-  pool:
-    vmImage: 'windows-2019'
+  pool: 
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPoolOSS-S
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPool-S
 
   steps:
 
@@ -33,30 +32,12 @@ jobs:
       echo useReleaseTag=${{ parameters.useReleaseTag }}
     displayName: 'CreateNugetPackage: Display parameters'
 
-  - task: DownloadBuildArtifacts@0 
+  - task: DownloadBuildArtifacts@1 
     inputs: 
       artifactName: drop
       downloadPath: '$(Build.SourcesDirectory)\Artifacts'
 
   - template: MUX-InstallNuget-Steps.yml
-
-  - ${{if parameters.signConfig }}:
-    # Re-create framework packages because we made them in the build step against unsigned binaries.
-    - template: MUX-MakeFrameworkPackages-Steps.yml
-
-    # Copy the re-made framework packages into the same location in the artifact drop to be republished at the end of the job.
-    - task: CopyFiles@2
-      inputs:
-        targetFolder: '${{ parameters.nupkgdir }}'
-        sourceFolder: '$(Build.SourcesDirectory)\Artifacts\drop'
-        Contents: '**\Microsoft.UI.Xaml*.appx'
-
-    # Copy the CBS packages into the same location in the artifact drop to be republished at the end of the job.
-    - task: CopyFiles@2
-      inputs:
-        targetFolder: '${{ parameters.nupkgdir }}'
-        sourceFolder: '$(Build.SourcesDirectory)\Artifacts\drop'
-        Contents: '**\CBS*'
         
   - powershell: |
       $prereleaseTag = "${{ parameters.prereleaseVersionTag }}"
@@ -81,6 +62,7 @@ jobs:
         FolderPath: '${{ parameters.nupkgdir }}'
         Pattern: |
           **/Microsoft.UI.Xaml*.nupkg
+          **/Microsoft.Experimental.UI.Xaml*.nupkg
         UseMinimatch: true
         signConfigType: inlineSignParams
         inlineOperation: | 

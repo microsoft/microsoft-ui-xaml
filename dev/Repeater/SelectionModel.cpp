@@ -190,7 +190,7 @@ winrt::IVectorView<winrt::IInspectable> SelectionModel::SelectedItems()
                     const unsigned int currentCount = node->SelectedCount();
                     if (index >= currentIndex && index < currentIndex + currentCount)
                     {
-                        int targetIndex = node->SelectedIndices().at(index - currentIndex);
+                        const int targetIndex = node->SelectedIndices().at(index - currentIndex);
                         item = node->ItemsSourceView().GetAt(targetIndex);
                         break;
                     }
@@ -245,7 +245,7 @@ winrt::IVectorView<winrt::IndexPath> SelectionModel::SelectedIndices()
                     const unsigned int currentCount = node->SelectedCount();
                     if (index >= currentIndex && index < currentIndex + currentCount)
                     {
-                        int targetIndex = node->SelectedIndices().at(index - currentIndex);
+                        const int targetIndex = node->SelectedIndices().at(index - currentIndex);
                         path = winrt::get_self<IndexPath>(info.Path)->CloneWithChildIndex(targetIndex);
                         break;
                     }

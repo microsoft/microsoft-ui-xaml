@@ -1,0 +1,63 @@
+﻿namespace MEU_XC_NAMESPACE
+{
+
+[MUX_EXPERIMENTAL]
+[webhosthidden]
+unsealed runtimeclass TitleBar : Windows.UI.Xaml.Controls.Control
+{
+    TitleBar();
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    String Title{ get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Microsoft.UI.Xaml.Controls.IconSource IconSource{ get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean IsBackButtonVisible{ get; set; };
+
+    Boolean IsBackEnabled{ get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Object CustomContent{ get; set; };
+
+    TitleBarTemplateSettings TemplateSettings{ get; };
+
+    event Windows.Foundation.TypedEventHandler<TitleBar, Object> BackRequested;
+
+    static Windows.UI.Xaml.DependencyProperty TitleProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IconSourceProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsBackButtonVisibleProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsBackEnabledProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty CustomContentProperty{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
+}
+
+[MUX_EXPERIMENTAL]
+[webhosthidden]
+unsealed runtimeclass TitleBarTemplateSettings : Windows.UI.Xaml.DependencyObject
+{
+    TitleBarTemplateSettings();
+
+    Windows.UI.Xaml.Controls.IconElement IconElement;
+
+    [MUX_DEFAULT_VALUE("c_titleColumnGridLengthDefault")]
+    Windows.UI.Xaml.GridLength TitleColumnGridLength;
+
+    [MUX_DEFAULT_VALUE("c_customColumnGridLengthDefault")]
+    Windows.UI.Xaml.GridLength CustomColumnGridLength;
+
+    static Windows.UI.Xaml.DependencyProperty IconElementProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty TitleColumnGridLengthProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty CustomColumnGridLengthProperty{ get; };
+}
+
+[MUX_EXPERIMENTAL]
+[webhosthidden]
+unsealed runtimeclass TitleBarAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    TitleBarAutomationPeer(MEU_XC_NAMESPACE.TitleBar owner);
+}
+
+}

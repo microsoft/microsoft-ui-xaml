@@ -30,61 +30,13 @@
                 for (int i = 0; i < SourceFiles.Length; i++)
                 {
                     string text = File.ReadAllText(SourceFiles[i]);
-                    
+
                     for (int j = 0; j < Patterns.Length; j++)
                     {
                         text = text.Replace(Patterns[j], Replacements[j]);
                     }
-                    
+
                     File.WriteAllText(DestinationFiles[i], text);
-                }
-            }
-]]>
-      </Code>
-    </Task>
-  </UsingTask>
-  <UsingTask Condition="$(BuildingWithBuildExe) == 'true'" TaskName="RunPowershellScript" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
-    <ParameterGroup>
-      <Path ParameterType="System.String" Required="true" />
-      <Parameters ParameterType="System.String" Required="false" />
-      <FilesWritten ParameterType="System.String[]" Required="false" />
-    </ParameterGroup>
-    <Task>
-      <Using Namespace="System" />
-      <Using Namespace="System.Diagnostics" />
-      <Code Type="Fragment" Language="cs">
-<![CDATA[
-            // pshrun.cmd is the script file to call if you want to execute a PowerShell script
-            // as part of a Razzle build.
-            string pshrunPath = Environment.GetEnvironmentVariable("RazzleToolPath") + "\\pshrun.cmd";
-            
-            // We're passing a string as a script parameter twice (one to pshrun.cmd, one to pshrun.ps1),
-            // so we need to doubly-escape the string to make sure it survives both passages.
-            string pshrunParameters = Path + " " + Parameters.Replace("\"", "\"\"\"");
-            
-            ProcessStartInfo processStartInfo = new ProcessStartInfo(pshrunPath, pshrunParameters);
-            processStartInfo.CreateNoWindow = true;
-            processStartInfo.UseShellExecute = false;
-            processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            processStartInfo.RedirectStandardOutput = true;
-            
-            Log.LogMessage(string.Format("Running {0} {1}...", pshrunPath, pshrunParameters));
-            
-            Process process = Process.Start(processStartInfo);
-            Console.WriteLine(process.StandardOutput.ReadToEnd());
-            
-            // The bool "Success" is defined in codegen as the return value for inline MSBuild tasks such as this one.
-            Success = process.WaitForExit(60000) && process.ExitCode == 0;
-            process.Close();
-            
-            if (!Success)
-            {
-                foreach (string filePath in FilesWritten)
-                {
-                    if (File.Exists(filePath))
-                    {
-                        File.Delete(filePath);
-                    }
                 }
             }
 ]]>

@@ -6,7 +6,7 @@
 #include "ItemsSourceView.h"
 
 class InspectingDataSource : 
-	public winrt::implements<InspectingDataSource, ItemsSourceView>
+    public winrt::implements<InspectingDataSource, ItemsSourceView>
 {
 public:
     ForwardRefToBaseReferenceTracker(ItemsSourceView)

@@ -4,6 +4,7 @@
 using Common;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
+using MUXTestInfra.Shared.Infra;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -33,6 +34,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
+        }
+
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("Ignore", "True")] // Ignored since the PagerControl is not fully accessible yet. See #6495
+        public void VerifyAxeScanPasses()
+        {
+            using (var setup = new TestSetupHelper("PagerControl-Axe"))
+            {
+                AxeTestHelper.TestForAxeIssues();
+            }
         }
 
         [TestMethod]
@@ -553,6 +566,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 VerifyNumberOfPages("11");
 
                 VerifyAutoDisplayMode();
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void VerifyButtonVisibilitySetInXAMLApplied()
+        {
+            using (var setup = new TestSetupHelper("PagerControl Tests"))
+            {
+                elements = new PagerControlTestPageElements();
+
+                // Invoke button
+                elements.GetCheckIfButtonsHiddenButton().Click();
+
+                Wait.ForIdle();
+                  
+                // Check result
+                Verify.AreEqual("Passed", elements.GetCheckIfButtonsHiddenLabel().GetText(), "Not all buttons where hidden and as such, the test result was not 'Passed'");
             }
         }
     }

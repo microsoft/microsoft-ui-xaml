@@ -8,8 +8,8 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-            <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+            <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="ControlFillColorTransparentBrush" />
 
             <StaticResource x:Key="NavigationViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="NavigationViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
@@ -40,11 +40,13 @@
             <StaticResource x:Key="TopNavigationViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TopNavigationViewItemBackgroundPressed" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TopNavigationViewItemBackgroundSelected" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TopNavigationViewItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TopNavigationViewItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
-            <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="AcrylicInAppFillColorDefaultBrush" />
+            <StaticResource x:Key="NavigationViewDefaultPaneBackground" ResourceKey="SolidBackgroundFillColorBaseBrush" />
+            <StaticResource x:Key="NavigationViewTopPaneBackground" ResourceKey="ControlFillColorTransparentBrush" />
 
             <StaticResource x:Key="NavigationViewItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="NavigationViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
@@ -75,6 +77,8 @@
             <StaticResource x:Key="TopNavigationViewItemBackgroundPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TopNavigationViewItemBackgroundPressed" ResourceKey="SubtleFillColorTransparentBrush" />
             <StaticResource x:Key="TopNavigationViewItemBackgroundSelected" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TopNavigationViewItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TopNavigationViewItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
@@ -110,6 +114,8 @@
             <StaticResource x:Key="TopNavigationViewItemBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
             <StaticResource x:Key="TopNavigationViewItemBackgroundPressed" ResourceKey="SystemControlHighlightListMediumRevealBackgroundBrush" />
             <StaticResource x:Key="TopNavigationViewItemBackgroundSelected" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
+            <StaticResource x:Key="TopNavigationViewItemBackgroundSelectedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="TopNavigationViewItemBackgroundSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 

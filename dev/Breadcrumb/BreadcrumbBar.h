@@ -48,7 +48,6 @@ private:
     bool MoveFocus(int initialIndexIncrement);
     bool MoveFocusPrevious();
     bool MoveFocusNext();
-    bool HandleEdgeCaseFocus(bool first, const winrt::IInspectable& source);
     void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
 
     void UpdateItemsRepeaterItemsSource();
@@ -96,7 +95,4 @@ private:
 
     // Template Parts
     static constexpr std::wstring_view s_itemsRepeaterPartName{ L"PART_ItemsRepeater"sv };
-
-    // Automation Names
-    static constexpr std::wstring_view s_breadcrumbItemAutomationName{ L"BreadcrumbBarItem"sv };
 };
