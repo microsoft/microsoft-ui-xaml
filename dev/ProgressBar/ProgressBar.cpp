@@ -86,21 +86,7 @@ void ProgressBar::OnShowErrorPropertyChanged(const winrt::DependencyPropertyChan
 
 void ProgressBar::UpdateStates()
 {
-    if (Visibility() == winrt::Visibility::Collapsed) {
-        if (ShowError())
-        {
-            winrt::VisualStateManager::GoToState(*this, s_CollapsedErrorStateName, true);
-        }
-        else if (ShowPaused())
-        {
-            winrt::VisualStateManager::GoToState(*this, s_CollapsedPausedStateName, true);
-        }
-        else
-        {
-            winrt::VisualStateManager::GoToState(*this, s_CollapsedStateName, true);
-        }
-    }
-    else if (IsIndeterminate())
+    if (IsIndeterminate() && Visibility() == winrt::Visibility::Visible)
     {
         if (ShowError())
         {
