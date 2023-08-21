@@ -2471,30 +2471,38 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
             auto queue = winrt::Windows::System::DispatcherQueue::GetForCurrentThread();
             queue.TryEnqueue(
                 winrt::DispatcherQueuePriority::Low,
-                winrt::DispatcherQueueHandler([this]()
+                winrt::DispatcherQueueHandler([weakThis{get_weak()}]()
+                {
+                    if(auto strongThis = weakThis.get())
                     {
-                        // It may be the case that this item is in a collapsed repeater, in which case
-                        // no container will be realized for it.  We'll assume that this this is the case
-                        // if the UI thread has fallen idle without any SelectionChanged being raised.
-                        // In this case, we'll raise the SelectionChanged at that time, as otherwise it'll never be raised.
-                        if (m_isSelectionChangedPending)
-                        {
-                            AnimateSelectionChanged(FindLowestLevelContainerToDisplaySelectionIndicator());
-
-                            m_isSelectionChangedPending = false;
-
-                            auto const item = m_pendingSelectionChangedItem;
-                            auto const direction = m_pendingSelectionChangedDirection;
-
-                            m_pendingSelectionChangedItem = nullptr;
-                            m_pendingSelectionChangedDirection = NavigationRecommendedTransitionDirection::Default;
-
-                            RaiseSelectionChangedEvent(item, IsSettingsItem(item), direction);
-                        }
-                    }));
-        }
+                        strongThis->CompletePendingSelectionChange();
+                    }
+                }));
     }
 }
+
+void NavigationView::CompletePendingSelectionChange()
+{
+    // It may be the case that this item is in a collapsed repeater, in which case
+    // no container will be realized for it.  We'll assume that this this is the case
+    // if the UI thread has fallen idle without any SelectionChanged being raised.
+    // In this case, we'll raise the SelectionChanged at that time, as otherwise it'll never be raised.
+    if (m_isSelectionChangedPending)
+    {
+        AnimateSelectionChanged(FindLowestLevelContainerToDisplaySelectionIndicator());
+
+        m_isSelectionChangedPending = false;
+
+        auto item = m_pendingSelectionChangedItem;
+        auto direction = m_pendingSelectionChangedDirection;
+
+        m_pendingSelectionChangedItem = nullptr;
+        m_pendingSelectionChangedDirection = NavigationRecommendedTransitionDirection::Default;
+
+        RaiseSelectionChangedEvent(item, IsSettingsItem(item), direction);
+    }
+}
+
 
 void NavigationView::UpdateSelectionModelSelection(const winrt::IndexPath& ip)
 {

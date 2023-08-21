@@ -103,6 +103,7 @@ private:
     void OnSelectionModelChildrenRequested(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelChildrenRequestedEventArgs& e);
     void OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem);
+    void CompletePendingSelectionChange();
     void UpdateSelectionModelSelection(const winrt::IndexPath& ip);
 
     // Item/container info functions
