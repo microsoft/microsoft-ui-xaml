@@ -186,7 +186,50 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
         }
-        
+
+        [TestMethod]
+        public void KeyboardNavigationWithArrowKeysWithDisabledItemTest()
+        {
+            using (var setup = new TestSetupHelper("MenuBar Tests"))
+            {
+                var editButton = FindElement.ById<Button>("MenuBarPartiallyEnabledOne");
+                editButton.Invoke();
+                VerifyElement.Found("PartiallyEnabledFlyoutOne", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Right);
+                VerifyElement.Found("PartiallyEnabledFlyoutThree", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Left);
+                VerifyElement.Found("PartiallyEnabledFlyoutOne", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Left);
+                VerifyElement.Found("PartiallyEnabledFlyoutThree", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Left);
+                VerifyElement.Found("PartiallyEnabledFlyoutOne", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Right);
+                VerifyElement.Found("PartiallyEnabledFlyoutThree", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Right);
+                VerifyElement.Found("PartiallyEnabledFlyoutOne", FindBy.Name);
+            }
+        }
+
+        [TestMethod]
+        public void KeyboardNavigationWithArrowKeysWithOnlyOneItemWorks()
+        {
+            using (var setup = new TestSetupHelper("MenuBar Tests"))
+            {
+                var editButton = FindElement.ById<Button>("LoopTestBarOne");
+                editButton.Invoke();
+                VerifyElement.Found("LoopTestItemOne", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Right);
+                VerifyElement.NotFound("LoopTestItemOne", FindBy.Name);
+            }
+        }
+
         [TestMethod]
         [TestProperty("Ignore", "True")]
         // Disabled due to: MenuBarTests.KeyboardNavigationWithAccessKeysTest unreliable #135
