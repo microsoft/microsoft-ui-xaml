@@ -490,7 +490,7 @@
                                                 <DiscreteObjectKeyFrame KeyTime="{StaticResource SplitViewPaneAnimationCloseDuration}" Value="1"/>
                                             </ObjectAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PaneClipRectangleTransform" Storyboard.TargetProperty="TranslateX">
-                                                <SplineDoubleKeyFrame KeyTime="{StaticResource SplitViewPaneAnimationCloseDuration}" KeySpline="0.0,0.35 0.15,1.0" Value="{Binding TemplateSettings.OpenPaneLength, RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+                                                <SplineDoubleKeyFrame KeyTime="{StaticResource SplitViewPaneAnimationCloseDuration}" KeySpline="0.0,0.35 0.15,1.0" Value="{Binding TemplateSettings.NegativeOpenPaneLength, RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PaneTransform" Storyboard.TargetProperty="TranslateX">
                                                 <SplineDoubleKeyFrame KeyTime="{StaticResource SplitViewPaneAnimationCloseDuration}" KeySpline="0.0,0.35 0.15,1.0" Value="{Binding TemplateSettings.OpenPaneLength, RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
