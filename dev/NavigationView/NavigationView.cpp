@@ -2471,13 +2471,14 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
             auto queue = winrt::Windows::System::DispatcherQueue::GetForCurrentThread();
             queue.TryEnqueue(
                 winrt::DispatcherQueuePriority::Low,
-                winrt::DispatcherQueueHandler([weakThis{get_weak()}]()
-                {
-                    if(auto strongThis = weakThis.get())
+                winrt::DispatcherQueueHandler([weakThis{ get_weak() }]()
                     {
-                        strongThis->CompletePendingSelectionChange();
-                    }
-                }));
+                        if (auto strongThis = weakThis.get())
+                        {
+                            strongThis->CompletePendingSelectionChange();
+                        }
+                    }));
+        }
     }
 }
 
