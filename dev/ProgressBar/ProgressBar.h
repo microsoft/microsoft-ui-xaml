@@ -51,9 +51,6 @@ private:
     static constexpr wstring_view s_IndeterminateProgressBarIndicator2Name{ L"IndeterminateProgressBarIndicator2" };
     static constexpr wstring_view s_ErrorStateName{ L"Error" };
     static constexpr wstring_view s_PausedStateName{ L"Paused" };
-    static constexpr wstring_view s_CollapsedStateName{ L"Collapsed" };
-    static constexpr wstring_view s_CollapsedErrorStateName{ L"CollapsedError" };
-    static constexpr wstring_view s_CollapsedPausedStateName{ L"CollapsedPaused" };
     static constexpr wstring_view s_IndeterminateStateName{ L"Indeterminate" };
     static constexpr wstring_view s_IndeterminateErrorStateName{ L"IndeterminateError" };
     static constexpr wstring_view s_IndeterminatePausedStateName{ L"IndeterminatePaused" };

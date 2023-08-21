@@ -101,7 +101,6 @@
                                 </VisualStateGroup.Transitions>
 
                                 <VisualState x:Name="Normal" />
-                                <VisualState x:Name="Collapsed" />
                                 <VisualState x:Name="Determinate" />
                                 <VisualState x:Name="Updating" />
                                 <VisualState x:Name="UpdatingError">
@@ -119,15 +118,6 @@
                                             Duration="0:0:0.167"/>
                                     </Storyboard>
                                 </VisualState>
-                                <VisualState x:Name="CollapsedError">
-                                    <Storyboard>
-                                        <ColorAnimation
-                                            Storyboard.TargetName="DeterminateProgressBarIndicator"
-                                            Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
-                                            To="{ThemeResource ProgressBarErrorForegroundColor}"
-                                            Duration="0:0:0.0"/>
-                                    </Storyboard>
-                                </VisualState>
 
                                 <VisualState x:Name="Paused">
                                     <Storyboard>
@@ -136,15 +126,6 @@
                                                 Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
                                                 To="{ThemeResource ProgressBarPausedForegroundColor}"
                                                 Duration="0:0:0.167"/>
-                                    </Storyboard>
-                                </VisualState>
-                                <VisualState x:Name="CollapsedPaused">
-                                    <Storyboard>
-                                        <ColorAnimation
-                                                Storyboard.TargetName="DeterminateProgressBarIndicator"
-                                                Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
-                                                To="{ThemeResource ProgressBarPausedForegroundColor}"
-                                                Duration="0:0:0.0"/>
                                     </Storyboard>
                                 </VisualState>
 
