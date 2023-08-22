@@ -1097,11 +1097,11 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths, bool fillAllAvailableSpac
             {
                 const winrt::Size rightContentSize = rightContentPresenter.DesiredSize();
 
-                if (const auto item = TabStripFooter().try_as<winrt::FrameworkElement>())
+                if (const auto tabStripFooter = TabStripFooter().try_as<winrt::FrameworkElement>())
                 {
-                    const auto minWidth = item.MinWidth();
-                    const auto width = item.Width();
-                    const auto footerWidth = [this,width,minWidth,rightContentSize]() {
+                    const auto minWidth = tabStripFooter.MinWidth();
+                    const auto width = tabStripFooter.Width();
+                    const auto footerWidth = [this, width, minWidth, rightContentSize]() {
                         if (minWidth < width)
                         {
                             return rightContentSize.Width < width ? width : rightContentSize.Width;

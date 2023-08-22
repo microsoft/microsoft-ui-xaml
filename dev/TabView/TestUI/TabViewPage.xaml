@@ -170,9 +170,6 @@
 
                         <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent" Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
                             <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8" FontSize="20">Home Button</Button>
-                            <Button x:Name="NewWindowTabViewPage" Click="NewWindowTabViewPage_Click">
-                                Open new window TabView page.
-                            </Button>
                             <StackPanel Orientation="Horizontal">
                                 <Button x:Name="TabViewSizingPageButton" AutomationProperties.Name="TabViewSizingPageButton"
                                         Margin="4" Click="TabViewSizingPageButton_Click"
@@ -183,6 +180,8 @@
                                 <Button x:Name="TabViewTabItemsSourcePageButton" AutomationProperties.Name="TabViewTabItemsSourcePageButton"
                                         Margin="4" Click="TabViewTabItemsSourcePageButton_Click"
                                         FontSize="20">TabView TabItemsSource Page</Button>
+                                <Button x:Name="NewWindowTabViewPage" Click="NewWindowTabViewPage_Click">
+                                    Open AppWindowing Page</Button>
                             </StackPanel>
                         </StackPanel>
                     </controls:TabViewItem>
@@ -278,7 +277,7 @@
                         TabStripDragOver="OnTabStripDragOver"
                         TabStripDrop="OnTabStripDrop">
                         <controls:TabView.TabStripFooter>
-                            <Grid x:Name="MinWidthFooter"></Grid>
+                            <Grid x:Name="MinWidthFooter" />
                         </controls:TabView.TabStripFooter>
 
                         <controls:TabView.TabItems>
