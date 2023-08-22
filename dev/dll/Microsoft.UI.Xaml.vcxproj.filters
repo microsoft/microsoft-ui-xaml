@@ -29,8 +29,8 @@
     <ClCompile Include="FloatUtil.cpp" />
     <ClCompile Include="RegUtil.cpp" />
     <ClCompile Include="CommandingHelpers.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\XamlControlsResources.properties.cpp" />
     <ClCompile Include="XamlControlsResources.cpp" />
+    <ClCompile Include="$(DependencyPropertyCodeGenOutputDirectory)\XamlControlsResources.properties.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -72,6 +72,9 @@
     <ClInclude Include="..\inc\tracker_ref.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="..\inc\StaticAssertFalse.h">
+      <Filter>inc</Filter>
+    </ClInclude>
     <ClInclude Include="XamlMetadataProviderGenerated.h" />
     <ClInclude Include="..\inc\TypeHelper.h">
       <Filter>inc</Filter>
@@ -99,7 +102,6 @@
     <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Microsoft.UI.Xaml.def" />
     <None Include="packages.config" />
     <None Include="$(OutDir)XamlMetadataProviderWindowsCodeGen.cs" />
     <None Include="XamlMetadataProviderGenerated.tt" />
@@ -115,21 +117,6 @@
     <Page Include="@(PageRequiringCustomCompilation)" />
     <Page Include="$(MSBuildProjectDirectory)\DensityStyles\Compact.xaml" />
     <Page Include="$(MSBuildProjectDirectory)\DensityStyles\CompactDatePickerTimePickerFlyout.xaml" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="@(PageRequiringCustomCompilation)" />
     <Page Include="@(PageRequiringCustomCompilation)" />
   </ItemGroup>
   <ItemGroup>

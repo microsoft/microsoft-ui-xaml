@@ -34,7 +34,7 @@ using RepeaterAutomationPeer = Microsoft.UI.Xaml.Automation.Peers.RepeaterAutoma
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class AccessibilityTests : TestsBase
+    public class AccessibilityTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateChildrenPeers()

@@ -17,12 +17,12 @@ struct RoutedEventHandler_revoker
     RoutedEventHandler_revoker() noexcept = default;
     RoutedEventHandler_revoker(RoutedEventHandler_revoker const&) = delete;
     RoutedEventHandler_revoker& operator=(RoutedEventHandler_revoker const&) = delete;
-    RoutedEventHandler_revoker(RoutedEventHandler_revoker&& other)
+    RoutedEventHandler_revoker(RoutedEventHandler_revoker&& other) noexcept
     {
         move_from(other);
     }
 
-    RoutedEventHandler_revoker& operator=(RoutedEventHandler_revoker&& other)
+    RoutedEventHandler_revoker& operator=(RoutedEventHandler_revoker&& other) noexcept
     {
         move_from(other);
         return *this;
@@ -81,7 +81,11 @@ enum class RoutedEventType
     GettingFocus,
     LosingFocus,
     KeyDown,
-    PointerPressed
+    PointerPressed,
+    PointerReleased,
+    PointerExited,
+    PointerCanceled,
+    PointerCaptureLost
 };
 
 template<RoutedEventType eventType>
@@ -117,10 +121,38 @@ struct RoutedEventTraits<RoutedEventType::PointerPressed>
     using HandlerT = winrt::PointerEventHandler;
 };
 
+template <>
+struct RoutedEventTraits<RoutedEventType::PointerReleased>
+{
+    static winrt::RoutedEvent Event() { return winrt::UIElement::PointerReleasedEvent(); }
+    using HandlerT = winrt::PointerEventHandler;
+};
+
+template <>
+struct RoutedEventTraits<RoutedEventType::PointerExited>
+{
+    static winrt::RoutedEvent Event() { return winrt::UIElement::PointerExitedEvent(); }
+    using HandlerT = winrt::PointerEventHandler;
+};
+
+template <>
+struct RoutedEventTraits<RoutedEventType::PointerCanceled>
+{
+    static winrt::RoutedEvent Event() { return winrt::UIElement::PointerCanceledEvent(); }
+    using HandlerT = winrt::PointerEventHandler;
+};
+
+template <>
+struct RoutedEventTraits<RoutedEventType::PointerCaptureLost>
+{
+    static winrt::RoutedEvent Event() { return winrt::UIElement::PointerCaptureLostEvent(); }
+    using HandlerT = winrt::PointerEventHandler;
+};
+
 template<RoutedEventType eventType, typename traits = RoutedEventTraits<eventType>>
 inline RoutedEventHandler_revoker AddRoutedEventHandler(winrt::UIElement const& object, typename traits::HandlerT const& callback, bool handledEventsToo)
 {
-    auto handler = winrt::box_value<traits::HandlerT>(callback);
+    auto handler = winrt::box_value<typename traits::HandlerT>(callback);
     auto event = traits::Event();
     object.AddHandler(event, handler, handledEventsToo);
     return { object, event, handler };

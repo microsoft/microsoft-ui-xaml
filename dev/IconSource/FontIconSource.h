@@ -16,4 +16,7 @@ class FontIconSource :
 public:
     using FontIconSourceProperties::EnsureProperties;
     using FontIconSourceProperties::ClearProperties;
+
+    winrt::DependencyProperty GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty);
+    winrt::IconElement CreateIconElementCore();
 };

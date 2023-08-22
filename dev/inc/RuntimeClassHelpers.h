@@ -79,7 +79,7 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
         return this->m_inner;
     }
 
-    HRESULT __stdcall NonDelegatingQueryInterface(GUID const& riid, void** value) noexcept
+    int32_t __stdcall NonDelegatingQueryInterface(winrt::guid const& riid, void** value) noexcept
     {
         // In order for the reference tracking mechanism to work, we actually need to hand out XAML's
         // implementation of IWeakReferenceSource. However there are some bugs on RS2 where XAML calls
@@ -113,8 +113,9 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
 
     // TEMP-BEGIN
 
-    HRESULT __stdcall QueryInterface(GUID const& id, void** object) noexcept
+    HRESULT __stdcall QueryInterface(GUID const& id_abi, void** object) noexcept
     {
+        auto& id = reinterpret_cast<winrt::guid const&>(id_abi);
         if (this->outer())
         {
             return this->outer()->QueryInterface(id, object);
@@ -134,24 +135,27 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
     // return false.  If we're off the UI thread but can't get to it, then do the DeleteInstance() here (asynchronously).
     static void DeleteInstanceOnUIThread(std::unique_ptr<D>&& self) noexcept
     {
-        bool queued = false;
-        
+        auto me = static_cast<ReferenceTracker<D, ImplT, I...>*>(self.get());
+        // Some sanity checks that we aren't running through this twice and that no one has modified some of our fields
+        // that should always be non-zero.
+        if (me->m_destroying || (me->m_owningThreadId == 0) || !me->m_dispatcherHelper.DispatcherQueue())
+        {
+            MUX_FAIL_FAST();
+        }
+        me->m_destroying = true;
+
         // See if we're on the UI thread
         if(!self->IsOnThread())
         {
             // We're not on the UI thread
-            static_cast<ReferenceTracker<D, ImplT, I...>*>(self.get())->m_dispatcherHelper.RunAsync(
+            me->m_dispatcherHelper.RunAsync(
                 [instance = self.release()]()
                 {
                     delete instance;
                 },
                 true /*fallbackToThisThread*/);
-
-            queued = true;
         }
-        
-
-        if (!queued)
+        else
         {
             self.reset();
         }
@@ -165,9 +169,12 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
 #endif
         if (!this->m_inner) // We need to derive from DependencyObject. Do so if it didn't happen yet.
         {
+#pragma warning(push)
+#pragma warning(disable : 26444) // Disable es.84, there is sometimes a return value that needs to be assigned and ignored
             // Internally derive from DependencyObject to get ReferenceTracker behavior.
             winrt::impl::call_factory<winrt::DependencyObject, winrt::IDependencyObjectFactory>([&](auto&& f) { f.CreateInstance(*this, this->m_inner); });
             //winrt::get_activation_factory<winrt::DependencyObject, winrt::IDependencyObjectFactory>().CreateInstance(*this, this->m_inner);
+#pragma warning(pop)
         }
         if (this->m_inner)
         {
@@ -186,62 +193,26 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
 
 private:
     DWORD m_owningThreadId{};
+    bool m_destroying{};
 };
 
-template<typename Factory>
-inline HRESULT STDMETHODCALLTYPE CppWinRTCreateActivationFactory(_In_ unsigned int *flags, _In_ const ::Microsoft::WRL::Details::CreatorMap* entry, REFIID riid, _Outptr_ IUnknown **ppFactory) throw()
-{
-    try
-    {
-        auto activationFactory = winrt::make<Factory>();
-
-        *flags |= DisableCaching;
-
-        winrt::check_hresult(winrt::get_unknown(activationFactory)->QueryInterface(riid, (void**)ppFactory));
-        __analysis_assume(*ppFactory);
-
-        CATCH_RETURN;
-    }
-}
-
-#define CppWinRTInternalWrlCreateCreatorMap(className, runtimeClassName, trustLevel, creatorFunction, section) \
-    __declspec(selectany) ::Microsoft::WRL::Details::FactoryCache __objectFactory__##className = { nullptr, 0 }; \
-    extern __declspec(selectany) const ::Microsoft::WRL::Details::CreatorMap __object_##className = { \
-        creatorFunction, \
-        runtimeClassName, \
-        trustLevel, \
-        &__objectFactory__##className,\
-        nullptr}; \
-    extern "C" __declspec(allocate(section)) __declspec(selectany) const ::Microsoft::WRL::Details::CreatorMap* const __minATLObjMap_##className = &__object_##className; \
-    WrlCreatorMapIncludePragma(className)
-
-namespace CppWinRTTemp
-{
-    static TrustLevel __stdcall GetTrustLevel_BaseTrust() { return BaseTrust;  }
-}
-
 #define CppWinRTActivatableClassWithFactory(className, factory) \
-    namespace CppWinRTTemp { static auto __stdcall RuntimeClassName__##className() { return winrt::name_of<className::class_type>().data(); } } \
-    CppWinRTInternalWrlCreateCreatorMap(\
-        className, \
-        reinterpret_cast<const IID*>(&CppWinRTTemp::RuntimeClassName__##className), \
-        &CppWinRTTemp::GetTrustLevel_BaseTrust, \
-        CppWinRTCreateActivationFactory<factory>, \
-        "minATL$__r")
+    namespace factory_implementation { using className = factory; }; \
+    namespace implementation { using className = ::className; }; \
 
 #define CppWinRTActivatableClass(className) \
     CppWinRTActivatableClassWithFactory(className, className##Factory)
 
 #define CppWinRTActivatableClassWithBasicFactory(className) \
-    struct className##Factory : public winrt::factory_implementation::className##T<className##Factory, className> {}; \
+    struct className##Factory : public winrt::factory_implementation::className##T<className##Factory, ::className> {}; \
     CppWinRTActivatableClassWithFactory(className, className##Factory)
 
 #define CppWinRTActivatableClassWithDPFactory(className) \
-    struct className##Factory : public winrt::factory_implementation::className##T<className##Factory, className> \
+    struct className##Factory : public winrt::factory_implementation::className##T<className##Factory, ::className> \
     { \
         className##Factory() { EnsureProperties(); } \
-        static void ClearProperties() { className::ClearProperties(); }\
-        static void EnsureProperties() { className::EnsureProperties(); }\
+        static void ClearProperties() { ::className::ClearProperties(); }\
+        static void EnsureProperties() { ::className::EnsureProperties(); }\
     }; \
     CppWinRTActivatableClassWithFactory(className, className##Factory)
 

@@ -8,6 +8,8 @@
 #include "ResourceAccessor.h"
 #include "Utils.h"
 
+#include "ColorSpectrumAutomationPeer.properties.cpp"
+
 ColorSpectrumAutomationPeer::ColorSpectrumAutomationPeer(winrt::ColorSpectrum const& owner) :
     ReferenceTracker(owner)
 {
@@ -65,7 +67,7 @@ winrt::Rect ColorSpectrumAutomationPeer::GetBoundingRectangleCore()
 
 winrt::Point ColorSpectrumAutomationPeer::GetClickablePointCore()
 {
-    auto boundingRect = GetBoundingRectangleCore(); // Call potentially overridden method
+    const auto boundingRect = GetBoundingRectangleCore(); // Call potentially overridden method
 
     return winrt::Point{ boundingRect.X + boundingRect.Width / 2, boundingRect.Y + boundingRect.Height / 2 };
 }
@@ -77,9 +79,9 @@ bool ColorSpectrumAutomationPeer::IsReadOnly()
 
 winrt::hstring ColorSpectrumAutomationPeer::Value()
 {
-    winrt::ColorSpectrum colorSpectrumOwner = Owner().as<winrt::ColorSpectrum>();
-    winrt::Color color = colorSpectrumOwner.Color();
-    winrt::float4 hsvColor = colorSpectrumOwner.HsvColor();
+    const winrt::ColorSpectrum colorSpectrumOwner = Owner().as<winrt::ColorSpectrum>();
+    const winrt::Color color = colorSpectrumOwner.Color();
+    const winrt::float4 hsvColor = colorSpectrumOwner.HsvColor();
 
     return GetValueString(color, hsvColor);
 }
@@ -87,7 +89,7 @@ winrt::hstring ColorSpectrumAutomationPeer::Value()
 void ColorSpectrumAutomationPeer::SetValue(winrt::hstring const& value)
 {
     winrt::ColorSpectrum colorSpectrumOwner = Owner().as<winrt::ColorSpectrum>();
-    winrt::Color color = unbox_value<winrt::Color>(winrt::XamlBindingHelper::ConvertValue({ winrt::hstring_name_of<winrt::Color>(), winrt::TypeKind::Metadata }, box_value(value)));
+    const winrt::Color color = unbox_value<winrt::Color>(winrt::XamlBindingHelper::ConvertValue({ winrt::hstring_name_of<winrt::Color>(), winrt::TypeKind::Metadata }, box_value(value)));
 
     colorSpectrumOwner.Color(color);
 
@@ -107,9 +109,9 @@ void ColorSpectrumAutomationPeer::RaisePropertyChangedEvent(winrt::Color oldColo
 
 winrt::hstring ColorSpectrumAutomationPeer::GetValueString(winrt::Color color, winrt::float4 hsvColor)
 {
-    auto hue = static_cast<unsigned int>(round(hsv::GetHue(hsvColor)));
-    auto saturation = static_cast<unsigned int>(round(hsv::GetSaturation(hsvColor) * 100));
-    auto value = static_cast<unsigned int>(round(hsv::GetValue(hsvColor) * 100));
+    const auto hue = static_cast<unsigned int>(round(hsv::GetHue(hsvColor)));
+    const auto saturation = static_cast<unsigned int>(round(hsv::GetSaturation(hsvColor) * 100));
+    const auto value = static_cast<unsigned int>(round(hsv::GetValue(hsvColor) * 100));
 
     if (DownlevelHelper::ToDisplayNameExists())
     {

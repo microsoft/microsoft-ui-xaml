@@ -5,4 +5,4 @@
 
 #include "MaterialHelperTestApi.h"
 
-CppWinRTActivatableClassWithBasicFactory(MaterialHelperTestApi)
+#include "MaterialHelperTestApi.properties.cpp"

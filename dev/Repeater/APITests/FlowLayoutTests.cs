@@ -41,7 +41,7 @@ using LayoutPanel = Microsoft.UI.Xaml.Controls.LayoutPanel;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class FlowLayoutTests : TestsBase
+    public class FlowLayoutTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateStackLayout()
@@ -368,7 +368,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 foreach (ScrollOrientation scrollOrientation in Enum.GetValues(typeof(ScrollOrientation)))
                 {
                     Log.Comment(string.Format("ScrollOrientation: {0}", scrollOrientation));
-                    var om = new OrientationBasedMeasures(scrollOrientation);
+                    var om = new OrientationBasedMeasures(scrollOrientation, useLayoutRounding: true);
                     const int panelMinorSize = 500;
                     const int numItems = 2;
                     const int itemMinorSize = 200;
@@ -441,13 +441,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                     Log.Comment("UniformGridLayoutItemsJustification.SpaceEvenly");
                     layout.ItemsJustification = UniformGridLayoutItemsJustification.SpaceEvenly;
+
                     panel.UpdateLayout();
                     ValidateChildBounds(
                         panel,
                         new List<Rect>()
                         {
-                            om.MinorMajorRect(33, 0, itemMinorSize, itemMajorSize),
-                            om.MinorMajorRect(267, 0, itemMinorSize, itemMajorSize)
+                            om.MinorMajorRect(33.3333, 0, itemMinorSize, itemMajorSize),
+                            om.MinorMajorRect(266.6667, 0, itemMinorSize, itemMajorSize)
                         });
 
                     Log.Comment("UniformGridLayoutItemsJustification.Start +  UniformGridLayoutItemsStretch.Fill");
@@ -460,8 +461,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         panel,
                         new List<Rect>()
                         {
-                            om.MinorMajorRect(0, 0, itemMinorSize + 40, itemMajorSize),
-                            om.MinorMajorRect(250, 0, itemMinorSize + 40, itemMajorSize)
+                            om.MinorMajorRect(0, 0, itemMinorSize + 45, itemMajorSize),
+                            om.MinorMajorRect(255, 0, itemMinorSize + 45, itemMajorSize)
                         });
 
                     Log.Comment("UniformGridLayoutItemsJustification.Start +  UniformGridLayoutItemsStretch.Uniform");
@@ -474,9 +475,166 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         panel,
                         new List<Rect>()
                         {
-                            om.MinorMajorRect(0, 0, itemMinorSize + 40, itemMajorSize + 19),
-                            om.MinorMajorRect(250, 0, itemMinorSize + 40, itemMajorSize + 19)
+                            om.MinorMajorRect(0, 0, itemMinorSize + 45, itemMajorSize + 22.5),
+                            om.MinorMajorRect(255, 0, itemMinorSize + 45, itemMajorSize + 22.5)
                         });
+                }
+            });
+        }
+
+        [TestMethod]
+        public void ValidateGridLayoutMaximumRowsOrColumns()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (ScrollOrientation scrollOrientation in Enum.GetValues(typeof(ScrollOrientation)))
+                {
+                    Log.Comment(string.Format("ScrollOrientation: {0}", scrollOrientation));
+                    var om = new OrientationBasedMeasures(scrollOrientation, useLayoutRounding: true);
+                    const int panelMinorSize = 500;
+                    const int numItems = 4;
+                    const int itemMinorSize = 150;
+                    const int itemMajorSize = 100;
+                    Log.Comment("UniformGridLayoutItemsJustification.Start + UniformGridLayoutItemsStretch.None");
+                    LayoutPanel panel = new LayoutPanel();
+                    var layout = new UniformGridLayout()
+                    {
+                        Orientation = scrollOrientation.ToOrthogonalLayoutOrientation(),
+                        ItemsJustification = UniformGridLayoutItemsJustification.Start,
+                        MinItemWidth = om.IsVerical ? itemMinorSize : itemMajorSize,
+                        MinItemHeight = om.IsVerical ? itemMajorSize : itemMinorSize
+                    };
+
+                    SetPanelMinorSize(panel, om, panelMinorSize);
+                    for (int i = 0; i < numItems; i++)
+                    {
+                        panel.Children.Add(new Button() { Content = i });
+                    }
+
+                    panel.Layout = layout;
+                    Content = panel;
+                    panel.UpdateLayout();
+
+                    Log.Comment($"MaximumRowsOrColumns = {layout.MaximumRowsOrColumns}");
+                    ValidateChildBounds(
+                        panel,
+                        new List<Rect>()
+                        {
+                            om.MinorMajorRect(0, 0, itemMinorSize, itemMajorSize),
+                            om.MinorMajorRect(150, 0, itemMinorSize, itemMajorSize),
+                            om.MinorMajorRect(300, 0, itemMinorSize, itemMajorSize),
+                            om.MinorMajorRect(0, 100, itemMinorSize, itemMajorSize)
+                        });
+
+                    layout.MaximumRowsOrColumns = 0;
+                    Log.Comment($"MaximumRowsOrColumns = {layout.MaximumRowsOrColumns}");
+                    panel.UpdateLayout();
+                    ValidateChildBounds(
+                        panel,
+                        new List<Rect>()
+                        {
+                            om.MinorMajorRect(0, 0, itemMinorSize, itemMajorSize),
+                            om.MinorMajorRect(0, 100, itemMinorSize, itemMajorSize),
+                            om.MinorMajorRect(0, 200, itemMinorSize, itemMajorSize),
+                            om.MinorMajorRect(0, 300, itemMinorSize, itemMajorSize)
+                        });
+
+                    layout.MaximumRowsOrColumns = 1;
+                    Log.Comment($"MaximumRowsOrColumns = {layout.MaximumRowsOrColumns} + UniformGridLayoutItemsJustification.Start +  UniformGridLayoutItemsStretch.Uniform");
+                    layout.ItemsJustification = UniformGridLayoutItemsJustification.Start;
+                    layout.ItemsStretch = UniformGridLayoutItemsStretch.Uniform;
+                    layout.MinRowSpacing = 10;
+                    layout.MinColumnSpacing = 10;
+                    var aspectRatio = itemMinorSize / (double)itemMajorSize;
+                    var extraMajorSize = (panelMinorSize - itemMinorSize) / aspectRatio;
+                    var majorOffset = itemMajorSize + extraMajorSize + layout.MinRowSpacing;
+                    panel.UpdateLayout();
+                    ValidateChildBounds(
+                        panel,
+                        new List<Rect>()
+                        {
+                            om.MinorMajorRect(0, 0,               panelMinorSize, itemMajorSize + extraMajorSize),
+                            om.MinorMajorRect(0, majorOffset,     panelMinorSize, itemMajorSize + extraMajorSize),
+                            om.MinorMajorRect(0, majorOffset * 2, panelMinorSize, itemMajorSize + extraMajorSize),
+                            om.MinorMajorRect(0, majorOffset * 3, panelMinorSize, itemMajorSize + extraMajorSize),
+                        });
+
+                    layout.MaximumRowsOrColumns = 2;
+                    Log.Comment($"MaximumRowsOrColumns = {layout.MaximumRowsOrColumns} + UniformGridLayoutItemsJustification.Start +  UniformGridLayoutItemsStretch.Fill");
+                    layout.ItemsJustification = UniformGridLayoutItemsJustification.Start;
+                    layout.ItemsStretch = UniformGridLayoutItemsStretch.Fill;
+                    layout.MinRowSpacing = 10;
+                    layout.MinColumnSpacing = 10;
+                    panel.UpdateLayout();
+                    ValidateChildBounds(
+                        panel,
+                        new List<Rect>()
+                        {
+                            om.MinorMajorRect(0,    0,                  itemMinorSize + 95, itemMajorSize),
+                            om.MinorMajorRect(255,  0,                  itemMinorSize + 95, itemMajorSize),
+                            om.MinorMajorRect(0,    itemMajorSize + 10, itemMinorSize + 95, itemMajorSize),
+                            om.MinorMajorRect(255,  itemMajorSize + 10, itemMinorSize + 95, itemMajorSize),
+                        });
+
+                }
+            });
+        }
+
+        [TestMethod]
+        public void ValidateGridLayoutDesiredSizingWithMaxRowsOrColumnsSet()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (ScrollOrientation scrollOrientation in Enum.GetValues(typeof(ScrollOrientation)))
+                {
+                    Log.Comment(string.Format("ScrollOrientation: {0}", scrollOrientation));
+                    var om = new OrientationBasedMeasures(scrollOrientation, useLayoutRounding: true);
+                    const int numItems = 4;
+
+                    int itemSize = 100;
+
+                    LayoutPanel panel = new LayoutPanel();
+                    var layout = new UniformGridLayout() {
+                        Orientation = scrollOrientation.ToOrthogonalLayoutOrientation(),
+                        ItemsJustification = UniformGridLayoutItemsJustification.Start,
+                        MinItemWidth = itemSize,
+                        MinItemHeight = itemSize,
+                        MinRowSpacing = 0,
+                        MinColumnSpacing = 0
+                    };
+                    
+                    for (int i = 0; i < numItems; i++)
+                    {
+                        panel.Children.Add(new Button() { Content = i,Width = itemSize,Height = itemSize });
+                    }
+                    
+                    panel.Layout = layout;
+                    Content = panel;
+
+                    // Place in top left corner to prevent stretch of panel
+                    panel.VerticalAlignment = VerticalAlignment.Top;
+                    panel.HorizontalAlignment = HorizontalAlignment.Left;
+                    layout.ItemsJustification = UniformGridLayoutItemsJustification.Start;
+
+                    for(int i = 1; i < numItems; i++)
+                    {
+                        layout.MaximumRowsOrColumns = i;
+                        panel.UpdateLayout();
+
+                        if (om.IsVerical)
+                        {
+                            // Vertical so fill columns first
+                            Verify.AreEqual(itemSize * i, panel.DesiredSize.Width);
+                            Verify.AreEqual(Math.Ceiling((double)numItems / (double)i) * itemSize, panel.DesiredSize.Height);
+                        }
+                        else
+                        {
+                            // Horizontal, fill rows first
+                            Verify.AreEqual(itemSize * i, panel.DesiredSize.Height);
+                            Verify.AreEqual(Math.Ceiling((double)numItems / (double)i) * itemSize, panel.DesiredSize.Width);
+                        }
+                    }
+
                 }
             });
         }
@@ -1087,8 +1245,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             RunOnUIThread.Execute(() =>
             {
-                var repeater = new ItemsRepeater()
-                {
+                var repeater = new ItemsRepeater() {
                     ItemsSource = new List<string>(), // no items 
                     Layout = new UniformGridLayout() { Orientation = Orientation.Vertical },
                 };
@@ -1099,6 +1256,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 // Ensure we do not crash and get zero size.
                 Verify.AreEqual(0, repeater.DesiredSize.Width);
                 Verify.AreEqual(0, repeater.DesiredSize.Height);
+            });
+        }
+
+        [TestMethod]
+        public void ValidateUniformGridWithItemsRelyingOnAspectRatio()
+        {
+            ItemsRepeater repeater = null;
+            ScrollViewer scroller = null;
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 6), // no items 
+                    Layout = new UniformGridLayout() {
+                        Orientation = Orientation.Vertical,
+                        MaximumRowsOrColumns = 1,
+                        MinItemWidth = 100
+                    },
+                    MaxWidth = 300,
+                    ItemTemplate = GetDataTemplate("<repeaterCommon:AspectRatioRespectingControl/>")
+                };
+
+                scroller = new ScrollViewer() {
+                    Content = repeater
+                };
+
+                Content = scroller;
+                repeater.UpdateLayout();
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Assert not implemented yet
+                Verify.IsTrue(Math.Abs(300 - repeater.DesiredSize.Width) < 1, "Repeater width should be 300");
+                Verify.IsTrue(repeater.DesiredSize.Height > 1, "Repeater should have height");
             });
         }
 
@@ -1235,6 +1429,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        [TestMethod]
+        public void ValidateStackLayoutArrangeWithStretch()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var svWidth = 1000.0;
+                ScrollViewer sv = new ScrollViewer() {
+                    Width = svWidth,
+                    HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
+                };
+
+                var repeater = new ItemsRepeater();
+                repeater.ItemsSource = Enumerable.Range(0, 10);
+                repeater.ItemTemplate = GetDataTemplate(@"<TextBlock HorizontalAlignment='Stretch' Text='{Binding}' />");
+
+                sv.Content = repeater;
+
+                Content = sv;
+                Content.UpdateLayout();
+
+                var firstItem = (FrameworkElement)repeater.TryGetElement(0);
+                var bounds = LayoutInformation.GetLayoutSlot(firstItem);
+                Verify.AreEqual(svWidth, bounds.Width);
+
+            });
+        }
+
         #region Private Helpers
 
         private enum LayoutChoice
@@ -1352,7 +1573,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             for (int i = 0; i < list.Count; i++)
             {
                 var child = (FrameworkElement)panel.Children[i];
-                Verify.AreEqual(LayoutInformation.GetLayoutSlot(child), list[i]);
+                Verify.AreEqual(list[i], LayoutInformation.GetLayoutSlot(child));
             }
         }
 
@@ -1360,7 +1581,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             return (DataTemplate)XamlReader.Load(
                        string.Format(@"<DataTemplate  
-                            xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                            xmlns:repeaterCommon='using:MUXControls.ApiTests.RepeaterTests.Common'>
                            {0}
                         </DataTemplate>", content));
         }
@@ -1416,22 +1638,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         break;
 
                     case LayoutChoice.Grid:
-                        var minRowSpacing = om.ScrollOrientation == ScrollOrientation.Vertical ? lineSpacing : 0;
-                        var minColumnSpacing = om.ScrollOrientation == ScrollOrientation.Horizontal ? lineSpacing : 0;
-                        layout = new UniformGridLayout() { MinItemWidth = itemSize, MinItemHeight = itemSize, MinRowSpacing = minRowSpacing, MinColumnSpacing = minColumnSpacing };
+                        {
+                            var minRowSpacing = om.ScrollOrientation == ScrollOrientation.Vertical ? lineSpacing : 0;
+                            var minColumnSpacing = om.ScrollOrientation == ScrollOrientation.Horizontal ? lineSpacing : 0;
+                            layout = new UniformGridLayout() { MinItemWidth = itemSize, MinItemHeight = itemSize, MinRowSpacing = minRowSpacing, MinColumnSpacing = minColumnSpacing };
+                        }
                         break;
 
                     case LayoutChoice.Flow:
-                        layout = new FlowLayoutDerived()
                         {
-                            MinColumnSpacing = lineSpacing,
-                            OnLineArrangedFunc = (int startIndex, int countInLine, double lineSize, VirtualizingLayoutContext context) =>
+                            var minRowSpacing = om.ScrollOrientation == ScrollOrientation.Vertical ? lineSpacing : 0;
+                            var minColumnSpacing = om.ScrollOrientation == ScrollOrientation.Horizontal ? lineSpacing : 0;
+                            layout = new FlowLayoutDerived()
                             {
-                                Verify.AreEqual(0, startIndex % 4);
-                                Verify.AreEqual(4, countInLine);
-                                Verify.AreEqual(lineSize, itemSize);
-                            }
-                        };
+                                MinRowSpacing = minRowSpacing,
+                                MinColumnSpacing = minColumnSpacing,
+                                OnLineArrangedFunc = (int startIndex, int countInLine, double lineSize, VirtualizingLayoutContext context) =>
+                                {
+                                    Verify.AreEqual(0, startIndex % 4);
+                                    Verify.AreEqual(4, countInLine);
+                                    Verify.AreEqual(lineSize, itemSize);
+                                }
+                            };
+                        }
                         break;
 
                     default:

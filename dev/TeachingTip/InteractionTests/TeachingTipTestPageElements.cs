@@ -1,4 +1,7 @@
-﻿using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using System;
 using System.Numerics;
@@ -286,6 +289,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private CheckBox returnTopForOutOfWindowPlacementCheckBox;
 
+        public ComboBox GetTitleComboBox()
+        {
+            return GetElement(ref titleComboBox, "TitleComboBox");
+        }
+        private ComboBox titleComboBox;
+
+        public Button GetSetTitleButton()
+        {
+            return GetElement(ref setTitleButton, "SetTitleButton");
+        }
+        private Button setTitleButton;
+
+        public ComboBox GetSubtitleComboBox()
+        {
+            return GetElement(ref subtitleComboBox, "SubtitleComboBox");
+        }
+        private ComboBox subtitleComboBox;
+
+        public Button GetSetSubtitleButton()
+        {
+            return GetElement(ref setSubtitleButton, "SetSubtitleButton");
+        }
+        private Button setSubtitleButton;
+
         public ComboBox GetIconComboBox()
         {
             return GetElement(ref iconComboBox, "IconComboBox");
@@ -334,6 +361,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private UIObject teachingTipCloseButton;
 
+        public UIObject GetTitleVisibilityTextBlock()
+        {
+            return GetElement(ref titleVisibilityTextBlock, "TitleVisibilityTextBlock");
+        }
+        private UIObject titleVisibilityTextBlock;
+
+        public UIObject GetSubtitleVisibilityTextBlock()
+        {
+            return GetElement(ref subtitleVisibilityTextBlock, "SubtitleVisibilityTextBlock");
+        }
+        private UIObject subtitleVisibilityTextBlock;
+
         public ComboBox GetAutomationNameComboBox()
         {
             return GetElement(ref automationNameComboBox, "AutomationNameComboBox");
@@ -357,6 +396,63 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return GetElement(ref effectiveForegroundOfTeachingTipContentTextBlock, "EffectiveForegroundOfTeachingTipContent");
         }
         private TextBlock effectiveForegroundOfTeachingTipContentTextBlock;
+
+        public Button GetRemoveTeachingTipButton()
+        {
+            return GetElement(ref effectiveRemoveTeachingTipButton, "RemoveTeachingTipButton");
+        }
+        private Button effectiveRemoveTeachingTipButton;
+
+        public TextBlock GetTeachingTipContent()
+        {
+            return GetElement(ref effectiveTeachingTipContent, "TeachingTipContentTextBlock");
+        }
+        private TextBlock effectiveTeachingTipContent;
+
+        public CheckBox GetTeachingTipContentUnloadedCheck()
+        {
+            return GetElement(ref effectiveTeachingTipContentUnloadedCheckbox, "VisualTreeTeachingTipContentTextBlockUnloaded");
+        }
+        private CheckBox effectiveTeachingTipContentUnloadedCheckbox;
+
+        public CheckBox GetPageRTLCheckbox()
+        {
+            return GetElement(ref effectivePageRTLCheckbox, "PageRTLCheckbox");
+        }
+        private CheckBox effectivePageRTLCheckbox;
+
+        public Button GetRemoveOpenButtonFromVisualTreeButton()
+        {
+            return GetElement(ref effectiveRemoveOpenButton, "RemoveButtonFromVisualTreeButton");
+        }
+        private Button effectiveRemoveOpenButton;
+
+        public Button GetOpenTeachingTipOnEdgeButton()
+        {
+            return GetElement(ref effectiveOpenTeachingTipOnEdgeButton, "TargetButtonRightEdge");
+        }
+        private Button effectiveOpenTeachingTipOnEdgeButton;
+
+        public Button GetTeachingTipOnEdgeOffsetButton()
+        {
+            return GetElement(ref effectiveTeachingTipOnEdgeOffsetButton, "GetEdgeTeachingTipOffset");
+        }
+        private Button effectiveTeachingTipOnEdgeOffsetButton;
+
+        public TextBlock GetTeachingTipOnEdgeOffsetTextblock()
+        {
+            return GetElement(ref effectiveTeachingTipOnEdgeOffsetTextblock, "EdgeTeachingTipOffset");
+        }
+        private TextBlock effectiveTeachingTipOnEdgeOffsetTextblock;
+
+        public double GetTeachingTipOnEdgeHorizontalOffset()
+        {
+            return double.Parse(GetTeachingTipOnEdgeOffsetTextblock().GetText().Split(";")[0]);
+        }
+        public double GetTeachingTipOnEdgeVerticalOffset()
+        {
+            return double.Parse(GetTeachingTipOnEdgeOffsetTextblock().GetText().Split(";")[1]);
+        }
 
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {
@@ -393,6 +489,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             BlueSquare,
             Image,
             NoContent
+        }
+
+        public enum TitleContentOptions
+        {
+            No,
+            Small,
+            Long
+        }
+
+        public enum SubtitleContentOptions
+        {
+            No,
+            Small,
+            Long
         }
 
         public enum IconOptions

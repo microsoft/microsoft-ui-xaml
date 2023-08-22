@@ -5,6 +5,8 @@
 #include "common.h"
 #include "MenuBarItemFlyout.h"
 
+#include "MenuBarItemFlyout.properties.cpp"
+
 winrt::Control MenuBarItemFlyout::CreatePresenter()
 {
     m_presenter.set(__super::CreatePresenter());

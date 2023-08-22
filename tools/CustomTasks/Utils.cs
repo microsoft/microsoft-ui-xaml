@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+using System;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace CustomTasks
 {
     class Utils
     {
-        //The XmlWriter can't handle &#xE0E5 unless we escape/unescape the ampersand
+        //The XmlWriter can't handle &#xE70D unless we escape/unescape the ampersand
         public static string UnEscapeAmpersand(string s)
         {
             return s.Replace("&amp;", "&");
@@ -53,6 +52,44 @@ namespace CustomTasks
             }
 
             return fullPath;
+        }
+    }
+
+    static class TaskExtensions
+    {
+        public static void LogMessage(this Task task, string message, params object[] messageParams)
+        {
+            LogMessage(task, MessageImportance.Normal, message, messageParams);
+        }
+
+        public static void LogMessage(this Task task, MessageImportance messageImportance, string message, params object[] messageParams)
+        {
+            // If BuildEngine is null, we're not running in an MSBuild context,
+            // so we'll output to the console in that case.
+            // Otherwise, we'll use the Log object.
+            if (task.BuildEngine == null)
+            {
+                Console.WriteLine(string.Format(message, messageParams));
+            }
+            else
+            {
+                task.Log.LogMessage(messageImportance, message, messageParams);
+            }
+        }
+
+        public static void LogError(this Microsoft.Build.Utilities.Task task, string message, params object[] messageParams)
+        {
+            // If BuildEngine is null, we're not running in an MSBuild context,
+            // so we'll output to the console in that case.
+            // Otherwise, we'll use the Log object.
+            if (task.BuildEngine == null)
+            {
+                Console.WriteLine(string.Format(message, messageParams));
+            }
+            else
+            {
+                task.Log.LogError(message, messageParams);
+            }
         }
     }
 }

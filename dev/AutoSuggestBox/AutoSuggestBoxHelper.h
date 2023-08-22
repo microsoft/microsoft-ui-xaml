@@ -25,7 +25,6 @@ private:
 
     static void UpdateCornerRadius(const winrt::AutoSuggestBox& autoSuggestBox, bool isPopupOpen);
     static bool IsPopupOpenDown(const winrt::AutoSuggestBox& autoSuggestBox);
-    static winrt::IInspectable ResourceLookup(const winrt::Control& control, const winrt::IInspectable& key);
 };
 
 class AutoSuggestEventRevokers

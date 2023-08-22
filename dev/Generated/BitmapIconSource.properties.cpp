@@ -6,7 +6,12 @@
 #include "common.h"
 #include "BitmapIconSource.h"
 
-CppWinRTActivatableClassWithDPFactory(BitmapIconSource)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(BitmapIconSource)
+}
+
+#include "BitmapIconSource.g.cpp"
 
 GlobalDependencyProperty BitmapIconSourceProperties::s_ShowAsMonochromeProperty{ nullptr };
 GlobalDependencyProperty BitmapIconSourceProperties::s_UriSourceProperty{ nullptr };
@@ -28,7 +33,7 @@ void BitmapIconSourceProperties::EnsureProperties()
                 winrt::name_of<winrt::BitmapIconSource>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnShowAsMonochromePropertyChanged));
     }
     if (!s_UriSourceProperty)
     {
@@ -39,7 +44,7 @@ void BitmapIconSourceProperties::EnsureProperties()
                 winrt::name_of<winrt::BitmapIconSource>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Uri>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnUriSourcePropertyChanged));
     }
 }
 
@@ -50,9 +55,28 @@ void BitmapIconSourceProperties::ClearProperties()
     IconSource::ClearProperties();
 }
 
+void BitmapIconSourceProperties::OnShowAsMonochromePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::BitmapIconSource>();
+    winrt::get_self<BitmapIconSource>(owner)->OnPropertyChanged(args);
+}
+
+void BitmapIconSourceProperties::OnUriSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::BitmapIconSource>();
+    winrt::get_self<BitmapIconSource>(owner)->OnPropertyChanged(args);
+}
+
 void BitmapIconSourceProperties::ShowAsMonochrome(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<BitmapIconSource*>(this)->SetValue(s_ShowAsMonochromeProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool BitmapIconSourceProperties::ShowAsMonochrome()
@@ -62,7 +86,10 @@ bool BitmapIconSourceProperties::ShowAsMonochrome()
 
 void BitmapIconSourceProperties::UriSource(winrt::Uri const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<BitmapIconSource*>(this)->SetValue(s_UriSourceProperty, ValueHelper<winrt::Uri>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Uri BitmapIconSourceProperties::UriSource()

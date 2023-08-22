@@ -43,6 +43,21 @@ namespace RuntimeProfiler
         ProfId_ItemsRepeaterScrollHost,
         ProfId_TabView,
         ProfId_TabViewItem,
+        ProfId_ProgressBar,
+        ProfId_ProgressRing,
+        ProfId_NumberBox,
+        ProfId_RadialGradientBrush,
+        ProfId_InfoBar,
+        ProfId_Expander,
+        ProfId_PagerControl,
+        ProfId_BreadcrumbBar,
+        ProfId_BreadcrumbBarItem,
+        ProfId_PipsPager,
+        ProfId_ImageIcon,
+        ProfId_AnimatedIcon,
+        ProfId_InfoBadge,
+        ProfId_WebView2,
+        ProfId_MicaController,
         ProfId_Size // ProfId_Size is the last always. 
     } ProfilerClassId;
 
@@ -79,7 +94,6 @@ namespace RuntimeProfiler
             RuntimeProfiler::RegisterMethod(RuntimeProfiler::PG_Class, (UINT16)typeindex, (UINT16)memberindex, &__RuntimeProfiler_Counter); \
         } \
     }
-
 
 
 

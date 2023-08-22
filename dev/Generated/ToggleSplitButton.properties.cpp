@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ToggleSplitButton.h"
 
-CppWinRTActivatableClassWithDPFactory(ToggleSplitButton)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(ToggleSplitButton)
+}
+
+#include "ToggleSplitButton.g.cpp"
 
 GlobalDependencyProperty ToggleSplitButtonProperties::s_IsCheckedProperty{ nullptr };
 
@@ -48,7 +53,10 @@ void ToggleSplitButtonProperties::OnIsCheckedPropertyChanged(
 
 void ToggleSplitButtonProperties::IsChecked(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ToggleSplitButton*>(this)->SetValue(s_IsCheckedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool ToggleSplitButtonProperties::IsChecked()

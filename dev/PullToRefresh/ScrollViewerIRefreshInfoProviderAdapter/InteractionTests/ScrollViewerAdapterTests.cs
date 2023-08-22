@@ -40,7 +40,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
-        // [TestMethod] Disabled pending investigation of 11754081
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125 and internal issue 11754081
         public void DeconstructionHandlesCorrectlyTest()
         {
             using (var setup = new TestSetupHelper("ScrollViewerAdapter Tests")) // This literally clicks the button corresponding to the test page.

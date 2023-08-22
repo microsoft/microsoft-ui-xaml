@@ -8,31 +8,39 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="AppBarButtonBackground" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
-            <StaticResource x:Key="AppBarButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
-            <StaticResource x:Key="AppBarButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="AppBarButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="AppBarButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarButtonBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="AppBarButtonBackgroundSubMenuOpened" ResourceKey="SystemControlHighlightListAccentLowBrush" />
-            <StaticResource x:Key="AppBarButtonForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <StaticResource x:Key="AppBarButtonBorderBrushSubMenuOpened" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarButtonSubItemChevronForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
-            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="AppBarButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarButtonBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonBorderBrushDisabled" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForeground" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="TextFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundSubMenuOpened" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonForegroundSubMenuOpened" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundSubMenuOpened" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonBorderBrushSubMenuOpened" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForeground" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundPressed" ResourceKey="TextFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundSubMenuOpened" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
+            <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE974;</x:String>
+            <x:String x:Key="AppBarButtonOverflowFlyoutGlyph">&#xE974;</x:String>
+            <x:Double x:Key="AppBarButtonSubItemChevronFontSize">8</x:Double>
+            <x:Double x:Key="AppBarButtonSecondarySubItemChevronFontSize">12</x:Double>
+            <Thickness x:Key="AppBarButtonSubItemChevronMargin">-23,20,12,0</Thickness>
+            <Thickness x:Key="AppBarButtonSubItemChevronLabelOnRightMargin">-7,20,12,0</Thickness>
+            <Thickness x:Key="AppBarButtonSecondarySubItemChevronMargin">0,0,16,0</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="AppBarButtonBackground" ResourceKey="SystemControlTransparentBrush" />
@@ -60,46 +68,72 @@
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
+            <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE974;</x:String>
+            <x:String x:Key="AppBarButtonOverflowFlyoutGlyph">&#xE974;</x:String>
+            <x:Double x:Key="AppBarButtonSubItemChevronFontSize">8</x:Double>
+            <x:Double x:Key="AppBarButtonSecondarySubItemChevronFontSize">12</x:Double>
+            <Thickness x:Key="AppBarButtonSubItemChevronMargin">-23,20,12,0</Thickness>
+            <Thickness x:Key="AppBarButtonSubItemChevronLabelOnRightMargin">-7,20,12,0</Thickness>
+            <Thickness x:Key="AppBarButtonSecondarySubItemChevronMargin">0,0,16,0</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="AppBarButtonBackground" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
-            <StaticResource x:Key="AppBarButtonBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
-            <StaticResource x:Key="AppBarButtonBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-            <StaticResource x:Key="AppBarButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="AppBarButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarButtonBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarButtonBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarButtonBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
-            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="AppBarButtonBackgroundSubMenuOpened" ResourceKey="SystemControlHighlightListAccentLowBrush" />
-            <StaticResource x:Key="AppBarButtonForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseMediumBrush" />
-            <StaticResource x:Key="AppBarButtonBorderBrushSubMenuOpened" ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="AppBarButtonSubItemChevronForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
-            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundSubMenuOpened" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+            <StaticResource x:Key="AppBarButtonBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundDisabled" ResourceKey="SubtleFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarButtonBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonBorderBrushDisabled" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForeground" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundPressed" ResourceKey="TextFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <StaticResource x:Key="AppBarButtonBackgroundSubMenuOpened" ResourceKey="SubtleFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonForegroundSubMenuOpened" ResourceKey="TextFillColorPrimaryBrush" />
+            <StaticResource x:Key="AppBarButtonKeyboardAcceleratorTextForegroundSubMenuOpened" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonBorderBrushSubMenuOpened" ResourceKey="ControlFillColorTransparentBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForeground" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundPressed" ResourceKey="TextFillColorTertiaryBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundSubMenuOpened" ResourceKey="TextFillColorSecondaryBrush" />
+            <StaticResource x:Key="AppBarButtonSubItemChevronForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+            <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
+            <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE974;</x:String>
+            <x:String x:Key="AppBarButtonOverflowFlyoutGlyph">&#xE974;</x:String>
+            <x:Double x:Key="AppBarButtonSubItemChevronFontSize">8</x:Double>
+            <x:Double x:Key="AppBarButtonSecondarySubItemChevronFontSize">12</x:Double>
+            <Thickness x:Key="AppBarButtonSubItemChevronMargin">-23,20,12,0</Thickness>
+            <Thickness x:Key="AppBarButtonSubItemChevronLabelOnRightMargin">-7,20,12,0</Thickness>
+            <Thickness x:Key="AppBarButtonSecondarySubItemChevronMargin">0,0,16,0</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <Thickness x:Key="AppBarButtonContentViewboxMargin">12,10,0,10</Thickness>
+    <Thickness x:Key="AppBarButtonContentViewboxMargin">12,16,0,10</Thickness>
     <Thickness x:Key="AppBarButtonContentViewboxCompactMargin">0,12,0,12</Thickness>
-    <Thickness x:Key="AppBarButtonContentViewboxCollapsedMargin">0,12,0,4</Thickness>
+    <Thickness x:Key="AppBarButtonContentViewboxCollapsedMargin">0,16,0,2</Thickness>
     <Thickness x:Key="AppBarButtonOverflowTextTouchMargin">0,9,0,12</Thickness>
     <Thickness x:Key="AppBarButtonOverflowTextLabelPadding">0,5,0,8</Thickness>
     <Thickness x:Key="AppBarButtonTextLabelMargin">2,0,2,8</Thickness>
-    <Thickness x:Key="AppBarButtonTextLabelOnRightMargin">8,11,12,13</Thickness>
+    <Thickness x:Key="AppBarButtonTextLabelOnRightMargin">8,16,12,10</Thickness>
+    <Thickness x:Key="AppBarButtonInnerBorderMargin">2,6,2,6</Thickness>
+    <Thickness x:Key="AppBarButtonInnerBorderCompactMargin">2,6,2,22</Thickness>
+    <Thickness x:Key="AppBarButtonInnerBorderOverflowMargin">4,0,4,0</Thickness>
+
+    <Style TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}" />
+
+    <Style x:Key="AppBarButtonOverflowStyle" TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Width" Value="NaN" />
+    </Style>
 
     <!-- LabelOnRightStyle is retired since RS3, We still need it for RS2 or RS3 -->
-    <Style TargetType="AppBarButton">
+    <Style x:Key="DefaultAppBarButtonStyle" TargetType="AppBarButton">
         <Setter Property="Background" Value="{ThemeResource AppBarButtonBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource AppBarButtonForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource AppBarButtonBorderBrush}" />
@@ -109,18 +143,18 @@
         <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="Width" Value="68" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+        <Setter Property="FocusVisualMargin" Value="-3" />
         <Setter Property="AllowFocusOnInteraction" Value="False" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <contract6Present:Setter Property="KeyboardAcceleratorPlacementMode" Value="Hidden" />
+        <contract7Present:Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="AppBarButton">
                     <Grid x:Name="Root"
+                        Background="Transparent"
                         MinWidth="{TemplateBinding MinWidth}"
-                        MaxWidth="{TemplateBinding MaxWidth}"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}" >
+                        MaxWidth="{TemplateBinding MaxWidth}">
                         <contract5NotPresent:Grid.Resources>
                             <Style x:Name="LabelOnRightStyle" TargetType="AppBarButton">
                                 <Setter Property="Width" Value="NaN" />
@@ -130,6 +164,9 @@
                             <VisualStateGroup x:Name="ApplicationViewStates">
                                 <VisualState x:Name="FullSize" />
                                 <VisualState x:Name="Compact">
+                                    <VisualState.Setters>
+                                        <Setter Target="AppBarButtonInnerBorder.Margin" Value="{StaticResource AppBarButtonInnerBorderCompactMargin}" />
+                                    </VisualState.Setters>
 
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TextLabel" Storyboard.TargetProperty="Visibility">
@@ -158,6 +195,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TextLabel" Storyboard.TargetProperty="Margin">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource AppBarButtonTextLabelOnRightMargin}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SubItemChevron" Storyboard.TargetProperty="Margin">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource AppBarButtonSubItemChevronLabelOnRightMargin}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="LabelCollapsed">
@@ -174,6 +214,7 @@
                                 <VisualState x:Name="Overflow">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
+                                        <Setter Target="AppBarButtonInnerBorder.Margin" Value="{StaticResource AppBarButtonInnerBorderOverflowMargin}" />
                                         <Setter Target="ContentViewbox.Visibility" Value="Collapsed" />
                                         <Setter Target="TextLabel.Visibility" Value="Collapsed" />
                                         <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
@@ -182,6 +223,7 @@
                                 <VisualState x:Name="OverflowWithToggleButtons">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
+                                        <Setter Target="AppBarButtonInnerBorder.Margin" Value="{StaticResource AppBarButtonInnerBorderOverflowMargin}" />
                                         <Setter Target="ContentViewbox.Visibility" Value="Collapsed" />
                                         <Setter Target="TextLabel.Visibility" Value="Collapsed" />
                                         <Setter Target="OverflowTextLabel.Visibility" Value="Visible" />
@@ -191,6 +233,7 @@
                                 <VisualState x:Name="OverflowWithMenuIcons">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
+                                        <Setter Target="AppBarButtonInnerBorder.Margin" Value="{StaticResource AppBarButtonInnerBorderOverflowMargin}" />
                                         <Setter Target="ContentViewbox.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ContentViewbox.VerticalAlignment" Value="Center" />
                                         <Setter Target="ContentViewbox.Width" Value="16" />
@@ -204,6 +247,7 @@
                                 <VisualState x:Name="OverflowWithToggleButtonsAndMenuIcons">
                                     <VisualState.Setters>
                                         <Setter Target="ContentRoot.MinHeight" Value="0" />
+                                        <Setter Target="AppBarButtonInnerBorder.Margin" Value="{StaticResource AppBarButtonInnerBorderOverflowMargin}" />
                                         <Setter Target="ContentViewbox.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ContentViewbox.VerticalAlignment" Value="Center" />
                                         <Setter Target="ContentViewbox.Width" Value="16" />
@@ -217,109 +261,87 @@
 
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal">
-
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                    </Storyboard>
-                                </VisualState>
+                                <VisualState x:Name="Normal"/>
 
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonBackgroundPointerOver}" />
-                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPointerOver}" />
-                                        <Setter Target="AppBarButtonInnerBorder.Stroke" Value="{ThemeResource AppBarButtonBorderBrushPointerOver}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource AppBarButtonBackgroundPointerOver}" />
+                                        <Setter Target="AppBarButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPointerOver}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}" />
+                                        <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundPointerOver}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundPointerOver}" />
                                     </VisualState.Setters>
-
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                    </Storyboard>
                                 </VisualState>
 
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonBackgroundPressed}" />
-                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPressed}" />
-                                        <Setter Target="AppBarButtonInnerBorder.Stroke" Value="{ThemeResource AppBarButtonBorderBrushPressed}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource AppBarButtonBackgroundPressed}" />
+                                        <Setter Target="AppBarButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPressed}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}" />
+                                        <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundPressed}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundPressed}" />
                                     </VisualState.Setters>
-
-                                    <Storyboard>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="OverflowTextLabel" />
-                                    </Storyboard>
                                 </VisualState>
 
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonBackgroundDisabled}" />
-                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushDisabled}" />
-                                        <Setter Target="AppBarButtonInnerBorder.Stroke" Value="{ThemeResource AppBarButtonBorderBrushDisabled}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource AppBarButtonBackgroundDisabled}" />
+                                        <Setter Target="AppBarButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushDisabled}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarButtonForegroundDisabled}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundDisabled}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundDisabled}" />
+                                        <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundDisabled}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundDisabled}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OverflowNormal">
-
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
+                                    <VisualState.Setters>
+                                        <Setter Target="SubItemChevron.Visibility" Value="Collapsed" />
+                                        <Setter Target="OverflowSubItemChevron.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OverflowPointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonBackgroundPointerOver}" />
-                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPointerOver}" />
-                                        <Setter Target="AppBarButtonInnerBorder.Stroke" Value="{ThemeResource AppBarButtonBorderBrushPointerOver}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource AppBarButtonBackgroundPointerOver}" />
+                                        <Setter Target="AppBarButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPointerOver}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPointerOver}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundPointerOver}" />
                                         <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundPointerOver}" />
+                                        <Setter Target="SubItemChevron.Visibility" Value="Collapsed" />
+                                        <Setter Target="OverflowSubItemChevron.Visibility" Value="Visible" />
                                     </VisualState.Setters>
-
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="OverflowPressed">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonBackgroundPressed}" />
-                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPressed}" />
-                                        <Setter Target="AppBarButtonInnerBorder.Stroke" Value="{ThemeResource AppBarButtonBorderBrushPressed}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource AppBarButtonBackgroundPressed}" />
+                                        <Setter Target="AppBarButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPressed}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundPressed}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundPressed}" />
                                         <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundPressed}" />
+                                        <Setter Target="SubItemChevron.Visibility" Value="Collapsed" />
+                                        <Setter Target="OverflowSubItemChevron.Visibility" Value="Visible" />
                                     </VisualState.Setters>
-
-                                    <Storyboard>
-                                        <PointerDownThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="OverflowSubMenuOpened">
                                     <VisualState.Setters>
-                                        <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonBackgroundSubMenuOpened}" />
-                                        <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushSubMenuOpened}" />
-                                        <Setter Target="AppBarButtonInnerBorder.Stroke" Value="{ThemeResource AppBarButtonBorderBrushSubMenuOpened}" />
+                                        <Setter Target="AppBarButtonInnerBorder.Background" Value="{ThemeResource AppBarButtonBackgroundSubMenuOpened}" />
+                                        <Setter Target="AppBarButtonInnerBorder.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushSubMenuOpened}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource AppBarButtonForegroundSubMenuOpened}" />
                                         <Setter Target="TextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundSubMenuOpened}" />
                                         <Setter Target="OverflowTextLabel.Foreground" Value="{ThemeResource AppBarButtonForegroundSubMenuOpened}" />
                                         <contract6Present:Setter Target="KeyboardAcceleratorTextLabel.Foreground" Value="{ThemeResource AppBarButtonKeyboardAcceleratorTextForegroundSubMenuOpened}" />
                                         <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource AppBarButtonSubItemChevronForegroundSubMenuOpened}" />
+                                        <Setter Target="SubItemChevron.Visibility" Value="Collapsed" />
+                                        <Setter Target="OverflowSubItemChevron.Visibility" Value="Visible" />
                                     </VisualState.Setters>
-
-                                    <Storyboard>
-                                        <PointerUpThemeAnimation Storyboard.TargetName="ContentRoot" />
-                                    </Storyboard>
                                 </VisualState>
 
                             </VisualStateGroup>
@@ -350,14 +372,28 @@
                                 <VisualState x:Name="NoFlyout" />
                                 <VisualState x:Name="HasFlyout">
                                     <VisualState.Setters>
-                                        <Setter Target="SubItemChevron.Visibility" Value="Visible" />
+                                        <Setter Target="SubItemChevronPanel.Visibility" Value="{ThemeResource AppBarButtonHasFlyoutChevronVisibility}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
 
                         </VisualStateManager.VisualStateGroups>
-                        <Rectangle x:Name="AppBarButtonInnerBorder" StrokeThickness="1" Stroke="{TemplateBinding BorderBrush}"/>
-                        <Grid x:Name="ContentRoot" MinHeight="{ThemeResource AppBarThemeMinHeight}">
+                        <Border x:Name="AppBarButtonInnerBorder"                                       
+                                Margin="{ThemeResource AppBarButtonInnerBorderMargin}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                                Control.IsTemplateFocusTarget="True">
+
+                            <contract7Present:Border.BackgroundTransition>
+                                <contract7Present:BrushTransition Duration="0:0:0.083" />
+                            </contract7Present:Border.BackgroundTransition>
+                        </Border>
+
+                        <Grid x:Name="ContentRoot"
+                            MinHeight="{ThemeResource AppBarThemeMinHeight}" >
 
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -411,19 +447,32 @@
                                 Foreground="{ThemeResource AppBarButtonKeyboardAcceleratorTextForeground}"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
+                                HorizontalTextAlignment="Right"
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw" />
-                            <FontIcon x:Name="SubItemChevron"
+                            <Grid x:Name="SubItemChevronPanel"
                                 Grid.Column="2"
-                                Glyph="&#xE0E3;"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                FontSize="12"
-                                AutomationProperties.AccessibilityView="Raw"
-                                Foreground="{ThemeResource MenuFlyoutSubItemChevron}"
-                                Margin="12,0,12,0"
-                                MirroredWhenRightToLeft="True"
-                                Visibility="Collapsed" />
-
+                                Visibility="Collapsed">
+                                <FontIcon x:Name="SubItemChevron"
+                                    Glyph="{ThemeResource AppBarButtonFlyoutGlyph}"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    FontSize="{ThemeResource AppBarButtonSubItemChevronFontSize}"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    Foreground="{ThemeResource AppBarButtonSubItemChevronForeground}"
+                                    VerticalAlignment="Top"
+                                    Margin="{ThemeResource AppBarButtonSubItemChevronMargin}"
+                                    MirroredWhenRightToLeft="True"/>
+                                <FontIcon x:Name="OverflowSubItemChevron"
+                                    Glyph="{ThemeResource AppBarButtonOverflowFlyoutGlyph}"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    FontSize="{ThemeResource AppBarButtonSecondarySubItemChevronFontSize}"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    Foreground="{ThemeResource AppBarButtonSubItemChevronForeground}"
+                                    VerticalAlignment="Center"
+                                    Margin="{ThemeResource AppBarButtonSecondarySubItemChevronMargin}"
+                                    MirroredWhenRightToLeft="True"
+                                    Visibility="Collapsed"/>
+                            </Grid>
                         </Grid>
 
                     </Grid>

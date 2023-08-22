@@ -17,6 +17,10 @@ public:
     auto begin() const { return m_elementMap.begin(); }
     auto end() const { return m_elementMap.end(); }
 
+#ifdef _DEBUG
+    auto IsEmpty() { return m_elementMap.size() == 0; }
+#endif
+
 private:
     ItemsRepeater* m_owner{ nullptr };
     std::map<std::wstring, tracker_ref<winrt::UIElement>> m_elementMap;

@@ -20,9 +20,13 @@ namespace IXMPTestApp.Tests
     [TestClass]
     public class MetadataProviderTests
     {
+        
+
         [TestMethod]
+
         public void CanLoadXamlFragments()
         {
+#if MUX_PRERELEASE
             var dispatcher = CoreApplication.MainView.Dispatcher;
             dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
@@ -55,30 +59,36 @@ namespace IXMPTestApp.Tests
                         <Rectangle Width='100' Height='100' Fill='Red' />
                     </controls:ParallaxView>");
 
-                Log.Comment("Loading ItemsRepeater...");
-                XamlReader.Load(@"
-                    <controls:ItemsRepeaterScrollHost
-                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
-                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-                        xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
-                        <ScrollViewer>
-                            <controls:ItemsRepeater Name='repeater'>
-                                <controls:ItemsRepeater.Layout>
-                                    <controls:StackLayout Orientation='Vertical' Spacing='10' />
-                                </controls:ItemsRepeater.Layout>
-                                <controls:ItemsRepeater.ItemTemplate>
-                                    <controls:RecyclingElementFactory>
-                                        <controls:RecyclingElementFactory.RecyclePool>
-                                            <controls:RecyclePool />
-                                        </controls:RecyclingElementFactory.RecyclePool>
-                                        <DataTemplate x:Key='Primary'>
-                                            <TextBlock Text='{Binding}' />
-                                        </DataTemplate>
-                                    </controls:RecyclingElementFactory>
-                                </controls:ItemsRepeater.ItemTemplate>
-                            </controls:ItemsRepeater>
-                        </ScrollViewer>
-                    </controls:ItemsRepeaterScrollHost>");
+
+                // This test case is disabled in Debug configuration due to:
+                // Bug #1725: RecyclingElementFactory.Templates cannot be set from Xaml on RS4 and below in debug configuration (using reflection provider) 
+                if (!PlatformConfiguration.IsDebugBuildConfiguration())
+                {
+                    Log.Comment("Loading ItemsRepeater...");
+                    XamlReader.Load(@"
+                        <controls:ItemsRepeaterScrollHost
+                            xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                            xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                            xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                            <ScrollViewer>
+                                <controls:ItemsRepeater Name='repeater'>
+                                    <controls:ItemsRepeater.Layout>
+                                        <controls:StackLayout Orientation='Vertical' Spacing='10' />
+                                    </controls:ItemsRepeater.Layout>
+                                    <controls:ItemsRepeater.ItemTemplate>
+                                        <controls:RecyclingElementFactory>
+                                            <controls:RecyclingElementFactory.RecyclePool>
+                                                <controls:RecyclePool />
+                                            </controls:RecyclingElementFactory.RecyclePool>
+                                            <DataTemplate x:Key='Primary'>
+                                                <TextBlock Text='{Binding}' />
+                                            </DataTemplate>
+                                        </controls:RecyclingElementFactory>
+                                    </controls:ItemsRepeater.ItemTemplate>
+                                </controls:ItemsRepeater>
+                            </ScrollViewer>
+                        </controls:ItemsRepeaterScrollHost>");
+                }
 
                 Log.Comment("Loading SwipeControl...");
                 XamlReader.Load(@"
@@ -92,7 +102,7 @@ namespace IXMPTestApp.Tests
                         xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
                         <controls:SwipeControl.Resources>
                             <controls:SymbolIconSource x:Key='SymbolIcon' Symbol='Camera'/>
-                            <controls:FontIconSource x:Key='FontIcon' Glyph='&#xE115;' FontWeight='Normal'/>
+                            <controls:FontIconSource x:Key='FontIcon' Glyph='&#xE713;' FontWeight='Normal'/>
                             <controls:PathIconSource x:Key='PathIcon' Data='F1 M 16,12 20,2L 20,16 1,16'/>
                             <controls:BitmapIconSource x:Key='BitmapIcon' UriSource='ms-appx:///Assets/StoreLogo.png' ShowAsMonochrome='False' />
                         </controls:SwipeControl.Resources>
@@ -152,7 +162,7 @@ namespace IXMPTestApp.Tests
                             <controls:NavigationViewItem x:Name='MoviesItem' Content='Movies' Icon='Video' />
                             <controls:NavigationViewItem x:Name='TVItem' Content='TV' Icon='Slideshow' />
                         </controls:NavigationView.MenuItems>
-                        <TextBlock HorizontalAlignment='Center' VerticalAlignment='Center'>Content</TextBlock>
+                        <TextBlock HorizontalAlignment='Center' VerticalAlignment='Center' Text='Content'/>
                     </controls:NavigationView>");
 
                 Log.Comment("Loading PersonPicture...");
@@ -164,6 +174,8 @@ namespace IXMPTestApp.Tests
                                     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'/>");
 
             }).AsTask().Wait();
+
+#endif
         }
     }
 }

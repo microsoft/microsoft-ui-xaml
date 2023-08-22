@@ -15,21 +15,27 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\AnimatedIconSource.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\BitmapIconSource.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\FontIconSource.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\IconSource.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ImageIconSource.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\PathIconSource.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\SymbolIconSource.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedIconSource.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BitmapIconSource.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FontIconSource.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)IconSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ImageIconSource.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)PathIconSource.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SymbolIconSource.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedIconSource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)BitmapIconSource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FontIconSource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)IconSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ImageIconSource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)PathIconSource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SymbolIconSource.h" />
   </ItemGroup>

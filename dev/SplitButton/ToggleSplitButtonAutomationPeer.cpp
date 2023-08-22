@@ -8,6 +8,8 @@
 #include "ToggleSplitButtonAutomationPeer.h"
 #include "Utils.h"
 
+#include "ToggleSplitButtonAutomationPeer.properties.cpp"
+
 ToggleSplitButtonAutomationPeer::ToggleSplitButtonAutomationPeer(winrt::ToggleSplitButton const& owner)
     : ReferenceTracker(owner)
 {

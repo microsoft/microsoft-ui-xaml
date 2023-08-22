@@ -6,28 +6,11 @@
 #include "common.h"
 #include "MUXControlsTestHooks.h"
 
-CppWinRTActivatableClassWithBasicFactory(MUXControlsTestHooks)
-
-
-MUXControlsTestHooksProperties::MUXControlsTestHooksProperties()
-    : m_loggingMessageEventSource{static_cast<MUXControlsTestHooks*>(this)}
+namespace winrt::Microsoft::UI::Private::Controls
 {
+    CppWinRTActivatableClassWithBasicFactory(MUXControlsTestHooks)
 }
 
-void MUXControlsTestHooksProperties::EnsureProperties()
-{
-}
+#include "MUXControlsTestHooks.g.cpp"
 
-void MUXControlsTestHooksProperties::ClearProperties()
-{
-}
 
-winrt::event_token MUXControlsTestHooksProperties::LoggingMessage(winrt::TypedEventHandler<winrt::IInspectable, winrt::MUXControlsTestHooksLoggingMessageEventArgs> const& value)
-{
-    return m_loggingMessageEventSource.add(value);
-}
-
-void MUXControlsTestHooksProperties::LoggingMessage(winrt::event_token const& token)
-{
-    m_loggingMessageEventSource.remove(token);
-}

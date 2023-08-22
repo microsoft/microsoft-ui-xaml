@@ -30,7 +30,7 @@
             <Button x:Name="RVRefreshRequestedComboBoxSwitcher" AutomationProperties.Name="RVRefreshRequestedComboBoxSwitcher" Content="switch" Margin="2"/>
         </StackPanel>
         <muxcontrols:RefreshContainer x:Name="RefreshContainer" VerticalAlignment="Center" HorizontalAlignment="Center">
-        <ListView x:Name="listView" Width="400" Height="300" AutomationProperties.Name="listView" Background="Bisque">
+        <ListView x:Name="listView" Width="400" Height="300" AutomationProperties.Name="listView" BorderBrush="Cyan" BorderThickness="2">
             <ListView.Header>
                 <StackPanel Background="Red">
                 <TextBlock Text="ListView header"/>

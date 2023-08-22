@@ -22,12 +22,12 @@ void QPCTimer::Reset()
 int QPCTimer::DurationInMilliSeconds() const
 {
     LARGE_INTEGER now;
-    auto success = QueryPerformanceCounter(&now);
+    const auto success = QueryPerformanceCounter(&now);
     int elapsedMilliSeconds = 0;
 
     if (success)
     {
-        double elapsedSeconds = static_cast<DOUBLE>(now.QuadPart - m_start.QuadPart) / static_cast<DOUBLE>(m_frequency.QuadPart);
+        const double elapsedSeconds = static_cast<DOUBLE>(now.QuadPart - m_start.QuadPart) / static_cast<DOUBLE>(m_frequency.QuadPart);
         elapsedMilliSeconds = static_cast<int>(elapsedSeconds * 1000);
     }
     else

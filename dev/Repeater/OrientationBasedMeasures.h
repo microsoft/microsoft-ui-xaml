@@ -17,14 +17,14 @@ public:
 
     // Major - Scrolling/virtualizing direction
     // Minor - Opposite direction
-    float winrt::Size::* Major() const;
-    float winrt::Size::* Minor() const;
+    float& Major(const winrt::Size& size);
+    float& Minor(const winrt::Size& size);
 
-    float winrt::Rect::* MajorSize() const;
-    float winrt::Rect::* MinorSize() const;
-    float winrt::Rect::* MajorStart() const;
+    float& MajorSize(const winrt::Rect& rect);
+    float& MinorSize(const winrt::Rect& rect);
+    float& MajorStart(const winrt::Rect& rect);
     float MajorEnd(const winrt::Rect& rect) const;
-    float winrt::Rect::* MinorStart() const;
+    float& MinorStart(const winrt::Rect& rect);
     float MinorEnd(const winrt::Rect& rect) const;
 
     winrt::Rect MinorMajorRect(float minor, float major, float minorSize, float majorSize);

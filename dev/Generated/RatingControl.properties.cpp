@@ -6,7 +6,12 @@
 #include "common.h"
 #include "RatingControl.h"
 
-CppWinRTActivatableClassWithDPFactory(RatingControl)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(RatingControl)
+}
+
+#include "RatingControl.g.cpp"
 
 GlobalDependencyProperty RatingControlProperties::s_CaptionProperty{ nullptr };
 GlobalDependencyProperty RatingControlProperties::s_InitialSetValueProperty{ nullptr };
@@ -193,7 +198,10 @@ void RatingControlProperties::OnValuePropertyChanged(
 
 void RatingControlProperties::Caption(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingControl*>(this)->SetValue(s_CaptionProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring RatingControlProperties::Caption()
@@ -203,7 +211,10 @@ winrt::hstring RatingControlProperties::Caption()
 
 void RatingControlProperties::InitialSetValue(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingControl*>(this)->SetValue(s_InitialSetValueProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int RatingControlProperties::InitialSetValue()
@@ -213,7 +224,10 @@ int RatingControlProperties::InitialSetValue()
 
 void RatingControlProperties::IsClearEnabled(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingControl*>(this)->SetValue(s_IsClearEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool RatingControlProperties::IsClearEnabled()
@@ -223,7 +237,10 @@ bool RatingControlProperties::IsClearEnabled()
 
 void RatingControlProperties::IsReadOnly(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingControl*>(this)->SetValue(s_IsReadOnlyProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool RatingControlProperties::IsReadOnly()
@@ -233,7 +250,10 @@ bool RatingControlProperties::IsReadOnly()
 
 void RatingControlProperties::ItemInfo(winrt::RatingItemInfo const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingControl*>(this)->SetValue(s_ItemInfoProperty, ValueHelper<winrt::RatingItemInfo>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::RatingItemInfo RatingControlProperties::ItemInfo()
@@ -243,7 +263,10 @@ winrt::RatingItemInfo RatingControlProperties::ItemInfo()
 
 void RatingControlProperties::MaxRating(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingControl*>(this)->SetValue(s_MaxRatingProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int RatingControlProperties::MaxRating()
@@ -253,7 +276,10 @@ int RatingControlProperties::MaxRating()
 
 void RatingControlProperties::PlaceholderValue(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingControl*>(this)->SetValue(s_PlaceholderValueProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double RatingControlProperties::PlaceholderValue()
@@ -263,7 +289,10 @@ double RatingControlProperties::PlaceholderValue()
 
 void RatingControlProperties::Value(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RatingControl*>(this)->SetValue(s_ValueProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double RatingControlProperties::Value()

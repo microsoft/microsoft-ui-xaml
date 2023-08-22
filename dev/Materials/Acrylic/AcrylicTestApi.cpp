@@ -6,6 +6,8 @@
 #include "AcrylicTestApi.h"
 #include "AcrylicBrush.h"
 
+#include "AcrylicTestApi.properties.cpp"
+
 winrt::AcrylicBrush AcrylicTestApi::AcrylicBrush()
 {
     return m_acrylicBrush;

@@ -15,7 +15,7 @@ public:
         IFlowLayoutAlgorithmDelegates* callbacks);
     void UninitializeForContext(const winrt::VirtualizingLayoutContext& context);
     void OnElementMeasured(int elementIndex, double majorSize, double minorSize);
-    void OnArrangeLayoutEnd();
+    void OnMeasureStart();
 
     ::FlowLayoutAlgorithm& FlowAlgorithm() { return m_flowAlgorithm; }
     double TotalElementSize() const { return m_totalElementSize; }

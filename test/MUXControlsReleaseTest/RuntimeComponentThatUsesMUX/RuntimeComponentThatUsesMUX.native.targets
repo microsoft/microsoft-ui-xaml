@@ -1,0 +1,14 @@
+﻿<!--
+  Copyright (c) Microsoft Corporation. Licensed under the MIT License
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_WinmdDir>$(MSBuildThisFileDirectory)..\..\lib\uap10.0\</_WinmdDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="$(_WinmdDir)*.winmd">
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  <Import Project="$(MSBuildThisFileDirectory)../RuntimeComponentThatUsesMUX.targets"/>
+</Project>

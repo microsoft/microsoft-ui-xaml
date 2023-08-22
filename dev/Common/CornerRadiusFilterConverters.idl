@@ -1,7 +1,7 @@
 ﻿namespace MU_XCP_NAMESPACE
 {
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 [default_interface]
 runtimeclass CornerRadiusFilterConverter : Windows.UI.Xaml.DependencyObject, Windows.UI.Xaml.Data.IValueConverter
@@ -10,11 +10,14 @@ runtimeclass CornerRadiusFilterConverter : Windows.UI.Xaml.DependencyObject, Win
 
     [MUX_DEFAULT_VALUE("winrt::CornerRadiusFilterKind::None")]
     CornerRadiusFilterKind Filter{ get; set; };
+    [MUX_DEFAULT_VALUE("1.0")]
+    Double Scale{ get; set; };
 
     static Windows.UI.Xaml.DependencyProperty FilterProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ScaleProperty{ get; };
 };
 
-[WUXC_VERSION_MUXONLY]
+[MUX_PUBLIC]
 [webhosthidden]
 enum CornerRadiusFilterKind
 {

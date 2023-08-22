@@ -7,7 +7,7 @@
 #include "TreeViewListAutomationPeer.h"
 #include "TreeViewItemDataAutomationPeer.h"
 
-CppWinRTActivatableClassWithBasicFactory(TreeViewListAutomationPeer);
+#include "TreeViewListAutomationPeer.properties.cpp"
 
 TreeViewListAutomationPeer::TreeViewListAutomationPeer(winrt::TreeViewList const& owner)
     : ReferenceTracker(owner)
@@ -54,9 +54,9 @@ bool TreeViewListAutomationPeer::CanSelectMultiple()
     return IsMultiselect()? true: __super::CanSelectMultiple();
 }
 
-bool TreeViewListAutomationPeer::IsSelectionRequried()
+bool TreeViewListAutomationPeer::IsSelectionRequired()
 {
-    return IsMultiselect()? false : __super::CanSelectMultiple();
+    return false;
 }
 
 winrt::com_array<winrt::Windows::UI::Xaml::Automation::Provider::IRawElementProviderSimple> TreeViewListAutomationPeer::GetSelection()

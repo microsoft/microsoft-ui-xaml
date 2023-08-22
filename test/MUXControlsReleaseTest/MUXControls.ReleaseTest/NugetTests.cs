@@ -26,14 +26,14 @@ namespace MUXControls.ReleaseTest
         [TestProperty("Platform", "Any")]
         public static void ClassInitialize(TestContext testContext)
         {
-            TestEnvironment.Initialize(testContext, TestType.Nuget);
+            TestEnvironment.Initialize(testContext, TestApplicationInfo.NugetPackageTestApp);
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
             PGOManager.PGOSweepIfInstrumented(TestEnvironment.TestContext.TestName);
-            TestEnvironment.AssemblyCleanupWorker(TestType.Nuget);
+            TestEnvironment.AssemblyCleanupWorker(TestApplicationInfo.NugetPackageTestApp);
         }
 
         [TestMethod]
@@ -44,6 +44,9 @@ namespace MUXControls.ReleaseTest
                 var textBlock = new TextBlock(FindElement.ByName("TestTextBlock"));
                 Verify.IsNotNull(textBlock);
                 Verify.AreEqual(textBlock.DocumentText, "Loaded");
+
+                var button = new Button(FindElement.ById("RequestRefresh"));
+                button.Invoke();
             }
         }
 

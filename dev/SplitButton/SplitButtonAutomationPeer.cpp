@@ -8,6 +8,8 @@
 #include "SplitButtonAutomationPeer.h"
 #include "Utils.h"
 
+#include "SplitButtonAutomationPeer.properties.cpp"
+
 SplitButtonAutomationPeer::SplitButtonAutomationPeer(winrt::SplitButton const& owner)
     : ReferenceTracker(owner)
 {
@@ -84,6 +86,6 @@ void SplitButtonAutomationPeer::Invoke()
 {
     if (auto splitButton = GetImpl())
     {
-        splitButton->OnClickPrimary(nullptr, nullptr);
+        splitButton->Invoke();
     }
 }

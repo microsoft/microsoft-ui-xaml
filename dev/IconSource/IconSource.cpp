@@ -6,3 +6,45 @@
 #include "SharedHelpers.h"
 
 #include "IconSource.h"
+#include <Vector.h>
+
+winrt::IconElement IconSource::CreateIconElement()
+{
+    auto const element = CreateIconElementCore();
+    m_createdIconElements.push_back(winrt::make_weak<winrt::IconElement>(element));
+    return element;
+}
+
+void IconSource::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (auto const iconProp = GetIconElementPropertyCore(args.Property()))
+    {
+        m_createdIconElements.erase(std::remove_if(m_createdIconElements.begin(), m_createdIconElements.end(),
+            [iconProp, args, this](winrt::weak_ref<winrt::IconElement> weakElement)
+        {
+            auto const element = weakElement.get();
+            if (element)
+            {
+                if (ReadLocalValue(args.Property()) == winrt::DependencyProperty::UnsetValue())
+                {
+                    element.ClearValue(iconProp);
+                }
+                else
+                {
+                    element.SetValue(iconProp, args.NewValue());
+                }
+            }
+            return !element;
+        }), m_createdIconElements.end());
+    }
+}
+
+winrt::DependencyProperty IconSource::GetIconElementPropertyCore(winrt::DependencyProperty sourceProperty)
+{
+    if (sourceProperty == s_ForegroundProperty)
+    {
+        return winrt::IconElement::ForegroundProperty();
+    }
+
+    return nullptr;
+}

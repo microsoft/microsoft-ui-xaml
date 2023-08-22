@@ -6,28 +6,11 @@
 #include "common.h"
 #include "RepeaterTestHooks.h"
 
-CppWinRTActivatableClassWithBasicFactory(RepeaterTestHooks)
-
-
-RepeaterTestHooksProperties::RepeaterTestHooksProperties()
-    : m_buildTreeCompletedEventSource{static_cast<RepeaterTestHooks*>(this)}
+namespace winrt::Microsoft::UI::Private::Controls
 {
+    CppWinRTActivatableClassWithBasicFactory(RepeaterTestHooks)
 }
 
-void RepeaterTestHooksProperties::EnsureProperties()
-{
-}
+#include "RepeaterTestHooks.g.cpp"
 
-void RepeaterTestHooksProperties::ClearProperties()
-{
-}
 
-winrt::event_token RepeaterTestHooksProperties::BuildTreeCompleted(winrt::TypedEventHandler<winrt::IInspectable, winrt::IInspectable> const& value)
-{
-    return m_buildTreeCompletedEventSource.add(value);
-}
-
-void RepeaterTestHooksProperties::BuildTreeCompleted(winrt::event_token const& token)
-{
-    m_buildTreeCompletedEventSource.remove(token);
-}

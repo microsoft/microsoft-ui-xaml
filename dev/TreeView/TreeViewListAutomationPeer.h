@@ -28,7 +28,7 @@ public:
 
     // ISelectionProvider
     bool CanSelectMultiple();
-    bool IsSelectionRequried();
+    bool IsSelectionRequired();
     winrt::com_array<winrt::Windows::UI::Xaml::Automation::Provider::IRawElementProviderSimple> GetSelection();
 
 private:

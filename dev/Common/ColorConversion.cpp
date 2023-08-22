@@ -48,8 +48,8 @@ Hsv RgbToHsv(const Rgb &rgb)
     double saturation = 0;
     double value = 0;
 
-    double max = rgb.r >= rgb.g ? (rgb.r >= rgb.b ? rgb.r : rgb.b) : (rgb.g >= rgb.b ? rgb.g : rgb.b);
-    double min = rgb.r <= rgb.g ? (rgb.r <= rgb.b ? rgb.r : rgb.b) : (rgb.g <= rgb.b ? rgb.g : rgb.b);
+    const double max = rgb.r >= rgb.g ? (rgb.r >= rgb.b ? rgb.r : rgb.b) : (rgb.g >= rgb.b ? rgb.g : rgb.b);
+    const double min = rgb.r <= rgb.g ? (rgb.r <= rgb.b ? rgb.r : rgb.b) : (rgb.g <= rgb.b ? rgb.g : rgb.b);
 
     // The value, a number between 0 and 1, is the largest of R, G, and B (divided by 255).
     // Conceptually speaking, it represents how much color is present.
@@ -63,7 +63,7 @@ Hsv RgbToHsv(const Rgb &rgb)
     // then the chroma is maximized - this is a pure yellow, no grey of any kind.
     // On the other hand, if we have RGB = (128, 128, 128), then the chroma being zero
     // implies that this color is pure greyscale, with no actual hue to be found.
-    double chroma = max - min;
+    const double chroma = max - min;
 
     // If the chrome is zero, then hue is technically undefined - a greyscale color
     // has no hue.  For the sake of convenience, we'll just set hue to zero, since
@@ -167,8 +167,8 @@ Rgb HsvToRgb(const Hsv &hsv)
     //
     // From these facts, you can see that we can retrieve the chroma by simply multiplying the saturation and the value,
     // and we can retrieve the minimum of the RGB channels by subtracting the chroma from the value.
-    double chroma = saturation * value;
-    double min = value - chroma;
+    const double chroma = saturation * value;
+    const double min = value - chroma;
 
     // If the chroma is zero, then we have a greyscale color.  In that case, the maximum and the minimum RGB channels
     // have the same value (and, indeed, all of the RGB channels are the same), so we can just immediately return
@@ -202,9 +202,9 @@ Rgb HsvToRgb(const Hsv &hsv)
     // equal to the minimum plus the chroma (i.e., the max minus the min), multiplied by the percentage towards the new color.
     // This gets us a value between the maximum and the minimum representing the partially present channel.
     // Finally, the not-present color must be equal to the minimum value, since it is the one least participating in the overall color.
-    int sextant = static_cast<int>(hue / 60);
-    double intermediateColorPercentage = hue / 60 - sextant;
-    double max = chroma + min;
+    const int sextant = static_cast<int>(hue / 60);
+    const double intermediateColorPercentage = hue / 60 - sextant;
+    const double max = chroma + min;
 
     double r = 0;
     double g = 0;
@@ -249,17 +249,17 @@ Rgb HsvToRgb(const Hsv &hsv)
 
 Rgb HexToRgb(const wstring_view& input)
 {
-    auto [rgb, a] = HexToRgba(input);
+    const auto [rgb, a] = HexToRgba(input);
     return rgb;
 }
 
 winrt::hstring RgbToHex(const Rgb &rgb)
 {
-    byte rByte = static_cast<byte>(round(rgb.r * 255.0));
-    byte gByte = static_cast<byte>(round(rgb.g * 255.0));
-    byte bByte = static_cast<byte>(round(rgb.b * 255.0));
+    const byte rByte = static_cast<byte>(round(rgb.r * 255.0));
+    const byte gByte = static_cast<byte>(round(rgb.g * 255.0));
+    const byte bByte = static_cast<byte>(round(rgb.b * 255.0));
 
-    unsigned long hexValue = (rByte << 16) + (gByte << 8) + bByte;
+    const unsigned long hexValue = (rByte << 16) + (gByte << 8) + bByte;
 
     // We'll size this string to accommodate "#XXXXXX" - i.e., a full RGB number with a # sign.
     wchar_t hexString[8];
@@ -273,7 +273,7 @@ std::tuple<Rgb, double> HexToRgba(const wstring_view& input)
     auto ptr = input.data();
     ++ptr;
 
-    auto hexValue = TryParseInt(ptr, 16);
+    const auto hexValue = TryParseInt(ptr, 16);
 
     // If we failed to parse the string into an integer, then we'll return all -1's.
     // ARGB values can never be negative, so this is a convenient error state to use
@@ -283,23 +283,23 @@ std::tuple<Rgb, double> HexToRgba(const wstring_view& input)
         return { Rgb(-1, -1, -1), -1 };
     }
 
-    auto hex = hexValue.value();
-    byte a = static_cast<byte>((hex & 0xff000000) >> 24);
-    byte r = static_cast<byte>((hex & 0x00ff0000) >> 16);
-    byte g = static_cast<byte>((hex & 0x0000ff00) >> 8);
-    byte b = static_cast<byte>(hex & 0x000000ff);
+    const auto hex = hexValue.value();
+    const byte a = static_cast<byte>((hex & 0xff000000) >> 24);
+    const byte r = static_cast<byte>((hex & 0x00ff0000) >> 16);
+    const byte g = static_cast<byte>((hex & 0x0000ff00) >> 8);
+    const byte b = static_cast<byte>(hex & 0x000000ff);
 
     return { Rgb(r / 255.0, g / 255.0, b / 255.0), a / 255.0 };
 }
 
 winrt::hstring RgbaToHex(const Rgb &rgb, double alpha)
 {
-    byte aByte = static_cast<byte>(round(alpha * 255.0));
-    byte rByte = static_cast<byte>(round(rgb.r * 255.0));
-    byte gByte = static_cast<byte>(round(rgb.g * 255.0));
-    byte bByte = static_cast<byte>(round(rgb.b * 255.0));
+    const byte aByte = static_cast<byte>(round(alpha * 255.0));
+    const byte rByte = static_cast<byte>(round(rgb.r * 255.0));
+    const byte gByte = static_cast<byte>(round(rgb.g * 255.0));
+    const byte bByte = static_cast<byte>(round(rgb.b * 255.0));
 
-    unsigned long hexValue = (aByte << 24) + (rByte << 16) + (gByte << 8) + (bByte & 0xff);
+    const unsigned long hexValue = (aByte << 24) + (rByte << 16) + (gByte << 8) + (bByte & 0xff);
 
     // We'll size this string to accommodate "#XXXXXXXX" - i.e., a full ARGB number with a # sign.
     wchar_t hexString[10];

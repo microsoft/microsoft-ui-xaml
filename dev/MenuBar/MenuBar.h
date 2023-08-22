@@ -18,6 +18,8 @@ public:
     bool IsFlyoutOpen() { return m_isFlyoutOpen; };
     void IsFlyoutOpen(bool state);
 
+    void RequestPassThroughElement(const winrt::Microsoft::UI::Xaml::Controls::MenuBarItem& menuBarItem);
+
 public:
     // IUIElement / IUIElementOverridesHelper
     winrt::AutomationPeer OnCreateAutomationPeer();
@@ -25,8 +27,10 @@ public:
 private:
 
     void SetUpTemplateParts();
+    void UpdateAutomationSizeAndPosition();
 
     bool m_isFlyoutOpen{ false };
+    winrt::IObservableVector<winrt::MenuBarItem>::VectorChanged_revoker m_itemsVectorChangedRevoker{};
 
     // Visual components
     tracker_ref<winrt::ItemsControl> m_contentRoot{ this };

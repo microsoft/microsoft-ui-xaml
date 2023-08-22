@@ -8,7 +8,7 @@ class ItemsRepeater;
 struct ElementInfo
 {
     ElementInfo(const winrt::UIElement&  element, const winrt::com_ptr<VirtualizationInfo>& virtInfo) :
-        m_element(std::move(element)),
+        m_element(element),
         m_virtInfo(virtInfo)
     {}
 

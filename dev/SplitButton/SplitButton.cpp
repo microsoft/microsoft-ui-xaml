@@ -130,11 +130,21 @@ void SplitButton::UpdateVisualStates(bool useTransitions)
     // change visual state
     auto primaryButton = m_primaryButton.get();
     auto secondaryButton = m_secondaryButton.get();
-    if (primaryButton && secondaryButton)
+    if (!IsEnabled()) {
+        winrt::VisualStateManager::GoToState(*this, L"Disabled", useTransitions);
+    }
+    else if (primaryButton && secondaryButton)
     {
         if (m_isFlyoutOpen)
         {
-            winrt::VisualStateManager::GoToState(*this, L"FlyoutOpen", useTransitions);
+            if (InternalIsChecked())
+            {
+                winrt::VisualStateManager::GoToState(*this, L"CheckedFlyoutOpen", useTransitions);
+            }
+            else
+            {
+                winrt::VisualStateManager::GoToState(*this, L"FlyoutOpen", useTransitions);
+            }
         }
         // SplitButton and ToggleSplitButton share a template -- this section is driving the checked states for ToggleSplitButton.
         else if (InternalIsChecked())
@@ -215,7 +225,6 @@ void SplitButton::OpenFlyout()
         if (SharedHelpers::IsFlyoutShowOptionsAvailable())
         {
             winrt::FlyoutShowOptions options{};
-            options.Placement(winrt::FlyoutPlacementMode::BottomEdgeAlignedLeft);
             flyout.ShowAt(*this, options);
         }
         else
@@ -230,6 +239,19 @@ void SplitButton::CloseFlyout()
     if (auto flyout = Flyout())
     {
         flyout.Hide();
+    }
+}
+
+void SplitButton::ExecuteCommand()
+{
+    if (const auto& command = Command())
+    {
+        const auto& commandParameter = CommandParameter();
+
+        if (command.CanExecute(commandParameter))
+        {
+            command.Execute(commandParameter);
+        }
     }
 }
 
@@ -268,6 +290,26 @@ void SplitButton::OnClickSecondary(const winrt::IInspectable& sender, const winr
     OpenFlyout();
 }
 
+void SplitButton::Invoke()
+{
+    bool invoked = false;
+
+    if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(m_primaryButton.get()))
+    {
+        if (winrt::IInvokeProvider invokeProvider = peer.GetPattern(winrt::PatternInterface::Invoke).try_as<winrt::IInvokeProvider>())
+        {
+            invokeProvider.Invoke();
+            invoked = true;
+        }
+    }
+
+    // If we don't have a primary button that provides an invoke provider, we'll fall back to calling OnClickPrimary manually.
+    if (!invoked)
+    {
+        OnClickPrimary(nullptr, nullptr);
+    }
+}
+
 void SplitButton::OnPointerEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
 {
     winrt::PointerDeviceType pointerDeviceType = args.Pointer().PointerDeviceType();
@@ -287,7 +329,7 @@ void SplitButton::OnPointerEvent(const winrt::IInspectable& sender, const winrt:
 
 void SplitButton::OnSplitButtonKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
 {
-    winrt::VirtualKey key = args.Key();
+    const winrt::VirtualKey key = args.Key();
     if (key == winrt::VirtualKey::Space || key == winrt::VirtualKey::Enter || key == winrt::VirtualKey::GamepadA)
     {
         m_isKeyDown = true;
@@ -297,7 +339,7 @@ void SplitButton::OnSplitButtonKeyDown(const winrt::IInspectable& sender, const 
 
 void SplitButton::OnSplitButtonKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
 {
-    winrt::VirtualKey key = args.Key();
+    const winrt::VirtualKey key = args.Key();
     if (key == winrt::VirtualKey::Space || key == winrt::VirtualKey::Enter || key == winrt::VirtualKey::GamepadA)
     {
         m_isKeyDown = false;
@@ -307,13 +349,14 @@ void SplitButton::OnSplitButtonKeyUp(const winrt::IInspectable& sender, const wi
         if (IsEnabled())
         {
             OnClickPrimary(nullptr, nullptr);
+            ExecuteCommand();
             args.Handled(true);
         }
     }
     else if (key == winrt::VirtualKey::Down)
     {
-        winrt::CoreVirtualKeyStates menuState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Menu);
-        bool menuKeyDown = (menuState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+        const winrt::CoreVirtualKeyStates menuState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Menu);
+        const bool menuKeyDown = (menuState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
 
         if (IsEnabled() && menuKeyDown)
         {

@@ -14,6 +14,7 @@
 #include <winrt\Windows.ApplicationModel.Resources.h>
 #include <winrt\Windows.ApplicationModel.Resources.Core.h>
 #include <winrt\Windows.Devices.Input.h>
+#include <winrt\Windows.Globalization.h>
 #include <winrt\Windows.Globalization.NumberFormatting.h>
 #include <winrt\Windows.Graphics.Imaging.h>
 #include <winrt\Windows.Graphics.Display.h>
@@ -23,6 +24,7 @@
 #include <winrt\Windows.System.Profile.h>
 #include <winrt\Windows.System.h>
 #include <winrt\Windows.System.Threading.h>
+#include <winrt\Windows.System.UserProfile.h>
 #include <winrt\Windows.UI.h>
 #include <winrt\Windows.UI.Composition.h>
 #include <winrt\Windows.UI.Composition.Effects.h>
@@ -47,15 +49,29 @@
 #include <winrt\Windows.UI.Xaml.Media.Animation.h>
 #include <winrt\Windows.UI.Xaml.Media.Imaging.h>
 #include <winrt\Windows.UI.Xaml.Shapes.h>
+
+#if __has_include("winrt\Microsoft.UI.Private.Controls.h")
 #include <winrt\Microsoft.UI.Private.Controls.h>
+#endif
+
 #if __has_include("winrt\Microsoft.UI.Private.Media.h")
 #include <winrt\Microsoft.UI.Private.Media.h>
 #endif
 
+#if __has_include("winrt\Microsoft.UI.Xaml.Controls.h")
 #include <winrt\Microsoft.UI.Xaml.Controls.h>
+#endif
+
+#if __has_include("winrt\Microsoft.UI.Xaml.XamlTypeInfo.h")
 #include <winrt\Microsoft.UI.Xaml.XamlTypeInfo.h>
+#endif
+
 #if __has_include("winrt\Microsoft.UI.Xaml.Controls.Primitives.h")
 #include <winrt\Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
+
+#if __has_include("winrt\Microsoft.UI.Xaml.Controls.AnimatedVisuals.h")
+#include <winrt\Microsoft.UI.Xaml.Controls.AnimatedVisuals.h>
 #endif
 
 #if __has_include("winrt\Microsoft.UI.Xaml.Media.h")
@@ -66,8 +82,34 @@
 #include <winrt\Microsoft.UI.Xaml.Automation.Peers.h>
 #endif
 
-#if __has_include("winrt\Microsoft.UI.Composition.Effects.h")
-#include <winrt\Microsoft.UI.Composition.Effects.h>
+#if __has_include("winrt\Microsoft.UI.Private.Composition.Effects.h")
+#include <winrt\Microsoft.UI.Private.Composition.Effects.h>
+#endif
+
+
+
+#if __has_include("winrt\Microsoft.Experimental.UI.Xaml.Controls.h")
+#include <winrt\Microsoft.Experimental.UI.Xaml.Controls.h>
+#endif
+
+#if __has_include("winrt\Microsoft.Experimental.UI.Xaml.XamlTypeInfo.h")
+#include <winrt\Microsoft.Experimental.UI.Xaml.XamlTypeInfo.h>
+#endif
+
+#if __has_include("winrt\Microsoft.Experimental.UI.Xaml.Controls.Primitives.h")
+#include <winrt\Microsoft.Experimental.UI.Xaml.Controls.Primitives.h>
+#endif
+
+#if __has_include("winrt\Microsoft.Experimental.UI.Xaml.Controls.AnimatedVisuals.h")
+#include <winrt\Microsoft.Experimental.UI.Xaml.Controls.AnimatedVisuals.h>
+#endif
+
+#if __has_include("winrt\Microsoft.Experimental.UI.Xaml.Media.h")
+#include <winrt\Microsoft.Experimental.UI.Xaml.Media.h>
+#endif
+
+#if __has_include("winrt\Microsoft.Experimental.UI.Xaml.Automation.Peers.h")
+#include <winrt\Microsoft.Experimental.UI.Xaml.Automation.Peers.h>
 #endif
 
 namespace winrt
@@ -84,6 +126,7 @@ namespace winrt
     using namespace ::winrt::Windows::Foundation::Collections;
     using namespace ::winrt::Windows::Foundation::Metadata;
     using namespace ::winrt::Windows::Foundation::Numerics;
+    using namespace ::winrt::Windows::Globalization;
     using namespace ::winrt::Windows::Globalization::NumberFormatting;
     using namespace ::winrt::Windows::Graphics::Display;
     using namespace ::winrt::Windows::Graphics::Imaging;
@@ -92,6 +135,7 @@ namespace winrt
     using namespace ::winrt::Windows::System;
     using namespace ::winrt::Windows::System::Power;
     using namespace ::winrt::Windows::System::Threading;
+    using namespace ::winrt::Windows::System::UserProfile;
     using namespace ::winrt::Windows::UI;
     using namespace ::winrt::Windows::UI::Composition;
     using namespace ::winrt::Windows::UI::Composition::Effects;
@@ -114,6 +158,7 @@ namespace winrt
     using namespace ::winrt::Windows::UI::Xaml::Media::Imaging;
     using namespace ::winrt::Windows::UI::Xaml::Shapes;
     using namespace ::winrt::Windows::System::Profile;
+    namespace Microsoft::UI::Xaml::XamlTypeInfo {}
     using namespace ::winrt::Microsoft::UI::Xaml::XamlTypeInfo;
     namespace Microsoft::UI::Private::Controls {}
     using namespace ::winrt::Microsoft::UI::Private::Controls;
@@ -123,20 +168,46 @@ namespace winrt
     using namespace ::winrt::Microsoft::UI::Xaml::Controls;
     namespace Microsoft::UI::Xaml::Controls::Primitives {}
     using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives;
+    namespace Microsoft::UI::Xaml::Controls::AnimatedVisuals {}
+    using namespace ::winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals;
     namespace Microsoft::UI::Xaml::Media {}
     using namespace ::winrt::Microsoft::UI::Xaml::Media;
     namespace Microsoft::UI::Xaml::Automation::Peers {}
     using namespace ::winrt::Microsoft::UI::Xaml::Automation::Peers;
 
+
+    namespace Microsoft::Experimental::UI::Xaml::XamlTypeInfo {}
+    using namespace ::winrt::Microsoft::Experimental::UI::Xaml::XamlTypeInfo;
+    namespace Microsoft::Experimental::UI::Xaml::Controls {}
+    using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Controls;
+    namespace Microsoft::Experimental::UI::Xaml::Controls::Primitives {}
+    using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Controls::Primitives;
+    namespace Microsoft::Experimental::UI::Xaml::Controls::AnimatedVisuals {}
+    using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Controls::AnimatedVisuals;
+    namespace Microsoft::Experimental::UI::Xaml::Media {}
+    using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Media;
+    namespace Microsoft::Experimental::UI::Xaml::Automation::Peers {}
+    using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Automation::Peers;
+
     // using namespace will affect headers included later as well, so crack these namespaces now for convenience
     // but in order to avoid "namespace not defined" errors we have to define the namespaces here too.
     namespace Microsoft::UI::Private::Controls::implementation {}
     namespace Microsoft::UI::Private::Media::implementation {}
+
     namespace Microsoft::UI::Xaml::Controls::implementation {}
     namespace Microsoft::UI::Xaml::XamlTypeInfo::implementation {}
     namespace Microsoft::UI::Xaml::Controls::Primitives::implementation {}
     namespace Microsoft::UI::Xaml::Media::implementation {}
     namespace Microsoft::UI::Xaml::Automation::Peers::implementation {}
+    namespace Microsoft::UI::Xaml::Controls::AnimatedVisuals::implementation {}
+
+    namespace Microsoft::Experimental::UI::Xaml::Controls::implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::Controls::Primitives::implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::Controls::AnimatedVisuals::implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::Media::implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::Automation::Peers::implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::XamlTypeInfo::implementation {} 
+
     namespace implementation
     {
         using namespace ::winrt::Microsoft::UI::Private::Controls::implementation;
@@ -144,8 +215,16 @@ namespace winrt
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::XamlTypeInfo::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives::implementation;
+        using namespace ::winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Media::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Automation::Peers::implementation;
+
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Controls::implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Controls::Primitives::implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Controls::AnimatedVisuals::implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Media::implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Automation::Peers::implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::XamlTypeInfo::implementation;
     }
 
     namespace Microsoft::UI::Private::Controls::factory_implementation {}
@@ -153,8 +232,17 @@ namespace winrt
     namespace Microsoft::UI::Xaml::Controls::factory_implementation {}
     namespace Microsoft::UI::Xaml::XamlTypeInfo::factory_implementation {}
     namespace Microsoft::UI::Xaml::Controls::Primitives::factory_implementation {}
+    namespace Microsoft::UI::Xaml::Controls::AnimatedVisuals::factory_implementation {}
     namespace Microsoft::UI::Xaml::Media::factory_implementation {}
     namespace Microsoft::UI::Xaml::Automation::Peers::factory_implementation {}
+
+    namespace Microsoft::Experimental::UI::Xaml::Controls::factory_implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::XamlTypeInfo::factory_implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::Controls::Primitives::factory_implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::Controls::AnimatedVisuals::factory_implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::Media::factory_implementation {}
+    namespace Microsoft::Experimental::UI::Xaml::Automation::Peers::factory_implementation {}
+
     namespace factory_implementation
     {
         using namespace ::winrt::Microsoft::UI::Private::Controls::factory_implementation;
@@ -162,17 +250,26 @@ namespace winrt
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::XamlTypeInfo::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives::factory_implementation;
+        using namespace ::winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Media::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Automation::Peers::factory_implementation;
+
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Controls::factory_implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::XamlTypeInfo::factory_implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Controls::Primitives::factory_implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Controls::AnimatedVisuals::factory_implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Media::factory_implementation;
+        using namespace ::winrt::Microsoft::Experimental::UI::Xaml::Automation::Peers::factory_implementation;
     }
 
 #ifdef EFFECTS_INCLUDED
-    using namespace ::winrt::Microsoft::UI::Composition::Effects;
+    using namespace ::winrt::Microsoft::UI::Private::Composition::Effects;
 #endif
 
     // using namespace ::winrt::Windows::UI::Xaml::Controls;
     using AppBar = winrt::Windows::UI::Xaml::Controls::AppBar;
     using AppBarButton = winrt::Windows::UI::Xaml::Controls::AppBarButton;
+    using AppBarSeparator = winrt::Windows::UI::Xaml::Controls::AppBarSeparator;
     using AppBarToggleButton = winrt::Windows::UI::Xaml::Controls::AppBarToggleButton;
     using AutoSuggestBox = winrt::Windows::UI::Xaml::Controls::AutoSuggestBox;
     using BitmapIcon = winrt::Windows::UI::Xaml::Controls::BitmapIcon;
@@ -188,11 +285,13 @@ namespace winrt
     using ContentControl = winrt::Windows::UI::Xaml::Controls::ContentControl;
     using ContentPresenter = winrt::Windows::UI::Xaml::Controls::ContentPresenter;
     using Control = ::winrt::Windows::UI::Xaml::Controls::Control;
+    using IControl = ::winrt::Windows::UI::Xaml::Controls::IControl;
     using DataTemplateSelector = winrt::Windows::UI::Xaml::Controls::DataTemplateSelector;
     using DisabledFormattingAccelerators = winrt::Windows::UI::Xaml::Controls::DisabledFormattingAccelerators;
     using DragItemsCompletedEventArgs = winrt::Windows::UI::Xaml::Controls::DragItemsCompletedEventArgs;
     using DragItemsStartingEventArgs = winrt::Windows::UI::Xaml::Controls::DragItemsStartingEventArgs;
     using DragItemsStartingEventHandler = winrt::Windows::UI::Xaml::Controls::DragItemsStartingEventHandler;
+    using Flyout = winrt::Windows::UI::Xaml::Controls::Flyout;
     using FlyoutPresenter = winrt::Windows::UI::Xaml::Controls::FlyoutPresenter;
     using IFlyoutPresenter2 = winrt::Windows::UI::Xaml::Controls::IFlyoutPresenter2;
     using FocusDisengagedEventArgs = winrt::Windows::UI::Xaml::Controls::FocusDisengagedEventArgs;
@@ -240,6 +339,7 @@ namespace winrt
     using Panel = winrt::Windows::UI::Xaml::Controls::Panel;
     using PasswordBox = winrt::Windows::UI::Xaml::Controls::PasswordBox;
     using PathIcon = winrt::Windows::UI::Xaml::Controls::PathIcon;
+    using RadioButton = winrt::Windows::UI::Xaml::Controls::RadioButton;
     using RichEditBox = winrt::Windows::UI::Xaml::Controls::RichEditBox;
     using RichTextBlock = winrt::Windows::UI::Xaml::Controls::RichTextBlock;
     using RichTextBlockOverflow = winrt::Windows::UI::Xaml::Controls::RichTextBlockOverflow;
@@ -272,12 +372,14 @@ namespace winrt
     using WebView = winrt::Windows::UI::Xaml::Controls::WebView;
 
     // using namespace ::winrt::Windows::UI::Xaml::Media;
+    using ArcSegment = winrt::Windows::UI::Xaml::Media::ArcSegment;
     using Brush = winrt::Windows::UI::Xaml::Media::Brush;
-    using Brush = winrt::Windows::UI::Xaml::Media::Brush;
+    using BrushMappingMode = winrt::Windows::UI::Xaml::Media::BrushMappingMode;
     using ElementCompositeMode = winrt::Windows::UI::Xaml::Media::ElementCompositeMode;
     using FontFamily = winrt::Windows::UI::Xaml::Media::FontFamily;
     using GeneralTransform = winrt::Windows::UI::Xaml::Media::GeneralTransform;
     using Geometry = winrt::Windows::UI::Xaml::Media::Geometry;
+    using GradientSpreadMethod = winrt::Windows::UI::Xaml::Media::GradientSpreadMethod;
     using GradientStop = ::winrt::Windows::UI::Xaml::Media::GradientStop;
     using ImageBrush = ::winrt::Windows::UI::Xaml::Media::ImageBrush;
     using ImageSource = ::winrt::Windows::UI::Xaml::Media::ImageSource;
@@ -288,6 +390,7 @@ namespace winrt
     using IXamlLightProtected = winrt::Windows::UI::Xaml::Media::IXamlLightProtected;
     using LinearGradientBrush = ::winrt::Windows::UI::Xaml::Media::LinearGradientBrush;
     using LoadedImageSurface = ::winrt::Windows::UI::Xaml::Media::LoadedImageSurface;
+    using PathFigure = winrt::Windows::UI::Xaml::Media::PathFigure;
     using RectangleGeometry = winrt::Windows::UI::Xaml::Media::RectangleGeometry;
     using SolidColorBrush = ::winrt::Windows::UI::Xaml::Media::SolidColorBrush;
     using Stretch = winrt::Windows::UI::Xaml::Media::Stretch;
@@ -295,7 +398,7 @@ namespace winrt
     using TranslateTransform = winrt::Windows::UI::Xaml::Media::TranslateTransform;
     using VisualTreeHelper = winrt::Windows::UI::Xaml::Media::VisualTreeHelper;
     using XamlCompositionBrushBase = ::winrt::Windows::UI::Xaml::Media::XamlCompositionBrushBase;
-    using XamlLight = winrt::Windows::UI::Xaml::Media::XamlLight;
+    using XamlLight = winrt::Windows::UI::Xaml::Media::XamlLight;    
 
     // using namespace ::winrt::Windows::UI::Xaml::Media.Animation;
     using IStoryboard = ::winrt::Windows::UI::Xaml::Media::Animation::IStoryboard;
@@ -303,6 +406,7 @@ namespace winrt
     // using namespace ::winrt::Windows::UI::Xaml::Controls::Primitives;
     using ButtonBase = winrt::Windows::UI::Xaml::Controls::Primitives::ButtonBase;
     using CarouselPanel = winrt::Windows::UI::Xaml::Controls::Primitives::CarouselPanel;
+    using ComponentResourceLocation = winrt::Windows::UI::Xaml::Controls::Primitives::ComponentResourceLocation;
     using FlyoutBase = winrt::Windows::UI::Xaml::Controls::Primitives::FlyoutBase;
     using FlyoutBaseClosingEventArgs = winrt::Windows::UI::Xaml::Controls::Primitives::FlyoutBaseClosingEventArgs;
     using FlyoutPlacementMode = winrt::Windows::UI::Xaml::Controls::Primitives::FlyoutPlacementMode;
@@ -318,7 +422,10 @@ namespace winrt
     using ListViewItemPresenter = winrt::Windows::UI::Xaml::Controls::Primitives::ListViewItemPresenter;
     using OrientedVirtualizingPanel = winrt::Windows::UI::Xaml::Controls::Primitives::OrientedVirtualizingPanel;
     using Popup = winrt::Windows::UI::Xaml::Controls::Primitives::Popup;
+    using PopupPlacementMode = winrt::Windows::UI::Xaml::Controls::Primitives::PopupPlacementMode;
     using IPopup3 = winrt::Windows::UI::Xaml::Controls::Primitives::IPopup3;
+    using IPopup4 = winrt::Windows::UI::Xaml::Controls::Primitives::IPopup4;
+    using RangeBase = winrt::Windows::UI::Xaml::Controls::Primitives::RangeBase;
     using RangeBaseValueChangedEventArgs = winrt::Windows::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs;
     using RepeatButton = winrt::Windows::UI::Xaml::Controls::Primitives::RepeatButton;
     using ScrollBar = winrt::Windows::UI::Xaml::Controls::Primitives::ScrollBar;
@@ -328,6 +435,7 @@ namespace winrt
     using Selector = winrt::Windows::UI::Xaml::Controls::Primitives::Selector;
     using SelectorItem = winrt::Windows::UI::Xaml::Controls::Primitives::SelectorItem;
     using ToggleButton = winrt::Windows::UI::Xaml::Controls::Primitives::ToggleButton;
+    using IToggleButton = winrt::Windows::UI::Xaml::Controls::Primitives::IToggleButton;
 
     // using namespace winrt::Windows::UI::Xaml::Automation::Peers;
     using AccessibilityView = winrt::Windows::UI::Xaml::Automation::Peers::AccessibilityView;

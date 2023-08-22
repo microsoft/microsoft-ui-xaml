@@ -1,7 +1,7 @@
 namespace MU_PRIVATE_CONTROLS_NAMESPACE
 {
 
-[WUXC_VERSION_INTERNAL]
+[MUX_INTERNAL]
 [webhosthidden]
 runtimeclass MUXControlsTestHooksLoggingMessageEventArgs
 {
@@ -9,7 +9,7 @@ runtimeclass MUXControlsTestHooksLoggingMessageEventArgs
     Boolean IsVerboseLevel { get; };
 }
 
-[WUXC_VERSION_INTERNAL]
+[MUX_INTERNAL]
 [webhosthidden]
 [default_interface]
 runtimeclass MUXControlsTestHooks

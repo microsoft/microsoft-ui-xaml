@@ -5,4 +5,4 @@
 #include "common.h"
 #include <RatingItemInfo.h>
 
-CppWinRTActivatableClassWithBasicFactory(RatingItemInfo)
+#include "RatingItemInfo.properties.cpp"

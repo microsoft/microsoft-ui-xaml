@@ -10,7 +10,7 @@
 
 #pragma warning(push)
 #pragma warning(disable: 6101)  // Returning uninitialized memory '<value>'.  A successful path through the function does not set the named _Out_ parameter.
-#include <Microsoft.UI.Composition.Effects_impl.h>
+#include <Microsoft.UI.Private.Composition.Effects_impl.h>
 #pragma warning(pop)
 
 
@@ -36,6 +36,6 @@ private:
     winrt::CompositionSurfaceBrush m_minSurfaceBrush{ nullptr };
     winrt::CompositionSurfaceBrush m_maxSurfaceBrush{ nullptr };
 
-    com_ptr<Microsoft::UI::Composition::Effects::CrossFadeEffect> m_brushEffect{ nullptr };
+    com_ptr<Microsoft::UI::Private::Composition::Effects::CrossFadeEffect> m_brushEffect{ nullptr };
     winrt::CompositionEffectBrush m_brush{ nullptr };
 };

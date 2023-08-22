@@ -29,6 +29,90 @@ function Copy-IntoNewDirectory {
     }
 }
 
+function ExecuteMakePri
+{
+    Param($WindowsSdkBinDir, $makePriArgs)
+    $makepriNew = "`"" + (Join-Path $WindowsSdkBinDir "makepri.exe") + "`" $makePriArgs"
+    Write-Host $makepriNew
+    cmd /c $makepriNew
+    if ($LastExitCode -ne 0) { Exit 1 }
+}
+
+# only keep 21h1 themeresources, and set other themeresources to " "
+# I didn't set it to "" because "" will change the `makepri dump` layout, but " " will not.
+function RepackCBSResourcesPri
+{
+    Param($WindowsSdkBinDir, $sourceFile, $targetFile, $intermediateFolder)
+    New-Item -Path "$intermediateFolder" -ItemType Directory -Force | Out-Null
+
+    $priconfigFrom = Join-Path "$PSScriptRoot" "cbspriconfig.xml"
+    $priconfig = Join-Path "$intermediateFolder" "priconfig.xml"
+    Copy-Item "$priconfigFrom" "$priconfig" -Force | Out-Null
+
+    $cbsResourcesPriXml = "$intermediateFolder\CBSresources.pri.xml"
+    $resourcesPriXml = "$intermediateFolder\resources.pri.xml"
+
+    # step 1: makepri dump CBSresources.pri to CBSresources.pri.xml
+    ExecuteMakePri "$WindowsSdkBinDir" "dump /dt detailed /if $sourceFile /of `"$cbsResourcesPriXml`" /o"
+
+    # step 2: set rs2-19h1 resources to " " and save as resources.pri.xml
+    # In base64, IA== is " ".
+    [XML] $xml = Get-Content  -Encoding UTF8  "$cbsResourcesPriXml"
+    $nodes = $xml.PriInfo.ResourceMap.SelectNodes("ResourceMapSubtree/ResourceMapSubtree/ResourceMapSubtree/NamedResource")
+    
+    $namesToBeChanged = @("19h1_themeresources.xbf", "rs5_themeresources.xbf", "rs4_themeresources.xbf", "rs3_themeresources.xbf", "rs2_themeresources.xbf",
+        "19h1_generic.xbf", "rs5_generic.xbf", "rs4_generic.xbf", "rs4_generic.xbf", "rs3_generic.xbf", "rs2_generic.xbf",
+        "19h1_themeresources_v1.xbf", "rs5_themeresources_v1.xbf", "rs4_themeresources_v1.xbf", "rs3_themeresources_V1.xbf", "rs2_themeresources_v1.xbf",
+        "19h1_generic_v1.xbf", "rs5_generic_v1.xbf", "rs4_generic_v1.xbf", "rs4_generic_v1.xbf", "rs3_generic_v1.xbf", "rs2_generic_v1.xbf",
+        "19h1_compact_themeresources.xbf", "rs5_compact_themeresources.xbf", "rs4_compact_themeresources.xbf", "rs3_compact_themeresources.xbf", "rs2_compact_themeresources.xbf",
+        "19h1_compact_themeresources_v1.xbf", "rs5_compact_themeresources_v1.xbf", "rs4_compact_themeresources_v1.xbf", "rs3_compact_themeresources_V1.xbf", "rs2_compact_themeresources_v1.xbf",
+        "21h1_compact_themeresources_v1.xbf", "21h1_compact_themeresources.xbf"
+        )
+    
+    foreach($name in $namesToBeChanged) { 
+        $nodes | 
+            ? { $_.name -eq $name } | 
+            % { $_.Candidate.Base64Value = "IA==" }
+    }
+        
+    [System.Xml.XmlWriterSettings] $xmlSettings = New-Object System.Xml.XmlWriterSettings
+    
+    #Preserve Windows formating
+    $xmlSettings.Indent = $true
+    $xmlSettings.IndentChars = "`t"
+    
+    #Keeping UTF-8 without BOM
+    $xmlSettings.Encoding = New-Object System.Text.UTF8Encoding($false)
+    
+    [System.Xml.xmlWriter] $xmlWriter = [System.Xml.xmlWriter]::Create("$resourcesPriXml", $xmlSettings)
+    $xml.Save($xmlWriter)
+    $xmlWriter.Close()
+
+    # step 3: re-create PRI with resources.pri.xml
+    ExecuteMakePri "$WindowsSdkBinDir" "new  /pr `"$intermediateFolder`" /cf `"$priconfig`" /in Microsoft.UI.Xaml.CBS /of `"$targetFile`"  /o"
+  
+    # step 4: verify the re-created PRI is not the same with the original .pri
+    if((Get-FileHash "$sourceFile").hash -eq (Get-FileHash "$targetFile").hash)
+    {
+        Write-Error("$sourceFile should not equal to $targetFile");
+        Exit 1
+    }
+
+    # step 5: dump the two pris and compare the content, they should be the same.
+    $file1 = "$intermediateFolder\source.pri.xml"
+    $file2 = "$intermediateFolder\target.pri.xml"
+    
+    ExecuteMakePri "$WindowsSdkBinDir" "dump /if $sourceFile /of `"$file1`" /o"
+    ExecuteMakePri "$WindowsSdkBinDir" "dump /if $targetFile /of `"$file2`" /o"
+
+    # step 6: verify the dumped file, they should be the same
+    if((Get-FileHash "$file1").hash -ne (Get-FileHash "$file2").hash)
+    {
+        Write-Error("$file1 should equal to $file2");
+        Exit 1
+    }
+}
+
 pushd $PSScriptRoot
 
 $fullOutputPath = [IO.Path]::GetFullPath($outputDirectory)
@@ -37,6 +121,7 @@ Write-Host "MakeFrameworkPackage: $fullOutputPath" -ForegroundColor Magenta
 
 mkdir -Force $fullOutputPath\PackageContents | Out-Null
 mkdir -Force $fullOutputPath\Resources | Out-Null
+mkdir -Force $fullOutputPath\CBS | Out-Null
 
 Copy-IntoNewDirectory FrameworkPackageContents\* $fullOutputPath\PackageContents
 
@@ -160,18 +245,11 @@ else
     $pstTime = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $pstZone)
     # Split version into yyMM.dd because appx versions can't be greater than 65535
     # Also store submission requires that the revision field stay 0, so our scheme is:
-    #    A.ByyMM.ddNNN
+    #    B.yyMM.ddNNN
     # compared to nuget version which is:
     #    A.B.yyMMddNN
     # We could consider dropping the B part out of the minor section if we need to because
-    # it's part of the package name, but we'll try to keep it in for now. We also omit the "B"
-    # part when it's 0 because the appx version doesn't allow the minor version to have a 0 prefix.
-    # Also note that we trim 0s off the beginning of the day because appx versions can't start with 0.
-    if ($versionMinor -eq 0)
-    {
-        $versionMinor = ""
-    }
-
+    # it's part of the package name, but we'll try to keep it in for now.
     if (-not $builddate_yymm)
     {
         $builddate_yymm = ($pstTime).ToString("yyMM")
@@ -184,7 +262,7 @@ else
     # Pad subversion up to 3 digits
     $subversionPadded = $subversion.ToString("000")
 
-    $version = "${versionMajor}.${versionMinor}" + $builddate_yymm + "." + $builddate_dd.TrimStart("0") + "$subversionPadded.0"
+    $version = "${versionMinor}." + $builddate_yymm + "." + $builddate_dd.TrimStart("0") + "$subversionPadded.0"
 
     Write-Verbose "Version = $version"
 }
@@ -220,17 +298,6 @@ if ($Configuration -ilike "debug")
     #$PackageName += ".Debug"
 }
 
-# Allow single URI to access Compact.xaml from both framework package and nuget package
-$compactxaml = 
-@"
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-    <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="ms-appx://$PackageName/Microsoft.UI.Xaml/DensityStyles/Compact.xaml"/>
-    </ResourceDictionary.MergedDictionaries>
-</ResourceDictionary>
-"@
-Set-Content -Value $compactxaml $fullOutputPath\Compact.xaml
-
 # AppxManifest needs some pieces generated per-flavor.
 $manifestContents = Get-Content $fullOutputPath\PackageContents\AppxManifest.xml
 $manifestContents = $manifestContents.Replace('$(PackageName)', "$PackageName")
@@ -240,13 +307,29 @@ $manifestContents = $manifestContents.Replace('$(ActivatableTypes)', "$Activatab
 $manifestContents = $manifestContents.Replace('$(Version)', "$Version")
 Set-Content -Value $manifestContents $fullOutputPath\PackageContents\AppxManifest.xml
 
+$manifestContents = $manifestContents.Replace("$PackageName", "Microsoft.UI.Xaml.CBS")
+$manifestContents = $manifestContents.Replace('FrameworkPackageDetector', "CBSPackageDetector")
+Set-Content -Value $manifestContents $fullOutputPath\CBSAppxManifest.xml
 
 # Call GetFullPath to clean up the path -- makepri is very picky about double slashes in the path.
 $priConfigPath = [IO.Path]::GetFullPath("$fullOutputPath\priconfig.xml")
 $priOutputPath = [IO.Path]::GetFullPath("$fullOutputPath\resources.pri")
+$priCBSOutputPath = [IO.Path]::GetFullPath("$fullOutputPath\CBSresources.pri")
 $noiseAssetPath = [IO.Path]::GetFullPath("$fullOutputPath\Assets\NoiseAsset_256x256_PNG.png")
 $resourceContents = [IO.Path]::GetFullPath("$fullOutputPath\Resources")
-$pfxPath = [IO.Path]::GetFullPath("..\MSTest.pfx")
+
+$pfxPath = [IO.Path]::GetFullPath("MSTest.pfx")
+$CertificateFriendlyName = "MSTest"
+
+$cert = New-SelfSignedCertificate -Type Custom `
+    -Subject $Publisher `
+    -KeyUsage DigitalSignature `
+    -FriendlyName $CertificateFriendlyName `
+    -CertStoreLocation "Cert:\CurrentUser\My" `
+    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+
+$certificateBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pkcs12)
+[System.IO.File]::WriteAllBytes($pfxPath, $certificateBytes)
 
 pushd $fullOutputPath\PackageContents
 
@@ -265,10 +348,16 @@ if (($Configuration -ilike "debug") -and (Test-Path $xbfFilesPath))
 "$noiseAssetPath" "Microsoft.UI.Xaml\Assets\NoiseAsset_256x256_PNG.png"
 "@ | Out-File -Append -Encoding "UTF8" $fullOutputPath\PackageContents\FrameworkPackageFiles.txt
 
-$makepriNew = "`"" + (Join-Path $WindowsSdkBinDir "makepri.exe") + "`" new /pr $fullOutputPath /cf $priConfigPath /of $priOutputPath /in $PackageName /o"
-Write-Host $makepriNew
-cmd /c $makepriNew
-if ($LastExitCode -ne 0) { Exit 1 }
+ExecuteMakePri "$WindowsSdkBinDir" "new /pr $fullOutputPath /cf $priConfigPath /of $priOutputPath /in $PackageName /o"
+
+$cbsIntermediateFolder = [IO.Path]::GetFullPath("$fullOutputPath\CBS")
+$cbsIntermediatePri = Join-Path $cbsIntermediateFolder "CBSresources.pri"
+
+# create CBS\CBSresources.pri
+ExecuteMakePri "$WindowsSdkBinDir" " new /pr $fullOutputPath /cf $priConfigPath /of $cbsIntermediatePri /in Microsoft.UI.Xaml.CBS /o"
+
+# unpack CBS\CBSresources.pri and repack it as CBSresources.pri
+RepackCBSResourcesPri "$WindowsSdkBinDir" "$cbsIntermediatePri" "$priCBSOutputPath" "$cbsIntermediateFolder"
 
 $outputAppxFileFullPath = Join-Path $fullOutputPath "$PackageName.appx"
 $outputAppxFileFullPath = [IO.Path]::GetFullPath($outputAppxFileFullPath)
@@ -278,24 +367,7 @@ Write-Host $makeappx
 cmd /c $makeappx
 if ($LastExitCode -ne 0) { Exit 1 }
 
-if ($env:TFS_ToolsDirectory -and ($env:BUILD_DEFINITIONNAME -match "release") -and $env:UseSimpleSign)
-{
-    # From MakeAppxBundle in the XES tools
-    $signToolPath = $env:TFS_ToolsDirectory + "\bin\SimpleSign.exe"
-    if (![System.IO.File]::Exists($signToolPath))
-    {
-       $signToolPath = "SimpleSign.exe"
-    }
-
-    # From here: https://osgwiki.com/wiki/Package_ES_Appx_Bundle#Code_sign_Appx_Bundle
-    $signCert = "136020001"
-
-    $signtool = "`"$signToolPath`" -i:`"$outputAppxFileFullPath`" -c:$signCert -s:`"CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US`""
-}
-else
-{
-    $signtool = "`"" + (Join-Path $WindowsSdkBinDir "signtool.exe") + "`" sign /a /v /fd SHA256 /f $pfxPath $outputAppxFileFullPath"
-}
+$signtool = "`"" + (Join-Path $WindowsSdkBinDir "signtool.exe") + "`" sign /a /v /fd SHA256 /f $pfxPath $outputAppxFileFullPath"
 Write-Host $signtool
 cmd /c $signtool
 if ($LastExitCode -ne 0) { Exit 1 }

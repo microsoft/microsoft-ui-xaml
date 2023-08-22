@@ -530,8 +530,6 @@
         </Setter>
     </Style>
 
-    <Style TargetType="ComboBoxItem" BasedOn="{StaticResource ComboBoxItemRevealStyle}" />
-
     <Style x:Key="CommandBarRevealStyle" TargetType="CommandBar">
         <Setter Property="Background" Value="{ThemeResource CommandBarBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource CommandBarForeground}" />
@@ -542,6 +540,7 @@
         <Setter Property="VerticalContentAlignment" Value="Top" />
         <Setter Property="ClosedDisplayMode" Value="Compact" />
         <Setter Property="ExitDisplayModeOnAccessKeyInvoked" Value="False" />
+        <Setter Property="CommandBarOverflowPresenterStyle" Value="{ThemeResource DefaultCommandBarOverflowPresenterStyle}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="CommandBar">
@@ -943,7 +942,7 @@
                                             </ObjectAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ContentTransform" Storyboard.TargetProperty="Y">
                                                 <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HiddenVerticalDelta}" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.167" KeySpline="0.2,0 0,1" Value="0}" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.167" KeySpline="0.2,0 0,1" Value="0" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OverflowContentTransform" Storyboard.TargetProperty="Y">
                                                 <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
@@ -1315,7 +1314,7 @@
                                     VerticalAlignment="Center"
                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                     FontSize="20"
-                                    Glyph="&#xE10C;"
+                                    Glyph="&#xE712;"
                                     Height="{ThemeResource AppBarExpandButtonCircleDiameter}" />
                             </Button>
                             <Popup x:Name="OverflowPopup">
@@ -1361,8 +1360,6 @@
             </Setter.Value>
         </Setter>
     </Style>
-
-    <Style TargetType="CommandBar" BasedOn="{StaticResource CommandBarRevealStyle}" />
 
     <Style TargetType="ListViewItem" x:Key="ListViewItemRevealStyle">
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />

@@ -8,14 +8,6 @@
 
 const int CheckerSize = 4;
 
-Hsv FindNextNamedColor(
-    const Hsv &originalHsv,
-    winrt::ColorPickerHsvChannel channel,
-    IncrementDirection direction,
-    bool shouldWrap,
-    double minBound,
-    double maxBound);
-
 Hsv IncrementColorChannel(
     const Hsv &originalHsv,
     winrt::ColorPickerHsvChannel channel,
@@ -62,7 +54,7 @@ Hsv IncrementColorChannel(
             throw winrt::hresult_error(E_FAIL);
         }
 
-        double previousValue = *valueToIncrement;
+        const double previousValue = *valueToIncrement;
 
         *valueToIncrement += (direction == IncrementDirection::Lower ? -incrementAmount : incrementAmount);
 
@@ -105,8 +97,8 @@ Hsv IncrementColorChannel(
 template <typename T>
 int sgn(T val)
 {
-    int first = (static_cast<T>(0) < val) ? 1 : 0;
-    int second = (static_cast<T>(0) > val) ? 1 : 0;
+    const int first = (static_cast<T>(0) < val) ? 1 : 0;
+    const int second = (static_cast<T>(0) > val) ? 1 : 0;
 
     return first - second;
 }
@@ -162,7 +154,7 @@ Hsv FindNextNamedColor(
 
     while (newColorName == originalColorName)
     {
-        double previousValue = *newValue;
+        const double previousValue = *newValue;
         *newValue += (direction == IncrementDirection::Lower ? -1 : 1) * incrementAmount;
 
         bool justWrapped = false;
@@ -325,8 +317,8 @@ double IncrementAlphaChannel(
     // we'll multiple alpha by 100 to put it in the range of 0-100 instead of 0-1.
     originalAlpha *= 100;
 
-    double smallIncrementAmount = 1;
-    double largeIncrementAmount = 10;
+    const double smallIncrementAmount = 1;
+    const double largeIncrementAmount = 10;
 
     if (amount == IncrementAmount::Small)
     {
@@ -394,7 +386,7 @@ void CreateCheckeredBackgroundAsync(
                 // depending on both its x- and its y-position.  If x == CheckerSize, we'll turn visibility off,
                 // but then if y == CheckerSize, we'll turn it back on.
                 // The below is a shorthand for the above intent.
-                bool pixelShouldBeBlank = (x / CheckerSize + y / CheckerSize) % 2 == 0 ? 255 : 0;
+                const bool pixelShouldBeBlank = (x / CheckerSize + y / CheckerSize) % 2 == 0 ? 255 : 0;
 
                 if (pixelShouldBeBlank)
                 {
@@ -471,9 +463,9 @@ winrt::LoadedImageSurface CreateSurfaceFromPixelData(
     std::vector<byte> bmpData;
 
     // Size is header (14 bytes) + DIB header (40 bytes) + Pixel array (size of bgraPixelData).
-    size_t dibHeaderSize = 40;
-    size_t headerSize = 14 + dibHeaderSize;
-    size_t fileSize = headerSize + (*bgraPixelData).size();
+    const size_t dibHeaderSize = 40;
+    const size_t headerSize = 14 + dibHeaderSize;
+    const size_t fileSize = headerSize + (*bgraPixelData).size();
 
     // Header field to identify as BMP.
     bmpData.push_back('B');
@@ -492,7 +484,7 @@ winrt::LoadedImageSurface CreateSurfaceFromPixelData(
     bmpData.push_back(0);
 
     // Offset of the pixel data from the start.  Since our header is 14 + 12 bytes long, it starts after that.
-    auto pixelDataOffset = static_cast<uint32_t>(headerSize);
+    const auto pixelDataOffset = static_cast<uint32_t>(headerSize);
     bmpData.push_back(static_cast<byte>(pixelDataOffset & 0x000000FF));
     bmpData.push_back(static_cast<byte>((pixelDataOffset & 0x0000FF00) >> 8));
     bmpData.push_back(static_cast<byte>((pixelDataOffset & 0x00FF0000) >> 16));
@@ -505,66 +497,66 @@ winrt::LoadedImageSurface CreateSurfaceFromPixelData(
     bmpData.push_back(static_cast<byte>((dibHeaderSize & 0xFF000000) >> 24));
 
     // Bitmap width in pixels (32-bit).
-    auto bitmapWidth = static_cast<uint32_t>(pixelWidth);
+    const auto bitmapWidth = static_cast<uint32_t>(pixelWidth);
     bmpData.push_back(static_cast<byte>(bitmapWidth & 0x000000FF));
     bmpData.push_back(static_cast<byte>((bitmapWidth & 0x0000FF00) >> 8));
     bmpData.push_back(static_cast<byte>((bitmapWidth & 0x00FF0000) >> 16));
     bmpData.push_back(static_cast<byte>((bitmapWidth & 0xFF000000) >> 24));
 
     // Bitmap height in pixels (32-bit).
-    auto bitmapHeight = static_cast<uint32_t>(pixelHeight);
+    const auto bitmapHeight = static_cast<uint32_t>(pixelHeight);
     bmpData.push_back(static_cast<byte>(bitmapHeight & 0x000000FF));
     bmpData.push_back(static_cast<byte>((bitmapHeight & 0x0000FF00) >> 8));
     bmpData.push_back(static_cast<byte>((bitmapHeight & 0x00FF0000) >> 16));
     bmpData.push_back(static_cast<byte>((bitmapHeight & 0xFF000000) >> 24));
 
     // Color plane count.
-    uint16_t colorPlaneCount = 1;
+    const uint16_t colorPlaneCount = 1;
     bmpData.push_back(static_cast<byte>(colorPlaneCount & 0x00FF));
     bmpData.push_back(static_cast<byte>((colorPlaneCount & 0xFF00) >> 8));
 
     // Bits per pixel.
-    uint16_t bitsPerPixel = 32;
+    const uint16_t bitsPerPixel = 32;
     bmpData.push_back(static_cast<byte>(bitsPerPixel & 0x00FF));
     bmpData.push_back(static_cast<byte>((bitsPerPixel & 0xFF00) >> 8));
 
     // Compression method.  0 means uncompressed.
-    uint32_t compressionMethod = 0;
+    const uint32_t compressionMethod = 0;
     bmpData.push_back(static_cast<byte>(compressionMethod & 0x000000FF));
     bmpData.push_back(static_cast<byte>((compressionMethod & 0x0000FF00) >> 8));
     bmpData.push_back(static_cast<byte>((compressionMethod & 0x00FF0000) >> 16));
     bmpData.push_back(static_cast<byte>((compressionMethod & 0xFF000000) >> 24));
 
     // Image size.  Not needed for uncompressed images.
-    uint32_t imageSize = 0;
+    const uint32_t imageSize = 0;
     bmpData.push_back(static_cast<byte>(imageSize & 0x000000FF));
     bmpData.push_back(static_cast<byte>((imageSize & 0x0000FF00) >> 8));
     bmpData.push_back(static_cast<byte>((imageSize & 0x00FF0000) >> 16));
     bmpData.push_back(static_cast<byte>((imageSize & 0xFF000000) >> 24));
 
     // Horizontal resolution.  We don't care about this value.
-    uint32_t horizontalResolution = 1;
+    const uint32_t horizontalResolution = 1;
     bmpData.push_back(static_cast<byte>(horizontalResolution & 0x000000FF));
     bmpData.push_back(static_cast<byte>((horizontalResolution & 0x0000FF00) >> 8));
     bmpData.push_back(static_cast<byte>((horizontalResolution & 0x00FF0000) >> 16));
     bmpData.push_back(static_cast<byte>((horizontalResolution & 0xFF000000) >> 24));
 
     // Vertical resolution.  We don't care about this value.
-    uint32_t verticalResolution = 1;
+    const uint32_t verticalResolution = 1;
     bmpData.push_back(static_cast<byte>(verticalResolution & 0x000000FF));
     bmpData.push_back(static_cast<byte>((verticalResolution & 0x0000FF00) >> 8));
     bmpData.push_back(static_cast<byte>((verticalResolution & 0x00FF0000) >> 16));
     bmpData.push_back(static_cast<byte>((verticalResolution & 0xFF000000) >> 24));
 
     // Number of colors in the palette.  0 means use the default.
-    uint32_t colorsInPalette = 0;
+    const uint32_t colorsInPalette = 0;
     bmpData.push_back(static_cast<byte>(colorsInPalette & 0x000000FF));
     bmpData.push_back(static_cast<byte>((colorsInPalette & 0x0000FF00) >> 8));
     bmpData.push_back(static_cast<byte>((colorsInPalette & 0x00FF0000) >> 16));
     bmpData.push_back(static_cast<byte>((colorsInPalette & 0xFF000000) >> 24));
 
     // Important colors.  0 means all colors are important.
-    uint32_t importantColors = 0;
+    const uint32_t importantColors = 0;
     bmpData.push_back(static_cast<byte>(importantColors & 0x000000FF));
     bmpData.push_back(static_cast<byte>((importantColors & 0x0000FF00) >> 8));
     bmpData.push_back(static_cast<byte>((importantColors & 0x00FF0000) >> 16));

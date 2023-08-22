@@ -1,4 +1,7 @@
-﻿#include "pch.h"
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#include "pch.h"
 #include "common.h"
 #include "TeachingTipClosingEventArgs.h"
 
@@ -28,7 +31,7 @@ winrt::Deferral TeachingTipClosingEventArgs::GetDeferral()
 
     com_ptr<TeachingTipClosingEventArgs> strongThis = get_strong();
 
-    winrt::DeferralCompletedHandler instance{ [strongThis]()
+    winrt::Deferral instance{ [strongThis]()
     {
         strongThis->CheckThread();
         strongThis->DecrementDeferralCount();

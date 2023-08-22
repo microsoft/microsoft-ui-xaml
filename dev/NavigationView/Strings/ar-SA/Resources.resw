@@ -130,7 +130,7 @@
     <comment>Default automation id if no name or id is provided</comment>
   </data>
   <data name="SettingsButtonName" xml:space="preserve">
-    <value>إعدادات</value>
+    <value>الإعدادات</value>
     <comment>Automation name for the settings button</comment>
   </data>
   <data name="NavigationViewSearchButtonName" xml:space="preserve">
@@ -150,11 +150,15 @@
     <comment>Automation name for the nav view provided close button</comment>
   </data>
   <data name="NavigationOverflowButtonName" xml:space="preserve">
-    <value>زر المزيد</value>
+    <value>المزيد</value>
     <comment>Automation name for the nav view more button when panel is on top</comment>
   </data>
   <data name="NavigationOverflowButtonText" xml:space="preserve">
     <value>المزيد</value>
     <comment>Text for the nav view more button when panel is on top</comment>
+  </data>
+  <data name="NavigationOverflowButtonToolTip" xml:space="preserve">
+    <value>المزيد</value>
+    <comment>ToolTip caption for the nav view more button when panel is on top</comment>
   </data>
 </root>

@@ -150,11 +150,15 @@
     <comment>Automation name for the nav view provided close button</comment>
   </data>
   <data name="NavigationOverflowButtonName" xml:space="preserve">
-    <value>ปุ่มเพิ่มเติม</value>
+    <value>เพิ่มเติม</value>
     <comment>Automation name for the nav view more button when panel is on top</comment>
   </data>
   <data name="NavigationOverflowButtonText" xml:space="preserve">
     <value>ดูมากขึ้น</value>
     <comment>Text for the nav view more button when panel is on top</comment>
+  </data>
+  <data name="NavigationOverflowButtonToolTip" xml:space="preserve">
+    <value>เพิ่มเติม</value>
+    <comment>ToolTip caption for the nav view more button when panel is on top</comment>
   </data>
 </root>

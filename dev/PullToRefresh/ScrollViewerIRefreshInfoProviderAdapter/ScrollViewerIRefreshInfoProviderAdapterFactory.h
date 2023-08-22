@@ -5,4 +5,4 @@
 
 #include "ScrollViewerIRefreshInfoProviderAdapter.h"
 
-CppWinRTActivatableClassWithBasicFactory(ScrollViewerIRefreshInfoProviderAdapter);
+

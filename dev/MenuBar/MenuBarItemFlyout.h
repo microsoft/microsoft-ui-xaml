@@ -19,4 +19,3 @@ public:
     tracker_ref<winrt::Control> m_presenter{ this };
 };
 
-CppWinRTActivatableClassWithBasicFactory(MenuBarItemFlyout);

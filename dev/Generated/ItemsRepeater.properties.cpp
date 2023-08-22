@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ItemsRepeater.h"
 
-CppWinRTActivatableClassWithDPFactory(ItemsRepeater)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(ItemsRepeater)
+}
+
+#include "ItemsRepeater.g.cpp"
 
 GlobalDependencyProperty ItemsRepeaterProperties::s_AnimatorProperty{ nullptr };
 GlobalDependencyProperty ItemsRepeaterProperties::s_BackgroundProperty{ nullptr };
@@ -166,7 +171,10 @@ void ItemsRepeaterProperties::OnVerticalCacheLengthPropertyChanged(
 
 void ItemsRepeaterProperties::Animator(winrt::ElementAnimator const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ItemsRepeater*>(this)->SetValue(s_AnimatorProperty, ValueHelper<winrt::ElementAnimator>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ElementAnimator ItemsRepeaterProperties::Animator()
@@ -176,7 +184,10 @@ winrt::ElementAnimator ItemsRepeaterProperties::Animator()
 
 void ItemsRepeaterProperties::Background(winrt::Brush const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ItemsRepeater*>(this)->SetValue(s_BackgroundProperty, ValueHelper<winrt::Brush>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Brush ItemsRepeaterProperties::Background()
@@ -186,7 +197,10 @@ winrt::Brush ItemsRepeaterProperties::Background()
 
 void ItemsRepeaterProperties::HorizontalCacheLength(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ItemsRepeater*>(this)->SetValue(s_HorizontalCacheLengthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ItemsRepeaterProperties::HorizontalCacheLength()
@@ -196,7 +210,10 @@ double ItemsRepeaterProperties::HorizontalCacheLength()
 
 void ItemsRepeaterProperties::ItemsSource(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ItemsRepeater*>(this)->SetValue(s_ItemsSourceProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable ItemsRepeaterProperties::ItemsSource()
@@ -206,7 +223,10 @@ winrt::IInspectable ItemsRepeaterProperties::ItemsSource()
 
 void ItemsRepeaterProperties::ItemTemplate(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ItemsRepeater*>(this)->SetValue(s_ItemTemplateProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable ItemsRepeaterProperties::ItemTemplate()
@@ -216,7 +236,10 @@ winrt::IInspectable ItemsRepeaterProperties::ItemTemplate()
 
 void ItemsRepeaterProperties::Layout(winrt::Layout const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ItemsRepeater*>(this)->SetValue(s_LayoutProperty, ValueHelper<winrt::Layout>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Layout ItemsRepeaterProperties::Layout()
@@ -226,7 +249,10 @@ winrt::Layout ItemsRepeaterProperties::Layout()
 
 void ItemsRepeaterProperties::VerticalCacheLength(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ItemsRepeater*>(this)->SetValue(s_VerticalCacheLengthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double ItemsRepeaterProperties::VerticalCacheLength()

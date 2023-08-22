@@ -15,14 +15,23 @@ public:
     void LeftPaneVisibility(winrt::Visibility const& value);
     winrt::Visibility LeftPaneVisibility();
 
+    void OpenPaneLength(double value);
+    double OpenPaneLength();
+
     void OverflowButtonVisibility(winrt::Visibility const& value);
     winrt::Visibility OverflowButtonVisibility();
 
     void PaneToggleButtonVisibility(winrt::Visibility const& value);
     winrt::Visibility PaneToggleButtonVisibility();
 
+    void PaneToggleButtonWidth(double value);
+    double PaneToggleButtonWidth();
+
     void SingleSelectionFollowsFocus(bool value);
     bool SingleSelectionFollowsFocus();
+
+    void SmallerPaneToggleButtonWidth(double value);
+    double SmallerPaneToggleButtonWidth();
 
     void TopPadding(double value);
     double TopPadding();
@@ -32,17 +41,23 @@ public:
 
     static winrt::DependencyProperty BackButtonVisibilityProperty() { return s_BackButtonVisibilityProperty; }
     static winrt::DependencyProperty LeftPaneVisibilityProperty() { return s_LeftPaneVisibilityProperty; }
+    static winrt::DependencyProperty OpenPaneLengthProperty() { return s_OpenPaneLengthProperty; }
     static winrt::DependencyProperty OverflowButtonVisibilityProperty() { return s_OverflowButtonVisibilityProperty; }
     static winrt::DependencyProperty PaneToggleButtonVisibilityProperty() { return s_PaneToggleButtonVisibilityProperty; }
+    static winrt::DependencyProperty PaneToggleButtonWidthProperty() { return s_PaneToggleButtonWidthProperty; }
     static winrt::DependencyProperty SingleSelectionFollowsFocusProperty() { return s_SingleSelectionFollowsFocusProperty; }
+    static winrt::DependencyProperty SmallerPaneToggleButtonWidthProperty() { return s_SmallerPaneToggleButtonWidthProperty; }
     static winrt::DependencyProperty TopPaddingProperty() { return s_TopPaddingProperty; }
     static winrt::DependencyProperty TopPaneVisibilityProperty() { return s_TopPaneVisibilityProperty; }
 
     static GlobalDependencyProperty s_BackButtonVisibilityProperty;
     static GlobalDependencyProperty s_LeftPaneVisibilityProperty;
+    static GlobalDependencyProperty s_OpenPaneLengthProperty;
     static GlobalDependencyProperty s_OverflowButtonVisibilityProperty;
     static GlobalDependencyProperty s_PaneToggleButtonVisibilityProperty;
+    static GlobalDependencyProperty s_PaneToggleButtonWidthProperty;
     static GlobalDependencyProperty s_SingleSelectionFollowsFocusProperty;
+    static GlobalDependencyProperty s_SmallerPaneToggleButtonWidthProperty;
     static GlobalDependencyProperty s_TopPaddingProperty;
     static GlobalDependencyProperty s_TopPaneVisibilityProperty;
 

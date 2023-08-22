@@ -7,6 +7,8 @@
 #include "RatingControlAutomationPeer.h"
 #include "Utils.h"
 
+#include "RatingControlAutomationPeer.properties.cpp"
+
 RatingControlAutomationPeer::RatingControlAutomationPeer(winrt::FrameworkElement const& owner)
     : ReferenceTracker(owner)
 {
@@ -25,14 +27,14 @@ bool RatingControlAutomationPeer::IsReadOnly()
 
 hstring RatingControlAutomationPeer::IValueProvider_Value()
 {
-    double ratingValue = GetRatingControl().Value();
+    const double ratingValue = GetRatingControl().Value();
     winrt::hstring valueString;
 
     winrt::hstring ratingString;
 
     if (ratingValue == -1)
     {
-        double placeholderValue = GetRatingControl().PlaceholderValue();
+        const double placeholderValue = GetRatingControl().PlaceholderValue();
         if (placeholderValue == -1)
         {
             valueString = ResourceAccessor::GetLocalizedStringResource(SR_RatingUnset);
@@ -84,7 +86,7 @@ double RatingControlAutomationPeer::Minimum()
 double RatingControlAutomationPeer::Value()
 {
     // Change this to provide a placeholder value too.
-    double value = GetRatingControl().Value();
+    const double value = GetRatingControl().Value();
     if (value == -1)
     {
         return 0;
@@ -121,12 +123,12 @@ winrt::AutomationControlType RatingControlAutomationPeer::GetAutomationControlTy
 void RatingControlAutomationPeer::RaisePropertyChangedEvent(double newValue)
 {
     // UIA doesn't tolerate a null doubles, so we convert them to zeroes.
-    double oldValue = GetRatingControl().Value();
+    const double oldValue = GetRatingControl().Value();
     auto oldValueProp = winrt::PropertyValue::CreateDouble(oldValue);
 
     if (newValue == -1)
     {
-        auto newValueProp = winrt::PropertyValue::CreateDouble(0.0);
+        const auto newValueProp = winrt::PropertyValue::CreateDouble(0.0);
         __super::RaisePropertyChangedEvent(winrt::ValuePatternIdentifiers::ValueProperty(), oldValueProp, newValueProp);
         __super::RaisePropertyChangedEvent(winrt::RangeValuePatternIdentifiers::ValueProperty(), oldValueProp, newValueProp);
     }
@@ -149,7 +151,7 @@ winrt::RatingControl RatingControlAutomationPeer::GetRatingControl()
 int RatingControlAutomationPeer::DetermineFractionDigits(double value)
 {
     value = value * 100;
-    int intValue = (int)value;
+    const int intValue = (int)value;
 
     // When reading out the Value_Value, we want clients to read out the least number of digits
     // possible. We don't want a 3 (represented as a double) to be read out as 3.00...
@@ -192,8 +194,8 @@ winrt::hstring RatingControlAutomationPeer::GenerateValue_ValueString(const winr
 
     std::wstring maxRatingString = std::to_wstring(GetRatingControl().MaxRating());
 
-    int fractionDigits = DetermineFractionDigits(ratingValue);
-    int sigDigits = DetermineSignificantDigits(ratingValue, fractionDigits);
+    const int fractionDigits = DetermineFractionDigits(ratingValue);
+    const int sigDigits = DetermineSignificantDigits(ratingValue, fractionDigits);
     formatter.FractionDigits(fractionDigits);
     rounder.SignificantDigits(sigDigits);
     winrt::hstring ratingString = formatter.Format(ratingValue);

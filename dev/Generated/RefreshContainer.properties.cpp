@@ -6,7 +6,12 @@
 #include "common.h"
 #include "RefreshContainer.h"
 
-CppWinRTActivatableClassWithDPFactory(RefreshContainer)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(RefreshContainer)
+}
+
+#include "RefreshContainer.g.cpp"
 
 GlobalDependencyProperty RefreshContainerProperties::s_PullDirectionProperty{ nullptr };
 GlobalDependencyProperty RefreshContainerProperties::s_VisualizerProperty{ nullptr };
@@ -67,7 +72,10 @@ void RefreshContainerProperties::OnVisualizerPropertyChanged(
 
 void RefreshContainerProperties::PullDirection(winrt::RefreshPullDirection const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RefreshContainer*>(this)->SetValue(s_PullDirectionProperty, ValueHelper<winrt::RefreshPullDirection>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::RefreshPullDirection RefreshContainerProperties::PullDirection()
@@ -77,7 +85,10 @@ winrt::RefreshPullDirection RefreshContainerProperties::PullDirection()
 
 void RefreshContainerProperties::Visualizer(winrt::RefreshVisualizer const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RefreshContainer*>(this)->SetValue(s_VisualizerProperty, ValueHelper<winrt::RefreshVisualizer>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::RefreshVisualizer RefreshContainerProperties::Visualizer()

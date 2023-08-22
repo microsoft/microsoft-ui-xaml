@@ -5,9 +5,11 @@
 
 #include "ElementFactory.h"
 #include "RecyclingElementFactory.g.h"
+#include "RecyclingElementFactory.properties.h"
 
 class RecyclingElementFactory :
-    public ReferenceTracker<RecyclingElementFactory, winrt::implementation::RecyclingElementFactoryT, ElementFactory>
+    public ReferenceTracker<RecyclingElementFactory, winrt::implementation::RecyclingElementFactoryT, ElementFactory>,
+    public RecyclingElementFactoryProperties
 {
 public:
     RecyclingElementFactory();
@@ -19,8 +21,6 @@ public:
     winrt::IMap<winrt::hstring, winrt::DataTemplate> Templates();
     void Templates(winrt::IMap<winrt::hstring, winrt::DataTemplate> const& value);
 
-    winrt::event_token SelectTemplateKey(winrt::TypedEventHandler<winrt::RecyclingElementFactory, winrt::SelectTemplateEventArgs> const& value);
-    void SelectTemplateKey(winrt::event_token const& token);
 #pragma endregion
 
 #pragma region IRecyclingElementFactoryOverrides
@@ -36,5 +36,4 @@ private:
     tracker_ref<winrt::RecyclePool> m_recyclePool{ this };
     tracker_ref<winrt::IMap<winrt::hstring, winrt::DataTemplate>> m_templates{ this };
     tracker_ref<winrt::SelectTemplateEventArgs> m_args{ this };
-    event_source<winrt::TypedEventHandler<winrt::RecyclingElementFactory, winrt::SelectTemplateEventArgs>> m_selectTemplateKeyEventSource{ this };
 };

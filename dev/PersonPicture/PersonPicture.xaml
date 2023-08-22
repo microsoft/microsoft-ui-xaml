@@ -4,12 +4,17 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
 
-    <Style TargetType="local:PersonPicture">
+    <Style TargetType="local:PersonPicture" BasedOn="{StaticResource DefaultPersonPictureStyle}" />
+
+    <Style x:Key="DefaultPersonPictureStyle" TargetType="local:PersonPicture">
         <Setter Property="Foreground" Value="{ThemeResource PersonPictureForegroundThemeBrush}" />
-        <Setter Property="Width" Value="100" />
-        <Setter Property="Height" Value="100" />
+        <Setter Property="Background" Value="{ThemeResource PersonPictureEllipseFillThemeBrush}"/>
+        <Setter Property="BorderBrush" Value="{ThemeResource PersonPictureEllipseFillStrokeBrush}"/>
+        <Setter Property="BorderThickness" Value="{ThemeResource PersonPictureEllipseStrokeThickness}"/>
+        <Setter Property="Width" Value="96" />
+        <Setter Property="Height" Value="96" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-        <Setter Property="FontWeight" Value="SemiLight" />
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
         <Setter Property="Template">
@@ -28,7 +33,7 @@
                                 <VisualState x:Name="Initials" />
                                 <VisualState x:Name="NoPhotoOrInitials">
                                     <VisualState.Setters>
-                                        <Setter Target="InitialsTextBlock.FontFamily" Value="Segoe MDL2 Assets"/>
+                                        <Setter Target="InitialsTextBlock.FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
                                         <!-- Placeholder symbol for 'Contact' (https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font) -->
                                         <Setter Target="InitialsTextBlock.Text" Value="&#xE77B;"/>
                                     </VisualState.Setters>
@@ -36,7 +41,7 @@
                                 <!-- Visual State when in Group mode -->
                                 <VisualState x:Name="Group">
                                     <VisualState.Setters>
-                                        <Setter Target="InitialsTextBlock.FontFamily" Value="Segoe MDL2 Assets"/>
+                                        <Setter Target="InitialsTextBlock.FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
                                         <!-- Placeholder symbol for 'People' (https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font) -->
                                         <Setter Target="InitialsTextBlock.Text" Value="&#xE716;"/>
                                     </VisualState.Setters>
@@ -64,16 +69,16 @@
                         </VisualStateManager.VisualStateGroups>
 
                         <Ellipse
-                            Fill="{ThemeResource PersonPictureEllipseFillThemeBrush}"
-                            Stroke="{ThemeResource SystemColorButtonTextColor}"
-                            StrokeThickness="{ThemeResource PersonPictureEllipseStrokeThickness}"
+                            Fill="{TemplateBinding Background}"
+                            Stroke="{TemplateBinding BorderBrush}"
+                            StrokeThickness="{TemplateBinding BorderThickness}"
                             Width="{TemplateBinding Width}"
                             Height="{TemplateBinding Height}" />
 
                         <TextBlock
                             x:Name="InitialsTextBlock"
                             AutomationProperties.AccessibilityView="Raw"
-                            FontSize="36"
+                            FontSize="40"
                             FontFamily="{TemplateBinding FontFamily}"
                             Foreground="{TemplateBinding Foreground}"
                             FontWeight="{TemplateBinding FontWeight}"
@@ -94,8 +99,9 @@
                         <Grid
                             x:Name="BadgeGrid"
                             Visibility="Collapsed"
-                            VerticalAlignment="Bottom"
-                            HorizontalAlignment="Right">
+                            VerticalAlignment="Top"
+                            HorizontalAlignment="Right"
+                            Margin="{ThemeResource PersonPictureBadgeGridMargin}">
 
                             <Ellipse
                                 x:Name="BadgingBackgroundEllipse"

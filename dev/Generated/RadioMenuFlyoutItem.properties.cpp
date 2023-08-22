@@ -6,8 +6,14 @@
 #include "common.h"
 #include "RadioMenuFlyoutItem.h"
 
-CppWinRTActivatableClassWithDPFactory(RadioMenuFlyoutItem)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(RadioMenuFlyoutItem)
+}
 
+#include "RadioMenuFlyoutItem.g.cpp"
+
+GlobalDependencyProperty RadioMenuFlyoutItemProperties::s_AreCheckStatesEnabledProperty{ nullptr };
 GlobalDependencyProperty RadioMenuFlyoutItemProperties::s_GroupNameProperty{ nullptr };
 GlobalDependencyProperty RadioMenuFlyoutItemProperties::s_IsCheckedProperty{ nullptr };
 
@@ -18,6 +24,17 @@ RadioMenuFlyoutItemProperties::RadioMenuFlyoutItemProperties()
 
 void RadioMenuFlyoutItemProperties::EnsureProperties()
 {
+    if (!s_AreCheckStatesEnabledProperty)
+    {
+        s_AreCheckStatesEnabledProperty =
+            InitializeDependencyProperty(
+                L"AreCheckStatesEnabled",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::RadioMenuFlyoutItem>(),
+                true /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(false),
+                &RadioMenuFlyoutItem::OnAreCheckStatesEnabledPropertyChanged);
+    }
     if (!s_GroupNameProperty)
     {
         s_GroupNameProperty =
@@ -44,6 +61,7 @@ void RadioMenuFlyoutItemProperties::EnsureProperties()
 
 void RadioMenuFlyoutItemProperties::ClearProperties()
 {
+    s_AreCheckStatesEnabledProperty = nullptr;
     s_GroupNameProperty = nullptr;
     s_IsCheckedProperty = nullptr;
 }
@@ -64,9 +82,23 @@ void RadioMenuFlyoutItemProperties::OnIsCheckedPropertyChanged(
     winrt::get_self<RadioMenuFlyoutItem>(owner)->OnPropertyChanged(args);
 }
 
+
+void RadioMenuFlyoutItemProperties::SetAreCheckStatesEnabled(winrt::MenuFlyoutSubItem const& target, bool value)
+{
+    target.SetValue(s_AreCheckStatesEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool RadioMenuFlyoutItemProperties::GetAreCheckStatesEnabled(winrt::MenuFlyoutSubItem const& target)
+{
+    return ValueHelper<bool>::CastOrUnbox(target.GetValue(s_AreCheckStatesEnabledProperty));
+}
+
 void RadioMenuFlyoutItemProperties::GroupName(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadioMenuFlyoutItem*>(this)->SetValue(s_GroupNameProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring RadioMenuFlyoutItemProperties::GroupName()
@@ -76,7 +108,10 @@ winrt::hstring RadioMenuFlyoutItemProperties::GroupName()
 
 void RadioMenuFlyoutItemProperties::IsChecked(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RadioMenuFlyoutItem*>(this)->SetValue(s_IsCheckedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool RadioMenuFlyoutItemProperties::IsChecked()

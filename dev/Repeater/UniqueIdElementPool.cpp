@@ -36,7 +36,7 @@ winrt::UIElement UniqueIdElementPool::Remove(int index)
     // Check if there is already a element in the mapping and if so, use it.
     winrt::UIElement element = nullptr;
     std::wstring key = std::wstring(m_owner->ItemsSourceView().KeyFromIndex(index));
-    auto it = m_elementMap.find(key);
+    const auto it = m_elementMap.find(key);
     if (it != m_elementMap.end())
     {
         element = it->second.get();

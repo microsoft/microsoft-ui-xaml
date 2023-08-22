@@ -35,7 +35,7 @@ std::wstring StringUtil::Utf8ToUtf16(const std::string_view& utf8Str)
     std::wstring converted;
     if (utf8Str.size() > 0)
     {
-        int length = MultiByteToWideChar(CP_UTF8, 0, utf8Str.data(), (int)utf8Str.size(), nullptr, 0);
+        const int length = MultiByteToWideChar(CP_UTF8, 0, utf8Str.data(), (int)utf8Str.size(), nullptr, 0);
         if (length > 0)
         {
             converted.resize(length);
@@ -58,7 +58,7 @@ std::string StringUtil::Utf16ToUtf8(const std::wstring_view& utf16Str)
     std::string converted;
     if (utf16Str.size() > 0)
     {
-        int length = WideCharToMultiByte(CP_UTF8, 0, utf16Str.data(), (int)utf16Str.size(), nullptr, 0, nullptr, nullptr);
+        const int length = WideCharToMultiByte(CP_UTF8, 0, utf16Str.data(), (int)utf16Str.size(), nullptr, 0, nullptr, nullptr);
         if (length > 0)
         {
             converted.resize(length);
@@ -96,7 +96,7 @@ bool VisualStateUtil::VisualStateGroupExists(const winrt::FrameworkElement& cont
     return static_cast<bool>(GetVisualStateGroup(control, groupName));
 }
 
-void VisualStateUtil::GotToStateIfGroupExists(const winrt::Control& control, const std::wstring_view& groupName, const std::wstring_view& stateName, bool useTransitions)
+void VisualStateUtil::GoToStateIfGroupExists(const winrt::Control& control, const std::wstring_view& groupName, const std::wstring_view& stateName, bool useTransitions)
 {
     auto visualStateGroup = GetVisualStateGroup(control, groupName);
     if (visualStateGroup)

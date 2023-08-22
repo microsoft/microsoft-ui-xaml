@@ -6,7 +6,12 @@
 #include "common.h"
 #include "CommandBarFlyoutCommandBar.h"
 
-CppWinRTActivatableClassWithDPFactory(CommandBarFlyoutCommandBar)
+namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
+{
+    CppWinRTActivatableClassWithDPFactory(CommandBarFlyoutCommandBar)
+}
+
+#include "CommandBarFlyoutCommandBar.g.cpp"
 
 GlobalDependencyProperty CommandBarFlyoutCommandBarProperties::s_FlyoutTemplateSettingsProperty{ nullptr };
 
@@ -37,7 +42,10 @@ void CommandBarFlyoutCommandBarProperties::ClearProperties()
 
 void CommandBarFlyoutCommandBarProperties::FlyoutTemplateSettings(winrt::CommandBarFlyoutCommandBarTemplateSettings const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBar*>(this)->SetValue(s_FlyoutTemplateSettingsProperty, ValueHelper<winrt::CommandBarFlyoutCommandBarTemplateSettings>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::CommandBarFlyoutCommandBarTemplateSettings CommandBarFlyoutCommandBarProperties::FlyoutTemplateSettings()

@@ -8,7 +8,13 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" HorizontalAlignment="Center">
+        <StackPanel.Resources>
+            <Style TargetType="Button">
+                <Setter Property="Margin" Value="2"/>
+                <Setter Property="Width" Value="200"/>
+            </Style>
+        </StackPanel.Resources>
       <Button x:Name="RefreshContainerButton" AutomationProperties.Name="RefreshContainerPageButton" Content="RefreshContainer"/>
       <Button x:Name="RefreshContainerOnImageButton" AutomationProperties.Name="RefreshContainerOnImagePageButton" Content="RefreshContainerOnImage"/>
       <Button x:Name="RefreshVisualizerButton" AutomationProperties.Name="RefreshVisualizerPageButton" Content="RefreshVisualizer"/>

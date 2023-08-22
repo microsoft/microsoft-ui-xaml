@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
@@ -11,7 +11,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)DesignModeHelpers.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IdleSynchronizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NavigateToTestCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PlatformConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestDeclaration.cs" />
@@ -20,9 +19,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)VisualTreeDumper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)Themes\Generic.xaml"  Condition="'$(MSBuildProjectName)' != 'MUXControlsTestAppWPF'">
+    <Page Include="$(MSBuildThisFileDirectory)Themes\Generic.xaml" Condition="'$(MSBuildProjectName)' != 'MUXControlsTestAppWPF'">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\testinfra\AppTestAutomationHelpers\AppTestAutomationHelpers.vcxproj">
+      <Project>{128e6f7a-578c-48dc-bd3f-750ec662c268}</Project>
+      <Name>AppTestAutomationHelpers</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

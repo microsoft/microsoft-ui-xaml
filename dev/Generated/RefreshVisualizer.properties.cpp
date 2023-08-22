@@ -6,7 +6,12 @@
 #include "common.h"
 #include "RefreshVisualizer.h"
 
-CppWinRTActivatableClassWithDPFactory(RefreshVisualizer)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(RefreshVisualizer)
+}
+
+#include "RefreshVisualizer.g.cpp"
 
 GlobalDependencyProperty RefreshVisualizerProperties::s_ContentProperty{ nullptr };
 GlobalDependencyProperty RefreshVisualizerProperties::s_InfoProviderProperty{ nullptr };
@@ -110,7 +115,10 @@ void RefreshVisualizerProperties::OnStatePropertyChanged(
 
 void RefreshVisualizerProperties::Content(winrt::UIElement const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RefreshVisualizer*>(this)->SetValue(s_ContentProperty, ValueHelper<winrt::UIElement>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::UIElement RefreshVisualizerProperties::Content()
@@ -121,7 +129,10 @@ winrt::UIElement RefreshVisualizerProperties::Content()
 
 void RefreshVisualizerProperties::Orientation(winrt::RefreshVisualizerOrientation const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RefreshVisualizer*>(this)->SetValue(s_OrientationProperty, ValueHelper<winrt::RefreshVisualizerOrientation>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::RefreshVisualizerOrientation RefreshVisualizerProperties::Orientation()
@@ -131,7 +142,10 @@ winrt::RefreshVisualizerOrientation RefreshVisualizerProperties::Orientation()
 
 void RefreshVisualizerProperties::State(winrt::RefreshVisualizerState const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<RefreshVisualizer*>(this)->SetValue(s_StateProperty, ValueHelper<winrt::RefreshVisualizerState>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::RefreshVisualizerState RefreshVisualizerProperties::State()

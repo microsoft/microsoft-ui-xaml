@@ -6,6 +6,8 @@
 #include "NavigationViewItemInvokedEventArgs.h"
 #include "NavigationView.h"
 
+#include "NavigationViewItemInvokedEventArgs.properties.cpp"
+
 winrt::IInspectable NavigationViewItemInvokedEventArgs::InvokedItem()
 {
     return m_invokedItem.get();

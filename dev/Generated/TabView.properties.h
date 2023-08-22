@@ -24,6 +24,9 @@ public:
     void CanReorderTabs(bool value);
     bool CanReorderTabs();
 
+    void CloseButtonOverlayMode(winrt::TabViewCloseButtonOverlayMode const& value);
+    winrt::TabViewCloseButtonOverlayMode CloseButtonOverlayMode();
+
     void IsAddTabButtonVisible(bool value);
     bool IsAddTabButtonVisible();
 
@@ -65,6 +68,7 @@ public:
     static winrt::DependencyProperty AllowDropTabsProperty() { return s_AllowDropTabsProperty; }
     static winrt::DependencyProperty CanDragTabsProperty() { return s_CanDragTabsProperty; }
     static winrt::DependencyProperty CanReorderTabsProperty() { return s_CanReorderTabsProperty; }
+    static winrt::DependencyProperty CloseButtonOverlayModeProperty() { return s_CloseButtonOverlayModeProperty; }
     static winrt::DependencyProperty IsAddTabButtonVisibleProperty() { return s_IsAddTabButtonVisibleProperty; }
     static winrt::DependencyProperty SelectedIndexProperty() { return s_SelectedIndexProperty; }
     static winrt::DependencyProperty SelectedItemProperty() { return s_SelectedItemProperty; }
@@ -83,6 +87,7 @@ public:
     static GlobalDependencyProperty s_AllowDropTabsProperty;
     static GlobalDependencyProperty s_CanDragTabsProperty;
     static GlobalDependencyProperty s_CanReorderTabsProperty;
+    static GlobalDependencyProperty s_CloseButtonOverlayModeProperty;
     static GlobalDependencyProperty s_IsAddTabButtonVisibleProperty;
     static GlobalDependencyProperty s_SelectedIndexProperty;
     static GlobalDependencyProperty s_SelectedItemProperty;
@@ -128,11 +133,19 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
+    static void OnCloseButtonOverlayModePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
     static void OnSelectedIndexPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnSelectedItemPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnTabItemsSourcePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

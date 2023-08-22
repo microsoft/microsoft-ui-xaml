@@ -38,19 +38,9 @@ using PullToRefreshHelperTestApi = Microsoft.UI.Private.Controls.PullToRefreshHe
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class RefreshVisualizerTests
+    public class RefreshVisualizerTests : ApiTestBase
     {
         TimeSpan c_MaxWaitDuration = TimeSpan.FromMilliseconds(5000);
-        
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            RunOnUIThread.Execute(() => {
-                Log.Comment("TestCleanup: Restore TestContentRoot to null");
-                // Put things back the way we found them.
-                MUXControlsTestApp.App.TestContentRoot = null;
-            });
-        }
 
         [TestMethod]
         public void CanInstantiate()
@@ -64,7 +54,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment("RefreshVisualizer.Loaded event handler");
                     refreshVisualizerLoadedEvent.Set();
                 };
-                MUXControlsTestApp.App.TestContentRoot = refreshVisualizer;
+                Content = refreshVisualizer;
             });
 
             Log.Comment("Waiting for Loaded event");
@@ -73,7 +63,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.IsNotNull(MUXControlsTestApp.App.TestContentRoot as RefreshVisualizer);
+                Verify.IsNotNull(Content as RefreshVisualizer);
             });
         }
 
@@ -97,40 +87,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void ContentIsUpdatable()
         {
-            var refreshVisualizerLoadedEvent = new AutoResetEvent(false);
             RunOnUIThread.Execute(() =>
             {
                 RefreshVisualizer refreshVisualizer = new RefreshVisualizer();
                 //The default Progress Indicator is consturcted in the OnApplyTemplate method, since that is not called in this test
                 //we expect the Content to be null.
                 Verify.IsNull(refreshVisualizer.Content);
-
-                refreshVisualizer.Loaded += (object sender, RoutedEventArgs e) =>
-                {
-                    Log.Comment("RefreshVisualizer.Loaded event handler");
-                    refreshVisualizerLoadedEvent.Set();
-                };
-                MUXControlsTestApp.App.TestContentRoot = refreshVisualizer;
-            });
-
-            IdleSynchronizer.Wait();
-            refreshVisualizerLoadedEvent.WaitOne(c_MaxWaitDuration);
-
-            RunOnUIThread.Execute(() =>
-            {
-                RefreshVisualizer refreshVisualizer = MUXControlsTestApp.App.TestContentRoot as RefreshVisualizer;
-                Verify.IsNotNull(refreshVisualizer);
+                Content = refreshVisualizer;
+                Content.UpdateLayout();
                 Verify.IsNotNull(refreshVisualizer.Content);
                 Verify.AreEqual<Symbol>(Symbol.Refresh, ((SymbolIcon)(refreshVisualizer.Content)).Symbol);
-
                 refreshVisualizer.Content = new SymbolIcon(Symbol.Cancel);
                 Verify.AreEqual<Symbol>(Symbol.Cancel, ((SymbolIcon)(refreshVisualizer.Content)).Symbol);
             });
-        }
-
-        private void RefreshVisualizer_Loaded(object sender, RoutedEventArgs e)
-        {
-            throw new NotImplementedException();
         }
 
         [TestMethod]
@@ -203,7 +172,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual<int>(0, refreshInfoProviderImpl.OnRefreshStartedCalls);
                 Verify.AreEqual<int>(0, refreshInfoProviderImpl.OnRefreshCompletedCalls);
 
-                MUXControlsTestApp.App.TestContentRoot = refreshVisualizer;
+                Content = refreshVisualizer;
                 
                 refreshVisualizer.RequestRefresh();
             });
@@ -212,7 +181,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                RefreshVisualizer refreshVisualizer = (RefreshVisualizer)MUXControlsTestApp.App.TestContentRoot;
+                RefreshVisualizer refreshVisualizer = (RefreshVisualizer)Content;
                 RefreshInfoProviderImpl refreshInfoProviderImpl = ((RefreshInfoProviderImpl)((IRefreshVisualizerPrivate)refreshVisualizer).InfoProvider);
 
                 Verify.AreEqual<int>(1, refreshInfoProviderImpl.OnRefreshStartedCalls);

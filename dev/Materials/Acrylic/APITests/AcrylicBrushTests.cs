@@ -32,7 +32,7 @@ using AcrylicBrush = Microsoft.UI.Xaml.Media.AcrylicBrush;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class AcrylicBrushTests
+    public class AcrylicBrushTests : ApiTestBase
     {
         private Rectangle _rectangle1 = null;
         private StackPanel _rootSP = null;
@@ -84,6 +84,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 #endif
         public void VerifyAcrylicBrushHasCorrectFallbackColor()
         {
+            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone2))
+            {
+                Log.Comment("Using system XAML AcrylicBrushes post-RS2, so nothing to test.");
+                return;
+            }
+
             RunOnUIThread.Execute(() =>
             {
                 // only select the pair whose <fallback color> is not empty
@@ -150,7 +156,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             _rootSP.Children.Add(_rectangle1);
 
             Log.Comment("Setting window content");
-            MUXControlsTestApp.App.TestContentRoot = _rootSP;
+            Content = _rootSP;
         }
 
         private Color GetColorByName(string name, ResourceDictionary dict)

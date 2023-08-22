@@ -12,6 +12,8 @@
 
 using TreeNodeSelectionState = TreeViewNode::TreeNodeSelectionState;
 
+#pragma warning(disable: 26813)  
+
 // When dragging an item over a collapsed folder, we expand the folder after 1s hovering.
 static int64_t const c_dragOverInterval = 1000 * 10000;
 
@@ -38,6 +40,8 @@ public:
     winrt::AutomationPeer OnCreateAutomationPeer();
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+
+    void SetItemsSource(winrt::TreeViewNode const& node, winrt::IInspectable const& value);
 
 public:
     // IFrameworkElementOverrides
@@ -82,7 +86,7 @@ private:
     void UpdateTreeViewItemVisualState(TreeNodeSelectionState const& state);
     void RaiseSelectionChangeEvents(bool isSelected);
 
-    static bool IsDirectionalKey(winrt::VirtualKey key);
+    static bool constexpr IsDirectionalKey(winrt::VirtualKey key);
 
     DispatcherHelper m_dispatcherHelper{ *this };
 };

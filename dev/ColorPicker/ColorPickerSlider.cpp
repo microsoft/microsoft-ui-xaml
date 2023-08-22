@@ -43,12 +43,10 @@ void ColorPickerSlider::OnApplyTemplate()
 
 void ColorPickerSlider::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 {
-    if ((Orientation() == winrt::Orientation::Horizontal &&
-            args.Key() != winrt::VirtualKey::Left &&
-            args.Key() != winrt::VirtualKey::Right) ||
-        (Orientation() == winrt::Orientation::Vertical &&
-            args.Key() != winrt::VirtualKey::Up &&
-            args.Key() != winrt::VirtualKey::Down))
+    if (args.Key() != winrt::VirtualKey::Left &&
+        args.Key() != winrt::VirtualKey::Right &&
+        args.Key() != winrt::VirtualKey::Up &&
+        args.Key() != winrt::VirtualKey::Down)
     {
         __super::OnKeyDown(args);
         return;
@@ -61,7 +59,7 @@ void ColorPickerSlider::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
         return;
     }
 
-    bool isControlDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    const bool isControlDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
 
     double minBound = 0;
     double maxBound = 0;
@@ -101,14 +99,14 @@ void ColorPickerSlider::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 
     const bool shouldInvertHorizontalDirection = FlowDirection() == winrt::FlowDirection::RightToLeft && !IsDirectionReversed();
 
-    IncrementDirection direction =
-        ((args.Key() == winrt::VirtualKey::Left && !shouldInvertHorizontalDirection) ||
+    const IncrementDirection direction =
+        ((args.Key() == winrt::VirtualKey::Left && !shouldInvertHorizontalDirection)    ||
             (args.Key() == winrt::VirtualKey::Right && shouldInvertHorizontalDirection) ||
-            args.Key() == winrt::VirtualKey::Up) ?
+             args.Key() == winrt::VirtualKey::Down) ?
         IncrementDirection::Lower :
         IncrementDirection::Higher;
 
-    IncrementAmount amount = isControlDown ? IncrementAmount::Large : IncrementAmount::Small;
+    const IncrementAmount amount = isControlDown ? IncrementAmount::Large : IncrementAmount::Small;
 
     if (ColorChannel() != winrt::ColorPickerHsvChannel::Alpha)
     {
@@ -184,10 +182,10 @@ void ColorPickerSlider::OnValueChangedEvent(winrt::IInspectable const& /*sender*
 
     if (owningColorPicker)
     {
-        winrt::Color oldColor = owningColorPicker.Color();
+        const winrt::Color oldColor = owningColorPicker.Color();
         Hsv hsv = RgbToHsv(RgbFromColor(oldColor));
         hsv.v = args.NewValue() / 100.0;
-        winrt::Color newColor = ColorFromRgba(HsvToRgb(hsv));
+        const winrt::Color newColor = ColorFromRgba(HsvToRgb(hsv));
 
         winrt::ColorPickerSliderAutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).as<winrt::ColorPickerSliderAutomationPeer>();
         winrt::get_self<ColorPickerSliderAutomationPeer>(peer)->RaisePropertyChangedEvent(oldColor, newColor, static_cast<int>(round(args.OldValue())), static_cast<int>(round(args.NewValue())));
@@ -209,7 +207,7 @@ winrt::ColorPicker ColorPickerSlider::GetParentColorPicker()
 
 winrt::hstring ColorPickerSlider::GetToolTipString()
 {
-    unsigned int sliderValue = static_cast<unsigned int>(round(Value()));
+    const unsigned int sliderValue = static_cast<unsigned int>(round(Value()));
 
     if (ColorChannel() == winrt::ColorPickerHsvChannel::Alpha)
     {

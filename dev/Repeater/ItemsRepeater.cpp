@@ -42,6 +42,7 @@ ItemsRepeater::ItemsRepeater()
 
     Loaded({ this, &ItemsRepeater::OnLoaded });
     Unloaded({ this, &ItemsRepeater::OnUnloaded });
+    LayoutUpdated({ this, &ItemsRepeater::OnLayoutUpdated });
 
     // Initialize the cached layout to the default value
     auto layout = Layout().as<winrt::VirtualizingLayout>();
@@ -96,6 +97,23 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
         throw winrt::hresult_error(E_FAIL, L"Cannot run layout in the middle of a collection change.");
     }
 
+    auto layout = Layout();
+
+    if (layout)
+    {
+        auto const stackLayout = layout.try_as<winrt::StackLayout>();
+
+        if (stackLayout && ++m_stackLayoutMeasureCounter >= s_maxStackLayoutIterations)
+        {
+            REPEATER_TRACE_INFO(L"MeasureOverride shortcut - %d\n", m_stackLayoutMeasureCounter);
+            // Shortcut the apparent layout cycle by returning the previous desired size.
+            // This can occur when children have variable sizes that prevent the ItemsPresenter's desired size from settling.
+            const winrt::Rect layoutExtent = m_viewportManager->GetLayoutExtent();
+            const winrt::Size desiredSize{ layoutExtent.Width - layoutExtent.X, layoutExtent.Height - layoutExtent.Y };
+            return desiredSize;
+        }
+    }
+
     m_viewportManager->OnOwnerMeasuring();
 
     m_isLayoutInProgress = true;
@@ -108,7 +126,7 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
     winrt::Rect extent{};
     winrt::Size desiredSize{};
 
-    if (auto layout = Layout())
+    if (layout)
     {
         auto layoutContext = GetLayoutContext();
 
@@ -118,8 +136,15 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
         virtualContext->Indent(Indent());
 #endif
 
-        desiredSize = layout.Measure(layoutContext, availableSize);
-        extent = winrt::Rect{ m_layoutOrigin.X, m_layoutOrigin.Y, desiredSize.Width, desiredSize.Height };
+        // Checking if we have an data template and it is empty
+        if (m_isItemTemplateEmpty) {
+            // Has no content, so we will draw nothing and request zero space
+            extent = winrt::Rect{ m_layoutOrigin.X, m_layoutOrigin.Y, 0, 0 };
+        }
+        else {
+            desiredSize = layout.Measure(layoutContext, availableSize);
+            extent = winrt::Rect{ m_layoutOrigin.X, m_layoutOrigin.Y, desiredSize.Width, desiredSize.Height };
+        }
 
         // Clear auto recycle candidate elements that have not been kept alive by layout - i.e layout did not
         // call GetElementAt(index).
@@ -270,8 +295,14 @@ void ItemsRepeater::ClearElementImpl(const winrt::UIElement& element)
 
 int ItemsRepeater::GetElementIndexImpl(const winrt::UIElement& element)
 {
-    auto virtInfo = TryGetVirtualizationInfo(element);
-    return m_viewManager.GetElementIndex(virtInfo);
+    // Verify that element is actually a child of this ItemsRepeater
+    auto const parent = winrt::VisualTreeHelper::GetParent(element);
+    if (parent == *this)
+    {
+        auto virtInfo = TryGetVirtualizationInfo(element);
+        return m_viewManager.GetElementIndex(virtInfo);
+    }
+    return -1;
 }
 
 winrt::UIElement ItemsRepeater::GetElementFromIndexImpl(int index)
@@ -294,6 +325,11 @@ winrt::UIElement ItemsRepeater::GetElementFromIndexImpl(int index)
 
 winrt::UIElement ItemsRepeater::GetOrCreateElementImpl(int index)
 {
+    if (ItemsSourceView() == nullptr)
+    {
+       throw winrt::hresult_error(E_FAIL, L"ItemSource doesn't have a value");
+    }
+
     if (index >= 0 && index >= ItemsSourceView().Count())
     {
         throw winrt::hresult_invalid_argument(L"Argument index is invalid.");
@@ -359,14 +395,17 @@ void ItemsRepeater::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
 
     if (property == s_ItemsSourceProperty)
     {
-        auto newValue = args.NewValue();
-        auto newDataSource = newValue.try_as<winrt::ItemsSourceView>();
-        if (newValue && !newDataSource)
+        if (args.NewValue() != args.OldValue())
         {
-            newDataSource = winrt::ItemsSourceView(newValue);
-        }
+            auto newValue = args.NewValue();
+            auto newDataSource = newValue.try_as<winrt::ItemsSourceView>();
+            if (newValue && !newDataSource)
+            {
+                newDataSource = winrt::ItemsSourceView(newValue);
+            }
 
-        OnDataSourcePropertyChanged(m_itemsSourceView.get(), newDataSource);
+            OnDataSourcePropertyChanged(m_itemsSourceView.get(), newDataSource);
+        }
     }
     else if (property == s_ItemTemplateProperty)
     {
@@ -446,10 +485,8 @@ void ItemsRepeater::OnElementIndexChanged(const winrt::UIElement& element, int o
 // can be used to make logging a little easier to read.
 int ItemsRepeater::Indent()
 {
-    int indent = 1;
-
-    // Expensive, so we do it only in debug builds.
 #ifdef _DEBUG
+    // Expensive, so we do it only in debug builds.
     auto parent = this->Parent().as<winrt::FrameworkElement>();
     while (parent && !parent.try_as<winrt::ItemsRepeater>())
     {
@@ -459,11 +496,11 @@ int ItemsRepeater::Indent()
     if (parent)
     {
         auto parentRepeater = winrt::get_self<ItemsRepeater>(parent.as<winrt::ItemsRepeater>());
-        indent = parentRepeater->Indent();
+        return parentRepeater->Indent() * 4;
     }
 #endif
 
-    return indent * 4;
+    return 4;
 }
 
 void ItemsRepeater::OnLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
@@ -480,12 +517,20 @@ void ItemsRepeater::OnLoaded(const winrt::IInspectable& /*sender*/, const winrt:
 
 void ItemsRepeater::OnUnloaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
+    m_stackLayoutMeasureCounter = 0u;
+
     ++_unloadedCounter;
     // Only reset the scrollers if this unload event is in-sync.
     if (_unloadedCounter == _loadedCounter)
     {
         m_viewportManager->ResetScrollers();
     }
+}
+
+void ItemsRepeater::OnLayoutUpdated(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
+{
+    // Now that the layout has settled, reset the measure counter to detect the next potential StackLayout layout cycle.
+    m_stackLayoutMeasureCounter = 0u;
 }
 
 void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& oldValue, const winrt::ItemsSourceView& newValue)
@@ -495,32 +540,37 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
         throw winrt::hresult_error(E_FAIL, L"Cannot set ItemsSourceView during layout.");
     }
 
-    m_itemsSourceView.set(newValue);
-
-    if (oldValue)
+    if (m_itemsSourceViewChanged)
     {
         m_itemsSourceViewChanged.revoke();
     }
+
+    m_itemsSourceView.set(newValue);
 
     if (newValue)
     {
         m_itemsSourceViewChanged = newValue.CollectionChanged(winrt::auto_revoke, { this, &ItemsRepeater::OnItemsSourceViewChanged });
     }
 
-    if (auto layout = Layout())
+    if (auto const layout = Layout())
     {
-        if (auto virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
+        auto const args = winrt::NotifyCollectionChangedEventArgs(
+            winrt::NotifyCollectionChangedAction::Reset,
+            nullptr /* newItems */,
+            nullptr /* oldItems */,
+            -1 /* newIndex */,
+            -1 /* oldIndex */);
+        auto const processingChange = gsl::finally([this]()
+            {
+                m_processingItemsSourceChange.set(nullptr);
+            });
+        m_processingItemsSourceChange.set(args);
+
+        if (auto const virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
         {
-            auto args = winrt::NotifyCollectionChangedEventArgs(
-                winrt::NotifyCollectionChangedAction::Reset,
-                nullptr /* newItems */,
-                nullptr /* oldItems */,
-                -1 /* newIndex */,
-                -1 /* oldIndex */);
-            args.Action();
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
         }
-        else if (auto nonVirtualLayout = layout.try_as<winrt::NonVirtualizingLayout>())
+        else if (auto const nonVirtualLayout = layout.try_as<winrt::NonVirtualizingLayout>())
         {
             // Walk through all the elements and make sure they are cleared for
             // non-virtualizing layouts.
@@ -531,6 +581,8 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
                     ClearElementImpl(element);
                 }
             }
+
+            Children().Clear();
         }
 
         InvalidateMeasure();
@@ -548,36 +600,33 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
     // have already been created and are now in the tree. The easiest way to do that
     // would be to do a reset.. Note that this has to be done before we change the template
     // so that the cleared elements go back into the old template.
-    if (auto layout = Layout())
+    if (auto const layout = Layout())
     {
-        if (auto virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
-        {
-            auto args = winrt::NotifyCollectionChangedEventArgs(
-                winrt::NotifyCollectionChangedAction::Reset,
-                nullptr /* newItems */,
-                nullptr /* oldItems */,
-                -1 /* newIndex */,
-                -1 /* oldIndex */);
-            args.Action();
-            m_processingItemsSourceChange.set(args);
-            auto processingChange = gsl::finally([this]()
-                {
-                    m_processingItemsSourceChange.set(nullptr);
-                });
+        auto const args = winrt::NotifyCollectionChangedEventArgs(
+            winrt::NotifyCollectionChangedAction::Reset,
+            nullptr /* newItems */,
+            nullptr /* oldItems */,
+            -1 /* newIndex */,
+            -1 /* oldIndex */);
+        auto const processingChange = gsl::finally([this]()
+            {
+                m_processingItemsSourceChange.set(nullptr);
+            });
+        m_processingItemsSourceChange.set(args);
 
+        if (auto const virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
+        {
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
         }
-        else if (auto nonVirtualLayout = layout.try_as<winrt::NonVirtualizingLayout>())
+        else if (auto const nonVirtualLayout = layout.try_as<winrt::NonVirtualizingLayout>())
         {
             // Walk through all the elements and make sure they are cleared for
             // non-virtualizing layouts.
-            auto children = Children();
-            for (unsigned i = 0u; i < children.Size(); ++i)
+            for (auto const& child : Children())
             {
-                auto element = children.GetAt(i);
-                if (GetVirtualizationInfo(element)->IsRealized())
+                if (GetVirtualizationInfo(child)->IsRealized())
                 {
-                    ClearElementImpl(element);
+                    ClearElementImpl(child);
                 }
             }
         }
@@ -589,7 +638,8 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
         // UIAffinityQueue cleanup. To avoid that bug, take a strong ref
         m_itemTemplate = newValue;
     }
-
+    // Clear flag for bug #776
+    m_isItemTemplateEmpty = false;
     m_itemTemplateWrapper = newValue.try_as<winrt::IElementFactoryShim>();
     if (!m_itemTemplateWrapper)
     {
@@ -598,6 +648,20 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
         if (auto dataTemplate = newValue.try_as<winrt::DataTemplate>())
         {
             m_itemTemplateWrapper = winrt::make<ItemTemplateWrapper>(dataTemplate);
+            if (auto content = dataTemplate.LoadContent().as<winrt::FrameworkElement>())
+            {
+                // Due to bug https://github.com/microsoft/microsoft-ui-xaml/issues/3057, we need to get the framework
+                // to take ownership of the extra implicit ref that was returned by LoadContent. The simplest way to do
+                // this is to add it to a Children collection and immediately remove it.
+                auto children = Children();
+                children.Append(content);
+                children.RemoveAtEnd();
+            }
+            else
+            {
+                // We have a DataTemplate which is empty, so we need to set it to true
+                m_isItemTemplateEmpty = true;
+            }
         }
         else if (auto selector = newValue.try_as<winrt::DataTemplateSelector>())
         {
@@ -627,6 +691,7 @@ void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::
         oldValue.UninitializeForContext(GetLayoutContext());
         m_measureInvalidated.revoke();
         m_arrangeInvalidated.revoke();
+        m_stackLayoutMeasureCounter = 0u;
         
         // Walk through all the elements and make sure they are cleared
         auto children = Children();
@@ -656,7 +721,7 @@ void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::
         m_arrangeInvalidated = newValue.ArrangeInvalidated(winrt::auto_revoke, { this, &ItemsRepeater::InvalidateArrangeForLayout });
     }
 
-    bool isVirtualizingLayout = newValue != nullptr && newValue.try_as<winrt::VirtualizingLayout>() != nullptr;
+    const bool isVirtualizingLayout = newValue != nullptr && newValue.try_as<winrt::VirtualizingLayout>() != nullptr;
     m_viewportManager->OnLayoutChanged(isVirtualizingLayout);
     InvalidateMeasure();
 }
@@ -696,7 +761,7 @@ void ItemsRepeater::OnItemsSourceViewChanged(const winrt::IInspectable& sender, 
 
     if (auto layout = Layout())
     {
-        if (auto virtualLayout = layout.as<winrt::VirtualizingLayout>())
+        if (auto virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
         {
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), sender, args);
         }

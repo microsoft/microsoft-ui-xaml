@@ -21,14 +21,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class AutoSuggestBoxTests
+    public class AutoSuggestBoxTests : ApiTestBase
     {
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            TestUtilities.ClearVisualTreeRoot();
-        }
-
         [TestMethod]
         public void VerifyAutoSuggestBoxCornerRadius()
         {
@@ -38,32 +32,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            AutoSuggestBox autoSuggestBox = null;
-            RunOnUIThread.Execute(() =>
-            {
-                autoSuggestBox = new AutoSuggestBox();
-                List<string> suggestions = new List<string> 
-                {
-                    "Item 1", "Item 2", "Item 3"
-                };
-                autoSuggestBox.ItemsSource = suggestions;
-            });
-            IdleSynchronizer.Wait();
-            Verify.IsNotNull(autoSuggestBox);
-            TestUtilities.SetAsVisualTreeRoot(autoSuggestBox);
+            var autoSuggestBox = SetupAutoSuggestBox();
 
             RunOnUIThread.Execute(() =>
             {
                 autoSuggestBox.CornerRadius = new CornerRadius(2);
                 autoSuggestBox.Focus(FocusState.Keyboard);
                 autoSuggestBox.Text = "123";
+                autoSuggestBox.MaxHeight = 32;
             });
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
                 var textBox = TestUtilities.FindDescendents<TextBox>(autoSuggestBox).Where(e => e.Name == "TextBox").Single();
-                Verify.AreEqual(new CornerRadius(2, 2, 0, 0), textBox.CornerRadius);
+
+                // Flyout might open differently and as such flip corner radii values
+                Verify.IsTrue(new CornerRadius(2, 2, 0, 0) == textBox.CornerRadius || new CornerRadius(0,0,2,2) == textBox.CornerRadius);
 
                 var overlayCornerRadius = new CornerRadius(0, 0, 0, 0);
                 var radius = App.Current.Resources["OverlayCornerRadius"];
@@ -74,8 +59,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var popup = VisualTreeHelper.GetOpenPopups(Window.Current).Last();
                 var popupBorder = popup.Child as Border;
 
-                Verify.AreEqual(new CornerRadius(0, 0, overlayCornerRadius.BottomRight, overlayCornerRadius.BottomLeft), popupBorder.CornerRadius);
+                // Flyout might open differently and as such flip corner radii values
+                Verify.IsTrue(new CornerRadius(0, 0, overlayCornerRadius.BottomRight, overlayCornerRadius.BottomLeft) == popupBorder.CornerRadius
+                    || new CornerRadius(overlayCornerRadius.TopRight, overlayCornerRadius.TopLeft, 0, 0) == popupBorder.CornerRadius);
             });
+        }
+
+        [TestMethod]
+        public void VerifyVisualTree()
+        {
+            var autoSuggestBox = SetupAutoSuggestBox();
+            VisualTreeTestHelper.VerifyVisualTree(root: autoSuggestBox, verificationFileNamePrefix: "AutoSuggestBox");
+        }
+
+        private AutoSuggestBox SetupAutoSuggestBox()
+        {
+            AutoSuggestBox autoSuggestBox = null;
+            RunOnUIThread.Execute(() =>
+            {
+                autoSuggestBox = new AutoSuggestBox();
+                List<string> suggestions = new List<string>
+                {
+                    "Item 1", "Item 2", "Item 3"
+                };
+                autoSuggestBox.ItemsSource = suggestions;
+                autoSuggestBox.Width = 400;
+            });
+            TestUtilities.SetAsVisualTreeRoot(autoSuggestBox);
+            Verify.IsNotNull(autoSuggestBox);
+            return autoSuggestBox;
         }
 
     }

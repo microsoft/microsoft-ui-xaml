@@ -7,7 +7,7 @@
 #include "FlowLayoutAlgorithm.h"
 #include "FlowLayoutState.h"
 
-CppWinRTActivatableClassWithBasicFactory(FlowLayoutState);
+#include "FlowLayoutState.properties.cpp"
 
 void FlowLayoutState::InitializeForContext(
     const winrt::VirtualizingLayoutContext& context,
@@ -36,8 +36,8 @@ void FlowLayoutState::OnLineArranged(int startIndex, int countInLine, double lin
     // different from the rest of the lines and can throw off estimation.
     if (m_totalLinesMeasured == 0 || startIndex + countInLine != context.ItemCount())
     {
-        int estimationBufferIndex = startIndex % m_lineSizeEstimationBuffer.size();
-        bool alreadyMeasured = m_lineSizeEstimationBuffer[estimationBufferIndex] != 0;
+        const int estimationBufferIndex = startIndex % m_lineSizeEstimationBuffer.size();
+        const bool alreadyMeasured = m_lineSizeEstimationBuffer[estimationBufferIndex] != 0;
 
         if (!alreadyMeasured)
         {

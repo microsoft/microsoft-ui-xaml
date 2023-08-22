@@ -6,6 +6,8 @@
 #include "RevealBrushTestApi.h"
 #include "RevealBrush.h"
 
+#include "RevealBrushTestApi.properties.cpp"
+
 winrt::RevealBrush RevealBrushTestApi::RevealBrush()
 {
     return m_revealBrush;

@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>107794d7-4be0-407e-a76c-efa46d1e9f93</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>MUXTestInfra.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CommonManaged\MSTestInterop.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CommonManaged\PlatformConfiguration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\AppsTestExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\FindElement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\FocusHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\GamepadHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\InputHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\KeyboardHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\ScrollChangedEventWaiter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\ScrollHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\ScrollPresenterUIObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\TestHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\ValueChangedEventWaiter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\WaitHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infra\Application.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infra\TestEnvironment.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Infra\TestHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestAppInstallHelper.cs" />
+  </ItemGroup>
+</Project>

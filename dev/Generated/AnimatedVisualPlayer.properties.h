@@ -9,6 +9,9 @@ class AnimatedVisualPlayerProperties
 public:
     AnimatedVisualPlayerProperties();
 
+    void AnimationOptimization(winrt::PlayerAnimationOptimization const& value);
+    winrt::PlayerAnimationOptimization AnimationOptimization();
+
     void AutoPlay(bool value);
     bool AutoPlay();
 
@@ -36,6 +39,7 @@ public:
     void Stretch(winrt::Stretch const& value);
     winrt::Stretch Stretch();
 
+    static winrt::DependencyProperty AnimationOptimizationProperty() { return s_AnimationOptimizationProperty; }
     static winrt::DependencyProperty AutoPlayProperty() { return s_AutoPlayProperty; }
     static winrt::DependencyProperty DiagnosticsProperty() { return s_DiagnosticsProperty; }
     static winrt::DependencyProperty DurationProperty() { return s_DurationProperty; }
@@ -46,6 +50,7 @@ public:
     static winrt::DependencyProperty SourceProperty() { return s_SourceProperty; }
     static winrt::DependencyProperty StretchProperty() { return s_StretchProperty; }
 
+    static GlobalDependencyProperty s_AnimationOptimizationProperty;
     static GlobalDependencyProperty s_AutoPlayProperty;
     static GlobalDependencyProperty s_DiagnosticsProperty;
     static GlobalDependencyProperty s_DurationProperty;
@@ -58,6 +63,10 @@ public:
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnAnimationOptimizationPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnAutoPlayPropertyChanged(
         winrt::DependencyObject const& sender,

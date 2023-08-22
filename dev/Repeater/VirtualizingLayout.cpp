@@ -7,7 +7,7 @@
 #include "VirtualizingLayout.h"
 #include "RuntimeProfiler.h"
 
-CppWinRTActivatableClassWithBasicFactory(VirtualizingLayout)
+#include "VirtualizingLayout.properties.cpp"
 
 #pragma region IVirtualizingLayoutOverrides
 

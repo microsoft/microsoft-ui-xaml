@@ -1,6 +1,11 @@
-﻿#include "pch.h"
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#include "pch.h"
 #include "common.h"
 #include "TeachingTipTestHooks.h"
+
+#include "TeachingTipTestHooks.properties.cpp"
 
 com_ptr<TeachingTipTestHooks> TeachingTipTestHooks::s_testHooks{};
 
@@ -250,6 +255,48 @@ void TeachingTipTestHooks::OffsetChanged(winrt::event_token const& token)
     hooks->m_offsetChangedEventSource.remove(token);
 }
 
+void TeachingTipTestHooks::NotifyTitleVisibilityChanged(const winrt::TeachingTip& sender)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    if (hooks->m_titleVisibilityChangedEventSource)
+    {
+        hooks->m_titleVisibilityChangedEventSource(sender, nullptr);
+    }
+}
+
+winrt::event_token TeachingTipTestHooks::TitleVisibilityChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    return hooks->m_titleVisibilityChangedEventSource.add(value);
+}
+
+void TeachingTipTestHooks::TitleVisibilityChanged(winrt::event_token const& token)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    hooks->m_titleVisibilityChangedEventSource.remove(token);
+}
+
+void TeachingTipTestHooks::NotifySubtitleVisibilityChanged(const winrt::TeachingTip& sender)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    if (hooks->m_subtitleVisibilityChangedEventSource)
+    {
+        hooks->m_subtitleVisibilityChangedEventSource(sender, nullptr);
+    }
+}
+
+winrt::event_token TeachingTipTestHooks::SubtitleVisibilityChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    return hooks->m_subtitleVisibilityChangedEventSource.add(value);
+}
+
+void TeachingTipTestHooks::SubtitleVisibilityChanged(winrt::event_token const& token)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    hooks->m_subtitleVisibilityChangedEventSource.remove(token);
+}
+
 double TeachingTipTestHooks::GetVerticalOffset(const winrt::TeachingTip& teachingTip)
 {
     if (teachingTip)
@@ -266,6 +313,24 @@ double TeachingTipTestHooks::GetHorizontalOffset(const winrt::TeachingTip& teach
         return winrt::get_self<TeachingTip>(teachingTip)->GetHorizontalOffset();
     }
     return 0.0;
+}
+
+winrt::Visibility TeachingTipTestHooks::GetTitleVisibility(const winrt::TeachingTip& teachingTip)
+{
+    if (teachingTip)
+    {
+        return winrt::get_self<TeachingTip>(teachingTip)->GetTitleVisibility();
+    }
+    return winrt::Visibility::Collapsed;
+}
+
+winrt::Visibility TeachingTipTestHooks::GetSubtitleVisibility(const winrt::TeachingTip& teachingTip)
+{
+    if (teachingTip)
+    {
+        return winrt::get_self<TeachingTip>(teachingTip)->GetSubtitleVisibility();
+    }
+    return winrt::Visibility::Collapsed;
 }
 
 winrt::Popup TeachingTipTestHooks::GetPopup(const winrt::TeachingTip& teachingTip)

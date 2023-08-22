@@ -6,8 +6,14 @@
 #include "common.h"
 #include "AnimatedVisualPlayer.h"
 
-CppWinRTActivatableClassWithDPFactory(AnimatedVisualPlayer)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(AnimatedVisualPlayer)
+}
 
+#include "AnimatedVisualPlayer.g.cpp"
+
+GlobalDependencyProperty AnimatedVisualPlayerProperties::s_AnimationOptimizationProperty{ nullptr };
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_AutoPlayProperty{ nullptr };
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_DiagnosticsProperty{ nullptr };
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_DurationProperty{ nullptr };
@@ -25,6 +31,17 @@ AnimatedVisualPlayerProperties::AnimatedVisualPlayerProperties()
 
 void AnimatedVisualPlayerProperties::EnsureProperties()
 {
+    if (!s_AnimationOptimizationProperty)
+    {
+        s_AnimationOptimizationProperty =
+            InitializeDependencyProperty(
+                L"AnimationOptimization",
+                winrt::name_of<winrt::PlayerAnimationOptimization>(),
+                winrt::name_of<winrt::AnimatedVisualPlayer>(),
+                false /* isAttached */,
+                ValueHelper<winrt::PlayerAnimationOptimization>::BoxValueIfNecessary(winrt::PlayerAnimationOptimization::Latency),
+                winrt::PropertyChangedCallback(&OnAnimationOptimizationPropertyChanged));
+    }
     if (!s_AutoPlayProperty)
     {
         s_AutoPlayProperty =
@@ -128,6 +145,7 @@ void AnimatedVisualPlayerProperties::EnsureProperties()
 
 void AnimatedVisualPlayerProperties::ClearProperties()
 {
+    s_AnimationOptimizationProperty = nullptr;
     s_AutoPlayProperty = nullptr;
     s_DiagnosticsProperty = nullptr;
     s_DurationProperty = nullptr;
@@ -137,6 +155,14 @@ void AnimatedVisualPlayerProperties::ClearProperties()
     s_PlaybackRateProperty = nullptr;
     s_SourceProperty = nullptr;
     s_StretchProperty = nullptr;
+}
+
+void AnimatedVisualPlayerProperties::OnAnimationOptimizationPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::AnimatedVisualPlayer>();
+    winrt::get_self<AnimatedVisualPlayer>(owner)->OnAnimationOptimizationPropertyChanged(args);
 }
 
 void AnimatedVisualPlayerProperties::OnAutoPlayPropertyChanged(
@@ -179,9 +205,25 @@ void AnimatedVisualPlayerProperties::OnStretchPropertyChanged(
     winrt::get_self<AnimatedVisualPlayer>(owner)->OnStretchPropertyChanged(args);
 }
 
+void AnimatedVisualPlayerProperties::AnimationOptimization(winrt::PlayerAnimationOptimization const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_AnimationOptimizationProperty, ValueHelper<winrt::PlayerAnimationOptimization>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::PlayerAnimationOptimization AnimatedVisualPlayerProperties::AnimationOptimization()
+{
+    return ValueHelper<winrt::PlayerAnimationOptimization>::CastOrUnbox(static_cast<AnimatedVisualPlayer*>(this)->GetValue(s_AnimationOptimizationProperty));
+}
+
 void AnimatedVisualPlayerProperties::AutoPlay(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_AutoPlayProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool AnimatedVisualPlayerProperties::AutoPlay()
@@ -191,7 +233,10 @@ bool AnimatedVisualPlayerProperties::AutoPlay()
 
 void AnimatedVisualPlayerProperties::Diagnostics(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_DiagnosticsProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable AnimatedVisualPlayerProperties::Diagnostics()
@@ -201,7 +246,10 @@ winrt::IInspectable AnimatedVisualPlayerProperties::Diagnostics()
 
 void AnimatedVisualPlayerProperties::Duration(winrt::TimeSpan const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_DurationProperty, ValueHelper<winrt::TimeSpan>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::TimeSpan AnimatedVisualPlayerProperties::Duration()
@@ -211,7 +259,10 @@ winrt::TimeSpan AnimatedVisualPlayerProperties::Duration()
 
 void AnimatedVisualPlayerProperties::FallbackContent(winrt::DataTemplate const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_FallbackContentProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::DataTemplate AnimatedVisualPlayerProperties::FallbackContent()
@@ -221,7 +272,10 @@ winrt::DataTemplate AnimatedVisualPlayerProperties::FallbackContent()
 
 void AnimatedVisualPlayerProperties::IsAnimatedVisualLoaded(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_IsAnimatedVisualLoadedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool AnimatedVisualPlayerProperties::IsAnimatedVisualLoaded()
@@ -231,7 +285,10 @@ bool AnimatedVisualPlayerProperties::IsAnimatedVisualLoaded()
 
 void AnimatedVisualPlayerProperties::IsPlaying(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_IsPlayingProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool AnimatedVisualPlayerProperties::IsPlaying()
@@ -241,7 +298,10 @@ bool AnimatedVisualPlayerProperties::IsPlaying()
 
 void AnimatedVisualPlayerProperties::PlaybackRate(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_PlaybackRateProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double AnimatedVisualPlayerProperties::PlaybackRate()
@@ -251,7 +311,10 @@ double AnimatedVisualPlayerProperties::PlaybackRate()
 
 void AnimatedVisualPlayerProperties::Source(winrt::IAnimatedVisualSource const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_SourceProperty, ValueHelper<winrt::IAnimatedVisualSource>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IAnimatedVisualSource AnimatedVisualPlayerProperties::Source()
@@ -261,7 +324,10 @@ winrt::IAnimatedVisualSource AnimatedVisualPlayerProperties::Source()
 
 void AnimatedVisualPlayerProperties::Stretch(winrt::Stretch const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<AnimatedVisualPlayer*>(this)->SetValue(s_StretchProperty, ValueHelper<winrt::Stretch>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Stretch AnimatedVisualPlayerProperties::Stretch()

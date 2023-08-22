@@ -6,7 +6,12 @@
 #include "common.h"
 #include "AutoSuggestBoxHelper.h"
 
-CppWinRTActivatableClassWithDPFactory(AutoSuggestBoxHelper)
+namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
+{
+    CppWinRTActivatableClassWithDPFactory(AutoSuggestBoxHelper)
+}
+
+#include "AutoSuggestBoxHelper.g.cpp"
 
 GlobalDependencyProperty AutoSuggestBoxHelperProperties::s_KeepInteriorCornersSquareProperty{ nullptr };
 

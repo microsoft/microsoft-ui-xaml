@@ -140,17 +140,17 @@ private:
 
     bool DoesRealizationWindowOverlapExtent(const winrt::Rect& realizationWindow, const winrt::Rect& extent)
     {
-        return MajorEnd(realizationWindow) >= extent.*MajorStart() && realizationWindow.*MajorStart() <= MajorEnd(extent);
+        return MajorEnd(realizationWindow) >= MajorStart(extent) && MajorStart(realizationWindow) <= MajorEnd(extent);
     }
 
     double LineSpacing()
     {
-        return ScrollOrientation() == ScrollOrientation::Vertical ? m_minColumnSpacing : m_minRowSpacing;
+        return GetScrollOrientation() == ScrollOrientation::Vertical ? m_minRowSpacing : m_minColumnSpacing;
     }
 
     double MinItemSpacing()
     {
-        return ScrollOrientation() == ScrollOrientation::Vertical ? m_minRowSpacing : m_minColumnSpacing;
+        return GetScrollOrientation() == ScrollOrientation::Vertical ? m_minColumnSpacing : m_minRowSpacing;
     }
 
     // Fields

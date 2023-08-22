@@ -42,7 +42,7 @@ using ViewportChangedEventHandler = Microsoft.UI.Private.Controls.ViewportChange
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class EffectiveViewportTests : TestsBase
+    public class EffectiveViewportTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateBasicScrollViewerScenario()

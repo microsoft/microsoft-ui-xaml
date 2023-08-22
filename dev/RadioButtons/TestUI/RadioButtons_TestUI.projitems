@@ -10,12 +10,26 @@
     <Import_RootNamespace>RadioButtons_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)RadioButtonsCaseBundle.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RadioButtonsFocusPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)RadioButtonsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)RadioButtonsCaseBundle.xaml.cs">
+      <DependentUpon>RadioButtonsCaseBundle.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)RadioButtonsFocusPage.xaml.cs">
+      <DependentUpon>RadioButtonsFocusPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)RadioButtonsPage.xaml.cs">
       <DependentUpon>RadioButtonsPage.xaml</DependentUpon>
     </Compile>

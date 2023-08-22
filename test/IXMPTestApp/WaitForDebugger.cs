@@ -26,13 +26,10 @@ namespace MUXControlsTestApp
     public class WaitForDebugger
     {
         [AssemblyInitialize]
+        [TestProperty("HelixWorkItemCreation", "CreateWorkItemPerTestClass")]
         public static void AssemblyInitialize(TestContext testContext)
         {
-#if USING_TAEF
             if (testContext.Properties.Contains("WaitForDebugger") || testContext.Properties.Contains("WaitForAppDebugger"))
-#else
-            if (testContext.Properties.ContainsKey("WaitForDebugger") || testContext.Properties.ContainsKey("WaitForAppDebugger"))
-#endif
             {
                 var processId = Windows.System.Diagnostics.ProcessDiagnosticInfo.GetForCurrentProcess().ProcessId;
                 var waitEvent = new AutoResetEvent(false);

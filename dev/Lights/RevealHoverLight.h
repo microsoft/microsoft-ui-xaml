@@ -112,6 +112,6 @@ private:
     // For mouse and touch we will set this to false and have our light follow the pointer position.
     bool m_centerLight{ true };
 
-    const RevealHoverSpotlightStateDesc* m_spotLightStates;
+    const RevealHoverSpotlightStateDesc* m_spotLightStates{};
     winrt::IInspectable m_elementPointerPressedEventHandler{};
 };

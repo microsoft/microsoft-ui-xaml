@@ -1,4 +1,7 @@
-﻿#include "pch.h"
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#include "pch.h"
 #include "common.h"
 #include "TeachingTip.h"
 #include "RuntimeProfiler.h"
@@ -10,11 +13,19 @@
 #include "../ResourceHelper/Utils.h"
 #include <enum_array.h>
 
+static constexpr auto c_TitleTextBlockVisibleStateName = L"ShowTitleTextBlock"sv;
+static constexpr auto c_TitleTextBlockCollapsedStateName = L"CollapseTitleTextBlock"sv;
+static constexpr auto c_SubtitleTextBlockVisibleStateName = L"ShowSubtitleTextBlock"sv;
+static constexpr auto c_SubtitleTextBlockCollapsedStateName = L"CollapseSubtitleTextBlock"sv;
+
+static constexpr auto c_OverlayCornerRadiusName = L"OverlayCornerRadius"sv;
+
 TeachingTip::TeachingTip()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TeachingTip);
     SetDefaultStyleKey(this);
     EnsureProperties();
+    Unloaded({ this, &TeachingTip::ClosePopupOnUnloadEvent });
     m_automationNameChangedRevoker = RegisterPropertyChanged(*this, winrt::AutomationProperties::NameProperty(), { this, &TeachingTip::OnAutomationNameChanged });
     m_automationIdChangedRevoker = RegisterPropertyChanged(*this, winrt::AutomationProperties::AutomationIdProperty(), { this, &TeachingTip::OnAutomationIdChanged });
     SetValue(s_TemplateSettingsProperty, winrt::make<::TeachingTipTemplateSettings>());
@@ -27,7 +38,10 @@ winrt::AutomationPeer TeachingTip::OnCreateAutomationPeer()
 
 void TeachingTip::OnApplyTemplate()
 {
+    base_type::OnApplyTemplate();
+
     m_acceleratorKeyActivatedRevoker.revoke();
+    m_previewKeyDownForF6Revoker.revoke();
     m_effectiveViewportChangedRevoker.revoke();
     m_contentSizeChangedRevoker.revoke();
     m_closeButtonClickedRevoker.revoke();
@@ -43,12 +57,14 @@ void TeachingTip::OnApplyTemplate()
     m_contentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_contentRootGridName, controlProtected));
     m_nonHeroContentRootGrid.set(GetTemplateChildT<winrt::Grid>(s_nonHeroContentRootGridName, controlProtected));
     m_heroContentBorder.set(GetTemplateChildT<winrt::Border>(s_heroContentBorderName, controlProtected));
-    m_iconBorder.set(GetTemplateChildT<winrt::Border>(s_iconBorderName, controlProtected));
     m_actionButton.set(GetTemplateChildT<winrt::Button>(s_actionButtonName, controlProtected));
     m_alternateCloseButton.set(GetTemplateChildT<winrt::Button>(s_alternateCloseButtonName, controlProtected));
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
     m_tailEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_tailEdgeBorderName, controlProtected));
     m_tailPolygon.set(GetTemplateChildT<winrt::Polygon>(s_tailPolygonName, controlProtected));
+    ToggleVisibilityForEmptyContent(c_TitleTextBlockVisibleStateName, c_TitleTextBlockCollapsedStateName, Title());
+    ToggleVisibilityForEmptyContent(c_SubtitleTextBlockVisibleStateName, c_SubtitleTextBlockCollapsedStateName, Subtitle());
+
 
     if (auto&& container = m_container.get())
     {
@@ -103,6 +119,10 @@ void TeachingTip::OnApplyTemplate()
     UpdateButtonsState();
     OnIsLightDismissEnabledChanged();
     OnIconSourceChanged();
+    OnHeroContentPlacementChanged();
+
+    UpdateButtonAutomationProperties(m_actionButton.get(), ActionButtonContent());
+    UpdateButtonAutomationProperties(m_closeButton.get(), CloseButtonContent());
 
     EstablishShadows();
 
@@ -119,12 +139,17 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     }
     else if (property == s_TargetProperty)
     {
+        // Unregister from old target if it exists
+        if (args.OldValue()) {
+            m_TargetUnloadedRevoker.revoke();
+        }
+
+        // Register to new target if it exists
+        if (const auto& value = args.NewValue()) {
+            winrt::FrameworkElement newTarget = unbox_value<winrt::FrameworkElement >(value);
+            m_TargetUnloadedRevoker = newTarget.Unloaded(winrt::auto_revoke, { this,&TeachingTip::ClosePopupOnUnloadEvent });
+        }
         OnTargetChanged();
-    }
-    else if (property == s_ActionButtonContentProperty ||
-        property == s_CloseButtonContentProperty)
-    {
-        UpdateButtonsState();
     }
     else if (property == s_PlacementMarginProperty)
     {
@@ -160,8 +185,56 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     else if (property == s_TitleProperty)
     {
         SetPopupAutomationProperties();
+        if (ToggleVisibilityForEmptyContent(c_TitleTextBlockVisibleStateName, c_TitleTextBlockCollapsedStateName, Title()))
+        {
+            TeachingTipTestHooks::NotifyTitleVisibilityChanged(*this);
+        }
+    }
+    else if (property == s_SubtitleProperty)
+    {
+        if (ToggleVisibilityForEmptyContent(c_SubtitleTextBlockVisibleStateName, c_SubtitleTextBlockCollapsedStateName, Subtitle()))
+        {
+            TeachingTipTestHooks::NotifySubtitleVisibilityChanged(*this);
+        }
+    }
+    else if (property == s_ActionButtonContentProperty)
+    {
+        UpdateButtonsState();
+        winrt::IInspectable value = args.NewValue();
+        UpdateButtonAutomationProperties(m_actionButton.get(), value);
+    }
+    else if (property == s_CloseButtonContentProperty)
+    {
+        UpdateButtonsState();
+        winrt::IInspectable value = args.NewValue();
+        UpdateButtonAutomationProperties(m_closeButton.get(), value);
     }
 
+}
+
+void TeachingTip::UpdateButtonAutomationProperties(const winrt::Button button, const winrt::IInspectable content)
+{
+    if (button) 
+    {
+        winrt::hstring nameHString = SharedHelpers::TryGetStringRepresentationFromObject(content);
+        winrt::AutomationProperties::SetName(button, nameHString);
+    }
+}
+
+bool TeachingTip::ToggleVisibilityForEmptyContent(const wstring_view visibleStateName, const wstring_view collapsedStateName, const winrt::hstring& content)
+{
+    
+    if (content != L"")
+    {
+        winrt::VisualStateManager::GoToState(*this, visibleStateName, false);
+        return true;
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(*this, collapsedStateName, false);
+        return true;
+    }
+    return false;
 }
 
 void TeachingTip::OnContentChanged(const winrt::IInspectable& oldContent, const winrt::IInspectable& newContent)
@@ -218,7 +291,7 @@ bool TeachingTip::UpdateTail()
     // An effective placement of auto indicates that no tail should be shown.
     auto const [placement, tipDoesNotFit] = DetermineEffectivePlacement();
     m_currentEffectiveTailPlacementMode = placement;
-    auto&& tailVisibility = TailVisibility();
+    const auto tailVisibility = TailVisibility();
     if (tailVisibility == winrt::TeachingTipTailVisibility::Collapsed || (!m_target && tailVisibility != winrt::TeachingTipTailVisibility::Visible))
     {
         m_currentEffectiveTailPlacementMode = winrt::TeachingTipPlacementMode::Auto;
@@ -393,7 +466,7 @@ void TeachingTip::PositionPopup()
 
 bool TeachingTip::PositionTargetedPopup()
 {
-    bool tipDoesNotFit = UpdateTail();
+    const bool tipDoesNotFit = UpdateTail();
     auto const offset = PlacementMargin();
 
     auto const [tipHeight, tipWidth] = [this]()
@@ -500,7 +573,7 @@ bool TeachingTip::PositionUntargetedPopup()
         return std::make_tuple(0.0, 0.0);
     }();
 
-    bool tipDoesNotFit = UpdateTail();
+    const bool tipDoesNotFit = UpdateTail();
 
     auto const offset = PlacementMargin();
 
@@ -508,7 +581,7 @@ bool TeachingTip::PositionUntargetedPopup()
     // offset property to determine the appropriate vertical and horizontal offsets of the popup that the tip is contained in.
     if (auto&& popup = m_popup.get())
     {
-        switch (PreferredPlacement())
+        switch (GetFlowDirectionAdjustedPlacement(PreferredPlacement()))
         {
         case winrt::TeachingTipPlacementMode::Auto:
         case winrt::TeachingTipPlacementMode::Bottom:
@@ -663,7 +736,7 @@ void TeachingTip::UpdateButtonsState()
 {
     auto const actionContent = ActionButtonContent();
     auto const closeContent = CloseButtonContent();
-    bool isLightDismiss = IsLightDismissEnabled();
+    const bool isLightDismiss = IsLightDismissEnabled();
     if (actionContent && closeContent)
     {
         winrt::VisualStateManager::GoToState(*this, L"BothButtonsVisible"sv, false);
@@ -700,12 +773,17 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToTop()
 {
     if (HeroContentPlacement() == winrt::TeachingTipHeroContentPlacementMode::Auto)
     {
-        winrt::VisualStateManager::GoToState(*this, L"HeroContentTop"sv, false);
-        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Top)
-        {
-            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Top;
-            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
-        }
+        UpdateDynamicHeroContentPlacementToTopImpl();
+    }
+}
+
+void TeachingTip::UpdateDynamicHeroContentPlacementToTopImpl()
+{
+    winrt::VisualStateManager::GoToState(*this, L"HeroContentTop"sv, false);
+    if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Top)
+    {
+        m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Top;
+        TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
     }
 }
 
@@ -713,29 +791,47 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToBottom()
 {
     if (HeroContentPlacement() == winrt::TeachingTipHeroContentPlacementMode::Auto)
     {
-        winrt::VisualStateManager::GoToState(*this, L"HeroContentBottom"sv, false);
-        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Bottom)
-        {
-            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Bottom;
-            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
-        }
+        UpdateDynamicHeroContentPlacementToBottomImpl();
+    }
+}
+
+void TeachingTip::UpdateDynamicHeroContentPlacementToBottomImpl()
+{
+    winrt::VisualStateManager::GoToState(*this, L"HeroContentBottom"sv, false);
+    if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Bottom)
+    {
+        m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Bottom;
+        TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
     }
 }
 
 void TeachingTip::OnIsOpenChanged()
 {
-    SharedHelpers::QueueCallbackForCompositionRendering([strongThis = get_strong()]() 
+    if (m_ignoreNextIsOpenChanged) {
+        m_ignoreNextIsOpenChanged = false;
+    }
+    else
     {
-        if (strongThis->IsOpen())
+        SharedHelpers::QueueCallbackForCompositionRendering([strongThis = get_strong()]()
         {
-            strongThis->IsOpenChangedToOpen();
-        }
-        else
-        {
-            strongThis->IsOpenChangedToClose();
-        }
-        TeachingTipTestHooks::NotifyOpenedStatusChanged(*strongThis);
-    });
+            if (strongThis->m_isIdle) {
+                if (strongThis->IsOpen())
+                {
+                    strongThis->IsOpenChangedToOpen();
+                }
+                else
+                {
+                    strongThis->IsOpenChangedToClose();
+                }
+                TeachingTipTestHooks::NotifyOpenedStatusChanged(*strongThis);
+            }
+            else
+            {
+                strongThis->m_ignoreNextIsOpenChanged = true;
+                strongThis->IsOpen(!strongThis->IsOpen());
+            }
+        });
+    }
 }
 
 void TeachingTip::IsOpenChangedToOpen()
@@ -780,9 +876,6 @@ void TeachingTip::IsOpenChangedToOpen()
         CreateExpandAnimation();
     }
 
-    // We are about to begin the process of trying to open the teaching tip, so notify that we are no longer idle.
-    SetIsIdle(false);
-
     //If the developer defines their TeachingTip in a resource dictionary it is possible that it's template will have never been applied
     if (!m_isTemplateApplied)
     {
@@ -813,6 +906,8 @@ void TeachingTip::IsOpenChangedToOpen()
         {
             if (!popup.IsOpen())
             {
+                // We are about to begin the process of trying to open the teaching tip, so notify that we are no longer idle.
+                SetIsIdle(false);
                 UpdatePopupRequestedTheme();
                 popup.Child(m_rootElement.get());
                 if (auto&& lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
@@ -832,7 +927,24 @@ void TeachingTip::IsOpenChangedToOpen()
         }
     }
 
-    m_acceleratorKeyActivatedRevoker = Dispatcher().AcceleratorKeyActivated(winrt::auto_revoke, { this, &TeachingTip::OnF6AcceleratorKeyClicked });
+    [this]()
+    {
+        if (winrt::IUIElement10 uiElement10 = *this)
+        {
+            if (auto const xamlRoot = uiElement10.XamlRoot())
+            {
+                if (auto const content = xamlRoot.Content())
+                {
+                    m_previewKeyDownForF6Revoker = content.PreviewKeyDown(winrt::auto_revoke, { this, &TeachingTip::OnF6PreviewKeyDownClicked });
+                    return;
+                }
+            }
+        }
+
+        m_acceleratorKeyActivatedRevoker = Dispatcher().AcceleratorKeyActivated(winrt::auto_revoke, { this, &TeachingTip::OnF6AcceleratorKeyClicked });
+        return;
+    }();
+
 
     // Make sure we are in the correct VSM state after ApplyTemplate and moving the template content from the Control to the Popup:
     OnIsLightDismissEnabledChanged();
@@ -858,6 +970,9 @@ void TeachingTip::IsOpenChangedToClose()
         }
     }
 
+    m_acceleratorKeyActivatedRevoker.revoke();
+    m_previewKeyDownForF6Revoker.revoke();
+    m_popupPreviewKeyDownForF6Revoker.revoke();
     m_currentEffectiveTipPlacementMode = winrt::TeachingTipPlacementMode::Auto;
     TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
 }
@@ -956,20 +1071,10 @@ void TeachingTip::OnHeroContentPlacementChanged()
     case winrt::TeachingTipHeroContentPlacementMode::Auto:
         break;
     case winrt::TeachingTipHeroContentPlacementMode::Top:
-        winrt::VisualStateManager::GoToState(*this, L"HeroContentTop"sv, false);
-        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Top)
-        {
-            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Top;
-            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
-        }
+        UpdateDynamicHeroContentPlacementToTopImpl();
         break;
     case winrt::TeachingTipHeroContentPlacementMode::Bottom:
-        winrt::VisualStateManager::GoToState(*this, L"HeroContentBottom"sv, false);
-        if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Bottom)
-        {
-            m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Bottom;
-            TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
-        }
+        UpdateDynamicHeroContentPlacementToBottomImpl();
         break;
     }
 
@@ -1013,72 +1118,105 @@ void TeachingTip::OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const 
         args.VirtualKey() == winrt::VirtualKey::F6 &&
         args.EventType() == winrt::CoreAcceleratorKeyEventType::KeyDown)
     {
-        //  Logging usage telemetry
-        if (m_hasF6BeenInvoked)
-        {
-            __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_TeachingTip, RuntimeProfiler::ProfMemberId_TeachingTip_F6AccessKey_SubsequentInvocation);
-        }
-        else
-        {
-            __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_TeachingTip, RuntimeProfiler::ProfMemberId_TeachingTip_F6AccessKey_FirstInvocation);
-            m_hasF6BeenInvoked = true;
-        }
+        args.Handled(HandleF6Clicked());
+    }
+}
 
-        auto const hasFocusInSubtree = [this, args]()
-        {
-            auto current = winrt::FocusManager::GetFocusedElement().try_as<winrt::DependencyObject>();
-            if (auto const rootElement = m_rootElement.get())
-            {
-                while (current)
-                {
-                    if (current.try_as<winrt::UIElement>() == rootElement)
-                    {
-                        return true;
-                    }
-                    current = winrt::VisualTreeHelper::GetParent(current);
-                }
-            }
-            return false;
-        }();
+void TeachingTip::OnF6PreviewKeyDownClicked(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args)
+{
+    if (!args.Handled() &&
+        IsOpen() &&
+        args.Key() == winrt::VirtualKey::F6)
+    {
+        args.Handled(HandleF6Clicked());
+    }
+}
 
-        if (hasFocusInSubtree)
+void TeachingTip::OnF6PopupPreviewKeyDownClicked(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args)
+{
+    if (!args.Handled() &&
+        IsOpen() &&
+        args.Key() == winrt::VirtualKey::F6)
+    {
+        args.Handled(HandleF6Clicked(/*fromPopup*/true));
+    }
+}
+
+bool TeachingTip::HandleF6Clicked(bool fromPopup)
+{
+    //  Logging usage telemetry
+    if (m_hasF6BeenInvoked)
+    {
+        __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_TeachingTip, RuntimeProfiler::ProfMemberId_TeachingTip_F6AccessKey_SubsequentInvocation);
+    }
+    else
+    {
+        __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_TeachingTip, RuntimeProfiler::ProfMemberId_TeachingTip_F6AccessKey_FirstInvocation);
+        m_hasF6BeenInvoked = true;
+    }
+
+    auto const hasFocusInSubtree = [this]()
+    {
+        if (auto const rootElement = m_rootElement.get())
         {
-            bool setFocus = SetFocus(m_previouslyFocusedElement.get(), winrt::FocusState::Programmatic);
-            m_previouslyFocusedElement = nullptr;
-            args.Handled(setFocus);
-        }
-        else
-        {
-            const winrt::Button f6Button = [this]() -> winrt::Button
-            {
-                auto firstButton = m_closeButton.get();
-                auto secondButton = m_alternateCloseButton.get();
-                //Prefer the close button to the alternate, except when there is no content.
-                if (!CloseButtonContent())
+            auto current = [rootElement]() {
+                if (winrt::IUIElement10 uiElement10 = rootElement)
                 {
-                    std::swap(firstButton, secondButton);
+                    return winrt::FocusManager::GetFocusedElement(uiElement10.XamlRoot()).try_as<winrt::DependencyObject>();
                 }
-                if (firstButton && firstButton.Visibility() == winrt::Visibility::Visible)
-                {
-                    return firstButton;
-                }
-                else if (secondButton && secondButton.Visibility() == winrt::Visibility::Visible)
-                {
-                    return secondButton;
-                }
-                return nullptr;
+                return winrt::FocusManager::GetFocusedElement().try_as<winrt::DependencyObject>();
             }();
 
-            if (f6Button)
+            while (current)
             {
-                auto const scopedRevoker = f6Button.GettingFocus(winrt::auto_revoke, [this](auto const&, auto const& args) {
-                    m_previouslyFocusedElement = winrt::make_weak(args.OldFocusedElement());
-                });
-                bool setFocus = f6Button.Focus(winrt::FocusState::Keyboard);
-                args.Handled(setFocus);
+                if (current.try_as<winrt::UIElement>() == rootElement)
+                {
+                    return true;
+                }
+                current = winrt::VisualTreeHelper::GetParent(current);
             }
         }
+        return false;
+    }();
+
+    if (hasFocusInSubtree && fromPopup)
+    {
+        const bool setFocus = SetFocus(m_previouslyFocusedElement.get(), winrt::FocusState::Programmatic);
+        m_previouslyFocusedElement = nullptr;
+        return setFocus;
     }
+    else if (!hasFocusInSubtree && !fromPopup)
+    {
+        const winrt::Button f6Button = [this]() -> winrt::Button
+        {
+            auto firstButton = m_closeButton.get();
+            auto secondButton = m_alternateCloseButton.get();
+            //Prefer the close button to the alternate, except when there is no content.
+            if (!CloseButtonContent())
+            {
+                std::swap(firstButton, secondButton);
+            }
+            if (firstButton && firstButton.Visibility() == winrt::Visibility::Visible)
+            {
+                return firstButton;
+            }
+            else if (secondButton && secondButton.Visibility() == winrt::Visibility::Visible)
+            {
+                return secondButton;
+            }
+            return nullptr;
+        }();
+
+        if (f6Button)
+        {
+            auto const scopedRevoker = f6Button.GettingFocus(winrt::auto_revoke, [this](auto const&, auto const& args) {
+                m_previouslyFocusedElement = winrt::make_weak(args.OldFocusedElement());
+                });
+            const bool setFocus = f6Button.Focus(winrt::FocusState::Keyboard);
+            return setFocus;
+        }
+    }
+    return false;
 }
 
 void TeachingTip::OnAutomationNameChanged(const winrt::IInspectable&, const winrt::IInspectable&)
@@ -1111,7 +1249,16 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
         {
             m_currentXamlRootSize = xamlRoot.Size();
             m_xamlRoot.set(xamlRoot);
-            m_xamlRootChangedRevoker = xamlRoot.Changed(winrt::auto_revoke, { this, &TeachingTip::XamlRootChanged });
+            m_xamlRootChangedRevoker = RegisterXamlRootChanged(xamlRoot, { this, &TeachingTip::XamlRootChanged });
+
+            if (auto&& popup = m_popup.get())
+            {
+                if (auto const popupContent = popup.Child())
+                {
+                    // This handler is not required for Winui3 because the framework bug this works around has been fixed.
+                    m_popupPreviewKeyDownForF6Revoker = popupContent.PreviewKeyDown(winrt::auto_revoke, { this, &TeachingTip::OnF6PopupPreviewKeyDownClicked });
+                }
+            }
         }
     }
     else
@@ -1141,7 +1288,7 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
             {
                 try
                 {
-                    if (auto&& package = winrt::ApplicationModel::Package::Current())
+                    if (const auto package = winrt::ApplicationModel::Package::Current())
                     {
                         return package.DisplayName();
                     }
@@ -1202,6 +1349,12 @@ void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspec
     }
 }
 
+void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
+{
+    IsOpen(false);
+    ClosePopup();
+}
+
 void TeachingTip::OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     if (IsOpen())
@@ -1218,7 +1371,7 @@ void TeachingTip::RaiseClosingEvent(bool attachDeferralCompletedHandler)
 
     if (attachDeferralCompletedHandler)
     {
-        winrt::DeferralCompletedHandler instance{ [strongThis = get_strong(), args]()
+        winrt::Deferral instance{ [strongThis = get_strong(), args]()
             {
                 strongThis->CheckThread();
                 if (!args->Cancel())
@@ -1289,6 +1442,49 @@ void TeachingTip::ClosePopup()
     }
 }
 
+winrt::TeachingTipPlacementMode TeachingTip::GetFlowDirectionAdjustedPlacement(const winrt::TeachingTipPlacementMode& placementMode)
+{
+    if (FlowDirection() == winrt::FlowDirection::LeftToRight)
+    {
+        return placementMode;
+    }
+    else
+    {
+        switch (placementMode)
+        {
+            case winrt::TeachingTipPlacementMode::Auto:
+                return winrt::TeachingTipPlacementMode::Auto;
+            case winrt::TeachingTipPlacementMode::Left:
+                return winrt::TeachingTipPlacementMode::Right;
+            case winrt::TeachingTipPlacementMode::Right:
+                return winrt::TeachingTipPlacementMode::Left;
+            case winrt::TeachingTipPlacementMode::Top:
+                return winrt::TeachingTipPlacementMode::Top;
+            case winrt::TeachingTipPlacementMode::Bottom:
+                return winrt::TeachingTipPlacementMode::Bottom;
+            case winrt::TeachingTipPlacementMode::LeftBottom:
+                return winrt::TeachingTipPlacementMode::RightBottom;
+            case winrt::TeachingTipPlacementMode::LeftTop:
+                return winrt::TeachingTipPlacementMode::RightTop;
+            case winrt::TeachingTipPlacementMode::TopLeft:
+                return winrt::TeachingTipPlacementMode::TopRight;
+            case winrt::TeachingTipPlacementMode::TopRight:
+                return winrt::TeachingTipPlacementMode::TopLeft;
+            case winrt::TeachingTipPlacementMode::RightTop:
+                return winrt::TeachingTipPlacementMode::LeftTop;
+            case winrt::TeachingTipPlacementMode::RightBottom:
+                return winrt::TeachingTipPlacementMode::LeftBottom;
+            case winrt::TeachingTipPlacementMode::BottomRight:
+                return winrt::TeachingTipPlacementMode::BottomLeft;
+            case winrt::TeachingTipPlacementMode::BottomLeft:
+                return winrt::TeachingTipPlacementMode::BottomRight;
+            case winrt::TeachingTipPlacementMode::Center:
+                return winrt::TeachingTipPlacementMode::Center;
+        }
+    }
+    return winrt::TeachingTipPlacementMode::Auto;
+}
+
 void TeachingTip::OnTargetChanged()
 {
     m_targetLayoutUpdatedRevoker.revoke();
@@ -1345,17 +1541,27 @@ void TeachingTip::RevokeViewportChangedEvent()
 
 void TeachingTip::WindowSizeChanged(const winrt::CoreWindow&, const winrt::WindowSizeChangedEventArgs&)
 {
-    RepositionPopup();
+    // Reposition popup when target/window has finished determining sizes
+    SharedHelpers::QueueCallbackForCompositionRendering(
+        [strongThis = get_strong()](){
+            strongThis->RepositionPopup();
+        }
+    );
 }
 
 void TeachingTip::XamlRootChanged(const winrt::XamlRoot& xamlRoot, const winrt::XamlRootChangedEventArgs&)
 {
-    auto xamlRootSize = xamlRoot.Size();
-    if (xamlRootSize != m_currentXamlRootSize)
-    {
-        m_currentXamlRootSize = xamlRootSize;
-        RepositionPopup();
-    }
+    // Reposition popup when target has finished determining its own position.
+    SharedHelpers::QueueCallbackForCompositionRendering(
+        [strongThis = get_strong(),xamlRootSize = xamlRoot.Size()](){
+            if (xamlRootSize != strongThis->m_currentXamlRootSize)
+            {
+                strongThis->m_currentXamlRootSize = xamlRootSize;
+                strongThis->RepositionPopup();
+            }
+        }
+    );
+
 }
 
 void TeachingTip::RepositionPopup()
@@ -1406,7 +1612,7 @@ void TeachingTip::CreateExpandAnimation()
 {
     auto const compositor = winrt::Window::Current().Compositor();
 
-    auto&& expandEasingFunction = [this, compositor]()
+    const auto&& expandEasingFunction = [this, compositor]()
     {
         if (!m_expandEasingFunction)
         {
@@ -1453,7 +1659,7 @@ void TeachingTip::CreateContractAnimation()
 {
     auto const compositor = winrt::Window::Current().Compositor();
 
-    auto&& contractEasingFunction = [this, compositor]()
+    const auto&& contractEasingFunction = [this, compositor]()
     {
         if (!m_contractEasingFunction)
         {
@@ -1488,7 +1694,8 @@ void TeachingTip::CreateContractAnimation()
     m_contractElevationAnimation.set([this, compositor, contractEasingFunction]()
     {
         auto const contractElevationAnimation = compositor.CreateVector3KeyFrameAnimation();
-        contractElevationAnimation.InsertExpressionKeyFrame(1.0f, L"Vector3(this.Target.Translation.X, this.Target.Translation.Y, 0.0f)", contractEasingFunction);
+        // animating to 0.01f instead of 0.0f as work around to internal issue 26001712 which was causing text clipping.
+        contractElevationAnimation.InsertExpressionKeyFrame(1.0f, L"Vector3(this.Target.Translation.X, this.Target.Translation.Y, 0.01f)", contractEasingFunction);
         contractElevationAnimation.Duration(m_contractAnimationDuration);
         contractElevationAnimation.Target(s_translationTargetName);
         return contractElevationAnimation;
@@ -1603,7 +1810,7 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
     // SetReturnTopForOutOfWindowBounds test hook.
     if (!ShouldConstrainToRootBounds() && m_returnTopForOutOfWindowPlacement)
     {
-        auto const placement = PreferredPlacement();
+        auto const placement =  GetFlowDirectionAdjustedPlacement(PreferredPlacement());
         if (placement == winrt::TeachingTipPlacementMode::Auto)
         {
             return std::make_tuple(winrt::TeachingTipPlacementMode::Top, false);
@@ -1657,8 +1864,8 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
     availability[winrt::TeachingTipPlacementMode::RightBottom] = true;
     availability[winrt::TeachingTipPlacementMode::Center] = true;
 
-    double tipHeight = contentHeight + TailShortSideLength();
-    double tipWidth = contentWidth + TailShortSideLength();
+    const double tipHeight = contentHeight + TailShortSideLength();
+    const double tipWidth = contentWidth + TailShortSideLength();
 
     // We try to avoid having the tail touch the HeroContent so rule out positions where this would be required
     if (HeroContent())
@@ -1828,7 +2035,8 @@ std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectiv
         availability[winrt::TeachingTipPlacementMode::RightBottom] = false;
     }
 
-    auto const priorities = GetPlacementFallbackOrder(PreferredPlacement());
+    auto const wantedDirection = GetFlowDirectionAdjustedPlacement(PreferredPlacement());
+    auto const priorities = GetPlacementFallbackOrder(wantedDirection);
 
     for (auto const mode : priorities)
     {
@@ -2050,7 +2258,7 @@ void TeachingTip::EstablishShadows()
                 m_contentRootGrid_uiElement10.Shadow(winrt::ThemeShadow{});
                 if (auto&& contentRootGrid = m_contentRootGrid.get())
                 {
-                    auto&& contentRootGridTranslation = contentRootGrid.Translation();
+                    const auto contentRootGridTranslation = contentRootGrid.Translation();
                     contentRootGrid.Translation({ contentRootGridTranslation.x, contentRootGridTranslation.y, m_contentElevation });
                 }
             }
@@ -2125,6 +2333,22 @@ float TeachingTip::MinimumTipEdgeToTailCenter()
         }
     }
     return 0;
+}
+
+winrt::CornerRadius TeachingTip::GetTeachingTipCornerRadius()
+{
+    if (SharedHelpers::IsRS5OrHigher())
+    {
+        return CornerRadius();
+    }
+    else if (auto const contentRootGrid = m_contentRootGrid.get())
+    {
+        return contentRootGrid.CornerRadius();
+    }
+    else
+    {
+        return unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(*this, box_value(c_OverlayCornerRadiusName)));
+    }
 }
 
 ////////////////
@@ -2291,6 +2515,24 @@ double TeachingTip::GetVerticalOffset()
         return popup.VerticalOffset();
     }
     return 0.0;
+}
+
+winrt::Visibility TeachingTip::GetTitleVisibility()
+{
+    if (auto&& titleTextBox = GetTemplateChildT<winrt::UIElement>(s_titleTextBoxName, *this))
+    {
+        return titleTextBox.Visibility();
+    }
+    return winrt::Visibility::Collapsed;
+}
+
+winrt::Visibility TeachingTip::GetSubtitleVisibility()
+{
+    if (auto&& subtitleTextBox = GetTemplateChildT<winrt::UIElement>(s_subtitleTextBoxName, *this))
+    {
+        return subtitleTextBox.Visibility();
+    }
+    return winrt::Visibility::Collapsed;
 }
 
 void TeachingTip::UpdatePopupRequestedTheme()

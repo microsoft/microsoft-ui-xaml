@@ -9,7 +9,6 @@ if "%DevEnvDir%" == "" (
 )
 
 set TFS_SourcesDirectory=%~dp0
-set XES_DFSDROP=%~dp0BuildOutput
 set BUILD_BINARIESDIRECTORY=%~dp0BuildOutput
 set VERSIONBUILDNUMBER=local
 set VERSIONBUILDREVISION=10001
@@ -72,12 +71,6 @@ if "%1" == "/UseInternalSDK" (
     shift
     goto :MoreArguments
 )
-if "%1" == "/EmitTelemetryEvents" (
-    REM echo EmitTelemetryEvents
-    set EMITTELEMETRYEVENTS=1
-    shift
-    goto :MoreArguments
-)
 if "%1" == "/project" (
     set PROJECTPATH=%~2
     shift
@@ -114,9 +107,9 @@ REM
 REM     NUGET Restore
 REM
 if "%PROJECTPATH%" NEQ "" (
-	call .\Tools\NugetWrapper.cmd restore -MSBuildPath "%MSBUILDDIRPATH%" -NonInteractive %PROJECTPATH%
+    call .\Tools\NugetWrapper.cmd restore -MSBuildPath "%MSBUILDDIRPATH%" -NonInteractive %PROJECTPATH%
 ) else (
-	call .\Tools\NugetWrapper.cmd restore -MSBuildPath "%MSBUILDDIRPATH%" -NonInteractive .\MUXControls.sln 
+    call .\Tools\NugetWrapper.cmd restore -MSBuildPath "%MSBUILDDIRPATH%" -NonInteractive .\MUXControls.sln 
 )
 
 REM
@@ -128,7 +121,6 @@ set EXTRAMSBUILDPARAMS=
 if "%MUXFINAL%" == "1" ( set EXTRAMSBUILDPARAMS=/p:MUXFinalRelease=true )
 if "%USEINSIDERSDK%" == "1" ( set EXTRAMSBUILDPARAMS=/p:UseInsiderSDK=true )
 if "%USEINTERNALSDK%" == "1" ( set EXTRAMSBUILDPARAMS=/p:UseInternalSDK=true )
-if "%EMITTELEMETRYEVENTS%" == "1" ( set EXTRAMSBUILDPARAMS=/p:EmitTelemetryEvents=true )
 
 
 if "%BUILDTARGET%" NEQ "" ( set EXTRAMSBUILDPARAMS=%EXTRAMSBUILDPARAMS% %BUILDTARGET% )
@@ -139,7 +131,6 @@ if "%PROJECTPATH%" NEQ "" (
     !MSBuildCommand!
 ) else (
     if "%BUILDALL%" == "" (
-        set XES_OUTDIR=%BUILD_BINARIESDIRECTORY%\%BUILDCONFIGURATION%\%BUILDPLATFORM%\
 
         "%MSBUILDPATH%" .\MUXControls.sln /p:platform="%BUILDPLATFORM%" /p:configuration="%BUILDCONFIGURATION%" /flp:Verbosity=Diagnostic /fl /bl %EXTRAMSBUILDPARAMS% /verbosity:Minimal /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false 
 
@@ -157,16 +148,6 @@ if "%PROJECTPATH%" NEQ "" (
             call .\tools\MakeAppxHelper.cmd arm64 release
             call .\tools\MakeAppxHelper.cmd arm64 debug
         )
-
-        REM
-        REM     PostBuild
-        REM
-        call .\tools\PostBuild.cmd
-
-        REM
-        REM     PkgGen
-        REM
-        REM call .\tools\pkggen.cmd
     )
 )
 
@@ -185,7 +166,6 @@ echo        /leanmux - build lean mux for the store
 echo        /muxfinal - build "final" bits which have the winmd stripped of experimental types
 echo        /UseInsiderSDK - build using insider SDK
 echo        /UseInternalSDK - build using internal SDK
-echo        /EmitTelemetryEvents - build with telemetry events turned on
 echo        /project ^<path^> - builds a specific project
 echo        /usevsprerelease - use the prerelease VS on the machine instead of latest stable
 echo        /target - specify the msbuild target. Specify multiple times to build multiple targets.

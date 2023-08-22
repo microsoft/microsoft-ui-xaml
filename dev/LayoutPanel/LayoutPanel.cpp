@@ -6,97 +6,16 @@
 #include "LayoutPanel.h"
 #include "LayoutPanelLayoutContext.h"
 
-GlobalDependencyProperty LayoutPanel::s_layoutProperty{ nullptr };
-GlobalDependencyProperty LayoutPanel::s_borderBrushProperty{ nullptr };
-GlobalDependencyProperty LayoutPanel::s_borderThicknessProperty{ nullptr };
-GlobalDependencyProperty LayoutPanel::s_cornerRadiusProperty{ nullptr };
-GlobalDependencyProperty LayoutPanel::s_paddingProperty{ nullptr };
-
-/*static*/
-void LayoutPanel::EnsureProperties()
-{
-    if (!s_layoutProperty)
-    {
-        s_layoutProperty =
-            InitializeDependencyProperty(
-                L"Layout",
-                winrt::name_of<winrt::Layout>(),
-                winrt::name_of<winrt::LayoutPanel>(),
-                false /* isAttached */,
-                nullptr, /* defaultValue */
-                winrt::PropertyChangedCallback(&LayoutPanel::OnPropertyChanged));
-    }
-    if (!s_borderBrushProperty)
-    {
-        s_borderBrushProperty =
-            InitializeDependencyProperty(
-                L"BorderBrush",
-                winrt::name_of<winrt::Brush>(),
-                winrt::name_of<winrt::LayoutPanel>(),
-                false /* isAttached */,
-                nullptr, /* defaultValue */
-                winrt::PropertyChangedCallback(&LayoutPanel::OnPropertyChanged));
-    }
-    if (!s_borderThicknessProperty)
-    {
-        s_borderThicknessProperty =
-            InitializeDependencyProperty(
-                L"BorderThickness",
-                winrt::name_of<winrt::Thickness>(),
-                winrt::name_of<winrt::LayoutPanel>(),
-                false /* isAttached */,
-                box_value(winrt::Thickness{ 0,0,0,0 }), /* defaultValue */
-                winrt::PropertyChangedCallback(&LayoutPanel::OnPropertyChanged));
-    }
-    if (!s_cornerRadiusProperty)
-    {
-        s_cornerRadiusProperty =
-            InitializeDependencyProperty(
-                L"CornerRadius",
-                winrt::name_of<winrt::CornerRadius>(),
-                winrt::name_of<winrt::LayoutPanel>(),
-                false /* isAttached */,
-                box_value(winrt::CornerRadius{ 0,0,0,0 }), /* defaultValue */
-                winrt::PropertyChangedCallback(&LayoutPanel::OnPropertyChanged));
-    }
-    if (!s_paddingProperty)
-    {
-        s_paddingProperty =
-            InitializeDependencyProperty(
-                L"Padding",
-                winrt::name_of<winrt::Thickness>(),
-                winrt::name_of<winrt::LayoutPanel>(),
-                false /* isAttached */,
-                box_value(winrt::Thickness{ 0,0,0,0 }), /* defaultValue */
-                winrt::PropertyChangedCallback(&LayoutPanel::OnPropertyChanged));
-    }
-}
-
-/*static*/
-void LayoutPanel::ClearProperties()
-{
-    s_layoutProperty = nullptr;
-    s_borderBrushProperty = nullptr;
-    s_borderThicknessProperty = nullptr;
-    s_cornerRadiusProperty = nullptr;
-    s_paddingProperty = nullptr;
-}
-
-/*static*/
-void LayoutPanel::OnPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    winrt::get_self<LayoutPanel>(sender.as<winrt::LayoutPanel>())->OnPropertyChanged(args);
-}
+#include "LayoutPanel.properties.cpp"
 
 void LayoutPanel::OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
     const winrt::IDependencyProperty dependencyProperty = args.Property();
 
-    if (dependencyProperty == s_layoutProperty)
+    if (dependencyProperty == s_LayoutProperty)
     {
-        OnLayoutChanged(args.OldValue().as<winrt::Layout>(), args.NewValue().as<winrt::Layout>());
+        m_layout.set(args.NewValue().as<winrt::Layout>());
+        OnLayoutChanged(args.OldValue().as<winrt::Layout>(), m_layout.get());
     }
 #ifdef USE_INTERNAL_SDK
     else if (dependencyProperty == s_borderBrushProperty)
@@ -121,71 +40,22 @@ void LayoutPanel::OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs co
         }
     }
 #endif
-    else if (dependencyProperty == s_paddingProperty)
+    else if (dependencyProperty == s_PaddingProperty)
     {
         InvalidateMeasure();
     }
 }
 
-winrt::Layout LayoutPanel::Layout()
-{
-    return m_layout.get();
-}
-
-void LayoutPanel::Layout(winrt::Layout const& value)
-{
-    SetValue(s_layoutProperty, value);
-}
-
-winrt::Brush LayoutPanel::BorderBrush()
-{
-    return GetValue(s_borderBrushProperty).as<winrt::Brush>();
-}
-
-void LayoutPanel::BorderBrush(winrt::Brush const& value)
-{
-    SetValue(s_borderBrushProperty, value);
-}
-
-winrt::Thickness LayoutPanel::BorderThickness()
-{
-    return auto_unbox(GetValue(s_borderThicknessProperty));
-}
-
-void LayoutPanel::BorderThickness(winrt::Thickness const& value)
-{
-    SetValue(s_borderThicknessProperty, box_value(value));
-}
-
-winrt::CornerRadius LayoutPanel::CornerRadius()
-{
-    return auto_unbox(GetValue(s_cornerRadiusProperty));
-}
-
-void LayoutPanel::CornerRadius(winrt::CornerRadius const& value)
-{
-    SetValue(s_cornerRadiusProperty, box_value(value));
-}
-
-winrt::Thickness LayoutPanel::Padding()
-{
-    return auto_unbox(GetValue(s_paddingProperty));
-}
-
-void LayoutPanel::Padding(winrt::Thickness const& value)
-{
-    SetValue(s_paddingProperty, box_value(value));
-}
 
 winrt::Size LayoutPanel::MeasureOverride(winrt::Size const& availableSize)
 {
     winrt::Size desiredSize{};
 
     // We adjust availableSize based on our Padding and BorderThickness:
-    auto padding = Padding();
-    auto borderThickness = BorderThickness();
-    auto effectiveHorizontalPadding = static_cast<float>(padding.Left + padding.Right + borderThickness.Left + borderThickness.Right);
-    auto effectiveVerticalPadding = static_cast<float>(padding.Top + padding.Bottom + borderThickness.Top + borderThickness.Bottom);
+    const auto padding = Padding();
+    const auto borderThickness = BorderThickness();
+    const auto effectiveHorizontalPadding = static_cast<float>(padding.Left + padding.Right + borderThickness.Left + borderThickness.Right);
+    const auto effectiveVerticalPadding = static_cast<float>(padding.Top + padding.Bottom + borderThickness.Top + borderThickness.Bottom);
 
     auto adjustedSize = availableSize;
     adjustedSize.Width -= effectiveHorizontalPadding;
@@ -207,7 +77,7 @@ winrt::Size LayoutPanel::MeasureOverride(winrt::Size const& availableSize)
         for (winrt::UIElement const& child : Children())
         {
             child.Measure(adjustedSize);
-            auto childDesiredSize = child.DesiredSize();
+            const auto childDesiredSize = child.DesiredSize();
             desiredSizeUnpadded.Width = std::max(desiredSizeUnpadded.Width, childDesiredSize.Width);
             desiredSizeUnpadded.Height = std::max(desiredSizeUnpadded.Height, childDesiredSize.Height);
         }
@@ -222,13 +92,13 @@ winrt::Size LayoutPanel::ArrangeOverride(winrt::Size const& finalSize)
 {
     winrt::Size result = finalSize;
 
-    auto padding = Padding();
-    auto borderThickness = BorderThickness();
+    const auto padding = Padding();
+    const auto borderThickness = BorderThickness();
 
-    auto effectiveHorizontalPadding = static_cast<float>(padding.Left + padding.Right + borderThickness.Left + borderThickness.Right);
-    auto effectiveVerticalPadding = static_cast<float>(padding.Top + padding.Bottom + borderThickness.Top + borderThickness.Bottom);
-    auto leftAdjustment = static_cast<float>(padding.Left + borderThickness.Left);
-    auto topAdjustment = static_cast<float>(padding.Top + borderThickness.Top);
+    const auto effectiveHorizontalPadding = static_cast<float>(padding.Left + padding.Right + borderThickness.Left + borderThickness.Right);
+    const auto effectiveVerticalPadding = static_cast<float>(padding.Top + padding.Bottom + borderThickness.Top + borderThickness.Bottom);
+    const auto leftAdjustment = static_cast<float>(padding.Left + borderThickness.Left);
+    const auto topAdjustment = static_cast<float>(padding.Top + borderThickness.Top);
 
     auto adjustedSize = finalSize;
     adjustedSize.Width -= effectiveHorizontalPadding;
@@ -262,7 +132,7 @@ winrt::Size LayoutPanel::ArrangeOverride(winrt::Size const& finalSize)
     }
     else
     {
-        winrt::Rect arrangeRect = { leftAdjustment, topAdjustment, adjustedSize.Width, adjustedSize.Height };
+        const winrt::Rect arrangeRect = { leftAdjustment, topAdjustment, adjustedSize.Width, adjustedSize.Height };
         for (winrt::UIElement const& child : Children())
         {
             child.Arrange(arrangeRect);

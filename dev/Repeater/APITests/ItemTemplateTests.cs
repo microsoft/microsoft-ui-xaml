@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks;
 using Microsoft.UI.Xaml.Controls;
+using System;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -37,7 +38,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
 
     [TestClass]
-    public class ItemTemplateTests : TestsBase
+    public class ItemTemplateTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateRecycling()
@@ -69,7 +70,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     ItemsSource = Enumerable.Range(0, numItems),
                     ItemTemplate = elementFactory,
                 };
-
 
                 var context = (ElementFactoryGetArgs)RepeaterTestHooks.CreateRepeaterElementFactoryGetArgs();
                 context.Parent = repeater;
@@ -372,6 +372,85 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        public void ValidateNoSizeWhenEmptyDataTemplate()
+        {
+            ItemsRepeater repeater = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var elementFactory = new RecyclingElementFactory();
+                elementFactory.RecyclePool = new RecyclePool();
+                elementFactory.Templates["Item"] = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' />");
+
+                repeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 10).Select(i => string.Format("Item #{0}", i)),
+                    ItemTemplate = elementFactory,
+                    // Default is StackLayout, so do not have to explicitly set.
+                    // Layout = new StackLayout(),
+                };
+                repeater.UpdateLayout();
+
+                // Asserting render size is zero
+                Verify.IsLessThan(repeater.RenderSize.Width, 0.0001);
+                Verify.IsLessThan(repeater.RenderSize.Height, 0.0001);
+            });
+        }
+
+        [TestMethod]
+        public void ValidateCorrectSizeWhenEmptyDataTemplateInSelector()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var dataTemplateOdd = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <TextBlock Text='{Binding}' Height='30' Width='50' />
+                        </DataTemplate>");
+                var dataTemplateEven = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' />");
+                ItemsRepeater repeater = null;
+                const int numItems = 10;
+                var selector = new MySelector() {
+                    TemplateOdd = dataTemplateOdd,
+                    TemplateEven = dataTemplateEven
+                };
+
+                repeater = new ItemsRepeater() {
+                    ItemTemplate = selector,
+                    Layout = new StackLayout(),
+                    ItemsSource = Enumerable.Range(0, numItems)
+                };
+
+                repeater.VerticalAlignment = VerticalAlignment.Top;
+                repeater.HorizontalAlignment = HorizontalAlignment.Left;
+                Content = repeater;
+
+                Content.UpdateLayout();
+                Verify.AreEqual(numItems, VisualTreeHelper.GetChildrenCount(repeater));
+                for (int i = 0; i < numItems; i++)
+                {
+                    var element = (FrameworkElement)repeater.TryGetElement(i);
+                    if (i % 2 == 0)
+                    {
+                        Verify.AreEqual(element.Height, 0);
+                    }
+                    else
+                    {
+                        Verify.AreEqual(element.Height, 30);
+                    }
+                }
+
+                Verify.AreEqual(5 * 30, repeater.ActualHeight);
+
+                // ItemsRepeater stretches page, so actual width is width of page and not 50
+                //Verify.AreEqual(50, repeater.ActualWidth);
+
+
+                repeater.ItemsSource = null;
+                Content.UpdateLayout();
+            });
+        }
+
+        [TestMethod]
         public void ValidateReyclingElementFactoryWithNoTemplate()
         {
             RunOnUIThread.Execute(() =>
@@ -486,6 +565,118 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        [TestMethod]
+        public void ValidateNullItemTemplateAndContainerInItems()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                const int numItems = 10;
+                ItemsRepeater repeater = null;
+                Content = CreateAndInitializeRepeater
+                (
+                    itemsSource: Enumerable.Range(0, numItems).Select(i => new Button() { Content = i }), // ItemsSource is UIElements
+                    elementFactory: null, // No ItemTemplate
+                    layout: new StackLayout(),
+                    repeater: ref repeater
+                );
+
+                Content.UpdateLayout();
+
+                Verify.AreEqual(numItems, VisualTreeHelper.GetChildrenCount(repeater));
+                
+                for (int i = 0; i < numItems; i++)
+                {
+                    var element = (Button)repeater.TryGetElement(i);
+                    Verify.AreEqual(i, element.Content);
+                }
+
+                Button button0 = (Button)repeater.TryGetElement(0);
+                Verify.IsNotNull(button0.Parent);
+
+                repeater.ItemsSource = null;
+                Verify.IsNull(button0.Parent);
+            });
+        }
+
+        [TestMethod]
+        public void VerifySelectTemplateLayoutFallback()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var dataTemplateOdd = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <TextBlock Text='static' Height='30' />
+                        </DataTemplate>");
+                var dataTemplateEven = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <TextBlock Text='{Binding}' Height='30' />
+                        </DataTemplate>");
+                ItemsRepeater repeater = null;
+                const int numItems = 10;
+                var selector = new MyContainerSelector() {
+                    TemplateOdd = dataTemplateOdd,
+                    TemplateEven = dataTemplateEven
+                };
+
+                Content = CreateAndInitializeRepeater
+                (
+                   itemsSource: Enumerable.Range(0, numItems),
+                   elementFactory: selector,
+                   layout: new StackLayout(),
+                   repeater: ref repeater
+                );
+
+                Content.UpdateLayout();
+
+                Verify.AreEqual(numItems, VisualTreeHelper.GetChildrenCount(repeater));
+                for (int i = 0; i < numItems; i++)
+                {
+                    var element = (TextBlock)repeater.TryGetElement(i);
+                    if (i % 2 == 0)
+                    {
+                        // Text is bound to the data for even indices
+                        Verify.AreEqual(i.ToString(), element.Text);
+                        Verify.AreEqual(i, element.DataContext);
+                    }
+                    else
+                    {
+                        // Text explicitly set on the element only for odd indices
+                        Verify.AreEqual("static", element.Text);
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
+        public void VerifyNullTemplateGivesMeaningfullError()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                ItemsRepeater repeater = null;
+                const int numItems = 10;
+
+                Content = CreateAndInitializeRepeater
+                (
+                    itemsSource: Enumerable.Range(0, numItems),
+                    // DataTemplateSelector always returns null, but throws hresult_invalid_argument when container is null
+                    elementFactory: new DataTemplateSelector(),
+                    layout: new StackLayout(),
+                    repeater: ref repeater
+                );
+                bool threwException = false;
+                try
+                {
+                    Content.UpdateLayout();
+                } catch(Exception e)
+                {
+                    threwException = true;
+                    Verify.IsTrue(e.Message.Contains("Null encountered as data template. That is not a valid value for a data template, and can not be used."));
+                }
+                Verify.IsTrue(threwException);
+                // Set content to null so testapp does not try to update layout again
+                Content = null;
+            });
+        }
         private ItemsRepeaterScrollHost CreateAndInitializeRepeater(
             object itemsSource,
             Layout layout,
@@ -539,5 +730,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             return (((int)item) % 2 == 0) ? TemplateEven : TemplateOdd;
         }
+    }
+
+    public class MyContainerSelector : DataTemplateSelector
+    {
+        public DataTemplate TemplateOdd { get; set; }
+
+        public DataTemplate TemplateEven { get; set; }
+
+        protected override DataTemplate SelectTemplateCore(object item, DependencyObject container)
+        {
+            return (((int)item) % 2 == 0) ? TemplateEven : TemplateOdd;
+        }
+
     }
 }

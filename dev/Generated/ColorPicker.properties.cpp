@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ColorPicker.h"
 
-CppWinRTActivatableClassWithDPFactory(ColorPicker)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(ColorPicker)
+}
+
+#include "ColorPicker.g.cpp"
 
 GlobalDependencyProperty ColorPickerProperties::s_ColorProperty{ nullptr };
 GlobalDependencyProperty ColorPickerProperties::s_ColorSpectrumComponentsProperty{ nullptr };
@@ -26,6 +31,7 @@ GlobalDependencyProperty ColorPickerProperties::s_MaxValueProperty{ nullptr };
 GlobalDependencyProperty ColorPickerProperties::s_MinHueProperty{ nullptr };
 GlobalDependencyProperty ColorPickerProperties::s_MinSaturationProperty{ nullptr };
 GlobalDependencyProperty ColorPickerProperties::s_MinValueProperty{ nullptr };
+GlobalDependencyProperty ColorPickerProperties::s_OrientationProperty{ nullptr };
 GlobalDependencyProperty ColorPickerProperties::s_PreviousColorProperty{ nullptr };
 
 ColorPickerProperties::ColorPickerProperties()
@@ -234,6 +240,17 @@ void ColorPickerProperties::EnsureProperties()
                 ValueHelper<int>::BoxValueIfNecessary(0),
                 winrt::PropertyChangedCallback(&OnMinValuePropertyChanged));
     }
+    if (!s_OrientationProperty)
+    {
+        s_OrientationProperty =
+            InitializeDependencyProperty(
+                L"Orientation",
+                winrt::name_of<winrt::Orientation>(),
+                winrt::name_of<winrt::ColorPicker>(),
+                false /* isAttached */,
+                ValueHelper<winrt::Orientation>::BoxValueIfNecessary(winrt::Orientation::Vertical),
+                winrt::PropertyChangedCallback(&OnOrientationPropertyChanged));
+    }
     if (!s_PreviousColorProperty)
     {
         s_PreviousColorProperty =
@@ -267,6 +284,7 @@ void ColorPickerProperties::ClearProperties()
     s_MinHueProperty = nullptr;
     s_MinSaturationProperty = nullptr;
     s_MinValueProperty = nullptr;
+    s_OrientationProperty = nullptr;
     s_PreviousColorProperty = nullptr;
 }
 
@@ -414,6 +432,14 @@ void ColorPickerProperties::OnMinValuePropertyChanged(
     winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
 }
 
+void ColorPickerProperties::OnOrientationPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ColorPicker>();
+    winrt::get_self<ColorPicker>(owner)->OnPropertyChanged(args);
+}
+
 void ColorPickerProperties::OnPreviousColorPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -424,7 +450,10 @@ void ColorPickerProperties::OnPreviousColorPropertyChanged(
 
 void ColorPickerProperties::Color(winrt::Color const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_ColorProperty, ValueHelper<winrt::Color>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Color ColorPickerProperties::Color()
@@ -434,7 +463,10 @@ winrt::Color ColorPickerProperties::Color()
 
 void ColorPickerProperties::ColorSpectrumComponents(winrt::ColorSpectrumComponents const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_ColorSpectrumComponentsProperty, ValueHelper<winrt::ColorSpectrumComponents>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ColorSpectrumComponents ColorPickerProperties::ColorSpectrumComponents()
@@ -444,7 +476,10 @@ winrt::ColorSpectrumComponents ColorPickerProperties::ColorSpectrumComponents()
 
 void ColorPickerProperties::ColorSpectrumShape(winrt::ColorSpectrumShape const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_ColorSpectrumShapeProperty, ValueHelper<winrt::ColorSpectrumShape>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ColorSpectrumShape ColorPickerProperties::ColorSpectrumShape()
@@ -454,7 +489,10 @@ winrt::ColorSpectrumShape ColorPickerProperties::ColorSpectrumShape()
 
 void ColorPickerProperties::IsAlphaEnabled(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_IsAlphaEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool ColorPickerProperties::IsAlphaEnabled()
@@ -464,7 +502,10 @@ bool ColorPickerProperties::IsAlphaEnabled()
 
 void ColorPickerProperties::IsAlphaSliderVisible(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_IsAlphaSliderVisibleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool ColorPickerProperties::IsAlphaSliderVisible()
@@ -474,7 +515,10 @@ bool ColorPickerProperties::IsAlphaSliderVisible()
 
 void ColorPickerProperties::IsAlphaTextInputVisible(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_IsAlphaTextInputVisibleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool ColorPickerProperties::IsAlphaTextInputVisible()
@@ -484,7 +528,10 @@ bool ColorPickerProperties::IsAlphaTextInputVisible()
 
 void ColorPickerProperties::IsColorChannelTextInputVisible(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_IsColorChannelTextInputVisibleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool ColorPickerProperties::IsColorChannelTextInputVisible()
@@ -494,7 +541,10 @@ bool ColorPickerProperties::IsColorChannelTextInputVisible()
 
 void ColorPickerProperties::IsColorPreviewVisible(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_IsColorPreviewVisibleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool ColorPickerProperties::IsColorPreviewVisible()
@@ -504,7 +554,10 @@ bool ColorPickerProperties::IsColorPreviewVisible()
 
 void ColorPickerProperties::IsColorSliderVisible(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_IsColorSliderVisibleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool ColorPickerProperties::IsColorSliderVisible()
@@ -514,7 +567,10 @@ bool ColorPickerProperties::IsColorSliderVisible()
 
 void ColorPickerProperties::IsColorSpectrumVisible(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_IsColorSpectrumVisibleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool ColorPickerProperties::IsColorSpectrumVisible()
@@ -524,7 +580,10 @@ bool ColorPickerProperties::IsColorSpectrumVisible()
 
 void ColorPickerProperties::IsHexInputVisible(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_IsHexInputVisibleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool ColorPickerProperties::IsHexInputVisible()
@@ -534,7 +593,10 @@ bool ColorPickerProperties::IsHexInputVisible()
 
 void ColorPickerProperties::IsMoreButtonVisible(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_IsMoreButtonVisibleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool ColorPickerProperties::IsMoreButtonVisible()
@@ -544,7 +606,10 @@ bool ColorPickerProperties::IsMoreButtonVisible()
 
 void ColorPickerProperties::MaxHue(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_MaxHueProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int ColorPickerProperties::MaxHue()
@@ -554,7 +619,10 @@ int ColorPickerProperties::MaxHue()
 
 void ColorPickerProperties::MaxSaturation(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_MaxSaturationProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int ColorPickerProperties::MaxSaturation()
@@ -564,7 +632,10 @@ int ColorPickerProperties::MaxSaturation()
 
 void ColorPickerProperties::MaxValue(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_MaxValueProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int ColorPickerProperties::MaxValue()
@@ -574,7 +645,10 @@ int ColorPickerProperties::MaxValue()
 
 void ColorPickerProperties::MinHue(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_MinHueProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int ColorPickerProperties::MinHue()
@@ -584,7 +658,10 @@ int ColorPickerProperties::MinHue()
 
 void ColorPickerProperties::MinSaturation(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_MinSaturationProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int ColorPickerProperties::MinSaturation()
@@ -594,7 +671,10 @@ int ColorPickerProperties::MinSaturation()
 
 void ColorPickerProperties::MinValue(int value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_MinValueProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
 }
 
 int ColorPickerProperties::MinValue()
@@ -602,9 +682,25 @@ int ColorPickerProperties::MinValue()
     return ValueHelper<int>::CastOrUnbox(static_cast<ColorPicker*>(this)->GetValue(s_MinValueProperty));
 }
 
+void ColorPickerProperties::Orientation(winrt::Orientation const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<ColorPicker*>(this)->SetValue(s_OrientationProperty, ValueHelper<winrt::Orientation>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::Orientation ColorPickerProperties::Orientation()
+{
+    return ValueHelper<winrt::Orientation>::CastOrUnbox(static_cast<ColorPicker*>(this)->GetValue(s_OrientationProperty));
+}
+
 void ColorPickerProperties::PreviousColor(winrt::IReference<winrt::Color> const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<ColorPicker*>(this)->SetValue(s_PreviousColorProperty, ValueHelper<winrt::IReference<winrt::Color>>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IReference<winrt::Color> ColorPickerProperties::PreviousColor()

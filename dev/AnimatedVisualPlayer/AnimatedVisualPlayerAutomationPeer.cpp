@@ -1,8 +1,9 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "common.h"
 #include "AnimatedVisualPlayerAutomationPeer.h"
-
 #include "AnimatedVisualPlayer.h"
+
+#include "AnimatedVisualPlayerAutomationPeer.properties.cpp"
 
 AnimatedVisualPlayerAutomationPeer::AnimatedVisualPlayerAutomationPeer(winrt::AnimatedVisualPlayer const& owner)
     : ReferenceTracker(owner)

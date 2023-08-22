@@ -1,10 +1,8 @@
 namespace MU_XAP_NAMESPACE
 {
 
-[WUXC_VERSION_RS3]
+[MUX_PUBLIC]
 [webhosthidden]
-[WUXC_INTERFACE_NAME("IColorPickerSliderAutomationPeer", a514215a-7293-4577-924c-47d4e0bf9b90)]
-[WUXC_CONSTRUCTOR_NAME("IColorPickerSliderAutomationPeerFactory", 1a55c77e-9dd6-45a3-9042-b40200fea1a9)]
 unsealed runtimeclass ColorPickerSliderAutomationPeer : Windows.UI.Xaml.Automation.Peers.SliderAutomationPeer
 {
     [method_name("CreateInstanceWithOwner")] ColorPickerSliderAutomationPeer(MU_XCP_NAMESPACE.ColorPickerSlider owner);

@@ -22,6 +22,22 @@ namespace MUXControlsTestApp
 
         int _newTabNumber = 1;
 
+        private void SetSmallWidth_Click(object sender, object args)
+        {
+            LayoutRoot.Width = 500;
+        }
+
+        private void SetLargeWidth_Click(object sender, object args)
+        {
+            LayoutRoot.Width = 800;
+        }
+
+        private void GetWidthsButton_Click(object sender, object args)
+        {
+            WidthEqualText.Text = TabViewEqual.ActualWidth.ToString();
+            WidthSizeToContentText.Text = TabViewSizeToContent.ActualWidth.ToString();
+        }
+
         private void Tabview_AddTabButtonClick(TabView sender, object args)
         {
             TabViewItem item = new TabViewItem();

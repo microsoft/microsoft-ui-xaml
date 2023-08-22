@@ -15,6 +15,15 @@ MenuBar::MenuBar()
 
     auto items = winrt::make<ObservableVector<winrt::MenuBarItem>>();
     SetValue(s_ItemsProperty, items);
+
+    auto observableVector = Items().try_as<winrt::IObservableVector<winrt::MenuBarItem>>();
+    m_itemsVectorChangedRevoker = observableVector.VectorChanged(winrt::auto_revoke,
+    {
+        [this](auto const&, auto const&)
+        {
+            UpdateAutomationSizeAndPosition();
+        }
+    });
 }
 
 // IUIElement / IUIElementOverridesHelper
@@ -26,11 +35,6 @@ winrt::AutomationPeer MenuBar::OnCreateAutomationPeer()
 void MenuBar::OnApplyTemplate()
 {
     SetUpTemplateParts();
-    
-    for (auto const& menuBarItem : Items())
-    {
-        winrt::get_self<MenuBarItem>(menuBarItem)->AddPassThroughElement(m_layoutRoot.get());
-    }
 }
 
 void MenuBar::SetUpTemplateParts()
@@ -54,8 +58,42 @@ void MenuBar::SetUpTemplateParts()
     }
 }
 
+void MenuBar::RequestPassThroughElement(const winrt::Microsoft::UI::Xaml::Controls::MenuBarItem& menuBarItem)
+{
+    // To enable switching flyout on hover, every menubar item needs the MenuBar root to include it for hit detection with flyouts open
+    winrt::get_self<MenuBarItem>(menuBarItem)->AddPassThroughElement(m_layoutRoot.get());
+}
+
 void MenuBar::IsFlyoutOpen(bool state)
 {
     m_isFlyoutOpen = state;
 }
 
+// Automation Properties
+void MenuBar::UpdateAutomationSizeAndPosition()
+{
+    int sizeOfSet = 0;
+
+    for (const auto& item : Items())
+    {
+        if (auto itemAsUIElement = item.try_as<winrt::UIElement>())
+        {
+            if (itemAsUIElement.Visibility() == winrt::Visibility::Visible)
+            {
+                sizeOfSet++;
+                winrt::AutomationProperties::SetPositionInSet(itemAsUIElement, sizeOfSet);
+            }
+        }
+    }
+
+    for (const auto& item : Items())
+    {
+        if (auto itemAsUIElement = item.try_as<winrt::UIElement>())
+        {
+            if (itemAsUIElement.Visibility() == winrt::Visibility::Visible)
+            {
+                winrt::AutomationProperties::SetSizeOfSet(itemAsUIElement, sizeOfSet);
+            }
+        }
+    }
+}

@@ -90,12 +90,17 @@ winrt::Rect ViewportManagerDownLevel::GetLayoutVisibleWindow() const
 {
     auto visibleWindow = m_visibleWindow;
 
-    if (m_makeAnchorElement)
+    if (m_makeAnchorElement && m_isAnchorOutsideRealizedRange)
     {
         // The anchor is not necessarily laid out yet. Its position should default
         // to zero and the layout origin is expected to change once layout is done.
         // Until then, we need a window that's going to protect the anchor from
         // getting recycled.
+
+        // Also, we only want to mess with the realization rect iff the anchor is not inside it.
+        // If we fiddle with an anchor that is already inside the realization rect,
+        // shifting the realization rect results in repeater, layout and scroller thinking that it needs to act upon StartBringIntoView.
+        // We do NOT want that!
         visibleWindow.X = 0.0f;
         visibleWindow.Y = 0.0f;
     }

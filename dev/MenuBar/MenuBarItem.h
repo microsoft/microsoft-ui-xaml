@@ -6,7 +6,7 @@
 #include "MenuBarItem.g.h"
 #include "MenuBarItem.properties.h"
 
-enum FlyoutLocation
+enum class FlyoutLocation
 {
     Left,
     Right
@@ -39,6 +39,9 @@ private:
     void AttachEventHandlers();
     void DetachEventHandlers(bool useSafeGet = false);
     void OpenFlyoutFrom(FlyoutLocation location);
+    void MoveFocusTo(FlyoutLocation location);
+
+    winrt::MenuBarItem FocusAndReturnNextFocusableItem(int index, int direction);
 
     void OnVisualPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void UpdateVisualStates();
@@ -69,8 +72,8 @@ private:
     winrt::UIElement::PointerEntered_revoker m_pointerEnteredRevoker{};
     winrt::UIElement::AccessKeyInvoked_revoker m_accessKeyInvokedRevoker{};
 
-    winrt::IInspectable m_onMenuBarItemPointerPressedHandler{ nullptr };
-    winrt::IInspectable m_onMenuBarItemKeyDownHandler{ nullptr };
+    RoutedEventHandler_revoker m_onMenuBarItemPointerPressedRevoker{};
+    RoutedEventHandler_revoker m_onMenuBarItemKeyDownRevoker{};
 
     PropertyChanged_revoker m_pressedRevoker{};
     PropertyChanged_revoker m_pointerOverRevoker{};

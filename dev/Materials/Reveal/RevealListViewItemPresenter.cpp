@@ -10,7 +10,7 @@ bool RevealListViewItemPresenter::GoToElementStateCore(winrt::hstring const& sta
 {
     RevealBrush::EnsureProperties();
 
-    auto goToState = [this](winrt::RevealBrushState state) {
+    const auto goToState = [this](winrt::RevealBrushState state) {
         SetValue(RevealBrush::s_StateProperty, box_value(state));
     };
 

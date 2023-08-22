@@ -47,7 +47,7 @@ void RecyclePool::PutElementCore(
 {
 
     const auto& winrtKey = key;
-    auto iterator = m_elements.find(winrtKey);
+    const auto iterator = m_elements.find(winrtKey);
     const auto& winrtOwner = owner;
     auto winrtOwnerAsPanel = EnsureOwnerIsPanelOrNull(winrtOwner);
 
@@ -69,7 +69,7 @@ winrt::UIElement RecyclePool::TryGetElementCore(
     winrt::hstring const& key,
     winrt::UIElement const& owner)
 {
-    auto iterator = m_elements.find(key);
+    const auto iterator = m_elements.find(key);
     if (iterator != m_elements.end())
     {
         auto& elements = iterator->second;
@@ -104,7 +104,7 @@ winrt::UIElement RecyclePool::TryGetElementCore(
                 if (panel)
                 {
                     unsigned int childIndex = 0;
-                    bool found = panel.Children().IndexOf(elementInfo.Element(), childIndex);
+                    const bool found = panel.Children().IndexOf(elementInfo.Element(), childIndex);
                     if (!found)
                     {
                         throw winrt::hresult_error(E_FAIL, L"ItemsRepeater's child not found in its Children collection.");

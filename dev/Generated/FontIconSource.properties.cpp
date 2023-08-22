@@ -6,7 +6,12 @@
 #include "common.h"
 #include "FontIconSource.h"
 
-CppWinRTActivatableClassWithDPFactory(FontIconSource)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(FontIconSource)
+}
+
+#include "FontIconSource.g.cpp"
 
 GlobalDependencyProperty FontIconSourceProperties::s_FontFamilyProperty{ nullptr };
 GlobalDependencyProperty FontIconSourceProperties::s_FontSizeProperty{ nullptr };
@@ -32,8 +37,8 @@ void FontIconSourceProperties::EnsureProperties()
                 winrt::name_of<winrt::FontFamily>(),
                 winrt::name_of<winrt::FontIconSource>(),
                 false /* isAttached */,
-                ValueHelper<winrt::FontFamily>::BoxValueIfNecessary({ c_fontIconSourceDefaultFontFamily }),
-                nullptr);
+                ValueHelper<winrt::FontFamily>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnFontFamilyPropertyChanged));
     }
     if (!s_FontSizeProperty)
     {
@@ -44,7 +49,7 @@ void FontIconSourceProperties::EnsureProperties()
                 winrt::name_of<winrt::FontIconSource>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(20.0),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnFontSizePropertyChanged));
     }
     if (!s_FontStyleProperty)
     {
@@ -55,7 +60,7 @@ void FontIconSourceProperties::EnsureProperties()
                 winrt::name_of<winrt::FontIconSource>(),
                 false /* isAttached */,
                 ValueHelper<winrt::FontStyle>::BoxValueIfNecessary(winrt::FontStyle::Normal),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnFontStylePropertyChanged));
     }
     if (!s_FontWeightProperty)
     {
@@ -66,7 +71,7 @@ void FontIconSourceProperties::EnsureProperties()
                 winrt::name_of<winrt::FontIconSource>(),
                 false /* isAttached */,
                 ValueHelper<winrt::FontWeight>::BoxValueIfNecessary({ 400 }),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnFontWeightPropertyChanged));
     }
     if (!s_GlyphProperty)
     {
@@ -77,7 +82,7 @@ void FontIconSourceProperties::EnsureProperties()
                 winrt::name_of<winrt::FontIconSource>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnGlyphPropertyChanged));
     }
     if (!s_IsTextScaleFactorEnabledProperty)
     {
@@ -88,7 +93,7 @@ void FontIconSourceProperties::EnsureProperties()
                 winrt::name_of<winrt::FontIconSource>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnIsTextScaleFactorEnabledPropertyChanged));
     }
     if (!s_MirroredWhenRightToLeftProperty)
     {
@@ -99,7 +104,7 @@ void FontIconSourceProperties::EnsureProperties()
                 winrt::name_of<winrt::FontIconSource>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnMirroredWhenRightToLeftPropertyChanged));
     }
 }
 
@@ -115,9 +120,68 @@ void FontIconSourceProperties::ClearProperties()
     IconSource::ClearProperties();
 }
 
+void FontIconSourceProperties::OnFontFamilyPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::FontIconSource>();
+    winrt::get_self<FontIconSource>(owner)->OnPropertyChanged(args);
+}
+
+void FontIconSourceProperties::OnFontSizePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::FontIconSource>();
+    winrt::get_self<FontIconSource>(owner)->OnPropertyChanged(args);
+}
+
+void FontIconSourceProperties::OnFontStylePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::FontIconSource>();
+    winrt::get_self<FontIconSource>(owner)->OnPropertyChanged(args);
+}
+
+void FontIconSourceProperties::OnFontWeightPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::FontIconSource>();
+    winrt::get_self<FontIconSource>(owner)->OnPropertyChanged(args);
+}
+
+void FontIconSourceProperties::OnGlyphPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::FontIconSource>();
+    winrt::get_self<FontIconSource>(owner)->OnPropertyChanged(args);
+}
+
+void FontIconSourceProperties::OnIsTextScaleFactorEnabledPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::FontIconSource>();
+    winrt::get_self<FontIconSource>(owner)->OnPropertyChanged(args);
+}
+
+void FontIconSourceProperties::OnMirroredWhenRightToLeftPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::FontIconSource>();
+    winrt::get_self<FontIconSource>(owner)->OnPropertyChanged(args);
+}
+
 void FontIconSourceProperties::FontFamily(winrt::FontFamily const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<FontIconSource*>(this)->SetValue(s_FontFamilyProperty, ValueHelper<winrt::FontFamily>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::FontFamily FontIconSourceProperties::FontFamily()
@@ -127,7 +191,10 @@ winrt::FontFamily FontIconSourceProperties::FontFamily()
 
 void FontIconSourceProperties::FontSize(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<FontIconSource*>(this)->SetValue(s_FontSizeProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double FontIconSourceProperties::FontSize()
@@ -137,7 +204,10 @@ double FontIconSourceProperties::FontSize()
 
 void FontIconSourceProperties::FontStyle(winrt::FontStyle const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<FontIconSource*>(this)->SetValue(s_FontStyleProperty, ValueHelper<winrt::FontStyle>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::FontStyle FontIconSourceProperties::FontStyle()
@@ -147,7 +217,10 @@ winrt::FontStyle FontIconSourceProperties::FontStyle()
 
 void FontIconSourceProperties::FontWeight(winrt::FontWeight const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<FontIconSource*>(this)->SetValue(s_FontWeightProperty, ValueHelper<winrt::FontWeight>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::FontWeight FontIconSourceProperties::FontWeight()
@@ -157,7 +230,10 @@ winrt::FontWeight FontIconSourceProperties::FontWeight()
 
 void FontIconSourceProperties::Glyph(winrt::hstring const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<FontIconSource*>(this)->SetValue(s_GlyphProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::hstring FontIconSourceProperties::Glyph()
@@ -167,7 +243,10 @@ winrt::hstring FontIconSourceProperties::Glyph()
 
 void FontIconSourceProperties::IsTextScaleFactorEnabled(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<FontIconSource*>(this)->SetValue(s_IsTextScaleFactorEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool FontIconSourceProperties::IsTextScaleFactorEnabled()
@@ -177,7 +256,10 @@ bool FontIconSourceProperties::IsTextScaleFactorEnabled()
 
 void FontIconSourceProperties::MirroredWhenRightToLeft(bool value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<FontIconSource*>(this)->SetValue(s_MirroredWhenRightToLeftProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
 }
 
 bool FontIconSourceProperties::MirroredWhenRightToLeft()

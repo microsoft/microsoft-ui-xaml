@@ -20,11 +20,18 @@ private:
     /// String containing the resource location
     /// </summary>
     static PCWSTR c_resourceLoc;
+    static PCWSTR c_resourceLocWinUI;
 
     static winrt::ResourceMap GetResourceMap();
 public:
     static winrt::hstring GetLocalizedStringResource(const wstring_view &resourceName);
+
+#ifdef MUX_EXPERIMENTAL
+    static winrt::hstring GetLocalizedStringResourceFromWinUI(const wstring_view& resourceName);
+#endif
+
     static winrt::LoadedImageSurface GetImageSurface(const wstring_view &assetName, winrt::Size imageSize);
+    static winrt::IInspectable ResourceLookup(const winrt::Control& control, const winrt::IInspectable& key);
 
     static bool IsResourceIdNull(ResourceIdType resourceId)
     {
@@ -45,6 +52,7 @@ public:
 #define SR_NavigationCloseButtonName L"NavigationCloseButtonName"
 #define SR_NavigationOverflowButtonName L"NavigationOverflowButtonName"
 #define SR_NavigationOverflowButtonText L"NavigationOverflowButtonText"
+#define SR_NavigationOverflowButtonToolTip L"NavigationOverflowButtonToolTip"
 #define SR_SettingsButtonName L"SettingsButtonName"
 #define SR_NavigationViewSearchButtonName L"NavigationViewSearchButtonName"
 #define SR_TextAlphaLabel L"TextAlphaLabel"
@@ -109,10 +117,27 @@ public:
 #define SR_DefaultItemString L"DefaultItemString"
 #define SR_DropIntoNodeString L"DropIntoNodeString"
 #define SR_FallBackPlaceString L"FallBackPlaceString"
+#define SR_PagerControlPageTextName L"PagerControlPageText"
+#define SR_PagerControlPrefixTextName L"PagerControlPrefixText"
+#define SR_PagerControlSuffixTextName L"PagerControlSuffixText"
+#define SR_PagerControlFirstPageButtonTextName L"PagerControlFirstPageButtonText"
+#define SR_PagerControlPreviousPageButtonTextName L"PagerControlPreviousPageButtonText"
+#define SR_PagerControlNextPageButtonTextName L"PagerControlNextPageButtonText"
+#define SR_PagerControlLastPageButtonTextName L"PagerControlLastPageButtonText"
+#define SR_PipsPagerNameText L"PipsPagerNameText"
+#define SR_PipsPagerNextPageButtonText L"PipsPagerNextPageButtonText"
+#define SR_PipsPagerPreviousPageButtonText L"PipsPagerPreviousPageButtonText"
+#define SR_PipsPagerPageText L"PipsPagerPageText"
 #define SR_PlaceAfterString L"PlaceAfterString"
 #define SR_PlaceBeforeString L"PlaceBeforeString"
 #define SR_PlaceBetweenString L"PlaceBetweenString"
+#define SR_ProgressRingName L"ProgressRingName"
+#define SR_ProgressRingIndeterminateStatus L"ProgressRingIndeterminateStatus"
+#define SR_ProgressBarIndeterminateStatus L"ProgressBarIndeterminateStatus"
+#define SR_ProgressBarPausedStatus L"ProgressBarPausedStatus"
+#define SR_ProgressBarErrorStatus L"ProgressBarErrorStatus"
 #define SR_RatingLocalizedControlType L"RatingLocalizedControlType"
+#define SR_BreadcrumbBarItemLocalizedControlType L"BreadcrumbBarItemLocalizedControlType"
 #define SR_SplitButtonSecondaryButtonName L"SplitButtonSecondaryButtonName"
 #define SR_ProofingMenuItemLabel L"ProofingMenuItemLabel"
 #define SR_TextCommandLabelCut L"TextCommandLabelCut"
@@ -149,5 +174,38 @@ public:
 #define SR_TeachingTipNotificationWithoutAppName L"TeachingTipNotificationWithoutAppName"
 #define SR_TabViewAddButtonName L"TabViewAddButtonName"
 #define SR_TabViewAddButtonTooltip L"TabViewAddButtonTooltip"
+#define SR_TabViewCloseButtonName L"TabViewCloseButtonName"
+#define SR_TabViewCloseButtonTooltip L"TabViewCloseButtonTooltip"
+#define SR_TabViewCloseButtonTooltipWithKA L"TabViewCloseButtonTooltipWithKA"
+#define SR_TabViewScrollDecreaseButtonTooltip L"TabViewScrollDecreaseButtonTooltip"
+#define SR_TabViewScrollIncreaseButtonTooltip L"TabViewScrollIncreaseButtonTooltip"
+#define SR_NumberBoxUpSpinButtonName L"NumberBoxUpSpinButtonName"
+#define SR_NumberBoxDownSpinButtonName L"NumberBoxDownSpinButtonName"
+#define SR_NumberBoxMaximumValueStatus L"NumberBoxMaximumValueStatus"
+#define SR_NumberBoxMinimumValueStatus L"NumberBoxMinimumValueStatus"
+#define SR_ExpanderDefaultControlName L"ExpanderDefaultControlName"
+
+#define SR_InfoBarCloseButtonName L"InfoBarCloseButtonName"
+#define SR_InfoBarOpenedNotification L"InfoBarOpenedNotification"
+#define SR_InfoBarClosedNotification L"InfoBarClosedNotification"
+#define SR_InfoBarCustomLandmarkName L"InfoBarCustomLandmarkName"
+#define SR_InfoBarCloseButtonTooltip L"InfoBarCloseButtonTooltip"
+#define SR_InfoBarSeverityInformationalName L"InfoBarSeverityInformationalName"
+#define SR_InfoBarSeveritySuccessName L"InfoBarSeveritySuccessName"
+#define SR_InfoBarSeverityWarningName L"InfoBarSeverityWarningName"
+#define SR_InfoBarSeverityErrorName L"InfoBarSeverityErrorName"
+#define SR_InfoBarIconSeverityInformationalName L"InfoBarIconSeverityInformationalName"
+#define SR_InfoBarIconSeveritySuccessName L"InfoBarIconSeveritySuccessName"
+#define SR_InfoBarIconSeverityWarningName L"InfoBarIconSeverityWarningName"
+#define SR_InfoBarIconSeverityErrorName L"InfoBarIconSeverityErrorName"
+
+#define SR_AutomationNameEllipsisBreadcrumbBarItem L"AutomationNameEllipsisBreadcrumbBarItem"
+
+#define SR_CommandBarFlyoutCommandBarLocalizedControlType L"CommandBarFlyoutCommandBarLocalizedControlType"
+#define SR_CommandBarFlyoutAppBarButtonLocalizedControlType L"CommandBarFlyoutAppBarButtonLocalizedControlType"
+#define SR_CommandBarFlyoutAppBarToggleButtonLocalizedControlType L"CommandBarFlyoutAppBarToggleButtonLocalizedControlType"
+
+#define SR_WarningSuitableWebView2NotFound L"WarningSuitableWebView2NotFound"
+#define SR_DownloadWebView2Runtime L"DownloadWebView2Runtime"
 
 #define IR_NoiseAsset_256X256_PNG L"NoiseAsset_256X256_PNG"

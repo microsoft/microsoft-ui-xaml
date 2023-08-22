@@ -24,6 +24,10 @@
       <DependentUpon>TreeViewPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)TreeViewItemSource.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TreeViewUnrealizedChildrenTestPage.xaml.cs">
+      <DependentUpon>TreeViewUnrealizedChildrenTestPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)VirtualizingDataSource.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)TreeViewItemTemplateSelectorTestPage.xaml">
@@ -35,6 +39,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)TreeViewNodeInMarkupTestPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TreeViewUnrealizedChildrenTestPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

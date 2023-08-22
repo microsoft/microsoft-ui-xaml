@@ -10,10 +10,10 @@
 
 #pragma warning(push)
 #pragma warning(disable: 6101)  // Returning uninitialized memory '<value>'.  A successful path through the function does not set the named _Out_ parameter.
-#include "Microsoft.UI.Composition.Effects_impl.h"
+#include "Microsoft.UI.Private.Composition.Effects_impl.h"
 #pragma warning(pop)
 
-CppWinRTActivatableClassWithBasicFactory(RevealBorderLight)
+#include "RevealBorderLight.properties.cpp"
 
 static constexpr RevealBorderSpotlightStateDesc s_revealBorderSpotlightState
 {
@@ -278,7 +278,7 @@ void RevealBorderLight::SwitchLight(bool turnOn)
 
     m_shouldLightBeOn = turnOn;
 
-    auto animateSpotLight = [this, turnOn]()
+    const auto animateSpotLight = [this, turnOn]()
     {
         auto animation = m_colorsProxy.Compositor().CreateScalarKeyFrameAnimation();
         animation.Duration(250ms);

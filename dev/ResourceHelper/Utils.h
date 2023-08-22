@@ -25,7 +25,7 @@ class VisualStateUtil
 public:
     static winrt::VisualStateGroup GetVisualStateGroup(const winrt::FrameworkElement& control, const std::wstring_view& groupName);
     static bool VisualStateGroupExists(const winrt::FrameworkElement& control, const std::wstring_view& groupName);
-    static void GotToStateIfGroupExists(const winrt::Control& control, const std::wstring_view& groupName, const std::wstring_view& stateName, bool useTransitions);
+    static void GoToStateIfGroupExists(const winrt::Control& control, const std::wstring_view& groupName, const std::wstring_view& stateName, bool useTransitions);
 };
 
 namespace LayoutUtils
@@ -51,7 +51,7 @@ namespace LayoutUtils
 
 namespace Util
 {
-    inline winrt::Visibility VisibilityFromBool(bool visible) 
+    inline winrt::Visibility constexpr VisibilityFromBool(bool visible) 
     { 
         return visible ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
     }

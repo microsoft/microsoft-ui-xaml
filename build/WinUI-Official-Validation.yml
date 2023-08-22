@@ -1,0 +1,153 @@
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+variables:
+  minimumExpectedTestsExecutedCount: 2000  # Sanity check for minimum expected tests to be reported
+  rerunPassesRequiredToAvoidFailure: 5
+  
+
+resources:
+  pipelines:
+  - pipeline: WinUI-OB-Official
+    source: OneBranch\microsoft-ui-xaml-staging\WinUI2-Internal-OB-Official
+    trigger: 
+      branches:
+        include: 
+        - release/*
+        - main
+        - user/kmahone/ob
+
+stages:
+- stage: Build
+  jobs:
+
+
+  # This job gets the build from the WinUI-OB-Official pipeline
+  # The following jobs validate the build by running tests.
+  - job: GetBuild
+    pool: 
+      name: WinDevPool-L
+      demands: ImageOverride -equals WinDevVS17-latest
+    timeoutInMinutes: 120
+
+    variables:
+      buildIdToTest: $(resources.pipeline.WinUI-OB-Official.runID)
+      buildPipelineDefinition: 98255 # This is WinUI-OB-Official
+
+    steps:
+
+    - powershell: |
+        cmd.exe /c set
+      displayName: 'display env vars'
+      continueOnError: true
+
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        artifactName: drop_build_main_x64_Release
+        targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+        buildType: specific
+        project: $(System.TeamProjectId)
+        definition: $(buildPipelineDefinition)
+        buildVersionToDownload: specific
+        pipelineId : $(buildIdToTest)
+
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        artifactName: drop_build_main_x86_Release
+        targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+        buildType: specific
+        project: $(System.TeamProjectId)
+        definition: $(buildPipelineDefinition)
+        buildVersionToDownload: specific
+        pipelineId : $(buildIdToTest)
+
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        artifactName: drop_build_main_arm_Release
+        targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+        buildType: specific
+        project: $(System.TeamProjectId)
+        definition: $(buildPipelineDefinition)
+        buildVersionToDownload: specific
+        pipelineId : $(buildIdToTest)
+
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        artifactName: drop_build_main_arm64_Release
+        targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+        buildType: specific
+        project: $(System.TeamProjectId)
+        definition: $(buildPipelineDefinition)
+        buildVersionToDownload: specific
+        pipelineId : $(buildIdToTest)
+
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        artifactName: drop_pack_nupkg
+        targetPath: $(Build.SourcesDirectory)\Artifacts\drop
+        buildType: specific
+        project: $(System.TeamProjectId)
+        definition: $(buildPipelineDefinition)
+        buildVersionToDownload: specific
+        pipelineId : $(buildIdToTest)
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish artifact: drop'
+      inputs:
+        PathtoPublish: $(Build.SourcesDirectory)\Artifacts\drop
+        artifactName: drop
+
+    # We can't publish to the public Symbol Server from the main OneBranch build, so we do it here instead.
+    - task: PublishSymbols@2  # Publish symbols to public Microsoft Symbol Server
+      displayName: 'Publish symbols (public)'
+      continueOnError: true
+      inputs:
+        SymbolsFolder: $(Build.SourcesDirectory)\Artifacts\drop
+        SearchPattern: '**/Microsoft.UI.Xaml.pdb'
+        SymbolServerType: 'TeamServices'
+        IndexSources: false
+      env:
+        ArtifactServices_Symbol_AccountName: microsoftpublicsymbols
+        ArtifactServices_Symbol_PAT: $(WinUILab-Pipeline-PAT)
+
+- stage: Test
+  dependsOn: Build
+  jobs:
+  - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
+    parameters:
+      name: 'RunTestsInHelix'
+      rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
+
+- stage: TestNupkg
+  dependsOn: Build
+  jobs:
+  # Build solution that depends on nuget package
+  - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+    parameters:
+      buildJobName: 'BuildNugetPkgTests'
+      buildArtifactName: 'NugetPkgTestsDrop'
+      runTestJobName: 'RunNugetPkgTestsInHelix'
+      useFrameworkPkg: false
+
+  # Framework package tests
+  - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+    parameters:
+      buildJobName: 'BuildFrameworkPkgTests'
+      buildArtifactName: 'FrameworkPkgTestsDrop'
+      runTestJobName: 'RunFrameworkPkgTestsInHelix'
+      useFrameworkPkg: true
+
+  # NuGet package WACK tests
+  - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+    parameters:
+      name: 'NugetPkgWACKTests'
+      dependsOn: BuildNugetPkgTests
+      artifactName: 'NugetPkgTestsDrop'
+
+  # Framework package WACK tests
+  - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+    parameters:
+      name: 'FrameworkPkgWACKTests'
+      dependsOn: BuildFrameworkPkgTests
+      artifactName: 'FrameworkPkgTestsDrop'
+
+

@@ -30,5 +30,3 @@ public:
 private:
     com_ptr<ToggleSplitButton> GetImpl();
 };
-
-CppWinRTActivatableClassWithBasicFactory(ToggleSplitButtonAutomationPeer);

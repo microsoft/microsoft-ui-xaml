@@ -4,12 +4,12 @@
 using MUXControlsTestApp.Samples;
 using System;
 using Windows.UI.Xaml.Controls;
-using UniformGridLayoutItemsJustification = Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification;
-using FlowLayoutLineAlignment = Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment;
-using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
 using FlowLayout = Microsoft.UI.Xaml.Controls.FlowLayout;
-using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
+using FlowLayoutLineAlignment = Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
+using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
+using UniformGridLayoutItemsJustification = Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification;
+using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
 
 namespace MUXControlsTestApp
 {
@@ -34,6 +34,11 @@ namespace MUXControlsTestApp
                 Frame.NavigateWithoutAnimation(typeof(BasicDemo));
             };
 
+            uniformGridLayoutDemo.Click += delegate 
+            {
+                Frame.NavigateWithoutAnimation(typeof(UniformGridLayoutDemo));
+            };
+
             itemsSourceDemo.Click += delegate 
             {
                 Frame.NavigateWithoutAnimation(typeof(ElementsInItemsSourcePage));
@@ -47,6 +52,10 @@ namespace MUXControlsTestApp
             collectionChangeDemo.Click += delegate
             {
                 Frame.NavigateWithoutAnimation(typeof(CollectionChangeDemo));
+            };
+
+            sortingAndFilteringDemo.Click += delegate {
+                Frame.NavigateWithoutAnimation(typeof(SortingAndFilteringPage));
             };
 
             animationsDemo.Click += delegate
@@ -220,6 +229,7 @@ namespace MUXControlsTestApp
                         Orientation = orientation.IsOn ? Orientation.Horizontal : Orientation.Vertical,
                     });
             };
+
         }
 
         private VirtualizingLayout GetStackLayout()
@@ -246,7 +256,7 @@ namespace MUXControlsTestApp
                     MinItemHeight = 150,
                     MinRowSpacing = double.Parse(itemSpacing.Text),
                     MinColumnSpacing = double.Parse(lineSpacing.Text),
-                    ItemsJustification = (UniformGridLayoutItemsJustification)Enum.Parse(typeof(UniformGridLayoutItemsJustification), lineAlingment.Text),
+                    ItemsJustification = (UniformGridLayoutItemsJustification)Enum.Parse(typeof(UniformGridLayoutItemsJustification), lineAlignment.Text),
                     Orientation = orientation.IsOn ?  Orientation.Vertical: Orientation.Horizontal,
                 };
             }
@@ -262,7 +272,7 @@ namespace MUXControlsTestApp
                 {
                     MinRowSpacing = double.Parse(itemSpacing.Text),
                     MinColumnSpacing = double.Parse(lineSpacing.Text),
-                    LineAlignment = (FlowLayoutLineAlignment)Enum.Parse(typeof(FlowLayoutLineAlignment), lineAlingment.Text),
+                    LineAlignment = (FlowLayoutLineAlignment)Enum.Parse(typeof(FlowLayoutLineAlignment), lineAlignment.Text),
                     Orientation = orientation.IsOn ? Orientation.Vertical : Orientation.Horizontal,
                 };
             }

@@ -85,9 +85,9 @@ dotnet_style_predefined_type_for_member_access = true:suggestion
 #Style - implicit and explicit types
 
 #prefer explicit type over var to declare variables with built-in system types such as int
-csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_for_built_in_types = false:none
 #prefer explicit type over var when the type is already mentioned on the right-hand side of a declaration
-csharp_style_var_when_type_is_apparent = false:suggestion
+csharp_style_var_when_type_is_apparent = false:none
 
 #Style - language keyword and framework type options
 
@@ -104,6 +104,9 @@ dotnet_style_qualification_for_field = false:suggestion
 dotnet_style_qualification_for_method = false:suggestion
 #prefer properties not to be prefaced with this. or Me. in Visual Basic
 dotnet_style_qualification_for_property = false:suggestion
+
+# IDE0008: Use explicit type
+csharp_style_var_elsewhere = false:none
 
 [**.{cpp,h,idl}]
 indent_style = space

@@ -8,7 +8,10 @@
 
 #ifdef MATERIALS_INCLUDED
 #include "RevealBrush.h"
+#include "BackdropMaterial.h"
 #endif
+
+#include "XamlControlsXamlMetaDataProvider.g.cpp"
 
 bool MUXControlsFactory::s_initialized{ false };
 
@@ -23,6 +26,7 @@ void MUXControlsFactory::EnsureInitialized()
             // These are only needed on RS2+.
             RevealBrush::EnsureProperties();
         }
+        BackdropMaterial::EnsureProperties();
 #endif
         s_initialized = true;
     }

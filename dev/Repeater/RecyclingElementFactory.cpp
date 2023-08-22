@@ -10,7 +10,7 @@
 #include "ItemsRepeater.h"
 #include "RecyclePool.h"
 
-CppWinRTActivatableClassWithBasicFactory(RecyclingElementFactory);
+#include "RecyclingElementFactory.properties.cpp"
 
 RecyclingElementFactory::RecyclingElementFactory()
 {
@@ -37,16 +37,6 @@ winrt::IMap<winrt::hstring, winrt::DataTemplate> RecyclingElementFactory::Templa
 void RecyclingElementFactory::Templates(winrt::IMap<winrt::hstring, winrt::DataTemplate> const& value)
 {
     m_templates.set(value);
-}
-
-winrt::event_token RecyclingElementFactory::SelectTemplateKey(winrt::TypedEventHandler<winrt::RecyclingElementFactory, winrt::SelectTemplateEventArgs> const& value)
-{
-    return m_selectTemplateKeyEventSource.add(value);
-}
-
-void RecyclingElementFactory::SelectTemplateKey(winrt::event_token const& token)
-{
-    m_selectTemplateKeyEventSource.remove(token);
 }
 
 #pragma endregion

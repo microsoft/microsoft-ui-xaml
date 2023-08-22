@@ -8,7 +8,7 @@
 #include "DoubleUtil.h"
 #include "RuntimeProfiler.h"
 
-CppWinRTActivatableClassWithBasicFactory(ItemsRepeaterScrollHost)
+#include "ItemsRepeaterScrollHost.properties.cpp"
 
 ItemsRepeaterScrollHost::ItemsRepeaterScrollHost()
 {
@@ -67,7 +67,7 @@ winrt::Size ItemsRepeaterScrollHost::MeasureOverride(winrt::Size const& availabl
 
 winrt::Size ItemsRepeaterScrollHost::ArrangeOverride(winrt::Size const& finalSize)
 {
-    winrt::Size result = finalSize;
+    const winrt::Size result = finalSize;
     if (auto scrollViewer = ScrollViewer())
     {
         if (SharedHelpers::IsRS5OrHigher())

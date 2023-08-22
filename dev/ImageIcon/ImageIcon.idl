@@ -1,0 +1,16 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass ImageIcon : Windows.UI.Xaml.Controls.IconElement
+{
+    ImageIcon();
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Windows.UI.Xaml.Media.ImageSource Source{ get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty SourceProperty{ get; };
+}
+
+}

@@ -61,12 +61,22 @@
         </CommandBar>
 
         <StackPanel Width="800" Height="600" Name="RootCanvas" Grid.Row="1">
+            <StackPanel.Resources>
+                <Style x:Key="RevealPanelStyle" TargetType="StackPanel">
+                    <Setter Property="BorderBrush" Value="{ThemeResource SystemChromeGrayColor}"/>
+                    <Setter Property="BorderThickness" Value="1"/>
+                </Style>
+            </StackPanel.Resources>
+            
             <StackPanel Orientation="Horizontal">
-                <Button x:Name="BackgroundColorButton" Content="Change Theme" Click="OnBackgroundColorButtonClick" HorizontalAlignment="Center" Margin="5"/>
+                <TextBlock Text="Options:" Style="{ThemeResource StandardGroupHeader}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                <Button x:Name="BackgroundColorButton" Content="Change Theme" Click="OnBackgroundColorButtonClick" Margin="5"/>
+                <Button x:Name="ChangeDefaultPosition" Content="Change CommandBarDefaultLabelPosition" Click="OnChangeDefaultPositionClick" />
             </StackPanel>
 
             <StackPanel>
-                <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Sample controls with Reveal" Style="{ThemeResource StandardGroupHeader}"/>
+                <StackPanel Orientation="Horizontal" Style="{ThemeResource RevealPanelStyle}">
                     <StackPanel VerticalAlignment="Center">
                         <Button Style="{StaticResource ButtonRevealStyle}" Content="Button" Margin="5" Width="130" />
                         <RepeatButton Style="{StaticResource RepeatButtonRevealStyle}" Content="Repeat" Margin="5" Width="130" />
@@ -113,9 +123,9 @@
                     </StackPanel>
                 </StackPanel>
 
-                <TextBlock Text="Non-Revealy" Margin="24"/>
+                <TextBlock Text="Sample controls without Reveal" Style="{ThemeResource StandardGroupHeader}"/>
 
-                <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" Style="{ThemeResource RevealPanelStyle}">
                     <StackPanel VerticalAlignment="Center">
                         <Button Content="Button" Margin="5" Width="130" />
                         <RepeatButton Content="Repeat" Margin="5" Width="130" />
@@ -160,7 +170,6 @@
                         </controls:DropDownButton>
                     </StackPanel>
                 </StackPanel>
-                <Button x:Name="ChangeDefaultPosition" Content="Change CommandBarDefaultLabelPosition" Click="OnChangeDefaultPositionClick" />
             </StackPanel>
         </StackPanel>
     </Grid>

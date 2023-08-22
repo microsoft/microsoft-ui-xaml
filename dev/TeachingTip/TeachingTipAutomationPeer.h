@@ -1,4 +1,7 @@
-﻿#pragma once
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#pragma once
 #include "TeachingTip.h"
 #include "TeachingTipAutomationPeer.g.h"
 
@@ -29,5 +32,3 @@ public:
 private:
     winrt::TeachingTip GetTeachingTip();
 };
-
-CppWinRTActivatableClassWithBasicFactory(TeachingTipAutomationPeer)

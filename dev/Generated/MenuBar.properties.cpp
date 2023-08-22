@@ -6,7 +6,12 @@
 #include "common.h"
 #include "MenuBar.h"
 
-CppWinRTActivatableClassWithDPFactory(MenuBar)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(MenuBar)
+}
+
+#include "MenuBar.g.cpp"
 
 GlobalDependencyProperty MenuBarProperties::s_ItemsProperty{ nullptr };
 
@@ -37,7 +42,10 @@ void MenuBarProperties::ClearProperties()
 
 void MenuBarProperties::Items(winrt::IVector<winrt::MenuBarItem> const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<MenuBar*>(this)->SetValue(s_ItemsProperty, ValueHelper<winrt::IVector<winrt::MenuBarItem>>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IVector<winrt::MenuBarItem> MenuBarProperties::Items()

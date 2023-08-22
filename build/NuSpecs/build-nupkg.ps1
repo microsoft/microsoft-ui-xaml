@@ -12,6 +12,17 @@ Param(
     [switch]$SkipFrameworkPackage
 )
 
+Write-Host "BuildOutput = '$BuildOutput'"
+Write-Host "OutputDir = '$OutputDir'"
+Write-Host "VersionOverride = '$VersionOverride'"
+Write-Host "Subversion = '$Subversion'"
+Write-Host "DateOverride = '$DateOverride'"
+Write-Host "prereleaseversion = '$prereleaseversion'"
+Write-Host "BuildFlavor = '$BuildFlavor'"
+Write-Host "BuildArch = '$BuildArch'"
+Write-Host "NoDeleteTemp = '$NoDeleteTemp'"
+Write-Host "SkipFrameworkPackage = '$SkipFrameworkPackage'"
+
 #
 # Version is read from the VERSION file.
 #
@@ -40,15 +51,21 @@ else
     [xml]$customProps = (Get-Content ..\..\version.props)
     $versionMajor = $customProps.GetElementsByTagName("MUXVersionMajor").'#text'
     $versionMinor = $customProps.GetElementsByTagName("MUXVersionMinor").'#text'
+    $versionPatch = $customProps.GetElementsByTagName("MUXVersionPatch").'#text'
 
-    if ((!$versionMajor) -or (!$versionMinor))
+    if ((!$versionMajor) -or (!$versionMinor) -or (!$versionPatch))
     {
-        Write-Error "Expected MUXVersionMajor and MUXVersionMinor tags to be in version.props file"
+        Write-Error "Expected MUXVersionMajor, MUXVersionMinor, and MUXVersionPatch tags to be in version.props file"
         Exit 1
     }
 
-    $version = "$versionMajor.$versionMinor"
-    
+    $version = "$versionMajor.$versionMinor.$versionPatch"
+
+    Write-Verbose "Version = $version"
+}
+
+if ($prereleaseversion)
+{
     $versiondate = $DateOverride
     if (-not $versiondate)
     {
@@ -57,14 +74,8 @@ else
         $versiondate += ($pstTime).ToString("yyMMdd")
     }
 
-    $version += "." + $versiondate + "$subversion"
-
-    Write-Verbose "Version = $version"
-}
-
-if ($prereleaseversion)
-{
-    $version = "$version-$prereleaseversion"
+    $version = "$version-$prereleaseversion.$versiondate$subversion"
+   
 }
 
 if (!(Test-Path $OutputDir)) { mkdir $OutputDir }
@@ -134,7 +145,6 @@ Write-Host
 if(-not $SkipFrameworkPackage)
 {
     # Nuget package with framework package encapsulation
-
     $NugetArgs = "$CommonNugetArgs -OutputDirectory $OutputDir\FrameworkPackage"
 
     Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x86\FrameworkPackage\Microsoft.UI.Xaml.*.appx "$toolsDir\AppX\x86\Release"

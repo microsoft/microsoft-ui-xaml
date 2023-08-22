@@ -4,17 +4,21 @@
 #pragma once
 
 #include "AutoHandle.h"
+#include "StaticAssertFalse.h"
 
 class SharedHelpers
 {
 public:
     static bool IsAnimationsEnabled();
     static winrt::IInspectable FindResource(const std::wstring_view& resource, const winrt::ResourceDictionary& resources, const winrt::IInspectable& defaultValue = nullptr);
+    static winrt::IInspectable FindInApplicationResources(const std::wstring_view& resource, const winrt::IInspectable& defaultValue = nullptr);
     static bool IsInDesignMode();
     static bool IsInDesignModeV1();
     static bool IsInDesignModeV2();
 
     // Logical OS version checks
+    static bool Is21H1OrHigher();
+    static bool Is20H1OrHigher();
     static bool IsVanadiumOrHigher();
     static bool Is19H1OrHigher();
     static bool IsRS5OrHigher();
@@ -35,13 +39,11 @@ public:
 
     static bool IsFlyoutShowOptionsAvailable();
 
-    static bool IsScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable();
-
     static bool IsScrollContentPresenterSizesContentToTemplatedParentAvailable();
 
-    static bool IsFrameworkElementInvalidateViewportAvailable();
+    static bool IsBringIntoViewOptionsVerticalAlignmentRatioAvailable();
 
-    static bool IsApplicationViewGetDisplayRegionsAvailable();
+    static bool IsFrameworkElementInvalidateViewportAvailable();
 
     static bool IsControlCornerRadiusAvailable();
 
@@ -55,16 +57,23 @@ public:
 
     static bool IsThemeShadowAvailable();
 
+    static bool IsIsLoadedAvailable();
+
+    static bool IsCompositionRadialGradientBrushAvailable();
+
     // Actual OS version checks
-    static bool IsAPIContractV9Available(); // 19H2
-    static bool IsAPIContractV8Available(); // 19H1
-    static bool IsAPIContractV7Available(); // RS5
-    static bool IsAPIContractV6Available(); // RS4
-    static bool IsAPIContractV5Available(); // RS3
-    static bool IsAPIContractV4Available(); // RS2
-    static bool IsAPIContractV3Available(); // RS1
+    static bool IsAPIContractV14Available(); // 21H1
+    static bool IsAPIContractV10Available();  // 20H1
+    static bool IsAPIContractV9Available();  // 19H2
+    static bool IsAPIContractV8Available();  // 19H1
+    static bool IsAPIContractV7Available();  // RS5
+    static bool IsAPIContractV6Available();  // RS4
+    static bool IsAPIContractV5Available();  // RS3
+    static bool IsAPIContractV4Available();  // RS2
+    static bool IsAPIContractV3Available();  // RS1
 
     static bool IsInFrameworkPackage();
+    static bool IsInCBSPackage();
 
     // Platform scale helpers
     static winrt::Rect ConvertDipsToPhysical(winrt::UIElement const& xamlRootReference, const winrt::Rect& dipsRect);
@@ -153,7 +162,7 @@ public:
 
     static winrt::FrameworkElement FindInVisualTree(winrt::FrameworkElement const& parent, std::function<bool(winrt::FrameworkElement element)> const& isMatch)
     {
-        int numChildren = winrt::VisualTreeHelper::GetChildrenCount(parent);
+        const int numChildren = winrt::VisualTreeHelper::GetChildrenCount(parent);
 
         winrt::FrameworkElement foundElement = parent;
         if (isMatch(foundElement))
@@ -191,6 +200,15 @@ public:
         }
     }
 
+    static bool IsTrue(winrt::IReference<bool> const& nullableBool)
+    {
+        if (nullableBool)
+        {
+            return nullableBool.GetBoolean();
+        }
+        return false;
+    }
+
     template<typename AncestorType>
     static AncestorType GetAncestorOfType(winrt::DependencyObject const& firstGuess)
     {
@@ -212,7 +230,9 @@ public:
         }
     }
 
-#ifdef ICONSOURCE_INCLUDED
+    static winrt::hstring TryGetStringRepresentationFromObject(winrt::IInspectable obj);
+
+#if defined(ICONSOURCE_INCLUDED) || defined(TITLEBAR_INCLUDED)
     static winrt::IconElement MakeIconElementFrom(winrt::IconSource const& iconSource);
 #endif
 
@@ -248,7 +268,7 @@ public:
         winrt::IObservableVector<ElementType> const& destination,
         winrt::IVectorChangedEventArgs const& args)
     {
-        uint32_t index = args.Index();
+        const uint32_t index = args.Index();
 
         switch (args.CollectionChange())
         {
@@ -276,7 +296,7 @@ public:
     template <typename IndexType, typename ElementType>
     static void EraseIfExists(std::map<IndexType, ElementType>& map, IndexType const& index)
     {
-        auto it = map.find(index);
+        const auto it = map.find(index);
         if (it != map.end())
         {
             map.erase(it);
@@ -294,6 +314,8 @@ public:
                 winrt::box_value(newValue));
         }
     }
+
+    static winrt::float4 RgbaColor(winrt::Color const& color);
 
 private:
     SharedHelpers() = default;

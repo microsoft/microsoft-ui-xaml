@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ComboBoxHelper.h"
 
-CppWinRTActivatableClassWithDPFactory(ComboBoxHelper)
+namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
+{
+    CppWinRTActivatableClassWithDPFactory(ComboBoxHelper)
+}
+
+#include "ComboBoxHelper.g.cpp"
 
 GlobalDependencyProperty ComboBoxHelperProperties::s_KeepInteriorCornersSquareProperty{ nullptr };
 

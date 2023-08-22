@@ -13,7 +13,7 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="RefreshContainerForegroundBrush" Color="{ThemeResource SystemColorHighlightTextColor}"/>
-            <SolidColorBrush x:Key="RefreshContainerBackgroundBrush" Color="{ThemeResource SystemColorHighlightColor}"/>
+            <SolidColorBrush x:Key="RefreshContainerBackgroundBrush" Color="Transparent"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

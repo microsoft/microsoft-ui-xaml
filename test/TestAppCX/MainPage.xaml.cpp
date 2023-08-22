@@ -11,6 +11,11 @@
 #include "LeakCycleTestCX.xaml.h"
 #include "MenuBarTestPage.xaml.h"
 #include "CornerRadiusTestPage.xaml.h"
+#include "TreeViewTestPage.xaml.h"
+#include "BackdropMaterialTestPage.xaml.h"
+#ifdef WEBVIEW2_INCLUDED
+#include "WebView2TestPage.xaml.h"
+#endif
 
 using namespace TestAppCX;
 
@@ -31,6 +36,12 @@ MainPage::MainPage()
     InitializeComponent();
 }
 
+void MainPage::OnNavigatedTo(NavigationEventArgs^ e)
+{
+    auto coreTitleBar = Windows::ApplicationModel::Core::CoreApplication::GetCurrentView()->TitleBar;
+    coreTitleBar->ExtendViewIntoTitleBar = false;
+}
+
 void TestAppCX::MainPage::GoToLeakTestControlPage(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
     auto app = dynamic_cast<App^>(Application::Current);
@@ -48,4 +59,24 @@ void TestAppCX::MainPage::GoToCornerRadiusTestPage(Platform::Object^ sender, Win
 {
     auto app = dynamic_cast<App^>(Application::Current);
     app->RootFrame->Navigate(TypeName(CornerRadiusTestPage::typeid), nullptr);
+}
+
+void TestAppCX::MainPage::GoToTreeViewTestPage(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    auto app = dynamic_cast<App^>(Application::Current);
+    app->RootFrame->Navigate(TypeName(TreeViewTestPage::typeid), nullptr);
+}
+
+void TestAppCX::MainPage::GoToBackdropMaterialTestPage(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    auto app = dynamic_cast<App^>(Application::Current);
+    app->RootFrame->Navigate(TypeName(BackdropMaterialTestPage::typeid), nullptr);
+}
+
+void TestAppCX::MainPage::GoToWebView2TestPage(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    auto app = dynamic_cast<App^>(Application::Current);
+#ifdef WEBVIEW2_INCLUDED
+    app->RootFrame->Navigate(TypeName(WebView2TestPage::typeid), nullptr);
+#endif
 }

@@ -15,6 +15,7 @@
         <Setter Property="VerticalContentAlignment" Value="Top" />
         <Setter Property="ClosedDisplayMode" Value="Compact" />
         <Setter Property="ExitDisplayModeOnAccessKeyInvoked" Value="False" />
+        <Setter Property="CommandBarOverflowPresenterStyle" Value="{ThemeResource DefaultCommandBarOverflowPresenterStyle}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="CommandBar">
@@ -395,7 +396,7 @@
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ContentTransform" Storyboard.TargetProperty="Y">
                                                 <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HiddenVerticalDelta}" />
-                                                <SplineDoubleKeyFrame KeyTime="0:0:0.167" KeySpline="0.2,0 0,1" Value="0}" />
+                                                <SplineDoubleKeyFrame KeyTime="0:0:0.167" KeySpline="0.2,0 0,1" Value="0" />
                                             </DoubleAnimationUsingKeyFrames>
                                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OverflowContentRootClipTransform" Storyboard.TargetProperty="Y">
                                                 <DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
@@ -740,7 +741,7 @@
                                     VerticalAlignment="Center"
                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                     FontSize="20"
-                                    Glyph="&#xE10C;"
+                                    Glyph="&#xE712;"
                                     Height="{ThemeResource AppBarExpandButtonCircleDiameter}" />
                             </Button>
                             <Rectangle x:Name="HighContrastBorder"

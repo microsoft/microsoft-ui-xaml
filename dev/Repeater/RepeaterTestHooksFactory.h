@@ -5,4 +5,3 @@
 
 #include "RepeaterTestHooks.h"
 
-CppWinRTActivatableClassWithBasicFactory(RepeaterTestHooks)

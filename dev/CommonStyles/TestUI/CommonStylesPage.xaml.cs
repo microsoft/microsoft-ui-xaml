@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Media;
 using System.Linq;
 using Common;
 using MUXControlsTestApp.Utilities;
+using Windows.UI;
 
 namespace MUXControlsTestApp
 {
@@ -55,8 +56,8 @@ namespace MUXControlsTestApp
         }
         private void SliderDensityTest_Click(object sender, RoutedEventArgs e)
         {
-            string expectSliderPreContentMargin = "15";
-            string expectSliderPostContentMargin = "15";
+            string expectSliderPreContentMargin = "14";
+            string expectSliderPostContentMargin = "14";
             string expectSliderHorizontalHeight = "32";
             string expectSliderVerticalWidth = "32";
 
@@ -120,9 +121,9 @@ namespace MUXControlsTestApp
             var contentPresenter = (ContentPresenter)root.FindName("HeaderContentPresenter");
             simpleVerify.IsTrue(contentPresenter != null, "HeaderContentPresenter can't be found");
 
-            string expectedHeaderMargin = "0,0,0,0";
-            string expectToggleSwitchPreContentMargin = "6";
-            string expectToggleSwitchPostContentMargin = "6";
+            string expectedHeaderMargin = "0,0,0,4";
+            string expectToggleSwitchPreContentMargin = "10";
+            string expectToggleSwitchPostContentMargin = "10";
 
             if (contentPresenter != null)
             {
@@ -220,7 +221,7 @@ namespace MUXControlsTestApp
 
         private void ListViewItemDensityTest_Click(object sender, RoutedEventArgs e)
         {
-            var item = ListView1.FindElementOfTypeInSubtree<ListViewItem>();
+            var item = ListView1.FindVisualChildByType<ListViewItem>();
             SimpleVerify simpleVerify = new SimpleVerify();
             if (item != null)
             {
@@ -247,8 +248,8 @@ namespace MUXControlsTestApp
             var root = (FrameworkElement)VisualTreeHelper.GetChild(control, 0);
             var contentPresenter = (ContentPresenter)root.FindName("HeaderContentPresenter");
             simpleVerify.IsTrue(contentPresenter != null, "HeaderContentPresenter can't be found");
-
-            string expectedHeaderMargin = "0,0,0,4";
+            
+            string expectedHeaderMargin = "0,0,0,8";
             if (contentPresenter != null)
             {
                 simpleVerify.IsEqual(contentPresenter.Margin.ToString(), expectedHeaderMargin, "HeaderContentPresenter.Margin");
@@ -269,16 +270,7 @@ namespace MUXControlsTestApp
         {
             SimpleVerify simpleVerify = new SimpleVerify();
             FrameworkElement[] iconCollapsedElements = { AppBarButton1, AppBarButton3 };
-            VerifyHeight(iconCollapsedElements, simpleVerify, 40);
-
-            // Bug 19741281: Density: AppBarButton/AppBarToggleButton Reveal style height is 60 other than 56 on RS1
-            // Bug 19767717: AppBarToggleButtonDensityTest fail on RS4 
-            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2)
-                && !PlatformConfiguration.IsOsVersion(OSVersion.Redstone4))
-            { 
-                FrameworkElement[] iconVisibleElements = { AppBarButton2, AppBarButton4 };
-                VerifyHeight(iconVisibleElements, simpleVerify, 56);
-            }
+            VerifyHeight(iconCollapsedElements, simpleVerify, 48);
 
             DensityTestResult.Text = simpleVerify.ToString();
         }
@@ -287,18 +279,67 @@ namespace MUXControlsTestApp
         {
             SimpleVerify simpleVerify = new SimpleVerify();
             FrameworkElement[] iconCollapsedElements = { AppBarToggleButton1, AppBarToggleButton3 };
-            VerifyHeight(iconCollapsedElements, simpleVerify, 40);
-
-            // Bug 19741281: Density: AppBarButton/AppBarToggleButton Reveal style height is 60 other than 56 on RS1
-            // Bug 19767717: AppBarToggleButtonDensityTest fail on RS4 
-            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2)
-                && PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
-            {
-                FrameworkElement[] iconVisibleElements = { AppBarToggleButton2, AppBarToggleButton4 };
-                VerifyHeight(iconVisibleElements, simpleVerify, 56);
-            }
+            VerifyHeight(iconCollapsedElements, simpleVerify, 48);
 
             DensityTestResult.Text = simpleVerify.ToString();
+        }
+
+        private void BlueBackground_Click(object sender, RoutedEventArgs e)
+        {
+            RootSampleControlsPanel.Background = new SolidColorBrush(Color.FromArgb(255,0, 173, 239));
+        }
+
+        private void StandardBackground_Click(object sender, RoutedEventArgs e)
+        {
+            RootSampleControlsPanel.Background = new SolidColorBrush(Colors.Transparent);
+        }
+
+        private void CmbListViewSelectionMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (listView1 != null)
+            {
+                listView1.SelectionMode = (ListViewSelectionMode)(sender as ComboBox).SelectedIndex;
+            }
+        }
+
+        private void CmbGridViewSelectionMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (gridView1 != null)
+            {
+                gridView1.SelectionMode = (ListViewSelectionMode)(sender as ComboBox).SelectedIndex;
+            }
+        }
+
+        private void ChkListViewIsEnabled_Checked(object sender, RoutedEventArgs e)
+        {
+            if (listView1 != null)
+            {
+                listView1.IsEnabled = true;
+            }
+        }
+
+        private void ChkListViewIsEnabled_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (listView1 != null)
+            {
+                listView1.IsEnabled = false;
+            }
+        }
+
+        private void ChkGridViewIsEnabled_Checked(object sender, RoutedEventArgs e)
+        {
+            if (gridView1 != null)
+            {
+                gridView1.IsEnabled = true;
+            }
+        }
+
+        private void ChkGridViewIsEnabled_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (gridView1 != null)
+            {
+                gridView1.IsEnabled = false;
+            }
         }
     }
 }

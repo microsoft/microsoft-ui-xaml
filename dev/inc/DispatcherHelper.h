@@ -17,21 +17,14 @@ public:
 
         if (!dispatcherQueue)
         {
-            try
+            if (dependencyObject)
             {
-                if (dependencyObject)
-                {
-                    coreDispatcher = dependencyObject.Dispatcher();
-                }
-                else if (auto currentView = winrt::CoreApplication::GetCurrentView())
-                {
-                    coreDispatcher = currentView.Dispatcher();
-                }
+                coreDispatcher = dependencyObject.Dispatcher();
             }
-            catch (winrt::hresult_error)
+            else if (auto window = winrt::Windows::UI::Core::CoreWindow::GetForCurrentThread())
             {
-                // CoreApplicationView might throw in XamlPresenter scenarios or in LogonUI.exe.
-            }            
+                coreDispatcher = window.Dispatcher();
+            }
         }
     }
 
@@ -39,7 +32,7 @@ public:
     {
         if (dispatcherQueue)
         {
-            auto result = dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler(func));
+            const auto result = dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler(func));
             if (!result)
             {
                 if (fallbackToThisThread)
@@ -82,6 +75,8 @@ public:
             }
         }
     }
+
+    auto DispatcherQueue() { return dispatcherQueue; }
 
 private:
     winrt::Windows::System::DispatcherQueue dispatcherQueue{ nullptr };

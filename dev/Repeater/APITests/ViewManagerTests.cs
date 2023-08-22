@@ -39,7 +39,7 @@ using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHo
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class ViewManagerTests : TestsBase
+    public class ViewManagerTests : ApiTestBase
     {
         [TestMethod]
         public void CanQueryElementFactory()
@@ -85,7 +85,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        // [TestMethod] Issue #1018
+        [TestMethod] //Issue #1018
+        [TestProperty("Ignore", "True")]
         public void CanPinFocusedElements()
         {
             // Setup a grouped repeater scenario with two groups each containing two items.
@@ -186,7 +187,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        // [TestMethod] Issue 1018
+        [TestMethod] //Issue 1018
+        [TestProperty("Ignore", "True")]
         public void CanReuseElementsDuringUniqueIdReset()
         {
             var data = new WinRTCollection(Enumerable.Range(0, 2).Select(i => string.Format("Item #{0}", i)));
@@ -586,7 +588,80 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        // [TestMethod] Issue 1018
+        [TestMethod]
+        public void ValidateDataContextDoesNotGetOverwritten()
+        {
+            const string c_element1DataContext = "Element1_DataContext";
+
+            RunOnUIThread.Execute(() =>
+            {
+                var data = new List<Button>()
+                {
+                    new Button()
+                    {
+                            Content = "Element1_Content",
+                            DataContext = c_element1DataContext
+                    }
+                };
+
+                var elementFactory = new DataAsElementElementFactory();
+
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = data,
+                    ItemTemplate = elementFactory
+                };
+
+                Content = repeater;
+
+                Content.UpdateLayout();
+
+                // Verify that DataContext is still the same
+                var firstElement = repeater.TryGetElement(0) as Button;
+                var retrievedDataContextItem1 = firstElement.DataContext as string;
+                Verify.IsTrue(retrievedDataContextItem1 == c_element1DataContext);
+
+            });
+        }
+
+        [TestMethod]
+        public void ValidateDataContextGetsPropagated()
+        {
+            const string c_element1DataContext = "Element1_DataContext";
+
+            RunOnUIThread.Execute(() =>
+            {
+                var data = new List<Button>()
+                {
+                    new Button()
+                    {
+                            Content = "Element1_Content",
+                            DataContext = c_element1DataContext
+                    }
+                };
+
+                var elementFactory = new ElementFromElementElementFactory();
+
+                var repeater = new ItemsRepeater() 
+                {
+                    ItemsSource = data,
+                    ItemTemplate = elementFactory
+                };
+
+                Content = repeater;
+
+                Content.UpdateLayout();
+
+                // Verify that DataContext of data has propagated to the container
+                var firstElement = repeater.TryGetElement(0) as Button;
+                var retrievedDataContextItem1 = firstElement.DataContext as string;
+                Verify.IsTrue(data[0] == firstElement.Content);
+                Verify.IsTrue(retrievedDataContextItem1 == c_element1DataContext);
+
+            });
+        }
+
+        [TestMethod]// Issue 1018
+        [TestProperty("Ignore", "True")]
         public void ValidateFocusMoveOnElementCleared()
         {
             ItemsRepeater repeater = null;
@@ -630,7 +705,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 });
         }
 
-        // [TestMethod] Issue 1018
+        [TestMethod] //Issue 1018
+        [TestProperty("Ignore", "True")]
         public void ValidateFocusMoveOnElementClearedWithUniqueIds()
         {
             ItemsRepeater repeater = null;
@@ -687,6 +763,48 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     () => { ValidateCurrentFocus(repeater, 0 /*expectedIndex */, "3" /* expectedContent */); }
                 });
         }
+
+        [TestMethod]
+        // Why does this test work?
+        // When the elements get created from the RecyclingElementFactory, we get already "existing" data templates.
+        // However, the reason for the crash in #2384 is that those "empty" data templates actually still had their data context
+        // If that data context is not null, that means it did not get cleared when the element was recycled, which is the wrong behavior.
+        // To check if the clearing is working correctly, we are checking this inside the ElementFactory's RecycleElement function.
+        public void ValidateElementClearingClearsDataContext()
+        {
+            ItemsRepeater repeater = null;
+            MockElementFactory elementFactory = null;
+            int elementClearingRaisedCount = 0;
+            Log.Comment("Initialize ItemsRepeater");
+            RunOnUIThread.Execute(() =>
+            {
+                elementFactory = new MockElementFactory() {
+                    GetElementFunc = delegate (int index, UIElement owner) {
+                        return new Button() { Content = index };
+                           },
+
+                    ClearElementFunc = delegate (UIElement element, UIElement owner) {
+                        elementClearingRaisedCount++;
+                        Verify.IsNull((element as FrameworkElement).DataContext);
+                    }
+                };
+
+                repeater = CreateRepeater(Enumerable.Range(0, 100),
+                    elementFactory);
+
+                repeater.Layout = new StackLayout();
+
+                Content = repeater;
+                repeater.UpdateLayout();
+
+                repeater.ItemsSource = null;
+
+                Log.Comment("Verify ItemsRepeater cleared data contexts correctly");
+                Verify.IsTrue(elementClearingRaisedCount > 0, "ItemsRepeater should have cleared some elements");
+            });
+        }
+
+
         private void MoveFocusToIndex(ItemsRepeater repeater, int index)
         {
             var element = repeater.TryGetElement(index) as Control;

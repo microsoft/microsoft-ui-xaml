@@ -61,18 +61,19 @@ public:
         const winrt::Size& /*measureSize*/,
         const winrt::Size& /*desiredSize*/,
         const winrt::Size& /*provisionalArrangeSize*/,
-        const winrt::VirtualizingLayoutContext& /*context*/)override {}
+        const winrt::VirtualizingLayoutContext& /*context*/) override {}
     void Algorithm_OnLineArranged(
         int /*startIndex*/,
         int /*countInLine*/,
         double /*lineSize*/,
-        const winrt::VirtualizingLayoutContext& /*context*/)override {}
+        const winrt::VirtualizingLayoutContext& /*context*/) override {}
 #pragma endregion
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
     // Methods
+    int GetItemsPerLine(winrt::Size const& availableSize, winrt::VirtualizingLayoutContext const& context);
     float GetMinorSizeWithSpacing(winrt::VirtualizingLayoutContext const& context);
     float GetMajorSizeWithSpacing(winrt::VirtualizingLayoutContext const& context);
 
@@ -96,7 +97,6 @@ private:
     double LineSpacing()
     {
         return Orientation() == winrt::Orientation::Horizontal ? m_minRowSpacing: m_minColumnSpacing;
-
     }
 
     double MinItemSpacing()
@@ -111,7 +111,8 @@ private:
     double m_minColumnSpacing{};
     winrt::UniformGridLayoutItemsJustification m_itemsJustification{ winrt::UniformGridLayoutItemsJustification::Start };
     winrt::UniformGridLayoutItemsStretch m_itemsStretch{ winrt::UniformGridLayoutItemsStretch::None };
+    unsigned int m_maximumRowsOrColumns{MAXUINT};
     // !!! WARNING !!!
-    // Any storage here needs to be related to layout configuration. 
+    // Any storage here needs to be related to layout configuration.
     // layout specific state needs to be stored in UniformGridLayoutState.
  };

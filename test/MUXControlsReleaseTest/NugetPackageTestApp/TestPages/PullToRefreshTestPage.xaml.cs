@@ -11,5 +11,10 @@ namespace NugetPackageTestApp
         {
             this.InitializeComponent();
         }
+
+        private void RequestRefresh_Clicked(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            refreshContainer.RequestRefresh();
+        }
     }
 }

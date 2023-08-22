@@ -5,9 +5,11 @@
   xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Thickness x:Key="RichEditBoxTopHeaderMargin">0,0,0,4</Thickness>
+    <Thickness x:Key="RichEditBoxTopHeaderMargin">0,0,0,8</Thickness>
 
-    <Style TargetType="RichEditBox">
+    <Style TargetType="RichEditBox" BasedOn="{StaticResource DefaultRichEditBoxStyle}" />
+
+    <Style x:Key="DefaultRichEditBoxStyle" TargetType="RichEditBox">
         <Setter Property="Foreground" Value="{ThemeResource TextControlForeground}" />
         <Setter Property="Background" Value="{ThemeResource TextControlBackground}" />
         <contract7Present:Setter Property="ContentLinkForegroundColor" Value="{ThemeResource ContentLinkForegroundColor}" />
@@ -93,9 +95,6 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundFocused}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="RequestedTheme">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Light" />
-                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
 
@@ -141,6 +140,7 @@
                             IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
                             Margin="{TemplateBinding BorderThickness}"
                             Padding="{TemplateBinding Padding}"
+                            Foreground="{TemplateBinding Foreground}"
                             IsTabStop="False"
                             ZoomMode="Disabled"
                             AutomationProperties.AccessibilityView="Raw" />

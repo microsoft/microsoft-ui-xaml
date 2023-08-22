@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<SignConfigXML>
-  <job platform="" configuration="" dest="__INPATHROOT__\FrameworkPackage" jobname="dep.controls" approvers="">
-    <!-- Overwrite the input files to simplify downstream things like nuget package generation. -->
-    <file src="__INPATHROOT__\FrameworkPackage\Microsoft.UI.Xaml*.appx" signType="FirstPartyWindowsStore" />
-  </job>
-</SignConfigXML>

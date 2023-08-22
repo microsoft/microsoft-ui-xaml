@@ -4,10 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp.Samples"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     <Page.Resources>
         <controls:RecyclePool x:Name="recyclePool" />
@@ -19,9 +16,10 @@
             <ColumnDefinition Width="auto" />
             <ColumnDefinition Width="auto" />
             <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="auto" />
         </Grid.ColumnDefinitions>
         <StackPanel>
-            <TextBlock>DataTemplate Sample:</TextBlock>
+            <TextBlock Text="DataTemplate Sample:"/>
             <controls:ItemsRepeaterScrollHost Height="400" Width="150">
                 <ScrollViewer>
                     <controls:ItemsRepeater x:Name="repeater0"
@@ -37,7 +35,7 @@
             </controls:ItemsRepeaterScrollHost>
         </StackPanel>
         <StackPanel Grid.Column="1">
-            <TextBlock>DataTemplateSelector Sample:</TextBlock>
+            <TextBlock Text="DataTemplateSelector Sample:"/>
             <controls:ItemsRepeaterScrollHost Height="400" Width="150">
                 <ScrollViewer>
                     <controls:ItemsRepeater x:Name="repeater1" 
@@ -62,7 +60,7 @@
             </controls:ItemsRepeaterScrollHost>
         </StackPanel>
         <StackPanel Grid.Column="2">
-            <TextBlock>ElementFactory Single Template Sample:</TextBlock>
+            <TextBlock Text="ElementFactory Single Template Sample:"/>
             <controls:ItemsRepeaterScrollHost Height="400" Width="150">
                 <ScrollViewer>
                     <controls:ItemsRepeater x:Name="repeater2" 
@@ -80,10 +78,10 @@
             </controls:ItemsRepeaterScrollHost>
         </StackPanel>
         <StackPanel Grid.Column="3">
-            <TextBlock>ElementFactory Multiple Template Sample:</TextBlock>
+            <TextBlock Text="ElementFactory Multiple Template Sample:"/>
             <controls:ItemsRepeaterScrollHost Height="400" Width="150">
                 <ScrollViewer>
-                    <controls:ItemsRepeater x:Name="repeater3" 
+                    <controls:ItemsRepeater x:Name="repeater4" 
                                             ItemsSource="{x:Bind Data}"
                                             Layout="{StaticResource stackLayout}">
                         <controls:ItemsRepeater.ItemTemplate>
@@ -97,6 +95,22 @@
                                     <TextBlock Text="{Binding}" Foreground="Green" />
                                 </DataTemplate>
                             </controls:RecyclingElementFactory>
+                        </controls:ItemsRepeater.ItemTemplate>
+                    </controls:ItemsRepeater>
+                </ScrollViewer>
+            </controls:ItemsRepeaterScrollHost>
+        </StackPanel>
+        <StackPanel Grid.Column="4">
+            <TextBlock Text="DataTemplate clear count checking:"/>
+            <controls:ItemsRepeaterScrollHost Height="400" Width="150">
+                <ScrollViewer>
+                    <controls:ItemsRepeater x:Name="repeater3" 
+                                            ItemsSource="{x:Bind Numbers}"
+                                            Layout="{StaticResource stackLayout}">
+                        <controls:ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="local:MyData" >
+                                <local:DisposableUserControl Number="{x:Bind number}"/>
+                            </DataTemplate>
                         </controls:ItemsRepeater.ItemTemplate>
                     </controls:ItemsRepeater>
                 </ScrollViewer>

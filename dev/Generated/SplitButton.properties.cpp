@@ -6,7 +6,12 @@
 #include "common.h"
 #include "SplitButton.h"
 
-CppWinRTActivatableClassWithDPFactory(SplitButton)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(SplitButton)
+}
+
+#include "SplitButton.g.cpp"
 
 GlobalDependencyProperty SplitButtonProperties::s_CommandProperty{ nullptr };
 GlobalDependencyProperty SplitButtonProperties::s_CommandParameterProperty{ nullptr };
@@ -88,7 +93,10 @@ void SplitButtonProperties::OnFlyoutPropertyChanged(
 
 void SplitButtonProperties::Command(winrt::ICommand const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SplitButton*>(this)->SetValue(s_CommandProperty, ValueHelper<winrt::ICommand>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::ICommand SplitButtonProperties::Command()
@@ -98,7 +106,10 @@ winrt::ICommand SplitButtonProperties::Command()
 
 void SplitButtonProperties::CommandParameter(winrt::IInspectable const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SplitButton*>(this)->SetValue(s_CommandParameterProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::IInspectable SplitButtonProperties::CommandParameter()
@@ -108,7 +119,10 @@ winrt::IInspectable SplitButtonProperties::CommandParameter()
 
 void SplitButtonProperties::Flyout(winrt::FlyoutBase const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SplitButton*>(this)->SetValue(s_FlyoutProperty, ValueHelper<winrt::FlyoutBase>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::FlyoutBase SplitButtonProperties::Flyout()

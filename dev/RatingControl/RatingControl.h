@@ -9,7 +9,7 @@
 #include "RatingControl.properties.h"
 #include "DispatcherHelper.h"
 
-enum RatingControlStates
+enum class RatingControlStates
 {
     Disabled = 0,
     Set = 1,
@@ -20,7 +20,7 @@ enum RatingControlStates
     Null = 6
 };
 
-enum RatingInfoType
+enum class RatingInfoType
 {
     None,
     Font,
@@ -112,7 +112,7 @@ public:
     void OnPreviewKeyUp(winrt::KeyRoutedEventArgs const& e);
 
 private:
-
+    bool ShouldEnableAnimation();
     void OnFocusEngaged(const winrt::Control& sender, const winrt::FocusEngagedEventArgs& args);
     void OnFocusDisengaged(const winrt::Control& sender, const winrt::FocusDisengagedEventArgs& args);
 

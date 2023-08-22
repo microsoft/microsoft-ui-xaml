@@ -26,7 +26,7 @@ namespace MUXControls.ReleaseTest
         [TestProperty("Platform", "Any")]
         public static void ClassInitialize(TestContext testContext)
         {
-            TestEnvironment.Initialize(testContext, TestType.NugetCX);
+            TestEnvironment.Initialize(testContext, TestApplicationInfo.NugetPackageTestAppCX);
         }
 
         [TestCleanup]
@@ -38,7 +38,7 @@ namespace MUXControls.ReleaseTest
         [AssemblyCleanup]
         public static void AssemblyCleanup()
         {
-            TestEnvironment.AssemblyCleanupWorker(TestType.NugetCX);
+            TestEnvironment.AssemblyCleanupWorker(TestApplicationInfo.NugetPackageTestAppCX);
         }
 
         [TestMethod]
@@ -50,6 +50,7 @@ namespace MUXControls.ReleaseTest
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Issue #4899: Test MUXControls.ReleaseTest.RepeaterNoCrashTest is unreliable 
         public void RepeaterNoCrashTest()
         {
             var button = new Button(FindElement.ByName("AddItemsButton"));
@@ -68,7 +69,14 @@ namespace MUXControls.ReleaseTest
             Wait.ForIdle();
 
             var textBlock = new TextBlock(FindElement.ByName("CheckBoxRectangleCornerRadiusValueTextBlock"));
-            Verify.AreEqual("2,2", textBlock.DocumentText);
+            Verify.AreEqual("4,4", textBlock.DocumentText);
+        }
+
+        [TestMethod]
+        public void TreeViewNodeContentTest()
+        {
+            var node = FindElement.ByName("TreeViewNode1");
+            Verify.IsNotNull(node, "Verify TreeViewNode conteins right content");
         }
     }
 }

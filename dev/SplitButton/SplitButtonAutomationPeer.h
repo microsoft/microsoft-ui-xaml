@@ -30,4 +30,3 @@ private:
     com_ptr<SplitButton> GetImpl();
 };
 
-CppWinRTActivatableClassWithBasicFactory(SplitButtonAutomationPeer);

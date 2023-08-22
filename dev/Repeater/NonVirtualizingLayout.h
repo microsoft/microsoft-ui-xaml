@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Layout.g.h"
+#include "Layout.h"
 #include "NonVirtualizingLayout.g.h"
 
 class NonVirtualizingLayout :
@@ -16,8 +16,8 @@ public:
     virtual void InitializeForContextCore(winrt::LayoutContext const& context);
     virtual void UninitializeForContextCore(winrt::LayoutContext const& context);
 
-    virtual winrt::Size MeasureOverride(winrt::LayoutContext const& context, winrt::Size const& availableSize);
-    virtual winrt::Size ArrangeOverride(winrt::LayoutContext const& context, winrt::Size const& finalSize);
+    virtual winrt::Size MeasureOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& availableSize);
+    virtual winrt::Size ArrangeOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& finalSize);
 #pragma endregion
 
 };

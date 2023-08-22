@@ -61,4 +61,3 @@ private:
     winrt::hstring GenerateValue_ValueString(const winrt::hstring& resourceString, double ratingValue);
 };
 
-CppWinRTActivatableClassWithBasicFactory(RatingControlAutomationPeer)

@@ -6,7 +6,7 @@
     /// <summary>
     /// Value indicating the general character set for a given character.
     /// </summary>
-enum CharacterType
+enum class CharacterType
 {
     /// <summary>
     /// Indicates we could not match the character set.

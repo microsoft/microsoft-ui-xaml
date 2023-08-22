@@ -1,110 +1,106 @@
-# Windows UI Library Roadmap
+# Windows UI Library Overview
 
-This document outlines the prospective roadmap for WinUI through 2019 and into early 2020. WinUI is under active development by the Microsoft developer platform team and the roadmap will continue to evolve based on market changes and customer feedback, so please note that the plans outlined here aren't exhaustive or guaranteed. We welcome your feedback on the roadmap: please feel free to contribute to existing issues - e.g. the [WinUI 3.0 discussion issue](https://github.com/microsoft/microsoft-ui-xaml/issues/717) - or [file a new issue](https://github.com/microsoft/microsoft-ui-xaml/issues).
+WinUI is the modern native UI platform for Windows with two active generations:
 
-The WinUI team has two major efforts underway in 2019:
+1. **WinUI 3**: The latest, 3rd generation of WinUI that ships the entire WinUI stack decoupled from the operating system as a part of the [Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk/).
 
-1. **WinUI 2.2**: new controls and features for UWP apps, ETA Q3 2019
+2. **WinUI 2**: The previous generation of the WinUI stack for UWP apps, consisting of a XAML and Visual Layer built directly into the Windows 10 operating system, and a controls library built on top of the OS, delivered via NuGet, and hosted at this repository. WinUI 2 will continue to be supported with bug, reliability, and security fixes.
 
-2. **WinUI 3.0**: a major update to the Windows 10 UI platform, ETA Q4 2019 (preview release)
+**For a detailed look on the difference between WinUI 2 & 3, please view our [comparison table](https://docs.microsoft.com/windows/apps/winui/#comparison-of-winui-3-and-winui-2)
 
-## WinUI 2 (Q4 2019)
+### Benefits of WinUI 
 
-The next release of WinUI 2 will be **WinUI 2.3**.
-
-2.3 will be an incremental release that includes new WinUI features and fixes for UWP apps on Windows 10.
-
-You can see a list of currently planned work in the [WinUI 2.3 milestone](https://github.com/microsoft/microsoft-ui-xaml/milestone/8).
-
-WinUI 2 will be superseded by WinUI 3 in early 2020. WinUI 3 will include all the controls and features in WinUI 2.
-
-## WinUI 3 (Q4 2019 - 2020)
-
-### Overview
-
-> You can watch the Build 2019 conference session *State of the Union: The Windows Presentation Platform* for more details:
-https://mybuild.techcommunity.microsoft.com/sessions/77008
-
-Since Windows 8, the Windows UI platform - including the [Xaml UI](https://docs.microsoft.com/windows/uwp/xaml-platform/xaml-overview) framework, [visual composition](https://docs.microsoft.com/uwp/api/Windows.UI.Composition) layer, and [input processing](https://docs.microsoft.com/uwp/api/Windows.UI.Input) - has been shipped as an integral part of Windows.
-
-Starting with WinUI 2 in 2018, we began also shipping some new Xaml UI controls and features as separate [NuGet](https://docs.microsoft.com/nuget/what-is-nuget) packages that build on top of the UWP SDK:
-
-![WinUI 2 platform](roadmap_winui2.png)
-
-WinUI 3 will greatly expand the scope of WinUI to include the full UI platform, which will now be fully decoupled from the UWP SDK:
-
-![WinUI 3 platform](roadmap_winui3.png)
-
-This means that the Xaml framework will now be developed on GitHub and ship out of band as [NuGet](https://docs.microsoft.com/nuget/what-is-nuget) packages.
-
-The existing UWP Xaml APIs that ship as part of the OS will no longer receive new feature updates. They will still receive security updates and critical fixes according to the Windows 10 support lifecycle.
-
-The Universal Windows Platform contains more than just the Xaml framework (e.g. application and security model, media pipeline, Xbox and Windows 10 shell integrations, broad device support) and will continue to evolve. All new Xaml features will just be developed and ship as part of WinUI instead.
-
-### Benefits of WinUI 3
-
-WinUI 3 will provide a number of benefits compared to the current UWP Xaml framework, WPF, WinForms and MFC which will make WinUI the best way to create Windows app UI:
+WinUI provides a number of benefits which makes it the best way to create user interfaces for Windows apps:
 
 1. **The native UI platform of Windows**  
-WinUI is the highly-optimized native UI platform used to create Windows itself, now made more broadly available for all developers to use to reach Windows. It's a thoroughly tested and proven UI platform that powers the operating system environment and essential experiences of 800+ million Windows 10 PC, XBox One, HoloLens, Surface Hub and other devices.
+WinUI is the highly-optimized native UI platform used to create Windows itself, now made more broadly available for all developers to use to reach Windows. It's a thoroughly tested and proven UI platform that powers the operating system environment and essential experiences of 1 billion+ Windows 10 & 11 PC, XBox One, HoloLens, Surface Hub and other devices.
 
-2. **The latest Fluent Design**  
+2. **The latest advancements in Fluent Design**  
 WinUI is Microsoft's main focus for native, accessible Windows UI and controls and is the definitive source for the [Fluent Design System](https://www.microsoft.com/design/fluent/) on Windows.  
-It will also have the latest lower-level composition and rendering innovations like vector animations, effects, shadows and lighting.
+It will also support the latest composition and rendering innovations like vector animations, effects, shadows and lighting.
 
-3. **Easier "a la carte" desktop development**  
-WinUI 3 will let you more easily mix and match the right combination of:
-    * **Language**: .NET (C#, Visual Basic), standard C++
-    * **App model**: UWP, Win32
-    * **Packaging**: [MSIX](https://docs.microsoft.com/windows/msix/), AppX for the Microsoft Store, unpackaged  
-    * **Interop**: use WinUI 3 to extend existing WPF, WinForms and MFC apps with modern Fluent UI
+3. **Backward compatibility for new features**  
+New WinUI features will continue to be backward-compatible with a wide range of Windows 10 and 11 versions. With WinUI 3, you can start building and shipping apps with new features immediately as soon as they're released, without having to wait for your users to be running the latest update of Windows.
 
-4. **Backward compatibility for new features**  
-New WinUI features will continue to be backward-compatible with a wide range of Windows versions: you can start building and shipping apps with new features immediately as soon as they're released, without having to wait for your users to update Windows.
-WinUI 3.0 should be backward-compatible to Creators Update (15063) on Windows 10, plus limited support on Windows 8.1.
-
-5. **Native development support**  
+4. **Native development support**  
 WinUI can be used with .NET, but doesn't depend on .NET: WinUI is 100% C++ and can be used in unmanaged Windows apps, for example using standard C++17 via [C++/WinRT](https://docs.microsoft.com/windows/uwp/cpp-and-winrt-apis/).
 
-6. **More frequent updates**  
-WinUI will continue to ship new stable versions 3x per year, with monthly prerelease builds.
+5. **More frequent updates**  
+WinUI is planned to ship roughly every 6 months, with at least two preview builds per stable release.  This is more of a guideline than a rule, but that is what the team strives for.
 
-7. **Open source development and community engagement**  
-WinUI will continue to be developed as an open source project on GitHub. WinUI 2 is already open source in this repo, and we plan to add the full WinUI 3 Xaml framework.  
-You can engage directly with Microsoft's core engineering team and contribute bug reports, feature ideas, and even code: see the [Contribution Guide](../CONTRIBUTING.md) for more info.  
-You can also try out the monthly prerelease builds to see new in-development features and help shape their final form.  
+6. **Open source development and community engagement**  
+ The WinUI 2 Controls Library is already open source on GitHub, and we're planning to add the full WinUI 3 framework into this repo as well. You can engage directly with Microsoft's core engineering team and contribute bug reports, feature ideas, and even code: see the [Contribution Guide](../CONTRIBUTING.md) for more info.  You can also try out the pre-release builds to see new in-development features and help shape their final form.  
 
-8. **A native Windows target for web and cross-platform frameworks**  
-WinUI 3 is better optimized for libraries and frameworks to build on.  
-For example, we're planning to base the new high-performance C++ [React Native Windows](https://github.com/Microsoft/react-native-windows) implementation on WinUI 3.
+## WinUI 3
 
-### New Features in WinUI 3.0
+**[WinUI 3](https://docs.microsoft.com/windows/apps/winui/winui3/)** is the latest generation of native Windows UI, consisting of all the major UX layers of Windows decoupled and shipping as a standalone solution for you to use.
 
-Our primary focus for WinUI 3.0 is to decouple the UWP UI framework (Xaml, composition and input) while maintaining high compatibility with existing UWP APIs and behaviors to help make the update to WinUI 3.0 easy for existing UWP apps.
+It focuses on enabling three main use cases:
 
-This means we won't be adding many new features in the first WinUI 3.0 release. 
+1. **Modernizing existing apps**
+    * Enabling you to extend existing Win32 (WPF, WinForms, MFC...) apps with modern Windows UI at your own pace using the upcoming release of [Xaml Islands](https://docs.microsoft.com/windows/apps/desktop/modernize/xaml-islands). Developers who currently use WinUI 2 for their app UX will be able to easily move to WinUI 3, as their syntax and capabilities are very similar
+2. **Creating new Windows apps**
+    * Enabling you to easily create new modern Windows apps with the flexibility offered by the [Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk/)
+3. **Enabling other frameworks**
+    * Providing the native implementation for other frameworks like [React Native](https://github.com/Microsoft/react-native-windows) and .NET [MAUI](https://docs.microsoft.com/dotnet/maui/what-is-maui) when running on Windows.
 
-However, we are planning at least a few new features, including:
+WinUI 3 is available as a part of the [Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk) for building stable and supported desktop/Win32 apps for production scenarios. The latest release is the Windows App SDK 1.2, which you can download and read more about at the documentation linked below:
 
-1. Downlevel support (backward compatibility) for all existing features: new Xaml and Composition features that were added in the Windows May 2019 Update will now work on Creators Update and newer!
-2. A new [Microsoft Edge (Chromium) WebView](https://docs.microsoft.com/microsoft-edge/hosting/webview2) Xaml control
-3. [Input validation support](https://github.com/microsoft/microsoft-ui-xaml/issues/179)
-4. New Visual Studio 2019 app templates for different combinations of app type (Win32, UWP) and language (C#, C++)
+[Stable release channel for the Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk/stable-channel)
 
-### Updating your apps to use WinUI 3.0
+We also ship experimental features as we develop them. You can read more about the Windows App SDK Experimental releases at the following documentation. Note that Experimental releases have limitations and known issues, so they are not equipped for production apps.
 
-Creating a new WinUI app will be easy using the new Visual Studio 2019 project templates.
+[Experimental release channel for the Windows App SDK](https://docs.microsoft.com/windows/apps/windows-app-sdk/experimental-channel).
 
-It should also be straightforward to add WinUI views to existing Win32 apps.
+### Features by release
+Legend:
 
-For existing UWP Xaml apps there will be some updates required when migrating to WinUI 3.0. 
+&#128994; - Available as supported feature
 
-We'd love to hear your thoughts on the developer experience in the [WinUI 3.0 discussion issue](https://github.com/microsoft/microsoft-ui-xaml/issues/717).
+&#128311; - Available as experimental feature  
 
-### WinUI 3.0 Timelines and Milestones
+Blank -  Not available
 
-We plan to release a prerelease version of WinUI 3.0 in Q4 2019 for public testing and feedback.
+**WinUI 3 - Windows App SDK 1.3** is our latest release.
 
-The first stable release of WinUI 3.0 is planned for 2020.
+| Customer Capability | Project Reunion 0.5 <br/>(March 2021) | Windows App SDK 0.8 <br/>(June 2021) | Windows App SDK 1.0 <br/> (November 2021) | Windows App SDK 1.1 <br/> (June 2022) | Windows App SDK 1.2 <br/> (November 2022) | Windows App SDK 1.3 <br/> (April 2023)
+| ------------------- | --------------------------------                | ------------------------------- | ----------------------------- | -----| ----- | ----- |
+| Supported in any app using the Windows App SDK                        | &#128994;          | &#128994;          | &#128994;      | &#128994;     | &#128994; | &#128994;
+| Contains new Windows 11 controls/styles from WinUI 2.6                |                    |                    | &#128994;      | &#128994;     | &#128994; | &#128994;
+| Supports MSIX Deployment                                              | &#128994;          | &#128994;          | &#128994;      | &#128994;     | &#128994; | &#128994;
+| Supports Unpackaged (non-MSIX) Deployment                             |                    |                    | &#128994;      | &#128994;     | &#128994; | &#128994;
+| Works downlevel to Windows 10 version 1809 and above                  | &#128994;          | &#128994;          | &#128994;      | &#128994;     | &#128994; | &#128994;
+| Supports the latest .NET                                              | &#128994;          | &#128994;          | &#128994;      | &#128994;     | &#128994; | &#128994;
+| ARM64 support                                                         | &#128994;          | &#128994;          | &#128994;      | &#128994;     | &#128994; | &#128994;
+| `<SwapChainPanel> `                                                   | &#128994;          | &#128994;          | &#128994;      | &#128994;     | &#128994; | &#128994;
+| Intellisense, Hot Reload, Live Visual Tree                            | &#128311;          | &#128311;          | &#128994;[^1]  | &#128994;[^1] | &#128994;[^1] | &#128994;[^1]
+| Chromium-based WebView2                                               | &#128994;          | &#128994;          | &#128994;      | &#128994;     | &#128994; | &#128994;
+| Title bar customization                                               | &#128994;          | &#128994;          | &#128994;      | &#128994;     | &#128994; | &#128994;
+| Fluent Shadows                                                        | &#128994;          | &#128994;          | &#128994;      | &#128994;     | &#128994; | &#128994;
+| Input validation for data fields                                      | &#128311;          | &#128311;          | &#128311;      | &#128311;     | &#128311; | &#128311;
+| Supports multiple top-level windows on the same thread                | &#128311;          | &#128311;          | &#128994;[^2]  | &#128994;     | &#128994; | &#128994;
+| Supports multiple top-level windows on separate threads               | &#128311;          | &#128311;          | &#128311;      | &#128311;     | &#128311; | &#128311;
+| Drag and drop                                                         | &#128994;          | &#128994;          | &#128994;      | &#128994;     | &#128994; | &#128994;
+| RenderTargetBitmap                                                    | &#128994;          | &#128994;          | &#128994;      | &#128994;     | &#128994; | &#128994;
+| Mouse cursor customization                                            | &#128994;          | &#128994;          | &#128994;      | &#128994;     | &#128994; | &#128994;
+| Animated Gif support                                                  | &#128994;          | &#128994;          | &#128994;      | &#128994;     | &#128994; | &#128994;
+| VirtualSurfaceImageSource (VSIS) support                              | &#128994;          | &#128994;          | &#128994;      | &#128994;     | &#128994; | &#128994;
+| In-app acrylic                                                        | &#128994;          | &#128994;          | &#128994;      | &#128994;     | &#128994; | &#128994;
+| XAML Islands                                                          |                    | &#128311;          | &#128311;      | &#128311;     | &#128311; | &#128311;
+| Mica                                                                  |                    |                    |                | &#128994;     | &#128994; | &#128994;
+| Widgets                                                               |                    |                    |                |               | &#128994; | &#128994;
+| Media playback controls                                               |                    |                    |                |               | &#128994;  | &#128994;
+| InfoBadge and other updates from WinUI 2.8                            |                    |                    |                |               | &#128994; | &#128994;
 
-We're also working on open sourcing WinUI 3.0 as soon as we can.
+[^1]: Supported on Visual Studio 2022 Preview 5 and above for packaged apps only 
+[^2]: Supported in 1.0.1 and above
+
+## WinUI 2 Controls Library
+
+WinUI 2 is a native user experience (UX) framework for both Windows desktop and UWP applications tightly integrated with Windows 10 and above SDKs.
+
+The latest release of the **WinUI 2 Controls Library** was v2.8 which was released in July 2022. You can find a list of what was introduced in this release in the [release notes](https://learn.microsoft.com/en-us/windows/apps/winui/winui2/release-notes/winui-2.8).
+
+At this time, there are no plans for a WinUI 2.9. However, WinUI 2 will continue to be supported through servicing releases with bug, reliability, and security fixes as needed. 
+
+For installation instructions see [Getting started with the Windows UI Library](https://docs.microsoft.com/windows/apps/winui/winui2/getting-started).

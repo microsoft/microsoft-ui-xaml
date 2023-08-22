@@ -325,13 +325,13 @@ void ScrollViewerIRefreshInfoProviderAdapter::MakeInteractionSource(const winrt:
 winrt::FxScrollViewer ScrollViewerIRefreshInfoProviderAdapter::AdaptFromTreeRecursiveHelper(const winrt::DependencyObject& root, int depth)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, depth);
-    int numChildren = winrt::VisualTreeHelper::GetChildrenCount(root);
+    const int numChildren = winrt::VisualTreeHelper::GetChildrenCount(root);
     if (depth == 0)
     {
         for (int i = 0; i < numChildren; i++)
         {
-            winrt::DependencyObject childObject = winrt::VisualTreeHelper::GetChild(root, i);
-            winrt::FxScrollViewer childObjectAsSV = childObject.try_as<winrt::FxScrollViewer>();
+            const winrt::DependencyObject childObject = winrt::VisualTreeHelper::GetChild(root, i);
+            const winrt::FxScrollViewer childObjectAsSV = childObject.try_as<winrt::FxScrollViewer>();
             if (childObjectAsSV)
             {
                 return childObjectAsSV;
@@ -343,8 +343,8 @@ winrt::FxScrollViewer ScrollViewerIRefreshInfoProviderAdapter::AdaptFromTreeRecu
     {
         for (int i = 0; i < numChildren; i++)
         {
-            winrt::DependencyObject childObject = winrt::VisualTreeHelper::GetChild(root, i);
-            winrt::FxScrollViewer recursiveResult = AdaptFromTreeRecursiveHelper(childObject, depth - 1);
+            const winrt::DependencyObject childObject = winrt::VisualTreeHelper::GetChild(root, i);
+            const winrt::FxScrollViewer recursiveResult = AdaptFromTreeRecursiveHelper(childObject, depth - 1);
             if (recursiveResult)
             {
                 return recursiveResult;
@@ -356,7 +356,7 @@ winrt::FxScrollViewer ScrollViewerIRefreshInfoProviderAdapter::AdaptFromTreeRecu
 
 void ScrollViewerIRefreshInfoProviderAdapter::CleanupScrollViewer()
 {
-    auto sv = m_scrollViewer.get();
+    auto&& sv = m_scrollViewer.get();
     if (m_boxedPointerPressedEventHandler)
     {
         sv.RemoveHandler(winrt::UIElement::PointerPressedEvent(), m_boxedPointerPressedEventHandler.get());
@@ -381,7 +381,7 @@ void ScrollViewerIRefreshInfoProviderAdapter::CleanupScrollViewer()
 
 void ScrollViewerIRefreshInfoProviderAdapter::CleanupIRefreshInfoProvider()
 {
-    auto provider = m_infoProvider.get();
+    auto&& provider = m_infoProvider.get();
     if (m_infoProvider_RefreshStartedToken.value)
     {
         provider->RefreshStarted(m_infoProvider_RefreshStartedToken);

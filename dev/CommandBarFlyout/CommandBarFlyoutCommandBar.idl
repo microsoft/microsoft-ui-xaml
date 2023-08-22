@@ -1,7 +1,7 @@
-namespace MU_XCP_NAMESPACE
+﻿namespace MU_XCP_NAMESPACE
 {
 
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 [MUX_PROPERTY_NEEDS_DP_FIELD]
 runtimeclass CommandBarFlyoutCommandBarTemplateSettings
@@ -29,7 +29,7 @@ runtimeclass CommandBarFlyoutCommandBarTemplateSettings
     Windows.Foundation.Rect OverflowContentClipRect{ get; };
 };
 
-[WUXC_VERSION_RS5]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass CommandBarFlyoutCommandBar : Windows.UI.Xaml.Controls.CommandBar
 {
@@ -39,4 +39,14 @@ unsealed runtimeclass CommandBarFlyoutCommandBar : Windows.UI.Xaml.Controls.Comm
     CommandBarFlyoutCommandBarTemplateSettings FlyoutTemplateSettings { get; };
 };
 
+[MUX_PUBLIC]
+[webhosthidden]
+static runtimeclass CommandBarFlyoutCommandBarAutomationProperties
+{
+    [MUX_DEFAULT_VALUE("winrt::AutomationControlType::Custom")]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnControlTypePropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty ControlTypeProperty{ get; };
+    static Windows.UI.Xaml.Automation.Peers.AutomationControlType GetControlType(Windows.UI.Xaml.UIElement element);
+    static void SetControlType(Windows.UI.Xaml.UIElement element, Windows.UI.Xaml.Automation.Peers.AutomationControlType value);
+}
 }

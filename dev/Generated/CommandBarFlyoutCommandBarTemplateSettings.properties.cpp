@@ -295,7 +295,10 @@ void CommandBarFlyoutCommandBarTemplateSettingsProperties::ClearProperties()
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::CloseAnimationEndPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_CloseAnimationEndPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CommandBarFlyoutCommandBarTemplateSettingsProperties::CloseAnimationEndPosition()
@@ -305,7 +308,10 @@ double CommandBarFlyoutCommandBarTemplateSettingsProperties::CloseAnimationEndPo
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::ContentClipRect(winrt::Rect const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_ContentClipRectProperty, ValueHelper<winrt::Rect>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Rect CommandBarFlyoutCommandBarTemplateSettingsProperties::ContentClipRect()
@@ -315,7 +321,10 @@ winrt::Rect CommandBarFlyoutCommandBarTemplateSettingsProperties::ContentClipRec
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::CurrentWidth(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_CurrentWidthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CommandBarFlyoutCommandBarTemplateSettingsProperties::CurrentWidth()
@@ -325,7 +334,10 @@ double CommandBarFlyoutCommandBarTemplateSettingsProperties::CurrentWidth()
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::Dispatcher(winrt::CoreDispatcher const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_DispatcherProperty, ValueHelper<winrt::CoreDispatcher>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::CoreDispatcher CommandBarFlyoutCommandBarTemplateSettingsProperties::Dispatcher()
@@ -335,7 +347,10 @@ winrt::CoreDispatcher CommandBarFlyoutCommandBarTemplateSettingsProperties::Disp
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandDownAnimationEndPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_ExpandDownAnimationEndPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandDownAnimationEndPosition()
@@ -345,7 +360,10 @@ double CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandDownAnimation
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandDownAnimationHoldPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_ExpandDownAnimationHoldPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandDownAnimationHoldPosition()
@@ -355,7 +373,10 @@ double CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandDownAnimation
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandDownAnimationStartPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_ExpandDownAnimationStartPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandDownAnimationStartPosition()
@@ -365,7 +386,10 @@ double CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandDownAnimation
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandDownOverflowVerticalPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_ExpandDownOverflowVerticalPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandDownOverflowVerticalPosition()
@@ -375,7 +399,10 @@ double CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandDownOverflowV
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandedWidth(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_ExpandedWidthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandedWidth()
@@ -385,7 +412,10 @@ double CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandedWidth()
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandUpAnimationEndPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_ExpandUpAnimationEndPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandUpAnimationEndPosition()
@@ -395,7 +425,10 @@ double CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandUpAnimationEn
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandUpAnimationHoldPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_ExpandUpAnimationHoldPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandUpAnimationHoldPosition()
@@ -405,7 +438,10 @@ double CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandUpAnimationHo
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandUpAnimationStartPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_ExpandUpAnimationStartPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandUpAnimationStartPosition()
@@ -415,7 +451,10 @@ double CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandUpAnimationSt
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandUpOverflowVerticalPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_ExpandUpOverflowVerticalPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandUpOverflowVerticalPosition()
@@ -425,7 +464,10 @@ double CommandBarFlyoutCommandBarTemplateSettingsProperties::ExpandUpOverflowVer
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::OpenAnimationEndPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_OpenAnimationEndPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CommandBarFlyoutCommandBarTemplateSettingsProperties::OpenAnimationEndPosition()
@@ -435,7 +477,10 @@ double CommandBarFlyoutCommandBarTemplateSettingsProperties::OpenAnimationEndPos
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::OpenAnimationStartPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_OpenAnimationStartPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CommandBarFlyoutCommandBarTemplateSettingsProperties::OpenAnimationStartPosition()
@@ -445,7 +490,10 @@ double CommandBarFlyoutCommandBarTemplateSettingsProperties::OpenAnimationStartP
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::OverflowContentClipRect(winrt::Rect const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_OverflowContentClipRectProperty, ValueHelper<winrt::Rect>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::Rect CommandBarFlyoutCommandBarTemplateSettingsProperties::OverflowContentClipRect()
@@ -455,7 +503,10 @@ winrt::Rect CommandBarFlyoutCommandBarTemplateSettingsProperties::OverflowConten
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::WidthExpansionAnimationEndPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_WidthExpansionAnimationEndPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CommandBarFlyoutCommandBarTemplateSettingsProperties::WidthExpansionAnimationEndPosition()
@@ -465,7 +516,10 @@ double CommandBarFlyoutCommandBarTemplateSettingsProperties::WidthExpansionAnima
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::WidthExpansionAnimationStartPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_WidthExpansionAnimationStartPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CommandBarFlyoutCommandBarTemplateSettingsProperties::WidthExpansionAnimationStartPosition()
@@ -475,7 +529,10 @@ double CommandBarFlyoutCommandBarTemplateSettingsProperties::WidthExpansionAnima
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::WidthExpansionDelta(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_WidthExpansionDeltaProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CommandBarFlyoutCommandBarTemplateSettingsProperties::WidthExpansionDelta()
@@ -485,7 +542,10 @@ double CommandBarFlyoutCommandBarTemplateSettingsProperties::WidthExpansionDelta
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::WidthExpansionMoreButtonAnimationEndPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_WidthExpansionMoreButtonAnimationEndPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CommandBarFlyoutCommandBarTemplateSettingsProperties::WidthExpansionMoreButtonAnimationEndPosition()
@@ -495,7 +555,10 @@ double CommandBarFlyoutCommandBarTemplateSettingsProperties::WidthExpansionMoreB
 
 void CommandBarFlyoutCommandBarTemplateSettingsProperties::WidthExpansionMoreButtonAnimationStartPosition(double value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CommandBarFlyoutCommandBarTemplateSettings*>(this)->SetValue(s_WidthExpansionMoreButtonAnimationStartPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
 }
 
 double CommandBarFlyoutCommandBarTemplateSettingsProperties::WidthExpansionMoreButtonAnimationStartPosition()

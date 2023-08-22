@@ -6,7 +6,12 @@
 #include "common.h"
 #include "SwipeItems.h"
 
-CppWinRTActivatableClassWithDPFactory(SwipeItems)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(SwipeItems)
+}
+
+#include "SwipeItems.g.cpp"
 
 GlobalDependencyProperty SwipeItemsProperties::s_ModeProperty{ nullptr };
 
@@ -45,7 +50,10 @@ void SwipeItemsProperties::OnModePropertyChanged(
 
 void SwipeItemsProperties::Mode(winrt::SwipeMode const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<SwipeItems*>(this)->SetValue(s_ModeProperty, ValueHelper<winrt::SwipeMode>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::SwipeMode SwipeItemsProperties::Mode()

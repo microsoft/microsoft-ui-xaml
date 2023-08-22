@@ -21,12 +21,13 @@ using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
+using MUXTestInfra.Shared.Infra;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     [TestClass]
     public class MenuBarTests
-    { 
+    {
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
@@ -36,13 +37,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TestEnvironment.Initialize(testContext);
         }
 
+        [TestMethod]
+        public void VerifyAxeScanPasses()
+        {
+            using (var setup = new TestSetupHelper("MenuBar-Axe"))
+            {
+                AxeTestHelper.TestForAxeIssues();
+            }
+        }
+
         [TestCleanup]
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
         }
 
-        //[TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")]
         // Disabled due to: 
         // https://github.com/Microsoft/microsoft-ui-xaml/issues/115
         public void BasicMouseInteractionTest()
@@ -147,16 +158,80 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 if (ApiInformation.IsTypePresent("Windows.UI.Xaml.IUIElement5")) // XYFocusNavigation is only availabe from IUElement5 foward
                 {
+                    KeyboardHelper.PressKey(Key.Left);
+                    VerifyElement.NotFound("Word Wrap", FindBy.Name);
+
+                    KeyboardHelper.PressKey(Key.Enter);
+                    VerifyElement.Found("Word Wrap", FindBy.Name);
+
+                    KeyboardHelper.PressKey(Key.Escape);
+                    KeyboardHelper.PressKey(Key.Right);
+
                     KeyboardHelper.PressKey(Key.Right);
                     VerifyElement.NotFound("Undo", FindBy.Name);
 
                     KeyboardHelper.PressKey(Key.Enter);
                     VerifyElement.Found("Undo", FindBy.Name);
+
+                    KeyboardHelper.PressKey(Key.Down);
+                    KeyboardHelper.PressKey(Key.Down);
+                    KeyboardHelper.PressKey(Key.Down);
+                    KeyboardHelper.PressKey(Key.Down);
+                    KeyboardHelper.PressKey(Key.Down);
+                    VerifyElement.NotFound("Item 1", FindBy.Name);
+
+                    KeyboardHelper.PressKey(Key.Right);
+                    VerifyElement.Found("Item 1", FindBy.Name);
+
                 }
             }
         }
-        
-        //[TestMethod]
+
+        [TestMethod]
+        public void KeyboardNavigationWithArrowKeysWithDisabledItemTest()
+        {
+            using (var setup = new TestSetupHelper("MenuBar Tests"))
+            {
+                var editButton = FindElement.ById<Button>("MenuBarPartiallyEnabledOne");
+                editButton.Invoke();
+                VerifyElement.Found("PartiallyEnabledFlyoutOne", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Right);
+                VerifyElement.Found("PartiallyEnabledFlyoutThree", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Left);
+                VerifyElement.Found("PartiallyEnabledFlyoutOne", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Left);
+                VerifyElement.Found("PartiallyEnabledFlyoutThree", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Left);
+                VerifyElement.Found("PartiallyEnabledFlyoutOne", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Right);
+                VerifyElement.Found("PartiallyEnabledFlyoutThree", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Right);
+                VerifyElement.Found("PartiallyEnabledFlyoutOne", FindBy.Name);
+            }
+        }
+
+        [TestMethod]
+        public void KeyboardNavigationWithArrowKeysWithOnlyOneItemWorks()
+        {
+            using (var setup = new TestSetupHelper("MenuBar Tests"))
+            {
+                var editButton = FindElement.ById<Button>("LoopTestBarOne");
+                editButton.Invoke();
+                VerifyElement.Found("LoopTestItemOne", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Right);
+                VerifyElement.NotFound("LoopTestItemOne", FindBy.Name);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Ignore", "True")]
         // Disabled due to: MenuBarTests.KeyboardNavigationWithAccessKeysTest unreliable #135
         public void KeyboardNavigationWithAccessKeysTest()
         {
@@ -303,10 +378,53 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Verify that the size of the MenuBar can be set.");
 
                 Verify.AreEqual(menuBar.BoundingRectangle.Height, 24);
-                Verify.AreEqual(menuBarItem.BoundingRectangle.Height, 24);
+                Verify.AreEqual(menuBarItem.BoundingRectangle.Height, 16);
             }
         }
 
+        [TestMethod]
+        public void HoveringBehaviorTest()
+        {
+            // Overlay pass through element is only available from IFlyoutBase3 forward
+            // On OS versions below RS5 test is unreliable/not working.
+            // Tracked by https://github.com/Microsoft/microsoft-ui-xaml/issues/115
+            if (PlatformConfiguration.IsDevice(DeviceType.Phone) 
+                || !ApiInformation.IsTypePresent("Windows.UI.Xaml.Controls.Primitives.IFlyoutBase3")
+                || PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
+            {
+                Log.Comment("Skipping tests on phone, because menubar is not supported.");
+                return;
+            }
+            using (var setup = new TestSetupHelper("MenuBar Tests"))
+            {
+                var menuBar = FindElement.ById("SizedMenuBar");
+                var addButton = FindElement.ByName("AddItemsToEmptyMenuBar");
+
+                addButton.Click();
+                addButton.Click();
+                addButton.Click();
+
+                var help0 = FindElement.ByName<Button>("Help0");
+                var help1 = FindElement.ByName<Button>("Help1");
+
+                // This behavior seems to a bit unreliable, so repeat
+                InputHelper.LeftClick(help0);
+                TestEnvironment.VerifyAreEqualWithRetry(20,
+                    () => FindCore.ByName("Add0", shouldWait: false) != null, // The item should be in the tree
+                    () => true);
+
+                // Check if hovering over the next button actually will show the correct item
+                VerifyElement.NotFound("Add1", FindBy.Name);
+                InputHelper.MoveMouse(help1, 0, 0);
+                InputHelper.MoveMouse(help1, 1, 1);
+                InputHelper.MoveMouse(help1, 5, 5);
+
+                UIObject add1Element = null;
+                ElementCache.Clear();
+                var element = GetElement(ref add1Element, "Add1");
+                Verify.IsNotNull(add1Element);
+            }
+        }
 
         [TestMethod]
         public void TabTest()
@@ -330,6 +448,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 
                 Verify.AreEqual(true, fileButton.HasKeyboardFocus);
             }
+        }
+
+        [TestMethod]
+        public void EmptyMenuBarItemNoPopupTest()
+        {
+            if (PlatformConfiguration.IsDevice(DeviceType.Phone))
+            {
+                Log.Comment("Skipping tests on phone, because menubar is not supported.");
+                return;
+            }
+            using (var setup = new TestSetupHelper("MenuBar Tests"))
+            {
+                FindElement.ByName<Button>("NoChildrenFlyout").Click();
+                VerifyElement.NotFound("Popup",FindBy.Name);
+
+                FindElement.ByName<Button>("OneChildrenFlyout").Click();
+                VerifyElement.Found("Popup", FindBy.Name);
+
+                // Click twice to close flyout
+                FindElement.ByName<Button>("RemoveItemsFromOneChildrenItem").Click();
+                FindElement.ByName<Button>("RemoveItemsFromOneChildrenItem").Click();
+
+                FindElement.ByName<Button>("OneChildrenFlyout").Click();
+                VerifyElement.NotFound("Popup", FindBy.Name);
+            }
+        }
+
+        private T GetElement<T>(ref T element, string elementName) where T : UIObject
+        {
+            if (element == null)
+            {
+                Log.Comment("Find the " + elementName);
+                element = FindElement.ByNameOrId<T>(elementName);
+                Verify.IsNotNull(element);
+            }
+            return element;
         }
     }
 }

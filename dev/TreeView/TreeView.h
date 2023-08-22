@@ -9,6 +9,7 @@
 #include "TreeViewCollapsedEventArgs.h"
 #include "TreeViewDragItemsStartingEventArgs.h"
 #include "TreeViewDragItemsCompletedEventArgs.h"
+#include "TreeViewSelectionChangedEventArgs.h"
 
 #include "TreeView.g.h"
 #include "TreeView.properties.h"
@@ -20,20 +21,22 @@ class TreeView :
 public:
     TreeView();
     winrt::IVector<winrt::TreeViewNode> RootNodes();
-    TreeViewList* ListControl();
+    const TreeViewList* ListControl() const;
+    TreeViewList* MutableListControl();
 
     winrt::IInspectable ItemFromContainer(winrt::DependencyObject const& container);
     winrt::DependencyObject ContainerFromItem(winrt::IInspectable const& item);
-    winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container);
-    winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node);
+    winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container) const;
+    winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node) const;
 
     void SelectedNode(winrt::TreeViewNode const& node);
     winrt::TreeViewNode SelectedNode();
     winrt::IVector<winrt::TreeViewNode> SelectedNodes();
 
-    void SelectedItem(winrt::IInspectable const& item);
-    winrt::IInspectable SelectedItem();
     winrt::IVector<winrt::IInspectable> SelectedItems();
+
+    void UpdateSelection(winrt::TreeViewNode const& node, bool isSelected);
+    void RaiseSelectionChanged(const winrt::IVector<winrt::IInspectable> addedItems, const winrt::IVector<winrt::IInspectable> removedItems);
 
     void Expand(winrt::TreeViewNode const& value);
     void Collapse(winrt::TreeViewNode const& value);
@@ -45,6 +48,7 @@ public:
     void OnNodeCollapsed(const winrt::TreeViewNode& sender, const winrt::IInspectable&);
     void OnListControlDragItemsStarting(const winrt::IInspectable& sender, const winrt::DragItemsStartingEventArgs& args);
     void OnListControlDragItemsCompleted(const winrt::IInspectable& sender, const winrt::DragItemsCompletedEventArgs& args);
+    void OnListControlSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void UpdateItemsSelectionMode(bool isMultiSelect);
 
@@ -75,4 +79,5 @@ private:
     winrt::ListViewBase::ContainerContentChanging_revoker m_containerContentChangingRevoker{};
     winrt::ListViewBase::DragItemsStarting_revoker m_dragItemsStartingRevoker{};
     winrt::ListViewBase::DragItemsCompleted_revoker m_dragItemsCompletedRevoker{};
+    winrt::ListViewBase::SelectionChanged_revoker m_selectionChangedRevoker{};
 };

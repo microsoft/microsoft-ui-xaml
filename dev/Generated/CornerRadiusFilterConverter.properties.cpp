@@ -6,9 +6,15 @@
 #include "common.h"
 #include "CornerRadiusFilterConverter.h"
 
-CppWinRTActivatableClassWithDPFactory(CornerRadiusFilterConverter)
+namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
+{
+    CppWinRTActivatableClassWithDPFactory(CornerRadiusFilterConverter)
+}
+
+#include "CornerRadiusFilterConverter.g.cpp"
 
 GlobalDependencyProperty CornerRadiusFilterConverterProperties::s_FilterProperty{ nullptr };
+GlobalDependencyProperty CornerRadiusFilterConverterProperties::s_ScaleProperty{ nullptr };
 
 CornerRadiusFilterConverterProperties::CornerRadiusFilterConverterProperties()
 {
@@ -28,19 +34,47 @@ void CornerRadiusFilterConverterProperties::EnsureProperties()
                 ValueHelper<winrt::CornerRadiusFilterKind>::BoxValueIfNecessary(winrt::CornerRadiusFilterKind::None),
                 nullptr);
     }
+    if (!s_ScaleProperty)
+    {
+        s_ScaleProperty =
+            InitializeDependencyProperty(
+                L"Scale",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::CornerRadiusFilterConverter>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxValueIfNecessary(1.0),
+                nullptr);
+    }
 }
 
 void CornerRadiusFilterConverterProperties::ClearProperties()
 {
     s_FilterProperty = nullptr;
+    s_ScaleProperty = nullptr;
 }
 
 void CornerRadiusFilterConverterProperties::Filter(winrt::CornerRadiusFilterKind const& value)
 {
+    [[gsl::suppress(con)]]
+    {
     static_cast<CornerRadiusFilterConverter*>(this)->SetValue(s_FilterProperty, ValueHelper<winrt::CornerRadiusFilterKind>::BoxValueIfNecessary(value));
+    }
 }
 
 winrt::CornerRadiusFilterKind CornerRadiusFilterConverterProperties::Filter()
 {
     return ValueHelper<winrt::CornerRadiusFilterKind>::CastOrUnbox(static_cast<CornerRadiusFilterConverter*>(this)->GetValue(s_FilterProperty));
+}
+
+void CornerRadiusFilterConverterProperties::Scale(double value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<CornerRadiusFilterConverter*>(this)->SetValue(s_ScaleProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
+}
+
+double CornerRadiusFilterConverterProperties::Scale()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<CornerRadiusFilterConverter*>(this)->GetValue(s_ScaleProperty));
 }

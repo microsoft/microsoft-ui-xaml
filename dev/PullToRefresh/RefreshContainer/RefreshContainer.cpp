@@ -282,7 +282,7 @@ winrt::IRefreshInfoProvider RefreshContainer::SearchTreeForIRefreshInfoProvider(
 winrt::IRefreshInfoProvider RefreshContainer::SearchTreeForIRefreshInfoProviderRecursiveHelper(winrt::DependencyObject root, int depth)
 {
     PTR_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, depth);
-    int numChildren = winrt::VisualTreeHelper::GetChildrenCount(root);
+    const int numChildren = winrt::VisualTreeHelper::GetChildrenCount(root);
     if (depth == 0)
     {
         for (int i = 0; i < numChildren; i++)
@@ -333,7 +333,7 @@ void RefreshContainer::RaiseRefreshRequested()
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     com_ptr<RefreshContainer> strongThis = get_strong();
 
-    winrt::DeferralCompletedHandler instance{ [strongThis]()
+    winrt::Deferral instance{ [strongThis]()
         {
             strongThis->CheckThread();
             strongThis->RefreshCompleted();

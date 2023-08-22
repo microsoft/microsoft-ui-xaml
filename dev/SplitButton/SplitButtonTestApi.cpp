@@ -6,6 +6,8 @@
 #include "SplitButtonTestHelper.h"
 #include "SplitButtonTestApi.h"
 
+#include "SplitButtonTestApi.properties.cpp"
+
 bool SplitButtonTestApi::SimulateTouch()
 {
     return SplitButtonTestHelper::SimulateTouch();

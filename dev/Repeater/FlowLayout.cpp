@@ -57,7 +57,9 @@ winrt::Size FlowLayout::MeasureOverride(
         true, /* isWrapping*/
         MinItemSpacing(),
         LineSpacing(),
+        std::numeric_limits<unsigned int>::max() /* maxItemsPerLine */,
         OrientationBasedMeasures::GetScrollOrientation(),
+        false /* disableVirtualization */,
         LayoutId());
     return desiredSize;
 }
@@ -69,7 +71,8 @@ winrt::Size FlowLayout::ArrangeOverride(
     auto value = GetFlowAlgorithm(context).Arrange(
         finalSize,
         context,
-        static_cast<FlowLayoutAlgorithm::LineAlignment>(m_lineAlignment),
+        true, /* isWrapping */
+        static_cast<FlowLayoutAlgorithm::LineAlignment>(m_lineAlignment),        
         LayoutId());
     return value;
 }
@@ -131,18 +134,18 @@ winrt::FlowLayoutAnchorInfo FlowLayout::GetAnchorForRealizationRect(
         const double averageLineSize = GetAverageLineInfo(availableSize, context, flowState, averageItemsPerLine) + LineSpacing();
         MUX_ASSERT(averageItemsPerLine != 0);
 
-        const double extentMajorSize = lastExtent.*MajorSize() == 0 ? (itemsCount / averageItemsPerLine) * averageLineSize : lastExtent.*MajorSize();
+        const double extentMajorSize = MajorSize(lastExtent) == 0 ? (itemsCount / averageItemsPerLine) * averageLineSize : MajorSize(lastExtent);
         if (itemsCount > 0 &&
-            realizationRect.*MajorSize() > 0 &&
-            DoesRealizationWindowOverlapExtent(realizationRect, MinorMajorRect(lastExtent.*MinorStart(), lastExtent.*MajorStart(), availableSize.*Minor(), static_cast<float>(extentMajorSize))))
+            MajorSize(realizationRect) > 0 &&
+            DoesRealizationWindowOverlapExtent(realizationRect, MinorMajorRect(MinorStart(lastExtent), MajorStart(lastExtent), Minor(availableSize), static_cast<float>(extentMajorSize))))
         {
-            const double realizationWindowStartWithinExtent = realizationRect.*MajorStart() - lastExtent.*MajorStart();
+            const double realizationWindowStartWithinExtent = MajorStart(realizationRect) - MajorStart(lastExtent);
             const int lineIndex = std::max(0, (int)(realizationWindowStartWithinExtent / averageLineSize));
             anchorIndex = (int)(lineIndex * averageItemsPerLine);
 
             // Clamp it to be within valid range
             anchorIndex = std::max(0, std::min(itemsCount - 1, anchorIndex));
-            offset = lineIndex * averageLineSize + lastExtent.*MajorStart();
+            offset = lineIndex * averageLineSize + MajorStart(lastExtent);
         }
     }
 
@@ -166,7 +169,7 @@ winrt::FlowLayoutAnchorInfo FlowLayout::GetAnchorForTargetElement(
         double averageItemsPerLine = 0;
         const double averageLineSize = GetAverageLineInfo(availableSize, context, flowState, averageItemsPerLine) + LineSpacing();
         const int lineIndex = (int)(targetIndex / averageItemsPerLine);
-        offset = lineIndex * averageLineSize + flowState->FlowAlgorithm().LastExtent().*MajorStart();
+        offset = lineIndex * averageLineSize + MajorStart(flowState->FlowAlgorithm().LastExtent());
     }
 
     return { index, offset };
@@ -185,12 +188,12 @@ winrt::Rect FlowLayout::GetExtent(
     UNREFERENCED_PARAMETER(lastRealized);
 
     auto extent = winrt::Rect{};
-    
+
     const int itemsCount = context.ItemCount();
 
     if (itemsCount > 0)
     {
-        const float availableSizeMinor = availableSize.*Minor();
+        const float availableSizeMinor = Minor(availableSize);
         const auto state = context.LayoutState();
         const auto flowState = GetAsFlowState(state);
         double averageItemsPerLine = 0;
@@ -201,34 +204,34 @@ winrt::Rect FlowLayout::GetExtent(
         {
             MUX_ASSERT(lastRealized);
             const int linesBeforeFirst = static_cast<int>(firstRealizedItemIndex / averageItemsPerLine);
-            const double extentMajorStart = firstRealizedLayoutBounds.*MajorStart() - linesBeforeFirst * averageLineSize;
-            extent.*MajorStart() = static_cast<float>(extentMajorStart);
+            const double extentMajorStart = MajorStart(firstRealizedLayoutBounds) - linesBeforeFirst * averageLineSize;
+            MajorStart(extent) = static_cast<float>(extentMajorStart);
             const int remainingItems = itemsCount - lastRealizedItemIndex - 1;
             const int remainingLinesAfterLast = static_cast<int>((remainingItems / averageItemsPerLine));
-            const double extentMajorSize = MajorEnd(lastRealizedLayoutBounds) - extent.*MajorStart() + remainingLinesAfterLast * averageLineSize;
-            extent.*MajorSize() = static_cast<float>(extentMajorSize);
+            const double extentMajorSize = MajorEnd(lastRealizedLayoutBounds) - MajorStart(extent) + remainingLinesAfterLast * averageLineSize;
+            MajorSize(extent) = static_cast<float>(extentMajorSize);
 
             // If the available size is infinite, we will have realized all the items in one line.
             // In that case, the extent in the non virtualizing direction should be based on the
             // right/bottom of the last realized element.
-            extent.*MinorSize() =
+            MinorSize(extent) =
                 std::isfinite(availableSizeMinor) ?
                 availableSizeMinor :
                 std::max(0.0f, MinorEnd(lastRealizedLayoutBounds));
         }
         else
         {
-            auto lineSpacing = LineSpacing();
-            auto minItemSpacing = MinItemSpacing();
+            const auto lineSpacing = LineSpacing();
+            const auto minItemSpacing = MinItemSpacing();
             // We dont have anything realized. make an educated guess.
-            int numLines = (int)std::ceil(itemsCount / averageItemsPerLine);
+            const int numLines = (int)std::ceil(itemsCount / averageItemsPerLine);
             extent =
-                std::isfinite(availableSizeMinor) ? 
+                std::isfinite(availableSizeMinor) ?
                 MinorMajorRect(0, 0, availableSizeMinor, std::max(0.0f, static_cast<float>(numLines * averageLineSize - lineSpacing))) :
                 MinorMajorRect(
                     0,
                     0,
-                    std::max(0.0f, static_cast<float>((flowState->SpecialElementDesiredSize().*Minor() + minItemSpacing) * itemsCount - minItemSpacing)),
+                    std::max(0.0f, static_cast<float>((Minor(flowState->SpecialElementDesiredSize()) + minItemSpacing) * itemsCount - minItemSpacing)),
                     std::max(0.0f, static_cast<float>(averageLineSize - lineSpacing)));
             REPEATER_TRACE_INFO(L"%*s: \tEstimating extent with no realized elements. \n", winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), LayoutId().data());
         }
@@ -268,7 +271,7 @@ void FlowLayout::OnLineArranged(
 
     REPEATER_TRACE_INFO(L"%*s: \tOnLineArranged startIndex:%d Count:%d LineHeight:%d \n",
         winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), LayoutId().data(), startIndex, countInLine, lineSize);
-    
+
     const auto flowState = GetAsFlowState(context.LayoutState());
     flowState->OnLineArranged(startIndex, countInLine, lineSize, context);
 }
@@ -371,7 +374,7 @@ void FlowLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
 
         //Note: For FlowLayout Vertical Orientation means we have a Horizontal ScrollOrientation. Horizontal Orientation means we have a Vertical ScrollOrientation.
         //i.e. the properties are the inverse of each other.
-        ScrollOrientation scrollOrientation = (orientation == winrt::Orientation::Horizontal) ? ScrollOrientation::Vertical : ScrollOrientation::Horizontal;
+        const auto scrollOrientation = (orientation == winrt::Orientation::Horizontal) ? ScrollOrientation::Vertical : ScrollOrientation::Horizontal;
         OrientationBasedMeasures::SetScrollOrientation(scrollOrientation);
     }
     else if (property == s_MinColumnSpacingProperty)
@@ -409,11 +412,11 @@ double FlowLayout::GetAverageLineInfo(
         const auto desiredSize = flowState->FlowAlgorithm().MeasureElement(tmpElement, 0, availableSize, context);
         context.RecycleElement(tmpElement);
 
-        int estimatedCountInLine = std::max(1, static_cast<int>(availableSize.*Minor() / desiredSize.*Minor()));
-        flowState->OnLineArranged(0, estimatedCountInLine, desiredSize.*Major(), context);
+        const int estimatedCountInLine = std::max(1, static_cast<int>(Minor(availableSize) / Minor(desiredSize)));
+        flowState->OnLineArranged(0, estimatedCountInLine, Major(desiredSize), context);
         flowState->SpecialElementDesiredSize(desiredSize);
     }
-    
+
     avgCountInLine = std::max(1.0, flowState->TotalItemsPerLine() / flowState->TotalLinesMeasured());
     avgLineSize = round(flowState->TotalLineSize() / flowState->TotalLinesMeasured());
 

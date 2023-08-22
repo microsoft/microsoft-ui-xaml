@@ -21,7 +21,8 @@
         </Grid.ColumnDefinitions>
 
         <ScrollViewer>
-            <StackPanel Orientation="Vertical" Padding="12" Background="LightGray" MinWidth="250">
+            <StackPanel Orientation="Vertical" Padding="12" Background="{ThemeResource SystemChromeLowColor}" MinWidth="250">
+                <TextBlock Text="Options" Style="{ThemeResource StandardGroupHeader}"/>
                 <TextBlock Text="Width:"/>
                 <ComboBox x:Name="WidthComboBox" AutomationProperties.Name="WidthComboBox" SelectedIndex="0" HorizontalAlignment="Stretch" SelectionChanged="WidthComboBox_SelectionChanged">
                     <ComboBoxItem Content="Default"/>
@@ -92,9 +93,6 @@
                 <TextBlock Text="Min Tall Height:" Margin="0,12,0,0"/>
                 <TextBox x:Name="MinTallModeHeightTextBox" AutomationProperties.Name="MinTallModeHeightTextBox" Text="641" TextChanged="MinTallModeHeightTextBox_TextChanged"/>
 
-                <TextBlock Text="Mode:" Margin="0,12,0,0"/>
-                <TextBlock x:Name="ConfigurationTextBlock" AutomationProperties.Name="ConfigurationTextBlock"/>
-
                 <TextBlock Text="Simulate regions:" Margin="0,12,0,0"/>
                 <ComboBox x:Name="SimulateComboBox" AutomationProperties.Name="SimulateComboBox" SelectedIndex="0" HorizontalAlignment="Stretch" SelectionChanged="SimulateComboBox_SelectionChanged">
                     <ComboBoxItem Content="None"/>
@@ -103,32 +101,45 @@
                 </ComboBox>
 
                 <CheckBox x:Name="AddMarginCheckBox" AutomationProperties.Name="AddMarginCheckBox" Content="Add margin" Margin="0,12,0,0" Checked="AddMarginCheckBox_Checked" Unchecked="AddMarginCheckBox_Unchecked"/>
-
                 <CheckBox x:Name="OneSideCheckBox" AutomationProperties.Name="OneSideCheckBox" Content="One side only" Margin="0,12,0,0" Checked="OneSideCheckBox_Checked" Unchecked="OneSideCheckBox_Unchecked"/>
+
+                <Border HorizontalAlignment="Stretch" Height="3" Background="{ThemeResource SystemChromeGrayColor}" Margin="0,8,0,8"/>
+
+                <TextBlock Text="Reports" Style="{ThemeResource StandardGroupHeader}"/>
+                
+                <TextBlock Text="Mode:" Margin="0,12,0,0"/>
+                <TextBlock x:Name="ConfigurationTextBlock" AutomationProperties.Name="ConfigurationTextBlock"/>
 
                 <TextBlock x:Name="SpacingTextBox" AutomationProperties.Name="SpacingTextBox" Margin="0,12,0,0" />
 
                 <TextBlock x:Name="ControlWidthText" AutomationProperties.Name="ControlWidthText"/>
                 <TextBlock x:Name="ControlHeightText" AutomationProperties.Name="ControlHeightText"/>
 
-                <muxcontrols:TwoPaneView x:Name="TwoPaneViewSmall" Width="200" Height="200" Margin="0,12,0,0" PanePriority="Pane2" >
-                    <muxcontrols:TwoPaneView.Pane1>
-                        <TextBlock x:Name="SmallContent1" AutomationProperties.Name="SmallContent1" Text="I should NOT be seen"/>
-                    </muxcontrols:TwoPaneView.Pane1>
+                <Border HorizontalAlignment="Stretch" Height="3" Background="{ThemeResource SystemChromeGrayColor}" Margin="0,8,0,8"/>
 
-                    <muxcontrols:TwoPaneView.Pane2>
-                        <TextBlock x:Name="SmallContent2" AutomationProperties.Name="SmallContent2" Text="I should be seen"/>
-                    </muxcontrols:TwoPaneView.Pane2>
-                </muxcontrols:TwoPaneView>
+                <TextBlock Text="Small control sample" Style="{ThemeResource StandardGroupHeader}"/>
+                <StackPanel Background="{ThemeResource SystemListMediumColor}" Margin="0,8,0,0">
+                    <TextBlock Text="Small TwoPaneView with pane priority set"/>
+                    <muxcontrols:TwoPaneView x:Name="TwoPaneViewSmall" Width="200" Height="200" Margin="0,12,0,0" PanePriority="Pane2" >
+                        <muxcontrols:TwoPaneView.Pane1>
+                            <TextBlock x:Name="SmallContent1" AutomationProperties.Name="SmallContent1" Text="I should NOT be seen"/>
+                        </muxcontrols:TwoPaneView.Pane1>
+
+                        <muxcontrols:TwoPaneView.Pane2>
+                            <TextBlock x:Name="SmallContent2" AutomationProperties.Name="SmallContent2" Text="I should be seen"/>
+                        </muxcontrols:TwoPaneView.Pane2>
+                    </muxcontrols:TwoPaneView>
+                </StackPanel>
             </StackPanel>
         </ScrollViewer>
 
         <Grid Grid.Column="1" Margin="12">
             <Grid x:Name="SimulatedWindow" AutomationProperties.Name="SimulatedWindow" Grid.Column="1" Background="Gray">
 
-                <muxcontrols:TwoPaneView x:Name="TwoPaneView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="TwoPaneView_SizeChanged">
+                <muxcontrols:TwoPaneView x:Name="TwoPaneView" AutomationProperties.Name="TwoPaneViewLarge"
+                                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="TwoPaneView_SizeChanged">
                     <muxcontrols:TwoPaneView.Pane1>
-                        <Grid x:Name="Pane1Content" AutomationProperties.Name="Pane1Content" Background="AliceBlue" SizeChanged="PaneSizeChanged">
+                        <Grid x:Name="Pane1Content" AutomationProperties.Name="Pane1Content" Background="{ThemeResource SystemChromeDisabledHighColor}" SizeChanged="PaneSizeChanged">
 
                             <Border x:Name="Content1Border" AutomationProperties.Name="Content1Border" BorderBrush="{StaticResource ContentBorderBrush}" BorderThickness="5" Padding="7" MinWidth="250" MinHeight="250">
                                 <Grid>
@@ -151,7 +162,7 @@
                     </muxcontrols:TwoPaneView.Pane1>
 
                     <muxcontrols:TwoPaneView.Pane2>
-                        <Grid x:Name="Pane2Content" AutomationProperties.Name="Pane2Content" Background="LavenderBlush" SizeChanged="PaneSizeChanged">
+                        <Grid x:Name="Pane2Content" AutomationProperties.Name="Pane2Content" Background="{ThemeResource SystemListMediumColor}" SizeChanged="PaneSizeChanged">
                             <Border x:Name="Content2Border" AutomationProperties.Name="Content2Border" BorderBrush="{StaticResource ContentBorderBrush}" BorderThickness="5" Padding="7">
                                 <Grid>
                                     <Grid.RowDefinitions>

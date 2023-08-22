@@ -19,21 +19,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using SplitButton = Microsoft.UI.Xaml.Controls.SplitButton;
+using ToggleSplitButton = Microsoft.UI.Xaml.Controls.ToggleSplitButton;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class SplitButtonTests
+    public class SplitButtonTests : ApiTestBase
     {
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            RunOnUIThread.Execute(() => {
-                Log.Comment("TestCleanup: Restore TestContentRoot to null");
-                MUXControlsTestApp.App.TestContentRoot = null;
-            });
-        }
-
         [TestMethod]
         [Description("Verifies SplitButton default properties.")]
         public void VerifyDefaultsAndBasicSetting()
@@ -70,10 +62,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(splitButton.CommandParameter, parameter);
             });
         }
+
+        [TestMethod]
+        [Description("Verifies ToggleSplitButton IsChecked property.")]
+        public void VerifyIsCheckedProperty()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                ToggleSplitButton toggleSplitButton = new ToggleSplitButton();
+
+                Verify.IsFalse(toggleSplitButton.IsChecked, "ToggleSplitButton is not unchecked");
+
+                toggleSplitButton.SetValue(ToggleSplitButton.IsCheckedProperty, true);
+
+                bool isChecked = (bool)toggleSplitButton.GetValue(ToggleSplitButton.IsCheckedProperty);
+                Verify.IsTrue(isChecked, "ToggleSplitButton is not checked");
+            });
+        }
     }
 
+
     // CanExecuteChanged is never used -- that's ok, disable the compiler warning.
-    #pragma warning disable CS0067
+#pragma warning disable CS0067
     public class TestCommand : ICommand
     {
         public event EventHandler CanExecuteChanged;

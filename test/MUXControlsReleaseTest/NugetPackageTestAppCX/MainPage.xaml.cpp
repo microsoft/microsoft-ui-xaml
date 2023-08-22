@@ -23,10 +23,10 @@ using namespace Windows::UI::Xaml::Shapes;
 MainPage::MainPage() :
     mItems(ref new Vector<String^>())
 {
-	InitializeComponent();
+    InitializeComponent();
 
     AutomationProperties::SetName(this, L"MainPage");
-        
+
     Repeater->ItemsSource = mItems;
 }
 
@@ -54,7 +54,8 @@ void NugetPackageTestAppCX::MainPage::WaitForIdleInvokerButton_Click(Platform::O
     MainPage^ spThis = this;
     auto workItem = ref new Windows::System::Threading::WorkItemHandler([spThis](IAsyncAction^ workItem) mutable
     {
-        MUXTestUtilities::IdleSynchronizer::Wait();
+        AppTestAutomationHelpers::IdleSynchronizer idle(spThis->Dispatcher);
+        auto errorString = idle.TryWait();
 
         spThis->Dispatcher->RunAsync(
             Windows::UI::Core::CoreDispatcherPriority::Low,

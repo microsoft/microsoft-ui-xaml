@@ -76,10 +76,7 @@ namespace MUXControlsTestApp
             RatingBindingSample.DataContext = CaptionStringBox;
             BindingRatingCaption.DataContext = ColorFlipButton;
 
-            var testFrame = Window.Current.Content as TestFrame;
-            DependencyObject checkBox = SearchVisualTree(testFrame, "ViewScalingCheckBox");
-            CheckBox cb = checkBox as CheckBox;
-            FrameDetails.Text = Window.Current.Bounds.ToString() + " " + cb.IsChecked.ToString();
+            FrameDetails.Text = Window.Current.Bounds.ToString();
 
             if (ApiInformation.IsTypePresent("Windows.UI.Xaml.Controls.RatingControl"))
             {
@@ -499,7 +496,7 @@ namespace MUXControlsTestApp
 
         private void UnsetFallbackRating_Loaded(object sender, RoutedEventArgs e)
         {
-            PerformGlyphVerification(UnsetFallbackRating, "\uE00B" /* full heart */, UnsetFallbackTextBlock, "RatingBackgroundStackPanel");
+            PerformGlyphVerification(UnsetFallbackRating, "\uEB52" /* full heart */, UnsetFallbackTextBlock, "RatingBackgroundStackPanel");
         }
 
         private void PlaceholderFallbackRating_Loaded(object sender, RoutedEventArgs e)

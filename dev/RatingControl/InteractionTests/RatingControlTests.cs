@@ -85,9 +85,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.AreEqual("1", textBlock.DocumentText);
 
-                Log.Comment("Verify a left key on an RTL rating increases the rating.");
-                Button rtlbutton = new Button(FindElement.ByName("RTLButton"));
-                rtlbutton.Invoke();
+                Log.Comment("Verify a left key on an RTL rating increases the rating."); 
+                TestSetupHelper.SetInnerFrameFlowDirection(FlowDirection.RightToLeft);
                 Wait.ForIdle();
 
                 KeyboardHelper.PressKey(ratingUIObject, Key.Left);
@@ -107,7 +106,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(ratingUIObject, Key.Up);
                 Verify.AreEqual("5", textBlock.DocumentText);
 
-                rtlbutton.Invoke();
+                TestSetupHelper.SetInnerFrameFlowDirection(FlowDirection.LeftToRight);
                 Wait.ForIdle();
 
                 Log.Comment("Verify home/end keys in LTR");
@@ -127,6 +126,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // RatingControlTests.MaxRatingTest is unreliable #7668
         public void MaxRatingTest()
         {
             using (var setup = new TestSetupHelper("RatingControl Tests")) // This clicks the button corresponding to the test page, and navs there
@@ -266,8 +266,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //RatingControlTests.GamepadTest unreliable test #155
-        //[TestMethod]
+        [TestMethod]
         public void GamepadTest()
         {
             using (var setup = new TestSetupHelper("RatingControl Tests")) // This literally clicks the button corresponding to the test page.
@@ -336,8 +335,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //Test failures with keyboard/gamepad/mousewheel input #269
-        //[TestMethod]
+        [TestMethod]
         public void VerifyThatProgrammaticallyRemovingEngagementResetsValue()
         {
             using (var setup = new TestSetupHelper("RatingControl Tests"))  // This literally clicks the button corresponding to the test page.
@@ -663,7 +661,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         // These two tests that try and test live mid-input visual changes are unreliable.
-        // [TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
         public void EnsureScaleMaintainedOnTap()
         {
             using (var setup = new TestSetupHelper("RatingControl Tests")) // This literally clicks the button corresponding to the test page.
@@ -692,7 +691,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // [TestMethod]
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
         public void VerifyRatingItemFallback()
         {
             // This test is actually performed in the test app itself, so go look at RatingControlPage.xaml.cs for the meat of it.

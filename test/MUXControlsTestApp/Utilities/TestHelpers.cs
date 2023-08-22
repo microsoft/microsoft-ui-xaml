@@ -139,7 +139,7 @@ namespace MUXControlsTestApp.Utilities
                     // to make sure that we don't wait on an event that won't actually come.
                     unloadedEvent.Set();
                 }
-                
+
                 Log.Comment("Clearing visual tree root and waiting for Unloaded to be raised...");
                 MUXControlsTestApp.App.TestContentRoot = null;
             });

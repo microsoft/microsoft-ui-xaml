@@ -19,6 +19,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\SwipeItem.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\SwipeItems.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SwipeControl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SwipeControlInteractionTrackerOwner.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SwipeItems.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SwipeItem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SwipeItemInvokedEventArgs.cpp" />
@@ -28,6 +29,7 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeControlTrace.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeControl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SwipeControlInteractionTrackerOwner.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeItems.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeItem.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeItemInvokedEventArgs.h" />
@@ -36,14 +38,33 @@
   </ItemGroup>
   <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)SwipeControl.xaml">
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+      <Version>RS2</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)SwipeControl_v1.xaml">
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS2</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)SwipeControl_rs1.xaml">
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)SwipeControl_rs1_v1.xaml">
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)SwipeControl_themeresources.xaml">
+      <ControlsResourcesVersion>Version2</ControlsResourcesVersion>
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <FileType>Document</FileType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)SwipeControl_themeresources_v1.xaml">
+      <ControlsResourcesVersion>Version1</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>

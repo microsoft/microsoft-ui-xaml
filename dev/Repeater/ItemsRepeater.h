@@ -23,6 +23,12 @@ public:
     ItemsRepeater();
     ~ItemsRepeater();
 
+    // StackLayout measurements are shortcut when m_stackLayoutMeasureCounter reaches this value
+    // to prevent a layout cycle exception.
+    // The XAML Framework's iteration limit is 250, but that limit has been reached in practice
+    // with this value as small as 61. It was never reached with 60. 
+    static constexpr uint8_t s_maxStackLayoutIterations = 60u;
+
     static winrt::Point ClearedElementsArrangePosition;
     // A convention we use in the ItemsRepeater codebase for an invalid Rect value.
     static winrt::Rect InvalidRect;
@@ -120,6 +126,7 @@ public:
 private:
     void OnLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/);
     void OnUnloaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/);
+    void OnLayoutUpdated(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/);
 
     void OnDataSourcePropertyChanged(const winrt::ItemsSourceView& oldValue, const winrt::ItemsSourceView& newValue);
     void OnItemTemplateChanged(const winrt::IElementFactory& oldValue, const winrt::IElementFactory& newValue);
@@ -170,9 +177,18 @@ private:
     int _loadedCounter{};
     int _unloadedCounter{};
 
+    // Used to avoid layout cycles with StackLayout layouts where variable sized children prevent
+    // the ItemsRepeater's layout to settle.
+    uint8_t m_stackLayoutMeasureCounter{ 0u };
+
     // Bug in framework's reference tracking causes crash during
     // UIAffinityQueue cleanup. To avoid that bug, take a strong ref
     winrt::IElementFactory m_itemTemplate{ nullptr };
     winrt::Layout m_layout{ nullptr };
     winrt::ElementAnimator m_animator{ nullptr };
+
+    // Bug where DataTemplate with no content causes a crash.
+    // See: https://github.com/microsoft/microsoft-ui-xaml/issues/776
+    // Solution: Have flag that is only true when DataTemplate exists but it is empty.
+    bool m_isItemTemplateEmpty{ false };
 };
