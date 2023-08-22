@@ -107,6 +107,7 @@
                 <CheckBox x:Name="ShowPausedCheckBox" AutomationProperties.Name="ShowPausedCheckBox" Content="ShowPaused" />
                 <CheckBox x:Name="ShowErrorCheckBox" AutomationProperties.Name="ShowErrorCheckBox"  Content="ShowError"/>
                 <CheckBox x:Name="ShowIsIndeterminateCheckBox" AutomationProperties.Name="ShowIsIndeterminateCheckBox" Content="IsIndeterminate"/>
+                <CheckBox x:Name="ShowIsVisibleCheckBox" AutomationProperties.Name="IsVisibleCheckBox" Content="Visible" Checked="IsVisibleCheckBox_CheckChanged" Unchecked="IsVisibleCheckBox_CheckChanged" IsChecked="True"/>
             </StackPanel>
         </StackPanel>
 
