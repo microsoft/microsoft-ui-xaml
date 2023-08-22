@@ -211,9 +211,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-<<<<<<< HEAD
-        public void VerifyTabViewWithoutTabsDoesNotCrash()
-=======
         public void VerifyPaneFooterSizingRespected()
         {
             foreach (var property in new DependencyProperty[] { FrameworkElement.MinWidthProperty, FrameworkElement.WidthProperty })
@@ -264,8 +261,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
 
 
-        private static void VerifyTabWidthVisualStates(IList<object> items, bool isCompact)
->>>>>>> 6e77244d (Add test)
+        private void VerifyTabViewWithoutTabsDoesNotCrash()
         {
             RunOnUIThread.Execute(() =>
             {
