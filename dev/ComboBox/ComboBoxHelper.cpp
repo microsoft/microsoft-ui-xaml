@@ -53,7 +53,7 @@ void ComboBoxHelper::OnKeepInteriorCornersSquarePropertyChanged(
 {
     if (auto comboBox = sender.try_as<winrt::ComboBox>())
     {
-        bool shouldMonitorDropDownState = unbox_value<bool>(args.NewValue());
+        const bool shouldMonitorDropDownState = unbox_value<bool>(args.NewValue());
         if (shouldMonitorDropDownState)
         {
             auto revokersInspectable = winrt::make<ComboBoxDropDownEventRevokers>();

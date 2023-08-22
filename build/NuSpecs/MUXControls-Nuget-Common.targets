@@ -8,8 +8,8 @@
       <MicrosoftUIXamlTargetPlatformMinCheckValue>$([System.Version]::Parse('$(TargetPlatformMinVersion)').Build)</MicrosoftUIXamlTargetPlatformMinCheckValue>
     </PropertyGroup>
     <Error 
-        Text="Microsoft.UI.Xaml nuget package requires TargetPlatformMinVersion &gt;= 10.0.15063.0 (current project is $(MicrosoftUIXamlTargetPlatformMinCheckValue))" 
-        Condition="$(MicrosoftUIXamlTargetPlatformMinCheckValue) &lt; 15063" />
+        Text="Microsoft.UI.Xaml nuget package requires TargetPlatformMinVersion &gt;= 10.0.17763.0 (current project is $(MicrosoftUIXamlTargetPlatformMinCheckValue))" 
+        Condition="$(MicrosoftUIXamlTargetPlatformMinCheckValue) &lt; 17763" />
     <PropertyGroup>
       <MicrosoftUIXamlTargetPlatformCheckValue>$([System.Version]::Parse('$(TargetPlatformVersion)').Build)</MicrosoftUIXamlTargetPlatformCheckValue>
     </PropertyGroup>
@@ -24,7 +24,7 @@
   <ItemGroup>
     <XamlWinmd Include="$(MSBuildThisFileDirectory)..\lib\uap10.0\Microsoft.UI.Xaml.winmd">
       <SkipHarvestingWinmdRegistration Condition="'$(MicrosoftUIXamlAppxVersion)' != ''">true</SkipHarvestingWinmdRegistration>
-      <TargetPath>$(WinMetadataDir)\Microsoft.UI.Xaml.winmd</TargetPath>
+      <TargetPath>Microsoft.UI.Xaml.winmd</TargetPath>
       <OutputGroup>CustomOutputGroupForPackaging</OutputGroup>
       <ProjectName>$(ProjectName)</ProjectName>
       <Implementation Condition="'$(MicrosoftUIXamlAppxVersion)' == ''">Microsoft.UI.Xaml.dll</Implementation>

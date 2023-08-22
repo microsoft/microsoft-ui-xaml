@@ -56,6 +56,16 @@ namespace MUXControlsTestApp
             navview.MenuItems.RemoveAt(2);
         }
 
+        private void AddChildItemToMI19(object sender, RoutedEventArgs e)
+        {
+            MI19.MenuItems.Add(CreateMenuItem("Child of MI19"));
+        }
+
+        private NavigationViewItem CreateMenuItem(string title)
+        { 
+            return new NavigationViewItem{ Content = title };
+        }
+
         private void PrintTopLevelIsChildSelectedItems(object sender, RoutedEventArgs e)
         {
             string itemstring = "";

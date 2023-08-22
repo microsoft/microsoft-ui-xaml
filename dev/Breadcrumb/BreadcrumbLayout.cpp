@@ -106,7 +106,7 @@ int BreadcrumbLayout::GetFirstBreadcrumbBarItemToArrange(winrt::NonVirtualizingL
 
     for (int i = itemCount - 2; i >= 0; --i)
     {
-        float newAccumLength = accumLength + GetElementAt(context, i).DesiredSize().Width;
+        const float newAccumLength = accumLength + GetElementAt(context, i).DesiredSize().Width;
         if (newAccumLength > m_availableSize.Width)
         {
             return i + 1;

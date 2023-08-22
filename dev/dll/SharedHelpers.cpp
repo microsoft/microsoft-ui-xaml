@@ -43,6 +43,11 @@ bool SharedHelpers::Is21H1OrHigher()
     return IsAPIContractV14Available();
 }
 
+bool SharedHelpers::Is20H1OrHigher()
+{
+    return IsAPIContractV10Available();
+}
+
 bool SharedHelpers::IsVanadiumOrHigher()
 {
     return IsAPIContractV9Available();
@@ -125,14 +130,6 @@ bool SharedHelpers::IsFlyoutShowOptionsAvailable()
         Is19H1OrHigher() ||
         winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Primitives.FlyoutShowOptions");
     return s_isFlyoutShowOptionsAvailable;
-}
-
-bool SharedHelpers::IsScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable()
-{
-    static bool s_isScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable =
-        Is19H1OrHigher() ||
-        winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.ScrollViewer", L"ReduceViewportForCoreInputViewOcclusions");
-    return s_isScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable;
 }
 
 bool SharedHelpers::IsScrollContentPresenterSizesContentToTemplatedParentAvailable()
@@ -226,8 +223,11 @@ template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
     static bool isAPIContractVxAvailable = false;
     if (!isAPIContractVxAvailableInitialized)
     {
+        // The CBS package is only ever used as a part of the Windows build. Therefore, we can assume that
+        // all API contracts are present since we can never be running these binaries on a windows build
+        // that does not match the windows sdk these binaries were compiled against.
+        isAPIContractVxAvailable = IsInCBSPackage() ? true : winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", APIVersion);
         isAPIContractVxAvailableInitialized = true;
-        isAPIContractVxAvailable = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", APIVersion);
     }
 
     return isAPIContractVxAvailable;
@@ -237,6 +237,11 @@ template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
 bool SharedHelpers::IsAPIContractV14Available()
 {
     return IsAPIContractVxAvailable<14>();
+}
+
+bool SharedHelpers::IsAPIContractV10Available()
+{
+    return IsAPIContractVxAvailable<10>();
 }
 
 bool SharedHelpers::IsAPIContractV9Available()
@@ -529,7 +534,7 @@ bool SharedHelpers::IsAncestor(
     return false;
 }
 
-#ifdef ICONSOURCE_INCLUDED
+#if defined(ICONSOURCE_INCLUDED) || defined(TITLEBAR_INCLUDED)
 
 winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& iconSource)
 {
@@ -585,7 +590,7 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         }
         return bitmapIcon;
     }
-#ifdef IMAGEICON_INCLUDED
+#if defined(IMAGEICON_INCLUDED) || defined(TITLEBAR_INCLUDED)
     else if (auto imageIconSource = iconSource.try_as<winrt::ImageIconSource>())
     {
         winrt::ImageIcon imageIcon;
@@ -614,7 +619,7 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
         }
         return pathIcon;
     }
-#ifdef ANIMATEDICON_INCLUDED
+#if defined(ANIMATEDICON_INCLUDED) || defined(TITLEBAR_INCLUDED)
     else if (auto animatedIconSource = iconSource.try_as<winrt::AnimatedIconSource>())
     {
         winrt::AnimatedIcon animatedIcon;

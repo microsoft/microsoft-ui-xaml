@@ -54,7 +54,7 @@ void AutoSuggestBoxHelper::OnKeepInteriorCornersSquarePropertyChanged(
 {
     if (auto autoSuggestBox = sender.try_as<winrt::AutoSuggestBox>())
     {
-        bool shouldMonitorAutoSuggestEvents = unbox_value<bool>(args.NewValue());
+        const bool shouldMonitorAutoSuggestEvents = unbox_value<bool>(args.NewValue());
         if (shouldMonitorAutoSuggestEvents)
         {
             auto revokersInspectable = winrt::make<AutoSuggestEventRevokers>();

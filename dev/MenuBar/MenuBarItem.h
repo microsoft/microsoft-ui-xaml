@@ -39,6 +39,9 @@ private:
     void AttachEventHandlers();
     void DetachEventHandlers(bool useSafeGet = false);
     void OpenFlyoutFrom(FlyoutLocation location);
+    void MoveFocusTo(FlyoutLocation location);
+
+    winrt::MenuBarItem FocusAndReturnNextFocusableItem(int index, int direction);
 
     void OnVisualPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void UpdateVisualStates();

@@ -11,11 +11,11 @@ jobs:
   condition:
     eq(variables['useBuildOutputFromBuildId'],'') 
   pool: 
-    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/microsoft/') }}:
-      name: WinDevPool-L
-    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/microsoft/') }}:
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
       name: WinDevPoolOSS-L
-    demands: ImageOverride -equals WinDevVS16-9
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPool-L
+    demands: ImageOverride -equals WinDevVS17-latest
   timeoutInMinutes: 120
   variables:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages

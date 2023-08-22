@@ -251,7 +251,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+#if MUX_PRERELEASE
         [TestMethod]
+#endif
         public void VerifyUseCompactResourcesAPI()
         {
             //Verify there is no crash and TreeViewItemMinHeight is not the same when changing UseCompactResources.
@@ -321,12 +323,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        //Task 30789390: Re-enable disabled tests
-        //[TestMethod]
+        // https://github.com/microsoft/microsoft-ui-xaml/issues/4320
+        // Task 30789390: Re-enable AppBarToggleButton disabled test
+        [TestMethod]
         public void VerifyVisualTreeForControlsInCommonStyles()
         {
             var controlsToVerify = new List<string> {
-                "AppBarButton", "AppBarToggleButton", "Button", "CheckBox",
+                "AppBarButton", /*"AppBarToggleButton",*/ "Button", "CheckBox",
                 "CommandBar", "ContentDialog", "DatePicker", "FlipView", "ListViewItem",
                 "PasswordBox", "Pivot", "PivotItem", "RichEditBox", "Slider", "SplitView",
                 "TextBox", "TimePicker", "ToolTip", "ToggleButton", "ToggleSwitch"};
@@ -390,7 +393,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Disabled due to #2210: Unreliable test: CommonStylesApiTests.VerifyVisualTreeForCommandBarOverflowMenu
         public void VerifyVisualTreeForCommandBarOverflowMenu()
         {
             StackPanel root = null;
@@ -434,11 +436,165 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             VisualTreeTestHelper.VerifyVisualTree(root: overflowContent, verificationFileNamePrefix: "CommandBarOverflowMenu", filter: visualTreeDumperFilter);
         }
 
+        [TestMethod]
+        public void VerifyAppBarButtonLightweightStyling()
+        {
+            StackPanel root = null;
+            AppBarButton appBarButton = null;
+            ManualResetEvent appBarButtonLoadedEvent = new ManualResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                root = (StackPanel)XamlReader.Load(
+                    @"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' 
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> 
+                            <StackPanel.Resources>
+                                <Visibility x:Key='AppBarButtonHasFlyoutChevronVisibility'>Collapsed</Visibility>
+                                <SolidColorBrush x:Key='AppBarButtonSubItemChevronForeground' Color='Red' />
+                                <x:String x:Key='AppBarButtonFlyoutGlyph'>&#xE972;</x:String>
+                                <x:Double x:Key='AppBarButtonSubItemChevronFontSize'>12</x:Double>
+                                <Thickness x:Key='AppBarButtonSubItemChevronMargin'>-24,20,12,0</Thickness>
+                                <x:String x:Key='AppBarButtonOverflowFlyoutGlyph'>&#xE973;</x:String>
+                                <x:Double x:Key='AppBarButtonSecondarySubItemChevronFontSize'>14</x:Double>
+                                <Thickness x:Key='AppBarButtonSecondarySubItemChevronMargin'>-25,20,12,0</Thickness>
+                            </StackPanel.Resources>
+                            <AppBarButton x:Name='TestAppBarButton'/>
+                      </StackPanel>");
+
+                appBarButton = (AppBarButton)root.FindName("TestAppBarButton");
+                appBarButton.Loaded += (sender, args) => { appBarButtonLoadedEvent.Set(); };
+                Content = root;
+                Content.UpdateLayout();
+            });
+
+            appBarButtonLoadedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Panel subItemChevronPanel = (Panel)GetVisualChildByName(appBarButton, "SubItemChevronPanel");
+                FontIcon subItemChevron = (FontIcon)GetVisualChildByName(appBarButton, "SubItemChevron");
+                FontIcon overflowSubItemChevron = (FontIcon)GetVisualChildByName(appBarButton, "OverflowSubItemChevron");
+
+                Verify.AreEqual((Visibility)root.Resources["AppBarButtonHasFlyoutChevronVisibility"], subItemChevronPanel.Visibility);
+
+                Verify.AreEqual((string)root.Resources["AppBarButtonFlyoutGlyph"], subItemChevron.Glyph);
+                Verify.AreEqual((double)root.Resources["AppBarButtonSubItemChevronFontSize"], subItemChevron.FontSize);
+                Verify.AreEqual(((SolidColorBrush)root.Resources["AppBarButtonSubItemChevronForeground"]).Color, ((SolidColorBrush)subItemChevron.Foreground).Color);
+                Verify.AreEqual((Thickness)root.Resources["AppBarButtonSubItemChevronMargin"], subItemChevron.Margin);
+
+                Verify.AreEqual((string)root.Resources["AppBarButtonOverflowFlyoutGlyph"], overflowSubItemChevron.Glyph);
+                Verify.AreEqual((double)root.Resources["AppBarButtonSecondarySubItemChevronFontSize"], overflowSubItemChevron.FontSize);
+                Verify.AreEqual(((SolidColorBrush)root.Resources["AppBarButtonSubItemChevronForeground"]).Color, ((SolidColorBrush)overflowSubItemChevron.Foreground).Color);
+                Verify.AreEqual((Thickness)root.Resources["AppBarButtonSecondarySubItemChevronMargin"], overflowSubItemChevron.Margin);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyAppBarButtonChevronMarginsDoNotCollide()
+        {
+            StackPanel root = null;
+            ManualResetEvent rootLoadedEvent = new ManualResetEvent(false);
+            CommandBar commandBar = null;
+            ManualResetEvent commandBarSizeChangedEvent = new ManualResetEvent(false);
+            AppBarButton appBarButton = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                root = (StackPanel)XamlReader.Load(
+                    @"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' 
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> 
+                            <StackPanel.Resources>
+                                <Visibility x:Key='AppBarButtonHasFlyoutChevronVisibility'>Visible</Visibility>
+                                <x:String x:Key='AppBarButtonFlyoutGlyph'>&#xE972;</x:String>
+                                <Thickness x:Key='AppBarButtonSubItemChevronMargin'>-22,20,12,0</Thickness>
+                                <Thickness x:Key='AppBarButtonSubItemChevronLabelOnRightMargin'>-6,20,12,0</Thickness>
+                                <MenuFlyout x:Key='MenuFlyout' Placement='Bottom'>
+                                    <MenuFlyoutItem Text='Item 1'/>
+                                    <MenuFlyoutItem Text='Item 2'/>
+                                    <MenuFlyoutItem Text='Item 3'/>
+                                </MenuFlyout>
+                            </StackPanel.Resources>
+                            <CommandBar x:Name='CommandBar' DefaultLabelPosition='Right'>
+                                <AppBarButton Label='Add' Icon='Add' Flyout='{StaticResource MenuFlyout}'/>
+                                <AppBarSeparator />
+                                <AppBarButton x:Name='LastAppBarButton' Label='Add' Icon='Add' Flyout='{StaticResource MenuFlyout}'/>
+                                <AppBarSeparator />
+                                <CommandBar.SecondaryCommands>
+                                    <AppBarButton Icon='Add' Label='Add' />
+                                </CommandBar.SecondaryCommands>
+                            </CommandBar>
+                      </StackPanel>");
+
+                root.Loaded += (sender, args) => { rootLoadedEvent.Set(); };
+                commandBar = (CommandBar)root.FindName("CommandBar");
+                commandBar.SizeChanged += (sender, args) => { commandBarSizeChangedEvent.Set(); };
+                appBarButton = (AppBarButton)root.FindName("LastAppBarButton");
+
+                Content = root;
+                Content.UpdateLayout();
+            });
+
+            rootLoadedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            FontIcon subItemChevron = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                subItemChevron = (FontIcon)GetVisualChildByName(appBarButton, "SubItemChevron");
+
+                Verify.AreEqual((Thickness)root.Resources["AppBarButtonSubItemChevronLabelOnRightMargin"], subItemChevron.Margin);
+
+                commandBarSizeChangedEvent.Reset();
+                commandBar.Width = 0;
+            });
+
+            commandBarSizeChangedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                commandBarSizeChangedEvent.Reset();
+                commandBar.Width = double.NaN;
+            });
+
+            commandBarSizeChangedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual((Thickness)root.Resources["AppBarButtonSubItemChevronLabelOnRightMargin"], subItemChevron.Margin);
+            });
+        }
+
         private string XamlStringForControl(string controlName)
         {
             return $@"<Grid Width='400' Height='400' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> 
                           <{controlName} />
                    </Grid>";
+        }
+
+        private FrameworkElement GetVisualChildByName(DependencyObject root, string name)
+        {
+            if (root is FrameworkElement element && element.Name == name)
+            {
+                return element;
+            }
+
+            int childCount = VisualTreeHelper.GetChildrenCount(root);
+
+            for (int i = 0; i < childCount; i++)
+            {
+                FrameworkElement visualChild = GetVisualChildByName(VisualTreeHelper.GetChild(root, i), name);
+
+                if (visualChild != null)
+                {
+                    return visualChild;
+                }
+            }
+
+            return null;
         }
     }
 
@@ -453,8 +609,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class CommonStylesVisualTreeTestSamples
     {
-        //Task 30789390: Re-enable disabled tests
-        //[TestMethod]
+        [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // The default theme is different on OneCore, leading to a test failure.
         public void VerifyVisualTreeForAppBarAndAppBarToggleButton()
         {
@@ -523,7 +678,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 theme: Theme.Light);
         }
 
-        // TODO: fix failing tests after color updates[TestMethod]
+        [TestMethod]
         // [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // The default theme is different on OneCore, leading to a test failure.
         public void VerifyVisualTreeExampleWithCustomerFilter()
         {

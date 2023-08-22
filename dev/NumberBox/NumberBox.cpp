@@ -15,7 +15,6 @@ static constexpr wstring_view c_numberBoxHeaderName{ L"HeaderContentPresenter"sv
 static constexpr wstring_view c_numberBoxDownButtonName{ L"DownSpinButton"sv };
 static constexpr wstring_view c_numberBoxUpButtonName{ L"UpSpinButton"sv };
 static constexpr wstring_view c_numberBoxTextBoxName{ L"InputBox"sv };
-static constexpr wstring_view c_numberBoxPopupButtonName{ L"PopupButton"sv };
 static constexpr wstring_view c_numberBoxPopupName{ L"UpDownPopup"sv };
 static constexpr wstring_view c_numberBoxPopupDownButtonName{ L"PopupDownSpinButton"sv };
 static constexpr wstring_view c_numberBoxPopupUpButtonName{ L"PopupUpSpinButton"sv };
@@ -36,8 +35,6 @@ std::wstring trim(const std::wstring& s)
 NumberBox::NumberBox()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NumberBox);
-
-    Loaded({ this, &NumberBox::OnLoaded });
 
     NumberFormatter(GetRegionalSettingsAwareDecimalFormatter());
 
@@ -178,6 +175,11 @@ void NumberBox::OnApplyTemplate()
         return textBox;
     }());
 
+    if (const auto textBox = m_textBox.get())
+    {
+        textBox.Loaded({ this, &NumberBox::OnTextBoxLoaded });
+    }
+
     m_popup.set(GetTemplateChildT<winrt::Popup>(c_numberBoxPopupName, controlProtected));
 
     if (SharedHelpers::IsThemeShadowAvailable())
@@ -208,9 +210,12 @@ void NumberBox::OnApplyTemplate()
 
     m_isEnabledChangedRevoker = IsEnabledChanged(winrt::auto_revoke, { this,  &NumberBox::OnIsEnabledChanged });
 
-    // .NET rounds to 12 significant digits when displaying doubles, so we will do the same.
-    m_displayRounder.SignificantDigits(12);
+    // printf() defaults to 6 digits. 6 digits are sufficient for most
+    // users under most circumstances, while simultaneously avoiding most
+    // rounding errors for instance during double/float conversion.
+    m_displayRounder.Increment(1e-6);
 
+    UpdateSpinButtonPlacement();
     UpdateSpinButtonEnabled();
 
     UpdateVisualStateForIsEnabledChange();
@@ -229,9 +234,9 @@ void NumberBox::OnApplyTemplate()
     }
 }
 
-void NumberBox::OnLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
+void NumberBox::OnTextBoxLoaded(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
 {
-    // This is done OnLoaded so TextBox VisualStates can be updated properly.
+    // Updating again once TextBox is loaded so its visual states are set properly.
     UpdateSpinButtonPlacement();
 }
 
@@ -275,6 +280,7 @@ void NumberBox::OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedE
     CoerceValue();
 
     UpdateSpinButtonEnabled();
+    ReevaluateForwardedUIAName();
 }
 
 void NumberBox::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -283,6 +289,7 @@ void NumberBox::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedE
     CoerceValue();
 
     UpdateSpinButtonEnabled();
+    ReevaluateForwardedUIAName();
 }
 
 void NumberBox::OnSmallChangePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -363,17 +370,24 @@ void NumberBox::ReevaluateForwardedUIAName()
     if (const auto textBox = m_textBox.get())
     {
         const auto name = winrt::AutomationProperties::GetName(*this);
+        const auto minimum = Minimum() == -std::numeric_limits<double>::max() ?
+            winrt::hstring{} :
+            winrt::hstring{ L" " + ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMinimumValueStatus) + winrt::to_hstring(Minimum()) };
+        const auto maximum = Maximum() == std::numeric_limits<double>::max() ?
+            winrt::hstring{} :
+            winrt::hstring{ L" " + ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxMaximumValueStatus) + winrt::to_hstring(Maximum()) };
+
         if (!name.empty())
         {
             // AutomationProperties.Name is a non empty string, we will use that value.
-            winrt::AutomationProperties::SetName(textBox, name);
+            winrt::AutomationProperties::SetName(textBox, name + minimum + maximum );
         }
         else
         {
             if (const auto headerAsString = Header().try_as<winrt::IReference<winrt::hstring>>())
             {
                 // Header is a string, we can use that as our UIA name.
-                winrt::AutomationProperties::SetName(textBox, headerAsString.Value());
+                winrt::AutomationProperties::SetName(textBox, headerAsString.Value() + minimum + maximum );
             }
         }
     }
@@ -643,6 +657,7 @@ void NumberBox::UpdateSpinButtonPlacement()
     }
 
     winrt::VisualStateManager::GoToState(*this, state, false);
+
     if (const auto textbox = m_textBox.get())
     {
         winrt::VisualStateManager::GoToState(textbox, state, false);

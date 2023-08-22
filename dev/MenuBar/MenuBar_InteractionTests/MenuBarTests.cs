@@ -21,12 +21,13 @@ using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
+using MUXTestInfra.Shared.Infra;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     [TestClass]
     public class MenuBarTests
-    { 
+    {
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
@@ -34,6 +35,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext);
+        }
+
+        [TestMethod]
+        public void VerifyAxeScanPasses()
+        {
+            using (var setup = new TestSetupHelper("MenuBar-Axe"))
+            {
+                AxeTestHelper.TestForAxeIssues();
+            }
         }
 
         [TestCleanup]
@@ -148,15 +158,78 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 if (ApiInformation.IsTypePresent("Windows.UI.Xaml.IUIElement5")) // XYFocusNavigation is only availabe from IUElement5 foward
                 {
+                    KeyboardHelper.PressKey(Key.Left);
+                    VerifyElement.NotFound("Word Wrap", FindBy.Name);
+
+                    KeyboardHelper.PressKey(Key.Enter);
+                    VerifyElement.Found("Word Wrap", FindBy.Name);
+
+                    KeyboardHelper.PressKey(Key.Escape);
+                    KeyboardHelper.PressKey(Key.Right);
+
                     KeyboardHelper.PressKey(Key.Right);
                     VerifyElement.NotFound("Undo", FindBy.Name);
 
                     KeyboardHelper.PressKey(Key.Enter);
                     VerifyElement.Found("Undo", FindBy.Name);
+
+                    KeyboardHelper.PressKey(Key.Down);
+                    KeyboardHelper.PressKey(Key.Down);
+                    KeyboardHelper.PressKey(Key.Down);
+                    KeyboardHelper.PressKey(Key.Down);
+                    KeyboardHelper.PressKey(Key.Down);
+                    VerifyElement.NotFound("Item 1", FindBy.Name);
+
+                    KeyboardHelper.PressKey(Key.Right);
+                    VerifyElement.Found("Item 1", FindBy.Name);
+
                 }
             }
         }
-        
+
+        [TestMethod]
+        public void KeyboardNavigationWithArrowKeysWithDisabledItemTest()
+        {
+            using (var setup = new TestSetupHelper("MenuBar Tests"))
+            {
+                var editButton = FindElement.ById<Button>("MenuBarPartiallyEnabledOne");
+                editButton.Invoke();
+                VerifyElement.Found("PartiallyEnabledFlyoutOne", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Right);
+                VerifyElement.Found("PartiallyEnabledFlyoutThree", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Left);
+                VerifyElement.Found("PartiallyEnabledFlyoutOne", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Left);
+                VerifyElement.Found("PartiallyEnabledFlyoutThree", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Left);
+                VerifyElement.Found("PartiallyEnabledFlyoutOne", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Right);
+                VerifyElement.Found("PartiallyEnabledFlyoutThree", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Right);
+                VerifyElement.Found("PartiallyEnabledFlyoutOne", FindBy.Name);
+            }
+        }
+
+        [TestMethod]
+        public void KeyboardNavigationWithArrowKeysWithOnlyOneItemWorks()
+        {
+            using (var setup = new TestSetupHelper("MenuBar Tests"))
+            {
+                var editButton = FindElement.ById<Button>("LoopTestBarOne");
+                editButton.Invoke();
+                VerifyElement.Found("LoopTestItemOne", FindBy.Name);
+
+                KeyboardHelper.PressKey(Key.Right);
+                VerifyElement.NotFound("LoopTestItemOne", FindBy.Name);
+            }
+        }
+
         [TestMethod]
         [TestProperty("Ignore", "True")]
         // Disabled due to: MenuBarTests.KeyboardNavigationWithAccessKeysTest unreliable #135

@@ -7,18 +7,21 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="DropDownButtonForegroundSecondaryPressed" ResourceKey="TextFillColorTertiaryBrush"/>
             <StaticResource x:Key="DropDownButtonForegroundSecondary" ResourceKey="TextFillColorSecondaryBrush"/>
+            <StaticResource x:Key="DropDownButtonForegroundSecondaryPointerOver" ResourceKey="TextFillColorTertiaryBrush"/>
+            <StaticResource x:Key="DropDownButtonForegroundSecondaryPressed" ResourceKey="TextFillColorTertiaryBrush"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="DropDownButtonForegroundSecondaryPressed" ResourceKey="TextFillColorTertiaryBrush"/>
             <StaticResource x:Key="DropDownButtonForegroundSecondary" ResourceKey="TextFillColorSecondaryBrush"/>
+            <StaticResource x:Key="DropDownButtonForegroundSecondaryPointerOver" ResourceKey="TextFillColorTertiaryBrush"/>
+            <StaticResource x:Key="DropDownButtonForegroundSecondaryPressed" ResourceKey="TextFillColorTertiaryBrush"/>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="DropDownButtonForegroundSecondaryPressed" ResourceKey="SystemControlHighlightBaseHighBrush"/>
-            <StaticResource x:Key="DropDownButtonForegroundSecondary" ResourceKey="SystemColorButtonTextColor"/>
+            <StaticResource x:Key="DropDownButtonForegroundSecondary" ResourceKey="SystemColorButtonTextColorBrush"/>
+            <StaticResource x:Key="DropDownButtonForegroundSecondaryPointerOver" ResourceKey="SystemColorHighlightColorBrush"/>
+            <StaticResource x:Key="DropDownButtonForegroundSecondaryPressed" ResourceKey="SystemColorHighlightColorBrush"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

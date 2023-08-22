@@ -540,12 +540,12 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
         throw winrt::hresult_error(E_FAIL, L"Cannot set ItemsSourceView during layout.");
     }
 
-    m_itemsSourceView.set(newValue);
-
-    if (oldValue)
+    if (m_itemsSourceViewChanged)
     {
         m_itemsSourceViewChanged.revoke();
     }
+
+    m_itemsSourceView.set(newValue);
 
     if (newValue)
     {
@@ -560,7 +560,6 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
             nullptr /* oldItems */,
             -1 /* newIndex */,
             -1 /* oldIndex */);
-        args.Action();
         auto const processingChange = gsl::finally([this]()
             {
                 m_processingItemsSourceChange.set(nullptr);
@@ -609,7 +608,6 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
             nullptr /* oldItems */,
             -1 /* newIndex */,
             -1 /* oldIndex */);
-        args.Action();
         auto const processingChange = gsl::finally([this]()
             {
                 m_processingItemsSourceChange.set(nullptr);
@@ -723,7 +721,7 @@ void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::
         m_arrangeInvalidated = newValue.ArrangeInvalidated(winrt::auto_revoke, { this, &ItemsRepeater::InvalidateArrangeForLayout });
     }
 
-    bool isVirtualizingLayout = newValue != nullptr && newValue.try_as<winrt::VirtualizingLayout>() != nullptr;
+    const bool isVirtualizingLayout = newValue != nullptr && newValue.try_as<winrt::VirtualizingLayout>() != nullptr;
     m_viewportManager->OnLayoutChanged(isVirtualizingLayout);
     InvalidateMeasure();
 }

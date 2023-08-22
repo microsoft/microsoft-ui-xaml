@@ -4,7 +4,10 @@ param
     [string] $releaseFolder,
 
     [Parameter(Mandatory=$true)]
-    [string] $publicsRoot
+    [string] $publicsRoot,
+
+    [Parameter(Mandatory=$true)]
+    [string] $publishDir
 )
 
 Trap
@@ -12,6 +15,8 @@ Trap
     Write-Error $_.Exception.Message;
     Exit 1
 };
+
+$repoRoot = $script:MyInvocation.MyCommand.Path | Split-Path -Parent | Split-Path -Parent
 
 function GetVersionFromManifest([string] $manifestPath)
 {
@@ -42,6 +47,31 @@ function Get-ScriptDirectory {
     Split-Path -parent $PSCommandPath
 }
 
+function Get-WebView2PackageVersion {
+    $packagesConfig = Join-Path $repoRoot "dev\dll\packages.config"
+    [xml]$packages = Get-Content $packagesConfig
+    $webView2Version = $packages.SelectSingleNode("//packages/package[@id=`"Microsoft.Web.WebView2`"]").version
+
+    return $webView2Version
+}
+
+function RemergeWinMd([string] $winmdSourceFolder, [string] $winmdTargetFolder, [string] $winmdReferencesDir)
+{
+    Write-Host "re-merge Microsoft.UI.Xaml.winmd"
+
+    New-Item -Path "$winmdTargetFolder" -ItemType Directory | Out-Null
+
+    # We need to re-merge Microsoft.UI.Xaml.winmd against the OS internal metadata instead of against the metadata from the public sdk:
+    $mdMergeArgs = "-v -metadata_dir ""$winmdReferencesDir"" -o ""$winmdTargetFolder"" -i ""$winmdSourceFolder"" -partial -n:3 -createPublicMetadata -transformExperimental:transform"
+    Write-Host "mdmerge $mdMergeArgs"
+    Invoke-Expression "mdmerge $mdMergeArgs" | Out-Null
+    if($LASTEXITCODE)
+    {
+        Write-Error "mdmerge exited with error ($LASTEXITCODE)"
+        exit
+    }
+}
+
 if (-not (Test-Path "$releaseFolder"))
 {
     Write-Error "Not found folder $releaseFolder"
@@ -59,9 +89,11 @@ if(!(Get-Command mdmerge -ErrorAction Ignore))
     Write-Error "Cannot find mdmerge. Make sure to run from a Developer Command Prompt."
     exit 1
 }
-
-$cbsFolder = "$releaseFolder\CBS"
-$winmdFolder = "$cbsFolder\winmd"
+$winuiVpackFolder = "$publishDir\WinUIVpack"
+$cbsFolder = "$publishDir\CBS"
+$cbswinmdFolder = "$cbsFolder\winmd"
+$packagesDir = Join-Path $repoRoot "packages"
+$winmdReferencesDir = Join-Path $repoRoot "winmdreferences"
 
 if (Test-Path $cbsFolder)
 {
@@ -69,8 +101,30 @@ if (Test-Path $cbsFolder)
     Remove-Item -Path $cbsFolder -Force -Recurse| Out-Null
 }
 
+if (Test-Path $winuiVpackFolder)
+{
+    Write-Host "Deleting $winuiVpackFolder"
+    Remove-Item -Path $winuiVpackFolder -Force -Recurse| Out-Null
+}
+
+if (Test-Path $winmdReferencesDir)
+{
+    Write-Host "Deleting $winmdReferencesDir"
+    Remove-Item -Path $winmdReferencesDir -Force -Recurse| Out-Null
+}
+
+New-Item -Path "$winuiVpackFolder" -ItemType Directory | Out-Null
 New-Item -Path "$cbsFolder" -ItemType Directory | Out-Null
-New-Item -Path "$winmdFolder" -ItemType Directory | Out-Null
+New-Item -Path "$winmdReferencesDir" -ItemType Directory | Out-Null
+
+Write-Host "Copy OS publics to $winmdReferencesDir"
+$osBuildMetadataDir = Join-Path $publicsRoot "onecoreuap\internal\buildmetadata"
+Copy-Item "$osBuildMetadataDir\*.winmd" "$winmdReferencesDir" -Force 
+
+Write-Host "Copy WebView2 winmd to $winmdReferencesDir"
+$webView2Version = Get-WebView2PackageVersion
+$webView2WinMdPath = Join-Path $packagesDir "Microsoft.Web.WebView2.$($webView2Version)\lib"
+Copy-Item "$webView2WinMdPath\*.winmd" "$winmdReferencesDir" -Force 
 
 $buildFlavours = @("X64", "X86", "ARM", "ARM64")
 
@@ -84,6 +138,39 @@ foreach ($flavour in $buildFlavours)
     }  
 }
 
+# Create WinUI Vpack:
+foreach ($flavour in $buildFlavours) 
+{
+    $sourceFolder = "$releaseFolder\$flavour\FrameworkPackage"
+    $winmdSourceFolder = "$releaseFolder\$flavour\Microsoft.UI.Xaml\sdk"
+    $targetFolder = "$winuiVpackFolder\$flavour"
+    $winmdTargetFolder = "$winuiVpackFolder\winmd"
+
+    New-Item -Path "$targetFolder" -ItemType Directory | Out-Null
+
+    $search = "Microsoft.UI.Xaml.*.appx"
+    $found = Get-ChildItem $sourceFolder -Filter $search
+    if ($found.Length -eq 0)
+    {
+        Write-Error "Could not find '$search' in '$sourceFolder'"
+        Exit 1
+    }
+
+    $fileName = $found[0].Name
+    $sourcePathFull = $found[0].FullName
+    
+    $destPathFull = Join-Path $targetFolder $fileName
+
+    Write-Verbose "Copy item from '$sourcePathFull' to '$destPathFull' "
+    Copy-Item $sourcePathFull $destPathFull
+
+    if ($flavour -ieq "X64")
+    {
+        RemergeWinMd $winmdSourceFolder $winmdTargetFolder $winmdReferencesDir
+    }
+}
+
+# Create CBS Vpacks:
 foreach ($flavour in $buildFlavours) 
 {
     $sourceFolder = "$releaseFolder\$flavour"
@@ -100,19 +187,7 @@ foreach ($flavour in $buildFlavours)
 
     if ($flavour -ieq "X64")
     {
-        Write-Host "re-merge Microsoft.UI.Xaml.winmd"
-
-        $osBuildMetadataDir = Join-Path $publicsRoot "onecoreuap\internal\buildmetadata"
-
-        # We need to re-merge Microsoft.UI.Xaml.winmd against the OS internal metadata instead of against the metadata from the public sdk:
-        $mdMergeArgs = "-v -metadata_dir ""$osBuildMetadataDir"" -o ""$winmdFolder"" -i ""$targetFolder"" -partial -n:3 -createPublicMetadata -transformExperimental:transform"
-        Write-Host "mdmerge $mdMergeArgs"
-        Invoke-Expression "mdmerge $mdMergeArgs" | Out-Null
-        if($LASTEXITCODE)
-        {
-            Write-Error "mdmerge exited with error ($LASTEXITCODE)"
-            exit
-        }
+        RemergeWinMd $targetFolder $cbswinmdFolder $winmdReferencesDir
     }
 }
 
@@ -130,4 +205,4 @@ $contentString = "This is the contents of version '$($vpackversion)' of the Micr
 Set-Content -Path $readmeFilePath -Value $contentString 
 
 # This sets a Pipeline variable that the Job will use to push the created vpacks with the specified version.
-Write-Host "##vso[task.setvariable variable=vpackversion]$vpackversion"
+Write-Host "##vso[task.setvariable variable=vpackversion;isOutput=true;]$vpackversion"

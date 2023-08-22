@@ -368,7 +368,7 @@
     <x:Double x:Key="CheckBoxMinWidth">120</x:Double>
     <Thickness x:Key="CheckBoxPadding">8,5,0,0</Thickness>
     <Thickness x:Key="CheckBoxFocusVisualMargin">-7,-3,-7,-3</Thickness>
-    <x:String x:Key="CheckBoxCheckedGlyph">&#xE001;</x:String>
+    <x:String x:Key="CheckBoxCheckedGlyph">&#xE73E;</x:String>
     <x:String x:Key="CheckBoxIndeterminateGlyph">&#xE9AE;</x:String>
 
     <Style TargetType="CheckBox" BasedOn="{StaticResource DefaultCheckBoxStyle}" />
@@ -658,6 +658,7 @@
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <Setter Target="CheckGlyph.(local:AnimatedIcon.State)" Value="NormalIndeterminate"/>
+                                        <Setter Target="CheckGlyph.Margin" Value="0"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="IndeterminatePointerOver">
@@ -691,6 +692,7 @@
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <Setter Target="CheckGlyph.(local:AnimatedIcon.State)" Value="PointerOverIndeterminate"/>
+                                        <Setter Target="CheckGlyph.Margin" Value="0"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="IndeterminatePressed">
@@ -724,6 +726,7 @@
                                     </Storyboard>
                                     <VisualState.Setters>
                                         <Setter Target="CheckGlyph.(local:AnimatedIcon.State)" Value="PressedIndeterminate"/>
+                                        <Setter Target="CheckGlyph.Margin" Value="0"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="IndeterminateDisabled">
@@ -758,6 +761,7 @@
                                     <VisualState.Setters>
                                         <!-- DisabledVisual Should be handled by the control, not the animated icon. -->
                                         <Setter Target="CheckGlyph.(local:AnimatedIcon.State)" Value="NormalIndeterminate"/>
+                                        <Setter Target="CheckGlyph.Margin" Value="0"/>
                                     </VisualState.Setters>
                                 </VisualState>
 

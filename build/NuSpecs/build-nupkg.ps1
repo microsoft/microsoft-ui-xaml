@@ -12,6 +12,17 @@ Param(
     [switch]$SkipFrameworkPackage
 )
 
+Write-Host "BuildOutput = '$BuildOutput'"
+Write-Host "OutputDir = '$OutputDir'"
+Write-Host "VersionOverride = '$VersionOverride'"
+Write-Host "Subversion = '$Subversion'"
+Write-Host "DateOverride = '$DateOverride'"
+Write-Host "prereleaseversion = '$prereleaseversion'"
+Write-Host "BuildFlavor = '$BuildFlavor'"
+Write-Host "BuildArch = '$BuildArch'"
+Write-Host "NoDeleteTemp = '$NoDeleteTemp'"
+Write-Host "SkipFrameworkPackage = '$SkipFrameworkPackage'"
+
 #
 # Version is read from the VERSION file.
 #

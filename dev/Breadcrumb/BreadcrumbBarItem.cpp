@@ -537,6 +537,8 @@ void BreadcrumbBarItem::InstantiateFlyout()
             winrt::AutomationProperties::SetName(ellipsisItemsRepeater, s_ellipsisItemsRepeaterAutomationName);
             ellipsisItemsRepeater.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
 
+            ellipsisItemsRepeater.Layout(winrt::StackLayout());
+
             m_ellipsisElementFactory = winrt::make_self<BreadcrumbElementFactory>();
             ellipsisItemsRepeater.ItemTemplate(*m_ellipsisElementFactory);
 
@@ -730,7 +732,7 @@ bool BreadcrumbBarItem::IgnorePointerId(const winrt::PointerRoutedEventArgs& arg
 {
     MUX_ASSERT(m_isEllipsisDropDownItem);
 
-    uint32_t pointerId = args.Pointer().PointerId();
+    const uint32_t pointerId = args.Pointer().PointerId();
 
     if (m_trackedPointerId == 0)
     {

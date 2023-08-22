@@ -62,6 +62,9 @@ private:
     PropertyChanged_revoker m_automationNameChangedRevoker{};
     PropertyChanged_revoker m_automationIdChangedRevoker{};
     winrt::CoreDispatcher::AcceleratorKeyActivated_revoker m_acceleratorKeyActivatedRevoker{};
+    winrt::UIElement::PreviewKeyDown_revoker m_previewKeyDownForF6Revoker{};
+    // This handler is not required for Winui3 because the framework bug this works around has been fixed.
+    winrt::UIElement::PreviewKeyDown_revoker m_popupPreviewKeyDownForF6Revoker{};
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
     winrt::Button::Click_revoker m_alternateCloseButtonClickedRevoker{};
     winrt::Button::Click_revoker m_actionButtonClickedRevoker{};
@@ -75,7 +78,7 @@ private:
     winrt::Popup::Closed_revoker m_lightDismissIndicatorPopupClosedRevoker{};
     winrt::CoreWindow::SizeChanged_revoker m_windowSizeChangedRevoker{};
     winrt::Grid::Loaded_revoker m_tailOcclusionGridLoadedRevoker{};
-    winrt::XamlRoot::Changed_revoker m_xamlRootChangedRevoker{};
+    XamlRootChanged_revoker m_xamlRootChangedRevoker{};
     // Hold a strong ref to the xamlRoot while we're open so that the changed revoker works.
     // This can be removed when internal bug #21302432 is fixed.
     tracker_ref<winrt::XamlRoot> m_xamlRoot{ this };
@@ -114,7 +117,10 @@ private:
     void OnAutomationIdChanged(const winrt::IInspectable&, const winrt::IInspectable&);
 
     void OnContentSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args);
+    void OnF6PreviewKeyDownClicked(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args);
+    void OnF6PopupPreviewKeyDownClicked(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args);
     void OnF6AcceleratorKeyClicked(const winrt::CoreDispatcher&, const winrt::AcceleratorKeyEventArgs& args);
+    bool HandleF6Clicked(bool fromPopup = false);
     void OnCloseButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnActionButtonClicked(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
     void OnPopupOpened(const winrt::IInspectable&, const winrt::IInspectable&);
@@ -156,6 +162,7 @@ private:
     void EstablishShadows();
     void TrySetCenterPoint(const winrt::IUIElement9& element, const winrt::float3& centerPoint);
     bool ToggleVisibilityForEmptyContent(const wstring_view visibleStateName, const wstring_view collapsedStateName, const winrt::hstring& content);
+    void UpdateButtonAutomationProperties(const winrt::Button button, const winrt::IInspectable content);
 
     // The tail is designed as an 8x16 pixel shape, however it is actually a 10x20 shape which is partially occluded by the tip content.
     // This is done to get the border of the tip to follow the tail shape without drawing the border on the tip edge of the tail.
@@ -206,6 +213,7 @@ private:
 
     winrt::Size m_currentXamlRootSize{ 0,0 };
 
+    bool m_ignoreNextIsOpenChanged{ false };
     bool m_isTemplateApplied{ false };
     bool m_createNewPopupOnOpen{ false };
 

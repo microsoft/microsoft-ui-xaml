@@ -12,12 +12,13 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="{ThemeResource InfoBarBorderBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource InfoBarBorderThickness}" />
+        <Setter Property="AutomationProperties.LandmarkType" Value="Custom" />
         <contract7Present:Setter Property="AutomationProperties.IsDialog" Value="True"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:InfoBar">
-                    <Border x:Name="ContentRoot" 
+                    <Border x:Name="ContentRoot"
                         VerticalAlignment="Top"
                         Background="{ThemeResource InfoBarInformationalSeverityBackgroundBrush}"
                         BorderBrush="{TemplateBinding BorderBrush}"
@@ -168,7 +169,6 @@
                                     primitives:InfoBarPanel.HorizontalOrientationMargin="{StaticResource InfoBarTitleHorizontalOrientationMargin}"
                                     primitives:InfoBarPanel.VerticalOrientationMargin="{StaticResource InfoBarTitleVerticalOrientationMargin}"
                                     TextWrapping="WrapWholeWords"
-                                    AutomationProperties.LandmarkType="Navigation"
                                     FontWeight="{StaticResource InfoBarTitleFontWeight}"
                                     FontSize="{StaticResource InfoBarTitleFontSize}"/>
 

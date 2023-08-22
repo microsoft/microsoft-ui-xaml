@@ -27,9 +27,9 @@ Include the following workloads:
 
 While WinUI is designed to work against many versions of Windows, you will need 
 a fairly recent SDK in order to build WinUI. It's required that you install the 
-17763 and 18362 SDKs. You can download these via Visual Studio (check 
+17763 and 22000 SDKs. You can download these via Visual Studio (check 
 all the boxes when prompted), or you can manually download them from here: 
-https://developer.microsoft.com/windows/downloads/windows-10-sdk
+https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/
 
 
 ## Building the repository
@@ -97,7 +97,8 @@ Example usage (running from the root of the repository folder):
 .\build\NuSpecs\build-nupkg.ps1 -BuildOutput "..\..\BuildOutput" -BuildFlavor "debug" -BuildArch "x64" -OutputDir "..\..\NugetPackage"
 ```
 
-> Note: To use debug build outputs as a NuGet package, you need to change [this line](https://github.com/microsoft/microsoft-ui-xaml/blob/7d2cd793a0154580f1dd0c9685c461198e05f207/dev/dll/Microsoft.UI.Xaml.vcxproj#L35) in `microsoft-ui-xaml/dev/dll/Microsoft.UI.Xaml.vcxproj` from
+> Note: To use debug build outputs as a NuGet package, you need to change the following line in 
+> [`microsoft-ui-xaml/dev/dll/Microsoft.UI.Xaml.Common.props`](../dev/dll/Microsoft.UI.Xaml.Common.props) from
 > ```xml
 > <DisableEmbeddedXbf Condition="'$(Configuration)'=='Release'">false</DisableEmbeddedXbf> 
 > ``` 
@@ -195,6 +196,12 @@ Keep in mind that your test will be run on many different versions of
 Windows, not just the most recent version. Your tests may need version or 
 [IsApiPresent](https://docs.microsoft.com/uwp/api/windows.foundation.metadata.apiinformation.istypepresent) 
 checks in order to pass on all versions.
+
+#### Axe testing
+Axe tests are part of the interaction tests. [Axe.Windows](https://github.com/microsoft/axe-windows) is a library to run automated app scans and allows to detect accessibility issues.
+To add a new test page to use for Axe scanning, you can use the AxeTestPageAttribute which will add the test page to the list of test pages for Axe scanning. That way, other tests are not affected by the new test page.
+
+Running the Axe.Windows scan can be done using the `AxeTestHelper.TestForAxeIssues` method. If accessibility issues have been found, the method will throw an exception.
 
 #### Visual tree verification tests
 

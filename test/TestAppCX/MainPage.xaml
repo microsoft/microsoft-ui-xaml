@@ -15,8 +15,8 @@
             <Button Content="MenuBar test page" Click="GoToMenuBarTestPage"/>
             <Button Content="CornerRadius test page" Click="GoToCornerRadiusTestPage"/>
             <Button Content="TreeView test page" Click="GoToTreeViewTestPage"/>
-
             <Button Content="BackdropMaterial test page" Click="GoToBackdropMaterialTestPage"/>
+            <Button Content="WebView2 test page" Click="GoToWebView2TestPage"/>
         </StackPanel>
     </Grid>
 </Page>

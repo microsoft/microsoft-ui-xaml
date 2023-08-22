@@ -177,8 +177,8 @@
     <Thickness x:Key="SliderTopHeaderMargin">0,0,0,4</Thickness>
     <CornerRadius x:Key="SliderTrackCornerRadius">2</CornerRadius>
     <CornerRadius x:Key="SliderThumbCornerRadius">10</CornerRadius>
-    <x:Double x:Key="SliderPreContentMargin">15</x:Double>
-    <x:Double x:Key="SliderPostContentMargin">15</x:Double>
+    <x:Double x:Key="SliderPreContentMargin">14</x:Double>
+    <x:Double x:Key="SliderPostContentMargin">14</x:Double>
     <x:Double x:Key="SliderInnerThumbHeight">12</x:Double>
     <x:Double x:Key="SliderHorizontalHeight">32</x:Double>
     <x:Double x:Key="SliderVerticalWidth">32</x:Double>   

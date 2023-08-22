@@ -4,7 +4,9 @@ You can contribute to WinUI with issues and PRs. Simply filing issues for
 problems you encounter is a great way to contribute. Contributing 
 implementations is greatly appreciated.
 
-Good issues to work on are issues tagged with [help wanted](https://github.com/microsoft/microsoft-ui-xaml/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) or [good first issue](https://github.com/microsoft/microsoft-ui-xaml/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
+Good issues to work on are issues tagged with 
+[help wanted](https://github.com/microsoft/microsoft-ui-xaml/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22) or 
+[good first issue](https://github.com/microsoft/microsoft-ui-xaml/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
 
 ## Suggested Workflow
 
@@ -89,7 +91,8 @@ bot will then trigger the build.
 
 In order to have PRs automatically merge once all checks have passed (including optional 
 checks), maintainers can apply the [auto merge](https://github.com/Microsoft/microsoft-ui-xaml/labels/auto%20merge) 
-label. It will take effect after an 8 hour delay, [more info here (internal link)](https://microsoft.sharepoint.com/teams/FabricBot/SitePages/AutoMerge,-Bot-Templates-and.aspx).
+label. It will take effect after an 8 hour delay, 
+[more info here (internal link)](https://microsoft.sharepoint.com/teams/FabricBot/SitePages/AutoMerge,-Bot-Templates-and.aspx).
 
 ### Other Pipelines
 
@@ -108,12 +111,12 @@ Please format commit messages as follows (based on [A Note About Git Commit Mess
 
 ```
 Summarize change in 50 characters or less
-	
+
 Provide more detail after the first line. Leave one blank line below the 
 summary and wrap all lines at 72 characters or less.
-	
+
 If the change fixes an issue, leave another blank line after the final 
 paragraph and indicate which issue is fixed in the specific format below.
-	
+
 Fix #42
 ```

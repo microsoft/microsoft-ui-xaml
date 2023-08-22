@@ -12,6 +12,13 @@ unsealed runtimeclass NavigationViewItemPresenter : Windows.UI.Xaml.Controls.Con
 
     static Windows.UI.Xaml.DependencyProperty IconProperty { get; };
     static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
+
+
+    [MUX_PUBLIC_V2]
+    {
+        Microsoft.UI.Xaml.Controls.InfoBadge InfoBadge{ get; set; };
+        static Windows.UI.Xaml.DependencyProperty InfoBadgeProperty{ get; };
+    }
 }
 
 [MUX_PUBLIC]

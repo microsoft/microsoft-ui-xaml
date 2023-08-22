@@ -130,7 +130,10 @@ void SplitButton::UpdateVisualStates(bool useTransitions)
     // change visual state
     auto primaryButton = m_primaryButton.get();
     auto secondaryButton = m_secondaryButton.get();
-    if (primaryButton && secondaryButton)
+    if (!IsEnabled()) {
+        winrt::VisualStateManager::GoToState(*this, L"Disabled", useTransitions);
+    }
+    else if (primaryButton && secondaryButton)
     {
         if (m_isFlyoutOpen)
         {
@@ -287,6 +290,26 @@ void SplitButton::OnClickSecondary(const winrt::IInspectable& sender, const winr
     OpenFlyout();
 }
 
+void SplitButton::Invoke()
+{
+    bool invoked = false;
+
+    if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(m_primaryButton.get()))
+    {
+        if (winrt::IInvokeProvider invokeProvider = peer.GetPattern(winrt::PatternInterface::Invoke).try_as<winrt::IInvokeProvider>())
+        {
+            invokeProvider.Invoke();
+            invoked = true;
+        }
+    }
+
+    // If we don't have a primary button that provides an invoke provider, we'll fall back to calling OnClickPrimary manually.
+    if (!invoked)
+    {
+        OnClickPrimary(nullptr, nullptr);
+    }
+}
+
 void SplitButton::OnPointerEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
 {
     winrt::PointerDeviceType pointerDeviceType = args.Pointer().PointerDeviceType();
@@ -332,7 +355,7 @@ void SplitButton::OnSplitButtonKeyUp(const winrt::IInspectable& sender, const wi
     }
     else if (key == winrt::VirtualKey::Down)
     {
-        winrt::CoreVirtualKeyStates menuState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Menu);
+        const winrt::CoreVirtualKeyStates menuState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Menu);
         const bool menuKeyDown = (menuState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
 
         if (IsEnabled() && menuKeyDown)

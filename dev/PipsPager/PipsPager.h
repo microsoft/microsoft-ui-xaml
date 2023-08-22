@@ -107,5 +107,4 @@ private:
     int m_lastSelectedPageIndex{ -1 };
     bool m_isPointerOver{ false };
     bool m_isFocused{ false };
-    bool m_ifNextFocusElementInside{ false };
 };

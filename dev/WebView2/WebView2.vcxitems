@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{AD144714-93FC-4281-B500-A5C2193DBC60}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory);$(XamlPublicHeadersPath);$(LiftedIXPIncludePaths)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WEBVIEW2_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)WebView2AutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)WebView2.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)WebView2Utility.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\WebView2.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\WebView2AutomationPeer.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)WebView2.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)WebView2AutomationPeer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)WebView2.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)WebView2AutomationPeer.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
+  </ItemGroup>
+</Project>

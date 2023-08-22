@@ -12,11 +12,17 @@ parameters:
     Release_Arm:
       buildPlatform: 'arm'
       buildConfiguration: 'Release'
+    Release_Arm64:
+      buildPlatform: 'arm64'
+      buildConfiguration: 'Release'
 jobs:
 - job: ${{ parameters.name }}
   dependsOn: ${{ parameters.dependsOn }}
-  pool:
-    vmImage: windows-latest
+  pool: 
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPoolOSS-S
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      name: WinDevPool-S
   strategy:
     maxParallel: 10
     matrix: ${{ parameters.matrix }}
@@ -32,15 +38,14 @@ jobs:
     inputs: 
       artifactName: ${{ parameters.artifactName }} 
       downloadPath: '$(artifactDownloadPath)'
-      itemPattern: '**\*.appx'
+      itemPattern: '**\*.?(appx|msix)'
 
   - task: PkgESWACKTests@12
     displayName: Run WACK tests for NugetPackageTestApp
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
-      PackageFilePath: '$(appxPackagesPath)\NugetPackageTestApp_Test\NugetPackageTestApp.appx'
-
+      PackageFilePath: '$(appxPackagesPath)\NugetPackageTestApp_Test\NugetPackageTestApp.msix'
   - task: CopyFiles@2
     displayName: 'Copy results for NugetPackageTestApp'
     condition: succeededOrFailed()
@@ -55,13 +60,27 @@ jobs:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     condition: succeededOrFailed()
     inputs:
-      PackageFilePath: '$(appxPackagesPath)\AppThatUsesMUXIndirectly_Test\AppThatUsesMUXIndirectly.appx'
-
+      PackageFilePath: '$(appxPackagesPath)\AppThatUsesMUXIndirectly_Test\AppThatUsesMUXIndirectly.msix'
   - task: CopyFiles@2
     displayName: 'Copy results for AppThatUsesMUXIndirectly'
     condition: succeededOrFailed()
     inputs:
       sourceFolder: $(appxPackagesPath)\AppThatUsesMUXIndirectly_Test\
+      contents: '*.xml'
+      targetFolder: $(resultLogStagingPath)
+
+  - task: PkgESWACKTests@12
+    displayName: Run WACK tests for UwpAppWithFullTrustProcess
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    condition: succeededOrFailed()
+    inputs:
+      PackageFilePath: '$(appxPackagesPath)\UwpAppWithFullTrustProcess_package_Test\UwpAppWithFullTrustProcess_package.msix'
+  - task: CopyFiles@2
+    displayName: 'Copy results for UwpAppWithFullTrustProcess'
+    condition: succeededOrFailed()
+    inputs:
+      sourceFolder: $(appxPackagesPath)\UwpAppWithFullTrustProcess_package_Test\
       contents: '*.xml'
       targetFolder: $(resultLogStagingPath)
 

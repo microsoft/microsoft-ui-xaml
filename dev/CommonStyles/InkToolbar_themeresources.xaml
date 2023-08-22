@@ -251,6 +251,7 @@
         <Setter Property="FocusVisualMargin" Value="-3" />
         <Setter Property="Padding" Value="2,2,2,2" />
         <Setter Property="Margin" Value="2,2,2,2" />
+        <Setter Property="IsTextScaleFactorEnabled" Value="False" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
     </Style>
 
@@ -266,7 +267,7 @@
         <Setter Property="Margin" Value="0,0,0,0" />
         <Setter Property="Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
         <Setter Property="Opacity" Value="0" />
-        <Setter Property="Text" Value="&#xE228;" />
+        <Setter Property="Text" Value="&#xE96E;" />
         <Setter Property="HighContrastAdjustment" Value="None" />
     </Style>
 
@@ -423,7 +424,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26B;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE970;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="LeftDirection">
@@ -431,7 +432,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26C;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE96F;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="RightDirectionRTL">
@@ -439,7 +440,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26C;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE96F;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="LeftDirectionRTL">
@@ -447,7 +448,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26B;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE970;" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -632,7 +633,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26B;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE970;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="LeftDirection">
@@ -640,7 +641,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26C;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE96F;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="RightDirectionRTL">
@@ -648,7 +649,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26C;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE96F;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="LeftDirectionRTL">
@@ -656,7 +657,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26B;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE970;" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -673,13 +674,13 @@
                             </Grid.RenderTransform>
                             <TextBlock x:Name="Content"
                                 Style="{StaticResource InkToolbarGlyphFontStyle}"
-                                Text="&#xE193;"
+                                Text="&#xE7E6;"
                                 AutomationProperties.AccessibilityView="Raw"
                                 Canvas.ZIndex="1"
                                 Foreground="{ThemeResource InkToolbarButtonForeground}" />
                             <TextBlock x:Name="CheckedContent"
                                 Style="{StaticResource InkToolbarGlyphFontStyle}"
-                                Text="&#xE193;"
+                                Text="&#xE7E6;"
                                 AutomationProperties.AccessibilityView="Raw"
                                 Canvas.ZIndex="1"
                                 Foreground="{ThemeResource InkToolbarButtonSelectedForegroundThemeBrush}"
@@ -840,7 +841,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26B;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE970;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="LeftDirection">
@@ -848,7 +849,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26C;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE96F;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="RightDirectionRTL">
@@ -856,7 +857,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26C;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE96F;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="LeftDirectionRTL">
@@ -864,7 +865,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26B;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE970;" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -932,8 +933,8 @@
                     <Grid x:Name="RootElement"
                         Background="{TemplateBinding Background}"
                         Width="{StaticResource InkToolbarButtonWidth}"
-                        Height="{StaticResource InkToolbarButtonHeight}">
-
+                        Height="{StaticResource InkToolbarButtonHeight}"
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
@@ -970,10 +971,7 @@
                                         <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonSelectedBackground}" />
                                         <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonSelectedBorderBrush}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonSelectedForeground}" />
-                                        <Setter Target="CheckedContent.Foreground" Value="{ThemeResource InkToolbarButtonSelectedForeground}" />
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
-                                        <Setter Target="Content.Opacity" Value="0" />
-                                        <Setter Target="CheckedContent.Opacity" Value="1" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -983,10 +981,7 @@
                                         <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonSelectedBackgroundPointerOver}" />
                                         <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonSelectedBorderBrushPointerOver}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonSelectedForegroundPointerOver}" />
-                                        <Setter Target="CheckedContent.Foreground" Value="{ThemeResource InkToolbarButtonSelectedForegroundPointerOver}" />
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
-                                        <Setter Target="Content.Opacity" Value="0" />
-                                        <Setter Target="CheckedContent.Opacity" Value="1" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -996,10 +991,7 @@
                                         <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonSelectedBackgroundPressed}" />
                                         <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonSelectedBorderBrushPressed}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonSelectedForegroundPressed}" />
-                                        <Setter Target="CheckedContent.Foreground" Value="{ThemeResource InkToolbarButtonSelectedForegroundPressed}" />
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
-                                        <Setter Target="Content.Opacity" Value="0" />
-                                        <Setter Target="CheckedContent.Opacity" Value="1" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1009,10 +1001,7 @@
                                         <Setter Target="RootElement.Background" Value="{ThemeResource InkToolbarButtonSelectedBackgroundDisabled}" />
                                         <Setter Target="Border.BorderBrush" Value="{ThemeResource InkToolbarButtonSelectedBorderBrushDisabled}" />
                                         <Setter Target="Content.Foreground" Value="{ThemeResource InkToolbarButtonSelectedForegroundDisabled}" />
-                                        <Setter Target="CheckedContent.Foreground" Value="{ThemeResource InkToolbarButtonSelectedForegroundDisabled}" />
                                         <Setter Target="ExtensionGlyph.Foreground" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
-                                        <Setter Target="Content.Opacity" Value="0" />
-                                        <Setter Target="CheckedContent.Opacity" Value="1" />
                                         <Setter Target="ExtensionGlyph.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -1039,7 +1028,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26B;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE970;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="LeftDirection">
@@ -1047,7 +1036,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26C;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE96F;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="RightDirectionRTL">
@@ -1055,7 +1044,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26C;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE96F;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="LeftDirectionRTL">
@@ -1063,7 +1052,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26B;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE970;" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -1439,7 +1428,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26B;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE970;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="LeftDirection">
@@ -1447,7 +1436,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26C;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE96F;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="RightDirectionRTL">
@@ -1455,7 +1444,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26C;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE96F;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="LeftDirectionRTL">
@@ -1463,7 +1452,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26B;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE970;" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -1520,8 +1509,9 @@
                     <Grid x:Name="RootElement"
                         Background="{TemplateBinding Background}"
                         Width="{StaticResource InkToolbarButtonWidth}"
-                        Height="{StaticResource InkToolbarButtonHeight}">
-
+                        Height="{StaticResource InkToolbarButtonHeight}"
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}" >
+                        
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
@@ -1575,7 +1565,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26B;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE970;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="LeftDirection">
@@ -1583,7 +1573,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26C;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE96F;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="RightDirectionRTL">
@@ -1591,7 +1581,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26C;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE96F;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="LeftDirectionRTL">
@@ -1599,7 +1589,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26B;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE970;" />
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -2062,7 +2052,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26B;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE970;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="LeftDirection">
@@ -2070,7 +2060,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26C;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE96F;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="RightDirectionRTL">
@@ -2078,7 +2068,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Right" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="0,0,2,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26C;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE96F;" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="LeftDirectionRTL">
@@ -2086,7 +2076,7 @@
                                         <Setter Target="ExtensionGlyph.HorizontalAlignment" Value="Left" />
                                         <Setter Target="ExtensionGlyph.VerticalAlignment" Value="Center" />
                                         <Setter Target="ExtensionGlyph.Margin" Value="2,0,0,0" />
-                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE26B;" />
+                                        <Setter Target="ExtensionGlyph.Text" Value="&#xE970;" />
                                     </VisualState.Setters>
                                 </VisualState>
 

@@ -22,7 +22,9 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\MenuBar\MenuBar_TestUI\MenuBar_TestUI.projitems" Label="Shared" Condition="$(FeatureMenuBarEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\NavigationView\TestUI\NavigationView_TestUI.projitems" Label="Shared" Condition="$(FeatureNavigationViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ParallaxView\TestUI\ParallaxView_TestUI.projitems" Label="Shared" Condition="$(FeatureParallaxViewEnabled) == 'true'" />
+
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PersonPicture\TestUI\PersonPicture_TestUI.projitems" Label="Shared" Condition="$(FeaturePersonPictureEnabled) == 'true'" />
+  
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PullToRefresh\RefreshVisualizer\TestUI\RefreshVisualizer_TestUI.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PullToRefresh\RefreshContainer\TestUI\RefreshContainer_TestUI.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\TestUI\ScrollViewerAdapter_TestUI.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
@@ -75,6 +77,7 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RadialGradientBrush\TestUI\RadialGradientBrush_TestUI.projitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\InfoBar\TestUI\InfoBar_TestUI.projitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Expander\TestUI\Expander_TestUI.projitems" Label="Shared" Condition="$(FeatureExpanderEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Expander\APITests\Expander_APITests.projitems" Label="Shared" Condition="$(FeatureExpanderEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PagerControl\TestUI\PagerControl_TestUI.projitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\PagerControl\APITests\PagerControl_APITests.projitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Breadcrumb\TestUI\Breadcrumb_TestUI.projitems" Label="Shared" Condition="$(FeatureBreadcrumbEnabled) == 'true'" />
@@ -86,4 +89,9 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\AnimatedIcon\TestUI\AnimatedIcon_TestUI.projitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\AnimatedIcon\APITests\AnimatedIcon_APITests.projitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\MonochromaticOverlayPresenter\TestUI\MonochromaticOverlayPresenter_TestUI.projitems" Label="Shared" Condition="$(FeatureMonochromaticOverlayPresenterEnabled) == 'true'" />
-</Project>
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\InfoBadge\TestUI\InfoBadge_TestUI.projitems" Label="Shared" Condition="$(FeatureInfoBadgeEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\InfoBadge\APITests\InfoBadge_APITests.projitems" Label="Shared" Condition="$(FeatureInfoBadgeEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\WebView2\TestUI\WebView2_TestUI.projitems" Label="Shared" Condition="$(FeatureWebView2Enabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ProgressRing\APITests\ProgressRing_APITests.projitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ProgressBar\APITests\ProgressBar_APITests.projitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true'" />
+</Project> 

@@ -47,7 +47,7 @@ namespace TestAppCX
         TreeViewTestPage();
     private:
         void ReplaceAll_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
-		void Clear_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
-	};
+        void Clear_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+    };
 
 }

@@ -27,9 +27,6 @@
     <Text Include="readme.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="TestUserControl1.xaml" />
-  </ItemGroup>
-  <ItemGroup>
     <Midl Include="MUXCInterfaceImplementation.idl" />
   </ItemGroup>
 </Project>

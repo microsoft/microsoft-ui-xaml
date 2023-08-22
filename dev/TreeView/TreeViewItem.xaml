@@ -17,6 +17,7 @@
         <Setter Property="GlyphBrush" Value="{ThemeResource TreeViewItemForeground}"/>
         <Setter Property="MinHeight" Value="{ThemeResource TreeViewItemMinHeight}"/>
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter Property="FocusVisualMargin" Value="0,-1,0,-1"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TreeViewItem">
@@ -35,20 +36,31 @@
                                     <VisualState.Setters>
                                         <Setter Target="ContentPresenterGrid.Background" Value="{ThemeResource TreeViewItemBackgroundPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TreeViewItemForegroundPointerOver}" />
+                                        <Setter Target="SelectionIndicator.Fill" Value="{ThemeResource TreeViewItemSelectionIndicatorForegroundPointerOver}" />
+                                        <Setter Target="CollapsedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundPointerOver}" />
+                                        <Setter Target="ExpandedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundPointerOver}" />
                                         <Setter Target="ContentPresenterGrid.BorderBrush" Value="{ThemeResource TreeViewItemBorderBrushPointerOver}" />
+                                         <Setter Target="SelectionIndicator.Opacity" Value="0" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
                                         <Setter Target="ContentPresenterGrid.Background" Value="{ThemeResource TreeViewItemBackgroundPressed}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TreeViewItemForegroundPressed}" />
+                                        <Setter Target="SelectionIndicator.Fill" Value="{ThemeResource TreeViewItemSelectionIndicatorForegroundPressed}" />
+                                        <Setter Target="CollapsedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundPressed}" />
+                                        <Setter Target="ExpandedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundPressed}" />
                                         <Setter Target="ContentPresenterGrid.BorderBrush" Value="{ThemeResource TreeViewItemBorderBrushPressed}" />
+                                        <Setter Target="SelectionIndicator.Opacity" Value="0" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Selected">
                                     <VisualState.Setters>
                                         <Setter Target="ContentPresenterGrid.Background" Value="{ThemeResource TreeViewItemBackgroundSelected}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TreeViewItemForegroundSelected}" />
+                                        <Setter Target="SelectionIndicator.Fill" Value="{ThemeResource TreeViewItemSelectionIndicatorForeground}" />
+                                        <Setter Target="CollapsedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundSelected}" />
+                                        <Setter Target="ExpandedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundSelected}" />
                                         <Setter Target="ContentPresenterGrid.BorderBrush" Value="{ThemeResource TreeViewItemBorderBrushSelected}" />
                                         <Setter Target="SelectionIndicator.Opacity" Value="1" />
                                     </VisualState.Setters>
@@ -57,6 +69,9 @@
                                     <VisualState.Setters>
                                         <Setter Target="ContentPresenterGrid.Background" Value="{ThemeResource TreeViewItemBackgroundDisabled}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TreeViewItemForegroundDisabled}" />
+                                        <Setter Target="SelectionIndicator.Fill" Value="{ThemeResource TreeViewItemSelectionIndicatorForegroundDisabled}" />
+                                        <Setter Target="CollapsedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundDisabled}" />
+                                        <Setter Target="ExpandedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundDisabled}" />
                                         <Setter Target="ContentPresenterGrid.BorderBrush" Value="{ThemeResource TreeViewItemBorderBrushDisabled}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -64,6 +79,9 @@
                                     <VisualState.Setters>
                                         <Setter Target="ContentPresenterGrid.Background" Value="{ThemeResource TreeViewItemBackgroundSelectedPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TreeViewItemForegroundSelectedPointerOver}" />
+                                        <Setter Target="SelectionIndicator.Fill" Value="{ThemeResource TreeViewItemSelectionIndicatorForegroundPointerOver}" />
+                                        <Setter Target="CollapsedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundSelectedPointerOver}" />
+                                        <Setter Target="ExpandedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundSelectedPointerOver}" />
                                         <Setter Target="ContentPresenterGrid.BorderBrush" Value="{ThemeResource TreeViewItemBorderBrushSelectedPointerOver}" />
                                         <Setter Target="SelectionIndicator.Opacity" Value="1" />
                                     </VisualState.Setters>
@@ -72,6 +90,9 @@
                                     <VisualState.Setters>
                                         <Setter Target="ContentPresenterGrid.Background" Value="{ThemeResource TreeViewItemBackgroundSelectedPressed}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TreeViewItemForegroundSelectedPressed}" />
+                                        <Setter Target="SelectionIndicator.Fill" Value="{ThemeResource TreeViewItemSelectionIndicatorForegroundPressed}" />
+                                        <Setter Target="CollapsedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundSelectedPressed}" />
+                                        <Setter Target="ExpandedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundSelectedPressed}" />
                                         <Setter Target="ContentPresenterGrid.BorderBrush" Value="{ThemeResource TreeViewItemBorderBrushSelectedPressed}" />
                                         <Setter Target="SelectionIndicator.Opacity" Value="1" />
                                     </VisualState.Setters>
@@ -80,7 +101,11 @@
                                     <VisualState.Setters>
                                         <Setter Target="ContentPresenterGrid.Background" Value="{ThemeResource TreeViewItemBackgroundSelectedDisabled}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TreeViewItemForegroundSelectedDisabled}" />
+                                        <Setter Target="SelectionIndicator.Fill" Value="{ThemeResource TreeViewItemSelectionIndicatorForegroundDisabled}" />
+                                        <Setter Target="CollapsedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundSelectedDisabled}" />
+                                        <Setter Target="ExpandedGlyph.Foreground" Value="{ThemeResource TreeViewItemForegroundSelectedDisabled}" />
                                         <Setter Target="ContentPresenterGrid.BorderBrush" Value="{ThemeResource TreeViewItemBorderBrushSelectedDisabled}" />
+                                        <Setter Target="SelectionIndicator.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ReorderedPlaceholder">
@@ -102,6 +127,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="MultiSelectCheckBox.Visibility" Value="Visible" />
                                         <Setter Target="MultiSelectGrid.Background" Value="{ThemeResource TreeViewItemBackgroundSelected}" />
+                                        <Setter Target="MultiSelectGrid.BorderBrush" Value="{ThemeResource TreeViewItemMultiSelectBorderBrushSelected}" />
                                         <Setter Target="ExpandCollapseChevron.Padding" Value="0,0,14,0" />
                                         <Setter Target="ContentPresenterGrid.Padding" Value="0" />
                                     </VisualState.Setters>
@@ -130,7 +156,13 @@
                             contract7Present:RadiusY="2"/>
 
 
-                        <Grid x:Name="MultiSelectGrid" Padding="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.Indentation}">
+                        <Grid
+                            x:Name="MultiSelectGrid"
+                            Margin="{ThemeResource TreeViewItemMultiSelectSelectedItemBorderMargin}"
+                            Padding="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.Indentation}"
+                            BorderBrush="Transparent"
+                            BorderThickness="{ThemeResource TreeViewItemBorderThemeThickness}"
+                            contract7Present:CornerRadius="{ThemeResource ControlCornerRadius}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
@@ -138,16 +170,18 @@
                             </Grid.ColumnDefinitions>
                             
                             <Grid Grid.Column="0">
-                                <CheckBox x:Name="MultiSelectCheckBox"
-                                            Width="32"
-                                            MinWidth="32"
-                                            MinHeight="{ThemeResource TreeViewItemMultiSelectCheckBoxMinHeight}"
-                                            Margin="10,0,0,0"
-                                            VerticalAlignment="Center"
-                                            Visibility="Collapsed"
-                                            IsTabStop="False"
-                                            AutomationProperties.AccessibilityView="Raw" />
-                                <Border x:Name="MultiArrangeOverlayTextBorder"
+                                <CheckBox
+                                    x:Name="MultiSelectCheckBox"
+                                    Width="32"
+                                    MinWidth="32"
+                                    MinHeight="{ThemeResource TreeViewItemMultiSelectCheckBoxMinHeight}"
+                                    Margin="10,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Visibility="Collapsed"
+                                    IsTabStop="False"
+                                    AutomationProperties.AccessibilityView="Raw" />
+                                <Border
+                                    x:Name="MultiArrangeOverlayTextBorder"
                                     Visibility="Collapsed"
                                     IsHitTestVisible="False"
                                     MinWidth="20"
@@ -158,7 +192,8 @@
                                     BorderThickness="1"
                                     BorderBrush="{ThemeResource SystemControlBackgroundChromeWhiteBrush}"
                                     CornerRadius="{ThemeResource ControlCornerRadius}">
-                                    <TextBlock x:Name="MultiArrangeOverlayText"
+                                    <TextBlock
+                                        x:Name="MultiArrangeOverlayText"
                                         Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.DragItemsCount}"
                                         Style="{ThemeResource CaptionTextBlockStyle}"
                                         Foreground="{ThemeResource SystemControlForegroundChromeWhiteBrush}"
@@ -169,13 +204,16 @@
                                 </Border>
                             </Grid>
 
-                            <Grid x:Name="ExpandCollapseChevron"
+                            <Grid
+                                x:Name="ExpandCollapseChevron"
                                 Grid.Column="1"
                                 Padding="14,0"
                                 Width="Auto"
                                 Opacity="{TemplateBinding GlyphOpacity}"
                                 Background="Transparent">
-                                <TextBlock Foreground="{TemplateBinding GlyphBrush}"
+                                <TextBlock
+                                    x:Name="CollapsedGlyph"
+                                    Foreground="{TemplateBinding GlyphBrush}"
                                     Width="12"
                                     Height="12"
                                     Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.CollapsedGlyphVisibility}"
@@ -187,7 +225,9 @@
                                     AutomationProperties.AccessibilityView="Raw"
                                     IsTextScaleFactorEnabled="False"
                                     IsHitTestVisible="False"/>
-                                <TextBlock Foreground="{TemplateBinding GlyphBrush}"
+                                <TextBlock
+                                    x:Name="ExpandedGlyph"
+                                    Foreground="{TemplateBinding GlyphBrush}"
                                     Width="12"
                                     Height="12"
                                     Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.ExpandedGlyphVisibility}" 
@@ -201,7 +241,8 @@
                                     IsHitTestVisible="False"/>
                             </Grid>
 
-                            <ContentPresenter x:Name="ContentPresenter"
+                            <ContentPresenter
+                                x:Name="ContentPresenter"
                                 Grid.Column="2"
                                 ContentTransitions="{TemplateBinding ContentTransitions}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"

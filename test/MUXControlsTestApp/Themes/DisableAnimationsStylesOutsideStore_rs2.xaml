@@ -186,7 +186,7 @@
                                             VerticalAlignment="Center"
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                             FontSize="16"
-                                            Glyph="&#xE10C;" />
+                                            Glyph="&#xE712;" />
                                     </Button>
                                 </Grid>
                                 <Popup x:Name="OverflowPopup" contract8Present:ShouldConstrainToRootBounds="False">

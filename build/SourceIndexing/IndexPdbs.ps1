@@ -8,10 +8,27 @@ Param(
     [switch]$recursive
 )
 
-$debuggerPath = (Get-ItemProperty -path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows Kits\Installed Roots" -name WindowsDebuggersRoot10).WindowsDebuggersRoot10
-$srcsrvPath = Join-Path $debuggerPath "x64\srcsrv"
-$srctoolExe = Join-Path $srcsrvPath "srctool.exe"
-$pdbstrExe = Join-Path $srcsrvPath "pdbstr.exe"
+
+$repoRoot = Join-Path (Split-Path -Parent $script:MyInvocation.MyCommand.Path) "..\..\"
+$pdbstrExe = Join-Path $repoRoot "packages\Microsoft.Debugging.Tools.PdbStr.20230202.1638.0\content\amd64\pdbstr.exe"
+$srctoolExe = Join-Path $repoRoot "packages\Microsoft.Debugging.Tools.SrcTool.20230202.1638.0\content\amd64\srctool.exe"
+
+Write-Host "srctoolExe = $srctoolExe"
+Write-Host "pdbstrExe = $pdbstrExe"
+
+if(!(Test-Path $srctoolExe))
+{
+    Write-Error "Not found: $srctoolExe"
+    Write-Error "Make sure to run nuget restore before running script"
+    return -1
+}
+
+if(!(Test-Path $pdbstrExe))
+{
+    Write-Error "Not found: $pdbstrExe"
+    Write-Error "Make sure to run nuget restore before running script"
+    return -1
+}
 
 $fileTable = @{}
 foreach ($gitFile in & git ls-files)
@@ -23,6 +40,7 @@ $mappedFiles = New-Object System.Collections.ArrayList
 
 foreach ($file in (Get-ChildItem -r:$recursive "$SearchDir\*.pdb"))
 {
+    $mappedFiles = New-Object System.Collections.ArrayList
     Write-Verbose "Found $file"
 
     $ErrorActionPreference = "Continue" # Azure Pipelines defaults to "Stop", continue past errors in this script.
@@ -50,7 +68,7 @@ foreach ($file in (Get-ChildItem -r:$recursive "$SearchDir\*.pdb"))
             if ($relative)
             {
                 $mapping = $allFiles[$i] + "*$relative"
-                $mappedFiles.Add($mapping)
+                $ignore = $mappedFiles.Add($mapping)
 
                 Write-Verbose "Mapped path $($i): $mapping"
             }
@@ -78,7 +96,26 @@ $($mappedFiles -join "`r`n")
 SRCSRV: end ------------------------------------------------
 "@ | Set-Content $pdbstrFile
 
+    Write-Host
+    Write-Host
+    Write-Host (Get-Content $pdbstrFile)
+    Write-Host
+    Write-Host
+
+    Write-Host "$pdbstrExe -p:""$file"" -w -s:srcsrv -i:$pdbstrFile"
     & $pdbstrExe -p:"$file" -w -s:srcsrv -i:$pdbstrFile
+    Write-Host
+    Write-Host
+
+    Write-Host "$pdbstrExe -p:""$file"" -r -s:srcsrv"
+    & $pdbstrExe -p:"$file" -r -s:srcsrv
+    Write-Host
+    Write-Host
+
+    Write-Host "$srctoolExe $file"
+    & $srctoolExe "$file"
+    Write-Host
+    Write-Host
 }
 
 # Return with exit 0 to override any weird error code from other tools

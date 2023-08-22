@@ -1,0 +1,194 @@
+id: 
+name: GitOps.PullRequestIssueManagement
+description: GitOps.PullRequestIssueManagement primitive
+owner: 
+resource: repository
+disabled: false
+where: 
+configuration:
+  resourceManagementConfiguration:
+    scheduledSearches:
+    - description: 
+      frequencies:
+      - hourly:
+          hour: 6
+      filters:
+      - isIssue
+      - isOpen
+      - hasLabel:
+          label: needs-author-feedback
+      - hasLabel:
+          label: no-recent-activity
+      - noActivitySince:
+          days: 7
+      actions:
+      - closeIssue
+    - description: 
+      frequencies:
+      - hourly:
+          hour: 6
+      filters:
+      - isIssue
+      - isOpen
+      - hasLabel:
+          label: needs-author-feedback
+      - noActivitySince:
+          days: 7
+      - isNotLabeledWith:
+          label: no-recent-activity
+      actions:
+      - addLabel:
+          label: no-recent-activity
+      - addReply:
+          reply: This issue has been automatically marked as stale because it has been marked as requiring author feedback but has not had any activity for **7 days**. It will be closed if no further activity occurs **within 7 days of this comment**.
+    eventResponderTasks:
+    - if:
+      - payloadType: Pull_Request
+      - labelAdded:
+          label: declined
+      then:
+      - addReply:
+          reply: We appreciate the feedback, however this doesn’t currently align to the project’s goals and roadmap and so will be automatically closed. Thank you for your contributions to WinUI!
+      - closeIssue
+      description: 
+    - if:
+      - payloadType: Pull_Request
+      - hasLabel:
+          label: auto merge
+      then:
+      - enableAutoMerge:
+          mergeMethod: Squash
+      description: 
+    - if:
+      - payloadType: Pull_Request
+      - labelRemoved:
+          label: auto merge
+      then:
+      - disableAutoMerge
+      description: 
+    - if:
+      - payloadType: Pull_Request
+      then:
+      - inPrLabel:
+          label: working on it
+      description: 
+    - if:
+      - payloadType: Issues
+      - or:
+        - labelRemoved:
+            label: team-CompInput
+        - labelRemoved:
+            label: team-Controls
+        - labelRemoved:
+            label: team-Framework
+        - labelRemoved:
+            label: team-Ink
+        - labelRemoved:
+            label: team-Markup
+        - labelRemoved:
+            label: team-Reach
+        - labelRemoved:
+            label: team-Rendering
+      then:
+      - addLabel:
+          label: needs-triage
+      description: 
+    - if:
+      - payloadType: Issues
+      - isAction:
+          action: Closed
+      then:
+      - removeLabel:
+          label: needs-triage
+      description: 
+    - if:
+      - payloadType: Issue_Comment
+      - not: isOpen
+      - hasLabel:
+          label: needs-triage
+      - or:
+        - activitySenderHasPermission:
+            permission: Write
+        - activitySenderHasPermission:
+            permission: Admin
+      then:
+      - removeLabel:
+          label: needs-triage
+      description: 
+    - if:
+      - payloadType: Issue_Comment
+      - isAction:
+          action: Created
+      - isActivitySender:
+          issueAuthor: True
+      - hasLabel:
+          label: needs-author-feedback
+      - isAssignedToSomeone
+      then:
+      - addLabel:
+          label: needs-assignee-attention
+      - removeLabel:
+          label: needs-author-feedback
+      description: 
+    - if:
+      - payloadType: Issue_Comment
+      - isAction:
+          action: Created
+      - isActivitySender:
+          issueAuthor: True
+      - hasLabel:
+          label: needs-author-feedback
+      - not: isAssignedToSomeone
+      then:
+      - addLabel:
+          label: needs-triage
+      - removeLabel:
+          label: needs-author-feedback
+      description: 
+    - if:
+      - payloadType: Pull_Request
+      - or:
+        - isAction:
+            action: Opened
+        - isAction:
+            action: Reopened
+      then:
+      - addLabel:
+          label: needs-triage
+      description: 
+    - if:
+      - payloadType: Issue_Comment
+      - isAction:
+          action: Created
+      - isActivitySender:
+          issueAuthor: True
+      - hasLabel:
+          label: needs-author-feedback
+      - isOpen
+      then:
+      - addLabel:
+          label: needs-triage
+      - removeLabel:
+          label: needs-author-feedback
+      description: 
+    - if:
+      - payloadType: Issues
+      - not:
+          isAction:
+            action: Closed
+      - hasLabel:
+          label: no-recent-activity
+      then:
+      - removeLabel:
+          label: no-recent-activity
+      description: 
+    - if:
+      - payloadType: Issue_Comment
+      - hasLabel:
+          label: no-recent-activity
+      then:
+      - removeLabel:
+          label: no-recent-activity
+      description: 
+onFailure: 
+onSuccess: 

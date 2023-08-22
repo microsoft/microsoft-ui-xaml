@@ -85,9 +85,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.AreEqual("1", textBlock.DocumentText);
 
-                Log.Comment("Verify a left key on an RTL rating increases the rating.");
-                Button rtlbutton = new Button(FindElement.ByName("RTLButton"));
-                rtlbutton.Invoke();
+                Log.Comment("Verify a left key on an RTL rating increases the rating."); 
+                TestSetupHelper.SetInnerFrameFlowDirection(FlowDirection.RightToLeft);
                 Wait.ForIdle();
 
                 KeyboardHelper.PressKey(ratingUIObject, Key.Left);
@@ -107,7 +106,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(ratingUIObject, Key.Up);
                 Verify.AreEqual("5", textBlock.DocumentText);
 
-                rtlbutton.Invoke();
+                TestSetupHelper.SetInnerFrameFlowDirection(FlowDirection.LeftToRight);
                 Wait.ForIdle();
 
                 Log.Comment("Verify home/end keys in LTR");
@@ -127,6 +126,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // RatingControlTests.MaxRatingTest is unreliable #7668
         public void MaxRatingTest()
         {
             using (var setup = new TestSetupHelper("RatingControl Tests")) // This clicks the button corresponding to the test page, and navs there
