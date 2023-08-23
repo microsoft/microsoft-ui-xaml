@@ -2468,16 +2468,15 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
             m_pendingSelectionChangedItem = nextItem;
             m_pendingSelectionChangedDirection = recommendedDirection;
 
-            auto queue = winrt::Windows::System::DispatcherQueue::GetForCurrentThread();
-            queue.TryEnqueue(
-                winrt::DispatcherQueuePriority::Low,
-                winrt::DispatcherQueueHandler([weakThis{ get_weak() }]()
-                    {
-                        if (auto strongThis = weakThis.get())
-                        {
-                            strongThis->CompletePendingSelectionChange();
-                        }
-                    }));
+            auto completePendingSelectionChange = [weakThis{ get_weak() }]()
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->CompletePendingSelectionChange();
+                }
+            };
+            
+            SharedHelpers::ScheduleActionAfterWait(completePendingSelectionChange, 100);
         }
     }
 }
