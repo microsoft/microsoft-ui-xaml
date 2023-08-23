@@ -170,7 +170,7 @@
 
                         <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent" Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
                             <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8" FontSize="20">Home Button</Button>
-                            <StackPanel>
+                            <StackPanel Orientation="Horizontal">
                                 <Button x:Name="TabViewSizingPageButton" AutomationProperties.Name="TabViewSizingPageButton"
                                         Margin="4" Click="TabViewSizingPageButton_Click"
                                         FontSize="20">TabView Sizing Page</Button>
@@ -180,6 +180,8 @@
                                 <Button x:Name="TabViewTabItemsSourcePageButton" AutomationProperties.Name="TabViewTabItemsSourcePageButton"
                                         Margin="4" Click="TabViewTabItemsSourcePageButton_Click"
                                         FontSize="20">TabView TabItemsSource Page</Button>
+                                <Button x:Name="NewWindowTabViewPage" Click="NewWindowTabViewPage_Click">
+                                    Open AppWindowing Page</Button>
                             </StackPanel>
                         </StackPanel>
                     </controls:TabViewItem>
@@ -274,6 +276,9 @@
                         TabDragStarting="OnTabDragStarting"
                         TabStripDragOver="OnTabStripDragOver"
                         TabStripDrop="OnTabStripDrop">
+                        <controls:TabView.TabStripFooter>
+                            <Grid x:Name="MinWidthFooter" />
+                        </controls:TabView.TabStripFooter>
 
                         <controls:TabView.TabItems>
 
@@ -284,7 +289,13 @@
 
                                 <TextBlock Padding="16" Text="Content"/>
                             </controls:TabViewItem>
+                            <controls:TabViewItem Header="Hello">
+                                <controls:TabViewItem.IconSource>
+                                    <controls:SymbolIconSource Symbol="Placeholder"/>
+                                </controls:TabViewItem.IconSource>
 
+                                <TextBlock Padding="16">Content</TextBlock>
+                            </controls:TabViewItem>
                         </controls:TabView.TabItems>
                     </controls:TabView>
                 </Grid>

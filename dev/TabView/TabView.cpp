@@ -72,6 +72,16 @@ TabView::TabView()
     }
 }
 
+TabView::~TabView()
+{
+    UnhookEventsAndClearFields();
+    if (const auto footer = TabStripFooter().try_as<winrt::FrameworkElement>())
+    {
+        m_footerMinWidthProperyChangedRevoker.revoke();
+        m_footerWidthProperyChangedRevoker.revoke();
+    }
+}
+
 void TabView::OnApplyTemplate()
 {
     UnhookEventsAndClearFields();
@@ -338,6 +348,20 @@ void TabView::UpdateBottomBorderLineVisualStates()
 void TabView::OnSelectedItemPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateSelectedItem();
+}
+
+void TabView::OnTabStripFooterPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (const auto oldFooter = args.OldValue().try_as<winrt::FrameworkElement>())
+    {
+        m_footerMinWidthProperyChangedRevoker.revoke();
+        m_footerWidthProperyChangedRevoker.revoke();
+    }
+    if (const auto newFooter = args.NewValue().try_as<winrt::FrameworkElement>())
+    {
+        m_footerMinWidthProperyChangedRevoker = RegisterPropertyChanged(newFooter,winrt::FrameworkElement::MinWidthProperty(), { this,&TabView::OnFooterSizeChanged });
+        m_footerWidthProperyChangedRevoker = RegisterPropertyChanged(newFooter,winrt::FrameworkElement::WidthProperty(), { this,&TabView::OnFooterSizeChanged });
+    }
 }
 
 void TabView::OnTabItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
@@ -718,6 +742,11 @@ void TabView::BringSelectedTabIntoView()
     }
 }
 
+void TabView::OnFooterSizeChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args)
+{
+    UpdateTabWidths();
+}
+
 void TabView::OnItemsChanged(winrt::IInspectable const& item)
 {
     if (auto args = item.as<winrt::IVectorChangedEventArgs>())
@@ -1067,8 +1096,30 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths, bool fillAllAvailableSpac
             if (auto&& rightContentPresenter = m_rightContentPresenter.get())
             {
                 const winrt::Size rightContentSize = rightContentPresenter.DesiredSize();
-                rightContentColumn.MinWidth(rightContentSize.Width);
-                widthTaken += rightContentSize.Width;
+
+                if (const auto tabStripFooter = TabStripFooter().try_as<winrt::FrameworkElement>())
+                {
+                    const auto minWidth = tabStripFooter.MinWidth();
+                    const auto width = tabStripFooter.Width();
+                    const auto footerWidth = [this, width, minWidth, rightContentSize]() {
+                        if (minWidth < width)
+                        {
+                            return rightContentSize.Width < width ? width : rightContentSize.Width;
+                        }
+                        else
+                        {
+                            return rightContentSize.Width < minWidth ? minWidth : rightContentSize.Width;
+                        }
+                    }();
+
+                    rightContentColumn.MinWidth(footerWidth);
+                    widthTaken += footerWidth;
+                }
+                else
+                {
+                    rightContentColumn.MinWidth(rightContentSize.Width);
+                    widthTaken += rightContentSize.Width;
+                }
             }
         }
 
