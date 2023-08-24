@@ -1260,6 +1260,18 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
             winrt::get_self<NavigationViewItem>(nvi)->PropagateDepthToChildren(childDepth);
 
             SetNavigationViewItemRevokers(nvi);
+
+            auto item = MenuItemFromContainer(nvi);
+
+            if (SelectedItem() == item && IsVisible(nvi))
+            {
+                if (m_isSelectionChangedPending && m_pendingSelectionChangedItem)
+                {
+                    MUX_ASSERT(m_pendingSelectionChangedItem == item);
+                }
+
+                m_selectedItemLayoutUpdatedRevoker = nvi.LayoutUpdated(winrt::auto_revoke, { this, &NavigationView::OnSelectedItemLayoutUpdated });
+            }
         }
     }
 }
@@ -2116,7 +2128,7 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
                     strongThis->OnAnimationComplete(sender, args);
                 });
         }
-        else
+        else if (prevIndicator != nextIndicator)
         {
             // if all else fails, or if animations are turned off, attempt to correctly set the positions and opacities of the indicators.
             ResetElementAnimationProperties(prevIndicator, 0.0f);
@@ -2311,6 +2323,7 @@ winrt::UIElement NavigationView::FindSelectionIndicator(const winrt::IInspectabl
                 // Indicator was not found, so maybe the layout hasn't updated yet.
                 // So let's do that now.
                 container.UpdateLayout();
+                container.ApplyTemplate();
                 return winrt::get_self<NavigationViewItem>(container)->GetSelectionIndicator();
             }
         }
@@ -2323,9 +2336,17 @@ void NavigationView::RaiseSelectionChangedEvent(winrt::IInspectable const& nextI
     auto eventArgs = winrt::make_self<NavigationViewSelectionChangedEventArgs>();
     eventArgs->SelectedItem(nextItem);
     eventArgs->IsSettingsSelected(isSettingsItem);
-    if (auto container = NavigationViewItemBaseOrSettingsContentFromData(nextItem))
+    if (nextItem)
     {
-        eventArgs->SelectedItemContainer(container);
+        if (auto container = NavigationViewItemBaseOrSettingsContentFromData(nextItem))
+        {
+            eventArgs->SelectedItemContainer(container);
+        }
+        else if (container = GetContainerForIndexPath(m_selectionModel.SelectedIndex(), false /* lastVisible */, true /* forceRealize */))
+        {
+            MUX_ASSERT(MenuItemFromContainer(container) == nextItem);
+            eventArgs->SelectedItemContainer(container);
+        }
     }
     eventArgs->RecommendedNavigationTransitionInfo(CreateNavigationTransitionInfo(recommendedDirection));
     m_selectionChangedEventSource(*this, *eventArgs);
@@ -2385,6 +2406,29 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         UnselectPrevItem(prevItem, nextItem);
         ChangeSelectStatusForItem(nextItem, true /*selected*/);
 
+        winrt::IndexPath indexPath{ nullptr };
+
+        if (auto container = NavigationViewItemBaseOrSettingsContentFromData(nextItem))
+        {
+            indexPath = GetIndexPathForContainer(container);
+        }
+        else
+        {
+            indexPath = GetIndexPathOfItem(nextItem);
+        }
+
+        if (indexPath && indexPath.GetSize() > 0)
+        {
+            // The SelectedItem property has already been updated. So we want to block any logic from executing
+            // in the SelectionModel selection changed callback.
+            auto scopeGuard = gsl::finally([this]()
+                {
+                    m_shouldIgnoreNextSelectionChange = false;
+                });
+            m_shouldIgnoreNextSelectionChange = true;
+            UpdateSelectionModelSelection(indexPath);
+        }
+
         {
             auto scopeGuard = gsl::finally([this]()
             {
@@ -2410,15 +2454,55 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
             }
         }
         
-        RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
-        AnimateSelectionChanged(nextItem);
-
+        // If this item has an associated container, we'll raise the SelectionChanged event on it immediately.
         if (auto const nvi = NavigationViewItemOrSettingsContentFromData(nextItem))
         {
+            AnimateSelectionChanged(nvi);
+            RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
             ClosePaneIfNeccessaryAfterItemIsClicked(nvi);
+        }
+        else
+        {
+            // Otherwise, we'll wait until a container gets realized for this item and raise it then.
+            m_isSelectionChangedPending = true;
+            m_pendingSelectionChangedItem = nextItem;
+            m_pendingSelectionChangedDirection = recommendedDirection;
+
+            auto completePendingSelectionChange = [weakThis{ get_weak() }]()
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->CompletePendingSelectionChange();
+                }
+            };
+            
+            SharedHelpers::ScheduleActionAfterWait(completePendingSelectionChange, 100);
         }
     }
 }
+
+void NavigationView::CompletePendingSelectionChange()
+{
+    // It may be the case that this item is in a collapsed repeater, in which case
+    // no container will be realized for it.  We'll assume that this this is the case
+    // if the UI thread has fallen idle without any SelectionChanged being raised.
+    // In this case, we'll raise the SelectionChanged at that time, as otherwise it'll never be raised.
+    if (m_isSelectionChangedPending)
+    {
+        AnimateSelectionChanged(FindLowestLevelContainerToDisplaySelectionIndicator());
+
+        m_isSelectionChangedPending = false;
+
+        auto const item = m_pendingSelectionChangedItem;
+        auto const direction = m_pendingSelectionChangedDirection;
+
+        m_pendingSelectionChangedItem = nullptr;
+        m_pendingSelectionChangedDirection = NavigationRecommendedTransitionDirection::Default;
+
+        RaiseSelectionChangedEvent(item, IsSettingsItem(item), direction);
+    }
+}
+
 
 void NavigationView::UpdateSelectionModelSelection(const winrt::IndexPath& ip)
 {
@@ -5106,6 +5190,11 @@ winrt::IndexPath NavigationView::SearchEntireTreeForIndexPath(const winrt::Navig
                         }
                     }
                 }
+                else
+                {
+                    // We found an unrealized child, so we'll want to manually realize and search if we don't find the item.
+                    areChildrenRealized = false;
+                }
             }
         }
     }
@@ -5310,7 +5399,7 @@ winrt::UIElement NavigationView::GetContainerForIndex(int index, bool inFooter)
     return nullptr;
 }
 
-winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::IndexPath& ip, bool lastVisible)
+winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::IndexPath& ip, bool lastVisible, bool forceRealize)
 {
     if (ip && ip.GetSize() > 0)
     {
@@ -5332,14 +5421,14 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const win
             // This will return nullptr if requesting children containers of
             // items in the primary list, or unrealized items in the overflow popup.
             // However this should not happen.
-            return GetContainerForIndexPath(container, ip, lastVisible);
+            return GetContainerForIndexPath(container, ip, lastVisible, forceRealize);
         }
     }
     return nullptr;
 }
 
 
-winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool lastVisible)
+winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool lastVisible, bool forceRealize)
 {
     auto container = firstContainer;
     if (ip.GetSize() > 2)
@@ -5356,7 +5445,8 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const win
 
                 if (auto const nviRepeater = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater())
                 {
-                    if (auto const nextContainer = nviRepeater.TryGetElement(ip.GetAt(i)))
+                    auto const index = ip.GetAt(i);
+                    if (auto const nextContainer = forceRealize ? nviRepeater.GetOrCreateElement(index) : nviRepeater.TryGetElement(index))
                     {
                         container = nextContainer;
                         succeededGettingNextContainer = true;
@@ -5667,4 +5757,52 @@ void NavigationView::RaiseCollapsedEvent(const winrt::NavigationViewItemBase& co
 bool NavigationView::IsTopLevelItem(const winrt::NavigationViewItemBase& nvib)
 {
     return IsRootItemsRepeater(GetParentItemsRepeaterForContainer(nvib));
+}
+
+bool NavigationView::IsVisible(const winrt::DependencyObject& obj)
+{
+    // We'll go up the visual tree until we find this NavigationView.
+    // If everything up the tree was visible, then this object was visible.
+    winrt::DependencyObject current = obj;
+    winrt::NavigationView navView = *this;
+
+    while (current && current != navView)
+    {
+        if (auto currentAsUIE = current.try_as<winrt::UIElement>())
+        {
+            if (currentAsUIE.Visibility() != winrt::Visibility::Visible)
+            {
+                return false;
+            }
+        }
+
+        current = winrt::VisualTreeHelper::GetParent(current);
+    }
+
+    // If we found this NavigationView, then this is both in the visual tree and visible.
+    // Otherwise, it's not in the visual tree, and thus is not visible.
+    return current == navView;
+}
+
+void NavigationView::OnSelectedItemLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable&)
+{
+    if (m_isSelectionChangedPending)
+    {
+        m_isSelectionChangedPending = false;
+
+        auto const item = m_pendingSelectionChangedItem;
+        auto const direction = m_pendingSelectionChangedDirection;
+
+        m_pendingSelectionChangedItem = nullptr;
+        m_pendingSelectionChangedDirection = NavigationRecommendedTransitionDirection::Default;
+
+        m_selectedItemLayoutUpdatedRevoker.revoke();
+
+        if (auto const nvi = NavigationViewItemOrSettingsContentFromData(item))
+        {
+            AnimateSelectionChanged(nvi);
+        }
+
+        RaiseSelectionChangedEvent(item, IsSettingsItem(item), direction);
+    }
 }
