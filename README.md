@@ -59,7 +59,7 @@ To view the WinUI controls in an interactive format, check out the Xaml Controls
 [WinUI](https://microsoft.github.io/microsoft-ui-xaml/) also has its own website where you can learn more about it.
 
 ## Contributing to WinUI
-The WinUI team welcomes feedback and contributions!
+The WinUI team welcomes your feedback!
 
 To understand how we handle incoming feature requests and bugs, please see our [contribution handling](docs/contribution_handling.md) guidelines.
 

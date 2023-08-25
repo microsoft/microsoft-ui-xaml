@@ -16,13 +16,10 @@ Please file questions and discussions as discussions, not issues.
 
 Feature proposals for WinUI 3 are categorized based on the likely timeframe in which the feature team can consider them.
 
-1. 	Short-term, possibly in the next 6 months or less
-2.	Medium-term, possibly in the next 6 months to 1 year
-3.	Long-term, not likely in the next year
+1. 	Short-term, less than a year
+2.	Long-term, not likely in the next year
 
-New feature proposals are automatically categorized as long-term and unlikely to be considered, although the WinUI team might change the priority based on customer and business needs. Existing proposals will be labeled with one of these priority categories to reflect our current plans.
-
-Feature proposals with no updates or interaction older than 180 days will be closed. If the WinUI team does close a feature proposal, we will indicate the reason why and how it fits into our plans. Closing a proposal does not mean that the team will never consider it. We encourage the community to add comments or interact with a proposal at any time, even a closed one, to signal its importance to the team.
+All feature proposals are automatically categorized as long-term and unlikely to be considered, although the WinUI team might change the priority based on customer and business needs. If the WinUI team does close a feature proposal, we will indicate the reason why and how it fits into our plans. Closing a proposal does not mean that the team will never consider it. We encourage the community to add comments or interact with a proposal at any time, even a closed one, to signal its importance to the team.
 
 ### Feature Planning
 
@@ -53,4 +50,4 @@ WinUI 3 bugs are not automatically considered for fixing, although the WinUI tea
 
 Bugs filed in relation to preview and experimental releases are triaged with the same criteria as stable releases and are intended to assist in identifying and fixing those bugs before they make their way to a stable release.
 
-Bugs filed on GitHub will be automatically mirrored to our internal bug tracking system and updates to them are automatically mirrored back to GitHub   with appropriate tags. This way, the bugs we’re working on and their progress are transparent. The only information we will reflect from our system externally is the state and release of the bug, not all the fine details; if a bug is resolved or closed, that’s reflected on GitHub, and as bugs are worked on, the release for that fix will be reflected with a milestone on GitHub.
+Bugs filed on GitHub will be automatically mirrored to our internal bug tracking system and updates to them are automatically mirrored back to GitHub  with appropriate tags. This way, the bugs we’re working on and their progress are transparent. The only information we will reflect from our system externally is the state and release of the bug, not all the fine details; if a bug is resolved or closed, that’s reflected on GitHub, and as bugs are worked on, the release for that fix will be reflected with a milestone on GitHub.

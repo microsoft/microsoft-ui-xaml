@@ -1,6 +1,6 @@
 # Contributing to the Windows UI Library
 
-We welcome your input and contributions to all aspects of WinUI, including bug reports, doc updates, feature proposals, code contributions and API spec discussions.
+We welcome your input and contributions to all aspects of WinUI, including bug reports, doc updates, feature proposals, and API spec discussions.
 
 This document contains general guidance. More specific guidance is included in the documents linked below.
 
