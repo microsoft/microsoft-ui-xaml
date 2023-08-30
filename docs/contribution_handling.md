@@ -1,6 +1,6 @@
 # WinUI Repo Contribution Handling
 
-The WinUI repo is intended both as a place for the WinUI community to discuss development with each other, and as a place to provide insight into upcoming changes and bug fixes the WinUI team is working on before updates are released. Here, we’ll outline how we handle feature requests and bugs that the community opens.
+The WinUI repo is intended both as a place for the WinUI community to discuss development with each other, and as a place to provide insight into upcoming changes and bug fixes the WinUI team is working on before updates are released. Here, we'll outline how we handle feature requests and bugs that the community opens.
 
 ## Issues
 
@@ -23,7 +23,7 @@ All feature proposals are automatically categorized as long-term and unlikely to
 
 ### Feature Planning
 
-The WinUI team plans on sharing what’s coming in the next major release once the feature list is ready, although due to frequently changing business priorities we are not committed to a long-term roadmap. Additionally, preview and experimental releases provide opportunities for the community to see what’s new and what’s changing on a more frequent basis.
+The WinUI team plans on sharing what's coming in the next major release once the feature list is ready, although due to frequently changing business priorities we are not committed to a long-term roadmap. Additionally, preview and experimental releases provide opportunities for the community to see what's new and what's changing on a more frequent basis.
 
 For more info about the what's coming in the next WinUI 3 release, see the [Windows App SDK feature roadmap](https://github.com/microsoft/WindowsAppSDK/blob/main/docs/roadmap.md).
 
@@ -31,7 +31,7 @@ For more info about the what's coming in the next WinUI 3 release, see the [Wind
 
 ### WinUI 2
 
-Because WinUI 2 is in maintenance mode, new bugs filed against it are closed unless they’re a security issue or are business critical. 
+Because WinUI 2 is in maintenance mode, new bugs filed against it are closed unless they're a security issue or are business critical. 
 
 ### WinUI 3
 
@@ -50,4 +50,4 @@ WinUI 3 bugs are not automatically considered for fixing, although the WinUI tea
 
 Bugs filed in relation to preview and experimental releases are triaged with the same criteria as stable releases and are intended to assist in identifying and fixing those bugs before they make their way to a stable release.
 
-Bugs filed on GitHub will be automatically mirrored to our internal bug tracking system and updates to them are automatically mirrored back to GitHub  with appropriate tags. This way, the bugs we’re working on and their progress are transparent. The only information we will reflect from our system externally is the state and release of the bug, not all the fine details; if a bug is resolved or closed, that’s reflected on GitHub, and as bugs are worked on, the release for that fix will be reflected with a milestone on GitHub.
+Bugs filed on GitHub will be automatically mirrored to our internal bug tracking system and updates to them are automatically mirrored back to GitHub with appropriate tags. This way, the bugs we're working on and their progress are transparent. The only information we will reflect from our system externally is the state and release of the bug, not all the fine details; if a bug is resolved or closed, that's reflected on GitHub, and as bugs are worked on, the release for that fix will be reflected with a milestone on GitHub.
