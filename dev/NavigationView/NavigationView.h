@@ -103,6 +103,7 @@ private:
     void OnSelectionModelChildrenRequested(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelChildrenRequestedEventArgs& e);
     void OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem);
+    void CompletePendingSelectionChange();
     void UpdateSelectionModelSelection(const winrt::IndexPath& ip);
 
     // Item/container info functions
@@ -110,8 +111,8 @@ private:
     static winrt::IInspectable GetItemFromIndex(const winrt::ItemsRepeater& ir, int index);
     winrt::IndexPath GetIndexPathOfItem(const winrt::IInspectable& data);
     winrt::UIElement GetContainerForIndex(int index, bool inFooter);
-    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& ip, bool lastVisible = false);
-    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool lastVisible);
+    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& ip, bool lastVisible = false, bool forceRealize = false);
+    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool lastVisible, bool forceRealize);
     winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::IndexPath& ip, bool forceRealize = false);
     winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool forceRealize = false);
     winrt::UIElement SearchEntireTreeForContainer(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data);
@@ -319,6 +320,8 @@ private:
 
     void OnBackButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
+    void OnSelectedItemLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& obj);
+
     bool IsOverlay();
     bool IsLightDismissible();
     bool ShouldShowBackButton();
@@ -340,6 +343,8 @@ private:
     void SetDropShadow();
     void UnsetDropShadow();
     void ShadowCasterEaseOutStoryboard_Completed(const winrt::Grid& shadowCaster);
+
+    bool IsVisible(const winrt::DependencyObject& obj);
 
     com_ptr<NavigationViewItemsFactory> m_navigationViewItemsFactory{ nullptr };
 
@@ -454,6 +459,8 @@ private:
 
     winrt::Storyboard::Completed_revoker m_shadowCasterEaseOutStoryboardRevoker{};
 
+    winrt::NavigationViewItem::LayoutUpdated_revoker m_selectedItemLayoutUpdatedRevoker{};
+
     bool m_wasForceClosed{ false };
     bool m_isClosedCompact{ false };
     bool m_blockNextClosingEvent{ false };
@@ -466,6 +473,10 @@ private:
 
     winrt::ItemsSourceView m_menuItemsSource{ nullptr };
     winrt::ItemsSourceView m_footerItemsSource{ nullptr };
+
+    bool m_isSelectionChangedPending{ false };
+    winrt::IInspectable m_pendingSelectionChangedItem{ nullptr };
+    NavigationRecommendedTransitionDirection m_pendingSelectionChangedDirection{ NavigationRecommendedTransitionDirection::Default };
 
     bool m_appliedTemplate{ false };
 

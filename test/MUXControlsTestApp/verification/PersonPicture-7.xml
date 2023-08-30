@@ -1,7 +1,7 @@
 [Microsoft.UI.Xaml.Controls.PersonPicture]
-    Background=[NULL]
-    BorderBrush=[NULL]
-    BorderThickness=0,0,0,0
+    Background=#18000000
+    BorderBrush=#0F000000
+    BorderThickness=1,1,1,1
     CornerRadius=0,0,0,0
     FocusVisualPrimaryBrush=#E4000000
     FocusVisualPrimaryThickness=2,2,2,2

@@ -293,13 +293,41 @@ void MenuBarItem::OpenFlyoutFrom(FlyoutLocation location)
         CloseMenuFlyout();
         if (location == FlyoutLocation::Left)
         {
-            winrt::get_self<MenuBarItem>(menuBar.Items().GetAt(((index - 1) + menuBar.Items().Size()) % menuBar.Items().Size()))->ShowMenuFlyout();
+            if (const auto item = FocusAndReturnNextFocusableItem(index, -1).try_as<MenuBarItem>())
+            {
+                item->ShowMenuFlyout();
+            }
         }
         else
         {
-            winrt::get_self<MenuBarItem>(menuBar.Items().GetAt((index + 1) % menuBar.Items().Size()))->ShowMenuFlyout();
+            if (const auto item = FocusAndReturnNextFocusableItem(index, +1).try_as<MenuBarItem>())
+            {
+                item->ShowMenuFlyout();
+            }
         }
     }
+}
+
+winrt::MenuBarItem MenuBarItem::FocusAndReturnNextFocusableItem(int index, int direction)
+{
+    if (const auto menuBar = m_menuBar.get())
+    {
+        const int itemsCount = menuBar.Items().Size();
+        // index + direction might be negative so account for that by adding itemsCount.
+        int itemIndex = (index + direction + itemsCount) % itemsCount;
+        while (!menuBar.Items().GetAt(itemIndex).Focus(winrt::FocusState::Programmatic))
+        {
+            // index + direction might be negative so account for that by adding itemsCount.
+            itemIndex = (itemIndex + direction + itemsCount) % itemsCount;
+            if (itemIndex == index)
+            {
+                // We are where we started, return no new item.
+                return nullptr;
+            }
+        }
+        return menuBar.Items().GetAt(itemIndex);
+    }
+    return nullptr;
 }
 
 void MenuBarItem::MoveFocusTo(FlyoutLocation location)

@@ -178,6 +178,8 @@ void NavigationViewItem::OnLoaded(winrt::IInspectable const&, winrt::RoutedEvent
     {
         PrepNavigationViewItem(splitView);
     }
+
+    UpdateVisualStateForChevron();
 }
 
 void NavigationViewItem::UpdateRepeaterItemsSource()
@@ -751,6 +753,7 @@ NavigationViewItemPresenter* NavigationViewItem::GetPresenter() const
     if (m_navigationViewItemPresenter)
     {
         presenter = winrt::get_self<NavigationViewItemPresenter>(m_navigationViewItemPresenter.get());
+        presenter->ApplyTemplate();
     }
     return presenter;
 }

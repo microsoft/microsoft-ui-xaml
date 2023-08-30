@@ -5,6 +5,7 @@ using MUXControlsTestApp.Utilities;
 
 using Common;
 using System;
+using System.Threading;
 using Windows.Foundation.Metadata;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
@@ -22,18 +23,39 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using NavigationViewDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewDisplayMode;
 using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
+using NavigationViewItemBase = Microsoft.UI.Xaml.Controls.NavigationViewItemBase;
 using NavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
 using NavigationViewItemHeader = Microsoft.UI.Xaml.Controls.NavigationViewItemHeader;
 using NavigationViewItemSeparator = Microsoft.UI.Xaml.Controls.NavigationViewItemSeparator;
 using NavigationViewBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible;
+using NavigationViewSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs;
 using System.Collections.ObjectModel;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Composition;
 using Windows.UI.Xaml.Markup;
 using System.Collections.Generic;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
+    public class Category
+    {
+        public String Content { get; set; }
+        public String Name { get; set; }
+        public String Icon { get; set; }
+        public ObservableCollection<Category> Children { get; set; }
+        public bool SelectsOnInvoked { get; set; }
+
+        public Category(String content, String name, String icon, ObservableCollection<Category> children, bool selectsOnInvoked)
+        {
+            this.Content = content;
+            this.Name = name;
+            this.Icon = icon;
+            this.Children = children;
+            this.SelectsOnInvoked = selectsOnInvoked;
+        }
+    }
+
     [TestClass]
     public class NavigationViewTests : ApiTestBase
     {
@@ -190,7 +212,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyVisualTree()
         {
-            using(VisualTreeVerifier visualTreeVerifier = new VisualTreeVerifier())
+            using (VisualTreeVerifier visualTreeVerifier = new VisualTreeVerifier())
             {
                 // Generate a basic NavigationView verification file for all the pane display modes
                 foreach (var paneDisplayMode in Enum.GetValues(typeof(NavigationViewPaneDisplayMode)))
@@ -292,7 +314,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var navView = SetupNavigationView();
 
-            foreach(var paneDisplayMode in Enum.GetValues(typeof(NavigationViewPaneDisplayMode)))
+            foreach (var paneDisplayMode in Enum.GetValues(typeof(NavigationViewPaneDisplayMode)))
             {
                 RunOnUIThread.Execute(() =>
                 {
@@ -817,13 +839,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 var expandPeer = NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetPattern(PatternInterface.ExpandCollapse);
 
-                Verify.IsNull(expandPeer,"Verify NavigationViewItem with no children has no ExpandCollapse pattern");
+                Verify.IsNull(expandPeer, "Verify NavigationViewItem with no children has no ExpandCollapse pattern");
 
                 expandPeer = NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem2).GetPattern(PatternInterface.ExpandCollapse);
-                Verify.IsNotNull(expandPeer,"Verify NavigationViewItem with children has an ExpandCollapse pattern provided");
+                Verify.IsNotNull(expandPeer, "Verify NavigationViewItem with children has an ExpandCollapse pattern provided");
 
                 expandPeer = NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem4).GetPattern(PatternInterface.ExpandCollapse);
-                Verify.IsNotNull(expandPeer,"Verify NavigationViewItem without children but with UnrealizedChildren set to true has an ExpandCollapse pattern provided");
+                Verify.IsNotNull(expandPeer, "Verify NavigationViewItem without children but with UnrealizedChildren set to true has an ExpandCollapse pattern provided");
             });
         }
 
@@ -1333,6 +1355,370 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 // NavigationView has a handler on NVI's IsSelected DependencyPropertyChangedEvent.
                 menuItem1.IsSelected = !menuItem1.IsSelected;
             });
+        }
+
+        [TestMethod]
+        public void VerifySelectingACollapsedItemShowsSelectionIndicator()
+        {
+            NavigationView navView = null;
+
+            ObservableCollection<Category> subCategories = null;
+            Category firstItem = null;
+            Category secondItem = null;
+            Category subItem = null;
+
+            ManualResetEvent loadedEvent = new(false);
+            ManualResetEvent selectionChangedEvent = new(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                subItem = new("Menu Item 3", "MI3", "Icon", null, true);
+
+                subCategories = new ObservableCollection<Category> {
+                    subItem
+                };
+
+                firstItem = new("Menu Item 1", "MI1", "Icon", null, true);
+                secondItem = new("Menu Item 2", "MI2", "Icon", subCategories, false);
+
+                var categories = new ObservableCollection<Category> {
+                    firstItem,
+                    secondItem
+                };
+
+                navView = new NavigationView {
+                    MenuItemsSource = categories,
+                    MenuItemTemplate = (DataTemplate)XamlReader.Load(@"
+                        <DataTemplate 
+                            xmlns ='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                            xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                            xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                                <controls:NavigationViewItem Content='{Binding Content}' Name='{Binding Name}' MenuItemsSource='{Binding Children}' SelectsOnInvoked='{Binding SelectsOnInvoked}'/>
+                        </DataTemplate>")
+                };
+
+                navView.Loaded += (sender, args) => loadedEvent.Set();
+                navView.SelectionChanged += (sender, args) => selectionChangedEvent.Set();
+                Content = navView;
+            });
+
+            loadedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            SelectItem(navView, subItem, selectionChangedEvent);
+            Verify.IsTrue(ItemHasSelectionIndicator(navView, "Menu Item 2"));
+            SelectItem(navView, firstItem, selectionChangedEvent);
+            Verify.IsTrue(ItemHasSelectionIndicator(navView, "Menu Item 1"));
+
+            Category newItem = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                newItem = new("Menu Item 4", "MI4", "Icon", null, true);
+                subCategories.Add(newItem);
+            });
+
+            SelectItem(navView, newItem, selectionChangedEvent);
+            Verify.IsTrue(ItemHasSelectionIndicator(navView, "Menu Item 2"));
+            SelectItem(navView, firstItem, selectionChangedEvent);
+            Verify.IsTrue(ItemHasSelectionIndicator(navView, "Menu Item 1"));
+
+            RunOnUIThread.Execute(() =>
+            {
+                var secondItemNvi = (NavigationViewItem)navView.ContainerFromMenuItem(secondItem);
+                secondItemNvi.IsExpanded = true;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Category newItem2 = new("Menu Item 5", "MI5", "Icon", null, true);
+                subCategories.Add(newItem2);
+                navView.SelectedItem = newItem2;
+            });
+
+            selectionChangedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            Verify.IsTrue(ItemHasSelectionIndicator(navView, "Menu Item 5"));
+        }
+
+        [TestMethod]
+        public void VerifyContainerIsNonNullWhenSelectingANewlyAddedItem()
+        {
+            NavigationView navView = null;
+
+            ObservableCollection<Category> subCategories = null;
+            Category firstItem = null;
+            Category secondItem = null;
+            Category subItem = null;
+
+            ManualResetEvent loadedEvent = new(false);
+            ManualResetEvent selectionChangedEvent = new(false);
+
+            Action<NavigationViewSelectionChangedEventArgs> selectionChangedVerification = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                subItem = new("Menu Item 3", "MI3", "Icon", null, true);
+
+                subCategories = new ObservableCollection<Category> {
+                    subItem
+                };
+
+                firstItem = new("Menu Item 1", "MI1", "Icon", null, true);
+                secondItem = new("Menu Item 2", "MI2", "Icon", subCategories, false);
+
+                var categories = new ObservableCollection<Category> {
+                    firstItem,
+                    secondItem
+                };
+
+                navView = new NavigationView {
+                    MenuItemsSource = categories,
+                    MenuItemTemplate = (DataTemplate)XamlReader.Load(@"
+                        <DataTemplate 
+                            xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                            xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                            xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                                <controls:NavigationViewItem Content='{Binding Content}' Name='{Binding Name}' MenuItemsSource='{Binding Children}' SelectsOnInvoked='{Binding SelectsOnInvoked}'/>
+                        </DataTemplate>")
+                };
+
+                navView.Loaded += (sender, args) => loadedEvent.Set();
+
+                navView.SelectionChanged += (sender, args) =>
+                {
+                    selectionChangedVerification?.Invoke(args);
+                    selectionChangedEvent.Set();
+                };
+
+                Content = navView;
+            });
+
+            loadedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            selectionChangedVerification = (args) =>
+            {
+                Verify.IsNotNull(args.SelectedItemContainer);
+                Verify.AreEqual(subItem.Content, args.SelectedItemContainer.Content);
+            };
+
+            SelectItem(navView, subItem, selectionChangedEvent);
+
+            Category newItem = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                newItem = new("Menu Item 4", "MI4", "Icon", null, true);
+                subCategories.Add(newItem);
+            });
+
+            selectionChangedVerification = (args) =>
+            {
+                Verify.IsNotNull(args.SelectedItemContainer);
+                Verify.AreEqual(newItem.Content, args.SelectedItemContainer.Content);
+            };
+
+            SelectItem(navView, newItem, selectionChangedEvent);
+
+            ManualResetEvent expandedEvent = new(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var secondItemNvi = (NavigationViewItem)navView.ContainerFromMenuItem(secondItem);
+
+                var itemRepeater = GetRepeater(secondItemNvi);
+                itemRepeater.ElementPrepared += (sender, args) =>
+                {
+                    if (((NavigationViewItem)args.Element).Content as string == "Menu Item 4")
+                    {
+                        expandedEvent.Set();
+                    }
+                };
+
+                secondItemNvi.IsExpanded = true;
+            });
+
+            expandedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Category newItem2 = new("Menu Item 5", "MI5", "Icon", null, true);
+                subCategories.Add(newItem2);
+
+                selectionChangedVerification = (args) =>
+                {
+                    Verify.IsNotNull(args.SelectedItemContainer);
+                    Verify.AreEqual(newItem2.Content, args.SelectedItemContainer.Content);
+                };
+
+                selectionChangedEvent.Reset();
+                navView.SelectedItem = newItem2;
+            });
+
+            selectionChangedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        public void VerifySelectingANewItemAfterExpandingShowsSelectionIndicatorInTheCorrectLocation()
+        {
+            NavigationView navView = null;
+
+            ObservableCollection<Category> subCategories = null;
+            Category firstItem = null;
+            Category secondItem = null;
+
+            ManualResetEvent loadedEvent = new(false);
+            ManualResetEvent selectionChangedEvent = new(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                ObservableCollection<Category> subSubCategories = new ObservableCollection<Category> {
+                    new("Menu Item 6", "MI6", "Icon", null, true)
+                };
+
+                subCategories = new ObservableCollection<Category> {
+                    new("Menu Item 3", "MI3", "Icon", null, true),
+                    new("Menu Item 4", "MI4", "Icon", subSubCategories, false),
+                    new("Menu Item 5", "MI5", "Icon", null, true),
+                };
+
+                firstItem = new("Menu Item 1", "MI1", "Icon", null, true);
+                secondItem = new("Menu Item 2", "MI2", "Icon", subCategories, false);
+
+                var categories = new ObservableCollection<Category> {
+                    firstItem,
+                    secondItem
+                };
+
+                navView = new NavigationView {
+                    MenuItemsSource = categories,
+                    MenuItemTemplate = (DataTemplate)XamlReader.Load(@"
+                    <DataTemplate 
+                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                            <controls:NavigationViewItem Content='{Binding Content}' Name='{Binding Name}' MenuItemsSource='{Binding Children}' SelectsOnInvoked='{Binding SelectsOnInvoked}'/>
+                    </DataTemplate>")
+                };
+
+                navView.Loaded += (sender, args) => loadedEvent.Set();
+                navView.SelectionChanged += (sender, args) => selectionChangedEvent.Set();
+                Content = navView;
+            });
+
+            loadedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            Category newItem = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                newItem = new("Menu Item 7", "MI7", "Icon", null, true);
+                subCategories.Add(newItem);
+                navView.SelectedItem = newItem;
+
+                var secondItemNvi = (NavigationViewItem)navView.ContainerFromMenuItem(secondItem);
+                secondItemNvi.IsExpanded = true;
+            });
+
+            selectionChangedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            Verify.IsTrue(ItemHasSelectionIndicator(navView, "Menu Item 7"));
+        }
+
+        static ItemsRepeater GetRepeater(DependencyObject parent)
+        {
+            static ItemsRepeater GetNavigationViewRepeaterHelper(DependencyObject root)
+            {
+                if (root is ItemsRepeater itemsRepeater &&
+                    (itemsRepeater.Name == "MenuItemsHost" ||
+                    itemsRepeater.Name == "NavigationViewItemMenuItemsHost"))
+                {
+                    return itemsRepeater;
+                }
+
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+                {
+                    var repeater = GetNavigationViewRepeaterHelper(VisualTreeHelper.GetChild(root, i));
+
+                    if (repeater != null)
+                    {
+                        return repeater;
+                    }
+                }
+
+                return null;
+            }
+
+            return GetNavigationViewRepeaterHelper(parent);
+        }
+
+        static bool ItemHasSelectionIndicator(NavigationView navView, string expectedContent)
+        {
+            static bool ItemHasSelectionIndicatorHelper(DependencyObject root, string expectedContent, NavigationViewItemBase lastSeenItem)
+            {
+                if (root is Rectangle possibleSelectionIndicator &&
+                    possibleSelectionIndicator.Name == "SelectionIndicator" &&
+                    possibleSelectionIndicator.Opacity > 0 &&
+                    lastSeenItem.Content as string == expectedContent)
+                {
+                    return true;
+                }
+                else if (root is NavigationViewItemBase item)
+                {
+                    lastSeenItem = item;
+                }
+
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+                {
+                    var hasSelectionIndicator = ItemHasSelectionIndicatorHelper(VisualTreeHelper.GetChild(root, i), expectedContent, lastSeenItem);
+
+                    if (hasSelectionIndicator)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            bool hasSelectionIndicator = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                hasSelectionIndicator = ItemHasSelectionIndicatorHelper(navView, expectedContent, null);
+            });
+
+            return hasSelectionIndicator;
+        }
+
+        static void SelectItem(NavigationView navView, object item, ManualResetEvent selectionChangedEvent = null)
+        {
+            IdleSynchronizer.Wait();
+
+            if (selectionChangedEvent != null)
+            {
+                selectionChangedEvent.Reset();
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView.SelectedItem = item;
+            });
+
+            if (selectionChangedEvent != null)
+            {
+                selectionChangedEvent.WaitOne();
+            }
+
+            IdleSynchronizer.Wait();
         }
     }
 }
