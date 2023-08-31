@@ -1,6 +1,6 @@
 # WinUI Repo Contribution Handling
 
-The WinUI repo is intended both as a place for the WinUI community to discuss development with each other, and as a place to provide insight into upcoming changes and bug fixes the WinUI team is working on before updates are released. Here, we'll outline how we handle feature requests and bugs that the community opens.
+The WinUI repo is intended as a place for the WinUI team to gather community feedback and provide insight into bug fixes that the team is working on before updates are released. Here, we'll outline how we handle feature requests and bugs that the community opens.
 
 ## Issues
 
@@ -35,7 +35,7 @@ Because WinUI 2 is in maintenance mode, new bugs filed against it are closed unl
 
 ### WinUI 3
 
-WinUI 3 bugs are not automatically considered for fixing, although the WinUI team will prioritize bugs based on how much it impacts one or more of the following criteria:
+WinUI 3 bugs are triaged and prioritized based on how much the bug impacts one or more of the following criteria. If a bug has lower impact, it is less likely to be considered for fixing.
 
 - Reliability
 - Data corruption or loss
