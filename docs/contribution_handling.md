@@ -23,9 +23,11 @@ All feature proposals are automatically categorized as long-term and unlikely to
 
 ### Feature Planning
 
-The WinUI team plans on sharing what's coming in the next major release once the feature list is ready, although due to frequently changing business priorities we are not committed to a long-term roadmap. Additionally, preview and experimental releases provide opportunities for the community to see what's new and what's changing on a more frequent basis.
+Our long term vision for WinUI is to be the best UX/UI native framework for Windows PCs that provides premium visuals, motion, accessibility, usability, and support for all input modalities.
 
-For more info about the what's coming in the next WinUI 3 release, see the [Windows App SDK feature roadmap](https://github.com/microsoft/WindowsAppSDK/blob/main/docs/roadmap.md).
+The current details of what we plan long-term are shaped by evolving priorities that are subject to frequent change and are often confidential based on business and customer needs. However, we are happy to share our immediate plans for what's coming next in the next major release once the feature list is ready. Additionally, preview and experimental releases provide opportunities for the community to see what's new and what's changing on a more frequent basis.
+
+For more info about our longer-term planning, see the [Windows App SDK feature roadmap](https://github.com/microsoft/WindowsAppSDK/blob/main/docs/roadmap.md). This page will be updated generally right after a major release, when the features for the next release are solidified enough to share.
 
 ## Bugs
 
