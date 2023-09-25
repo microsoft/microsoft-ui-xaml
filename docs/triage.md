@@ -5,6 +5,8 @@
 The WinUI team manages issues and PRs in the repo using a process we call "triage". It helps us keep issues
 organized and focuses the attention of the different groups that work in our project.
 
+For more info about our strategy for triaging bugs, see how we [handle contributions](contribution_handling.md).
+
 ### Triage labels
 
 1. New and re-opened issues are marked with `needs-triage`.
@@ -34,8 +36,7 @@ The temporary `needs-assignee-attention` label is intended for issues which need
 
 ### Backlog
 
-[Assigned issues](https://github.com/microsoft/microsoft-ui-xaml/issues/assigned/*) are being investigated or worked on. This doesn't mean they *will* be fixed soon, just that they are on the
-short list for that person to investigate, and possibly fix. They may get unassigned.
+[Assigned issues](https://github.com/microsoft/microsoft-ui-xaml/issues/assigned/*) are being investigated or worked on. This doesn't mean they *will* be fixed soon, just that they are on the short list for that person to investigate, and possibly fix. They may get unassigned.
 
 [Unassigned issues](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+no%3Aassignee) are the backlog. 
      
