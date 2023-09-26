@@ -984,7 +984,7 @@
                                               FocusVisualSecondaryBrush=#B3FFFFFF
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               Foreground=#E4000000
-                                              Margin=4,-1,8,0
+                                              Margin=4,-1,8,-1
                                               Name=ContentPresenter
                                               Padding=0,0,0,0
                                               RenderSize=52,19
@@ -1248,7 +1248,7 @@
                                               FocusVisualSecondaryBrush=#B3FFFFFF
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               Foreground=#E4000000
-                                              Margin=4,-1,8,0
+                                              Margin=4,-1,8,-1
                                               Name=ContentPresenter
                                               Padding=0,0,0,0
                                               RenderSize=78,19
@@ -1692,7 +1692,7 @@
                                               FocusVisualSecondaryBrush=#B3FFFFFF
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               Foreground=#E4000000
-                                              Margin=4,-1,8,0
+                                              Margin=4,-1,8,-1
                                               Name=ContentPresenter
                                               Padding=0,0,0,0
                                               RenderSize=46,19
@@ -1932,6 +1932,17 @@
                       Padding=0,0,0,0
                       RenderSize=301,19
                       Visibility=Visible
+                [Windows.UI.Xaml.Controls.Canvas]
+                    Background=[NULL]
+                    FocusVisualPrimaryBrush=#E4000000
+                    FocusVisualPrimaryThickness=2,2,2,2
+                    FocusVisualSecondaryBrush=#B3FFFFFF
+                    FocusVisualSecondaryThickness=1,1,1,1
+                    Margin=0,-32,-32,-32
+                    Name=PaneShadowReceiver
+                    RenderSize=352,663
+                    Visibility=Visible
+                    Width=352
             [Windows.UI.Xaml.Shapes.Rectangle]
                 FocusVisualPrimaryBrush=#E4000000
                 FocusVisualPrimaryThickness=2,2,2,2
