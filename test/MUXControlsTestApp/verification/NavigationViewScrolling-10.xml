@@ -1016,7 +1016,7 @@
                                               FocusVisualSecondaryBrush=#B3FFFFFF
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               Foreground=#E4000000
-                                              Margin=4,-1,8,-1
+                                              Margin=4,-1,8,0
                                               Name=ContentPresenter
                                               Padding=0,0,0,0
                                               RenderSize=46,19
@@ -1253,7 +1253,7 @@
                                               FocusVisualSecondaryBrush=#B3FFFFFF
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               Foreground=#E4000000
-                                              Margin=4,-1,8,-1
+                                              Margin=4,-1,8,0
                                               Name=ContentPresenter
                                               Padding=0,0,0,0
                                               RenderSize=46,19
@@ -1544,7 +1544,7 @@
                                               FocusVisualSecondaryBrush=#B3FFFFFF
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               Foreground=#E4000000
-                                              Margin=4,-1,8,-1
+                                              Margin=4,-1,8,0
                                               Name=ContentPresenter
                                               Padding=0,0,0,0
                                               RenderSize=46,19
@@ -1781,7 +1781,7 @@
                                               FocusVisualSecondaryBrush=#B3FFFFFF
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               Foreground=#E4000000
-                                              Margin=4,-1,8,-1
+                                              Margin=4,-1,8,0
                                               Name=ContentPresenter
                                               Padding=0,0,0,0
                                               RenderSize=46,19
@@ -2057,7 +2057,7 @@
                                               FocusVisualSecondaryBrush=#B3FFFFFF
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               Foreground=#E4000000
-                                              Margin=4,-1,8,-1
+                                              Margin=4,-1,8,0
                                               Name=ContentPresenter
                                               Padding=0,0,0,0
                                               RenderSize=46,19
@@ -2294,7 +2294,7 @@
                                               FocusVisualSecondaryBrush=#B3FFFFFF
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               Foreground=#E4000000
-                                              Margin=4,-1,8,-1
+                                              Margin=4,-1,8,0
                                               Name=ContentPresenter
                                               Padding=0,0,0,0
                                               RenderSize=46,19
@@ -2531,7 +2531,7 @@
                                               FocusVisualSecondaryBrush=#B3FFFFFF
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               Foreground=#E4000000
-                                              Margin=4,-1,8,-1
+                                              Margin=4,-1,8,0
                                               Name=ContentPresenter
                                               Padding=0,0,0,0
                                               RenderSize=46,19
@@ -2768,7 +2768,7 @@
                                               FocusVisualSecondaryBrush=#B3FFFFFF
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               Foreground=#E4000000
-                                              Margin=4,-1,8,-1
+                                              Margin=4,-1,8,0
                                               Name=ContentPresenter
                                               Padding=0,0,0,0
                                               RenderSize=46,19
@@ -3059,7 +3059,7 @@
                                               FocusVisualSecondaryBrush=#B3FFFFFF
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               Foreground=#E4000000
-                                              Margin=4,-1,8,-1
+                                              Margin=4,-1,8,0
                                               Name=ContentPresenter
                                               Padding=0,0,0,0
                                               RenderSize=46,19
@@ -3296,7 +3296,7 @@
                                               FocusVisualSecondaryBrush=#B3FFFFFF
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               Foreground=#E4000000
-                                              Margin=4,-1,8,-1
+                                              Margin=4,-1,8,0
                                               Name=ContentPresenter
                                               Padding=0,0,0,0
                                               RenderSize=46,19
@@ -3572,7 +3572,7 @@
                                               FocusVisualSecondaryBrush=#B3FFFFFF
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               Foreground=#E4000000
-                                              Margin=4,-1,8,-1
+                                              Margin=4,-1,8,0
                                               Name=ContentPresenter
                                               Padding=0,0,0,0
                                               RenderSize=46,19
@@ -4463,7 +4463,7 @@
                                               FocusVisualSecondaryBrush=#B3FFFFFF
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               Foreground=#E4000000
-                                              Margin=4,-1,8,-1
+                                              Margin=4,-1,8,0
                                               Name=ContentPresenter
                                               Padding=0,0,0,0
                                               RenderSize=46,19
