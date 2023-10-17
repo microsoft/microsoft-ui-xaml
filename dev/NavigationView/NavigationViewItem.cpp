@@ -460,12 +460,17 @@ void NavigationViewItem::UpdateVisualStateForKeyboardFocusedState()
 
 void NavigationViewItem::UpdateVisualStateForToolTip()
 {
+
+    const bool fadeTooltip = false;
     // Since RS5, ToolTip apply to NavigationViewItem directly to make Keyboard focus has tooltip too.
     // If ToolTip TemplatePart is detected, fallback to old logic and apply ToolTip on TemplatePart.
     if (auto toolTip = m_toolTip.get())
     {
         const auto shouldEnableToolTip = ShouldEnableToolTip();
         auto toolTipContent = m_suggestedToolTipContent.get();
+        if (fadeTooltip) {
+            toolTip.Opacity(0.9);
+        }
         if (shouldEnableToolTip && toolTipContent)
         {
             toolTip.Content(toolTipContent);
