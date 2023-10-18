@@ -597,7 +597,7 @@ void WebView2::RegisterCoreEventHandlers()
                                 return winrt::FocusManager::FindNextElement(xamlDirection);
                             }
                         }();
-                        if (nextElement && nextElement.try_as<winrt::WebView2>() == strongThis->try_as<winrt::WebView2>())
+                        if (nextElement && nextElement.try_as<winrt::WebView2>() == *(strongThis.get()))
                         {
                             // If the next element is this webview, then we are the only focusable element. Move focus back into the webview,
                             // or else we'll get stuck trying to tab out of the top or bottom of the page instead of looping around.
