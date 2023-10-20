@@ -521,137 +521,157 @@ HWND WebView2::GetActiveInputWindowHwnd() noexcept
 void WebView2::RegisterCoreEventHandlers()
 {
     m_coreNavigationStartingRevoker = m_coreWebView.NavigationStarting(winrt::auto_revoke, {
-        [this](auto const&, winrt::CoreWebView2NavigationStartingEventArgs const& args)
+        [weakThis{ get_weak() }](auto const&, winrt::CoreWebView2NavigationStartingEventArgs const& args)
         {
-            // Update Uri without navigation
-            UpdateSourceInternal();
-            FireNavigationStarting(args);
+            if (auto strongThis = weakThis.get())
+            {
+                // Update Uri without navigation
+                strongThis->UpdateSourceInternal();
+                strongThis->FireNavigationStarting(args);
+            }
         } });
 
     m_coreSourceChangedRevoker = m_coreWebView.SourceChanged(winrt::auto_revoke, {
-        [this](auto const&, winrt::CoreWebView2SourceChangedEventArgs const& args)
+        [weakThis{ get_weak() }](auto const&, winrt::CoreWebView2SourceChangedEventArgs const& args)
         {
-            // Update Uri without navigation
-            UpdateSourceInternal();
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->UpdateSourceInternal();
+            }
         } });
 
     m_coreNavigationCompletedRevoker = m_coreWebView.NavigationCompleted(winrt::auto_revoke, {
-        [this](auto const&, winrt::CoreWebView2NavigationCompletedEventArgs const& args)
+        [weakThis{ get_weak() }](auto const&, winrt::CoreWebView2NavigationCompletedEventArgs const& args)
         {
-            FireNavigationCompleted(args);
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->FireNavigationCompleted(args);
+            }
         } });
 
     m_coreWebMessageReceivedRevoker = m_coreWebView.WebMessageReceived(winrt::auto_revoke, {
-        [this](auto const&, winrt::CoreWebView2WebMessageReceivedEventArgs const& args)
+        [weakThis{ get_weak() }](auto const&, winrt::CoreWebView2WebMessageReceivedEventArgs const& args)
         {
-            // Fire the MUXC side NavigationCompleted event when the CoreWebView2 event is received.
-            FireWebMessageReceived(args);
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->FireWebMessageReceived(args);
+            }
         } });
 
     m_coreMoveFocusRequestedRevoker = m_coreWebViewController.MoveFocusRequested(winrt::auto_revoke, {
-        [this](auto const&, const winrt::CoreWebView2MoveFocusRequestedEventArgs& args)
+        [weakThis{ get_weak() }](auto const&, const winrt::CoreWebView2MoveFocusRequestedEventArgs& args)
         {
-            winrt::CoreWebView2MoveFocusReason moveFocusRequestedReason{ args.Reason() };
-
-            if (moveFocusRequestedReason == winrt::CoreWebView2MoveFocusReason::Next ||
-                moveFocusRequestedReason == winrt::CoreWebView2MoveFocusReason::Previous)
+            if (auto strongThis = weakThis.get())
             {
-                winrt::FocusNavigationDirection xamlDirection{ moveFocusRequestedReason == winrt::CoreWebView2MoveFocusReason::Next ?
-                                                                   winrt::FocusNavigationDirection::Next : winrt::FocusNavigationDirection::Previous };
-                winrt::FindNextElementOptions findNextElementOptions;
+                winrt::CoreWebView2MoveFocusReason moveFocusRequestedReason{ args.Reason() };
 
-                auto contentRoot = [this]()
+                if (moveFocusRequestedReason == winrt::CoreWebView2MoveFocusReason::Next ||
+                    moveFocusRequestedReason == winrt::CoreWebView2MoveFocusReason::Previous)
                 {
-                    if (auto thisXamlRoot = try_as<winrt::IUIElement10>())
+                    winrt::FocusNavigationDirection xamlDirection{ moveFocusRequestedReason == winrt::CoreWebView2MoveFocusReason::Next ?
+                                                                    winrt::FocusNavigationDirection::Next : winrt::FocusNavigationDirection::Previous };
+                    winrt::FindNextElementOptions findNextElementOptions;
+
+                    auto contentRoot = [strongThis]()
                     {
-                        if (auto xamlRoot = thisXamlRoot.XamlRoot())
+                        if (auto thisXamlRoot = strongThis->try_as<winrt::IUIElement10>())
                         {
-                            return xamlRoot.Content();
+                            if (auto xamlRoot = thisXamlRoot.XamlRoot())
+                            {
+                                return xamlRoot.Content();
+                            }
                         }
-                    }
-                    return winrt::Window::Current().Content();
-                }();
-
-                if (contentRoot)
-                {
-                    findNextElementOptions.SearchRoot(contentRoot);
-                    winrt::DependencyObject nextElement = [=]() {
-                        if (SharedHelpers::Is19H1OrHigher())
-                        {
-                            return winrt::FocusManager::FindNextElement(xamlDirection, findNextElementOptions);
-                        }
-                        else
-                        {
-                            return winrt::FocusManager::FindNextElement(xamlDirection);
-                        }
+                        return winrt::Window::Current().Content();
                     }();
-                    if (nextElement && nextElement.try_as<winrt::WebView2>() == *this)
-                    {
-                        // If the next element is this webview, then we are the only focusable element. Move focus back into the webview,
-                        // or else we'll get stuck trying to tab out of the top or bottom of the page instead of looping around.
-                        MoveFocusIntoCoreWebView(moveFocusRequestedReason);
-                        args.Handled(TRUE);
-                    }
-                    else if (nextElement)
-                    {
-                        // If core webview is also losing focus via something other than TAB (web LostFocus event fired)
-                        // and the TAB handling is arriving later (eg due to longer MOJO delay), skip manually moving Xaml Focus to next element.
-                        if (m_webHasFocus)
-                        {
-                            const auto _ = [=]() {
-                                if (SharedHelpers::Is19H1OrHigher())
-                                {
-                                    return winrt::FocusManager::TryMoveFocusAsync(xamlDirection, findNextElementOptions);
-                                }
-                                else
-                                {
-                                    return winrt::FocusManager::TryMoveFocusAsync(xamlDirection);
-                                }
-                            }();
-                            m_webHasFocus = false;
-                        }
 
-                        args.Handled(TRUE);
+                    if (contentRoot)
+                    {
+                        findNextElementOptions.SearchRoot(contentRoot);
+                        winrt::DependencyObject nextElement = [=]() {
+                            if (SharedHelpers::Is19H1OrHigher())
+                            {
+                                return winrt::FocusManager::FindNextElement(xamlDirection, findNextElementOptions);
+                            }
+                            else
+                            {
+                                return winrt::FocusManager::FindNextElement(xamlDirection);
+                            }
+                        }();
+                        if (nextElement && nextElement.try_as<winrt::WebView2>() == *(strongThis.get()))
+                        {
+                            // If the next element is this webview, then we are the only focusable element. Move focus back into the webview,
+                            // or else we'll get stuck trying to tab out of the top or bottom of the page instead of looping around.
+                            strongThis->MoveFocusIntoCoreWebView(moveFocusRequestedReason);
+                            args.Handled(TRUE);
+                        }
+                        else if (nextElement)
+                        {
+                            // If core webview is also losing focus via something other than TAB (web LostFocus event fired)
+                            // and the TAB handling is arriving later (eg due to longer MOJO delay), skip manually moving Xaml Focus to next element.
+                            if (strongThis->m_webHasFocus)
+                            {
+                                const auto _ = [=]() {
+                                    if (SharedHelpers::Is19H1OrHigher())
+                                    {
+                                        return winrt::FocusManager::TryMoveFocusAsync(xamlDirection, findNextElementOptions);
+                                    }
+                                    else
+                                    {
+                                        return winrt::FocusManager::TryMoveFocusAsync(xamlDirection);
+                                    }
+                                }();
+                                strongThis->m_webHasFocus = false;
+                            }
+
+                            args.Handled(TRUE);
+                        }
                     }
                 }
-
-                // If nextElement is null, focus is maintained in Anaheim by not marking Handled.
-            }
+            }   // If nextElement is null, focus is maintained in Anaheim by not marking Handled.
         } });
 
     m_coreProcessFailedRevoker = m_coreWebView.ProcessFailed(winrt::auto_revoke, {
-        [this](auto const&, winrt::CoreWebView2ProcessFailedEventArgs const& args)
+        [weakThis{ get_weak() }](auto const&, const winrt::CoreWebView2ProcessFailedEventArgs& args)
         {
-            winrt::CoreWebView2ProcessFailedKind coreProcessFailedKind{ args.ProcessFailedKind() };
-            if (coreProcessFailedKind == winrt::CoreWebView2ProcessFailedKind::BrowserProcessExited)
+            if (auto strongThis = weakThis.get())
             {
-                m_isCoreFailure_BrowserExited_State = true;
+                winrt::CoreWebView2ProcessFailedKind coreProcessFailedKind{ args.ProcessFailedKind() };
+                if (coreProcessFailedKind == winrt::CoreWebView2ProcessFailedKind::BrowserProcessExited)
+                {
+                    strongThis->m_isCoreFailure_BrowserExited_State = true;
 
-                // CoreWebView2 takes care of clearing the event handlers when closing the host,
-                // but we still need to reset the event tokens
-                UnregisterCoreEventHandlers();
+                    // CoreWebView2 takes care of clearing the event handlers when closing the host,
+                    // but we still need to reset the event tokens
+                    strongThis->UnregisterCoreEventHandlers();
 
-                // Null these out so we can't try to use them anymore
-                m_coreWebViewCompositionController = nullptr;
-                m_coreWebViewController = nullptr;
-                m_coreWebView = nullptr;
-                ResetProperties();
+                    // Null these out so we can't try to use them anymore
+                    strongThis->m_coreWebViewCompositionController = nullptr;
+                    strongThis->m_coreWebViewController = nullptr;
+                    strongThis->m_coreWebView = nullptr;
+                    strongThis->ResetProperties();
+                }
+
+                strongThis->FireCoreProcessFailedEvent(args);
             }
-
-            FireCoreProcessFailedEvent(args);
         } });
 
     m_coreLostFocusRevoker = m_coreWebViewController.LostFocus(winrt::auto_revoke, {
-        [this](auto const&, auto const&)
+        [weakThis{ get_weak() }](auto const& controller, auto const& obj)
         {
-            // Unset our tracking of Edge focus when it is lost via something other than TAB navigation.
-            m_webHasFocus = false;
+            if (auto strongThis = weakThis.get())
+            {
+                // Unset our tracking of Edge focus when it is lost via something other than TAB navigation.
+                strongThis->m_webHasFocus = false;
+            }
         } });
 
     m_cursorChangedRevoker = m_coreWebViewCompositionController.CursorChanged(winrt::auto_revoke, {
-        [this](auto const& controller, auto const& obj)
+        [weakThis{ get_weak() }](auto const& controller, auto const& obj)
         {
-            UpdateCoreWindowCursor();
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->UpdateCoreWindowCursor();
+            }
         } });
 }
 
