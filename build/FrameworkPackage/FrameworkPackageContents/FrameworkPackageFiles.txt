@@ -1,3 +1,0 @@
-[Files]
-"AppxManifest.xml" "AppxManifest.xml"
-"logo.png" "logo.png"

@@ -7,7 +7,7 @@ WinUI is a user interface layer that contains modern controls and styles for bui
 
 WinUI 2 is a library of controls that provides official native Microsoft UI controls and features for Windows [UWP apps](https://docs.microsoft.com/windows/uwp/index). WinUI 2 can be used in any Windows 10 UWP XAML app, or in a Xamarin.Forms app running on Windows 10 using [native view embedding](https://docs.microsoft.com/xamarin/xamarin-forms/platform/native-views).
 
-WinUI 3 is the next generation of the WinUI framework. It dramatically expands WinUI into a full UX framework, making WinUI available for all types of Windows apps – from Win32 to UWP – for use as the UI layer.
+WinUI 3 is the next generation of the WinUI framework. It dramatically expands WinUI into a full UX framework, making WinUI available for all Desktop Windows apps for use as the UI layer.
  
 ## WinUI Community Calls
 
@@ -20,12 +20,16 @@ You can watch them online here on YouTube at the [Windows Developer channel](htt
 
 ## Using WinUI 3
 
-You can build new Windows apps using WinUI 3, which ships as a part of the Windows App SDK. The latest available stable release is the Windows App SDK 1.3 (previously called Project Reunion). With this release, you can ship production Desktop apps to the Microsoft Store.
+You can build new Windows apps using WinUI 3, which ships as a part of the Windows App SDK. The latest available stable release is the Windows App SDK 1.4 (previously called Project Reunion). With this release, you can ship production Desktop apps to the Microsoft Store.
 
 See the [installation instructions](https://docs.microsoft.com/windows/apps/windows-app-sdk/set-up-your-development-environment), and guidelines on [creating your first WinUI 3 app](https://docs.microsoft.com/windows/apps/winui/winui3/create-your-first-winui3-app). 
 
+The source code for WinUI 3 can be found [here](https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/main).
+
 ## Using WinUI 2
 You can download and use WinUI packages in your app using the NuGet package manager: see the [Getting Started with the Windows UI Library](https://docs.microsoft.com/uwp/toolkits/winui/getting-started) page for more information.
+
+The source code for WinUI 2 can be found [here](https://github.com/microsoft/microsoft-ui-xaml/tree/winui2/main).
 
 ### Packages
 
@@ -107,9 +111,8 @@ For a detailed look at the features we're planning on releasing in WinAppSDK che
 
 ## Data/Telemetry
 
-This project collects usage data and sends it to Microsoft to help improve our products and services. See the [privacy statement](privacy.md) for more details.
+This project collects usage data and sends it to Microsoft to help improve our products and services. Note, however, that no data collection is performed when using your private builds.
 
-For more information on telemetry implementation see the [developer guide](docs/developer_guide.md#Telemetry).
 
 # Code of Conduct
 
