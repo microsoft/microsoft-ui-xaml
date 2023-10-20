@@ -736,6 +736,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         [TestMethod]
         [TestProperty("TestSuite", "B")]
+        [TestProperty("Ignore", "True")] // Bug 47130840: [WinUI2] RadioButtons.AccessKeys test is failing
         public void AccessKeys()
         { 
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
