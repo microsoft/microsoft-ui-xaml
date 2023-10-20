@@ -89,11 +89,6 @@ Pull requests from a fork will not automatically trigger all of these checks. A 
 team can trigger the Azure Pipeline checks by commenting `/azp run` on the PR. The Azure Pipelines
 bot will then trigger the build.
 
-In order to have PRs automatically merge once all checks have passed (including optional 
-checks), maintainers can apply the [auto merge](https://github.com/Microsoft/microsoft-ui-xaml/labels/auto%20merge) 
-label. It will take effect after an 8 hour delay, 
-[more info here (internal link)](https://microsoft.sharepoint.com/teams/FabricBot/SitePages/AutoMerge,-Bot-Templates-and.aspx).
-
 ### Other Pipelines
 
 Unlike the above checks these are not required for all PRs, but you may see them on some PRs so we 
