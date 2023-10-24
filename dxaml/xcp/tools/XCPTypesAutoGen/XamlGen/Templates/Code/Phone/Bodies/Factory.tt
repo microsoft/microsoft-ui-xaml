@@ -1,0 +1,151 @@
+<#@ template language="C#" linePragmas="false" inherits="PhoneCppCodeGenerator<ClassDefinition>" debug="true"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+// Dependency Property references.
+<# foreach (var p in Model.DependencyProperties.Where(p => !p.IsAbstract)) { #>
+wrl::ComPtr<<#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyProperty") #>> <#= Model.FactoryTypeName #>::s_<#= p.Name #>Property;
+<# }
+   foreach (var a in Model.DeclaredAttachedProperties.Where(e => e.GenerateStub)) { #>
+wrl::ComPtr<<#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyProperty") #>> <#= Model.FactoryTypeName #>::s_<#= a.Name #>Property;
+<# } #>
+
+// Initializers.
+_Check_return_ HRESULT <#= Model.FactoryTypeName #>::RuntimeClassInitialize()
+{
+    HRESULT hr = S_OK;
+
+    IFC(EnsureProperties());
+
+Cleanup:
+    RRETURN(hr);
+}
+
+_Check_return_ HRESULT <#= Model.FactoryTypeName #>::EnsureProperties()
+{
+<# foreach (var p in Model.DependencyProperties.Where(p => !p.IsAbstract)) { #>
+    IFC_RETURN(Initialize<#= p.Name #>Property());
+<# }
+   foreach (var a in Model.DeclaredAttachedProperties.Where(e => e.GenerateStub)) { #>
+    IFC_RETURN(Initialize<#= a.Name #>Property());
+<# } #>
+
+    return S_OK;
+}
+
+void <#= Model.FactoryTypeName #>::ClearProperties()
+{
+<# foreach (var p in Model.DependencyProperties) { #>
+        s_<#= p.Name #>Property.Reset();
+<# }
+   foreach (var p in Model.DeclaredAttachedProperties) { #>
+        s_<#= p.Name #>Property.Reset();
+<# } #>
+}
+
+<# foreach (var ctor in Model.IdlClassInfo.CustomConstructors) { #>
+IFACEMETHODIMP <#= Model.FactoryTypeName #>::<#= ctor.IdlConstructorInfo.FactoryMethodName #>(<#= GetConstructorParameterListAsString(ctor) #>)
+{
+<#     if (Model.IdlClassInfo.IsComposable && ctor.IsParameterless) { #>
+    HRESULT hr = S_OK;
+
+    IFC((pctl::AggregableComObject<
+            <#= AsCppType(Model.FullName) #>,
+            <#= AsCppType(Model.IdlClassInfo.AbiInterfaceFullName) #>>::CreateInstance(
+            pOuter,
+            ppInner,
+            ppInstance)));
+
+Cleanup:
+    RRETURN(hr);
+}
+<#     }
+       else { #>
+    HRESULT hr = S_OK;
+    IFCPTR(ppInstance);
+    ARG_VALIDRETURNPOINTER(ppInstance);
+<#              foreach (var p in ctor.Parameters.Where(p => p.RequiresNullCheck)) { #>
+    ARG_NOTNULL(<#= p.ParameterType.AbiParameterName #>, "<#= p.ParameterType.AbiParameterName #>");
+<#              } #>
+    IFC(<#= ctor.FactoryMethodImplName #>(<#= GetArgumentListAsString(ctor) #>));
+Cleanup:
+    RRETURN(hr);
+}
+
+<#     }
+   }
+   if (Model.NeedsActivateInstance) {
+#>
+IFACEMETHODIMP
+<#= Model.FactoryTypeName #>::ActivateInstance(
+    _Outptr_ IInspectable** ppInspectable)
+{
+    HRESULT hr = S_OK;
+    wrl::ComPtr<<#= AsCppType(Model.IdlClassInfo.AbiInterfaceFullName) #>> <#= LowerCaseFirstLetter(Model.Name) #>;
+
+    IFCPTR(ppInspectable);
+    IFC(wrl::MakeAndInitialize<<#= Model.Name #>>(&<#= LowerCaseFirstLetter(Model.Name) #>));
+
+    *ppInspectable = <#= LowerCaseFirstLetter(Model.Name) #>.Detach();
+
+Cleanup:
+    RRETURN(hr);
+}
+
+<# } #>
+// Static properties.
+
+<# var dependencyProperties = Model.DependencyProperties.Where(p => !p.IsAbstract);
+   if (dependencyProperties.Any()) { #>
+// Dependency properties initializing functions
+<#      foreach (var p in dependencyProperties) { #>
+<#= IncludeTemplate<InitializeProperty>(p) #>
+
+<#      }
+   }#>
+<# if (Model.HasPropertyChangeCallback && (Model.DependencyProperties.Any() || Model.DeclaredAttachedProperties.Any())) { #>
+// Property changed event handler
+HRESULT <#= Model.GeneratedFactoryName #>::OnPropertyChanged(
+    _In_ <#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyObject") #>* pSender,
+    _In_ <#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyProperty") #>ChangedEventArgs* pArgs)
+{
+    HRESULT hr = S_OK;
+    wrl::ComPtr<<#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyObject") #>> spSenderAsDO(pSender);
+    wrl::ComPtr<I<#= Model.Name #>> sp<#= Model.Name #>;
+
+    IFC(spSenderAsDO.As(&sp<#= Model.Name #>));
+    IFC(static_cast<<#= Model.Name #>*>(sp<#= Model.Name #>.Get())->OnPropertyChanged(pArgs));
+
+Cleanup:
+    RRETURN(hr);
+}
+
+<# } #>
+// Dependency properties.
+<# foreach (var p in Model.IdlClassInfo.DependencyProperties.Where(p => !p.IsAbstract)) { #>
+IFACEMETHODIMP <#= Model.GeneratedFactoryName #>::get_<#= p.Name #>Property(_Outptr_ <#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyProperty") #>** ppValue)
+{
+    HRESULT hr = S_OK;
+    
+    ARG_VALIDRETURNPOINTER(ppValue);
+    IFC(s_<#= p.Name #>Property.CopyTo(ppValue));
+
+Cleanup:
+    RRETURN(hr);
+}
+
+<# } #>
+
+// Attached properties.
+<# foreach (var a in Model.DeclaredAttachedProperties) { #>
+<#= IncludeTemplate<AttachedPropertyImpl>(a) #>
+
+<# } #>
+
+// Static methods.
+<# foreach (var m in Model.StaticMethods.Where(m => m.GenerateStub)) { #>
+<#= IncludeTemplate<Method>(m) #>
+
+<# } #>

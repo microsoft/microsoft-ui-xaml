@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>Utility</ConfigurationType>
+        <ProjectGuid>{f24b3ecb-bd87-4626-b17c-d8cc3e253f32}</ProjectGuid>
+        <MergeWinMd>false</MergeWinMd>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+
+    <ItemGroup>
+        <Midl Include="microsoft.ui.xaml.controls.controls.idl" CopyToPublicHeadersPath="true" />
+        <Midl Include="microsoft.ui.xaml.controls.controls2.idl" CopyToPublicHeadersPath="true" />
+    </ItemGroup>
+    
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

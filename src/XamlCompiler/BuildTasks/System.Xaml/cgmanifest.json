@@ -1,0 +1,16 @@
+{
+    "$schema": "https://json.schemastore.org/component-detection-manifest.json",
+    "version": 1,
+    "registrations": [
+        {
+            "component": {
+                "type": "git",
+                "git": { 
+                    "repositoryUrl": "https://github.com/dotnet/wpf", 
+                    "commitHash": "35fc9697cc539644056d5cd13a3faefde0b5fc4e", 
+                },
+            },
+            "developmentDependency": false,
+        }
+    ],
+}

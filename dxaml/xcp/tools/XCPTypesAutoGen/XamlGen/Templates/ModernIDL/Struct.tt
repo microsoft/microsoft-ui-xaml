@@ -1,0 +1,29 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="ModernIdlCodeGenerator<ClassDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+
+<# this.WriteAttributes(Model); #>
+struct <#= Model.IdlTypeInfo.Name #>
+{
+<#      foreach (var property in Model.IdlClassInfo.StructFields) { #>
+    <#= property.PropertyType.IdlTypeName #> <#= property.Name #>;
+<#      } #>
+};
+<# if (Model.IdlClassInfo.HasStructHelperClass) { #>
+<# this.WriteRuntimeClassAttributes(Model); #>
+runtimeclass <#= Model.IdlClassInfo.RuntimeClassName #>
+{
+<# foreach (var property in Model.IdlClassInfo.StaticProperties) { #>
+    <# WriteProperty(PropertyModel.Static(property), Model.Version); #>
+<# } #>
+<# foreach (var method in Model.IdlClassInfo.StaticMethods) { #>
+    <# WriteMethod(MethodModel.Static(method)); #>
+<# } #>
+<# foreach (var method in Model.IdlClassInfo.InstanceMethods) { #>
+    <# WriteMethod(MethodModel.Static(method)); #>
+<# } #>
+};
+<# } #>

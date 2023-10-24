@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <!--
+        There are already some MSBuild projects in the build tree.  NT Build handles these by passing in a series of
+        property values when it executes them.  This legacy file will (when not being run under NT) set those 
+        appropriate values.
+    -->
+    
+    <!-- Note, unlike our vcx projects which use a default props file to determine the Configuration and Platfrom (if they -->
+    <!--       weren't explicitly specified), these legacy projects seem to do it themselves and will specify a platform   -->
+    <!--       of "AnyCPU".  Unfortunately, this doesn't work for us because we need to know the platform to determine the -->
+    <!--       the appropriate directory.  So we rely on our default values (which are retrieved from environment          -->
+    <!--       variables.  I don't know how this will work in the lifted repro.                                            -->
+    <PropertyGroup>
+        <LegacyConfiguration>$(Configuration)</LegacyConfiguration>
+        <LegacyPlatform>$(Platform)</LegacyPlatform>
+        <Configuration Condition=" '$(Configuration)' == '' ">$(DefaultProjectConfiguration)</Configuration>
+        <Platform Condition="'$(Platform)' == ''">$(DefaultProjectPlatform)</Platform>
+    </PropertyGroup>
+    
+    <!-- Now that we have computed our paths, restore them so the project can do what it normally would do. -->
+    <PropertyGroup>
+        <Configuration>$(LegacyConfiguration)</Configuration>
+        <Platform>$(LegacyPlatform)</Platform>
+    </PropertyGroup>
+    
+    <PropertyGroup>
+        <ObjectDirectory>.</ObjectDirectory>
+        <ObjectPath>$(XamlBuildPath)</ObjectPath>
+        <SdkLibPath>$(WindowsUmLibPath)</SdkLibPath>
+        <CrtLibPath>$(WindowsUmLibPath)</CrtLibPath>
+
+        <MinimumVisualStudioVersion>15</MinimumVisualStudioVersion>
+        <GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
+
+        <!-- It looks like NTBuild will call these projects in multiple passes with different targets. -->
+        <!-- The proper way for us to handle this should be to change the default target on the        -->
+        <!-- project to be the one we need as a dependency and then we can add additional calls to     -->
+        <!-- msbuild for the rest.  But right now I am only dealing with the Private Infrastructure    -->
+        <!-- stuff, so this is what it needs.                                                          -->
+        <!-- <MSBuildProjectDefaultTargets>BuildGenerated</MSBuildProjectDefaultTargets> -->
+    </PropertyGroup>
+</Project>

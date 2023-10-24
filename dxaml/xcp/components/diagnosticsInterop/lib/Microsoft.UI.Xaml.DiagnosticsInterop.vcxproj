@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{f16e6fee-0a31-46d5-a6c9-cf19855e7266}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+
+    <PropertyGroup>
+        <XamlDiagPath>$(XamlSourcePath)\xcp\components\xamldiagnostics</XamlDiagPath>
+        <XamlDiagObjPath>$(XamlBinaryPath)\xcp\components\xamldiagnostics</XamlDiagObjPath>
+    </PropertyGroup>
+
+    <Import Project="$(XcpPath)\components\common.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(FrameworkUdkIncPath);
+            $(XamlDiagPath)\inc;
+            $(XamlDiagObjPath)\idl;
+            $(XamlSourcePath)\xcp\dxaml\lib;
+            $(XamlSourcePath)\xcp\dxaml\lib\winrtgeneratedclasses;
+            $(XamlSourcePath)\xcp\components;
+            $(XamlSourcePath)\xcp\components\style\inc;
+            $(XamlSourcePath)\xcp\components\valueBoxer\inc;
+            $(XamlSourcePath)\xcp\components\collection\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\PropertyChainEvaluator.cpp"/>
+        <ClCompile Include="..\PropertyChainIterator.cpp"/>
+        <ClCompile Include="..\MetadataIterator.cpp"/>
+        <ClCompile Include="..\ResourceGraph.cpp"/>
+        <ClCompile Include="..\DiagnosticsInterop.cpp"/>
+        <ClCompile Include="..\ResourceDependency.cpp"/>
+        <ClCompile Include="..\StyleContext.cpp"/>
+        <ClCompile Include="..\Unsealer.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XamlDiagPath)\idl\xamlom.vcxproj" Project="{c6e1e90c-ee33-4352-a8de-067b013c7cc9}"/>
+        <ProjectReference Include="$(XcpPath)\components\pch\prodexcept\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{d4b4d716-47d2-4b4b-8765-f879a171f1a2}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

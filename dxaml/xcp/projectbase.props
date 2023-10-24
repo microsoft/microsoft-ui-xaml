@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <Import Project="$(XamlSourcePath)\common.props"/>
+
+    <Import Project="$(XamlSourcePath)\msbuild\buildsettings\ETWManifestUsage.props"/>
+
+    <!-- # CASE_SENSITIVE_COMPARE                    -->
+    <!--                                             -->
+    <!-- Define this to allow case sensitive scripts -->
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) CASE_SENSITIVE_COMPARE=1; USE_COM_CONTEXT_DEF;</ProjectPreprocessorDefinitions>
+
+        <!-- #  XCP_MONITOR - debugging control                                 -->
+        <!--                                                                    -->
+        <!-- XCP monitoring is turned on by default in debug builds on Windows. -->
+        <!--                                                                    -->
+        <!-- XCP monitoring enables leak checking, and use of the xcpmon.exe    -->
+        <!-- to capture trace messages, IFC failures, Assertion messages and    -->
+        <!-- full details of leaked memory include stack traces.                -->
+        <ProjectPreprocessorDefinitions Condition="'$(XcpMonitor)'!=''">$(ProjectPreprocessorDefinitions) XCP_MONITOR=$(XcpMonitor);</ProjectPreprocessorDefinitions>
+
+        <!-- This flag is largely undocumented. It's used very sparingly across Windows, and appears to affect -->
+        <!-- passing an undocumented compiler flag in tools\makefile.def. Leaving intact for now.              -->
+        <!-- TODO: Reach out to the build/compiler team about this flag and its purpose.                       -->
+        <GuardCheckesp>1</GuardCheckesp>
+    </PropertyGroup>
+</Project>

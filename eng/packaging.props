@@ -1,0 +1,24 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project>
+  <!--
+    This file defines properties for how packaging works. The way we build the WinUI Alpha package is
+    we output the structure of the package to the BuildOutput\packaging location.
+  -->
+  <PropertyGroup>
+    <WinUIRuntimeIdentifier Condition="'$(Platform)' == 'Win32' or '$(Platform)'=='AnyCPU'">win10-x86</WinUIRuntimeIdentifier>
+    <WinUIRuntimeIdentifier Condition="'$(WinUIRuntimeIdentifier)' == ''">win10-$(Platform.ToLowerInvariant())</WinUIRuntimeIdentifier>
+
+    <PackageOutputLocation>$(ArtifactsRoot)packaging\$(Configuration)</PackageOutputLocation>
+
+    <!-- Allow for apps that even build release to use the debug version of WinUI -->
+    <PackageOutputLocation Condition="'$(UseDebugWinUI)' == 'true' and '$(Configuration)' == 'Release'">$(ArtifactsRoot)packaging\Debug</PackageOutputLocation>
+
+    <!-- Common properties that define the layout of the package -->
+    <WinMDPackageLocation>$(PackageOutputLocation)\lib\uap10.0</WinMDPackageLocation>
+    <NativeAssemblyPackageLocation>$(PackageOutputLocation)\runtimes\$(WinUIRuntimeIdentifier)\native</NativeAssemblyPackageLocation>
+    <ToolsPackageLocation>$(PackageOutputLocation)\tools</ToolsPackageLocation>
+    <BuildTargetsPackageLocation>$(PackageOutputLocation)\build</BuildTargetsPackageLocation>
+    <CSWinRTInteropAssemblyPackageLocation>$(PackageOutputLocation)\lib\$(DotNetCoreTargetFrameworkMonikerForPackaging)</CSWinRTInteropAssemblyPackageLocation>
+    <IncludesPackageLocation>$(PackageOutputLocation)\include</IncludesPackageLocation>
+  </PropertyGroup>
+</Project>

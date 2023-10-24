@@ -1,0 +1,658 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <GenerateManifest>false</GenerateManifest>
+    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <DisableProjectRootFeatureStagingXmlSearch>true</DisableProjectRootFeatureStagingXmlSearch>
+  </PropertyGroup>
+  <!-- Run code analysis: Release (locally only) -OR- Debug (pipeline only) -OR- Debug Intellisense -->
+  <PropertyGroup Condition="     ('$(Configuration)'=='Release' AND '$(TF_BUILD)'!='True') OR     ('$(Configuration)'=='Debug' AND '$(TF_BUILD)'=='True') OR     ('$(Configuration)'=='Debug' AND '$(IntelliSenseBuild)'=='1')     ">
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+  </PropertyGroup>
+  <PropertyGroup>
+    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+    <CodeAnalysisRuleSet>$(MUXProjectRoot)build\PrefastWarnings.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\Generated;$(MSBuildProjectDirectory)\..\GeneratedExperimental;$(ProjectDir);$(GeneratedFilesDir);$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <IgnoreAllDefaultLibraries>$(IgnoreAllDefaultLibraries)</IgnoreAllDefaultLibraries>
+      <GenerateWindowsMetadata>true</GenerateWindowsMetadata>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <Midl>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..;$(MSBuildProjectDirectory)\..\..\idl;$(MiniWindowsSDKIncludePath)</AdditionalIncludeDirectories>
+      <Enumclass>false</Enumclass>
+      <AdditionalOptions>%(AdditionalOptions) /noattributename</AdditionalOptions>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>user32.lib;mincore.lib;dxguid.lib;dcomp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <!-- Microsoft.winmd will contain the definition of both public, preview and private types. -->
+      <WindowsMetadataFile>$(OutDir)$(ProjectWinMDName)</WindowsMetadataFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <AdditionalOptions>/Brepro %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_x64_Desktop)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_x86_Desktop)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='ARM64'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_arm64_Desktop)</AdditionalLibraryDirectories>
+    </Link>
+    <ClCompile>
+      <DisableSpecificWarnings>4100;4189;4467;4702;6326;6285;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <!-- Disabling 4505 because it's firing incorrectly on C++/WinRT headers. Filed this issue for tracking: https://developercommunity.visualstudio.com/content/problem/848007/warning-4505-unreferenced-local-function-has-been.html-->
+      <!-- Temporarily disabling 6285, recent regression in VS 16.10 Preview 4 (which vs_buildtools is somehow installing): https://vsf-prod.westus.cloudapp.azure.com/content/problem/1429721/codeanalysis-warning-c6285-in-stl-functionalh-in-v.html -->
+      <DisableSpecificWarnings>4505;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>
+        %(AdditionalIncludeDirectories);
+        $(WindowsSDK_IncludePath)\winrt;
+        $(MSBuildProjectDirectory)\..\inc;
+        $(MSBuildProjectDirectory)\..\Generated;
+        $(OutDir);
+      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+        $(XamlPrivateComHeadersPath);
+        $(GeneratedFilesDir);
+        $(GeneratedFilesDir)\Automation\Peers;
+        $(GeneratedFilesDir)\Controls;
+        $(GeneratedFilesDir)\Controls\Primitives;
+        $(GeneratedFilesDir)\Media;
+        $(GeneratedFilesDir)\XamlTypeInfo;
+        $(GeneratedFilesDir)\Microsoft\UI\Private\Composition\Effects;
+        $(GeneratedFilesDir)\Microsoft\UI\Private\Controls;
+        $(GeneratedFilesDir)\Microsoft\UI\Private\Media;
+        %(AdditionalIncludeDirectories);
+        $(MiniWindowsSDKIncludePath);
+      </AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
+      <AdditionalOptions>/bigobj /await %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Wv:18 /Zc:lambda %(AdditionalOptions)</AdditionalOptions>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <ShowIncludes>false</ShowIncludes>
+      <!-- Disable RTTI to keep binary size down (adds about 50% to release dll size) -->
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <ControlFlowGuard>Guard</ControlFlowGuard>
+      <PreprocessorDefinitions>DISABLE_WINRT_DEPRECATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <!-- Disable multi-proc building on low powered machines, such as the lab machines -->
+      <MultiProcessorCompilation Condition="'$(TF_BUILD)'=='True' AND $(NUMBER_OF_PROCESSORS) &lt;= 4">false</MultiProcessorCompilation>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)' == 'Debug'">
+    <Midl>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);DEBUG;DBG</PreprocessorDefinitions>
+    </Midl>
+    <ClCompile>
+      <PreprocessorDefinitions>DEBUG;DBG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- This should be the default for a Debug build, but for some reason we need to explictly set it here-->
+      <!-- There might be other related settings that are also incorrect -->
+      <!-- Work Item 43952639 to follow up on this-->
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>$(GenerateDebugInformation)</GenerateDebugInformation>
+    </Link>
+    <ResourceCompile>
+      <PreprocessorDefinitions>DEBUG;DBG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)' == 'Release'">
+    <ClCompile>
+      <AdditionalOptions>%(AdditionalOptions) /d2FH4 /Gw</AdditionalOptions>
+      <EnablePREfast>true</EnablePREfast>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_STATIC_RTTI=0</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>MinSpace</Optimization>
+    </ClCompile>
+    <Link>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <AdditionalOptions>/debugtype:cv,fixup %(AdditionalOptions)</AdditionalOptions>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\inc\AutoHandle.h" />
+    <ClInclude Include="..\inc\BoxHelpers.h" />
+    <ClInclude Include="..\inc\BuildMacros.h" />
+    <ClInclude Include="..\inc\CastHelpers.h" />
+    <ClInclude Include="..\inc\CommandingHelpers.h" />
+    <ClInclude Include="..\inc\common.h" />
+    <ClInclude Include="..\inc\CppWinRTHelpers.h" />
+    <ClInclude Include="..\inc\CppWinRTIncludes.h" />
+    <ClInclude Include="..\inc\DispatcherHelper.h" />
+    <ClInclude Include="..\inc\enum_array.h" />
+    <ClInclude Include="..\inc\enum_vector.h" />
+    <ClInclude Include="..\inc\GlobalDependencyProperty.h" />
+    <ClInclude Include="..\inc\ErrorHandling.h" />
+    <ClInclude Include="..\inc\RegUtil.h" />
+    <ClInclude Include="..\inc\RuntimeClassHelpers.h" />
+    <ClInclude Include="..\inc\SharedHelpers.h" />
+    <ClInclude Include="..\inc\tracker_ref.h" />
+    <ClInclude Include="..\inc\TypeHelper.h" />
+    <ClInclude Include="..\inc\CollectionHelper.h" />
+    <ClInclude Include="MUXControlsFactory.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="XamlControlsResources.h" />
+    <ClInclude Include="XamlMember.h" />
+    <ClInclude Include="XamlMetadataProvider.h" />
+    <ClInclude Include="XamlMetadataProviderGenerated.h" />
+    <ClInclude Include="XamlType.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(GeneratedFilesDir)\module.g.cpp" />
+    <ClCompile Include="CommandingHelpers.cpp" />
+    <ClCompile Include="MUXControlsFactory.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="DoubleUtil.cpp" />
+    <ClCompile Include="FloatUtil.cpp" />
+    <ClCompile Include="RegUtil.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="SharedHelpers.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\XamlControlsResources.properties.cpp" />
+    <ClCompile Include="XamlControlsResources.cpp" />
+    <ClCompile Include="XamlMember.cpp" />
+    <ClCompile Include="XamlMetadataProvider.cpp" />
+    <ClCompile Include="XamlType.cpp" />
+    <None Include="$(OutDir)XamlMetadataProviderWindowsCodeGen.cs" />
+    <None Include="WinRtType.tt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Pages which needs CustomCompile to run a different version of GenXBF, we attach MinSDKVersionRequired to Page to help CompileXaml to identify the min SDK Version -->
+    <PageRequiringCustomCompilation Include="$(OutDir)generic.xaml">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)themeresources.xaml">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)compact_themeresources.xaml" Condition="$(MUXFinalRelease) != 'true'">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <Page Include="@(PageRequiringCustomCompilation)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(MUXProjectRoot)dxaml\xcp\dxaml\idl\winrt\merged\private\Microsoft.UI.Xaml.vcxproj" />
+    <!--
+      The above project reference will merge WinUI and IXP winmds, and produce a Microsoft.WinUI, Microsoft.Composition,
+      and Microsoft.Input winmds. So here we reference the external winmds, but exclude IXP.
+     -->
+    <Reference Include="@(ExternalWinMDs)" Exclude="@(IxpWinMDs)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="$(WindowsSdkPath)\References\$(MuxSdkVersion)\*.winmd" />
+  </ItemGroup>
+  <PropertyGroup>
+    <UnstrippedMetadataWinmdPath>$(IntDir)\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd</UnstrippedMetadataWinmdPath>
+    <StrippedMetadataWinmdPath>$(IntDir)StrippedWinMD\Microsoft.winmd</StrippedMetadataWinmdPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <T4Template Include="XamlMetadataProviderGenerated.tt">
+      <OutputFile>XamlMetadataProviderGenerated.h</OutputFile>
+    </T4Template>
+    <None Include="XamlMetadataProviderWindowsCodeGen.tt" />
+    <None Include="CommonHelpers.tt" />
+    <None Include="CppWinRTFilterTypes.tt" />
+    <T4ParameterValues Include="MetadataWinmdPaths">
+      <Value>$(StrippedMetadataWinmdPath)</Value>
+    </T4ParameterValues>
+    <T4ParameterValues Include="PropertiesHeadersDirectory">
+      <Value>$(MUXCProjectRoot)dev\Generated</Value>
+    </T4ParameterValues>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- This natvis support is not ready for prime time
+    <Natvis Include="$(IntermediateOutputPath)CppWinRT\Platform\winrt\cppwinrt.natvis">
+    </Natvis>
+    <Natvis Include="$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.natvis">
+    </Natvis>
+    -->
+  </ItemGroup>
+  <Import Project="$(CppTargetsFilePath)" />
+  <Import Project="$(MUXCProjectRoot)CustomInlineTasks.targets" />
+  <!-- We make it so that devs just include the en-us version of their string resources in the project. This is because
+       we only want people editing the en-us version (it's the only file that's input to the localization process) and
+       because if we use ** in the item target then the project shows 60+ 'resources.resw' files and it is completely unusable.
+
+       To work around this we take all the PRIResource items and find/replace 'en-us' to '**' -->
+  <Target Name="ExpandEnUSPRIResourceToWildcards" BeforeTargets="_PrepareForBuild">
+    <Message Text="Input PRIResource = @(PRIResource)" />
+    <ItemGroup>
+      <!-- Replace all en-us in the list with ** -->
+      <PRIResourceExpanded Include="@(PRIResource)">
+        <Replaced>$([System.String]::Copy('%(Identity)').ToLowerInvariant().Replace('en-us','**'))</Replaced>
+      </PRIResourceExpanded>
+      <!-- Remove all entries in the old PRIResource list so we can take it over -->
+      <PRIResource Remove="@(PRIResource)" />
+    </ItemGroup>
+    <!-- Use CreateItem to expand all the ** to individual full paths -->
+    <CreateItem Include="@(PRIResourceExpanded -> '%(Replaced)')">
+      <Output TaskParameter="Include" ItemName="PRIResource" />
+    </CreateItem>
+    <Message Text="Expanded PRIResource = @(PRIResource)" />
+  </Target>
+  <!-- Override the target which appends the XamlCompiler generated files to the ClCompile input list.
+       Doing this makes it so that we get XBF generation but ignore the XamlCompiler outputs (which are
+       in C++/CX format and do us no good. We are currently hand-authoring the necessary parts of our
+       IXamlMetadataProvider implementation. -->
+  <Target Name="ComputeXamlGeneratedCompileInputs" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(NuGetPackageRoot)\MUXCustomBuildTasks.$(MuxCustomBuildTasksPackageVersion)\build\MUXCustomBuildTasks.targets" Condition="Exists('$(NuGetPackageRoot)\MUXCustomBuildTasks.$(MuxCustomBuildTasksPackageVersion)\build\MUXCustomBuildTasks.targets')" />
+    <Import Project="$(NuGetPackageRoot)\Microsoft.Build.Tasks.Git.1.1.1\build\Microsoft.Build.Tasks.Git.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Build.Tasks.Git.1.1.1\build\Microsoft.Build.Tasks.Git.targets')" />
+    <Import Project="$(NuGetPackageRoot)\Microsoft.SourceLink.Common.1.1.1\build\Microsoft.SourceLink.Common.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.SourceLink.Common.1.1.1\build\Microsoft.SourceLink.Common.targets')" />
+    <Import Project="$(NuGetPackageRoot)\Microsoft.SourceLink.GitHub.1.1.1\build\Microsoft.SourceLink.GitHub.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.SourceLink.GitHub.1.1.1\build\Microsoft.SourceLink.GitHub.targets')" />
+    <Import Project="$(NuGetPackageRoot)\Microsoft.Windows.SDK.cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\build\native\Microsoft.Windows.SDK.cpp.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Windows.SDK.cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\build\native\Microsoft.Windows.SDK.cpp.targets')" />
+    <Import Project="$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="$(NuGetPackageRoot)\Microsoft.Web.WebView2.$(WebView2Version)\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Web.WebView2.$(WebView2Version)\build\native\Microsoft.Web.WebView2.targets')" />
+    <Import Project="$(PkgMicrosoft_PGO_Helpers_Cpp)\build\Microsoft.PGO-Helpers.Cpp.targets" />
+    <Import Project="$(NuGetPackageRoot)\Microsoft.Windows.Wil.Internal.0.2.115\build\native\Microsoft.Windows.Wil.Internal.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Windows.Wil.Internal.0.2.115\build\native\Microsoft.Windows.Wil.Internal.targets')" />
+  </ImportGroup>
+  <PropertyGroup>
+    <MergedWinmdDirectory>$(OutDir)Merged</MergedWinmdDirectory>
+    <UnmergedWinmdDirectory>$(OutDir)Unmerged</UnmergedWinmdDirectory>
+    <CppWinRTProjectWinMD>$(OutDir)$(ProjectWinMDName)</CppWinRTProjectWinMD>
+  </PropertyGroup>
+  <!-- It's costly to include all of our default templates as merged dictionaries.
+       Instead of that, we'll compile their contents into a statically merged XAML file.-->
+  <Target Name="CategorizeSharedPages">
+    <ItemGroup>
+      <!-- We merge the contents of the shared XAML pages into our generic and theme resources XAML files,
+           so we don't want to actually build these pages. We'll remove them prior to any processing of Page items. -->
+      <Page Remove="@(SharedPage)" />
+    </ItemGroup>
+    <ItemGroup>
+      <UndefinedPage Include="@(SharedPage)" Condition="'%(Type)' == 'Undefined'" />
+    </ItemGroup>
+    <Error File="@(UndefinedPage -> '%(Filename)%(Extension)')" Condition="'%(Filename)%(Extension)' != ''" Text="Type of %(Filename)%(Extension) was not defined in including .vcxitems file. Please annotate &lt;Page&gt; item tag with &lt;Type&gt; item metadata." />
+    <ItemGroup>
+      <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == '1'" />
+      <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == '2'" />
+      <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == '3'" />
+      <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == '4'" />
+      <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == '5'" />
+      <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == '6'" />
+      <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == '7'" />
+      <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == '8'" />
+      <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == 'Undefined'" />
+      <StylePage Include="@(OrderedSharedPage)" Condition="'%(Type)' == 'DefaultStyle'" />
+      <ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Type)' == 'ThemeResources'" />
+    </ItemGroup>
+  </Target>
+  <PropertyGroup>
+    <GenerateXamlFileBeforeTargets>BeforeBuildGenerateSources;CompileXaml;Prep_ComputeProcessXamlFiles;CompilePageRequiringCustomCompilation</GenerateXamlFileBeforeTargets>
+  </PropertyGroup>
+  <!-- MergeXamlConfig is using msbuild task batching, each BatchMergeXaml below is executed multilple times. 
+        https://docs.microsoft.com/en-us/visualstudio/msbuild/item-metadata-in-task-batching?view=vs-2019 -->
+  <Target Name="GenerateGenericResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(StylePage)" Outputs="$(OutDir)generic.xaml">
+    <Message Text="Generating generic resources XAML file " />
+    <BatchMergeXaml Pages="@(StylePage)" PagesFilteredBy="%(MergeXamlConfig.FilterAttribute)" MergedXamlFile="$(OutDir)generic%(MergeXamlConfig.Postfix).xaml" TlogReadFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile%(MergeXamlConfig.Postfix).read.1u.tlog" TlogWriteFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile%(MergeXamlConfig.Postfix).write.1u.tlog" />
+    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
+      PropertyGroup values are always evaluated even when their enclosing target is skipped,
+      whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
+      to only set a property if the target actually runs. -->
+    <CreateProperty Value="True">
+      <Output TaskParameter="ValueSetByTask" PropertyName="GenericXamlFileNeedsCompilation" />
+    </CreateProperty>
+  </Target>
+  <Target Name="GenerateThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(ThemeResourcePage)" Outputs="$(OutDir)themeresources.xaml">
+    <Message Text="Generating theme resources XAML file " />
+    <BatchMergeXaml Pages="@(ThemeResourcePage)" PagesFilteredBy="%(MergeXamlConfig.FilterAttribute)" MergedXamlFile="$(OutDir)themeresources%(MergeXamlConfig.Postfix).xaml" TlogReadFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile%(MergeXamlConfig.Postfix).read.1u.tlog" TlogWriteFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile%(MergeXamlConfig.Postfix).write.1u.tlog" />
+    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
+      PropertyGroup values are always evaluated even when their enclosing target is skipped,
+      whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
+      to only set a property if the target actually runs. -->
+    <CreateProperty Value="True">
+      <Output TaskParameter="ValueSetByTask" PropertyName="ThemeResourceFileNeedsCompilation" />
+    </CreateProperty>    
+  </Target>
+  <!-- Controls styles were missing in packaged generic.xaml file. Merge MUX Generic.xaml with MUXC Generic.xaml and ThemeResource.xaml -->
+  <Target Name="MergeMuxMuxcGenericResourceFiles" AfterTargets="GenerateThemeResourceFile" Inputs="$(ScriptPath)GenerateMergedXaml.ps1;$(MUXProjectRoot)dxaml\xcp\dxaml\themes\generic.xaml;$(OutDir)generic.xaml;$(OutDir)themeresources.xaml" Outputs="$(TempRoot)\generic.xaml">
+    <RunPowershellScript Path="$(ScriptPath)GenerateMergedXaml.ps1" Parameters="-XamlFileList &quot;$(MUXProjectRoot)dxaml\xcp\dxaml\themes\generic.xaml;$(OutDir)generic.xaml;$(OutDir)themeresources.xaml&quot; -MergedXamlFilePath &quot;$(TempRoot)\generic.xaml&quot;" FilesWritten="$(TempRoot)\generic.xaml" />
+  </Target>
+  <!-- Copy merged MUX's generic.xaml and MUXC's generic.xaml and ThemeResources file to the package -->
+  <Target Name="CopyMergedMuxMuxcGenericResourceFile" AfterTargets="MergeMuxMuxcGenericResourceFiles">
+    <ItemGroup>
+      <PackageContent Include="$(TempRoot)\generic.xaml" PackageLocation="$(WinMDPackageLocation)\Microsoft.UI\Themes"/>
+      <PackageContent Include="$(TempRoot)\generic.xaml" PackageLocation="$(CSWinRTInteropAssemblyPackageLocation)\Microsoft.WinUI\Themes"/>
+    </ItemGroup>
+  </Target>
+  <Target Name="GenerateCompactThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(ThemeResourcePage);@(CompactPage)" Outputs="$(OutDir)compact_themeresources.xaml">
+    <Message Text="Generating theme resources XAML file " />
+    <BatchMergeXaml Pages="@(ThemeResourcePage);@(CompactPage)" PagesFilteredBy="%(MergeXamlConfig.FilterAttribute)" MergedXamlFile="$(OutDir)compact_themeresources%(MergeXamlConfig.Postfix).xaml" TlogReadFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile%(MergeXamlConfig.Postfix).read.1u.tlog" TlogWriteFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile%(MergeXamlConfig.Postfix).write.1u.tlog" />
+    <!-- NB: We have to use CreateProperty here instead of PropertyGroup.
+      PropertyGroup values are always evaluated even when their enclosing target is skipped,
+      whereas CreateProperty has the TaskParameter ValueSetByTask that can be used
+      to only set a property if the target actually runs. -->
+    <CreateProperty Value="True">
+      <Output TaskParameter="ValueSetByTask" PropertyName="CompactThemeResourceFileNeedsCompilation" />
+    </CreateProperty>
+  </Target>
+  <Target Name="DeleteInputValidate" BeforeTargets="PrepareForBuild" Condition="'$(MUXFinalRelease)'=='true'">
+    <RunPowershellScript Path="$(ScriptPath)UpdateThemeResources.ps1" />
+  </Target>
+  <Target Name="RemovePageRequiringCustomCompilation" AfterTargets="BeforeBuildGenerateSources" BeforeTargets="MarkupCompilePass2" Condition="'@(PageRequiringCustomCompilation)' != ''">
+    <Message Text="RemovePageRequiringCustomCompilation" />
+    <ItemGroup>
+      <Page Remove="@(PageRequiringCustomCompilation)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="AddPageRequiringCustomCompilation" BeforeTargets="CompilePageRequiringCustomCompilation" AfterTargets="MarkupCompilePass2" Condition="'@(PageRequiringCustomCompilation)' != ''">
+    <Message Text="AddPageRequiringCustomCompilation" />
+    <ItemGroup>
+      <Page Include="@(PageRequiringCustomCompilation)" />
+    </ItemGroup>
+  </Target>
+  <!-- The CompilePageRequiringCustomCompilation contents are mostly copied from the
+       definition of the MarkupCompilePass2 target from Microsoft.Windows.UI.Xaml.Common.targets.
+       We use it to run the same XAML compilation functionality, except against a different SDK. -->
+  <Target Name="CompilePageRequiringCustomCompilation" AfterTargets="MarkupCompilePass2" DependsOnTargets="$(MarkupCompilePass2DependsOn)">
+    <PropertyGroup>
+      <WarningLevel>$(PrevWarningLevel)</WarningLevel>
+      <WarningLevel Condition="'$(WarningLevel)' == '' and '$(ExplicitResetWarningSuppression)' == 'true'">1</WarningLevel>
+      <!-- The Name of the Local Assembly in Managed and Native -->
+      <LocalAssembly Condition="'$(LocalAssembly)' == '' and Exists(@(XamlIntermediateAssembly))">
+        @(XamlIntermediateAssembly->'%(Identity)')
+      </LocalAssembly>
+    </PropertyGroup>
+    <CallTarget Targets="SDKRedistOutputGroup" Condition="'$(IncludeSDKRedistOutputGroup)' == 'true'">
+      <Output TaskParameter="TargetOutputs" ItemName="_SDKRedistOutputGroupOutput_xaml" />
+    </CallTarget>
+    <ItemGroup>
+      <SdkXamlItems Include="@(_SDKRedistOutputGroupOutput_xaml)" Condition="'%(Extension)'=='.xaml'" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'generic' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\generic.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'themeresources' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\themeresources.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'compact_themeresources' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\compact_themeresources.xbf'))" />
+    </ItemGroup>
+    <Message Condition="'@(PageToBeCompiled)' != ''" Text="CustomCompile with min version %(PageToBeCompiled.MinSDKVersionRequired) for Pages: @(PageToBeCompiled)" />
+    <!-- We need to do both Pass1 and Pass2 to properly plug into incremental building, even though we only need the output of Pass2. -->
+    <CompileXaml Condition="'@(PageToBeCompiled)' != ''"
+        LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
+        Language="$(XamlLanguage)"
+        RootNamespace="$(RootNamespace)"
+        XamlPages="@(Page)"
+        XamlApplications="@(ApplicationDefinition)"
+        PriIndexName="$(PriIndexName)"
+        ProjectName="$(XamlProjectName)"
+        IsPass1="True"
+        CodeGenerationControlFlags="$(XamlCodeGenerationControlFlags)"
+        ProjectPath="$(MSBuildProjectFullPath)"
+        CIncludeDirectories="$(XamlCppIncludeDirectories)"
+        OutputPath="$(XamlGeneratedOutputPath)"
+        OutputType="$(OutputType)"
+        ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
+        ReferenceAssemblies="@(ReferencePath);$(IntermediateOutputPath)Merged\Microsoft.winmd"
+        ForceSharedStateShutdown="False"
+        CompileMode="RealBuildPass1"
+        XAMLFingerprint="$(XAMLFingerprint)"
+        UseVCMetaManaged="$(UseVCMetaManaged)"
+        FingerprintIgnorePaths="$(XAMLFingerprintIgnorePaths)"
+        VCInstallDir="$(VCInstallDir)"
+        SavedStateFile="$(IntDir)CustomXamlSaveStateFile.xml"
+        SuppressWarnings="$(SuppressXamlWarnings)"
+        TargetPlatformMinVersion="%(PageToBeCompiled.MinSDKVersionRequired)"
+        WindowsSdkPath="$(WindowsSdkPath)"
+        XamlResourceMapName="$(XamlResourceMapName)"
+        XamlComponentResourceLocation="$(XamlComponentResourceLocation)"
+        FeatureControlFlags="@(XamlFeatureControlFlags)"
+        VCInstallPath32="$(VCInstallPath32)"
+        VCInstallPath64="$(VCInstallPath64)"
+        GenXbfPath="$(GenXbfPath)"
+        PrecompiledHeaderFile="$(PrecompiledHeaderFile)">
+      <Output Condition="'$(ManagedAssembly)'!='false' " ItemName="Compile" TaskParameter="GeneratedCodeFiles" />
+      <!-- FileWrites is used in Microsoft.Common.Targets for "Clean" build -->
+      <Output ItemName="FileWrites" TaskParameter="GeneratedCodeFiles" />
+      <Output ItemName="FileWrites" TaskParameter="GeneratedXamlFiles" />
+      <Output ItemName="FileWrites" TaskParameter="GeneratedXbfFiles" />
+      <Output ItemName="_GeneratedCodeFiles" TaskParameter="GeneratedCodeFiles" />
+      <Output ItemName="_GeneratedXamlFiles" TaskParameter="GeneratedXamlFiles" />
+      <Output ItemName="_GeneratedXbfFiles" TaskParameter="GeneratedXbfFiles" />
+    </CompileXaml>
+    <CompileXaml Condition="'@(PageToBeCompiled)' != ''"
+        LanguageSourceExtension="$(DefaultLanguageSourceExtension)"
+        Language="$(Language)"
+        RootNamespace="$(RootNamespace)"
+        XamlPages="@(PageToBeCompiled)"
+        XamlApplications="@(ApplicationDefinition)"
+        SdkXamlPages="@(SdkXamlItems)"
+        PriIndexName="$(PriIndexName)"
+        ProjectName="$(XamlProjectName)"
+        IsPass1="False"
+        DisableXbfGeneration="$(DisableXbfGeneration)"
+        DisableXbfLineInfo="$(DisableXbfLineInfo)"
+        CodeGenerationControlFlags="$(XamlCodeGenerationControlFlags)"
+        ClIncludeFiles="@(ClInclude)"
+        CIncludeDirectories="$(XamlCppIncludeDirectories)"
+        LocalAssembly="$(LocalAssembly)"
+        ProjectPath="$(MSBuildProjectFullPath)"
+        OutputPath="$(XamlGeneratedOutputPath)"
+        OutputType="$(OutputType)"
+        ReferenceAssemblyPaths="@(ReferenceAssemblyPaths)"
+        ReferenceAssemblies="@(XamlReferencesToCompile);$(IntermediateOutputPath)Merged\Microsoft.winmd"
+        ForceSharedStateShutdown="False"
+        CompileMode="RealBuildPass2"
+        XAMLFingerprint="$(XAMLFingerprint)"
+        UseVCMetaManaged="$(UseVCMetaManaged)"
+        FingerprintIgnorePaths="$(XAMLFingerprintIgnorePaths)"
+        VCInstallDir="$(VCInstallDir)"
+        WindowsSdkPath="$(WindowsSdkPath)"
+        SavedStateFile="$(IntDir)CustomXamlSaveStateFile.xml"
+        RootsLog="$(XamlRootsLog)"
+        SuppressWarnings="$(SuppressXamlWarnings)"
+        TargetPlatformMinVersion="%(PageToBeCompiled.MinSDKVersionRequired)"
+        XamlResourceMapName="$(XamlResourceMapName)"
+        XamlComponentResourceLocation="$(XamlComponentResourceLocation)"
+        FeatureControlFlags="@(XamlFeatureControlFlags)"
+        VCInstallPath32="$(VCInstallPath32)"
+        VCInstallPath64="$(VCInstallPath64)"
+        GenXbfPath="$(GenXbfPath)"
+        PrecompiledHeaderFile="$(PrecompiledHeaderFile)">
+      <Output Condition=" '$(ManagedAssembly)'!='false' " ItemName="Compile" TaskParameter="GeneratedCodeFiles" />
+      <Output Condition=" '$(ManagedAssembly)'=='false' " ItemName="XamlGFiles" TaskParameter="GeneratedCodeFiles" />
+      <!-- FileWrites is used in Microsoft.Common.Targets for "Clean" build -->
+      <Output ItemName="FileWrites" TaskParameter="GeneratedCodeFiles" />
+      <Output ItemName="FileWrites" TaskParameter="GeneratedXamlFiles" />
+      <Output ItemName="FileWrites" TaskParameter="GeneratedXbfFiles" />
+      <Output ItemName="FileWrites" TaskParameter="GeneratedXamlPagesFiles" />
+      <Output ItemName="_GeneratedCodeFiles" TaskParameter="GeneratedCodeFiles" />
+      <Output ItemName="_GeneratedXamlFiles" TaskParameter="GeneratedXamlFiles" />
+      <Output ItemName="_GeneratedXbfFiles" TaskParameter="GeneratedXbfFiles" />
+      <Output ItemName="GeneratedXamlPagesFiles" TaskParameter="GeneratedXamlPagesFiles" />
+    </CompileXaml>
+    <ItemGroup>
+      <FileWrites Include="@(PageRequiringCustomCompilation -> '$(GeneratedFilesDir)Themes\%(Filename).xaml')" />
+      <FileWrites Include="@(PageRequiringCustomCompilation -> '$(GeneratedFilesDir)Themes\%(Filename).xbf')" />
+      <FileWrites Include="$(XamlSavedStateFilePath)" />
+      <FileWrites Condition="'$(XamlRootsLog)' != ''" Include="$(XamlRootsLog)" />
+
+      <!-- If there are XAML files that we didn't compile, then we'll still want to add those to FileWrites,
+           as otherwise they'll be deleted during incremental clean. -->
+      <FileWrites Include="@(PageNotCompiled -> '$(GeneratedFilesDir)Themes\%(Filename)%(Extension)')" />
+      <FileWrites Include="@(PageNotCompiled -> '$(GeneratedFilesDir)Themes\%(Filename).xbf')" />
+    </ItemGroup>
+    <Message Text="(Out) GeneratedCodeFiles: '@(_GeneratedCodeFiles)'" />
+    <Message Text="(Out) GeneratedXamlFiles: '@(_GeneratedXamlFiles)'" />
+    <Message Text="(Out) GeneratedXbfFiles: '@(_GeneratedXbfFiles)'" />
+    <Message Text="(Out) GeneratedXamlPagesFiles: '@(GeneratedXamlPagesFiles)'" />
+    <Message Text="(Out) ClCompile: '@(ClCompile)'" Condition="'$(ManagedAssembly)'=='false'" />
+    <Message Text="(Out) Compile: '@(Compile)'" Condition="'$(ManagedAssembly)'!='false'" />
+    <ItemGroup>
+      <ClCompile Include="@(GeneratedXamlPagesFiles)">
+        <CompilerIteration>XamlGenerated</CompilerIteration>
+      </ClCompile>
+    </ItemGroup>
+  </Target>
+  <Import Project="$(MUXCProjectRoot)MidlShared.targets" />
+  <Target Name="CreateReferenceWinmds" BeforeTargets="XamlMetadataCodeGenMUX;RunDependencyPropertyCodeGen">
+    <ItemGroup>
+      <ReferenceWinMDs Include="@(ExternalWinMDs);$(XamlBuildOutputRoot)\dxaml\xcp\dxaml\idl\winrt\merged\private\Merged\*.winmd" />
+      <T4ParameterValues Include="ReferenceWinmds">
+        <Value>@(_MidlReferencesDistinct);@(ReferenceWinMDs)</Value>
+      </T4ParameterValues>
+    </ItemGroup>
+  </Target>
+  <Target Name="MakeStrippedMetadata" AfterTargets="CppWinRTMergeProjectWinMDInputs" BeforeTargets="XamlMetadataCodeGenMUX" Inputs="$(UnstrippedMetadataWinmdPath)" Outputs="$(StrippedMetadataWinmdPath)">
+    <PropertyGroup>
+      <_MdMergeParameters>-v @(CppWinRTMdMergeMetadataDirectories-&gt;'-metadata_dir "%(RelativeDir)."', ' ')</_MdMergeParameters>
+      <_MdMergeParameters>$(_MdMergeParameters) -o "$(IntDir)StrippedWinMD" @(CppWinRTMdMergeInputs-&gt;'-i "%(Identity)"', ' ') -partial -n:1 -createPublicMetadata -transformExperimental:transform</_MdMergeParameters>
+    </PropertyGroup>
+    <Exec Command="$(MdMergePath)mdmerge $(_MdMergeParameters)" />
+  </Target>
+  <Target Name="XamlMetadataCodeGenMUX" AfterTargets="CppWinRTMakeComponentProjection" BeforeTargets="ClCompile" Inputs="$(StrippedMetadataWinmdPath);@(ReferenceWinMDs);XamlMetadataProviderGenerated.tt;CommonHelpers.tt;WinRtType.tt" Outputs="XamlMetadataProviderGenerated.h">
+    <!-- Run XamlMetadataProviderGenerated.tt t4 template to generate XamlMetadataProviderGenerated.h from the winmd file -->
+    <TransformTemplate Template="%(T4Template.Identity)" ParameterValues="@(T4ParameterValues)" OutputFile="%(T4Template.OutputFile)">
+      <Output TaskParameter="MSBuildProcessId" ItemName="MSBuildProcessIdsToKill" />
+    </TransformTemplate>
+    <ItemGroup>
+      <FileWrites Include="XamlMetadataProviderGenerated.h" />
+    </ItemGroup>
+  </Target>
+  <Target Name="GetExistingGeneratedFilesForDependencyPropertyCodeGen" BeforeTargets="RunDependencyPropertyCodeGen">
+    <CreateItem Include="$(MSBuildProjectDirectory)\..\Generated\*">
+      <Output TaskParameter="Include" ItemName="DependencyPropertyCodeGenOutputs" />
+    </CreateItem>
+  </Target>
+  <Target Name="RunDependencyPropertyCodeGen" AfterTargets="CppWinRTMakeComponentProjection" BeforeTargets="ClCompile" Inputs="$(UnstrippedMetadataWinmdPath);@(ReferenceWinMDs)" Outputs="@(DependencyPropertyCodeGenOutputs);$(MSBuildProjectDirectory)\..\Generated\AcrylicBrush.properties.cpp">
+    <DependencyPropertyCodeGen WinMDInput="$(UnstrippedMetadataWinmdPath)" References="@(_MidlReferencesDistinct);@(ReferenceWinMDs)" OutputDirectory="$(MSBuildProjectDirectory)\..\Generated">
+      <Output TaskParameter="MSBuildProcessId" ItemName="MSBuildProcessIdsToKill" />
+    </DependencyPropertyCodeGen>
+    <Touch Files="@(DependencyPropertyCodeGenOutputs)" />
+  </Target>
+  <Target Name="WorkAroundFastUpToDateCheckBug" AfterTargets="_GenerateProjectPriFileCore" Inputs="$(OutDir)$(TargetName).pri" Outputs="$(OutDir)$(TargetName).dll" Condition="Exists('$(OutDir)$(TargetName).dll')">
+    <Message Text="Touching '$(OutDir)$(TargetName).dll' because pri file changed to work around DevDiv bug https://devdiv.visualstudio.com/DevDiv/_workitems?id=297204" />
+    <Touch Files="$(OutDir)$(TargetName).dll" />
+  </Target>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.CodeAnalysis.BinSkim.1.3.9\tools\x86\BinSkim.exe')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.CodeAnalysis.BinSkim.1.3.9\tools\x86\BinSkim.exe'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\MUXCustomBuildTasks.$(MuxCustomBuildTasksPackageVersion)\build\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\MUXCustomBuildTasks.$(MuxCustomBuildTasksPackageVersion)\build\MUXCustomBuildTasks.targets'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Build.Tasks.Git.1.1.1\build\Microsoft.Build.Tasks.Git.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Build.Tasks.Git.1.1.1\build\Microsoft.Build.Tasks.Git.props'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Build.Tasks.Git.1.1.1\build\Microsoft.Build.Tasks.Git.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Build.Tasks.Git.1.1.1\build\Microsoft.Build.Tasks.Git.targets'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.SourceLink.Common.1.1.1\build\Microsoft.SourceLink.Common.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.SourceLink.Common.1.1.1\build\Microsoft.SourceLink.Common.props'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.SourceLink.Common.1.1.1\build\Microsoft.SourceLink.Common.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.SourceLink.Common.1.1.1\build\Microsoft.SourceLink.Common.targets'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.SourceLink.GitHub.1.1.1\build\Microsoft.SourceLink.GitHub.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.SourceLink.GitHub.1.1.1\build\Microsoft.SourceLink.GitHub.props'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.SourceLink.GitHub.1.1.1\build\Microsoft.SourceLink.GitHub.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.SourceLink.GitHub.1.1.1\build\Microsoft.SourceLink.GitHub.targets'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Windows.SDK.cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\build\native\Microsoft.Windows.SDK.cpp.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Windows.SDK.cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\build\native\Microsoft.Windows.SDK.cpp.props'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Windows.SDK.cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\build\native\Microsoft.Windows.SDK.cpp.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Windows.SDK.cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\build\native\Microsoft.Windows.SDK.cpp.targets'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Windows.SDK.cpp.$(SdkPlatform).$(MicrosoftWindowsSDKCppNugetPackageVersion)\build\native\Microsoft.Windows.SDK.cpp.$(SdkPlatform).props')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Windows.SDK.cpp.$(SdkPlatform).$(MicrosoftWindowsSDKCppNugetPackageVersion)\build\native\Microsoft.Windows.SDK.cpp.$(SdkPlatform).props'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Web.WebView2.$(WebView2Version)\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Web.WebView2.$(WebView2Version)\build\native\Microsoft.Web.WebView2.targets'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Windows.Wil.Internal.0.2.115\build\native\Microsoft.Windows.Wil.Internal.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Windows.Wil.Internal.0.2.115\build\native\Microsoft.Windows.Wil.Internal.targets'))" />
+  </Target>
+  <!-- We want to generate SourceLink urls to GitHub even if we build against the AzDO repo -->
+  <Target Name="_TranslateAzureDevOpsUrlToGitHubUrl"
+          DependsOnTargets="$(SourceControlManagerUrlTranslationTargets)"
+          BeforeTargets="SourceControlManagerPublishTranslatedUrls">
+    <PropertyGroup>
+      <WinUIGitHubUrl>https://github.com/microsoft/microsoft-ui-xaml</WinUIGitHubUrl>
+      <ScmRepositoryUrl Condition="'$(ScmRepositoryUrl)' == 'https://microsoft.visualstudio.com/DefaultCollection/WinUI/_git/microsoft-ui-xaml-staging'" >$(WinUIGitHubUrl)</ScmRepositoryUrl>
+      <ScmRepositoryUrl Condition="'$(ScmRepositoryUrl)' == 'https://microsoft.visualstudio.com/WinUI/_git/microsoft-ui-xaml-staging'" >$(WinUIGitHubUrl)</ScmRepositoryUrl>
+      <ScmRepositoryUrl Condition="'$(ScmRepositoryUrl)' == 'https://dev.azure.com/microsoft/WinUI/_git/microsoft-ui-xaml-staging'" >$(WinUIGitHubUrl)</ScmRepositoryUrl>
+    </PropertyGroup>
+    <ItemGroup>
+      <SourceRoot Update="@(SourceRoot)">
+        <ScmRepositoryUrl>$(ScmRepositoryUrl)</ScmRepositoryUrl>
+      </SourceRoot>
+    </ItemGroup>
+  </Target>
+  <Target Name="RunBinSkim" AfterTargets="AfterBuild" Condition="'$(Configuration)'=='Release'">
+    <PropertyGroup>
+      <BinSkimCommand>$(NuGetPackageRoot)\Microsoft.CodeAnalysis.BinSkim.1.3.9\tools\x86\BinSkim.exe analyze "$(TargetPath)"</BinSkimCommand>
+    </PropertyGroup>
+    <Message Text="Running BinSkim on $(TargetFileName) to scan for potential security issues" Importance="high" />
+    <Exec Command="$(BinSkimCommand) | findstr &quot;error&quot;" IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="ExitCode" />
+    </Exec>
+    <Error Text="BinSkim task failed." Condition="'$(ExitCode)'=='0'" />
+  </Target>
+  <PropertyGroup>
+    <!-- Tell CreateLCGFile to use the LCE file from RC.EXE -->
+    <LCEFile>$(_LceFile)</LCEFile>
+  </PropertyGroup>
+  <!-- This also doesn't publish any libs we want other projects to link against. -->
+  <Target Name="GetResolvedLinkLibs" />
+  <!-- We don't want to copy the references we're using locally, since we'll get the ones from MergedWinMD for that. -->
+  <Target Name="RemoveReferenceCopyLocalPaths" AfterTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- We need to wait until the XBF files exist before we can use wildcards to retrieve them.
+       Metadata on ItemGroups like RecursiveDir aren't populated until after a target has returned,
+       so we need two targets to retrieve the XBF files and then populate the PackageContent and BinplaceItem
+       item groups with RecursiveDir. -->
+  <Target Name="GetXbfItems">
+    <ItemGroup>
+      <XbfItem Include="$(GeneratedFilesDir)**\*.xbf" />
+    </ItemGroup>
+  </Target>
+  <Target Name="AddPackageContentsAndBinplaceItems" AfterTargets="CompilePageRequiringCustomCompilation" DependsOnTargets="GetXbfItems">
+    <ItemGroup>
+      <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(NativeAssemblyPackageLocation)"/>
+      <PackageContent Include="$(OutDir)$(TargetName).pri" PackageLocation="$(NativeAssemblyPackageLocation)"/>
+      <PackageContent Include="@(XbfItem)" PackageLocation="$(NativeAssemblyPackageLocation)\Microsoft.UI.Xaml\%(RecursiveDir)" Condition="'$(DisableEmbeddedXbf)' != 'false'" />
+    </ItemGroup>
+    <ItemGroup>
+      <BinplaceItem Include="..\Materials\Acrylic\Assets\NoiseAsset_256X256_PNG.png">
+        <Destination>$(ProductBinplaceDestinationPath)\Microsoft.UI.Xaml\Assets</Destination>
+      </BinplaceItem>
+      <BinplaceItem Include="@(XbfItem)" Condition="'$(DisableEmbeddedXbf)' != 'false'">
+        <Destination>$(ProductBinplaceDestinationPath)\Microsoft.UI.Xaml\%(RecursiveDir)</Destination>
+      </BinplaceItem>
+    </ItemGroup>
+  </Target>
+  <!-- SourceLink doesn't properly plug into incremental building since it always regenerates the sourcelink.json file.
+       To get around that, we'll check to see whether the file will have changed from what it was before, and if that's
+       not the case, we won't touch the file used by the Link task. -->
+  <Target Name="GenerateSourceLinkFile"
+          DependsOnTargets="InitializeSourceControlInformation;$(_GenerateSourceLinkFileDependsOnTargets);_InitializeSourceRootMappedPathsOpt;$(SourceLinkUrlInitializerTargets)"
+          BeforeTargets="$(_GenerateSourceLinkFileBeforeTargets)"
+          Outputs="$(SourceLink)"
+          Condition="'$(SourceLink)' != '' and '$(SourceControlInformationFeatureSupported)' == 'true'">
+    <PropertyGroup>
+      <_SourceLinkTestFile>$(TEMP)\$(MSBuildProjectName).sourcelink.json</_SourceLinkTestFile>
+    </PropertyGroup>
+    <Microsoft.SourceLink.Common.GenerateSourceLinkFile SourceRoots="@(SourceRoot)" OutputFile="$(_SourceLinkTestFile)" />
+    <Exec Command="fc $(_SourceLinkTestFile) $(SourceLink) >nul" IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="FileCompareResult" />
+    </Exec>
+    <Copy SourceFiles="$(_SourceLinkTestFile)" DestinationFiles="$(SourceLink)" Condition="'$(FileCompareResult)' != '0'" />
+    <ItemGroup>
+      <FileWrites Include="$(_SourceLinkTestFile)" />
+      <FileWrites Include="$(SourceLink)" />
+    </ItemGroup>
+    <!-- C++ Link task currently doesn't recognize SourceLink property -->
+    <ItemGroup Condition="'$(Language)' == 'C++'">
+      <Link Update="@(Link)">
+        <AdditionalOptions>%(Link.AdditionalOptions) /sourcelink:"$(SourceLink)"</AdditionalOptions>
+      </Link>
+    </ItemGroup>
+  </Target>  
+</Project>

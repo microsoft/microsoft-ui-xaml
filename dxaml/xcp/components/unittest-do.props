@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+    </PropertyGroup>
+
+    <Import Project="$(XcpPath)\components\unittest-parser.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XamlSourcePath)\xcp\components\staticpal\mocks\;
+            $(XamlSourcePath)\xcp\components\metadata\mocks\;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}'" Include="$(XcpPath)\components\pch\ut\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}"/>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(ConfigurationType)'=='DynamicLibrary' or '$(ConfigurationType)'=='Application'">
+        <ProjectReference Condition="'$(ProjectGuid)'!='{a96cf4ea-7170-4aff-90a5-5fce1055270f}'" Include="$(XcpPath)\components\CValue\lib\Microsoft.UI.Xaml.CValue.vcxproj" Project="{a96cf4ea-7170-4aff-90a5-5fce1055270f}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{e0dd7555-841b-40e4-967a-b6ec2df39258}'" Include="$(XamlSourcePath)\xcp\components\DependencyObject\minlib\Microsoft.UI.Xaml.DependencyObjectMin.vcxproj" Project="{e0dd7555-841b-40e4-967a-b6ec2df39258}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{f7139209-4407-43f4-b04b-cddfcbfd5a65}'" Include="$(XamlSourcePath)\xcp\components\DependencyObject\lib\Microsoft.UI.Xaml.DependencyObject.vcxproj" Project="{f7139209-4407-43f4-b04b-cddfcbfd5a65}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{4baf458d-df02-4f8c-bb5a-97ceeb30027c}'" Include="$(XamlSourcePath)\xcp\components\primitiveDependencyObjects\lib\Microsoft.UI.Xaml.PrimitiveDependencyObjects.vcxproj" Project="{4baf458d-df02-4f8c-bb5a-97ceeb30027c}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{f9da8380-5504-4acc-bde0-72cd5981826d}'" Include="$(XamlSourcePath)\xcp\components\xstring\lib\Microsoft.UI.Xaml.XString.vcxproj" Project="{f9da8380-5504-4acc-bde0-72cd5981826d}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{23637f36-0cb9-4142-a60c-888b0efe9a4c}'" Include="$(XamlSourcePath)\xcp\components\metadata\lib\Microsoft.UI.Xaml.Metadata.vcxproj" Project="{23637f36-0cb9-4142-a60c-888b0efe9a4c}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{2b9a325f-17af-40f1-98c9-2aa7856b77e7}'" Include="$(XamlSourcePath)\xcp\components\metadata\mocks\Microsoft.UI.Xaml.Tests.Isolated.Mocks.Framework.Metadata.vcxproj" Project="{2b9a325f-17af-40f1-98c9-2aa7856b77e7}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{4d59a898-7e24-4650-baa0-7fe2bb6c82d4}'" Include="$(XamlSourcePath)\xcp\components\OneCoreTransforms\lib\Microsoft.UI.Xaml.OneCoreTransforms.vcxproj" Project="{4d59a898-7e24-4650-baa0-7fe2bb6c82d4}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{eb1e79fa-171b-4812-b0ee-fd162a81dc3b}'" Include="$(XamlSourcePath)\xcp\components\theming\lib\Microsoft.UI.Xaml.Theming.vcxproj" Project="{eb1e79fa-171b-4812-b0ee-fd162a81dc3b}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{834d7bb9-3cc6-43f5-8df9-2ac39ec2d8ef}'" Include="$(XamlSourcePath)\xcp\components\resources\lib\Microsoft.UI.Xaml.XamlResources.vcxproj" Project="{834d7bb9-3cc6-43f5-8df9-2ac39ec2d8ef}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{06ee2711-8ce5-4abc-b80d-3b055d7df537}'" Include="$(XamlSourcePath)\xcp\components\focus\focusselection\lib\Microsoft.UI.Xaml.Focus.FocusSelection.vcxproj" Project="{06ee2711-8ce5-4abc-b80d-3b055d7df537}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{b69373ed-ec7e-46ee-9fe6-76645661a3cb}'" Include="$(XamlSourcePath)\xcp\components\xboxutility\lib\Microsoft.UI.Xaml.XboxUtility.vcxproj" Project="{b69373ed-ec7e-46ee-9fe6-76645661a3cb}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{88536608-bab9-49f1-9cc6-36b7f8e73d8a}'" Include="$(XamlSourcePath)\xcp\components\flyweight\lib\Microsoft.UI.Xaml.Flyweight.vcxproj" Project="{88536608-bab9-49f1-9cc6-36b7f8e73d8a}"/>
+    </ItemGroup>
+</Project>

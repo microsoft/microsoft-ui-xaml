@@ -1,0 +1,16 @@
+;; Copyright (c) Microsoft Corporation.
+;; Licensed under the MIT License. See LICENSE in the project root for license information.
+
+;; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+;;  This file contains the exports for the public API in DXaml
+;; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+EXPORTS
+    DllMain
+    DllGetActivationFactory         PRIVATE
+    DllCanUnloadNow                 PRIVATE
+    OverrideXamlMetadataProvider    PRIVATE
+    OverrideXamlResourcePropertyBag PRIVATE
+    GetErrorContextIndex            PRIVATE
+    GetHeapHandle                   PRIVATE
+    XamlCheckProcessRequirements    PRIVATE

@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{c9184280-7438-4601-91c5-8bc9322ac599}</ProjectGuid>
+    </PropertyGroup>
+
+    <!-- ******************************** File Header ******************************\ -->
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved.                   -->
+    <!--                                                                              -->
+    <!-- Project specific SOURCES file.                                               -->
+    <!--                                                                              -->
+    <!-- ***************************************************************************/ -->
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+    <Import Project="$(XcpPath)\common.props"/>
+
+    <ItemGroup>
+        <ClCompile Include="..\BrowserDesktopUIUtils.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\inc;
+            $(XcpPath)\pal\inc;
+            $(XcpPath)\win\inc;
+            $(XcpPath)\win;
+            $(XcpPath)\core\inc;
+            $(ExternalDependencies)
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

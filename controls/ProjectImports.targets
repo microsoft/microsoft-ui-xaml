@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup>
+    <Import Project="$(MSBuildThisFileDirectory)dev\TestHooks\TestHooks.vcxitems" Label="Shared" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\Common\Common.vcxitems" Label="Shared" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\CommonStyles\CommonStyles.vcxitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true' Or $(FeatureCommonStylesEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\RatingControl\RatingControl.vcxitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true' Or $(FeatureRatingControlEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\InfoBadge\InfoBadge.vcxitems" Label="Shared" Condition="$(FeatureInfoBadgeEnabled) == 'true' Or $(FeatureInfoBadgeEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\NavigationView\NavigationView.vcxitems" Label="Shared" Condition="$(FeatureNavigationViewEnabled) == 'true' Or $(FeatureNavigationViewEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\ColorPicker\ColorPicker.vcxitems" Label="Shared" Condition="$(FeatureColorPickerEnabled) == 'true' Or $(FeatureColorPickerEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\Collections\Collections.vcxitems" Label="Shared" Condition="$(FeatureCollectionsEnabled) == 'true' Or $(FeatureCollectionsEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\CommandBarFlyout\CommandBarFlyout.vcxitems" Label="Shared" Condition="$(FeatureCommandBarFlyoutEnabled) == 'true' Or $(FeatureCommandBarFlyoutEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\Effects\Microsoft.UI.Private.Composition.Effects.vcxitems" Label="Shared" Condition="$(FeatureEffectsEnabled) == 'true' Or $(FeatureEffectsEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\PersonPicture\PersonPicture.vcxitems" Label="Shared" Condition="$(FeaturePersonPictureEnabled) == 'true' Or $(FeaturePersonPictureEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\ResourceHelper\ResourceHelper.vcxitems" Label="Shared" Condition="$(FeatureResourceHelperEnabled) == 'true' Or $(FeatureResourceHelperEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\PullToRefresh\RefreshContainer\RefreshContainer.vcxitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true' Or $(FeaturePullToRefreshEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\PullToRefresh\RefreshVisualizer\RefreshVisualizer.vcxitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true' Or $(FeaturePullToRefreshEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\ScrollViewerIRefreshInfoProviderAdapter.vcxitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true' Or $(FeaturePullToRefreshEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\MenuBar\MenuBar.vcxitems" Label="Shared" Condition="$(FeatureMenuBarEnabled) == 'true' Or $(FeatureMenuBarEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\Materials\Acrylic\AcrylicBrush.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true' Or $(FeatureMaterialsEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\Materials\DesktopAcrylicBackdrop\DesktopAcrylicBackdrop.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true' Or $(FeatureMaterialsEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\Materials\MicaBackdrop\MicaBackdrop.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true' Or $(FeatureMaterialsEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\Materials\Reveal\RevealBrush.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true' Or $(FeatureMaterialsEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\TreeView\TreeView.vcxitems" Label="Shared" Condition="$(FeatureTreeViewEnabled) == 'true' Or $(FeatureTreeViewEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\Telemetry\Telemetry.vcxitems" Label="Shared" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\ParallaxView\ParallaxView.vcxitems" Label="Shared" Condition="$(FeatureParallaxViewEnabled) == 'true' Or $(FeatureParallaxViewEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\ScrollPresenter\ScrollPresenter.vcxitems" Label="Shared" Condition="$(FeatureScrollPresenterEnabled) == 'true' Or $(FeatureScrollPresenterEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\ScrollView\ScrollView.vcxitems" Label="Shared" Condition="$(FeatureScrollViewEnabled) == 'true' Or $(FeatureScrollViewEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\ItemsView\ItemsView.vcxitems" Label="Shared" Condition="$(FeatureItemsViewEnabled) == 'true' Or $(FeatureItemsViewEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\Lights\Lights.vcxitems" Label="Shared" Condition="$(FeatureLightsEnabled) == 'true' Or $(FeatureLightsEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\Repeater\Repeater.vcxitems" Label="Shared" Condition="$(FeatureRepeaterEnabled) == 'true' Or $(FeatureRepeaterEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\SwipeControl\SwipeControl.vcxitems" Label="Shared" Condition="$(FeatureSwipeControlEnabled) == 'true' Or $(FeatureSwipeControlEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\TwoPaneView\TwoPaneView.vcxitems" Label="Shared" Condition="$(FeatureTwoPaneViewEnabled) == 'true' Or $(FeatureTwoPaneViewEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\PullToRefresh\PTRTracing\PTRTracing.vcxitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true' Or $(FeaturePullToRefreshEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\SplitButton\SplitButton.vcxitems" Label="Shared" Condition="$(FeatureSplitButtonEnabled) == 'true' Or $(FeatureSplitButtonEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\LayoutPanel\LayoutPanel.vcxitems" Label="Shared" Condition="$(FeatureLayoutPanelEnabled) == 'true' Or $(FeatureLayoutPanelEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\DropDownButton\DropDownButton.vcxitems" Label="Shared" Condition="$(FeatureDropDownButtonEnabled) == 'true' Or $(FeatureDropDownButtonEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\RadioButtons\RadioButtons.vcxitems" Label="Shared" Condition="$(FeatureRadioButtonsEnabled) == 'true' Or $(FeatureRadioButtonsEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\IconSource\IconSource.vcxitems" Label="Shared" Condition="$(FeatureIconSourceEnabled) == 'true' Or $(FeatureIconSourceEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\Interactions\ButtonInteraction\ButtonInteraction.vcxitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' Or $(FeatureInteractionsEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\Interactions\SliderInteraction\SliderInteraction.vcxitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' Or $(FeatureInteractionsEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\TeachingTip\TeachingTip.vcxitems" Label="Shared" Condition="$(FeatureTeachingTipEnabled) == 'true' Or $(FeatureTeachingTipEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems" Label="Shared" Condition="$(FeatureRadioMenuFlyoutItemEnabled) == 'true' Or $(FeatureRadioMenuFlyoutItemEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems" Label="Shared" Condition="$(FeatureAnimatedVisualPlayerEnabled) == 'true' Or $(FeatureAnimatedVisualPlayerEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\TabView\TabView.vcxitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true' Or $(FeatureTabViewEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\AutoSuggestBox\AutoSuggestBox.vcxitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true' Or $(FeatureAutoSuggestBoxEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\ComboBox\ComboBox.vcxitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true' Or $(FeatureComboBoxEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\SplitView\SplitView.vcxitems" Label="Shared" Condition="$(FeatureSplitViewEnabled) == 'true' Or $(FeatureSplitViewEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\ProgressBar\ProgressBar.vcxitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true' Or $(FeatureProgressBarEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\ProgressRing\ProgressRing.vcxitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true' Or $(FeatureProgressRingEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\NumberBox\NumberBox.vcxitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true' Or $(FeatureNumberBoxEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\RadialGradientBrush\RadialGradientBrush.vcxitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true' Or $(FeatureRadialGradientBrushEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\Expander\Expander.vcxitems" Label="Shared" Condition="$(FeatureExpanderEnabled) == 'true' Or $(FeatureExpanderEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\PagerControl\PagerControl.vcxitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true' Or $(FeaturePagerControlEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\InfoBar\InfoBar.vcxitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true' Or $(FeatureInfoBarEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\Breadcrumb\Breadcrumb.vcxitems" Label="Shared" Condition="$(FeatureBreadcrumbEnabled) == 'true' Or $(FeatureBreadcrumbEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\PipsPager\PipsPager.vcxitems" Label="Shared" Condition="$(FeaturePipsPagerEnabled) == 'true' Or $(FeaturePipsPagerEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\ImageIcon\ImageIcon.vcxitems" Label="Shared" Condition="$(FeatureImageIconEnabled) == 'true' Or $(FeatureImageIconEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\AnimatedIcon\AnimatedIcon.vcxitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true' Or $(FeatureAnimatedIconEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\MonochromaticOverlayPresenter\MonochromaticOverlayPresenter.vcxitems" Label="Shared" Condition="$(FeatureMonochromaticOverlayPresenterEnabled) == 'true' Or $(FeatureMonochromaticOverlayPresenterEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\WebView2\WebView2.vcxitems" Label="Shared" Condition="($(FeatureWebView2Enabled) == 'true' Or $(FeatureWebView2Enabled) == 'productOnly')" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\ItemContainer\ItemContainer.vcxitems" Label="Shared" Condition="$(FeatureItemContainerEnabled) == 'true' Or $(FeatureItemContainerEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\AnnotatedScrollBar\AnnotatedScrollBar.vcxitems" Label="Shared" Condition="$(FeatureAnnotatedScrollBarEnabled) == 'true' Or $(FeatureAnnotatedScrollBarEnabled) == 'productOnly'" />
+  </ImportGroup>
+</Project>

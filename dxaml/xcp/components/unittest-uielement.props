@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+    </PropertyGroup>
+
+    <Import Project="$(XcpPath)\components\unittest-do.props"/>
+
+    <ItemDefinitionGroup>
+        <Link>
+            <AdditionalDependencies>%(AdditionalDependencies) dwmapi.lib;</AdditionalDependencies>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}'" Include="$(XcpPath)\components\pch\ut\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}"/>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(ConfigurationType)'=='DynamicLibrary' or '$(ConfigurationType)'=='Application'">
+        <ProjectReference Condition="'$(ProjectGuid)'!='{425451f3-e2fe-49a1-a7f5-a3776e963b5e}'" Include="$(XamlSourcePath)\xcp\components\elements\lib\Microsoft.UI.Xaml.Elements.vcxproj" Project="{425451f3-e2fe-49a1-a7f5-a3776e963b5e}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{d704e322-e366-4c87-b394-28d2f4ccb481}'" Include="$(XamlSourcePath)\xcp\components\elements\sharedstubs\Microsoft.UI.Xaml.Elements.SharedStubs.vcxproj" Project="{d704e322-e366-4c87-b394-28d2f4ccb481}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{4a1f0ce8-0b6e-4d29-9799-a629c067543a}'" Include="$(XamlSourcePath)\xcp\components\simple\lib\Microsoft.UI.Xaml.Framework.SimpleProperties.vcxproj" Project="{4a1f0ce8-0b6e-4d29-9799-a629c067543a}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{8b386f16-9cf2-44e0-82ec-5c5129593a3c}'" Include="$(XamlSourcePath)\xcp\components\graphics\lib\Microsoft.UI.Xaml.GraphicsUtility.vcxproj" Project="{8b386f16-9cf2-44e0-82ec-5c5129593a3c}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{bb0522d9-7e95-40a1-9522-88b6f42b2db6}'" Include="$(XamlSourcePath)\xcp\components\animation\lib\Microsoft.UI.Xaml.Animation.vcxproj" Project="{bb0522d9-7e95-40a1-9522-88b6f42b2db6}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{be2a3cdf-01e2-4600-8e77-305065c1fcc0}'" Include="$(XamlSourcePath)\xcp\components\comptree\lib\Microsoft.UI.Xaml.CompTree.vcxproj" Project="{be2a3cdf-01e2-4600-8e77-305065c1fcc0}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{365cdabf-7f04-445d-a598-ba372821b5a6}'" Include="$(XamlSourcePath)\xcp\components\transforms\lib\Microsoft.UI.Xaml.Transforms.vcxproj" Project="{365cdabf-7f04-445d-a598-ba372821b5a6}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{a62ef27a-9759-4647-a1b9-c52ec131cb34}'" Include="$(XamlSourcePath)\xcp\components\style\lib\Microsoft.UI.Xaml.Style.vcxproj" Project="{a62ef27a-9759-4647-a1b9-c52ec131cb34}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{808bc3a6-a9e1-4e36-bdf7-1f3c12de8464}'" Include="$(XamlSourcePath)\xcp\components\collection\lib\Microsoft.UI.Xaml.Collection.vcxproj" Project="{808bc3a6-a9e1-4e36-bdf7-1f3c12de8464}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{834d7bb9-3cc6-43f5-8df9-2ac39ec2d8ef}'" Include="$(XamlSourcePath)\xcp\components\Resources\lib\Microsoft.UI.Xaml.XamlResources.vcxproj" Project="{834d7bb9-3cc6-43f5-8df9-2ac39ec2d8ef}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{71ada981-d444-464c-833d-290206b05240}'" Include="$(XamlSourcePath)\xcp\components\lifetime\lib\Microsoft.UI.Xaml.Lifetime.vcxproj" Project="{71ada981-d444-464c-833d-290206b05240}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{38506cdd-c34a-404c-b6e2-4d1ed278da88}'" Include="$(XamlSourcePath)\xcp\components\com\lib\Microsoft.UI.Xaml.Com.vcxproj" Project="{38506cdd-c34a-404c-b6e2-4d1ed278da88}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{073bb1fb-9ce9-4b52-becb-47bd8a77c6ca}'" Include="$(XamlSourcePath)\xcp\components\telemetry\Microsoft.UI.Xaml.Instrumentation.vcxproj" Project="{073bb1fb-9ce9-4b52-becb-47bd8a77c6ca}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{83ba909b-3bf5-4a36-8118-7f398b52cc3e}'" Include="$(XamlSourcePath)\xcp\components\brushes\lib\Microsoft.UI.Xaml.Brushes.vcxproj" Project="{83ba909b-3bf5-4a36-8118-7f398b52cc3e}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{6b5aed1f-fd5d-47bc-9b9a-37d56e2c2e97}'" Include="$(XamlSourcePath)\xcp\components\colors\lib\Microsoft.UI.Xaml.Colors.vcxproj" Project="{6b5aed1f-fd5d-47bc-9b9a-37d56e2c2e97}"/>
+    </ItemGroup>
+</Project>

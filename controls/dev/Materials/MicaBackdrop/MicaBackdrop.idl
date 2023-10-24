@@ -1,0 +1,16 @@
+namespace MU_XM_NAMESPACE
+{
+[MUX_PUBLIC_V4]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass MicaBackdrop : Microsoft.UI.Xaml.Media.SystemBackdrop
+{
+    MicaBackdrop();
+
+    Microsoft.UI.Composition.SystemBackdrops.MicaKind Kind { get; set; };
+
+    static Microsoft.UI.Xaml.DependencyProperty KindProperty { get; };
+}
+
+}

@@ -1,0 +1,19 @@
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+
+import "oaidl.idl";
+
+cpp_quote("#if (NTDDI_VERSION >= NTDDI_WIN10_RS4)")
+
+[
+    object,
+    uuid( EECDBF0E-BAE9-4CB6-A68E-9598E1CB57BB ),
+    local,
+    pointer_default(unique)
+]
+interface IWindowNative: IUnknown
+{
+    [propget] HRESULT WindowHandle([out, retval] HWND* hWnd);
+};
+
+cpp_quote("#endif // NTDDI_VERSION >= NTDDI_WIN10_RS4")
+

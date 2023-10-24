@@ -1,0 +1,18 @@
+﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+[MUX_INTERNAL]
+[webhosthidden]
+[default_interface]
+runtimeclass RepeaterTestHooks
+{
+    static event Windows.Foundation.TypedEventHandler<Object, Object> BuildTreeCompleted;
+
+    static String GetLayoutId(Object layout);
+    static void SetLayoutId(Object layout, String id);
+
+    static void SetElementFactoryElementIndex(Int32 index);
+    static Int32 GetElementFactoryElementIndex();
+}
+
+}

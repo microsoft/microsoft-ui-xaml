@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{bbdd985f-5ab4-40f4-8eb9-18ab4a76169a}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\common.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\Collection\inc;
+            $(XcpPath)\components\valueboxer\inc;
+            $(XcpPath)\components\colors\inc;
+            $(XcpPath)\components\lifetime\inc;
+            $(XcpPath)\components\metadata\inc;
+            $(XcpPath)\components\theming\inc;
+            $(XcpPath)\components\primitiveDependencyObjects\inc;
+            $(XcpPath)\components\text\inc;
+            $(XcpPath)\dxaml\lib;
+            $(XcpPath)\dxaml\lib\winrtgeneratedclasses;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="CValueBoxer.cpp"/>
+        <ClCompile Include="IValueBoxer.cpp"/>
+        <ClCompile Include="Value.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\prod\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{ccc61973-be99-4223-b935-353d03571e92}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

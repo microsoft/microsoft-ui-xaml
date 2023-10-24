@@ -1,0 +1,104 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<ResourceDictionary xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="using:Microsoft.UI.Xaml.Controls" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Style TargetType="controls:AnnotatedScrollBar">
+        <Setter Property="MinWidth" Value="{StaticResource LabelsGridMinWidth}" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="LabelTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <Border MinWidth="{StaticResource LabelsGridMinWidth}">
+                        <TextBlock
+                        Margin="0,-5,0,-2"
+                        HorizontalAlignment="Right"
+                        HorizontalTextAlignment="Right"
+                        Style="{StaticResource BodyTextBlockStyle}"
+                        Text="{Binding Content}"
+                        TextWrapping="NoWrap"/>
+                    </Border>
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:AnnotatedScrollBar">
+                    <Grid x:Name="PART_RootGrid" IsTapEnabled="True">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="auto" />
+                        </Grid.RowDefinitions>
+                        <RepeatButton 
+                                x:Name="PART_VerticalIncrementRepeatButton" 
+                                Grid.Row="0" 
+                                Style="{StaticResource ScrollButtonStyle}" 
+                                HorizontalAlignment="Right" 
+                                IsTabStop="False">
+                            <FontIcon x:Name="PART_VerticalIncrementRepeatIcon" FontSize="{StaticResource ScrollButtonFontSize}" Glyph="&#xEDDB;" />
+                        </RepeatButton>
+                        <Grid x:Name="PART_VerticalGrid" Grid.Row="1">
+                            <Grid 
+                                x:Name="PART_LabelsGrid" 
+                                Background="Transparent" 
+                                HorizontalAlignment="Center" 
+                                MinWidth="{StaticResource LabelsGridMinWidth}" />
+                            <Border x:Name="PART_ToolTipRail" HorizontalAlignment="Right" Width="1">
+                                <ToolTipService.ToolTip>
+                                    <ToolTip 
+                                        x:Name="PART_DetailLabelToolTip" 
+                                        Placement="Top" 
+                                        MaxWidth="{StaticResource AnnotatedScrollBarTooltipMaxWidth}"
+                                        MinHeight="{StaticResource AnnotatedScrollBarTooltipMinHeight}" 
+                                        VerticalContentAlignment="Center" 
+                                        HorizontalAlignment="Right">
+                                        <ContentPresenter x:Name="PART_TooltipContentPresenter">
+                                            <ContentPresenter.ContentTemplate>
+                                                <DataTemplate>
+                                                    <Border>
+                                                        <TextBlock
+                                                            Margin="0,0,0,2"
+                                                            HorizontalAlignment="Right"
+                                                            VerticalAlignment="Center"
+                                                            Style="{StaticResource BaseTextBlockStyle}"
+                                                            Text="{Binding}"
+                                                            TextWrapping="WrapWholeWords"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ContentPresenter.ContentTemplate>
+                                        </ContentPresenter>
+                                    </ToolTip>
+                                </ToolTipService.ToolTip>
+                            </Border>
+                            <Border 
+                                x:Name="PART_VerticalThumbGhost" 
+                                Grid.Row="1" 
+                                Visibility="Collapsed"
+                                Width="{StaticResource ThumbWidth}" 
+                                Height="{StaticResource ThumbHeight}" 
+                                CornerRadius="{StaticResource ThumbCornerRadius}" 
+                                Background="{ThemeResource AccentFillColorDisabledBrush}" 
+                                VerticalAlignment="Top" 
+                                HorizontalAlignment="Right" />
+                            <Border 
+                                x:Name="PART_VerticalThumb" 
+                                Grid.Row="1"
+                                Width="{StaticResource ThumbWidth}" 
+                                Height="{StaticResource ThumbHeight}" 
+                                CornerRadius="{StaticResource ThumbCornerRadius}" 
+                                Background="{ThemeResource VerticalThumbBrush}" 
+                                VerticalAlignment="Top" 
+                                HorizontalAlignment="Right" />
+                        </Grid>
+                        <RepeatButton 
+                                x:Name="PART_VerticalDecrementRepeatButton" 
+                                Grid.Row="2" 
+                                Style="{StaticResource ScrollButtonStyle}" 
+                                HorizontalAlignment="Right" 
+                                IsTabStop="False">
+                            <FontIcon x:Name="PART_VerticalDecrementRepeatIcon" FontSize="{StaticResource ScrollButtonFontSize}" Glyph="&#xEDDC;" />
+                        </RepeatButton>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

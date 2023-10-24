@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- MSBuild is a bit too aggressive when adding libraries to get PRI files from - mscorlib.ni.dll for example throws a BadImageFormatException when we try to process it.
+       We don't actually need to process most of the files that it adds, so we'll only add the ones that are potentially interesting. -->
+  <Target Name="AddPriLibraries" BeforeTargets="_GeneratePrisForPortableLibraries">
+    <ItemGroup>
+      <_LibrariesUnfiltered Include="$(OutputPath)..\..\dev\dll\Microsoft.UI.Xaml.Controls.dll" />
+    </ItemGroup>
+  </Target>
+</Project>

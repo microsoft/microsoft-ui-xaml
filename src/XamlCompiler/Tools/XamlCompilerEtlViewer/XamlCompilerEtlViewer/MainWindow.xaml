@@ -1,0 +1,113 @@
+﻿<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Window x:Class="XamlCompilerEtlViewer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:XamlCompilerEtlViewer"
+        xmlns:rdr="clr-namespace:XamlCompilerEtlReader.Structure;assembly=XamlCompilerEtlReader"
+        xmlns:ev="clr-namespace:XamlCompilerEtlReader;assembly=XamlCompilerEtlReader"
+        Title="MainWindow" Height="650" Width="700">
+    <Window.Resources>
+        <local:MyDoubleConverter x:Key="myDC"/>
+
+        <HierarchicalDataTemplate DataType="{x:Type ev:XamlCompilerEvent}">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding Name}" Margin="0,0,10,0"/>
+                    <TextBlock Text="{Binding DataString}" />
+                </StackPanel>
+            </StackPanel>
+        </HierarchicalDataTemplate>
+
+        <HierarchicalDataTemplate DataType="{x:Type rdr:PerPageTotals}" ItemsSource="{Binding Phases}">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Per-page Totals:" Margin="0,0,10,0"/>
+                    <TextBlock Text="{Binding Total, Converter={StaticResource myDC}}" />
+                    <TextBlock Text="ms" Margin="5,0" />
+                </StackPanel>
+            </StackPanel>
+        </HierarchicalDataTemplate>
+
+        <HierarchicalDataTemplate DataType="{x:Type rdr:XamlProjectTrace}" ItemsSource="{Binding Passes}">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Project:" Margin="0,0,10,0" />
+                    <TextBlock Text="{Binding Name}" FontWeight="Bold" Margin="10,0"/>
+                    <TextBlock Text="{Binding TotalTime, Converter={StaticResource myDC}}" FontWeight="Bold"/>
+                    <TextBlock Text="ms" Margin="5,0" />
+                </StackPanel>
+            </StackPanel>
+        </HierarchicalDataTemplate>
+
+        <HierarchicalDataTemplate DataType="{x:Type rdr:Pass1Trace}" ItemsSource="{Binding PageTraces}">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Pass1:" Margin="0,0,10,0"/>
+                    <TextBlock Text="{Binding ElapsedTime, Converter={StaticResource myDC}}" FontWeight="Bold"/>
+                    <TextBlock Text="ms" Margin="5,0" />
+                </StackPanel>
+            </StackPanel>
+        </HierarchicalDataTemplate>
+
+        <HierarchicalDataTemplate DataType="{x:Type rdr:Pass2Trace}" ItemsSource="{Binding PageTraces}">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Pass2:" Margin="0,0,10,0" />
+                    <TextBlock Text="{Binding ElapsedTime, Converter={StaticResource myDC}}" FontWeight="Bold"/>
+                    <TextBlock Text="ms" Margin="5,0" />
+                </StackPanel>
+            </StackPanel>
+        </HierarchicalDataTemplate>
+
+        <HierarchicalDataTemplate DataType="{x:Type rdr:XamlPageTrace}" ItemsSource="{Binding Phases}">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding FileName}" FontWeight="Bold"/>
+                    <TextBlock Text="Time:" Margin="10,0" />
+                    <TextBlock Text="{Binding ElapsedTime, Converter={StaticResource myDC}}" FontWeight="Bold"/>
+                    <TextBlock Text="ms" Margin="5,0" />
+                </StackPanel>
+            </StackPanel>
+        </HierarchicalDataTemplate>
+
+        <HierarchicalDataTemplate DataType="{x:Type rdr:XamlPhase}">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding Name}" Margin="0,0,10,0"/>
+                    <TextBlock Text="{Binding ElapsedTime, Converter={StaticResource myDC}}" />
+                    <TextBlock Text="ms" Margin="5,0" />
+                </StackPanel>
+            </StackPanel>
+        </HierarchicalDataTemplate>
+        
+    </Window.Resources>
+    
+    <Window.DataContext>
+        <local:PerfDataContext x:Name="_perfDataContext"/>
+    </Window.DataContext>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+        
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Button Content="Clear" Grid.Row="0" Click="ClearButton_Click" />
+            <TextBox x:Name="events" Grid.Row="1"
+                 VerticalScrollBarVisibility="Auto"  HorizontalScrollBarVisibility="Auto"
+                 TextWrapping="Wrap"
+                 Text="{Binding EventListText, Mode=OneWay}"/>
+        </Grid>
+
+        <GridSplitter Grid.Column="0" HorizontalAlignment="Right"
+                      Grid.RowSpan="2" VerticalAlignment="Stretch" Width="5" />
+        
+        <TreeView Grid.Column="1">
+            <TreeViewItem ItemsSource="{Binding XamlCompiles}" Header="Builds"/>
+        </TreeView>
+    </Grid>
+</Window>

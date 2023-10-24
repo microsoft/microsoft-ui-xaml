@@ -1,0 +1,41 @@
+<#@ template language="C#" linePragmas="false" inherits="PhoneCppCodeGenerator<ClassDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<# if(Model.IsADependencyObject) { #>
+typedef Private::ReferenceTrackerRuntimeClass<
+<# } else { #>
+typedef wrl::RuntimeClass<
+<# }
+   foreach (var version in Model.Versions.OrderBy(v => v.Version).Select(v => v.GetProjection())) {
+        if (version.IdlClassInfo.HasPrimaryInterface) { #>
+    <#= AsCppType(version.IdlClassInfo.FullInterfaceName) #>,
+<#      }
+        if (version.IdlClassInfo.HasVirtualMembers) { #>
+    <#= AsCppType(version.IdlClassInfo.FullVirtualMembersInterfaceName) #>,
+<#      }
+        if (version.IdlClassInfo.HasProtectedMembers) { #>
+    <#= AsCppType(version.IdlClassInfo.FullProtectedMembersInterfaceName) #>,
+<#      }
+        foreach (var implementedInterface in version.ExplicitlyImplementedInterfaces.OrderBy(i => i.AbiFullName)) { #>
+    <#= AsCppType(implementedInterface.AbiFullName)  #>,
+<#      }
+   }
+    if (!Model.ImplementOverridesExplicitly) {
+        foreach (var virtualMemberInterface in Model.BaseClassesVirtualMemberInterfaces)
+        {
+            if (VelocityFeatures.IsVelocityVersion(virtualMemberInterface.Version)) 
+            {#>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(virtualMemberInterface.Version) #>)
+<#            }#>
+    <#= AsCppType(virtualMemberInterface.IdlClassInfo.FullVirtualMembersInterfaceName)  #>,
+<#            if (VelocityFeatures.IsVelocityVersion(virtualMemberInterface.Version))
+            { #>
+#endif
+<#            }
+        } 
+    }#>
+    wrl::ComposableBase<<#= AsCppType(Model.BaseClass.IdlClassInfo.FullInterfaceName) #>Factory>>
+    <#= Model.Name #>RuntimeClass;

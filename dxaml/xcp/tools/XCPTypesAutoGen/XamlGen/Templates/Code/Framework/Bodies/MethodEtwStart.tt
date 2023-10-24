@@ -1,0 +1,14 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<MethodDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+if (EventEnabledApiFunctionCallStart())
+{
+<# if (Model.IsStatic) { #>
+    ApiEtwStart(nullptr, <#= Model.IndexName #>);
+<# } else { #>
+    ApiEtwStart(this, <#= Model.IndexName #>);
+<# } #>
+}

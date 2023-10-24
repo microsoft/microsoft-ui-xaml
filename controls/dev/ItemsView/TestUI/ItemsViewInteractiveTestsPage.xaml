@@ -1,0 +1,168 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.ItemsViewInteractiveTestsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:dataModel="using:MUXControlsTestApp.Samples.Model"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <local:TestPage.Resources>
+        <DataTemplate x:Key="recipeTemplate1" x:DataType="dataModel:Recipe">
+            <ContentControl IsTabStop="True" UseSystemFocusVisuals="True">
+                <StackPanel>
+                    <Image Source="{Binding ImageUri}" Width="32" Height="32"/>
+                    <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="2" FontSize="8" MaxWidth="48" MaxHeight="48"/>
+                </StackPanel>
+            </ContentControl>
+        </DataTemplate>
+
+        <DataTemplate x:Key="recipeTemplate2" x:DataType="dataModel:Recipe">
+            <StackPanel>
+                <Image Source="{Binding ImageUri}" Width="100" Height="100"/>
+                <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="2" FontSize="12" MaxWidth="200"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="recipeTemplate3" x:DataType="dataModel:Recipe">
+            <StackPanel>
+                <Image Source="{Binding ImageUri}" Width="192" Height="192"/>
+                <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="2" FontSize="16" MaxWidth="384"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="recipeTemplate4" x:DataType="dataModel:Recipe">
+            <ItemContainer MinWidth="72" Height="96" Background="Gray">
+                <Grid>
+                    <Image Source="{Binding ImageUri}" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="4" Foreground="White" FontSize="12" MaxWidth="68" MaxHeight="48" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+                </Grid>
+            </ItemContainer>
+        </DataTemplate>
+
+        <DataTemplate x:Key="recipeTemplate5" x:DataType="dataModel:Recipe">
+            <ItemContainer Width="80" Height="80" Background="Gray">
+                <Grid>
+                    <Image Source="{Binding ImageUri}" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="4" Foreground="White" FontSize="12" MaxWidth="76" MaxHeight="40" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+                </Grid>
+            </ItemContainer>
+        </DataTemplate>
+
+        <StackLayout x:Key="stackLayout"
+            Orientation="Vertical" Spacing="10"/>
+
+        <LinedFlowLayout x:Key="linedFlowLayout"
+            LineSpacing="4" MinItemSpacing="4" ItemsStretch="Fill"/>
+
+        <UniformGridLayout x:Key="uniformGridLayout"
+            MaximumRowsOrColumns="4"
+            MinColumnSpacing="10" MinRowSpacing="10"
+            MinItemWidth="100" MinItemHeight="150"/>
+    </local:TestPage.Resources>
+
+    <StackPanel x:Name="rootGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="4">
+        <StackPanel Orientation="Horizontal" Margin="2">
+            <Button x:Name="btnGetFullLog" Margin="6,2,2,2" AutomationProperties.AutomationId="btnGetFullLog" VerticalAlignment="Center" Content="Get log" Click="BtnGetFullLog_Click"/>
+            <Button x:Name="btnClearFullLog" Margin="0,2,2,2" AutomationProperties.AutomationId="btnClearFullLog" VerticalAlignment="Center" Content="Clear log" Click="BtnClearFullLog_Click"/>
+            <ComboBox x:Name="cmbFullLog" AutomationProperties.AutomationId="cmbFullLog" Margin="6,2,2,2" VerticalAlignment="Center" Width="175"/>
+            <CheckBox x:Name="chkLogUpdated" AutomationProperties.AutomationId="chkLogUpdated" Content="Log Updated?" Margin="6,2,2,2" VerticalAlignment="Center" IsEnabled="False" IsThreeState="False" IsChecked="True"/>
+            <CheckBox x:Name="chkLogCleared" AutomationProperties.AutomationId="chkLogCleared" Content="Log Cleared?" Margin="6,2,2,2" VerticalAlignment="Center" IsEnabled="False" IsThreeState="False" IsChecked="True"/>
+            <CheckBox x:Name="chkLogItemsRepeaterMessages" AutomationProperties.AutomationId="chkLogItemsRepeaterMessages" Content="Log ItemsRepeater Messages?" Margin="6,2,2,2" Checked="ChkLogItemsRepeaterMessages_Checked" Unchecked="ChkLogItemsRepeaterMessages_Unchecked"/>
+            <CheckBox x:Name="chkLogScrollViewMessages" AutomationProperties.AutomationId="chkLogScrollViewMessages" Content="Log ScrollView Messages?" Margin="6,2,2,2" Checked="ChkLogScrollViewMessages_Checked" Unchecked="ChkLogScrollViewMessages_Unchecked"/>
+            <CheckBox x:Name="chkLogItemsViewMessages" AutomationProperties.AutomationId="chkLogItemsViewMessages" Content="Log ItemsView Messages?" Margin="6,2,2,2" Checked="ChkLogItemsViewMessages_Checked" Unchecked="ChkLogItemsViewMessages_Unchecked"/>
+        </StackPanel>
+        
+        <StackPanel Orientation="Horizontal" Margin="2">
+            <TextBlock Text="HorizontalOffset:" Margin="6,2,2,2" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtScrollViewHorizontalOffset" AutomationProperties.AutomationId="txtScrollViewHorizontalOffset" VerticalAlignment="Center" Width="175"/>
+            <TextBlock Text="VerticalOffset:" Margin="6,2,2,2" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtScrollViewVerticalOffset" AutomationProperties.AutomationId="txtScrollViewVerticalOffset" VerticalAlignment="Center" Width="175"/>
+            <TextBlock Text="ZoomFactor:" Margin="6,2,2,2" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtScrollViewZoomFactor" AutomationProperties.AutomationId="txtScrollViewZoomFactor" VerticalAlignment="Center" Width="175"/>
+            <TextBlock Text="ScrollView State:" Margin="6,2,2,2" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtScrollViewState" AutomationProperties.AutomationId="txtScrollViewState" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="275"/>
+            <Button x:Name="btnScrollViewScrollTo" AutomationProperties.AutomationId="btnScrollViewScrollTo" Margin="6,2,2,2" VerticalAlignment="Center" Content="ScrollTo" Click="BtnScrollViewScrollTo_Click"/>
+            <Button x:Name="btnScrollViewZoomTo" AutomationProperties.AutomationId="btnScrollViewZoomTo" Margin="6,2,2,2" VerticalAlignment="Center" Content="ZoomTo" Click="BtnScrollViewZoomTo_Click"/>
+            <Button x:Name="btnResetScrollView" AutomationProperties.AutomationId="btnResetScrollView" Margin="6,2,2,2" VerticalAlignment="Center" Content="Reset ScrollView" Click="BtnResetScrollView_Click"/>
+            <TextBox x:Name="txtStatus" AutomationProperties.AutomationId="txtStatus" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="125"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Margin="2">
+            <TextBlock Text="ItemTemplate:" Margin="6,2,2,2" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbItemTemplate" AutomationProperties.AutomationId="cmbItemTemplate" Width="240" Margin="1"
+                VerticalAlignment="Center" SelectedIndex="0" SelectionChanged="CmbItemTemplate_SelectionChanged">
+                <ComboBoxItem>null</ComboBoxItem>
+                <ComboBoxItem>Recipe DataTemplate (Small ContentControl)</ComboBoxItem>
+                <ComboBoxItem>Recipe DataTemplate (Medium StackPanel)</ComboBoxItem>
+                <ComboBoxItem>Recipe DataTemplate (Large StackPanel)</ComboBoxItem>
+                <ComboBoxItem>Recipe DataTemplate (Medium ItemContainer)</ComboBoxItem>
+                <ComboBoxItem>Recipe DataTemplate (Square ItemContainer)</ComboBoxItem>
+            </ComboBox>
+
+            <TextBlock Text="ItemsSource:" Margin="6,2,2,2" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbItemsSource" AutomationProperties.AutomationId="cmbItemsSource" Width="240" Margin="1"
+                VerticalAlignment="Center" SelectedIndex="0" SelectionChanged="CmbItemsSource_SelectionChanged">
+                <ComboBoxItem>null</ComboBoxItem>
+                <ComboBoxItem>List&lt;Recipe&gt;</ComboBoxItem>
+                <ComboBoxItem>Large List&lt;Recipe&gt;</ComboBoxItem>
+                <ComboBoxItem>ObservableCollection&lt;Recipe&gt;</ComboBoxItem>
+            </ComboBox>
+
+            <TextBlock Text="Layout:" Margin="6,2,2,2" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbLayout" AutomationProperties.AutomationId="cmbLayout" Width="240" Margin="1"
+                VerticalAlignment="Center" SelectionChanged="CmbLayout_SelectionChanged">
+                <ComboBoxItem>null</ComboBoxItem>
+                <ComboBoxItem>LinedFlowLayout</ComboBoxItem>
+                <ComboBoxItem>StackLayout</ComboBoxItem>
+                <ComboBoxItem>UniformGridLayout</ComboBoxItem>
+            </ComboBox>
+
+            <TextBlock Text="IsItemInvokedEnabled:" Margin="6,2,2,2" VerticalAlignment="Center"/>
+            <CheckBox x:Name="chkIsItemInvokedEnabled" 
+                    AutomationProperties.AutomationId="chkIsItemInvokedEnabled"
+                    Content="IsItemInvokedEnabled" 
+                    Checked="ChkIsItemInvokedEnabled_Checked" 
+                    Unchecked="ChkIsItemInvokedEnabled_Unchecked" 
+                    IsChecked="False" 
+                    IsThreeState="False"
+                    Margin="2,0,0,0"
+                    Width="240" 
+                    VerticalAlignment="Center" />
+
+            <TextBlock Text="SelectionMode:" Margin="6,2,2,2" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbSelectionMode" AutomationProperties.AutomationId="cmbSelectionMode" Width="240" Margin="1"
+                VerticalAlignment="Center" SelectionChanged="CmbSelectionMode_SelectionChanged">
+                <ComboBoxItem>None</ComboBoxItem>
+                <ComboBoxItem>Single</ComboBoxItem>
+                <ComboBoxItem>Multiple</ComboBoxItem>
+                <ComboBoxItem>Extended</ComboBoxItem>
+            </ComboBox>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Margin="2">
+            <TextBlock Text="Current Element Index:" Margin="6,2,2,2" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtCurrentElementIndex" AutomationProperties.AutomationId="txtCurrentElementIndex" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="75"/>
+            <Button x:Name="btnGetCurrentElementIndex" AutomationProperties.AutomationId="btnGetCurrentElementIndex" Margin="6,2,2,2" VerticalAlignment="Center" Content="Get" Click="BtnGetCurrentElementIndex_Click"/>
+
+            <CheckBox x:Name="chkHandleItemsInfoRequested" AutomationProperties.AutomationId="chkHandleItemsInfoRequested" Content="Handle ItemsInfoRequested?" Margin="6,2,2,2" Checked="ChkHandleItemsInfoRequested_IsCheckedChanged" Unchecked="ChkHandleItemsInfoRequested_IsCheckedChanged"/>
+            <CheckBox x:Name="chkUseFastPath" AutomationProperties.AutomationId="chkUseFastPath" Content="Use Fast Path?" Margin="2" Checked="ChkUseFastPath_IsCheckedChanged" Unchecked="ChkUseFastPath_IsCheckedChanged"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal">
+            <Button x:Name="btnBefore" AutomationProperties.Name="btnBefore" Content="ButtonBefore" Margin="2"/>
+        
+            <ItemsView
+                x:Name="itemsView"
+                AutomationProperties.Name="itemsView"
+                Width="500"
+                Height="500"
+                Background="LightGray"
+                HorizontalAlignment="Left"/>
+
+            <Button x:Name="btnAfter" AutomationProperties.Name="btnAfter" Content="ButtonAfter" Margin="2"/>
+        </StackPanel>
+    </StackPanel>
+</local:TestPage>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Dependencies>
+  <ProductDependencies>
+    <Dependency Name="Microsoft.WindowsAppSDK.Foundation.TransportPackage" Version="1.4.0-20230728.0">
+      <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
+      <Sha>8a25a992470565d260c6145c31fc1af0185bc8f1</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="1.4.3-CI-22624.1040.230911-2114.0">
+      <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
+      <Sha>17b52d8f7c1921025a2d5aeef064d74602e155e9</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Internal.InteractiveExperiences" Version="1.4.3-CI-22624.1040.230911-2114.0">
+      <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
+      <Sha>17b52d8f7c1921025a2d5aeef064d74602e155e9</Sha>
+    </Dependency>
+  </ProductDependencies>
+  <ToolsetDependencies>
+    <Dependency Name="Microsoft.WinAppSDK.EngCommon" Version="1.3.230216">
+      <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKAggregator</Uri>
+      <Sha>4af33042dd35c5b7c41ce901320657a64be2e7ab</Sha>
+    </Dependency>
+  </ToolsetDependencies>
+</Dependencies>

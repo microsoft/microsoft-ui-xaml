@@ -1,0 +1,53 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<ClassDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#include "<#= Model.CppFrameworkGeneratedHeaderFileName #>"
+
+using namespace <#= OMContext.DefaultImplementationNamespace #>;
+
+<# if (Model.IdlClassInfo.HasAnyFactoryInterfaces) { #>
+HRESULT <#= AsCppType(Model.GeneratedFactoryFullName) #>::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
+{
+<#     using (var headerGenerator = new HeaderGenerator())
+       {
+           foreach (var version in Model.Versions.OrderBy(v => v.Version).Select(v => v.GetProjection())) {
+               if (version.IdlClassInfo.HasFactoryMethods) { #>
+    <# if (!headerGenerator.IsFirst) { #>else <# } #>if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(version.IdlClassInfo.FullFactoryInterfaceName) #>)))
+    {
+        *ppObject = static_cast<<#= AsCppType(version.IdlClassInfo.FullFactoryInterfaceName) #>*>(this);
+    }
+<#             }
+               if (version.IdlClassInfo.HasStaticMembers) { #>
+    <# if (!headerGenerator.IsFirst) { #>else <# } #>if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(version.IdlClassInfo.FullStaticMembersInterfaceName) #>)))
+    {
+        *ppObject = static_cast<<#= AsCppType(version.IdlClassInfo.FullStaticMembersInterfaceName) #>*>(this);
+    }
+<#             }
+           } #>
+    else
+    {
+        RRETURN(<#= GetBaseFactoryFullName(Model) #>::QueryInterfaceImpl(iid, ppObject));
+    }
+
+    AddRefOuter();
+    RRETURN(S_OK);
+<#     } #>
+}
+<# } #>
+
+<# if (Model.IdlClassInfo.HasRuntimeClass) { #>
+namespace <#= OMContext.DefaultImplementationNamespace #>
+{
+<#     if (Model.IdlClassInfo.HasRuntimeClass) { #>
+    _Check_return_ IActivationFactory* <#= Model.FactoryConstructor #>()
+    {
+        RRETURN(ctl::ActivationFactoryCreator<<#= GetFactoryFullName(Model) #>>::CreateActivationFactory());
+    }
+<#     } #>
+}
+<# } #>

@@ -1,0 +1,35 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<MethodDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<# if (Model.IsAbstract) { #>
+    // This method is abstract.
+    RRETURN(E_NOTIMPL);
+<# } else if (Model.DelegateToCore) { #>
+<#= IncludeTemplate<PInvokeMethodBody>(Model) #>
+<# } else { #>
+    HRESULT hr = S_OK;
+<# if (Model.IndexName != null) { #>
+    <#= IncludeTemplate<MethodEtwStart>(Model) #>
+<# } #>
+    <#= IncludeTemplate<ParameterValidation>(ParameterValidationModel.Create(Model)) #>
+    <#= IncludeTemplate<CheckAPICall>(Model) #>
+<#    if (!Model.GenerateDefaultBody)
+      {
+          if(Model.IsStatic)
+          { #>
+    IFC(<#= Model.ImplName #>(<#= GetArgumentListAsString(Model.Parameters, Model.ReturnType) #>));
+<#        }
+          else
+          { #>
+    IFC(static_cast<<#= Model.DeclaringClass.Name #>*>(this)-><#= Model.ImplName #>(<#= GetArgumentListAsString(Model.Parameters, Model.ReturnType) #>));
+<#        }
+      } #>
+Cleanup:
+<# if (Model.IndexName != null) { #>
+    <#= IncludeTemplate<MethodEtwStop>(Model) #>
+<# } #>
+    RRETURN(hr);
+<# } #>

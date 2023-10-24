@@ -1,0 +1,23 @@
+<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<EventDefinition>" debug="true"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+IFACEMETHODIMP <#= Model.DeclaringClass.GeneratedClassName #>::add_<#= Model.Name #>(<#= AsCppType(Model.EventHandlerType.AnnotatedAbiParameterName) #>, _Out_ EventRegistrationToken* pToken)
+{
+    HRESULT hr = S_OK;
+
+    ARG_VALIDRETURNPOINTER(pToken);
+    ARG_NOTNULL(pValue, "value");
+
+    IFC(m_<#= Model.Name #>EventSource.Add(pValue, pToken));
+
+Cleanup:
+    RRETURN(hr);
+}
+
+IFACEMETHODIMP <#= Model.DeclaringClass.GeneratedClassName #>::remove_<#= Model.Name #>(_In_ EventRegistrationToken token)
+{
+    RRETURN(m_<#= Model.Name #>EventSource.Remove(token));
+}

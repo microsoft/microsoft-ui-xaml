@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>ETW_ALT</ConfigurationType>
+        <ProjectGuid>{439d8d30-7118-4da6-956b-ee0c5b92d6a9}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+
+    <PropertyGroup>
+        <TargetDestination>retail</TargetDestination>
+        <!-- The IDL file references are included automatically in Microsoft.UI.Xaml.Build.Custom.target, but
+             the IDL projects need this project, so it creates a circular dependency.  Since we don't need
+             the IDL files, make sure we skip this. -->
+        <IgnorePrivateMUXMetadataDir>true</IgnorePrivateMUXMetadataDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <EtwManifest Include="$(XamlSourcePath)\xcp\plat\win\desktop\Microsoft-Windows-XAML-ETW.man"/>
+    </ItemGroup>
+
+    <ItemDefinitionGroup>
+        <EtwManifest>
+            <EventPrefix>Trace</EventPrefix>
+            <AdditionalOptions>%(AdditionalOptions) -um -mof</AdditionalOptions>
+        </EtwManifest>
+    </ItemDefinitionGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+    
+    <Target Name="GetMrtPackagingOutputs" />
+</Project>

@@ -1,0 +1,102 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#pragma once
+
+namespace SimpleProperty
+{
+    // Specializations for host types.
+<# foreach (var type in Model.GetAllTypeTableClassesWithSimpleProperties().Where((c) => c.SimpleProperties.Any((p) => p.SimpleStorage.Value == SimplePropertyStorage.Sparse || p.SimpleStorage.Value == SimplePropertyStorage.SparseGroup))) { #>
+
+    template <>
+    struct sparse_host<<#= type.CoreName #>>
+    {
+        using declaring_type = <#= type.CoreName #>;
+        static constexpr sparse_host_query_t<declaring_type> query = &declaring_type::IsSimpleSparseSet;
+        static constexpr sparse_host_setter_t<declaring_type> setter = &declaring_type::SetSimpleSparseFlag;
+    };
+<# } #>
+
+    namespace details
+    {
+        // Sparse table picker specializations.
+<# foreach (var property in Model.GetAllTypeTableSimpleProperties().Where((p) => p.SimpleStorage.Value == SimplePropertyStorage.Sparse || p.SimpleStorage.Value == SimplePropertyStorage.SparseGroup)) { #>
+
+        template <>
+        static auto& PickSparseTable<<#= property.IndexName #>>(sparsetables& tables)
+        {
+<#   if (property.SimpleStorage.Value == SimplePropertyStorage.Sparse) { #>
+            return tables.m_<#= property.IndexNameWithoutPrefix #>;
+<#   } else { #>
+            return tables.m_<#= property.SimpleGroupStorageClass #>;
+<#   } #>
+        }
+<# } #>
+
+        // Change handlers picker specializations.
+<# foreach (var property in Model.GetAllTypeTableSimpleProperties()) { #>
+
+        template <>
+        static auto& PickHandlersTable<<#= property.IndexName #>>(changehandlerstables& handlers)
+        {
+            return handlers.m_<#= property.IndexNameWithoutPrefix #>;
+        }
+<# } #>
+
+        // Positions in s_runtimePropertyInfos array need to be in the same relative order as KnownPropertyIndices of properties.
+<# uint index = 0; #>
+<# foreach (var property in Model.GetAllTypeTableSimpleProperties()) { #>
+        static_assert(<#= index++ #> == static_cast<size_t>(<#= property.IndexName #>) - KnownDependencyPropertyCount, "Index mismatch for <#= property.IndexNameWithoutPrefix #>");
+<# } #>
+
+        const RuntimePropertyInfo s_runtimePropertyInfos[] =
+        {
+<# foreach (var property in Model.GetAllTypeTableSimpleProperties()) { #>
+            GENERATE_RUNTIMEINFO(<#= property.IndexName #>),
+<# } #>
+        };
+    }
+<# foreach (var type in Model.GetAllTypeTableClassesWithSimpleProperties()) { #>
+
+    template <>
+    void Property::NotifyDestroyed<<#= type.CoreName #>>(objid_t obj)
+    {
+<# foreach (var property in Model.GetAllTypeTableSimpleProperties().Where((p) => p.DeclaringClass == type)) { #>
+        id<<#= property.IndexName #>>::DestroyInstance(obj);
+<# } #>
+    }
+<# } #>
+
+<# foreach (var type in Model.GetAllTypeTableClassesWithSimpleProperties()) { #>
+    template void Property::NotifyDestroyed<<#= type.CoreName #>>(objid_t);
+<# } #>
+
+    void Property::DestroyAllProperties()
+    {
+<# foreach (var property in Model.GetAllTypeTableSimpleProperties()) { #>
+        id<<#= property.IndexName #>>::DestroyProperty();
+<# } #>
+    }
+
+<# foreach (var property in Model.GetAllTypeTableSimpleProperties()) { #>
+    template class Property::id<<#= property.IndexName #>>;
+<# } #>
+
+#if DBG
+    bool Property::AreAllCleanedUp(const_objid_t obj)
+    {
+        bool result = true;
+
+<# foreach (var property in Model.GetAllTypeTableSimpleProperties()) { #>
+        result &= id<<#= property.IndexName #>>::IsCleanedUp(obj);
+<# } #>
+
+        return result;
+    }
+#endif
+}

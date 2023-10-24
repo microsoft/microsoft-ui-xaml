@@ -1,0 +1,28 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<ClassDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+IFACEMETHODIMP <#= AsCppType(Model.GeneratedClassFullName) #>::OnApplyTemplate()
+{
+    HRESULT hr = S_OK;
+<# foreach (var part in Model.TemplateParts.OrderBy(part => part.VarName)) { #>
+    ctl::ComPtr<<#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyObject") #>> <#= part.VarName #>;
+<# } #>
+
+    IFC(<#= GetBaseClassName(Model) #>::OnApplyTemplate());
+
+    // First try to resolve all parts.
+<# foreach (var part in Model.TemplateParts.OrderBy(part => part.VarName)) { #>
+    IFC(GetTemplateChild(Microsoft::WRL::Wrappers::HStringReference(L"<#= part.Name #>").Get(), &<#= part.VarName #>));
+<# } #>
+
+    // If everything succeeded, store the references.
+<# foreach (var part in Model.TemplateParts.OrderBy(part => part.VarName)) { #>
+    SetPtrValueWithQIOrNull(<#= part.FieldName #>, <#= part.VarName #>.Get());
+<# } #>
+
+Cleanup:
+    RRETURN(hr);
+}

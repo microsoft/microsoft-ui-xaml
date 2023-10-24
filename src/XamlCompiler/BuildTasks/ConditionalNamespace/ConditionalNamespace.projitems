@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>06974794-A0B0-4339-AF27-158E26F15A85</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>ConditionalNamespace</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)ConditionalNamespace.g4" />
+    <None Include="$(MSBuildThisFileDirectory)CSharpIdentifier.g4" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ConditionalNamespaceBaseListener.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConditionalNamespaceLexer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConditionalNamespaceListener.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConditionalNamespaceParser.cs" />
+  </ItemGroup>
+</Project>

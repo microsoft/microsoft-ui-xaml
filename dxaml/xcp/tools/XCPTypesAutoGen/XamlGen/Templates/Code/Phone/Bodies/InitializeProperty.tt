@@ -1,0 +1,36 @@
+<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<PropertyDefinition>" debug="true"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<# var isAttached = Model is AttachedPropertyDefinition; #>
+_Check_return_ HRESULT
+<#= Model.DeclaringClass.GeneratedFactoryName#>::Initialize<#= Model.Name #>Property()
+{
+    HRESULT hr = S_OK;
+
+    if (!s_<#= Model.Name #>Property)
+    {
+<# if (Model.HasCallbackRetrievedValue) { #>
+        wrl::ComPtr<IInspectable> sp<#= Model.Name #>Value;
+        IFC(<#= Model.DeclaringClass.Name #>::GetDefault<#= Model.Name #>(&sp<#= Model.Name #>Value));
+
+<# } #>
+        IFC(Private::InitializeDependencyProperty(
+            L"<#= Model.Name #>",
+            L"<#= Model.PropertyType.Type.DeclaringNamespace.Name + "." + Model.PropertyType.Type.MetadataName #>",
+            <#= Model.DeclaringClass.IdlClassInfo.RuntimeClassString #>,
+            <#= isAttached ? "true" : "false" #>, /* isAttached */
+            <# if (Model.HasCallbackRetrievedValue) { #>sp<#= Model.Name #>Value.Get()<# } else { #>nullptr<# } #>,  /* defaultValue */
+<# if (Model.DeclaringClass.HasPropertyChangeCallback && Model.HasPropertyChangeCallback) { #>
+            wrl::Callback<<#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IPropertyChangedCallback") #>>(&<#= isAttached ? Model.DeclaringClass.Name : Model.DeclaringClass.GeneratedFactoryName #>::On<# if (isAttached) { #>Attached<# } #>PropertyChanged).Get(),  /* property changed callback */
+<# } else { #>
+            nullptr,  /* property changed callback */
+<# } #>
+            &<#= Model.DeclaringClass.GeneratedFactoryName#>::s_<#= Model.Name #>Property));
+    }
+
+Cleanup:
+    RRETURN(hr);
+}

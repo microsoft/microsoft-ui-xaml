@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <NativeCode>true</NativeCode>
+  </PropertyGroup>
+
+  <!-- Project configurations -->
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <!-- It is, at times, desirable to produce not just a dynamic link library or a static library, but both.  To accomplish  -->
+  <!-- ths we have defined a "DualLibrary" configuration type.  However, MSBuild doesn't understand this.  So when we       -->
+  <!-- encounter it, we will switch to a standard DynamicLibrary, but set a property so that at the end of Xaml.cpp.targets -->
+  <!-- we can override some stuff to get MSBuild to produce both libraries.                                                 -->
+  <PropertyGroup Condition="'$(ConfigurationType)'=='DualLibrary'">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ProduceStaticLibrary>true</ProduceStaticLibrary>
+  </PropertyGroup>
+
+  <!-- It is, at times, desirable to not produce a static libary or a dynamic link library, but just compile the sources.   -->
+  <!-- To accomplish this, we have defined a CompileOnly configuration type.  However, MSBuild doesn't understand this, so  -->
+  <!-- when we encounter it, we will switch to a standard StaticLibrary, but will set a property so that before we         -->
+  <!-- actually link the lib, we will clear out all the lib sources                                                         -->
+  <PropertyGroup Condition="'$(ConfigurationType)'=='CompileOnly'">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <SuppressStaticLibrary>true</SuppressStaticLibrary>
+    <BeforeLibTargets>
+      $(BeforeLibTargets);
+      SuppressStaticLibrary;
+    </BeforeLibTargets>
+  </PropertyGroup>
+
+  <!-- This can probably be cleaned up.  We have a number of tests that intend to compile to OBJs (not libs) so they specify no target  -->
+  <!-- However, we haven't figured out yet how to do that with MSBuild.  So if there is no ConfigurationType defined, assume static lib -->
+  <Import Condition="'$(ConfigurationType)'=='Unknown'" Project="msbuild\buildsettings\LibraryCompile.props" />
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+  <Import Condition="'$(ConfigurationType)'=='DynamicLibrary' or '$(ConfigurationType)'=='StaticLibrary'" Project="msbuild\buildsettings\LibraryCompile.props" />
+  <Import Condition="'$(ConfigurationType)'=='DynamicLibrary' or '$(ConfigurationType)'=='Application'" Project="msbuild\buildsettings\ModuleLink.props" />
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">$(DefaultProjectConfiguration)</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">$(DefaultProjectPlatform)</Platform>
+    <ArchDefines Condition="'$(Platform)' == 'Win32'" >_X86_=1;i386=1;</ArchDefines>
+    <ArchDefines Condition="'$(Platform)' == 'x64'">WIN64;_WIN64;_AMD64_;AMD64;</ArchDefines>
+    <ArchDefines Condition="'$(Platform)' == 'ARM64'"  >_ARM64_;ARM64;</ArchDefines>
+    <XamlCommonPreprocessorDefinitions>
+      REDIR_BITMAPEX_REUSE;
+      _CONTROL_FLOW_GUARD_SVCTAB=1;
+      _CONTROL_FLOW_GUARD=1;
+      EXECUTABLE_WRITES_SUPPORT=0;
+      WINBLUE_KBSPRING14;
+      $(ArchDefines)
+    </XamlCommonPreprocessorDefinitions>
+  </PropertyGroup>
+
+</Project>

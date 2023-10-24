@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
+
+  <!-- Importing because this project generates the interop assembly -->
+  <Import Project="$(ProjectRoot)eng\winui-version.props" />
+
+  <PropertyGroup>
+    <TargetFramework>$(DotNetCoreTargetFrameworkMonikerForPackaging)</TargetFramework>
+    <TargetPlatformMinVersion>$(WindowsTargetPlatformMinVersion)</TargetPlatformMinVersion>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+    <Copyright>Copyright (c) Microsoft Corporation. All rights reserved.</Copyright>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(ProjectRoot)eng\key.snk</AssemblyOriginatorKeyFile>
+    <AssemblyTitle>Microsoft.WinUI v$(Version)</AssemblyTitle>
+    <AssemblyTitle Condition="'$(ProductPrereleaseTag)'!=''">$(AssemblyTitle)-$(ProductPrereleaseTag)</AssemblyTitle>
+
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <IsTrimmable>true</IsTrimmable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Windows.ApplicationModel.Resources.Projection.dll">
+      <HintPath>$(LiftedMRTLibPath)\net6.0-windows10.0.17763.0\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <CSWinRTIncludes>$(WinUI_CSWinRTIncludes)</CSWinRTIncludes>
+    <CSWinRTExcludes>$(WinUI_CSWinRTExcludes)</CSWinRTExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" PrivateAssets="All" />
+
+    <ProjectReference Include="..\..\MergedWinMD\MergedWinMD.vcxproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <CsWinRTInputs Include="$(PkgMicrosoft_Internal_WinUIDetails)\lib\uap10.0\Microsoft.UI.Text.winmd" />
+    <CsWinRTInputs Include="$(PkgMicrosoft_Web_WebView2)\lib\Microsoft.Web.WebView2.Core.winmd" />
+    <CsWinRTInputs Include="$(LiftedMRTLibPath)\uap10.0\Microsoft.Windows.ApplicationModel.Resources.winmd" />
+  </ItemGroup>
+
+  <!-- Add the generated cswinrt interop assembly to the nuget -->
+  <ItemGroup>
+    <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(CSWinRTInteropAssemblyPackageLocation)" />
+  </ItemGroup>
+</Project>

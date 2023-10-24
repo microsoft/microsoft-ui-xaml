@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{9b1c4ec5-7142-4445-9c75-cabaf74b09e6}</ProjectGuid>
+    </PropertyGroup>
+
+    <!-- ******************************** File Header ******************************\ -->
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved.                   -->
+    <!--                                                                              -->
+    <!-- Project specific SOURCES file.                                               -->
+    <!--                                                                              -->
+    <!-- ***************************************************************************/ -->
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+
+    <Import Project="$(XcpPath)\core\common.props"/>
+
+    <ItemGroup>
+        <ClInclude Include="HWRenderTarget.h"/>
+        <ClInclude Include="HWSolidColorBrush.h"/>
+        <ClInclude Include="HWStrokeStyle.h"/>
+        <ClInclude Include="HwTextBitmap.h"/>
+        <ClInclude Include="LinguisticsHelper.h"/>
+        <ClInclude Include="PasswordBox.h"/>
+        <ClInclude Include="PasswordBoxAutomationPeer.h"/>
+        <ClInclude Include="precomp.h"/>
+        <ClInclude Include="PrivateTextInputSettings.h"/>
+        <ClInclude Include="RichEditBox.h"/>
+        <ClInclude Include="RichEditBoxAutomationPeer.h"/>
+        <ClInclude Include="RichEditOleCallback.h"/>
+        <ClInclude Include="RichEditPal.h"/>
+        <ClInclude Include="RichTextBlockCommandHandler.h"/>
+        <ClInclude Include="TextBlockCommandHandler.h"/>
+        <ClInclude Include="TextBox.h"/>
+        <ClInclude Include="TextBoxAutomationPeer.h"/>
+        <ClInclude Include="TextBoxBase.h"/>
+        <ClInclude Include="TextBoxBaseAutomationPeer.h"/>
+        <ClInclude Include="TextBoxCommandHandler.h"/>
+        <ClInclude Include="TextBoxUIManagerEventSink.h"/>
+        <ClInclude Include="TextBoxView.h"/>
+        <ClInclude Include="TextContextMenu.h"/>
+        <ClInclude Include="TextContextMenuCommandHandler.h"/>
+        <ClInclude Include="TextServicesHost.h"/>
+        <ClInclude Include="Util.h"/>
+
+        <ClCompile Include="HWRenderTarget.cpp"/>
+        <ClCompile Include="HWSolidColorBrush.cpp"/>
+        <ClCompile Include="HWStrokeStyle.cpp"/>
+        <ClCompile Include="HwTextBitmap.cpp"/>
+        <ClCompile Include="PasswordBox.cpp"/>
+        <ClCompile Include="RichEditBox.cpp"/>
+        <ClCompile Include="RichEditOleCallback.cpp"/>
+        <ClCompile Include="RichTextBlockCommandHandler.cpp"/>
+        <ClCompile Include="TextBlockCommandHandler.cpp"/>
+        <ClCompile Include="RichEditBoxAutomationPeer.cpp"/>
+        <ClCompile Include="TextBoxAutomationPeer.cpp"/>
+        <ClCompile Include="PasswordBoxAutomationPeer.cpp"/>
+        <ClCompile Include="TextBoxBaseAutomationPeer.cpp"/>
+        <ClCompile Include="TextBox.cpp"/>
+        <ClCompile Include="TextBoxBase.cpp"/>
+        <ClCompile Include="TextBoxCommandHandler.cpp"/>
+        <ClCompile Include="TextControlsPinvokes.cpp"/>
+        <ClCompile Include="TextBoxView.cpp"/>
+        <ClCompile Include="TextServicesHost.cpp"/>
+        <ClCompile Include="TextContextMenu.cpp"/>
+        <ClCompile Include="TextContextMenuCommandHandler.cpp"/>
+        <ClCompile Include="TextBoxUIManagerEventSink.cpp"/>
+        <ClCompile Include="PrivateTextInputSettings.cpp"/>
+        <ClCompile Include="LinguisticsHelper.cpp"/>
+        <ClCompile Include="Util.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <OwnIncludes>
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\core\native\inc;
+            $(XcpPath)\inc;
+            $(XcpPath)\pal\inc;
+            $(XcpPath)\pal\win\inc;
+            $(XcpPath)\core\native\text\Common;
+            $(XcpPath)\core;
+            $(XcpPath)\core\compositor;
+            $(XcpPath)\core\inc;
+            $(XcpPath)\core\text;
+            $(XcpPath)\core\text\inc;
+            $(XcpPath)\core\text\RichTextServices\inci;
+            $(XcpPath)\core\sw;
+            $(XcpPath)\core\hw;
+            $(XcpPath)\control\inc;
+            $(XcpPath)\core\text\richtextservices\inc;
+            $(XcpPath)\plat\win\desktop;
+            $(XcpPath)\core\text\Classification;
+            $(XcpPath)\win\inc;
+            $(XcpPath)\components\controls\InputValidation\inc;
+            $(XcpPath)\components\XboxUtility\inc;
+            $(XcpPath)\components\DesktopUtility\inc;
+            $(XcpPath)\components\math\inc;
+            $(XcpPath)\components\valueboxer\inc;
+            $(XcpPath)\components\OneCoreTransforms\inc;
+            $(XcpPath)\dxaml\lib;
+            $(XcpPath)\components\KeyboardAccelerator\inc;
+            $(FrameworkUdkIncPath);
+        </OwnIncludes>
+        <ProjectIncludeDirectories>$(ProjectIncludeDirectories); $(OwnIncludes);</ProjectIncludeDirectories>
+        <XamlPrecompiledInclude>precomp.h</XamlPrecompiledInclude>
+        <XamlPrecompiledPch>nativetext.pch</XamlPrecompiledPch>
+        <XamlPrecompiledObj>nativetext.obj</XamlPrecompiledObj>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{ae6a3cb3-2d5f-4a15-843a-7d1dac6395d3}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\common.props"/>
+
+    <ItemGroup>
+        <ClCompile Include="..\OptimizedVisualStateManagerDataSource.cpp"/>
+        <ClCompile Include="..\StandardVisualStateManagerDataSource.cpp"/>
+        <ClCompile Include="..\VisualStateManagerActuator.cpp"/>
+        <ClCompile Include="..\VisualStateManagerDataSource.cpp"/>
+        <ClCompile Include="..\VisualStateGroupContext.cpp"/>
+        <ClCompile Include="..\CVisualStateManager2.cpp"/>
+        <ClCompile Include="..\DynamicTransitionStoryboardGenerator.cpp"/>
+        <ClCompile Include="..\DynamicTimelineHelper.cpp"/>
+        <ClCompile Include="..\VisualState.cpp"/>
+        <ClCompile Include="..\VisualStateSetterHelper.cpp"/>
+        <ClCompile Include="..\VisualStateToken.cpp"/>
+        <ClCompile Include="..\DeferredNameScopeEntry.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\deferral\inc;
+            $(XcpPath)\components\objectWriter\inc;
+            $(XcpPath)\components\qualifiers\inc;
+            $(XcpPath)\components\theming\inc;
+            $(XcpPath)\components\vsm\inc;
+            $(XcpPath)\core\parser;
+            $(XcpPath)\core\inc;
+            $(XcpPath)\control\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\prod\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{ccc61973-be99-4223-b935-353d03571e92}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

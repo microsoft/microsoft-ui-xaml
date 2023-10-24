@@ -1,0 +1,20 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project>
+  <!--
+      Generally, the Microsoft.Windows.SDK.NET.Ref pack is bundled with the .NET SDK. Sometimes we need to override it, and it
+      has to be done in after the Microsoft.NET.SDK has been imported, which means it needs to be in either the .csproj itself,
+      or a .targets file
+   -->
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdk)'=='true' and '$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)'!=''">
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="$(TargetPlatformVersion.TrimEnd('0'))$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="$(TargetPlatformVersion.TrimEnd('0'))$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)" />  
+  </ItemGroup>
+  
+  <!-- TODO: Remove this when https://github.com/microsoft/CsWinRT/issues/530 is fixed and we've picked up a new version. -->
+  <PropertyGroup>
+    <CoreCompileDependsOn Condition="'$(CsWinRTExe)' != ''">
+        $(CoreCompileDependsOn);
+        CsWinRTIncludeProjection
+    </CoreCompileDependsOn>
+  </PropertyGroup>
+</Project>

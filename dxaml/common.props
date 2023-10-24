@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup>
+        <!-- Exclude everything coming from NuGet in a package as "external" for Code Analysis purposes -->
+        <CAExcludePath>$(SolutionDir)\packages\;$(CAExcludePath)</CAExcludePath>
+    </PropertyGroup>
+
+    <Import Project="experimental-clang.props" Condition="'$(ExperimentalClang)' == 'true'" />
+    
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <LanguageStandard>stdcpp17</LanguageStandard>
+            <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
+
+            <!-- MSVC options. -->
+            <AdditionalOptions Condition="'$(ExperimentalClang)' != 'true'">%(AdditionalOptions)
+                /Zc:strictStrings
+                /d1ReturnUdtEHInline
+                /d2ReturnUdtEHInline
+                /Zc:externConstexpr
+            </AdditionalOptions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <ItemDefinitionGroup Condition="'$(ExperimentalClang)' != 'true'">
+        <ClCompile>
+            <WarningLevel>EnableAllWarnings</WarningLevel>
+            <TreatWarningAsError>true</TreatWarningAsError>
+            <DisableSpecificWarnings>%(DisableSpecificWarnings);
+                4061;
+                4062;
+                4100;
+                4191;
+                4201;
+                4238;
+                4245;
+                4255;
+                4263;
+                4264;
+                4265;
+                4266;
+                4355;
+                4365;
+                4369;
+                4371;
+                4389;
+                4435;
+                4459;
+                4471;
+                4499;
+                4514;
+                4548;
+                4555;
+                4577;
+                4599;
+                4619;
+                4623;
+                4625;
+                4626;
+                4643;
+                4668;
+                4701;
+                4706;
+                4710;
+                4711;
+                4738;
+                4743;
+                4746;
+                4774;
+                4777;
+                4820;
+                4826;
+                4838;
+                4917;
+                4946;
+                4986;
+                5026;
+                5027;
+                5038;
+                5039;
+                5045;
+                5204;
+                5205;
+                5219;
+                5220;
+                5246
+            </DisableSpecificWarnings>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <!-- Lifted IXP's private/internal interfaces are marked with [experimental]. We need access to them. -->
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions)ENABLE_WINRT_EXPERIMENTAL_TYPES=1;</ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <!-- In debug we crank the WIL diagnostics up to a high but not maximal level so that file/line/function information is available in the debug output.  These will also show up in ETL traces
+         that are captured with debug binaries.  The caller return address is pruned from our debug output because it is verbose and redundant so we turn that off.  That saves ~1MB of Debug dll
+         size.
+         
+         In release we set this to the minimum value to save binary size. -->
+    <PropertyGroup Condition="'$(Configuration)' != 'Debug'">
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions)RESULT_DIAGNOSTICS_LEVEL=0;</ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions)RESULT_DIAGNOSTICS_LEVEL=4;RESULT_INCLUDE_CALLER_RETURNADDRESS=0;</ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- Tell WIL not to go looking for all the *.featurestaging files it can find. -->
+       <DisableProjectRootFeatureStagingXmlSearch>true</DisableProjectRootFeatureStagingXmlSearch>
+    </PropertyGroup>
+
+    <Import Project="$(XamlSourcePath)\use-public-sdk.props"/>
+    <Import Condition="'$(ExternalDependenciesPropsImported)'!='true'" Project="$(XamlSourcePath)\external\external-dependencies.props"/>
+
+    <ItemGroup>
+        <IDLReference Include="$(XamlSourcePath)\xcp\dxaml\idl\winrt\merged\Microsoft.ui.xaml.vcxproj" Project="{869EA267-A81A-49ED-8404-812C2A03E25A}"/>
+        <IDLReference Include="$(XamlSourcePath)\xcp\dxaml\idl\com\microsoft.ui.xaml-com.vcxproj" />
+        <IDLReference Include="$(XamlSourcePath)\xcp\components\xamlDiagnostics\idl\xamlom.vcxproj" />
+    </ItemGroup>
+</Project>

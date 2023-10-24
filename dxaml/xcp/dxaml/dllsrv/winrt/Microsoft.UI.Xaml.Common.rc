@@ -1,0 +1,499 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+#define VER_INTERNALNAME_STR    "Microsoft.UI.Xaml.dll"
+#include <WinUIrc.ver>
+
+#include "localizedResource.h"
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// ETW Resources
+//
+1 11 "Microsoft-Windows-XAML-ETWEvents_MSG00001.bin"
+1 WEVT_TEMPLATE "Microsoft-Windows-XAML-ETWEventsTEMP.BIN"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+{
+    AG_E_MEDIA_CONTROLS_LONG_ERR_ABORTED_VIDEO           "Error: Video playback was aborted"
+    AG_E_MEDIA_CONTROLS_LONG_ERR_NETWORK_VIDEO           "Network Error: Unable to retrieve video"
+    AG_E_MEDIA_CONTROLS_LONG_ERR_DECODE_VIDEO            "Error: Video could not be decoded"
+    AG_E_MEDIA_CONTROLS_LONG_ERR_SRC_NOT_SUPPORTED_VIDEO "Error: Unsupported video type or invalid file path"
+    AG_E_MEDIA_CONTROLS_LONG_ERR_DEFAULT                 "Error: An unknown error occurred"
+    AG_E_MEDIA_CONTROLS_LONG_ERR_ABORTED_AUDIO           "Error: Audio playback was aborted"
+    AG_E_MEDIA_CONTROLS_LONG_ERR_NETWORK_AUDIO           "Network Error: Unable to retrieve audio"
+    AG_E_MEDIA_CONTROLS_LONG_ERR_DECODE_AUDIO            "Error: Audio could not be decoded"
+    AG_E_MEDIA_CONTROLS_LONG_ERR_SRC_NOT_SUPPORTED_AUDIO "Error: Unsupported audio type or invalid file path"
+
+    UIA_PROGRESSRING_BUSY                               "Busy..."
+    UIA_PROGRESSRING_NOTBUSY                            "Not busy..."
+    TEXT_CONTEXT_MENU_CUT "Cut" // Context menu entry
+    TEXT_CONTEXT_MENU_COPY "Copy"    // Context menu entry
+    TEXT_CONTEXT_MENU_PASTE "Paste"  // Context menu entry
+    TEXT_CONTEXT_MENU_UNDO "Undo"    // Context menu entry
+    TEXT_CONTEXT_MENU_REDO "Redo"    // Context menu entry
+    TEXT_CONTEXT_MENU_SELECT_ALL "Select All"    // Context menu entry
+    TEXT_TOGGLESWITCH_ON "On"   // Toggle switch value
+    TEXT_TOGGLESWITCH_OFF "Off" // Toggle switch value
+    UIA_AP_BUTTON "button"  // Control type reported for accessibility clients
+    UIA_AP_CALENDAR "calendar" // Control type reported for accessibility clients
+    UIA_AP_CHECKBOX "check box" // Control type reported for accessibility clients
+    UIA_AP_COMBOBOX "combo box" // Control type reported for accessibility clients
+    UIA_AP_EDIT "edit" // Control type reported for accessibility clients
+    UIA_AP_HYPERLINK "link" // Control type reported for accessibility clients
+    UIA_AP_IMAGE "image" // Control type reported for accessibility clients
+    UIA_AP_LISTITEM "list item" // Control type reported for accessibility clients
+    UIA_AP_LIST "list" // Control type reported for accessibility clients
+    UIA_AP_MENU "menu" // Control type reported for accessibility clients
+    UIA_AP_MENUBAR "menu bar" // Control type reported for accessibility clients
+    UIA_AP_MENUITEM "menu item" // Control type reported for accessibility clients
+    UIA_AP_PROGRESSBAR "progress bar" // Control type reported for accessibility clients
+    UIA_AP_RADIOBUTTON "radio button" // Control type reported for accessibility clients
+    UIA_AP_SCROLLBAR "scroll bar" // Control type reported for accessibility clients
+    UIA_AP_SLIDER "slider" // Control type reported for accessibility clients
+    UIA_AP_SPINNER "spinner" // Control type reported for accessibility clients
+    UIA_AP_STATUSBAR "status bar" // Control type reported for accessibility clients
+    UIA_AP_TAB "tab" // Control type reported for accessibility clients
+    UIA_AP_TABITEM "tab item" // Control type reported for accessibility clients
+    UIA_AP_TEXT "text" // Control type reported for accessibility clients
+    UIA_AP_TOOLBAR "tool bar" // Control type reported for accessibility clients
+    UIA_AP_TOOLTIP "tool tip" // Control type reported for accessibility clients
+    UIA_AP_TREE "tree" // Control type reported for accessibility clients
+    UIA_AP_TREEITEM "tree item" // Control type reported for accessibility clients
+    UIA_AP_CUSTOM "custom" // Control type reported for accessibility clients
+    UIA_AP_GROUP "group" // Control type reported for accessibility clients
+    UIA_AP_THUMB "thumb" // Control type reported for accessibility clients
+    UIA_AP_DATAGRID "data grid" // Control type reported for accessibility clients
+    UIA_AP_DATAITEM "data item" // Control type reported for accessibility clients
+    UIA_AP_DOCUMENT "document" // Control type reported for accessibility clients
+    UIA_AP_SPLITBUTTON "split button" // Control type reported for accessibility clients
+    UIA_AP_WINDOW "window" // Control type reported for accessibility clients
+    UIA_AP_PANE "pane" // Control type reported for accessibility clients
+    UIA_AP_HEADER "header" // Control type reported for accessibility clients
+    UIA_AP_HEADERITEM "header item" // Control type reported for accessibility clients
+    UIA_AP_TABLE "table" // Control type reported for accessibility clients
+    UIA_AP_TITLEBAR "title bar" // Control type reported for accessibility clients
+    UIA_AP_SEPARATOR "separator" // Control type reported for accessibility clients
+    UIA_AP_SEMANTICZOOM "semantic zoom" // Control type reported for accessibility clients
+    UIA_AP_TOGGLESWITCH "toggle switch"  // Control type reported for accessibility clients
+    UIA_AP_DATEPICKER "date picker"  // Control type reported for accessibility clients
+    UIA_AP_TIMEPICKER "time picker"  // Control type reported for accessibility clients
+    UIA_AP_APPBAR "app bar"  // Control type reported for accessibility clients
+    UIA_AP_CALENDARDATEPICKER "calendar date picker" // Control type reported for accessibility clients
+    UIA_AP_PROGRESSRING "progress ring" // Control type reported for accessibility clients
+    UIA_AP_FLIPVIEW "flip view" // Control type reported for accessibility clients
+
+    // These strings are used to construct UIAutomation messages for drag and drop events.
+
+    UIA_DRAG_ITEM "item"// Default name of an item
+    UIA_DRAG_ITEMS_COUNT "%1 items" // When dragging more than one item. Example: drop top place 5 items.
+    UIA_DRAG_CANCEL_DRAGGING "cancel dragging %1" // Example: drop to cancel dragging itemA
+    UIA_DRAG_PLACE_BETWEEN "place %1 between %2 and %3" // Example: drop to place itemB between itemA and itemC
+    UIA_DRAG_AFTER "after" // Example: drop to place itemZ after itemB
+    UIA_DRAG_BEFORE "before" // Example: drop to place itemA before itemB
+    UIA_DRAG_PLACE_3 "place %1 %2 %3" // Example: drop to place itemA to the right of itemB
+    UIA_DRAG_PLACE_ITEM "place %1" // Example: drop to place itemA
+    UIA_DRAG_MOVE "move" // Default drag effect
+    UIA_DRAG_DROPINTO "drop %1 into %2" // Example: drop itemA into itemB
+    UIA_FLIPVIEW_NEXT "Next" // use it for Calendar control's "Next" button as well.
+    UIA_FLIPVIEW_PREVIOUS "Previous" // use it for Calendar control's "Previous" button as well.
+    UIA_DATEPICKER_DAY "Day "
+    UIA_DATEPICKER_MONTH "Month "
+    UIA_DATEPICKER_YEAR "Year "
+    UIA_TIMEPICKER_HOUR "Hour "
+    UIA_TIMEPICKER_MINUTE "Minute "
+    UIA_TIMEPICKER_PERIOD "Period "
+    UIA_POPUP_NAME "Popup"
+    UIA_WINDOWED_POPUP_HOST "PopupHost"
+    UIA_LIGHTDISMISS_NAME "Close"
+    UIA_TEXTBOX_DELETE "Delete"
+    UIA_MORE_BUTTON "More options"  // Localized automation name property for more/expand buttons that on clicking shows overflow content.
+
+    UIA_SCROLLBAR_VERTICAL "Vertical"
+    UIA_SCROLLBAR_HORIZONTAL "Horizontal"
+
+    // Media Transport Controls: UI Automation Name / Tooltip text
+    UIA_MEDIA_PLAY "Play"
+    UIA_MEDIA_PAUSE "Pause"
+    UIA_MEDIA_TIME_ELAPSED "Time elapsed"
+    UIA_MEDIA_TIME_REMAINING "Time remaining"
+    UIA_MEDIA_DOWNLOAD_PROGRESS "Download Progress"
+    UIA_MEDIA_BUFFERING_PROGRESS "Buffering Progress"
+    UIA_MEDIA_SEEK "Seek"
+    UIA_MEDIA_MUTE "Mute"
+    UIA_MEDIA_UNMUTE "Unmute"
+    UIA_MEDIA_VOLUME "Volume"
+    UIA_MEDIA_ERROR "Error"
+    TEXT_MEDIA_AUDIO_TRACK_UNTITLED "untitled"
+    TEXT_MEDIA_AUDIO_TRACK_SELECTED "(On)"      // Appended to name of currently selected audio track
+    TEXT_MEDIA_AUDIO_TRACK_SEPARATOR " - " // Used to separate pieces of metadata in audio track name
+    UIA_MEDIA_FULLSCREEN "Full Screen"
+    UIA_MEDIA_EXIT_FULLSCREEN "Exit Full Screen"
+    UIA_MEDIA_AUDIO_SELECTION "Show audio selection menu"
+    UIA_MEDIA_CC_SELECTION "Show closed caption menu"
+    TEXT_MEDIA_CC_OFF "Off"
+    UIA_MEDIA_PLAYBACKRATE "Show playback rate list"
+    UIA_MEDIA_FASTFORWARD "Fast forward"
+    UIA_MEDIA_REWIND "Rewind"
+    UIA_MEDIA_STOP "Stop"
+    UIA_MEDIA_CAST "Cast to Device"
+    UIA_MEDIA_ASPECTRATIO "Aspect Ratio"
+    UIA_MEDIA_SKIPBACKWARD "Skip Backward"
+    UIA_MEDIA_SKIPFORWARD  "Skip Forward"
+    UIA_MEDIA_NEXTRACK     "Next Track"
+    UIA_MEDIA_PREVIOUSTRACK "Previous Track"
+    UIA_MEDIA_FASTFORWARD_2X "Fast forward in 2X"
+    UIA_MEDIA_FASTFORWARD_4X "Fast forward in 4X"
+    UIA_MEDIA_FASTFORWARD_8X "Fast forward in 8X"
+    UIA_MEDIA_FASTFORWARD_16X "Fast forward in 16X"
+    UIA_MEDIA_REWIND_2X "Rewind in 2X"
+    UIA_MEDIA_REWIND_4X "Rewind in 4X"
+    UIA_MEDIA_REWIND_8X "Rewind in 8X"
+    UIA_MEDIA_REWIND_16X "Rewind in 16X"
+    UIA_MEDIA_REPEAT_NONE "Repeat None"
+    UIA_MEDIA_REPEAT_ONE "Repeat One"
+    UIA_MEDIA_REPEAT_ALL "Repeat All"
+    UIA_MEDIA_MINIVIEW "Enter MiniView"
+    UIA_MEDIA_EXIT_MINIVIEW "Exit MiniView"
+    UIA_LESS_BUTTON "Less app bar"
+    UIA_AP_APPBAR_BUTTON "app bar button"
+    UIA_AP_APPBAR_TOGGLEBUTTON "app bar toggle button"
+    UIA_AP_MEDIAPLAYERELEMENT "media player" // Localized control type for the video output of MediaPlayerElement
+
+    UIA_SCROLLBAR_HORIZONTALLARGEINCREASE "Horizontal Large Increase"
+    UIA_SCROLLBAR_HORIZONTALSMALLINCREASE "Horizontal Small Increase"
+    UIA_SCROLLBAR_HORIZONTALLARGEDECREASE "Horizontal Large Decrease"
+    UIA_SCROLLBAR_HORIZONTALSMALLDECREASE "Horizontal Small Decrease"
+    UIA_SCROLLBAR_HORIZONTALTHUMB "Horizontal Thumb"
+    UIA_SCROLLBAR_VERTICALALLARGEINCREASE "Vertical Large Increase"
+    UIA_SCROLLBAR_VERTICALSMALLINCREASE "Vertical Small Increase"
+    UIA_SCROLLBAR_VERTICALLARGEDECREASE "Vertical Large Decrease"
+    UIA_SCROLLBAR_VERTICALSMALLDECREASE "Vertical Small Decrease"
+    UIA_SCROLLBAR_VERTICALTHUMB "Vertical Thumb"
+
+    UIA_NAME_DATEPICKER "%1 %2 date picker" // Example: startdate Mar23,2011 date picker
+    UIA_NAME_TIMEPICKER "%1 %2 time picker" // Example: endtime 11::30AM time picker
+
+    UIA_AUTOSUGGESTBOX_QUERY "Search"
+    UIA_PASSWORDBOX_REVEAL "Show Password"
+    UIA_PASSWORDBOX_REVEAL_ACCELERATORKEY "ALT F8 to show password"
+
+    TEXT_PASSWORDBOX_SHOW_PASSWORD "Show Password" // Reveal password checkbox default text
+
+    TEXT_HUB_SEE_MORE "See more" // Clickable label to view more information for the corresponding Hub section
+    TEXT_HUB_SEE_LESS "See less" // Clickable label to view less information for the corresponding Hub section
+
+    TEXT_CALENDARDATEPICKER_DEFAULT_PLACEHOLDER_TEXT "select a date"
+
+    // Friendly color names associated with various colors
+
+    // Achromatic colors
+    TEXT_COLOR_WHITE "White"
+    TEXT_COLOR_LIGHTGRAY "Light gray"
+    TEXT_COLOR_GRAY "Gray"
+    TEXT_COLOR_DARKGRAY "Dark gray"
+    TEXT_COLOR_BLACK "Black"
+
+    // Light colors
+    TEXT_COLOR_CORAL "Coral"
+    TEXT_COLOR_ROSE "Rose"
+    TEXT_COLOR_LIGHTORANGE "Light orange"
+
+    TEXT_COLOR_TAN "Tan"
+    TEXT_COLOR_LIGHTYELLOW "Light yellow"
+    TEXT_COLOR_LIGHTGREEN "Light green"
+    TEXT_COLOR_LIME "Lime"
+    TEXT_COLOR_AQUA "Aqua"
+    TEXT_COLOR_SKYBLUE "Sky blue"
+    TEXT_COLOR_LIGHTTURQUOISE "Light turquoise"
+    TEXT_COLOR_PALEBLUE "Pale blue"
+    TEXT_COLOR_LIGHTBLUE "Light blue"
+    TEXT_COLOR_ICEBLUE "Ice blue"
+    TEXT_COLOR_PERIWINKLE "Periwinkle"
+    TEXT_COLOR_LAVENDER "Lavender"
+    TEXT_COLOR_PINK "Pink"
+
+    // Mid colors
+    TEXT_COLOR_RED "Red"
+    TEXT_COLOR_ORANGE "Orange"
+    TEXT_COLOR_BROWN "Brown"
+    TEXT_COLOR_GOLD "Gold"
+    TEXT_COLOR_YELLOW "Yellow"
+    TEXT_COLOR_OLIVEGREEN "Olive green"
+    TEXT_COLOR_GREEN "Green"
+    TEXT_COLOR_BRIGHTGREEN "Bright green"
+    TEXT_COLOR_TEAL "Teal"
+    TEXT_COLOR_TURQUOISE "Turquoise"
+    TEXT_COLOR_BLUE "Blue"
+    TEXT_COLOR_BLUEGRAY "Blue-gray"
+    TEXT_COLOR_INDIGO "Indigo"
+    TEXT_COLOR_PURPLE "Purple"
+
+    // Dark colors
+    TEXT_COLOR_DARKRED "Dark red"
+    TEXT_COLOR_DARKYELLOW "Dark yellow"
+    TEXT_COLOR_DARKGREEN "Dark green"
+    TEXT_COLOR_DARKTEAL "Dark teal"
+    TEXT_COLOR_DARKBLUE "Dark blue"
+    TEXT_COLOR_DARKPURPLE "Dark purple"
+    TEXT_COLOR_PLUM "Plum"
+
+    KEYBOARD_ACCELERATOR_TEXT_JOIN "%s+%s" // Ex: "Ctrl+S".  Can be applied multiple times, e.g. "Ctrl+Shift+S" is "Ctrl" joined with "Shift", the result of which is then joined with "S".
+    KEYBOARD_ACCELERATOR_TEXT_TOOLTIP "%s (%s)" // Ex: "Save (Ctrl+S)".  First string is the name of the command, second string is the keyboard accelerator.
+
+    TEXT_VK_A "A" // {Locked} This is the keyboard key "A".
+    TEXT_VK_ACCEPT "Accept" // This is the keyboard key "Accept".
+    TEXT_VK_ADD "+" // This is the keyboard key "+".
+    TEXT_VK_APPLICATION "Application" // This is the keyboard key "Application".
+    TEXT_VK_B "B" // {Locked} This is the keyboard key "B".
+    TEXT_VK_BACK "Back" // This is the keyboard key "Back".
+    TEXT_VK_C "C" // {Locked} This is the keyboard key "C".
+    TEXT_VK_CANCEL "Cancel" // This is the keyboard key "Cancel".
+    TEXT_VK_CAPITALLOCK "Caps Lock" // This is the keyboard key "Caps Lock".
+    TEXT_VK_CLEAR "Clear" // This is the keyboard key "Clear".
+    TEXT_VK_CONTROL "Ctrl" // This is the keyboard key "Ctrl".
+    TEXT_VK_CONVERT "Convert" // This is the keyboard key "Convert".
+    TEXT_VK_D "D" // {Locked} This is the keyboard key "D".
+    TEXT_VK_DECIMAL "." // This is the keyboard key ".".
+    TEXT_VK_DELETE "Delete" // This is the keyboard key "Delete".
+    TEXT_VK_DIVIDE "/" // This is the keyboard key "/".
+    TEXT_VK_DOWN "Down" // This is the keyboard key "Down".
+    TEXT_VK_E "E" // {Locked} This is the keyboard key "E".
+    TEXT_VK_END "End" // This is the keyboard key "End".
+    TEXT_VK_ENTER "Enter" // This is the keyboard key "Enter".
+    TEXT_VK_ESCAPE "Esc" // This is the keyboard key "Esc".
+    TEXT_VK_EXECUTE "Execute" // This is the keyboard key "Execute".
+    TEXT_VK_F "F" // {Locked} This is the keyboard key "F".
+    TEXT_VK_F1 "F1" // {Locked} This is the keyboard key "F1".
+    TEXT_VK_F10 "F10" // {Locked} This is the keyboard key "F10".
+    TEXT_VK_F11 "F11" // {Locked} This is the keyboard key "F11".
+    TEXT_VK_F12 "F12" // {Locked} This is the keyboard key "F12".
+    TEXT_VK_F13 "F13" // {Locked} This is the keyboard key "F13".
+    TEXT_VK_F14 "F14" // {Locked} This is the keyboard key "F14".
+    TEXT_VK_F15 "F15" // {Locked} This is the keyboard key "F15".
+    TEXT_VK_F16 "F16" // {Locked} This is the keyboard key "F16".
+    TEXT_VK_F17 "F17" // {Locked} This is the keyboard key "F17".
+    TEXT_VK_F18 "F18" // {Locked} This is the keyboard key "F18".
+    TEXT_VK_F19 "F19" // {Locked} This is the keyboard key "F19".
+    TEXT_VK_F2 "F2" // {Locked} This is the keyboard key "F2".
+    TEXT_VK_F20 "F20" // {Locked} This is the keyboard key "F20".
+    TEXT_VK_F21 "F21" // {Locked} This is the keyboard key "F21".
+    TEXT_VK_F22 "F22" // {Locked} This is the keyboard key "F22".
+    TEXT_VK_F23 "F23" // {Locked} This is the keyboard key "F23".
+    TEXT_VK_F24 "F24" // {Locked} This is the keyboard key "F24".
+    TEXT_VK_F3 "F3" // {Locked} This is the keyboard key "F3".
+    TEXT_VK_F4 "F4" // {Locked} This is the keyboard key "F4".
+    TEXT_VK_F5 "F5" // {Locked} This is the keyboard key "F5".
+    TEXT_VK_F6 "F6" // {Locked} This is the keyboard key "F6".
+    TEXT_VK_F7 "F7" // {Locked} This is the keyboard key "F7".
+    TEXT_VK_F8 "F8" // {Locked} This is the keyboard key "F8".
+    TEXT_VK_F9 "F9" // {Locked} This is the keyboard key "F9".
+    TEXT_VK_FAVORITES "Favorites" // This is the keyboard key "Favorites".
+    TEXT_VK_FINAL "Final" // This is the keyboard key "Final".
+    TEXT_VK_G "G" // {Locked} This is the keyboard key "G".
+    TEXT_VK_GAMEPADA "GamepadA" // This is the keyboard key "GamepadA".
+    TEXT_VK_GAMEPADB "GamepadB" // This is the keyboard key "GamepadB".
+    TEXT_VK_GAMEPADDPADDOWN "GamepadDPadDown" // This is the keyboard key "GamepadDPadDown".
+    TEXT_VK_GAMEPADDPADLEFT "GamepadDPadLeft" // This is the keyboard key "GamepadDPadLeft".
+    TEXT_VK_GAMEPADDPADRIGHT "GamepadDPadRight" // This is the keyboard key "GamepadDPadRight".
+    TEXT_VK_GAMEPADDPADUP "GamepadDPadUp" // This is the keyboard key "GamepadDPadUp".
+    TEXT_VK_GAMEPADLEFTSHOULDER "GamepadLeftShoulder" // This is the keyboard key "GamepadLeftShoulder".
+    TEXT_VK_GAMEPADLEFTTHUMBSTICKBUTTON "GamepadLeftThumbstickButton" // This is the keyboard key "GamepadLeftThumbstickButton".
+    TEXT_VK_GAMEPADLEFTTHUMBSTICKDOWN "GamepadLeftThumbstickDown" // This is the keyboard key "GamepadLeftThumbstickDown".
+    TEXT_VK_GAMEPADLEFTTHUMBSTICKLEFT "GamepadLeftThumbstickLeft" // This is the keyboard key "GamepadLeftThumbstickLeft".
+    TEXT_VK_GAMEPADLEFTTHUMBSTICKRIGHT "GamepadLeftThumbstickRight" // This is the keyboard key "GamepadLeftThumbstickRight".
+    TEXT_VK_GAMEPADLEFTTHUMBSTICKUP "GamepadLeftThumbstickUp" // This is the keyboard key "GamepadLeftThumbstickUp".
+    TEXT_VK_GAMEPADLEFTTRIGGER "GamepadLeftTrigger" // This is the keyboard key "GamepadLeftTrigger".
+    TEXT_VK_GAMEPADMENU "GamepadMenu" // This is the keyboard key "GamepadMenu".
+    TEXT_VK_GAMEPADRIGHTSHOULDER "GamepadRightShoulder" // This is the keyboard key "GamepadRightShoulder".
+    TEXT_VK_GAMEPADRIGHTTHUMBSTICKBUTTON "GamepadRightThumbstickButton" // This is the keyboard key "GamepadRightThumbstickButton".
+    TEXT_VK_GAMEPADRIGHTTHUMBSTICKDOWN "GamepadRightThumbstickDown" // This is the keyboard key "GamepadRightThumbstickDown".
+    TEXT_VK_GAMEPADRIGHTTHUMBSTICKLEFT "GamepadRightThumbstickLeft" // This is the keyboard key "GamepadRightThumbstickLeft".
+    TEXT_VK_GAMEPADRIGHTTHUMBSTICKRIGHT "GamepadRightThumbstickRight" // This is the keyboard key "GamepadRightThumbstickRight".
+    TEXT_VK_GAMEPADRIGHTTHUMBSTICKUP "GamepadRightThumbstickUp" // This is the keyboard key "GamepadRightThumbstickUp".
+    TEXT_VK_GAMEPADRIGHTTRIGGER "GamepadRightTrigger" // This is the keyboard key "GamepadRightTrigger".
+    TEXT_VK_GAMEPADVIEW "GamepadView" // This is the keyboard key "GamepadView".
+    TEXT_VK_GAMEPADX "GamepadX" // This is the keyboard key "GamepadX".
+    TEXT_VK_GAMEPADY "GamepadY" // This is the keyboard key "GamepadY".
+    TEXT_VK_GOBACK "GoBack" // This is the keyboard key "GoBack".
+    TEXT_VK_GOFORWARD "GoForward" // This is the keyboard key "GoForward".
+    TEXT_VK_GOHOME "GoHome" // This is the keyboard key "GoHome".
+    TEXT_VK_H "H" // {Locked} This is the keyboard key "H".
+    TEXT_VK_HANGUL "Hangul" // This is the keyboard key "Hangul".
+    TEXT_VK_HANJA "Hanja" // This is the keyboard key "Hanja".
+    TEXT_VK_HELP "Help" // This is the keyboard key "Help".
+    TEXT_VK_HOME "Home" // This is the keyboard key "Home".
+    TEXT_VK_I "I" // {Locked} This is the keyboard key "I".
+    TEXT_VK_IMEON "IME ON"
+    TEXT_VK_IMEOFF "IME OFF"
+    TEXT_VK_INSERT "Insert" // This is the keyboard key "Insert".
+    TEXT_VK_J "J" // {Locked} This is the keyboard key "J".
+    TEXT_VK_JUNJA "Junja" // This is the keyboard key "Junja".
+    TEXT_VK_K "K" // {Locked} This is the keyboard key "K".
+    TEXT_VK_L "L" // {Locked} This is the keyboard key "L".
+    TEXT_VK_LEFT "Left" // This is the keyboard key "Left".
+    TEXT_VK_LEFTBUTTON "LeftButton" // This is the keyboard key "LeftButton".
+    TEXT_VK_M "M" // {Locked} This is the keyboard key "M".
+    TEXT_VK_MENU "Alt" // This is the keyboard key "Alt".
+    TEXT_VK_MIDDLEBUTTON "MiddleButton" // This is the keyboard key "MiddleButton".
+    TEXT_VK_MODECHANGE "ModeChange" // This is the keyboard key "ModeChange".
+    TEXT_VK_MULTIPLY "*" // This is the keyboard key "*".
+    TEXT_VK_N "N" // {Locked} This is the keyboard key "N".
+    TEXT_VK_NAVIGATIONACCEPT "NavigationAccept" // This is the keyboard key "NavigationAccept".
+    TEXT_VK_NAVIGATIONCANCEL "NavigationCancel" // This is the keyboard key "NavigationCancel".
+    TEXT_VK_NAVIGATIONDOWN "NavigationDown" // This is the keyboard key "NavigationDown".
+    TEXT_VK_NAVIGATIONLEFT "NavigationLeft" // This is the keyboard key "NavigationLeft".
+    TEXT_VK_NAVIGATIONMENU "NavigationMenu" // This is the keyboard key "NavigationMenu".
+    TEXT_VK_NAVIGATIONRIGHT "NavigationRight" // This is the keyboard key "NavigationRight".
+    TEXT_VK_NAVIGATIONUP "NavigationUp" // This is the keyboard key "NavigationUp".
+    TEXT_VK_NAVIGATIONVIEW "NavigationView" // This is the keyboard key "NavigationView".
+    TEXT_VK_NONCONVERT "NonConvert" // This is the keyboard key "NonConvert".
+    TEXT_VK_NONE "None" // This is the keyboard key "None".
+    TEXT_VK_NUMBER0 "0" // {Locked} This is the keyboard key "0".
+    TEXT_VK_NUMBER1 "1" // {Locked} This is the keyboard key "1".
+    TEXT_VK_NUMBER2 "2" // {Locked} This is the keyboard key "2".
+    TEXT_VK_NUMBER3 "3" // {Locked} This is the keyboard key "3".
+    TEXT_VK_NUMBER4 "4" // {Locked} This is the keyboard key "4".
+    TEXT_VK_NUMBER5 "5" // {Locked} This is the keyboard key "5".
+    TEXT_VK_NUMBER6 "6" // {Locked} This is the keyboard key "6".
+    TEXT_VK_NUMBER7 "7" // {Locked} This is the keyboard key "7".
+    TEXT_VK_NUMBER8 "8" // {Locked} This is the keyboard key "8".
+    TEXT_VK_NUMBER9 "9" // {Locked} This is the keyboard key "9".
+    TEXT_VK_NUMBERKEYLOCK "Num Lock" // This is the keyboard key "Num Lock".
+    TEXT_VK_NUMBERPAD0 "Num 0" // This is the keyboard key "Num 0".
+    TEXT_VK_NUMBERPAD1 "Num 1" // This is the keyboard key "Num 1".
+    TEXT_VK_NUMBERPAD2 "Num 2" // This is the keyboard key "Num 2".
+    TEXT_VK_NUMBERPAD3 "Num 3" // This is the keyboard key "Num 3".
+    TEXT_VK_NUMBERPAD4 "Num 4" // This is the keyboard key "Num 4".
+    TEXT_VK_NUMBERPAD5 "Num 5" // This is the keyboard key "Num 5".
+    TEXT_VK_NUMBERPAD6 "Num 6" // This is the keyboard key "Num 6".
+    TEXT_VK_NUMBERPAD7 "Num 7" // This is the keyboard key "Num 7".
+    TEXT_VK_NUMBERPAD8 "Num 8" // This is the keyboard key "Num 8".
+    TEXT_VK_NUMBERPAD9 "Num 9" // This is the keyboard key "Num 9".
+    TEXT_VK_O "O" // {Locked} This is the keyboard key "O".
+    TEXT_VK_P "P" // {Locked} This is the keyboard key "P".
+    TEXT_VK_PAGEDOWN "PageDown" // This is the keyboard key "PageDown".
+    TEXT_VK_PAGEUP "PageUp" // This is the keyboard key "PageUp".
+    TEXT_VK_PAUSE "Pause" // This is the keyboard key "Pause".
+    TEXT_VK_PRINT "Print" // This is the keyboard key "Print".
+    TEXT_VK_Q "Q" // {Locked} This is the keyboard key "Q".
+    TEXT_VK_R "R" // {Locked} This is the keyboard key "R".
+    TEXT_VK_REFRESH "Refresh" // This is the keyboard key "Refresh".
+    TEXT_VK_RIGHT "Right" // This is the keyboard key "Right".
+    TEXT_VK_RIGHTBUTTON "RightButton" // This is the keyboard key "RightButton".
+    TEXT_VK_S "S" // {Locked} This is the keyboard key "S".
+    TEXT_VK_SCROLL "Scroll Lock" // This is the keyboard key "Scroll Lock".
+    TEXT_VK_SEARCH "Search" // This is the keyboard key "Search".
+    TEXT_VK_SELECT "Select" // This is the keyboard key "Select".
+    TEXT_VK_SEPARATOR "Separator" // This is the keyboard key "Separator".
+    TEXT_VK_SHIFT "Shift" // This is the keyboard key "Shift".
+    TEXT_VK_SLEEP "Sleep" // This is the keyboard key "Sleep".
+    TEXT_VK_SNAPSHOT "Snapshot" // This is the keyboard key "Snapshot".
+    TEXT_VK_SPACE "Space" // This is the keyboard key "Space".
+    TEXT_VK_STOP "Stop" // This is the keyboard key "Stop".
+    TEXT_VK_SUBTRACT "-" // This is the keyboard key "-".
+    TEXT_VK_T "T" // {Locked} This is the keyboard key "T".
+    TEXT_VK_TAB "Tab" // This is the keyboard key "Tab".
+    TEXT_VK_U "U" // {Locked} This is the keyboard key "U".
+    TEXT_VK_UP "Up" // This is the keyboard key "Up".
+    TEXT_VK_V "V" // {Locked} This is the keyboard key "V".
+    TEXT_VK_W "W" // {Locked} This is the keyboard key "W".
+    TEXT_VK_WINDOWS "Windows" // This is the keyboard key "Windows".
+    TEXT_VK_X "X" // {Locked} This is the keyboard key "X".
+    TEXT_VK_XBUTTON1 "XButton1" // This is the keyboard key "XButton1".
+    TEXT_VK_XBUTTON2 "XButton2" // This is the keyboard key "XButton2".
+    TEXT_VK_Y "Y" // {Locked} This is the keyboard key "Y".
+    TEXT_VK_Z "Z" // {Locked} This is the keyboard key "Z".
+
+    TEXT_DATEPICKER_DAY_PLACEHOLDER "day"
+    TEXT_DATEPICKER_MONTH_PLACEHOLDER "month"
+    TEXT_DATEPICKER_YEAR_PLACEHOLDER "year"
+    TEXT_TIMEPICKER_HOUR_PLACEHOLDER "hour"
+    TEXT_TIMEPICKER_MINUTE_PLACEHOLDER "minute"
+    TEXT_TIMEPICKER_PERIOD_PLACEHOLDER "AM" // AM vs. PM in a 12-hour time
+
+    // Spell check context menu entries
+    TEXT_SPELLCHECK_IGNORE "Ignore"
+    TEXT_SPELLCHECK_STOP_CORRECTING "Stop correcting %s" // Stop correct [word]
+    TEXT_SPELLCHECK_ADD_TO_DICTIONARY "Add to dictionary"
+    TEXT_SPELLCHECK_DELETE_REPEATED_WORD "Delete repeated word"
+
+    TEXT_COMMAND_LABEL_CUT "Cut"
+    TEXT_COMMAND_LABEL_COPY "Copy"
+    TEXT_COMMAND_LABEL_PASTE "Paste"
+    TEXT_COMMAND_LABEL_SELECTALL "Select All"
+    TEXT_COMMAND_LABEL_DELETE "Delete"
+    TEXT_COMMAND_LABEL_SHARE "Share"
+    TEXT_COMMAND_LABEL_SAVE "Save"
+    TEXT_COMMAND_LABEL_OPEN "Open"
+    TEXT_COMMAND_LABEL_CLOSE "Close"
+    TEXT_COMMAND_LABEL_PAUSE "Pause"
+    TEXT_COMMAND_LABEL_PLAY "Play"
+    TEXT_COMMAND_LABEL_STOP "Stop"
+    TEXT_COMMAND_LABEL_FORWARD "Forward"
+    TEXT_COMMAND_LABEL_BACKWARD "Backward"
+    TEXT_COMMAND_LABEL_UNDO "Undo"
+    TEXT_COMMAND_LABEL_REDO "Redo"
+    TEXT_COMMAND_DESCRIPTION_CUT "Remove the selected content and put it on the clipboard"
+    TEXT_COMMAND_DESCRIPTION_COPY "Copy the selected content to the clipboard"
+    TEXT_COMMAND_DESCRIPTION_PASTE "Insert the contents of the clipboard at the current location"
+    TEXT_COMMAND_DESCRIPTION_SELECTALL "Select all content"
+    TEXT_COMMAND_DESCRIPTION_DELETE "Delete the selected content"
+    TEXT_COMMAND_DESCRIPTION_SHARE "Share the selected content"
+    TEXT_COMMAND_DESCRIPTION_SAVE "Save your changes"
+    TEXT_COMMAND_DESCRIPTION_OPEN "Open"
+    TEXT_COMMAND_DESCRIPTION_CLOSE "Close"
+    TEXT_COMMAND_DESCRIPTION_PAUSE "Pause"
+    TEXT_COMMAND_DESCRIPTION_PLAY "Play"
+    TEXT_COMMAND_DESCRIPTION_STOP "Stop"
+    TEXT_COMMAND_DESCRIPTION_FORWARD "Go to the next item"
+    TEXT_COMMAND_DESCRIPTION_BACKWARD "Go to the previous item"
+    TEXT_COMMAND_DESCRIPTION_UNDO "Reverse the most recent action"
+    TEXT_COMMAND_DESCRIPTION_REDO "Repeat the most recently undone action"
+    TEXT_COMMAND_KEYBOARDACCELERATORKEY_CUT "X" // {ValidChars="A-Z"}{MinLength=source}{MaxLength=source} Keyboard accelerator key for cutting - Ctrl+X. Must be unique with respect to every other keyboard accelerator in this file.
+    TEXT_COMMAND_KEYBOARDACCELERATORKEY_COPY "C" // {ValidChars="A-Z"}{MinLength=source}{MaxLength=source} Keyboard accelerator key for copying - Ctrl+C. Must be unique with respect to every other keyboard accelerator in this file.
+    TEXT_COMMAND_KEYBOARDACCELERATORKEY_PASTE "V" // {ValidChars="A-Z"}{MinLength=source}{MaxLength=source} Keyboard accelerator key for pasting - Ctrl+V. Must be unique with respect to every other keyboard accelerator in this file.
+    TEXT_COMMAND_KEYBOARDACCELERATORKEY_SELECTALL "A" // {ValidChars="A-Z"}{MinLength=source}{MaxLength=source} Keyboard accelerator key for selecting all - Ctrl+A. Must be unique with respect to every other keyboard accelerator in this file.
+    TEXT_COMMAND_KEYBOARDACCELERATORKEY_SAVE "S" // {ValidChars="A-Z"}{MinLength=source}{MaxLength=source} Keyboard accelerator key for saving - Ctrl+S. Must be unique with respect to every other keyboard accelerator in this file.
+    TEXT_COMMAND_KEYBOARDACCELERATORKEY_OPEN "O" // {ValidChars="A-Z"}{MinLength=source}{MaxLength=source} Keyboard accelerator key for opening - Ctrl+O. Must be unique with respect to every other keyboard accelerator in this file.
+    TEXT_COMMAND_KEYBOARDACCELERATORKEY_CLOSE "W" // {ValidChars="A-Z"}{MinLength=source}{MaxLength=source} Keyboard accelerator key for closing - Ctrl+W. Must be unique with respect to every other keyboard accelerator in this file.
+    TEXT_COMMAND_KEYBOARDACCELERATORKEY_UNDO "Z" // {ValidChars="A-Z"}{MinLength=source}{MaxLength=source} Keyboard accelerator key for undoing - Ctrl+Z. Must be unique with respect to every other keyboard accelerator in this file.
+    TEXT_COMMAND_KEYBOARDACCELERATORKEY_REDO "Y" // {ValidChars="A-Z"}{MinLength=source}{MaxLength=source} Keyboard accelerator key for redoing - Ctrl+Y. Must be unique with respect to every other keyboard accelerator in this file.
+    TEXT_CARETBROWSING_DIALOG_TURNON_TITLE "Turn on Caret Browsing?"
+    TEXT_CARETBROWSING_DIALOG_TURNOFF_TITLE "Turn off Caret Browsing?"
+    TEXT_CARETBROWSING_DIALOG_CONTENT "This adds a cursor on Text so you can select text with your keyboard. F7 turns caret browsing on or off."
+    TEXT_CARETBROWSING_DIALOG_CHECKBOX "Do not ask me again when I press F7."
+    TEXT_CARETBROWSING_DIALOG_YES "Yes"
+    TEXT_CARETBROWSING_DIALOG_NO "No"
+    
+    // These tooltips are kept same as tooltips of Win32 min, max and close buttons
+    TEXT_TOOLTIP_MINIMIZE "Minimize"
+    TEXT_TOOLTIP_MAXIMIZE "Maximize"
+    TEXT_TOOLTIP_CLOSE "Close"
+    TEXT_TOOLTIP_RESTORE "Restore Down"
+}
+
+// Increment this prior to any public release of WinUI Previews.
+// Used to ensure the "tap" dll shipped in Visual Studio
+// is compatible with this version of WinUI 3.
+// Version 1: Reunion 0.5 (including servicing releases) and prior, supported in VS 16.10
+// Version 2: Reunion 0.8, supported in VS 16.11.  Changed due to breaking DispatcherQueue changes which cascaded into the Window and DependencyObject GUIDs
+// Version 3: Reunion 1.0, supported in VS 17.0.  Changed due to breaking changes with UIElement/PointerCursor
+
+TOOLINGAPIVERSION RCDATA {3}

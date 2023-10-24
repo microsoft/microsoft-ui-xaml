@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ProjectGuid>{D4D488D4-440D-4D95-A10F-226D34E9B790}</ProjectGuid>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))" />
+  <Import Project="$(XamlSourcePath)\xcp\project-lift.props" />
+  <Import Project="$(XcpPath)\core\common.props" />
+
+  <ItemGroup>
+    <ClCompile Include="GeneratedClasses.g.cpp"/>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <XamlPrecompiledInclude>precomp.h</XamlPrecompiledInclude>
+    <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\math\inc;
+            $(XcpPath)\core\controls;
+            $(XcpPath)\core\inc;
+            $(XcpPath)\core\compositor;
+            $(XcpPath)\core\sw;
+            $(XcpPath)\core\hw;
+            $(XcpPath)\core\imaging\CoreImage;
+            $(XcpPath)\core\imaging\ImagingProvider;
+            $(XcpPath)\core\animation;
+            $(XcpPath)\core\parser\inc;
+            $(XcpPath)\core\text\inc;
+            $(XcpPath)\core\text\RichTextServices\inc;
+            $(XcpPath)\core\text;
+            $(XcpPath)\core\;
+            $(XcpPath)\control\inc;
+            $(XcpPath)\plat\win\desktop;
+            $(XcpPath)\core\native\inc;
+            $(XcpPath)\core\native\text\Controls;
+            $(XcpPath)\core\native\text\Common;
+            $(XcpPath)\win\inc;
+        </ProjectIncludeDirectories>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

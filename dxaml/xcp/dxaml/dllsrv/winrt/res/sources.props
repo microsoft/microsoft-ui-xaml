@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+    </PropertyGroup>
+
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+
+    <PropertyGroup>
+        <ResourceOnlyDll>true</ResourceOnlyDll>
+        <Mui>false</Mui>
+
+        <ProjectIncludeDirectories>
+            $(XcpPath)\inc;
+            $(XcpPath)\win\agcore.debug;
+            $(XcpPath)\dxaml\lib;
+            $(XcpPath)\inc\;
+            $(XamlBinaryPath)\xcp\dxaml\themes\autogen\GenAllXbf\;
+            $(XamlBinaryPath)\xcp\dxaml\themes\autogen\;
+        </ProjectIncludeDirectories>
+        <TargetDestination>$(ProductBinplaceDestinationPath)</TargetDestination>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\dxaml\themes\autogen\GenAllXbf.csproj" Project="{0D1EAEAA-7BEF-44A1-91E8-5E05E18F348E}" SkipGetTargetFrameworkProperties="true"/>
+    </ItemGroup>
+</Project>

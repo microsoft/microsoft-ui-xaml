@@ -1,0 +1,16 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project>
+  <PropertyGroup Condition="'$(MUXFinalRelease)' != 'true'">
+    <MUXFinalRelease>false</MUXFinalRelease> <!-- Task 24635257 : Unify it with MUXC props value -->
+    <DefineConstants>$(DefineConstants);MUX_PRERELEASE;WINUI_PRERELEASE</DefineConstants><!-- for C# code -->
+  </PropertyGroup>
+
+  <ItemDefinitionGroup Condition="$(MUXFinalRelease) != 'true'">
+    <ClCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);MUX_PRERELEASE;WINUI_PRERELEASE</PreprocessorDefinitions>
+    </ClCompile>
+    <Midl>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);MUX_PRERELEASE;WINUI_PRERELEASE</PreprocessorDefinitions>
+    </Midl>
+  </ItemDefinitionGroup>
+</Project>

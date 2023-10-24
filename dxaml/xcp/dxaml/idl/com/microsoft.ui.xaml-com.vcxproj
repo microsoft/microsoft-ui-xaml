@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>Utility</ConfigurationType>
+        <ProjectGuid>{a1eb01c3-ac8b-45a8-97c8-c459b77ed690}</ProjectGuid>
+        <MergeWinMd>false</MergeWinMd>
+        <DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\msbuild\buildsettings\MIDLOle.props"/>
+
+    <PropertyGroup>
+        <XamlUsePublicSdk>false</XamlUsePublicSdk>    <!-- IDL generation with public SDK does not work yet -->
+    </PropertyGroup>
+
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+
+    <!-- midl sources lines -->
+    <PropertyGroup>
+        <MidlFlags>$(MidlFlags) /noproxy</MidlFlags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Midl Include="microsoft.ui.xaml.media.dxinterop.idl" CopyToPublicHeadersPath="true" />
+        <Midl Include="microsoft.ui.xaml.hosting.referencetracker.idl" CopyToPublicHeadersPath="true" />
+        <Midl Include="microsoft.ui.xaml.compositiontarget-private.idl"/>
+        <Midl Include="microsoft.ui.xaml.window.idl"/>
+        <Midl Include="microsoft.ui.xaml.xamlroot.idl" />
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+    
+    <ItemGroup>
+        <PackageContent Include="$(OutDir)microsoft.ui.xaml.hosting.referencetracker.h" PackageLocation="$(IncludesPackageLocation)"/>
+        <PackageContent Include="$(MSBuildThisFileDirectory)microsoft.ui.xaml.hosting.referencetracker.idl" PackageLocation="$(IncludesPackageLocation)"/>
+        <PackageContent Include="$(OutDir)microsoft.ui.xaml.media.dxinterop.h" PackageLocation="$(IncludesPackageLocation)"/>
+        <PackageContent Include="$(MSBuildThisFileDirectory)microsoft.ui.xaml.media.dxinterop.idl" PackageLocation="$(IncludesPackageLocation)"/>
+        <PackageContent Include="$(OutDir)microsoft.ui.xaml.window.h" PackageLocation="$(IncludesPackageLocation)"/>
+        <PackageContent Include="$(MSBuildThisFileDirectory)microsoft.ui.xaml.window.idl" PackageLocation="$(IncludesPackageLocation)"/>
+
+    </ItemGroup>
+</Project>

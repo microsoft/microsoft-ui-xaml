@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{8b386f16-9cf2-44e0-82ec-5c5129593a3c}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\common.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\base\inc;
+            $(XcpPath)\components\brushes\inc;
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\comptree\inc;
+            $(XcpPath)\components\graphics\inc;
+            $(XcpPath)\components\transforms\inc;
+            $(XcpPath)\components\ValueBoxer\inc;
+            $(XcpPath)\components\scaling\inc;
+            $(XcpPath)\core\inc;
+            $(XcpPath)\plat\win\desktop;
+            $(XcpPath)\win\inc;
+            $(XcpPath)\dxaml\lib;
+            $(XcpPath)\dxaml\lib\winrtgeneratedclasses;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\AlphaMask.cpp"/>
+        <ClCompile Include="..\ExpressionHelper.cpp"/>
+        <ClCompile Include="..\WindowsGraphicsDeviceManager.cpp"/>
+        <ClCompile Include="..\HWTexture.cpp"/>
+        <ClCompile Include="..\RectangleGeometry.cpp"/>
+        <ClCompile Include="..\ThemeShadow.cpp"/>
+        <ClCompile Include="..\XamlLight.cpp"/>
+        <ClCompile Include="..\XamlLightTargetIdMap.cpp"/>
+        <ClCompile Include="..\XamlLightTargetMap.cpp"/>
+        <ClCompile Include="..\ProjectedShadowManager.cpp"/>
+        <ClCompile Include="..\EffectPolicyHelper.cpp"/>
+        <ClCompile Include="..\SystemBackdrop.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\prod\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{ccc61973-be99-4223-b935-353d03571e92}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

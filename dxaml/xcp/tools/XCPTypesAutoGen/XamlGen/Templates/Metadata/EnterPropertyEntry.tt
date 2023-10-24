@@ -1,0 +1,14 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="MetadataCodeGenerator<DependencyPropertyDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+// <#= Model.DescriptiveName #> enter property
+{
+    <#= GetOffsetString(Model) #>, // Offset
+    <#= GetStorageGroupOffsetString(Model) #>, // Storage offset
+    <#= GetEnterPropertyFlagsString(Model) #>, // Property flags
+    <#= Model.IndexName #>, // Index name
+    <#= Model.NextEnterPropertyInTypeTable.TypeTableEnterPropertyIndex #>, // Next enter property = <#= Model.NextEnterPropertyInTypeTable.DescriptiveName #>
+}

@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{d704e322-e366-4c87-b394-28d2f4ccb481}</ProjectGuid>
+    </PropertyGroup>
+
+    <!-- Task 14117377: Remove try/catch dependencies -->
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+
+    <Import Project="$(XcpPath)\components\common.except.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\brushes\inc;
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\comptree\inc;
+            $(XcpPath)\components\deferral\inc;
+            $(XcpPath)\components\elements\inc;
+            $(XcpPath)\components\graphics\inc;
+            $(XcpPath)\components\resources\inc;
+            $(XcpPath)\components\transforms\inc;
+            $(XcpPath)\components\simple\inc;
+            $(XcpPath)\control\inc;
+            $(XcpPath)\dxaml\lib;
+            $(XcpPath)\dxaml\lib\winrtgeneratedclasses;
+            $(XcpPath)\plat\win\desktop;
+            $(XcpPath)\win\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="SharedStubs.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\prodexcept\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{d4b4d716-47d2-4b4b-8765-f879a171f1a2}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

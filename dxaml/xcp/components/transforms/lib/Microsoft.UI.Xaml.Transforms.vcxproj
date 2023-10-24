@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{365cdabf-7f04-445d-a598-ba372821b5a6}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+
+    <Import Project="$(XcpPath)\components\common.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\brushes\inc;
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\comptree\inc;
+            $(XcpPath)\components\graphics\inc;
+            $(XcpPath)\components\transforms\inc;
+            $(XcpPath)\plat\win\desktop;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\WinRTExpressionConversionContext.cpp"/>
+        <ClCompile Include="..\Transform.cpp"/>
+        <ClCompile Include="..\TranslateTransform.cpp"/>
+        <ClCompile Include="..\RotateTransform.cpp"/>
+        <ClCompile Include="..\ScaleTransform.cpp"/>
+        <ClCompile Include="..\SkewTransform.cpp"/>
+        <ClCompile Include="..\MatrixTransform.cpp"/>
+        <ClCompile Include="..\CompositeTransform.cpp"/>
+        <ClCompile Include="..\TransformGroup.cpp"/>
+        <ClCompile Include="..\XamlLocalTransformBuilder.cpp"/>
+        <ClCompile Include="..\WinRTLocalExpressionBuilder.cpp"/>
+        <ClCompile Include="..\HitTestParams.cpp"/>
+        <ClCompile Include="..\Projection.cpp"/>
+        <ClCompile Include="..\PlaneProjection.cpp"/>
+        <ClCompile Include="..\Matrix3DProjection.cpp"/>
+        <ClCompile Include="..\Transform3D.cpp"/>
+        <ClCompile Include="..\PerspectiveTransform3D.cpp"/>
+        <ClCompile Include="..\CompositeTransform3D.cpp"/>
+        <ClCompile Include="..\TransformCollection.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\prodexcept\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{d4b4d716-47d2-4b4b-8765-f879a171f1a2}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

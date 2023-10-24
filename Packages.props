@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Copyright (c) Microsoft Corporation. 
+    Licensed under the MIT License. See LICENSE in the project root for license information. 
+
+    This is the project file used by CentralPackageVersions, and used to control all PackageReference's
+    and make sure the version is only declared in a single place
+
+    In order to the CentralPackageVersions, add this to your SDK-Style .csproj file:
+    <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
+
+    For more info: https://github.com/microsoft/MSBuildSdks/tree/master/src/CentralPackageVersions
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PackageReference Update="Microsoft.NETCore.UniversalWindowsPlatform" Version="$(MicrosoftNETCoreUniversalWindowsPlatformVersion)" />
+    <PackageReference Update="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestNetSdkVersion)" />
+    <PackageReference Update="Microsoft.TestPlatform.TestHost" Version="$(MicrosoftTestNetSdkVersion)" />
+    <PackageReference Update="Microsoft.Windows.SDK.BuildTools" Version="$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)" />
+    <PackageReference Update="Microsoft.Internal.WinUIDetails" Version="$(WinUIDetailsNugetVersion)" GeneratePathProperty="true"/>
+    <PackageReference Update="Microsoft.Internal.InteractiveExperiences" Version="$(IxpInternalPackageVersion)"/>
+    <PackageReference Update="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="$(IxpTransportPackageVersion)"/>
+    <PackageReference Update="Microsoft.Web.WebView2" Version="$(WebView2Version)" GeneratePathProperty="true" />
+    <PackageReference Update="Microsoft.SourceLink.AzureRepos.Git" Version="$(MicrosoftSourceLinkAzureReposVersion)" GeneratePathProperty="true"/>
+    <PackageReference Update="MUXCustomBuildTasks" Version="$(MuxCustomBuildTasksPackageVersion)" />
+    <PackageReference Update="Microsoft.Taef" Version="$(TaefNugetPackageVersion)" />
+    <PackageReference Update="ColorCode.Core" Version="$(ColorCodeVersion)" />
+    <PackageReference Update="Microsoft.Graphics.Win2D" Version="$(GraphicsWin2DVersion)" />
+    <PackageReference Update="Win2d.uwp" Version="$(Win2DUWPVersion)" />
+    <PackageReference Update="Win2d.winui" Version="$(Win2DWinUIVersion)" />
+    <PackageReference Update="DiffPlex" Version="1.2.1" />
+    <PackageReference Update="System.Private.Uri" Version="4.3.2"/>
+    <PackageReference Update="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)"/>
+    <PackageReference Update="Microsoft.WindowsAppSDK" Version="$(WindowsAppSdkPackageVersion)" />
+  </ItemGroup>
+</Project>

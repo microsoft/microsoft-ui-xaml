@@ -1,0 +1,158 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <!--
+        There are already some MSBuild projects in the build tree.  NT Build handles these by passing in a series of
+        property values when it executes them.  This legacy file will (when not being run under NT) set those 
+        appropriate values.
+    -->
+    <PropertyGroup>
+        <TestCode>true</TestCode>
+    </PropertyGroup>
+    <Import Project="Microsoft.UI.Xaml.Build.targets" />
+    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
+    
+    <PropertyGroup>
+        <WinRTFiles>@(WinMDReferenceFiles)</WinRTFiles>
+        <TargetPlatformWinMDLocation></TargetPlatformWinMDLocation>
+        <SkipUnionWinmd>true</SkipUnionWinmd>
+
+        <LinkIncremental Condition="'$(Configuration)'=='Release'">false</LinkIncremental>
+
+        <ArchDefines Condition="'$(BuildArchitecture)' == 'i386'" >_X86_=1;i386=1</ArchDefines>
+        <ArchDefines Condition="'$(BuildArchitecture)' == 'amd64'">WIN64;_AMD64_;AMD64</ArchDefines>
+        <ArchDefines Condition="'$(BuildArchitecture)' == 'ARM64'"  >_ARM64_;ARM64</ArchDefines>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Reference Include="@(WinUIWinMDReferences)" />
+        <Reference Include="$(SDKReferencesPath)\Windows.Foundation.FoundationContract.winmd" />
+        <Reference Include="$(SDKReferencesPath)\Windows.Foundation.UniversalApiContract.winmd" />
+        <Reference Include="$(VCToolsInstallDir)lib\x86\store\references\platform.winmd;" />
+        
+    </ItemGroup>
+  
+    <ItemGroup>
+        <ProjectReference Include="$(ProjectRoot)\MergedWinMD\private\MergedWinMD.vcxproj" Project="{52b2ed64-1cfc-401b-8c5b-6d1e1deadf98}"/>
+    </ItemGroup>
+ 
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <!-- Warning, this is probably not right.  We need to define the prcompiled header name because it isn't the standard  -->
+            <!-- sdafx.h.  Right now the only header we are using is pch.h but I can't figure out how it is getting set correctly. -->
+            <!-- for the ntbuild.  There must be some custom magic in there, but for now, let's just fake it.                      -->
+            <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>        
+            
+            <PreprocessorDefinitions>
+                %(PreprocessorDefinition)
+                _FULL_IOBUF;
+                $(ArchDefines);
+                NT_INST=0;
+                NT_UP=1;
+                WIN32_LEAN_AND_MEAN=1;
+                WINRT_LEAN_AND_MEAN;
+                CONDITION_HANDLING=1;
+                WIN32=100;
+                _NT1X_=100;
+                WINNT=1;
+                _WIN32_WINNT=0x0A00;
+                WINVER=0x0A00;
+                NTDDI_VERSION=0x0A000007;
+                _WIN32_IE=0x0A00;
+                STD_CALL;
+                _FULL_IOBUF;
+                XAML_USE_PUBLIC_SDK;
+                MIDL_NS_PREFIX;
+                %(PreprocessorDefinitions);
+                DEVL=1;
+                __BUILDMACHINE__=DCPP($(COMPUTERNAME))($(USERNAME));
+            </PreprocessorDefinitions>
+            <DebugInformationFormat>OldStyle</DebugInformationFormat>
+            <SuppressStartupBanner>true</SuppressStartupBanner>
+            <Optimization>MaxSpeed</Optimization>
+            <IntrinsicFunctions>true</IntrinsicFunctions>
+            <OmitFramePointers>false</OmitFramePointers>
+            <MinimalRebuild>false</MinimalRebuild>
+            <ExceptionHandling>Sync</ExceptionHandling>
+            <RuntimeLibrary Condition="'$(TestCode)'=='true'">MultiThreadedDLL</RuntimeLibrary>
+            <StructMemberAlignment>8Bytes</StructMemberAlignment>
+            <BufferSecurityCheck>true</BufferSecurityCheck>
+            <FunctionLevelLinking>true</FunctionLevelLinking>
+            <FloatingPointModel>Precise</FloatingPointModel>
+            <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+            <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+            <CallingConvention>StdCall</CallingConvention>
+            <CompileAs>CompileAsCpp</CompileAs>
+            <EnablePREfast>false</EnablePREfast>
+            <RemoveUnreferencedCodeData>false</RemoveUnreferencedCodeData>
+            <SupportJustMyCode>false</SupportJustMyCode>
+            <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+            <UseFullPaths>true</UseFullPaths>
+            <ErrorReporting>Queue</ErrorReporting>
+            <ForcedUsingFiles>
+              $(WinRTFiles);
+            </ForcedUsingFiles>
+            <AdditionalUsingDirectories>
+                %(AdditionalUsingDirectories);
+                $(ProjectSDKMetadataPath);
+            </AdditionalUsingDirectories>
+            <AdditionalOptions>
+                /ZW
+                /ZW:nostdlib
+                 -Zc:noexceptTypes-
+                -Zc:alignedNew-
+                /w15043
+                %(AdditionalOptions)
+                <!--/bigobj -->
+                /guard:cf
+            </AdditionalOptions>
+            <AdditionalOptions Condition="'$(Immersive)'=='true'">%(AdditionalOptions) /d2NoSmallFunctionOpt</AdditionalOptions>
+        </ClCompile>
+
+        <ClCompile>
+            <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_MAGIC_STATICS=1;</PreprocessorDefinitions>
+            <!-- <AdditionalOptions>%(AdditionalOptions) -dvc7dname</AdditionalOptions> -->
+            <AdditionalOptions>%(AdditionalOptions) /Qspectre -d1vc7dname -Zc:sizedDealloc-</AdditionalOptions>
+            <AdditionalOptions Condition="'$(PlatformTarget)'=='x86'">%(AdditionalOptions) /d2noftol3</AdditionalOptions>
+        </ClCompile>
+       <ClCompile Condition="'$(Immersive)'=='true'">
+           <!-- <AdditionalOptions>%(AdditionalOptions) -dvc7dname</AdditionalOptions> -->
+           <AdditionalOptions Condition="'$(PlatformTarget)'=='x86'">%(AdditionalOptions) /d2noftol3 /d2CoroOptsWorkaround</AdditionalOptions>
+
+        </ClCompile>
+
+        <Link>
+            <AppContainer Condition="'$(AppContainerApplication)'!='true'">false</AppContainer>
+            <AppContainer Condition="'$(AppContainerApplication)'=='true'">true</AppContainer>
+            <SubSystem Condition="'$(AppContainerApplication)'=='true'">Windows</SubSystem>
+            <AdditionalLibraryDirectories>$(LibraryPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+            <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+            <LinkErrorReporting>QueueForNextLogin</LinkErrorReporting>
+            <AdditionalOptions>
+                /debugtype:cv,fixup,pdata
+                /guard:cf
+                /guard:longjmp
+                /d2:-guardspecload
+            </AdditionalOptions>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <Target Name="AddUmbrellaLib" BeforeTargets="Link">
+        <ItemGroup>
+            <!-- Needed for UWP Win32 APIs. -->
+            <Link Include="WindowsApp.lib"/>
+        </ItemGroup>
+    </Target>
+
+    <Target Name="Preprocess">
+        <Message Condition="'$(Source)'!=''" Text="Preprocessing: $(Source)"/>
+        <Error Condition="'$(Source)'==''" Text="To generate a pre-processed file, please specify a source file with msbuild /p:Source=nameOfTheSource.cpp"/>
+        <CL PreprocessToFile="true" Sources="$(Source)" 
+            AdditionalIncludeDirectories="%(ClCompile.AdditionalIncludeDirectories)"
+            PreprocessorDefinitions="%(ClCompile.PreprocessorDefinitions)"
+            AdditionalOptions="%(ClCompile.AdditionalOptions) /d1PP"
+            PreprocessKeepComments="true"
+            PreprocessOutputPath="$(Source.Replace('.cpp', '.pp'))"
+            />
+    </Target>
+</Project>

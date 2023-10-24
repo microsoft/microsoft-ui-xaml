@@ -1,0 +1,11 @@
+﻿namespace MU_XAP_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass TeachingTipAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    TeachingTipAutomationPeer(MU_XC_NAMESPACE.TeachingTip owner);
+}
+
+}

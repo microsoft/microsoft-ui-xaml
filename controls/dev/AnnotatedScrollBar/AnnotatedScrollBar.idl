@@ -1,0 +1,97 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PUBLIC_V5]
+[webhosthidden]
+enum AnnotatedScrollBarScrollingEventKind
+{
+    Click = 0,
+    Drag = 1,
+    IncrementButton = 2,
+    DecrementButton = 3,
+};
+
+[MUX_PUBLIC_V5]
+[webhosthidden]
+runtimeclass AnnotatedScrollBarDetailLabelRequestedEventArgs
+{
+    Object Content{ get; set; };
+    Double ScrollOffset{ get; };
+}
+
+[MUX_PUBLIC_V5]
+[webhosthidden]
+runtimeclass AnnotatedScrollBarScrollingEventArgs
+{
+    Double ScrollOffset{ get; };
+    AnnotatedScrollBarScrollingEventKind ScrollingEventKind{ get; };
+    Boolean Cancel{ get; set; };
+}
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass AnnotatedScrollBarScrollOffsetFromValueRequestedEventArgs
+{
+    Double Value{ get; };
+    Double ScrollOffset{ get; set; };
+}
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass AnnotatedScrollBarValueFromScrollOffsetRequestedEventArgs
+{
+    Double Value{ get; set; };
+    Double ScrollOffset{ get; };
+}
+
+[MUX_PUBLIC_V5]
+[webhosthidden]
+runtimeclass AnnotatedScrollBarLabel
+{ 
+    AnnotatedScrollBarLabel(Object content, Double scrollOffset);
+
+    Object Content{ get; };
+    Double ScrollOffset{ get; };
+}
+
+
+[MUX_PUBLIC_V5]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass AnnotatedScrollBar : Microsoft.UI.Xaml.Controls.Control
+{
+    AnnotatedScrollBar();
+
+    Microsoft.UI.Xaml.Controls.Primitives.IScrollController ScrollController{ get; };
+    Windows.Foundation.Collections.IVector<AnnotatedScrollBarLabel> Labels{ get; set; };
+    Microsoft.UI.Xaml.IElementFactory LabelTemplate{ get; set; };
+    Microsoft.UI.Xaml.IElementFactory DetailLabelTemplate{ get; set; } ;
+    Double SmallChange{ get; set; };
+
+    event Windows.Foundation.TypedEventHandler<AnnotatedScrollBar, AnnotatedScrollBarScrollingEventArgs> Scrolling;
+    event Windows.Foundation.TypedEventHandler<AnnotatedScrollBar, AnnotatedScrollBarDetailLabelRequestedEventArgs> DetailLabelRequested;
+
+    static Microsoft.UI.Xaml.DependencyProperty LabelsProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty LabelTemplateProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty DetailLabelTemplateProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty SmallChangeProperty{ get; };
+
+    [MUX_PREVIEW]
+    {
+        [MUX_DEFAULT_VALUE("true")]
+        Boolean IsValueScrollOffset{ get; set; };
+        Double LabelContentAreaSize{ get; };
+        Double ScrollOffsetToLabelOffsetFactor{ get; };
+
+        event Windows.Foundation.TypedEventHandler<AnnotatedScrollBar, AnnotatedScrollBarScrollOffsetFromValueRequestedEventArgs> ScrollOffsetFromValueRequested;
+        event Windows.Foundation.TypedEventHandler<AnnotatedScrollBar, AnnotatedScrollBarValueFromScrollOffsetRequestedEventArgs> ValueFromScrollOffsetRequested;
+
+
+        static Microsoft.UI.Xaml.DependencyProperty IsValueScrollOffsetProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty LabelContentAreaSizeProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty ScrollOffsetToLabelOffsetFactorProperty{ get; };
+    }
+}
+
+}

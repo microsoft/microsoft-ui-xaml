@@ -1,0 +1,133 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33530.505
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.UI.Xaml.Markup.Compiler", "src\XamlCompiler\Microsoft.UI.Xaml.Markup.Compiler.csproj", "{CF0F4BDA-9030-4749-9102-7739049412F5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.UI.Xaml.Markup.Compiler.Executable", "src\XamlCompiler\Exe\Microsoft.UI.Xaml.Markup.Compiler.Executable.csproj", "{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.UI.Xaml.Markup.Compiler.IO", "src\XamlCompiler\Exe\Microsoft.UI.Xaml.Markup.Compiler.IO\Microsoft.UI.Xaml.Markup.Compiler.IO.csproj", "{1FBDE93D-5C21-4761-87D6-2504F772BF28}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop", "src\XamlCompiler\Exe\Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop\Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.csproj", "{A1175D44-D47D-4D3E-A319-CEFC7170D29C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildGenXbfForMSBuild", "eng\BuildGenXbfForMSBuild\BuildGenXbfForMSBuild.csproj", "{3CB5C51E-1F39-4EDC-8949-28812FC1C40E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM64 = Debug|ARM64
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|ARM64 = Release|ARM64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CF0F4BDA-9030-4749-9102-7739049412F5}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{CF0F4BDA-9030-4749-9102-7739049412F5}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{CF0F4BDA-9030-4749-9102-7739049412F5}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{CF0F4BDA-9030-4749-9102-7739049412F5}.Debug|Win32.Build.0 = Debug|Any CPU
+		{CF0F4BDA-9030-4749-9102-7739049412F5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CF0F4BDA-9030-4749-9102-7739049412F5}.Debug|x64.Build.0 = Debug|Any CPU
+		{CF0F4BDA-9030-4749-9102-7739049412F5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CF0F4BDA-9030-4749-9102-7739049412F5}.Debug|x86.Build.0 = Debug|Any CPU
+		{CF0F4BDA-9030-4749-9102-7739049412F5}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{CF0F4BDA-9030-4749-9102-7739049412F5}.Release|ARM64.Build.0 = Release|Any CPU
+		{CF0F4BDA-9030-4749-9102-7739049412F5}.Release|Win32.ActiveCfg = Release|Any CPU
+		{CF0F4BDA-9030-4749-9102-7739049412F5}.Release|Win32.Build.0 = Release|Any CPU
+		{CF0F4BDA-9030-4749-9102-7739049412F5}.Release|x64.ActiveCfg = Release|Any CPU
+		{CF0F4BDA-9030-4749-9102-7739049412F5}.Release|x64.Build.0 = Release|Any CPU
+		{CF0F4BDA-9030-4749-9102-7739049412F5}.Release|x86.ActiveCfg = Release|Any CPU
+		{CF0F4BDA-9030-4749-9102-7739049412F5}.Release|x86.Build.0 = Release|Any CPU
+		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Debug|Win32.Build.0 = Debug|Any CPU
+		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Debug|x64.Build.0 = Debug|Any CPU
+		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Debug|x86.Build.0 = Debug|Any CPU
+		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Release|ARM64.Build.0 = Release|Any CPU
+		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Release|Win32.ActiveCfg = Release|Any CPU
+		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Release|Win32.Build.0 = Release|Any CPU
+		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Release|x64.ActiveCfg = Release|Any CPU
+		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Release|x64.Build.0 = Release|Any CPU
+		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Release|x86.ActiveCfg = Release|Any CPU
+		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Release|x86.Build.0 = Release|Any CPU
+		{1FBDE93D-5C21-4761-87D6-2504F772BF28}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{1FBDE93D-5C21-4761-87D6-2504F772BF28}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{1FBDE93D-5C21-4761-87D6-2504F772BF28}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{1FBDE93D-5C21-4761-87D6-2504F772BF28}.Debug|Win32.Build.0 = Debug|Any CPU
+		{1FBDE93D-5C21-4761-87D6-2504F772BF28}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1FBDE93D-5C21-4761-87D6-2504F772BF28}.Debug|x64.Build.0 = Debug|Any CPU
+		{1FBDE93D-5C21-4761-87D6-2504F772BF28}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1FBDE93D-5C21-4761-87D6-2504F772BF28}.Debug|x86.Build.0 = Debug|Any CPU
+		{1FBDE93D-5C21-4761-87D6-2504F772BF28}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{1FBDE93D-5C21-4761-87D6-2504F772BF28}.Release|ARM64.Build.0 = Release|Any CPU
+		{1FBDE93D-5C21-4761-87D6-2504F772BF28}.Release|Win32.ActiveCfg = Release|Any CPU
+		{1FBDE93D-5C21-4761-87D6-2504F772BF28}.Release|Win32.Build.0 = Release|Any CPU
+		{1FBDE93D-5C21-4761-87D6-2504F772BF28}.Release|x64.ActiveCfg = Release|Any CPU
+		{1FBDE93D-5C21-4761-87D6-2504F772BF28}.Release|x64.Build.0 = Release|Any CPU
+		{1FBDE93D-5C21-4761-87D6-2504F772BF28}.Release|x86.ActiveCfg = Release|Any CPU
+		{1FBDE93D-5C21-4761-87D6-2504F772BF28}.Release|x86.Build.0 = Release|Any CPU
+		{A1175D44-D47D-4D3E-A319-CEFC7170D29C}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{A1175D44-D47D-4D3E-A319-CEFC7170D29C}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{A1175D44-D47D-4D3E-A319-CEFC7170D29C}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{A1175D44-D47D-4D3E-A319-CEFC7170D29C}.Debug|Win32.Build.0 = Debug|Any CPU
+		{A1175D44-D47D-4D3E-A319-CEFC7170D29C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A1175D44-D47D-4D3E-A319-CEFC7170D29C}.Debug|x64.Build.0 = Debug|Any CPU
+		{A1175D44-D47D-4D3E-A319-CEFC7170D29C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A1175D44-D47D-4D3E-A319-CEFC7170D29C}.Debug|x86.Build.0 = Debug|Any CPU
+		{A1175D44-D47D-4D3E-A319-CEFC7170D29C}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{A1175D44-D47D-4D3E-A319-CEFC7170D29C}.Release|ARM64.Build.0 = Release|Any CPU
+		{A1175D44-D47D-4D3E-A319-CEFC7170D29C}.Release|Win32.ActiveCfg = Release|Any CPU
+		{A1175D44-D47D-4D3E-A319-CEFC7170D29C}.Release|Win32.Build.0 = Release|Any CPU
+		{A1175D44-D47D-4D3E-A319-CEFC7170D29C}.Release|x64.ActiveCfg = Release|Any CPU
+		{A1175D44-D47D-4D3E-A319-CEFC7170D29C}.Release|x64.Build.0 = Release|Any CPU
+		{A1175D44-D47D-4D3E-A319-CEFC7170D29C}.Release|x86.ActiveCfg = Release|Any CPU
+		{A1175D44-D47D-4D3E-A319-CEFC7170D29C}.Release|x86.Build.0 = Release|Any CPU
+		{3CB5C51E-1F39-4EDC-8949-28812FC1C40E}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{3CB5C51E-1F39-4EDC-8949-28812FC1C40E}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{3CB5C51E-1F39-4EDC-8949-28812FC1C40E}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{3CB5C51E-1F39-4EDC-8949-28812FC1C40E}.Debug|Win32.Build.0 = Debug|Any CPU
+		{3CB5C51E-1F39-4EDC-8949-28812FC1C40E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3CB5C51E-1F39-4EDC-8949-28812FC1C40E}.Debug|x64.Build.0 = Debug|Any CPU
+		{3CB5C51E-1F39-4EDC-8949-28812FC1C40E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3CB5C51E-1F39-4EDC-8949-28812FC1C40E}.Debug|x86.Build.0 = Debug|Any CPU
+		{3CB5C51E-1F39-4EDC-8949-28812FC1C40E}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{3CB5C51E-1F39-4EDC-8949-28812FC1C40E}.Release|ARM64.Build.0 = Release|Any CPU
+		{3CB5C51E-1F39-4EDC-8949-28812FC1C40E}.Release|Win32.ActiveCfg = Release|Any CPU
+		{3CB5C51E-1F39-4EDC-8949-28812FC1C40E}.Release|Win32.Build.0 = Release|Any CPU
+		{3CB5C51E-1F39-4EDC-8949-28812FC1C40E}.Release|x64.ActiveCfg = Release|Any CPU
+		{3CB5C51E-1F39-4EDC-8949-28812FC1C40E}.Release|x64.Build.0 = Release|Any CPU
+		{3CB5C51E-1F39-4EDC-8949-28812FC1C40E}.Release|x86.ActiveCfg = Release|Any CPU
+		{3CB5C51E-1F39-4EDC-8949-28812FC1C40E}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4E90F142-722E-4A8A-BB0B-89CB556EB0F5}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\XamlCompiler\BuildTasks\Antlr4.Runtime\Antlr4.Runtime.projitems*{5a98f9f4-bb19-428c-96b7-87fbf8fb91fe}*SharedItemsImports = 5
+		src\XamlCompiler\BuildTasks\BindingPath\BindingPath.projitems*{5a98f9f4-bb19-428c-96b7-87fbf8fb91fe}*SharedItemsImports = 5
+		src\XamlCompiler\BuildTasks\ConditionalNamespace\ConditionalNamespace.projitems*{5a98f9f4-bb19-428c-96b7-87fbf8fb91fe}*SharedItemsImports = 5
+		src\XamlCompiler\BuildTasks\Core.projitems*{5a98f9f4-bb19-428c-96b7-87fbf8fb91fe}*SharedItemsImports = 5
+		src\XamlCompiler\BuildTasks\SuccinctCollectionSyntax\SuccinctCollectionSyntax.projitems*{5a98f9f4-bb19-428c-96b7-87fbf8fb91fe}*SharedItemsImports = 5
+		src\XamlCompiler\BuildTasks\System.Xaml\System.Xaml.projitems*{5a98f9f4-bb19-428c-96b7-87fbf8fb91fe}*SharedItemsImports = 5
+		src\XamlCompiler\Microsoft.UI.Xaml.Markup.Compiler.Core\Microsoft.UI.Xaml.Markup.Compiler.Core.projitems*{5a98f9f4-bb19-428c-96b7-87fbf8fb91fe}*SharedItemsImports = 5
+		src\XamlCompiler\Microsoft.UI.Xaml.Markup.Compiler.Parsing\Microsoft.UI.Xaml.Markup.Compiler.Parsing.projitems*{5a98f9f4-bb19-428c-96b7-87fbf8fb91fe}*SharedItemsImports = 5
+		src\XamlCompiler\BuildTasks\Antlr4.Runtime\Antlr4.Runtime.projitems*{cf0f4bda-9030-4749-9102-7739049412f5}*SharedItemsImports = 5
+		src\XamlCompiler\BuildTasks\BindingPath\BindingPath.projitems*{cf0f4bda-9030-4749-9102-7739049412f5}*SharedItemsImports = 5
+		src\XamlCompiler\BuildTasks\ConditionalNamespace\ConditionalNamespace.projitems*{cf0f4bda-9030-4749-9102-7739049412f5}*SharedItemsImports = 5
+		src\XamlCompiler\BuildTasks\Core.projitems*{cf0f4bda-9030-4749-9102-7739049412f5}*SharedItemsImports = 5
+		src\XamlCompiler\BuildTasks\SuccinctCollectionSyntax\SuccinctCollectionSyntax.projitems*{cf0f4bda-9030-4749-9102-7739049412f5}*SharedItemsImports = 5
+		src\XamlCompiler\BuildTasks\System.Xaml\System.Xaml.projitems*{cf0f4bda-9030-4749-9102-7739049412f5}*SharedItemsImports = 5
+		src\XamlCompiler\Microsoft.UI.Xaml.Markup.Compiler.Core\Microsoft.UI.Xaml.Markup.Compiler.Core.projitems*{cf0f4bda-9030-4749-9102-7739049412f5}*SharedItemsImports = 5
+		src\XamlCompiler\Microsoft.UI.Xaml.Markup.Compiler.Parsing\Microsoft.UI.Xaml.Markup.Compiler.Parsing.projitems*{cf0f4bda-9030-4749-9102-7739049412f5}*SharedItemsImports = 5
+	EndGlobalSection
+EndGlobal

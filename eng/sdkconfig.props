@@ -1,0 +1,119 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project>
+<!-- 
+  This project files provides configuration for the C++ and Managed SDK files that we import.
+
+  This file should be imported very early in the build process, since it redefines some common MSBuild properties (such as WindowsSDKDir)
+  to point to the Nuget that gets restored on the machine, and not the one installed in %ProgramFiles%\Windows Kits\.
+-->
+  <PropertyGroup>
+    <WindowsSDKArch Condition="'$(Platform)' == 'Win32' or '$(Platform)' == 'AnyCPU'">x86</WindowsSDKArch>
+    <WindowsSDKArch Condition="'$(WindowsSDKArch)' == ''">$(Platform)</WindowsSDKArch>
+
+    <UseWindowsSdk Condition="'$(UseWindowsSdk)'=='' and '$(AdhocApp)'=='true'">false</UseWindowsSdk>
+
+    <!--
+      VSIX projects do not need the Windows SDK nuget packages because they have no
+      dependency on the Windows SDK.
+    -->
+    <UseWindowsSdk Condition="'$(UseWindowsSdk)'=='' and '$(VSIXBuild)'=='true'">false</UseWindowsSdk>
+
+    <!--
+      .NET Core projects that use SDK-style projects don't need the windows sdk. Windows APIs are pulled
+      in through the TFM.
+    -->
+    <UseWindowsSdk Condition="'$(UseWindowsSdk)'=='' and '$(UsingMicrosoftNetSdk)'=='true'">false</UseWindowsSdk>
+    <!-- Default projects to using the Windows SDK nuget packages -->
+    <UseWindowsSdk Condition="'$(UseWindowsSdk)'==''">true</UseWindowsSdk>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+
+    <SdkCppArchitectureNeutralPropsFile>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\build\native\$(WindowsSdkNugetPackageName).cpp.props</SdkCppArchitectureNeutralPropsFile>
+    <SdkCppArchitectureSpecificPropsFile>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).cpp.$(WindowsSdkArch).$(MicrosoftWindowsSDKCppNugetPackageVersion)\build\native\$(WindowsSdkNugetPackageName).cpp.$(WindowsSdkArch).props</SdkCppArchitectureSpecificPropsFile>
+    <SdkManagedPropsFile>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).UWP.Managed.$(MicrosoftWindowsSDKUWPManagedVersion)\build\$(WindowsSdkNugetPackageName).UWP.Managed.props</SdkManagedPropsFile>
+    <ManagedConfig Condition="'$(MSBuildProjectExtension)' == '.csproj' or '$(MSBuildProjectExtension)' == '.vbproj'">true</ManagedConfig>
+
+    <!-- ensure this is set for cswinrt -->
+    <CsWinRTWindowsMetadata>$(WindowsTargetPlatformVersion)</CsWinRTWindowsMetadata>
+  </PropertyGroup>
+
+  <ImportGroup Condition="'$(UseWindowsSdk)' == 'true'">
+    <Import Project="$(SdkCppArchitectureNeutralPropsFile)" Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and Exists('$(SdkCppArchitectureNeutralPropsFile)')" />
+    <Import Project="$(SdkCppArchitectureSpecificPropsFile)" Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and '$(WindowsSDKArch)' != '' and Exists('$(SdkCppArchitectureNeutralPropsFile)')" />
+    <Import Project="$(SdkManagedPropsFile)" Condition="'$(ManagedConfig)' == 'true' and Exists('$(SdkManagedPropsFile)')" />
+    <Import Project="$(NugetPackageDirectory)\$(WilPackageName).$(CurrentWilPackageVersion)\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and Exists('$(NugetPackageDirectory)\$(WilPackageName).$(CurrentWilPackageVersion)\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
+  </ImportGroup>
+
+  <!-- The NuGet SDK reference WinMDs aren't added as references by default, unlike installed SDKs.
+        To work around that, we'll add them as references if need be before we resolve our references. -->
+  <Target Name="AddNugetSdkReferences"
+          DependsOnTargets="$(ResolveAssemblyReferencesDependsOn)"
+          BeforeTargets="ResolveAssemblyReferences"
+          Condition="'$(UseWindowsSdk)' == 'true'">
+    <ItemGroup Condition="'$(AddNugetSdkReferences)'=='true' or ('$(WinMDAssembly)' == 'true' and '$(TargetPlatformWinMDLocation)' != '')">
+      <!-- MSBuild will add a number of winmds from the standard intalled windows kit sdk.  We don't want these, so remove them.  It would be nice to find a way -->
+      <!-- to not have MSBuild add them, but short of rewriting the entire _PrepareReferenceResolution that doesn't seem possible                                 -->
+      <Reference Remove="$([Microsoft.Build.Utilities.ToolLocationHelper]::GetTargetPlatformReferences($(SDKIdentifier), $(SDKVersion), $(TargetPlatformIdentifier), $(TargetPlatformMinVersion), $(TargetPlatformVersion)))"/>
+      <Reference Remove="$(WindowsSdkPath)References\$(WindowsTargetPlatformVersion)\*.winmd"/>
+      <Reference Include="$(WindowsSdkPath)References\$(WindowsTargetPlatformVersion)\*.winmd">
+          <IsWinMDFile>true</IsWinMDFile>
+          <CopyLocal>false</CopyLocal>
+          <IsSystemReference>True</IsSystemReference>
+          <Implicit>true</Implicit>
+      </Reference>
+    </ItemGroup>
+  </Target>
+ 
+    <PropertyGroup Condition="'$(UseWindowsSdk)' == 'true'">
+
+    <!-- Disable Appx package signing if skipsigning is set to true -->
+    <AppxPackageSigningEnabled Condition="'$(SkipSigning)'=='true'">false</AppxPackageSigningEnabled>
+  </PropertyGroup>
+
+  <!-- SDK Path Overrides -->
+  <PropertyGroup>
+    <!-- There is a hard set (i.e. it doesn't check to see if it alrady has a value) of WindowsSdkDir from the versionioned WindowsSkdDir, so set them -->
+    <!-- both so it doesn't change when this hard set occurs. -->
+    <WindowsSDKCppRoot>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\c\</WindowsSDKCppRoot>
+    <WindowsSdkDir_10>$(WindowsSDKCppRoot)</WindowsSdkDir_10>
+    <WindowsSdkDir>$(WindowsSDKCppRoot)</WindowsSdkDir>
+
+    <WindowsSdkPath>$(WindowsSDKCppRoot)</WindowsSdkPath>
+
+    <WindowsSDKCppArchRoot>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).cpp.$(WindowsSDKArch).$(MicrosoftWindowsSDKCppNugetPackageVersion)\c\</WindowsSDKCppArchRoot>
+    <NETFXSDKDir />
+    
+    <WindowsSdkBinPath>$(WindowsSDKCppRoot)bin\</WindowsSdkBinPath>
+    <WindowsSdkVerBinPath>$(WindowsSDKCppRoot)bin\$(WindowsTargetPlatformVersion)\</WindowsSdkVerBinPath>
+    <WindowsSDKCppArchRoot>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).cpp.$(WindowsSDKArch).$(MicrosoftWindowsSDKCppNugetPackageVersion)\c\</WindowsSDKCppArchRoot>
+
+    <UniversalCRTSdkDir_10>$(WindowsSDKCppRoot)</UniversalCRTSdkDir_10>
+    <UniversalCRTSdkDir>$(WindowsSDKCppRoot)</UniversalCRTSdkDir>
+    <WindowsSDK_Desktop_Support>true</WindowsSDK_Desktop_Support>
+    <WindowsSDKInstalled>true</WindowsSDKInstalled>
+    
+    <WindowsSdkToolLocation>$(WindowsSdkVerBinPath)$(PreferredToolArchitecture)</WindowsSdkToolLocation>
+
+    <WindowsSdxUmIncludePath>$(WindowsSdkDir_10)\Include\$(WindowsTargetPlatformVersion)\um</WindowsSdxUmIncludePath>
+    <WindowsSdxSharedIncludePath>$(WindowsSdkDir_10)\Include\$(WindowsTargetPlatformVersion)\shared</WindowsSdxSharedIncludePath>
+    <WindowsSdxWinrtIncludePath>$(WindowsSdkDir_10)\Include\$(WindowsTargetPlatformVersion)\winrt</WindowsSdxWinrtIncludePath>
+
+    <WindowsSdxUcrtIncludePath>$(WindowsSDKCppRoot)Include\$(WindowsTargetPlatformVersion)\ucrt</WindowsSdxUcrtIncludePath>
+    <WindowsSdkUcrtLibPath>$(WindowsSDKCppArchRoot)ucrt\$(WindowsSDKArch)</WindowsSdkUcrtLibPath>
+    <WindowsSdkUmLibPath>$(WindowsSDKCppArchRoot)um\$(WindowsSDKArch)</WindowsSdkUmLibPath>
+    <INCLUDE>$(WindowsSdxUcrtIncludePath)</INCLUDE>
+    <LIB>$(WindowsSdkUcrtLibPath);$(WindowsSdkUmLibPath)</LIB>
+  </PropertyGroup>
+
+  <!-- There are some SDK paths that for some reason MSBuild does not add into the INCLUDE/LIB variables and/or put on the  -->
+  <!-- various items, we need to add them expliclity.                                                                       -->  
+  <ItemDefinitionGroup>
+    <!-- It would be nice if we were to be able to set this here, but because of the way that we sometimes replace %AdditionalIncludeDirectories -->
+    <!-- instead of bulding on it, this is tromped on  and we have to rely on the <INCLUDE> property set in the previous section.                -->
+    <CLCompile>
+       <AdditionalIncludeDirectories>$(WindowsSdxUcrtIncludePath);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>       
+    </CLCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(WindowsSdkUcrtLibPath);$(WindowsSdkUmLibPath);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>

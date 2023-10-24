@@ -1,0 +1,99 @@
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+
+
+#include <windows.h>
+
+#define VER_INTERNALNAME_STR        "Microsoft.UI.Xaml.Phone.dll"
+#include <WinUIrc.ver>
+
+#include <RuntimeErrorCodes.h>
+#include <PhoneResource.h>
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+{
+    TEXT_DATEPICKERFLYOUT_TITLE "CHOOSE A DATE"
+    TEXT_TIMEPICKERFLYOUT_TITLE "CHOOSE A TIME"
+    TEXT_LISTPICKERFLYOUT_TITLE "CHOOSE AN ITEM"
+
+    TEXT_PICKERFLYOUTBASE_ACCEPTBTNLABEL "Done"
+    TEXT_PICKERFLYOUTBASE_CANCELBTNLABEL "Cancel"
+
+    UIA_AP_DATEPICKER_NAME "datepicker"
+    UIA_AP_DATEPICKER_DAYNAME "day"
+    UIA_AP_DATEPICKER_MONTHNAME "month"
+    UIA_AP_DATEPICKER_YEARNAME "year"
+    UIA_AP_TIMEPICKER_NAME "timepicker"
+    UIA_AP_TIMEPICKER_MINUTENAME "minute"
+    UIA_AP_TIMEPICKER_HOURNAME "hour"
+    UIA_AP_TIMEPICKER_PERIODNAME "period"
+    UIA_AP_LISTPICKERFLYOUT_NAME "listpicker"
+    UIA_AP_PICKERFLYOUT_NAME "picker"
+    UIA_CONTROLTYPE_PIVOT "pivot"
+    UIA_CONTROLTYPE_PIVOTITEM "pivot item"
+    UIA_DIALOG_ACCEPT "Accept"
+    UIA_DIALOG_DISMISS "Dismiss"
+
+    ERR_ASYNC_ALREADY_IN_PROGRESS "Only a single async operation can be in progress for a given flyout instance."
+    ERR_INVALID_ENUM_VALUE "Invalid enum value."
+    ERR_APP_BAR_LABEL_NEWLINES "Newline characters not supported in app bar button labels."
+    ERR_FLYOUT_ALREADY_OPEN "Async operation cannot be started on a flyout that is already open."
+
+    IDS_ELEMENT_ENABLED_ONLY_IN_APP "This element is enabled only when the application is running."
+    IDS_MAP_MISSING_CREDENTIALS_WARNING "Warning: MapServiceToken not specified."
+
+    // Map Control Accessiblity 
+    UIA_AP_MAP_NAME "map"
+    // UIA_AP_MAP_FORMATTEDNAME_ALL: Formatted accessibility name for
+    // screen reader clients (e.g. Narrator)
+    // %1 is the distance measurement of the map such as "50"
+    // %2 is a distance unit of the map such as "miles"
+    // %3 is the center location of the map such as "Seattle" or "Washington"
+    // %4 is the current heading of the map such as "North up"
+    UIA_AP_MAP_FORMATTEDNAME_ALL "Map, %1 %2 view of %3, %4"
+    // UIA_AP_MAP_FORMATTEDNAME_NOLOCATION: Formatted accessibility name for
+    // screen reader clients (e.g. Narrator)
+    // %1 is the distance measurement of the map such as "50"
+    // %2 is a distance unit of the map such as "miles"
+    // %3 is the current heading of the map such as "North up"
+    UIA_AP_MAP_FORMATTEDNAME_NOLOCATION "Map, %1 %2 view, %3"
+    // UIA_AP_MAP_FORMATTEDNAME_DISTANCE:
+    // %1 is the distance measurement of the map such as "50"
+    // %2 is a distance unit of the map such as "miles"
+    UIA_AP_MAP_FORMATTEDNAME_DISTANCE "%1 %2 view"
+    UIA_AP_MAP_HEADING_NORTH "North"
+    UIA_AP_MAP_HEADING_NORTHEAST "Northeast"
+    UIA_AP_MAP_HEADING_NORTHWEST "Northwest"
+    UIA_AP_MAP_HEADING_EAST "East"
+    UIA_AP_MAP_HEADING_WEST "West"
+    UIA_AP_MAP_HEADING_SOUTH "South"
+    UIA_AP_MAP_HEADING_SOUTHEAST "Southeast"
+    UIA_AP_MAP_HEADING_SOUTHWEST "Southwest"
+    // UIA_AP_MAP_HEADING_FORMATTEDSTRING: Formatted accessibility string for
+    // a map heading (e.g. "Northwest up")
+    // %1 is a direction which will be loaded from one of the UIA_AP_MAP_HEADING_* strings above
+    UIA_AP_MAP_HEADING_FORMATTEDSTRING "%1 up"
+    UIA_AP_MAP_UNIT_MILE "mile"
+    UIA_AP_MAP_UNIT_MILES "miles"
+    UIA_AP_MAP_UNIT_FOOT "foot"
+    UIA_AP_MAP_UNIT_FEET "feet"
+    UIA_AP_MAP_UNIT_YARD "yard"
+    UIA_AP_MAP_UNIT_YARDS "yards"
+    UIA_AP_MAP_UNIT_KILOMETER "kilometer"
+    UIA_AP_MAP_UNIT_KILOMETERS "kilometers"
+    UIA_AP_MAP_UNIT_METER "meter"
+    UIA_AP_MAP_UNIT_METERS "meters"
+}
+
+#include "XamlTypeInfo.g.rc"

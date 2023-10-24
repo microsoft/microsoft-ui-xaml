@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>2f9ecef0-f8c3-4f81-b6be-29217e6ce9a4</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>System.Xaml</Import_RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(SystemXamlPathRoot)' == ''">
+    <SystemXamlPathRoot>.</SystemXamlPathRoot>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(SystemXamlPathRoot)\Xaml\otherassemblyattrs.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\MS\Internal\Markup\StringValueSerializer.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\MS\Internal\Markup\TypeConverterValueSerializer.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\MarkupExtensionBracketCharactersAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\MemberDefinition.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\PropertyDefinition.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\AcceptedMarkupExtensionExpressionTypeAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\AmbientAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\BuildTopDownAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\ConstructorArgumentAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\ContentPropertyAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\ContentWrapperAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\DependsOnAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\MarkupExtensionReturnTypeAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\NameScopePropertyAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\RootNamespaceAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\TrimSurroundingWhitespaceAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\UidPropertyAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\WhitespaceSignificantCollectionAttribute.cs " />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\XamlSetMarkupExtensionAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\XmlLangPropertyAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\XmlnsCompatibleWithAttribute.cs " />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\XmlnsDefinitionAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\XmlnsPrefixAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\Base\System\Windows\Markup\TypeConverterHelper.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\DateTimeValueSerializer.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\INameScope.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\INameScopeDictionary.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\IProvideValueTarget.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\IQueryAmbient.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\IUriContext.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\IValueSerializerContext.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\IXamlTypeResolver.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\ValueSerializer.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\ValueSerializerAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\XamlSetMarkupExtensionEventArgs.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\XamlSetTypeConverterAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\XamlSetTypeConverterEventArgs.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\XamlSetValueEventArgs.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\MarkupExtension.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\ArrayExtension.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\DictionaryKeyPropertyAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\IComponentConnector.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\NullExtension.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\StaticExtension.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\TypeExtension.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\StaticExtensionConverter.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\TypeExtensionConverter.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Markup\ReflectionHelper.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\MS\Internal\Xaml\Parser\SpecialBracketCharacters.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\MS\Internal\SafeSecurityHelper.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\MS\internal\SecurityCriticalDataForSet.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\Namescope.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Windows\NameValidationHelper.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\Base\MS\Internal\CriticalExceptions.cs " />
+    <Compile Include="$(SystemXamlPathRoot)\Base\System\Windows\Markup\RuntimeIdentifierPropertyAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\AllowedMemberLocations.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\AttachableMemberIdentifier.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\AttachablePropertyServices.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Context\ContextServices.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Context\HashSet.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Context\ICheckIfInitialized.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Context\NameFixupGraph.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Context\NameFixupToken.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Context\ObjectWriterContext.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Context\ObjectWriterFrame.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Context\SavedContext.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Context\ServiceProviderContext.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Context\XamlCommonFrame.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Context\XamlContext.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\MS\Internal\Xaml\Context\XamlContextStack.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\MS\Internal\Xaml\Context\XamlFrame.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Context\XamlParserContext.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Context\XamlParserFrame.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Context\XamlObjectWriterFactory.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\EventConverter.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Events\XamlObjectEventArgs.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\IAmbientProvider.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\IAttachedPropertyStore.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\IDestinationTypeProvider.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\INamespacePrefixLookup.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\InfosetObjects\DeferredWriter.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\InfosetObjects\XamlNodes.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\InfosetObjects\XamlReaderSettings.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\InfosetObjects\XamlObjectWriter.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\InfosetObjects\XamlObjectWriterSettings.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\InfosetObjects\XamlXmlReader.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\InfosetObjects\XamlXmlReaderSettings.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\IRootObjectProvider.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\IXamlLineInfo.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\IXamlLineInfoConsumer.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\IXamlNamespaceResolver.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\IXamlNameProvider.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\IXamlNameResolver.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\IXamlObjectWriterFactory.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\IXamlSchemaContextProvider.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\MS\Impl\ArrayHelper.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\MS\Impl\AssemblyNamespacePair.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\MS\Impl\KnownStrings.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\MS\Impl\PositionalParameterDescriptor.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\MS\Impl\XmlNsInfo.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\NameReferenceConverter.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\NamespaceDeclaration.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Parser\NamespacePrefixLookup.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Parser\GenericTypeNameParser.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Parser\GenericTypeNameScanner.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Parser\MePullParser.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Parser\MeScanner.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Parser\ScannerNodeType.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Parser\XamlAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Parser\XamlName.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Parser\NodeStreamSorter.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Parser\XamlPropertyName.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Parser\XamlPullParser.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Parser\XamlQualifiedName.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Parser\XamlScanner.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Parser\XamlScannerNode.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Parser\XamlScannerStack.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Parser\XamlText.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Permissions\XamlAccessLevel.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Permissions\XamlLoadPermission.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Primitives\LineInfo.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Primitives\ReaderBaseDelegate.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Primitives\ReaderDelegate.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Primitives\ReaderMultiIndexDelegate.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Primitives\WriterDelegate.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Primitives\XamlBackgroundReader.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Primitives\XamlNodeList.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Primitives\XamlNodeQueue.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Primitives\XamlSubreader.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Replacements\DateTimeConverter2.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Replacements\DateTimeOffsetConverter2.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Replacements\DateTimeValueSerializerContext.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Replacements\Reference.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Replacements\TypeListConverter.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Replacements\TypeTypeConverter.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Runtime\ClrObjectRuntime.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Runtime\DynamicMethodRuntime.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Runtime\PartialTrustTolerantRuntime.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Runtime\XamlRuntimeSettings.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Schema\BuiltInValueConverter.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Schema\ClrNamespaceUriParser.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Schema\CollectionReflector.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Schema\MemberReflector.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Schema\ReferenceEqualityComparer.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Schema\Reflector.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Schema\SafeReflectionInvoker.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Schema\TypeBits.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Schema\TypeReflector.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Schema\XamlCollectionKind.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Schema\XamlDirective.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Schema\XamlMemberInvoker.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Schema\XamlNamespace.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Schema\XamlTypeInvoker.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\Schema\XamlValueConverter.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\NameScopeDictionary.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlDeferLoadAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlDeferringLoader.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlException.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlLanguage.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlMarkupExtensionWriter.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlMember.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlReader.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlRuntime.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlSchemaContext.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlSchemaContextSettings.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlServices.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlType.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlTypeName.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlTypeTypeConverter.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlObjectReader.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlObjectReaderSettings.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlWriter.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlXmlWriter.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlXmlWriterSettings.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XamlWriterSettings.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\XData.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\System\Xaml\RefOnly\LooseTypeExtensions.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\Base\System\Windows\Markup\XmlCompatibilityReader.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\Base\System\Windows\Markup\XmlWrappingReader.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\Shared\MS\Internal\FriendAccessAllowedAttribute.cs" />
+    <Compile Include="$(SystemXamlPathRoot)\Shared\MS\Utility\FrugalList.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(SystemXamlPathRoot)\Resources\SR.cs" />
+    <EmbeddedResource Include="$(SystemXamlPathRoot)\Resources\ExceptionStringTable_temp.txt">
+      <!-- "Resx" indicates it should go through GenerateResource -->
+      <Type>Resx</Type>
+      <WithCulture>false</WithCulture>
+      <ManifestResourceName>ExceptionStringTable</ManifestResourceName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)SystemXaml.bp" />
+  </ItemGroup>
+</Project>

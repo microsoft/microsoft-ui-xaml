@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+    </PropertyGroup>
+
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved. -->
+
+    <Import Project="$(XcpPath)\components\common.props"/>
+
+    <!-- Disable warning 4201, 4481. We are rebuilding the PCH which includes -->
+    <!-- files with nameless structs and override keywords.                   -->
+    <PropertyGroup>
+        <Mui>true</Mui>
+        <TargetDestination>$(ProductBinplaceDestinationPath)</TargetDestination>
+
+        <WuxExtName>$(TargetName).dll</WuxExtName>
+
+        <XamlPrecompiledInclude>$(XcpPath)\components\pch\precomp.h</XamlPrecompiledInclude>
+
+        <ProjectPreprocessorDefinitions>
+            $(ProjectPreprocessorDefinitions)
+            WUX_EXT_FULLNAME__=$(WuxExtName);
+            WUX_EXT_NAME__=$(TargetName);
+        </ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\module.cpp"/>
+        <ClCompile Include="exports.cpp"/>
+        <ClCompile Include="XamlTypeInfo.cpp"/>
+        <ResourceCompile Include="Microsoft.UI.Xaml.$(ExtName).rc"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            ..\lib;
+            $(ProjectIncludeDirectories);
+            $(XamlSourcePath)\xcp\components\satellitebase\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <Link>
+            <ModuleDefinitionFile>Microsoft.UI.Xaml.$(ExtName).def</ModuleDefinitionFile>
+
+            <AdditionalDependencies>
+                %(AdditionalDependencies);
+                onecoreuap.lib;
+                dbghelp.lib;
+                muiload.lib;
+            </AdditionalDependencies>
+
+            <!-- For some reason, the ARM64 version of muiload.lib, and *only* the ARM64 version of
+                 that specific lib file, has a reference to the non-inlined verion of vsnwprintf,
+                 which requires that we also add references to these legacy libs. -->
+            <AdditionalDependencies Condition="'$(Platform)' == 'ARM64'">
+                %(AdditionalDependencies);
+                $(VisualStudioLibPath)legacy_stdio_definitions.lib;
+                $(VisualStudioLibPath)legacy_stdio_wide_specifiers.lib;
+            </AdditionalDependencies>
+
+            <DelayLoadDLLs>api-ms-win-rtcore-ntuser-private-l1-*.dll;</DelayLoadDLLs>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) UNLOADABLE_DELAYLOAD_IMPLEMENTATION;</ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{ccc61973-be99-4223-b935-353d03571e92}'" Include="$(XcpPath)\components\pch\prod\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{ccc61973-be99-4223-b935-353d03571e92}"/>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(ConfigurationType)'=='DynamicLibrary' or '$(ConfigurationType)'=='Application'">
+        <ProjectReference Include="@(BaseComplibs)"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{9e88d331-0324-428d-b7bc-70953f4b65d9}'" Include="$(XcpPath)\components\allocation\stubs\Microsoft.UI.Xaml.Allocation.Stubs.vcxproj" Project="{9e88d331-0324-428d-b7bc-70953f4b65d9}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{950d68b3-b34b-4453-96f9-5d1517f539ca}'" Include="$(XcpPath)\components\terminateProcessOnOOM\lib\Microsoft.UI.Xaml.TerminateProcessOnOOM.vcxproj" Project="{950d68b3-b34b-4453-96f9-5d1517f539ca}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{a0c77691-0c3e-4497-9837-178ed492f063}'" Include="$(XcpPath)\components\satellitebase\lib\Microsoft.UI.Xaml.SatelliteBase.vcxproj" Project="{a0c77691-0c3e-4497-9837-178ed492f063}"/>
+    </ItemGroup>
+</Project>

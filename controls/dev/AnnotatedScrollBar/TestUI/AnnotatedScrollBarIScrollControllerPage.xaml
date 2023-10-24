@@ -1,0 +1,64 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<local:TestPage
+    x:Class="MUXControlsTestApp.AnnotatedScrollBarIScrollControllerPage"
+    x:Name="AnnotatedScrollBarIScrollControllerTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+     <Page.Resources>
+        <DataTemplate x:Key="SquareTemplate" x:DataType="local:Square">
+            <StackPanel Orientation="Horizontal">
+                <ContentPresenter Margin="20" Height="100" Width="{x:Bind Width}" Background="{x:Bind Color}">
+                    <TextBlock Margin="5" Text="{x:Bind Name}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                </ContentPresenter>
+            </StackPanel>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <TextBlock 
+            Text="Annotated ScrollBar - Using ScrollView + IScrollController"
+            HorizontalAlignment="Center"
+            Margin="20"
+            FontSize="24"/>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <controls:ScrollView 
+                x:Name="pageScrollView"
+                Background="LightGray" 
+                Height="500"
+                Width="800"
+                VerticalScrollBarVisibility="Hidden">
+                <controls:ItemsRepeater 
+                    x:Name="pageContentRepeater"
+                    ItemTemplate="{StaticResource SquareTemplate}"
+                    HorizontalAlignment="Right"
+                    Margin="10">
+                    <controls:ItemsRepeater.Layout>
+                        <controls:UniformGridLayout/>
+                    </controls:ItemsRepeater.Layout>
+                </controls:ItemsRepeater>
+            </controls:ScrollView>
+            <controls:AnnotatedScrollBar
+                x:Name="pageAnnotatedScrollbar"
+                IsTabStop="False"
+                Grid.Column="1"
+                Margin="0,0,48,0"
+                HorizontalAlignment="Right"
+                Loaded="AnnotatedScrollBarPage_Loaded"/>
+        </Grid>
+    </Grid>
+</local:TestPage>

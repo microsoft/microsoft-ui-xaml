@@ -1,0 +1,15 @@
+<#@ template language="C#" linePragmas="false" inherits="PhoneCppCodeGenerator<PropertyDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+case put_<#= Model.DeclaringType.TypeTableName #>_<#= Model.Name #>:
+{
+    wrl::ComPtr<<#= AsCppType(Model.DeclaringTypeFullInterfaceNameWithVersion) #>> obj;
+    IFC(instance->QueryInterface(
+        __uuidof(<#= AsCppType(Model.DeclaringTypeFullInterfaceNameWithVersion) #>),
+        &obj));
+    IFC(obj->put_<#=Model.Name#>(value));
+    break;
+}

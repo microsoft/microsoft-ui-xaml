@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Build product binaries with Hybrid CRT linkage (Universal CRT + Static VS CRT) to simplify 
+  app install requirements. By default, test code is also built with Hybrid CRT, since it often 
+  links in product code libs and mixing CRT models is not supported.  Projects that are independent 
+  of product code can opt out of Hybrid CRT to keep binaries smaller and build times shorter. 
+  https://github.com/microsoft/WindowsAppSDK/blob/main/docs/Coding-Guidelines/HybridCRT.md -->
+  <PropertyGroup>
+    <CxCompilation Condition="'$(CxCompilation)'=='' and ('$(AppContainerApplication)'=='true' or '$(XamlConsumesWinRT)'=='true')">true</CxCompilation>
+    <CxLinkage Condition="'$(CxLinkage)'=='' and '$(XamlConsumesWinRT)'=='true'">true</CxLinkage>
+    <UseHybridCrt Condition="'$(UseHybridCrt)'==''">true</UseHybridCrt>
+    <UseDebugLibraries Condition="'$(UseHybridCrt)'=='true'">false</UseDebugLibraries>
+  </PropertyGroup>
+
+  <!-- Add CRT definitions -->
+  <PropertyGroup>
+    <CrtLibSuffix/>
+    <CrtLibSuffix Condition="'$(UseDebugLibraries)'=='true'">d</CrtLibSuffix>
+    <VisualStudioLibPath>$(VCToolsInstallDir)lib\$(WindowsSDKArch)\</VisualStudioLibPath>
+    <CrtDefinitions>
+      _UCRT;
+      _CRT_SECURE_NO_WARNINGS;
+      _CRT_NON_CONFORMING_SWPRINTFS;
+      _CRT_NONSTDC_NO_WARNINGS;
+      _CRT_STDIO_ARBITRARY_WIDE_SPECIFIERS;
+      _ACRTIMP_ALT=;
+    </CrtDefinitions>
+    <CrtDefinitions Condition="'$(UseHybridCrt)'=='true'">
+      _CRTIMP2_IMPORT=;
+      _CRTIMP2_PURE_IMPORT=;
+      _CRTDATA2_IMPORT=;
+      $(CrtDefinitions)
+    </CrtDefinitions>
+  </PropertyGroup>
+
+  <!-- Add STL definitions -->
+  <PropertyGroup>
+    <StlDefinitions>
+      _ITERATOR_DEBUG_LEVEL=0;
+    </StlDefinitions>
+  </PropertyGroup>
+
+  <!-- Add ClCompile/Midl common definitions -->
+  <PropertyGroup>
+    <!-- Pass appropriate value to yvals.h for pragma detect mismatches -->
+    <CrtDllSetting Condition="'$(UseHybridCrt)'!='true'">_DLL;</CrtDllSetting>
+    <ClMidlDefinitions>_STL140_; _MT=1; $(CrtDllSetting)</ClMidlDefinitions>
+  </PropertyGroup>
+
+  <!-- Determine runtime library -->
+  <PropertyGroup>
+      <!-- CX compilation (/ZW) requires dynamic CRT (/MD).  This collides with hybrid (static) CRT linkage,
+      producing error D8016, via a RuntimeLibrary pragma detect mismatch.  We disable this warning for CX test code
+      to allow it to link with C++ product code.  Normally, the mismatch would be a concern in that a binary should 
+      have one CRT instance for efficiency, consistency, to prevent heap confusion, etc.  In this case, we're not
+      introducing two CRT instances, since the dynamic CRT imports from CX code actually resolve to the static CRT
+      library externals (producing a warning about importing local functions). -->
+      <CompileDynamicCrt Condition="'$(CxCompilation)'=='true' or '$(UseHybridCrt)'!='true'">true</CompileDynamicCrt>
+      <RuntimeLibrary Condition="'$(CompileDynamicCrt)'=='true'">MultiThreadedDll</RuntimeLibrary>
+      <RuntimeLibrary Condition="'$(CompileDynamicCrt)'!='true'">MultiThreaded</RuntimeLibrary>
+      <AllowRuntimeLibraryMismatch Condition="'$(CompileDynamicCrt)'=='true'">_ALLOW_RUNTIME_LIBRARY_MISMATCH;</AllowRuntimeLibraryMismatch>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <RuntimeLibrary>$(RuntimeLibrary)</RuntimeLibrary>
+      <PreprocessorDefinitions>$(CrtDefinitions) $(StlDefinitions) $(ClMidlDefinitions) $(AllowRuntimeLibraryMismatch) %(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Midl>    
+      <PreprocessorDefinitions>$(ClMidlDefinitions) %(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>    
+    <Link>
+      <IgnoreSpecificDefaultLibraries>
+        libucrt.lib;
+        libucrtd.lib;
+        libcmt.lib;
+        libcmtd.lib;
+        libcpmt.lib;
+        libcpmtd.lib;
+        ucrt.lib;
+        ucrtd.lib;
+        msvcrt.lib;
+        msvcrtd.lib;
+        msvcprt.lib;
+        msvcprtd.lib;
+        vccorlib.lib;
+        vccorlibd.lib;
+        %(IgnoreSpecificDefaultLibraries)
+      </IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- If not hybrid CRT, link dynamically to all CRT code -->
+  <ItemGroup Condition="'$(UseHybridCrt)'!='true'">
+    <CrtLib Include="$(UCRTPath)\ucrt$(CrtLibSuffix).lib"/>
+    <CrtLib Include="$(VisualStudioLibPath)msvcrt$(CrtLibSuffix).lib"/>
+    <CrtLib Include="$(VisualStudioLibPath)msvcprt$(CrtLibSuffix).lib"/>
+    <CrtLib Include="$(VisualStudioLibPath)vcruntime$(CrtLibSuffix).lib"/>
+  </ItemGroup>
+  
+  <!-- If hybrid CRT, link dynamically to ucrtbase.dll, statically to VC startup/runtime and STL.
+  Note that we can't link with libcpmtd.lib (etc), or we'll end up with an iterator debug level mismatch,
+  which will break the build.  Using _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH is not a good workaround, as it can
+  cause STL allocator runtime failures (e.g., due to sizeof(std::wstring) != sizeof(std::wstring::_Mypair)).
+  Linking with libcpmt.lib in turn causes a RuntimeLibrary PDM mismatch, and so Hybrid CRT requires all
+  compilation units to use release libraries.
+  -->
+  <ItemGroup Condition="'$(UseHybridCrt)'=='true'">
+    <CrtLib Include="$(UCRTPath)\ucrt.lib"/>
+    <CrtLib Include="$(VisualStudioLibPath)libcmt.lib"/>
+    <CrtLib Include="$(VisualStudioLibPath)libcpmt.lib"/>
+    <CrtLib Include="$(VisualStudioLibPath)libvcruntime.lib"/>
+  </ItemGroup>
+
+  <!-- Add C++/CX CRT runtime if necessary -->
+  <ItemGroup Condition="'$(CxLinkage)'=='true'">
+    <CrtLib Condition="'$(UseHybridCrt)'!='true'" Include="$(VisualStudioLibPath)vccorlib$(CrtLibSuffix).lib"/>
+    <CrtLib Condition="'$(UseHybridCrt)'=='true'" Include="$(VisualStudioLibPath)vccorlib.lib"/>
+  </ItemGroup>
+
+  <!-- To ensure that XAML's new/delete function overrides take precedence, 
+    CRT libs are explicitly added last to the link inputs. -->
+  <Target Name="AddCrtLibs" BeforeTargets="Link">
+    <ItemGroup>
+      <Link Include="@(CrtLib)"/>
+    </ItemGroup>
+  </Target>
+
+</Project>
