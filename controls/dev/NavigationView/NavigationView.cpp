@@ -28,6 +28,11 @@
 #include "NavigationViewItemExpandingEventArgs.h"
 #include "NavigationViewItemCollapsedEventArgs.h"
 #include "InspectingDataSource.h"
+#include "velocity.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 46697123: [1.4 servicing] - Tab/Shift+Tab Navigation is very very confusing with List Views
+#define WINAPPSDK_CHANGEID_46697123 46697123
 
 // General items
 static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
@@ -2883,6 +2888,53 @@ void NavigationView::OnRepeaterGettingFocus(const winrt::IInspectable& sender, c
                     if (args.TrySetNewFocusedElement(selectedContainer))
                     {
                         args.Handled(true);
+                    }
+                }
+                else if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46697123>() &&
+                         !isFocusOutsideCurrentRootRepeater)
+                {
+                    // Tab or Shift-Tab from within the same root repeater should move focus outside it
+                    auto navigationViewItemBase = args.NewFocusedElement().try_as<winrt::NavigationViewItemBase>(); 
+                    if (navigationViewItemBase &&
+                       (args.Direction() == winrt::FocusNavigationDirection::Previous ||
+                        args.Direction() == winrt::FocusNavigationDirection::Next))
+                    {
+                        // We need to find the next tab stop outside the root repeater.
+                        // winrt::FocusManager::FindNextElement will at first give us NavigationViewItems
+                        // within the root repeater. This is why we need to set IsTabStop = false for 
+                        // the found the elements within the root repeater so that FindNextElement eventually
+                        // finds an element outside the root repeater.
+                        std::vector<winrt::NavigationViewItemBase> containersWithTabFocusOff{};
+
+                        const winrt::FindNextElementOptions options;
+                        options.SearchRoot(this->XamlRoot().Content());
+                        
+                        auto nextElement = winrt::FocusManager::FindNextElement(args.Direction(), options);
+                        while (auto nvib = nextElement.try_as<winrt::NavigationViewItemBase>())
+                        {
+                            // Verify the item is in the root repeater we are trying to leave
+                            if (newRootItemsRepeater == GetParentRootItemsRepeaterForContainer(nvib))
+                            {
+                                nvib.IsTabStop(false);
+                                // Keep track of the container so that we can re-enable tab stop once focus leaves
+                                containersWithTabFocusOff.push_back(nvib);
+                                nextElement = winrt::FocusManager::FindNextElement(args.Direction(), options);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                        
+                        for (auto nvib : containersWithTabFocusOff)
+                        {
+                            nvib.IsTabStop(true);
+                        }
+
+                        if (args.TrySetNewFocusedElement(nextElement))
+                        {
+                            args.Handled(true);
+                        }
                     }
                 }
             }

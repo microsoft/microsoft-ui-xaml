@@ -7,8 +7,13 @@
 #include "CommandBarFlyoutCommandBar.h"
 #include "Vector.h"
 #include "RuntimeProfiler.h"
+#include "velocity.h"
+#include <FrameworkUdk/Containment.h>
 
 #include "CommandBarFlyout.properties.cpp"
+
+// Bug 46607274: [1.4 servicing] Microsoft.UI.Xaml.Controls.dll!CommandBarFlyoutCommandBar::EnsureLocalizedControlTypes impacting context menu performance
+#define WINAPPSDK_CHANGEID_46607274 46607274
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool CommandBarFlyoutTrace::s_IsDebugOutputEnabled{ false };
@@ -306,6 +311,20 @@ winrt::IObservableVector<winrt::ICommandBarElement> CommandBarFlyout::SecondaryC
 winrt::Control CommandBarFlyout::CreatePresenter()
 {
     auto commandBar = winrt::make_self<CommandBarFlyoutCommandBar>();
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46607274>())
+    {
+        // Localized string resource lookup is more expensive on MRTCore. Do the lookup ahead of time and reuse it for all
+        // the CommandBarFlyoutCommandBar::EnsureLocalizedControlTypes calls in response to PrimaryCommands/SecondCommands
+        // changed events.
+        commandBar->CacheLocalizedStringResources();
+    }
+    auto const scopeGuard = WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46607274>()
+        ? wil::scope_exit(std::function<void()>([commandBar]()
+            {
+                commandBar->ClearLocalizedStringResourceCache();
+            }))
+        : wil::scope_exit(std::function<void()>([](){}));
 
     SharedHelpers::CopyVector(m_primaryCommands, commandBar->PrimaryCommands());
     SharedHelpers::CopyVector(m_secondaryCommands, commandBar->SecondaryCommands());

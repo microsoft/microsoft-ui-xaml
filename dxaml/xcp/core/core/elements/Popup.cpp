@@ -53,6 +53,9 @@ using namespace Focus;
 // Bug 46074461: [MTP 23-9B]- [Win11_23H2_ClientEnterprise_X64][Manual Testing] - File Explorer- List of Sort/View options are seen transparent and overlapping with the Explorer folder icons in the background.
 #define WINAPPSDK_CHANGEID_46074461 46074461
 
+// Bug 46702704: Cannot scroll ComboBox items by touch after second expand
+#define WINAPPSDK_CHANGEID_46702704 46702704
+
 // Windowed popup's window class
 ATOM CPopup::s_windowedPopupWindowClass = 0;
 
@@ -481,11 +484,25 @@ _Check_return_ HRESULT CPopup::Open()
             IFC_RETURN(EnsureWindowForWindowedPopup());
         }
 
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46702704>())
+        {
+            // Initial phase of popup addition to open popup list: just add the popup to the m_pOpenPopups list and add-ref it.
+            // This phase is performed *before* the AddChild call just below so that CUIElement::EnterImpl for any 
+            // ScrollViewer finds the correct HWND to hand off to DManip through GetElementInputWindow().
+            IFC_RETURN(pPopupRoot->StartAdditionToOpenPopupList(this));
+        }
+
         HRESULT hr = pPopupRoot->AddChild(m_pChild);
         if (FAILED(hr))
         {
             // AddChild failed, set the associated flag back.
             m_pChild->SetAssociated(true, nullptr /* Association owner needed only for shareable, non-parent aware DOs */);
+
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46702704>())
+            {
+                // Undo the addition performed by the StartAdditionToOpenPopupList call above.
+                IGNOREHR(pPopupRoot->UndoAdditionToOpenPopupList(this));
+            }
         }
         IFC_RETURN(hr);
 
@@ -494,7 +511,15 @@ _Check_return_ HRESULT CPopup::Open()
             IFC_RETURN(AddOverlayElementToPopupRoot());
         }
 
-        IFC_RETURN(pPopupRoot->AddToOpenPopupList(this));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46702704>())
+        {
+            // Final phase of popup addition to open popup list: peg managed peer, updates themes and rendering trees.
+            IFC_RETURN(pPopupRoot->CompleteAdditionToOpenPopupList(this));
+        }
+        else
+        {
+            IFC_RETURN(pPopupRoot->AddToOpenPopupList(this));
+        }
 
         if (IsWindowed())
         {
@@ -882,7 +907,7 @@ _Check_return_ HRESULT CPopup::Close(bool forceCloseforTreeReset)
 
     // The PopupAutomationPeer will be null from calling UIElement::GetOrCreateAutomationPeer() if Popup
     // is the closed state and the existing PopupAutomationPeer will invalidate the owner from
-    // CUIElement::OnCreateAutomationPeer() that shouldn�t be referenced from other AutomationPeer.
+    // CUIElement::OnCreateAutomationPeer() that shouldn't be referenced from other AutomationPeer.
     // The below calling SetAPParent(null) ensures the disconnect the relationship between PopupAutomationPeer
     // and Popup child's AutomationPeer when Popup is closed.
     {
@@ -4129,6 +4154,24 @@ Cleanup:
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CPopupRoot::AddToOpenPopupList(_Inout_ CPopup* pPopup)
 {
+    IFC_RETURN(StartAdditionToOpenPopupList(pPopup));
+    IFC_RETURN(CompleteAdditionToOpenPopupList(pPopup));
+
+    return S_OK;
+}
+
+
+//------------------------------------------------------------------------
+//
+//  Method:   StartAdditionToOpenPopupList
+//
+//  Synopsis:
+//      Initial phase: the provided popup simply gets added to the list of open popups.
+//      Then add-ref'ed - the equivalent release being in either UndoAdditionToOpenPopupList or RemoveFromOpenPopupList.
+//
+//------------------------------------------------------------------------
+_Check_return_ HRESULT CPopupRoot::StartAdditionToOpenPopupList(_In_ CPopup* pPopup)
+{
     IFCPTR_RETURN(pPopup);
     ASSERT(pPopup->m_pChild && pPopup->m_fIsOpen);
 
@@ -4144,6 +4187,46 @@ _Check_return_ HRESULT CPopupRoot::AddToOpenPopupList(_Inout_ CPopup* pPopup)
     //maintain a ref on popup so that it wont go away if it does not have
     //any other native ref.
     pPopup->AddRef();
+
+    return S_OK;
+}
+
+//------------------------------------------------------------------------
+//
+//  Method:   UndoAdditionToOpenPopupList
+//
+//  Synopsis:
+//      Undo the addition done by StartAdditionToOpenPopupList above.
+//
+//------------------------------------------------------------------------
+_Check_return_ HRESULT CPopupRoot::UndoAdditionToOpenPopupList(_In_ CPopup* pPopup)
+{
+    ASSERT(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46702704>());
+
+    IFCPTR_RETURN(pPopup);
+
+    if (m_pOpenPopups != nullptr && ContainsOpenOrUnloadingPopup(pPopup))
+    {
+        IFC_RETURN(m_pOpenPopups->Remove(pPopup, FALSE));
+        pPopup->Release();
+    }
+
+    return S_OK;
+}
+
+//------------------------------------------------------------------------
+//
+//  Method:   CompleteAdditionToOpenPopupList
+//
+//  Synopsis:
+//      Final phase: peg managed peer, update themes and rendering trees.
+//
+//------------------------------------------------------------------------
+_Check_return_ HRESULT CPopupRoot::CompleteAdditionToOpenPopupList(_Inout_ CPopup* pPopup)
+{
+    IFCPTR_RETURN(pPopup);
+    ASSERT(pPopup->m_pChild && pPopup->m_fIsOpen);
+    ASSERT(ContainsOpenOrUnloadingPopup(pPopup));
 
     // Open popup should not be GC'd. Hold a ref on the managed peer.
     IFC_RETURN(pPopup->PegManagedPeer());

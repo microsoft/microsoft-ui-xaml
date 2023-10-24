@@ -895,17 +895,47 @@ void CommandBarFlyoutCommandBar::EnsureLocalizedControlTypes()
     }
 }
 
+void CommandBarFlyoutCommandBar::CacheLocalizedStringResources()
+{
+    m_localizedCommandBarFlyoutAppBarButtonControlType = ResourceAccessor::GetLocalizedStringResource(SR_CommandBarFlyoutAppBarButtonLocalizedControlType);
+    m_localizedCommandBarFlyoutAppBarToggleButtonControlType = ResourceAccessor::GetLocalizedStringResource(SR_CommandBarFlyoutAppBarToggleButtonLocalizedControlType);
+    m_areLocalizedStringResourcesCached = true;
+}
+
+void CommandBarFlyoutCommandBar::ClearLocalizedStringResourceCache()
+{
+    m_areLocalizedStringResourcesCached = false;
+    m_localizedCommandBarFlyoutAppBarButtonControlType.clear();
+    m_localizedCommandBarFlyoutAppBarToggleButtonControlType.clear();
+}
+
 void CommandBarFlyoutCommandBar::SetKnownCommandLocalizedControlTypes(winrt::ICommandBarElement const& command)
 {
     COMMANDBARFLYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
     if (auto const& appBarButton = command.try_as<winrt::AppBarButton>())
     {
-        winrt::AutomationProperties::SetLocalizedControlType(appBarButton, ResourceAccessor::GetLocalizedStringResource(SR_CommandBarFlyoutAppBarButtonLocalizedControlType));
+        if (m_areLocalizedStringResourcesCached)
+        {
+            MUX_ASSERT(!m_localizedCommandBarFlyoutAppBarButtonControlType.empty());
+            winrt::AutomationProperties::SetLocalizedControlType(appBarButton, m_localizedCommandBarFlyoutAppBarButtonControlType);
+        }
+        else
+        {
+            winrt::AutomationProperties::SetLocalizedControlType(appBarButton, ResourceAccessor::GetLocalizedStringResource(SR_CommandBarFlyoutAppBarButtonLocalizedControlType));
+        }
     }
     else if (auto const& appBarToggleButton = command.try_as<winrt::AppBarToggleButton>())
     {
-        winrt::AutomationProperties::SetLocalizedControlType(appBarToggleButton, ResourceAccessor::GetLocalizedStringResource(SR_CommandBarFlyoutAppBarToggleButtonLocalizedControlType));
+        if (m_areLocalizedStringResourcesCached)
+        {
+            MUX_ASSERT(!m_localizedCommandBarFlyoutAppBarToggleButtonControlType.empty());
+            winrt::AutomationProperties::SetLocalizedControlType(appBarToggleButton, m_localizedCommandBarFlyoutAppBarToggleButtonControlType);
+        }
+        else
+        {
+            winrt::AutomationProperties::SetLocalizedControlType(appBarToggleButton, ResourceAccessor::GetLocalizedStringResource(SR_CommandBarFlyoutAppBarToggleButtonLocalizedControlType));
+        }
     }
 }
 

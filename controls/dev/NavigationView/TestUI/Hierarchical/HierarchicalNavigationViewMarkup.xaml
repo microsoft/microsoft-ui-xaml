@@ -89,6 +89,7 @@
                 <TextBlock x:Name="IsChildSelectedLabel" AutomationProperties.Name="IsChildSelectedLabel" Text="uninitialized"/>
                 <Button AutomationProperties.Name="PrintTopLevelIsChildSelectedItemsButton" Content="Print TopLevel IsChildSelected Items" Click="PrintTopLevelIsChildSelectedItems"/>
                 <Button Content="Select Second Item" Click="SelectSecondItem"/>
+                <CheckBox Content="Settings Item Visibility" x:Name="CheckBoxIsSettingsVisible" Checked="OnCheckedIsSettingsVisible" Unchecked="OnUncheckedIsSettingsVisible"/>
                 <!-- Components that get updated when item is expanded or collapsed -->
                 <StackPanel x:Name="ExpandCollapseRelatedComponents" Margin="0,10,0,10">
                     <Grid x:Name="ExpandingEventStates">

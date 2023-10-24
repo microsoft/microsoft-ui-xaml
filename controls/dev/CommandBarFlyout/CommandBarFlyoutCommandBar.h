@@ -46,6 +46,9 @@ public:
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
+    void CacheLocalizedStringResources();
+    void ClearLocalizedStringResourceCache();
+
 private:
     void AttachEventHandlers();
     void DetachEventHandlers();
@@ -127,4 +130,11 @@ private:
     // The one built into Popup is too high up in the Visual tree to be animated by a custom animation.
     winrt::ContentExternalBackdropLink m_backdropLink{ nullptr };
     winrt::ContentExternalBackdropLink m_overflowPopupBackdropLink{ nullptr };
+
+    // Localized string caches. Looking these up from MRTCore is expensive, so we don't want to put the lookups in a
+    // loop. Instead, look them up once, cache them, use the cached values, then clear the cache. The values in these
+    // caches are only valid after CacheLocalizedStringResources and before ClearLocalizedStringResourceCache.
+    bool m_areLocalizedStringResourcesCached{ false };
+    winrt::hstring m_localizedCommandBarFlyoutAppBarButtonControlType{};
+    winrt::hstring m_localizedCommandBarFlyoutAppBarToggleButtonControlType{};
 };

@@ -64,7 +64,7 @@ private:
         );
 
     static _Check_return_ HRESULT ProbeForAppResourcesPri(_Out_ xstring_ptr* appResourcePriPath);
-    static _Check_return_ HRESULT ProbeForFrameworkPackageResourcesPri(_Out_ xstring_ptr* frameworkPackageResourcePriPath);
+    static _Check_return_ HRESULT ProbeForFrameworkPackageResourcesPri(_Out_ xstring_ptr* frameworkPackageResourcePriPath, _Out_ bool& isUsingCbsPackage);
 
     _Check_return_ HRESULT InitializeContext();
 
@@ -94,4 +94,10 @@ private:
     wrl::ComPtr<mwar::IResourceContext> m_frameworkPackageResourceContext;
 
     xref_ptr<CommonResourceProvider> m_pFallbackResourceProvider;
+
+    // Note: any usage of m_shouldUseSystemLanguage should be contained behind 46751006
+    // If running as an OS component and using the CBS package,
+    // we should localize using the Windows display language
+    // instead of the user's preferred language list
+    bool m_shouldUseSystemLanguage = false;
 };

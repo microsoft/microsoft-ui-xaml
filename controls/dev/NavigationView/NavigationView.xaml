@@ -361,7 +361,10 @@
                       <controls:ItemsRepeaterScrollHost HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                         <ScrollViewer x:Name="MenuItemsScrollViewer" TabNavigation="Local" VerticalScrollBarVisibility="Auto">
                           <!-- Left nav ItemsRepeater -->
-                          <controls:ItemsRepeater x:Name="MenuItemsHost" AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}" AutomationProperties.AccessibilityView="Content">
+                          <controls:ItemsRepeater 
+                            x:Name="MenuItemsHost" 
+                            AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}" 
+                            AutomationProperties.AccessibilityView="Content">
                             <controls:ItemsRepeater.Layout>
                               <controls:StackLayout />
                             </controls:ItemsRepeater.Layout>

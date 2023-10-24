@@ -137,6 +137,7 @@
 
                 <controls:TabView
                     x:Name="Tabs"
+                    AutomationProperties.Name="Tabs"
                     TabWidthMode="Equal"
                     CanDragTabs="True"
                     SelectionChanged="TabViewSelectionChanged"

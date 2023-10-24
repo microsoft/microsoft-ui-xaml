@@ -12,6 +12,15 @@
 #include "SharedHelpers.h"
 #include <Vector.h>
 #include "velocity.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 46832679: [1.4 servicing] - When tapping a tabs' scroll button in File Explorer, the tabs are scrolled continuously
+#define WINAPPSDK_CHANGEID_46832679 46832679
+
+#include <FrameworkUdk/Containment.h>
+
+// Bug 46770740: I can still see a thin line under the active tab in file explorer
+#define WINAPPSDK_CHANGEID_46770740 46770740
 
 static constexpr double c_tabMinimumWidth = 48.0;
 static constexpr double c_tabMaximumWidth = 200.0;
@@ -403,13 +412,17 @@ void TabView::UnhookEventsAndClearFields()
     m_addButtonColumn.set(nullptr);
     m_rightContentColumn.set(nullptr);
     m_tabContainerGrid.set(nullptr);
-    m_shadowReceiver.set(nullptr);
     m_listView.set(nullptr);
     m_addButton.set(nullptr);
     m_itemsPresenter.set(nullptr);
     m_scrollViewer.set(nullptr);
     m_scrollDecreaseButton.set(nullptr);
     m_scrollIncreaseButton.set(nullptr);
+
+    if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46770740>())
+    {
+        m_shadowReceiver.set(nullptr);
+    }
 }
 
 void TabView::OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
@@ -570,6 +583,14 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::Rout
             const auto decreaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollDecreaseButton").as<winrt::RepeatButton>();
             if (decreaseButton)
             {
+                if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46832679>() &&
+                    decreaseButton.ManipulationMode() == winrt::ManipulationModes::System)
+                {
+                    // Changing the scroll RepeatButton's ManipulationMode property from the default System to None so that touch input does not
+                    // initiate an unnecessary DManip manipulation, thereby avoiding bug 46832679.
+                    decreaseButton.ManipulationMode(winrt::ManipulationModes::None);
+                }
+
                 // Do localization for the scroll decrease button
                 const auto toolTip = winrt::ToolTipService::GetToolTip(decreaseButton);
                 if (!toolTip)
@@ -588,6 +609,14 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::Rout
             const auto increaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollIncreaseButton").as<winrt::RepeatButton>();
             if (increaseButton)
             {
+                if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46832679>() &&
+                    increaseButton.ManipulationMode() == winrt::ManipulationModes::System)
+                {
+                    // Changing the scroll RepeatButton's ManipulationMode property from the default System to None so that touch input does not
+                    // initiate an unnecessary DManip manipulation, thereby avoiding bug 46832679.
+                    increaseButton.ManipulationMode(winrt::ManipulationModes::None);
+                }
+
                 // Do localization for the scroll increase button
                 const auto toolTip = winrt::ToolTipService::GetToolTip(increaseButton);
                 if (!toolTip)

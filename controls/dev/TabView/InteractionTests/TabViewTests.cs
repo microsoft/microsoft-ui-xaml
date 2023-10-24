@@ -1096,6 +1096,55 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that tapping the scroll increase repeat button once causes an incremental scroll.")]
+        [TestProperty("RegressionBug", "46527670")]
+        public void VerifyScrollRepeatButtons()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                Log.Comment("Enumerating TabView's children:");
+                UIObject tabView = FindElement.ByName("Tabs");
+                Verify.IsNotNull(tabView);
+
+                EnumerateChildren(tabView);
+
+                Verify.IsFalse(AreScrollButtonsVisible(), "Scroll repeat buttons should not be visible");
+
+                Log.Comment("Adding 10 new tabs to show the scroll repeat buttons.");
+                Button addTabButton = FindElement.ByName<Button>("Add New Tab");
+
+                for (int i = 0; i < 10; i++)
+                {
+                    addTabButton.InvokeAndWait();
+                }
+
+                ElementCache.Refresh();
+
+                Log.Comment("Enumerating TabView's children again:");
+                EnumerateChildren(tabView);
+
+                Verify.IsTrue(AreScrollButtonsVisible(), "Scroll repeat buttons should be visible now");
+                Verify.IsFalse(IsScrollDecreaseButtonEnabled(), "Scroll decrease repeat button should be disabled");
+                Verify.IsTrue(IsScrollIncreaseButtonEnabled(), "Scroll increase repeat button should be enabled");
+
+                Log.Comment("Add Button Bounding Rect: X=" + addTabButton.BoundingRectangle.X + ", Y=" + addTabButton.BoundingRectangle.Y + ", W=" + addTabButton.BoundingRectangle.Width + ", H=" + addTabButton.BoundingRectangle.Height);
+
+                // Since the scroll repeat buttons have no accessibility visibility, the neighboring Add Tab button is used, with a negative horizontal offset to reach the scroll increase repeat button.
+                addTabButton.Tap(-addTabButton.BoundingRectangle.Width, addTabButton.BoundingRectangle.Height * 0.5);
+                Wait.ForIdle();
+
+                bool newIsScrollDecreaseButtonEnabled = IsScrollDecreaseButtonEnabled();
+                bool newIsScrollIncreaseButtonEnabled = IsScrollIncreaseButtonEnabled();
+
+                Log.Comment("New scroll decrease repeat button status: " + newIsScrollDecreaseButtonEnabled);
+                Log.Comment("New scroll increase repeat button status: " + newIsScrollIncreaseButtonEnabled);
+
+                Verify.IsTrue(newIsScrollDecreaseButtonEnabled, "Scroll decrease repeat button should be enabled");
+                Verify.IsTrue(newIsScrollIncreaseButtonEnabled, "Scroll increase repeat button should be enabled");
+            }
+        }
+
         public void PressButtonAndVerifyText(String buttonName, String textBlockName, String expectedText)
         {
             Button button = FindElement.ByName<Button>(buttonName);
@@ -1117,6 +1166,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
             Log.Comment("Did not find close button for object " + tabItem.Name);
             return null;
+        }
+
+        private void EnumerateChildren(UIObject root)
+        {
+            foreach (UIObject child in root.Children)
+            {
+                Log.Comment("Children Enumeration: Name=" + child.Name + ", ClassName=" + child.ClassName);
+                EnumerateChildren(child);
+            }
         }
     }
 }

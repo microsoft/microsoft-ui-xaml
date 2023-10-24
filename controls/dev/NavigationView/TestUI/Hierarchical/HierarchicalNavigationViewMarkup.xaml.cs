@@ -17,6 +17,16 @@ namespace MUXControlsTestApp
             this.InitializeComponent();
         }
 
+        private void OnCheckedIsSettingsVisible(object sender, RoutedEventArgs e)
+        {
+            navview.IsSettingsVisible = true;
+        }
+
+        private void OnUncheckedIsSettingsVisible(object sender, RoutedEventArgs e)
+        {
+            navview.IsSettingsVisible = false;
+        }
+
         private void ClickedItem(object sender, NavigationViewItemInvokedEventArgs e)
         {
         }

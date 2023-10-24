@@ -19,6 +19,7 @@
 #include <theming\inc\FrameworkTheming.h>
 #include <theming\inc\Theme.h>
 #include <UriXStringGetters.h>
+#include <FrameworkUdk/Containment.h>
 
 #include "ModernResourceProvider.h"
 #include "MRTKnownQualifierNames.h"
@@ -27,7 +28,13 @@
 constexpr wchar_t c_resourcesPriName[] = L"resources.pri";
 constexpr wchar_t c_frameworkPackageNamePrefix[] = L"Microsoft.WindowsAppRuntime";
 constexpr int c_frameworkPackageNamePrefixLength = ARRAY_SIZE(c_frameworkPackageNamePrefix) - 1;
+constexpr wchar_t c_cbsPackageNamePrefix[] = L"Microsoft.WindowsAppRuntime.CBS";
+constexpr int c_cbsPackageNamePrefixLength = ARRAY_SIZE(c_cbsPackageNamePrefix) - 1;
 constexpr wchar_t c_winuiComponentName[] = L"Microsoft.UI.Xaml/";
+
+// Bug 46497947: WinUI 3 File Explorer displays languages inconsistently when preferred languages differ from Windows display language
+// Bug 46751006: [WinAppSDK 1.4] WinUI 3 File Explorer displays languages inconsistently when preferred languages differ from Windows display language
+#define WINAPPSDK_CHANGEID_46751006 46751006
 
 // NTSTATUS code copied from ntstatus.h
 // ntstatus.h and windows.h do not play nicely together; including them both
@@ -59,6 +66,21 @@ namespace
                                      c_frameworkPackageNamePrefix,
                                      c_frameworkPackageNamePrefixLength,
                                      TRUE) == CSTR_EQUAL);
+    }
+
+    // Detect if the specified package is the ProjectReunion CBS package
+    // by checking its name.  The CBS should be used exclusively by OS
+    // components, so this doubles as a check if we're running as part
+    // of an OS experience.
+    bool IsProjectReunionCBSPackage(const wchar_t* packageFamilyName)
+    {
+        int nameLength{ static_cast<int>(wcslen(packageFamilyName)) };
+        return (nameLength >= c_cbsPackageNamePrefixLength) &&
+            (CompareStringOrdinal(packageFamilyName,
+                c_cbsPackageNamePrefixLength,
+                c_cbsPackageNamePrefix,
+                c_cbsPackageNamePrefixLength,
+                TRUE) == CSTR_EQUAL);
     }
 
     bool IsProjectReunionFrameworkPackageResource(const xstring_ptr& resourceName)
@@ -149,7 +171,7 @@ HRESULT ModernResourceProvider::Create(
     }
 
     xstring_ptr frameworkPackageResourcesPriPath;
-    IFC_RETURN(ProbeForFrameworkPackageResourcesPri(&frameworkPackageResourcesPriPath));
+    IFC_RETURN(ProbeForFrameworkPackageResourcesPri(&frameworkPackageResourcesPriPath, resourceProvider->m_shouldUseSystemLanguage));
     if (!frameworkPackageResourcesPriPath.IsNullOrEmpty())
     {
         IFC_RETURN(resourceManagerFactory->CreateInstance(
@@ -394,11 +416,28 @@ HRESULT ModernResourceProvider::UpdateLanguageAndLayoutDirectionQualifiers()
         wrl_wrappers::HStringReference(RuntimeClass_Windows_Globalization_ApplicationLanguages).Get(),
         &applicationLanguagesStatics));
 
-    // Current language is the first element of Windows.Globalization.ApplicationLanguages.Languages
-    wrl::ComPtr<wfc::IVectorView<HSTRING>> languages;
     wrl_wrappers::HString primaryLanguageName;
-    IFC_RETURN(applicationLanguagesStatics->get_Languages(languages.ReleaseAndGetAddressOf()));
-    IFC_RETURN(languages->GetAt(0, primaryLanguageName.GetAddressOf()));
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46751006>() && m_shouldUseSystemLanguage)
+    {
+        // If using the CBS package, we want to use the Windows display language
+        // (the language used by OS components), not the first of the user's preferred
+        // languages from ApplicationLanguages.Languages.
+        // They can be different, and because
+        // Windows components use the Windows display language, can lead to an
+        // inconsistent language experience if WinUI 3 always uses
+        // ApplicationLanguages.Languages.
+        wchar_t lpLocaleName[LOCALE_NAME_MAX_LENGTH];
+        IFC_RETURN(GetUserDefaultLocaleName(lpLocaleName, LOCALE_NAME_MAX_LENGTH));
+        primaryLanguageName.Attach(wrl_wrappers::HStringReference(lpLocaleName).Get());
+    }
+    else
+    {
+        // Current language is the first element of Windows.Globalization.ApplicationLanguages.Languages
+        wrl::ComPtr<wfc::IVectorView<HSTRING>> languages;
+        IFC_RETURN(applicationLanguagesStatics->get_Languages(languages.ReleaseAndGetAddressOf()));
+        IFC_RETURN(languages->GetAt(0, primaryLanguageName.GetAddressOf()));
+    }
 
     wrl::ComPtr<wg::ILanguageFactory> languageFactory;
     IFC_RETURN(wf::GetActivationFactory(
@@ -769,9 +808,14 @@ HRESULT ModernResourceProvider::PrepareModernResourceName(
 }
 
 /* static */ _Check_return_ HRESULT
-ModernResourceProvider::ProbeForFrameworkPackageResourcesPri(_Out_ xstring_ptr* frameworkPackageResourcePriPath)
+ModernResourceProvider::ProbeForFrameworkPackageResourcesPri(_Out_ xstring_ptr* frameworkPackageResourcePriPath, _Out_ bool& isUsingCbsPackage)
 {
     *frameworkPackageResourcePriPath = xstring_ptr::EmptyString();
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46751006>())
+    {
+        isUsingCbsPackage = false;
+    }
 
     const UINT32 c_filter{ PACKAGE_FILTER_HEAD | PACKAGE_FILTER_DIRECT | PACKAGE_FILTER_STATIC | PACKAGE_FILTER_DYNAMIC | PACKAGE_INFORMATION_BASIC };
     std::uint32_t packageCount{};
@@ -783,6 +827,12 @@ ModernResourceProvider::ProbeForFrameworkPackageResourcesPri(_Out_ xstring_ptr* 
         for (std::uint32_t index=0; index < packageCount; index++)
         {
             const PACKAGE_INFO& packageInfo{ packageGraph[index] };
+
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46751006>() && IsProjectReunionCBSPackage(packageInfo.packageFamilyName))
+            {
+                isUsingCbsPackage = true;
+            }
+
             if (IsProjectReunionFrameworkPackage(packageInfo.packageFamilyName))
             {
                 auto frameworkPackagePath{ packageInfo.path };

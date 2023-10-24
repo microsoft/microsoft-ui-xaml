@@ -292,6 +292,160 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        public void TabNavigationHierarchicalTest()
+        {
+            var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
+            foreach (var testScenario in testScenarios)
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
+                {
+                    Button togglePaneButton = new Button(FindElement.ById("TogglePaneButton"));
+                    Button getSelectItemButton = new Button(FindElement.ByName("GetSelectedItemLabelButton"));
+
+                    VerifyTabNavigationWithoutMenuItemSelected();
+                    VerifyTabNavigationWithMenuItemSelected();
+                    VerifyTabNavigationWithSettingsItemVisible();
+
+                    void VerifyTabNavigationWithoutMenuItemSelected()
+                    {
+                        Log.Comment("Verify Tab navigation without a selected menu item");
+
+                        getSelectItemButton.Invoke();
+                        Wait.ForIdle();
+
+                        Verify.AreEqual("No Item Selected", GetSelectedItem());
+
+                        UIObject menuItem1 = FindElement.ByName("Menu Item 1");
+                        UIObject menuItem29 = FindElement.ByName("Menu Item 29 (Selectable)");
+
+                        // Set focus on the pane's toggle button.
+                        togglePaneButton.SetFocus();
+                        Wait.ForIdle();
+
+                        Log.Comment("Verify that pressing tab while TogglePaneButton has focus moves to Menu Item 1.");
+                        KeyboardHelper.PressKey(Key.Tab);
+                        Wait.ForIdle();
+                        Verify.IsTrue(menuItem1.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing tab while Menu Item 1 has focus moves to 'Get Selected Item Label' Button item");
+                        KeyboardHelper.PressKey(Key.Tab);
+                        Wait.ForIdle();
+                        Verify.IsTrue(getSelectItemButton.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing SHIFT+tab will move focus to Menu Item 29");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1);
+                        Wait.ForIdle();
+                        Verify.IsTrue(menuItem29.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing SHIFT+tab will move focus to the TogglePaneButton");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1);
+                        Wait.ForIdle();
+                        Verify.IsTrue(togglePaneButton.HasKeyboardFocus);
+                    }
+
+                    void VerifyTabNavigationWithMenuItemSelected()
+                    {
+                        Log.Comment("Verify Tab navigation with a selected menu item");
+
+                        Log.Comment("Expand Menu Item 15.");
+                        UIObject menuItem15 = FindElement.ByName("Menu Item 15");
+                        InputHelper.LeftClick(menuItem15);
+
+                        Log.Comment("Select Menu Item 16.");
+                        UIObject menuItem16 = FindElement.ByName("Menu Item 16");
+                        InputHelper.LeftClick(menuItem16);
+
+                        getSelectItemButton.Invoke();
+                        Wait.ForIdle();
+
+                        Verify.AreEqual("Menu Item 16", GetSelectedItem());
+
+                        // Set focus on the pane's toggle button.
+                        togglePaneButton.SetFocus();
+                        Wait.ForIdle();
+
+                        Log.Comment("Verify that pressing tab while TogglePaneButton has focus moves to Menu Item 16.");
+                        KeyboardHelper.PressKey(Key.Tab);
+                        Wait.ForIdle();
+                        Verify.IsTrue(menuItem16.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing tab while Menu Item 16 has focus moves to 'Get Selected Item Label' Button item");
+                        KeyboardHelper.PressKey(Key.Tab);
+                        Wait.ForIdle();
+                        Verify.IsTrue(getSelectItemButton.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing SHIFT+tab will move focus to Menu Item 16");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1);
+                        Wait.ForIdle();
+                        Verify.IsTrue(menuItem16.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing SHIFT+tab will move focus to the TogglePaneButton");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1);
+                        Wait.ForIdle();
+                        Verify.IsTrue(togglePaneButton.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing tab from parent of item will move focus to 'Get Selected Item Label' Button item");
+                        KeyboardHelper.PressKey(Key.Down, ModifierKey.None, 3);
+                        Wait.ForIdle();
+                        Verify.IsTrue(menuItem15.HasKeyboardFocus);
+
+                        KeyboardHelper.PressKey(Key.Tab);
+                        Wait.ForIdle();
+                        Verify.IsTrue(getSelectItemButton.HasKeyboardFocus);
+                    }
+
+                    void VerifyTabNavigationWithSettingsItemVisible()
+                    {
+                        Log.Comment("Verify tab navigation with settings item visible.");
+
+                        Log.Comment("Check IsSettingsVisible");
+                        CheckBox checkBoxIsSettingsVisible = FindElement.ByName<CheckBox>("Settings Item Visibility");
+                        checkBoxIsSettingsVisible.Check();
+                        Wait.ForIdle();
+
+                        UIObject settingsItem = FindElement.ByName("Settings");
+
+                        getSelectItemButton.Invoke();
+                        Wait.ForIdle();
+
+                        Verify.AreEqual("Menu Item 16", GetSelectedItem());
+
+                        UIObject menuItem16 = FindElement.ByName("Menu Item 16");
+
+                        // Set focus on the pane's toggle button.
+                        togglePaneButton.SetFocus();
+                        Wait.ForIdle();
+
+                        Log.Comment("Verify that pressing tab while TogglePaneButton has focus moves to Menu Item 16.");
+                        KeyboardHelper.PressKey(Key.Tab);
+                        Wait.ForIdle();
+                        Verify.IsTrue(menuItem16.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing tab while Menu Item 16 has focus moves to Settings item");
+                        KeyboardHelper.PressKey(Key.Tab);
+                        Wait.ForIdle();
+                        Verify.IsTrue(settingsItem.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing SHIFT+tab will move focus to Menu Item 16");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1);
+                        Wait.ForIdle();
+                        Verify.IsTrue(menuItem16.HasKeyboardFocus);
+
+                        Log.Comment("Verify that pressing SHIFT+tab will move focus to the TogglePaneButton");
+                        KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift, 1);
+                        Wait.ForIdle();
+                        Verify.IsTrue(togglePaneButton.HasKeyboardFocus);
+                    }
+                }
+
+                string GetSelectedItem()
+                {
+                    return new TextBlock(FindElement.ByName("SelectedItemLabel")).DocumentText;
+                }
+            }
+        }
+
+        [TestMethod]
         public void CanDoSelectionChangedOfItemTemplate()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView ItemTemplate Test" }))

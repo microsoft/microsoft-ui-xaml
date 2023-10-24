@@ -9,6 +9,10 @@
 #include "ResourceAccessor.h"
 #include "XamlControlsResources.h"
 #include "SharedHelpers.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 46770740: I can still see a thin line under the active tab in file explorer
+#define WINAPPSDK_CHANGEID_46770740 46770740
 
 TabViewItem::TabViewItem()
 {
@@ -85,25 +89,28 @@ void TabViewItem::OnApplyTemplate()
 
     if (tabView)
     {
-        if (internalTabView)
-        {          
-            m_shadow = winrt::ThemeShadow{};
+        if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46770740>())
+        {
+            if (internalTabView)
+            {          
+                m_shadow = winrt::ThemeShadow{};
 
-            double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
+                double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
 
-            const auto currentTranslation = Translation();
-            const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, static_cast<float>(shadowDepth) };
-            Translation(translation);
+                const auto currentTranslation = Translation();
+                const auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, static_cast<float>(shadowDepth) };
+                Translation(translation);
 
-            // Set separate shadow for TabDragVisualContainer.
-            m_tabDragVisualContainer.set(GetTemplateChildT<winrt::UIElement>(s_tabDragVisualContainer, controlProtected));
+                // Set separate shadow for TabDragVisualContainer.
+                m_tabDragVisualContainer.set(GetTemplateChildT<winrt::UIElement>(s_tabDragVisualContainer, controlProtected));
 
-            if (const auto tabDragVisualContainer = m_tabDragVisualContainer.get())
-            {
-                tabDragVisualContainer.Translation(translation);
-            }         
+                if (const auto tabDragVisualContainer = m_tabDragVisualContainer.get())
+                {
+                    tabDragVisualContainer.Translation(translation);
+                }         
 
-            UpdateShadow();
+                UpdateShadow();
+            }
         }
         m_tabDragStartingRevoker = tabView.TabDragStarting(winrt::auto_revoke, { this, &TabViewItem::OnTabDragStarting });
         m_tabDragCompletedRevoker = tabView.TabDragCompleted(winrt::auto_revoke, { this, &TabViewItem::OnTabDragCompleted });
@@ -175,7 +182,10 @@ void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sen
         SetValue(winrt::Canvas::ZIndexProperty(), box_value(0));
     }
 
-    UpdateShadow();
+    if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46770740>())
+    {
+        UpdateShadow();
+    }
     UpdateWidthModeVisualState();
 
     UpdateCloseButton();
@@ -202,26 +212,29 @@ void TabViewItem::UpdateForeground()
 
 void TabViewItem::UpdateShadow()
 {
-    if (IsSelected())
+    if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46770740>())
     {
-        if (m_isCheckingforDrag && m_isBeingDragged)
+        if (IsSelected())
         {
-            if (const auto tabDragVisualContainer = m_tabDragVisualContainer.get())
+            if (m_isCheckingforDrag && m_isBeingDragged)
             {
-                tabDragVisualContainer.Shadow(m_shadow.as<winrt::ThemeShadow>());
+                if (const auto tabDragVisualContainer = m_tabDragVisualContainer.get())
+                {
+                    tabDragVisualContainer.Shadow(m_shadow.as<winrt::ThemeShadow>());
 
-                // Disable shadow on Tab Strip.
-                Shadow(nullptr);
+                    // Disable shadow on Tab Strip.
+                    Shadow(nullptr);
+                }
+            }
+            else if (!m_isBeingDragged)
+            {
+                Shadow(m_shadow.as<winrt::ThemeShadow>());
             }
         }
-        else if (!m_isBeingDragged)
+        else
         {
-            Shadow(m_shadow.as<winrt::ThemeShadow>());
+            Shadow(nullptr);
         }
-    }
-    else
-    {
-         Shadow(nullptr);
     }
 }
 

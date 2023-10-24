@@ -7,7 +7,7 @@
 #endif
 
 // wil does not work well with code analysis enabled so we disable some warnings:
-#pragma warning(push) 
+#pragma warning(push)
 #pragma warning(disable : 6001)
 #pragma warning(disable : 6319)
 #pragma warning(disable : 6387)
@@ -21,6 +21,7 @@
 #pragma warning(disable : 26812)
 
 #include <wil/ResultMacros.h>
+#include "wil/result.h"
 using namespace wil::details;
 #include <wil/Staging.h>
 

@@ -37,7 +37,7 @@
       <AdditionalOptions>%(AdditionalOptions) /noattributename</AdditionalOptions>
     </Midl>
     <Link>
-      <AdditionalDependencies>user32.lib;mincore.lib;dxguid.lib;dcomp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>user32.lib;mincore.lib;dxguid.lib;dcomp.lib;$(FrameworkUdkLibPath)\Microsoft.Internal.FrameworkUdk.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <!-- Microsoft.winmd will contain the definition of both public, preview and private types. -->
       <WindowsMetadataFile>$(OutDir)$(ProjectWinMDName)</WindowsMetadataFile>
       <GenerateMapFile>true</GenerateMapFile>
@@ -305,7 +305,7 @@
   <PropertyGroup>
     <GenerateXamlFileBeforeTargets>BeforeBuildGenerateSources;CompileXaml;Prep_ComputeProcessXamlFiles;CompilePageRequiringCustomCompilation</GenerateXamlFileBeforeTargets>
   </PropertyGroup>
-  <!-- MergeXamlConfig is using msbuild task batching, each BatchMergeXaml below is executed multilple times. 
+  <!-- MergeXamlConfig is using msbuild task batching, each BatchMergeXaml below is executed multilple times.
         https://docs.microsoft.com/en-us/visualstudio/msbuild/item-metadata-in-task-batching?view=vs-2019 -->
   <Target Name="GenerateGenericResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(StylePage)" Outputs="$(OutDir)generic.xaml">
     <Message Text="Generating generic resources XAML file " />
@@ -327,7 +327,7 @@
       to only set a property if the target actually runs. -->
     <CreateProperty Value="True">
       <Output TaskParameter="ValueSetByTask" PropertyName="ThemeResourceFileNeedsCompilation" />
-    </CreateProperty>    
+    </CreateProperty>
   </Target>
   <!-- Controls styles were missing in packaged generic.xaml file. Merge MUX Generic.xaml with MUXC Generic.xaml and ThemeResource.xaml -->
   <Target Name="MergeMuxMuxcGenericResourceFiles" AfterTargets="GenerateThemeResourceFile" Inputs="$(ScriptPath)GenerateMergedXaml.ps1;$(MUXProjectRoot)dxaml\xcp\dxaml\themes\generic.xaml;$(OutDir)generic.xaml;$(OutDir)themeresources.xaml" Outputs="$(TempRoot)\generic.xaml">
@@ -654,5 +654,5 @@
         <AdditionalOptions>%(Link.AdditionalOptions) /sourcelink:"$(SourceLink)"</AdditionalOptions>
       </Link>
     </ItemGroup>
-  </Target>  
+  </Target>
 </Project>

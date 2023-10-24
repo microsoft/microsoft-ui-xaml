@@ -728,6 +728,9 @@ public:
     bool SkipNameRegistrationForChildren() override {  return true;   }
 
     _Check_return_ HRESULT AddToOpenPopupList(_Inout_ CPopup *pPopup);
+    _Check_return_ HRESULT StartAdditionToOpenPopupList(_In_ CPopup* pPopup);
+    _Check_return_ HRESULT UndoAdditionToOpenPopupList(_In_ CPopup* pPopup);
+    _Check_return_ HRESULT CompleteAdditionToOpenPopupList(_Inout_ CPopup* pPopup);
 
     _Check_return_ HRESULT RemoveFromOpenPopupList(_Inout_ CPopup *pPopup, bool bAsyncRelease);
 

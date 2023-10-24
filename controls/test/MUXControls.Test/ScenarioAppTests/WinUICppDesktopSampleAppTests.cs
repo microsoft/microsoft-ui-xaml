@@ -1233,6 +1233,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestPass:MinOSVer", WindowsOSVersion._19H1)] // 46636362: Temporarily disabled from a test failure in RS5, stemming from system CoreMessaging.
         [Description("Window Chrome tests : Test if no titlebar is provided and Window Chrome is enabled, caption buttons still appear on right and a default titlebar area is given which covers entire non client area")]
         public void WindowChromeNullTitlebarTest()
         {
