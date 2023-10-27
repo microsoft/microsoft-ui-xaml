@@ -30,7 +30,7 @@ if( -Not (Test-Path $outputFolder) )
 if($BuildId)
 {
     $artifactsDir = New-TemporaryDirectory
-    $artifactName = "helixTestOutput"
+    $artifactName = "TestOutput-devtest"
 
     $tempDir = New-TemporaryDirectory
     $tempDirPath = $tempDir.FullName
