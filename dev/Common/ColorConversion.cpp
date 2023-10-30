@@ -6,6 +6,9 @@
 #include "SharedHelpers.h"
 #include "ColorConversion.h"
 
+#pragma warning(disable: 26478) // Don't use std::move on constant variables. (es.56).
+
+
 Rgb::Rgb(double r, double g, double b) : r{ r }, g{ g }, b{ b }
 {
 }

@@ -6,6 +6,8 @@
 #include "NumberBoxParser.h"
 #include "Utils.h"
 
+#pragma warning(disable: 26478) // Don't use std::move on constant variables. (es.56).
+
 static constexpr wstring_view c_numberBoxOperators{ L"+-*/^"sv };
 
 // Returns list of MathTokens from expression input string. If there are any parsing errors, it returns an empty vector.

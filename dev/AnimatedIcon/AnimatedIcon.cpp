@@ -10,6 +10,8 @@
 #include "Utils.h"
 #include <mutex>
 
+#pragma warning(disable: 26478) // Don't use std::move on constant variables. (es.56).
+
 static constexpr wstring_view s_progressPropertyName{ L"Progress"sv };
 static constexpr wstring_view s_foregroundPropertyName{ L"Foreground"sv };
 static constexpr wstring_view s_transitionInfix{ L"To"sv };

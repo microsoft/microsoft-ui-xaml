@@ -9,6 +9,8 @@
 #include "ResourceAccessor.h"
 #include "math.h"
 
+#pragma warning(disable: 26478) // Don't use std::move on constant variables. (es.56).
+
 static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot"sv };
 static constexpr wstring_view s_LottiePlayerName{ L"LottiePlayer"sv };
 static constexpr wstring_view s_DefaultForegroundThemeResourceName{ L"SystemControlHighlightAccentBrush"sv };

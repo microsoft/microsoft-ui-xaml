@@ -8,6 +8,8 @@
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
+#pragma warning(disable: 26478) // Don't use std::move on constant variables. (es.56).
+
 ProgressBar::ProgressBar()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_ProgressBar);

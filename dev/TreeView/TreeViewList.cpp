@@ -11,6 +11,8 @@
 #include "TreeViewList.properties.cpp"
 #include "DispatcherHelper.h"
 
+#pragma warning(disable: 26813) // Use 'bitwise and' to check if a flag is set.
+
 TreeViewList::TreeViewList()
 {
     ListViewModel(winrt::make_self<ViewModel>());

@@ -8,6 +8,8 @@
 #include "TreeViewList.h"
 #include "TreeViewItemTemplateSettings.h"
 
+#pragma warning(disable: 26813) // Use 'bitwise and' to check if a flag is set.
+
 TreeViewItem::TreeViewItem()
 {
     SetDefaultStyleKey(this);
