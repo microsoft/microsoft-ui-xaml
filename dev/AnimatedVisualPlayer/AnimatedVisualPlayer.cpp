@@ -315,47 +315,63 @@ AnimatedVisualPlayer::AnimatedVisualPlayer()
 
     // Subscribe to suspending, resuming, and visibility events so we can pause the animation if it's 
     // definitely not visible.
-    m_suspendingRevoker = winrt::Application::Current().Suspending(winrt::auto_revoke, [weakThis{ get_weak() }](
-        auto const& /*sender*/,
-        auto const& /*e*/)
+    winrt::Application app{ nullptr };
+    try
     {
-        if (auto strongThis = weakThis.get())
-        {
-            strongThis->OnHiding();
-        }
-    });
-
-    m_resumingRevoker = winrt::Application::Current().Resuming(winrt::auto_revoke, [weakThis{ get_weak() }](
-        auto const& /*sender*/,
-        auto const& /*e*/)
+        app = winrt::Application::Current();
+    }
+    catch(winrt::hresult_error e)
     {
-        if (auto strongThis = weakThis.get())
-        {
-            if (winrt::CoreWindow::GetForCurrentThread().Visible())
-            {
-                strongThis->OnUnhiding();
-            }
-        }
-    });
-
-    m_visibilityChangedRevoker = winrt::CoreWindow::GetForCurrentThread().VisibilityChanged(winrt::auto_revoke, [weakThis{ get_weak() }](
-        auto const& /*sender*/,
-        auto const& e)
+        // ignore error and proceed without the Application
+    }
+    if (app)
     {
-        if (auto strongThis = weakThis.get())
+        m_suspendingRevoker = app.Suspending(winrt::auto_revoke, [weakThis{ get_weak() }](
+            auto const& /*sender*/,
+            auto const& /*e*/)
         {
-            if (e.Visible())
+            if (auto strongThis = weakThis.get())
             {
-                // Transition from invisible to visible.
-                strongThis->OnUnhiding();
-            }
-            else
-            {
-                // Transition from visible to invisible.
                 strongThis->OnHiding();
             }
-        }
-    });
+        });
+
+        m_resumingRevoker = app.Resuming(winrt::auto_revoke, [weakThis{ get_weak() }](
+            auto const& /*sender*/,
+            auto const& /*e*/)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                if (winrt::CoreWindow::GetForCurrentThread().Visible())
+                {
+                    strongThis->OnUnhiding();
+                }
+            }
+        });
+    }
+
+    auto coreWindow = winrt::CoreWindow::GetForCurrentThread();
+    if (coreWindow)
+    {
+        m_visibilityChangedRevoker = coreWindow.VisibilityChanged(winrt::auto_revoke, [weakThis{ get_weak() }](
+            auto const& /*sender*/,
+            auto const& e)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                if (e.Visible())
+                {
+                    // Transition from invisible to visible.
+                    strongThis->OnUnhiding();
+                }
+                else
+                {
+                    // Transition from visible to invisible.
+                    strongThis->OnHiding();
+                }
+            }
+        });
+    }
 
     // Subscribe to the Loaded/Unloaded events to ensure we unload the animated visual then reload
     // when it is next loaded.
@@ -1118,3 +1134,4 @@ void AnimatedVisualPlayer::OnStretchPropertyChanged(
 {
     InvalidateMeasure();
 }
+
