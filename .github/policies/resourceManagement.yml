@@ -135,7 +135,7 @@ configuration:
       - payloadType: Issue_Comment
       - not: isOpen
       - not:
-        - or:
+          or:
           - activitySenderHasPermission:
               permission: Write
           - activitySenderHasPermission:
