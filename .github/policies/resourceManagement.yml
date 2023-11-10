@@ -95,29 +95,6 @@ configuration:
       then:
       - addLabel:
           label: needs-triage
-
-
-    - description: Add needs-triage to issues when team- label removed
-      if:
-      - payloadType: Issues
-      - or:
-        - labelRemoved:
-            label: team-CompInput
-        - labelRemoved:
-            label: team-Controls
-        - labelRemoved:
-            label: team-Framework
-        - labelRemoved:
-            label: team-Ink
-        - labelRemoved:
-            label: team-Markup
-        - labelRemoved:
-            label: team-Reach
-        - labelRemoved:
-            label: team-Rendering
-      then:
-      - addLabel:
-          label: needs-triage
       
 
     - description: Remove needs-triage from Closed items
