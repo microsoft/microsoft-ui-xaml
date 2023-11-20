@@ -10,7 +10,7 @@ namespace Focus { namespace XYFocusPrivate {
     template<class Element>
     bool IsValidCandidate(_In_ Element* const element)
     {
-        const bool isFocusable = FocusProperties::IsFocusable(element);
+        const bool isFocusable = FocusProperties::IsFocusable(element, false /*ignoreOffScreenPosition*/);
         const bool isGamepadFocusCandidate = FocusProperties::IsGamepadFocusCandidate(element);
         const bool isRootScrollViewer = element->template OfTypeByIndex<KnownTypeIndex::RootScrollViewer>();
         const bool isValidTabStop = FocusProperties::IsPotentialTabStop(element);

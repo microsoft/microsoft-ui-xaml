@@ -13,6 +13,11 @@ using namespace DirectUISynonyms;
 #define ACTIVE 0
 #define SUSPENDED 1
 
+int BuildTreeService::ActiveWorkersCount() const
+{
+    return m_workers[ACTIVE].size();
+}
+
 _Check_return_ HRESULT BuildTreeService::RegisterWork(_In_ ITreeBuilder* pTreeBuildingElement)
 {
     HRESULT hr = S_OK;

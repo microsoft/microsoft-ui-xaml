@@ -19,6 +19,10 @@
 
 #include "InitialFocusSIPSuspender.h"
 #include "FocusLockOverrideGuard.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 46833401: [1.4 Servicing] AutoSuggestBox's dropdown flickers when focus moves back to the island
+#define WINAPPSDK_CHANGEID_46833401 46833401
 
 #define E_FOCUS_ASYNCOP_INPROGRESS 64L
 
@@ -113,7 +117,11 @@ CFocusManager::SetFocusedElement(_In_ const FocusMovement& movement)
 
     if (pFocusedElement == nullptr) { return FocusMovementResult(); }
 
-    if(!IsFocusable(pFocusedElement))
+    // This is the only occurrence where ignoreOffScreenPosition==True is used.
+    // For compatibility reasons, an element that is still placed in a ModernCollectionBasePanel's garbage section (because it has not been arranged yet)
+    // can be focused through the UpdadateFocus call below. This situation can occur when app code invokes UIElement.Focus(FocusState) inside a 
+    // ListViewBase.ContainerContentChanging event handler.
+    if (!IsFocusable(pFocusedElement, true /*ignoreOffScreenPosition*/))
     {
         pFocusedElement = GetFirstFocusableElement(pFocusedElement);
 
@@ -659,6 +667,30 @@ CFocusManager::ProcessTabStop(_In_ bool bPressedShift, _Out_ bool* bHandled)
     (*bHandled) = FALSE;
 
     xref_ptr<CDependencyObject> spNewTabStop;
+
+    auto scopeGuard = wil::scope_exit([&]
+    {
+        if (bPressedShift)
+        {
+            m_isMovingFocusToPreviousTabStop = false;
+        }
+        else
+        {
+            m_isMovingFocusToNextTabStop = false;
+        }
+    });
+
+    if (CUIElement::IsTabNavigationWithVirtualizedItemsSupported())
+    {
+        if (bPressedShift)
+        {
+            m_isMovingFocusToPreviousTabStop = true;
+        }
+        else
+        {
+            m_isMovingFocusToNextTabStop = true;
+        }
+    }
 
     // Get the new tab stoppable element.
     const bool queryOnly = false;
@@ -1491,9 +1523,9 @@ CFocusManager::NotifyFocusChanged(_In_ bool bringIntoView, _In_ bool animateIfBr
 //------------------------------------------------------------------------
 
 bool
-CFocusManager::IsFocusable(_In_ CDependencyObject *pObject)
+CFocusManager::IsFocusable(_In_ CDependencyObject *pObject, bool ignoreOffScreenPosition)
 {
-    return FocusProperties::IsFocusable(pObject);
+    return FocusProperties::IsFocusable(pObject, ignoreOffScreenPosition);
 }
 
 //------------------------------------------------------------------------
@@ -1937,7 +1969,7 @@ CFocusManager::UpdateFocus(_In_ const FocusMovement& movement)
         }
     }
 
-    ASSERT((pNewFocus == nullptr) || IsFocusable(pNewFocus));
+    ASSERT((pNewFocus == nullptr) || IsFocusable(pNewFocus, true /*ignoreOffScreenPosition*/));
 
     // Update the previous focused control
     pOldFocusedElement = m_pFocusedElement; // Still has reference that will be freed in Cleanup.
@@ -2584,9 +2616,50 @@ CDependencyObject* CFocusManager::FindNextFocus(
         const bool bPressedShift = direction == DirectUI::FocusNavigationDirection::Previous;
 
         // Get the move candidate element according to next/previous navigation direction.
-        if (FAILED(ProcessTabStopInternal(bPressedShift, findFocusOptions.IsQueryOnly(), nextFocusedElement.ReleaseAndGetAddressOf())))
+        if (CUIElement::IsTabNavigationWithVirtualizedItemsSupported())
         {
-            return nullptr;
+            if (findFocusOptions.IsQueryOnly())
+            {
+                if (FAILED(ProcessTabStopInternal(bPressedShift, true /*queryOnly*/, nextFocusedElement.ReleaseAndGetAddressOf())))
+                {
+                    return nullptr;
+                }
+            }
+            else
+            {
+                auto scopeGuard = wil::scope_exit([&]
+                {
+                    if (bPressedShift)
+                    {
+                        m_isMovingFocusToPreviousTabStop = false;
+                    }
+                    else if (direction == DirectUI::FocusNavigationDirection::Next)
+                    {
+                        m_isMovingFocusToNextTabStop = false;
+                    }
+                });
+
+                if (bPressedShift)
+                {
+                    m_isMovingFocusToPreviousTabStop = true;
+                }
+                else if (direction == DirectUI::FocusNavigationDirection::Next)
+                {
+                    m_isMovingFocusToNextTabStop = true;
+                }
+
+                if (FAILED(ProcessTabStopInternal(bPressedShift, false /*queryOnly*/, nextFocusedElement.ReleaseAndGetAddressOf())))
+                {
+                    return nullptr;
+                }
+            }
+        }
+        else
+        {
+            if (FAILED(ProcessTabStopInternal(bPressedShift, findFocusOptions.IsQueryOnly(), nextFocusedElement.ReleaseAndGetAddressOf())))
+            {
+                return nullptr;
+            }
         }
     }
     else
@@ -3198,6 +3271,17 @@ _Check_return_ HRESULT CFocusManager::SetWindowFocus(
     // This is usually the case because in order to change the setting the user needs to switch
     // to the settings app and back.
     m_pCoreService->SetShouldReevaluateIsAnimationEnabled(true);
+
+    if(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46833401>() &&
+        isFocused && focusedElement && ((m_contentRoot.GetInputManager().GetLastInputDeviceType() == InputDeviceType::Mouse)
+                                   || (m_contentRoot.GetInputManager().GetLastInputDeviceType() == InputDeviceType::Touch)
+                                   || (m_contentRoot.GetInputManager().GetLastInputDeviceType() == InputDeviceType::Pen)))
+    {
+        // When user is coming back to the window, we restore the focus while may be a click event going to some other control, 
+        // so we need to skip a few rendering frames to let the click event be processed to avoid rendering focus state for a control which may be able to lose focus to the clicked control
+
+        m_pCoreService->SkipFrames(5);
+    }
 
     if (focusedElement == nullptr && isFocused)
     {

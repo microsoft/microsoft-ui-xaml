@@ -109,13 +109,13 @@ bool IsEnabled<CDependencyObject>(_In_ CDependencyObject* const object)
 
 //Determine if a particular DependencyObject cares to take focus.
 template<>
-bool IsFocusable<CDependencyObject>(_In_ CDependencyObject* const object)
+bool IsFocusable<CDependencyObject>(_In_ CDependencyObject* const object, bool ignoreOffScreenPosition)
 {
     bool isFocusable = false;
 
     xref_ptr<CUIElement> objectAsUI;
 
-    if (SUCCEEDED(DoPointerCast(objectAsUI, object)) && objectAsUI->SkipFocusSubtree())
+    if (SUCCEEDED(DoPointerCast(objectAsUI, object)) && objectAsUI->SkipFocusSubtree(ignoreOffScreenPosition))
     {
         return false;
     }
@@ -125,7 +125,7 @@ bool IsFocusable<CDependencyObject>(_In_ CDependencyObject* const object)
         CControl* control = static_cast<CControl*>(object);
 
         ASSERT(control);
-        isFocusable = IsFocusable(control);
+        isFocusable = IsFocusable(control, ignoreOffScreenPosition);
     }
     else if (IFocusable* ifocusable = CFocusableHelper::GetIFocusableForDO(object))
     {
@@ -135,7 +135,7 @@ bool IsFocusable<CDependencyObject>(_In_ CDependencyObject* const object)
     {
         if (objectAsUI)
         {
-            isFocusable = IsFocusable(objectAsUI.get());
+            isFocusable = IsFocusable(objectAsUI.get(), ignoreOffScreenPosition);
         }
     }
 
@@ -207,7 +207,7 @@ bool CanHaveFocusableChildren<CDependencyObject>(_In_ CDependencyObject* const p
                     child->OfTypeByIndex<KnownTypeIndex::RichTextBlock>() ||
                     child->OfTypeByIndex<KnownTypeIndex::RichTextBlockOverflow>())
                 {
-                    if (IsFocusable(child.get()) && IsPotentialTabStop(child.get()))
+                    if (IsFocusable(child.get(), false /*ignoreOffScreenPosition*/) && IsPotentialTabStop(child.get()))
                     {
                         isFocusable = true;
                     }
@@ -221,7 +221,7 @@ bool CanHaveFocusableChildren<CDependencyObject>(_In_ CDependencyObject* const p
                 }
                 else
                 {
-                    if (IsFocusable(child.get()))
+                    if (IsFocusable(child.get(), false /*ignoreOffScreenPosition*/))
                     {
                         isFocusable = true;
                     }

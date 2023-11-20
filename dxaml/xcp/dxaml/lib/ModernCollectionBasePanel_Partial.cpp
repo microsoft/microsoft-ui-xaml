@@ -615,7 +615,12 @@ _Check_return_ HRESULT ModernCollectionBasePanel::MeasureElementsInGarbageSectio
 
         IFC(spChildren->GetAt(garbageIndex, &spCurrentElement));
 
-        const wf::Point position = GetGarbageElementPosition(spCurrentElement);
+        wf::Point position{};
+        
+        if (!IsTabNavigationWithVirtualizedItemsSupported())
+        {
+            position = GetGarbageElementPosition(spCurrentElement);
+        }
 
         xaml_controls::ElementType elementType = (GetElementIsHeader(spCurrentElement)) ? xaml_controls::ElementType_GroupHeader : xaml_controls::ElementType_ItemContainer;
 
@@ -641,7 +646,14 @@ _Check_return_ HRESULT ModernCollectionBasePanel::MeasureElementsInGarbageSectio
 
         IFC(spCurrentElement->get_DesiredSize(&desiredSize));
 
-        SetBoundsForElement(spCurrentElement, RectUtil::CreateRect(position, desiredSize));
+        if (IsTabNavigationWithVirtualizedItemsSupported())
+        {
+            SetElementSizeInGarbageSection(spCurrentElement, desiredSize);
+        }
+        else
+        {
+            SetBoundsForElement(spCurrentElement, RectUtil::CreateRect(position, desiredSize));
+        }
 
         // Protected by Apiset : TRUE only for Vertical Orientation + Headerplacement!=Left
         if (m_bUseStickyHeaders)
@@ -3875,6 +3887,58 @@ wf::Point ModernCollectionBasePanel::GetGarbageElementPosition(_In_ const ctl::C
     }
 
     return result;
+}
+
+/*static*/
+bool ModernCollectionBasePanel::ElementIsPositionedInGarbageSection(_In_ const ctl::ComPtr<IUIElement>& spElement)
+{
+    ASSERT(IsTabNavigationWithVirtualizedItemsSupported());
+        
+    const wf::Point offScreenPosition = GetOffScreenPosition();
+    const wf::Rect bounds = GetBoundsFromElement(spElement);
+    const bool hasOffScreenPosition = bounds.X == offScreenPosition.X && bounds.Y == offScreenPosition.Y;
+
+    return hasOffScreenPosition;
+}
+
+/*static*/
+void ModernCollectionBasePanel::SetElementEmptySizeInGarbageSection(_In_ const ctl::ComPtr<IUIElement>& spElement)
+{
+    ASSERT(IsTabNavigationWithVirtualizedItemsSupported());
+
+    SetElementSizeInGarbageSection(spElement, wf::Size());
+}
+
+/*static*/
+void ModernCollectionBasePanel::SetElementSizeInGarbageSection(_In_ const ctl::ComPtr<IUIElement>& spElement, _In_ wf::Size size)
+{
+    ASSERT(IsTabNavigationWithVirtualizedItemsSupported());
+
+    UIElement* uielement = spElement.Cast<UIElement>();
+    ASSERT(uielement);
+
+    static_cast<CUIElement*>(uielement->GetHandle())->SetSkipFocusSubtree(true /*skipFocusSubtree*/, true /*forOffScreenPosition*/);
+    uielement->GetVirtualizationInformation()->SetBounds(RectUtil::CreateRect(GetOffScreenPosition(), size));
+}
+
+/*static*/
+void ModernCollectionBasePanel::SetBoundsForElement(_In_ const ctl::ComPtr<IUIElement>& spElement, _In_ wf::Rect bounds)
+{
+    UIElement* uielement = spElement.Cast<UIElement>();
+    ASSERT(uielement);
+
+    if (IsTabNavigationWithVirtualizedItemsSupported())
+    {
+#ifdef DBG
+        const wf::Point offScreenPositionDbg = GetOffScreenPosition();
+        const bool hasOffScreenPositionDbg = bounds.X == offScreenPositionDbg.X && bounds.Y == offScreenPositionDbg.Y;
+        ASSERT(!hasOffScreenPositionDbg);
+#endif
+
+        static_cast<CUIElement*>(uielement->GetHandle())->SetSkipFocusSubtree(false /*skipFocusSubtree*/, true /*forOffScreenPosition*/);
+    }
+
+    uielement->GetVirtualizationInformation()->SetBounds(bounds);
 }
 
 _Check_return_ HRESULT ModernCollectionBasePanel::GetViewportSize(_Out_ wf::Size* pSize)

@@ -16,11 +16,15 @@
 #include "UIElement.g.h"
 #include "StickyHeaderWrapper.h"
 #include <microsoft.ui.composition.private.h>
+#include <FrameworkUdk/Containment.h>
 
 // TODO: Give codegen the ability to map non-codegen types to filenames
 //       so it can add the proper #include directives.
 //       Until then, we'll need to pull in core headers in some of our framework partial class headers
 #include <Pointer.h>
+
+// Bug 47048404: [1.4 servicing] Support ListViewBase.TabNavigation=Local/Cycle with virtualized items
+#define WINAPPSDK_CHANGEID_47048404 47048404
 
 class CRoutedEventArgs;
 

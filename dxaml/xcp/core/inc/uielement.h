@@ -27,6 +27,10 @@
 #include "AutomationEventsHelper.h"
 #include <fwd/windows.foundation.h>
 #include "xcpmath.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 47048404: [1.4 servicing] Support ListViewBase.TabNavigation=Local/Cycle with virtualized items
+#define WINAPPSDK_CHANGEID_47048404 47048404
 
 #undef GetFirstChild
 
@@ -789,14 +793,26 @@ public:
         return !!m_fUseLayoutRounding;
     }
 
-    void SetSkipFocusSubtree(bool skipFocusSubtree)
+    void SetSkipFocusSubtree(bool skipFocusSubtree, bool forOffScreenPosition = false)
     {
-        m_skipFocusSubtree = skipFocusSubtree;
+        if (forOffScreenPosition)
+        {
+            // forOffScreenPosition can only be True when ModernCollectionBasePanel::IsTabNavigationWithVirtualizedItemsSupported() returns True.
+            ASSERT(IsTabNavigationWithVirtualizedItemsSupported());
+            m_skipFocusSubtree_OffScreenPosition = skipFocusSubtree;
+        }
+        else
+        {
+            m_skipFocusSubtree_Other = skipFocusSubtree;
+        }
     }
 
-    bool SkipFocusSubtree() const
+    bool SkipFocusSubtree(bool ignoreOffScreenPosition = false) const
     {
-        return m_skipFocusSubtree;
+        // m_skipFocusSubtree_OffScreenPosition can only be True when ModernCollectionBasePanel::IsTabNavigationWithVirtualizedItemsSupported() returns True.
+        ASSERT(IsTabNavigationWithVirtualizedItemsSupported() || !m_skipFocusSubtree_OffScreenPosition);
+
+        return (!ignoreOffScreenPosition && m_skipFocusSubtree_OffScreenPosition) || m_skipFocusSubtree_Other;
     }
 
     // Inherited text property support
@@ -3127,9 +3143,11 @@ protected:
     unsigned int m_combinedInnerBoundsDirty      : 1;
     unsigned int m_outerBoundsDirty              : 1;
 
-    // If true focusmgr does not set the focus on children or the element. Notice that this flag only and only
-    // regulates the focusmanager tab behavior.
-    unsigned int m_skipFocusSubtree              : 1;
+    // If any of these flags is True, CFocusManager does not set the focus on children or the element itself. Notice that these flags only
+    // regulate the focus manager tab behavior.
+    unsigned int m_skipFocusSubtree_OffScreenPosition : 1; // Set to True when the element is placed off screen at position ModernCollectionBasePanel::GetOffScreenPosition.
+    unsigned int m_skipFocusSubtree_Other             : 1; // Set to True to skip focus for other reasons (like the element is in a recycle pool or hidden SemanticZoom view).
+    // m_skipFocusSubtree_OffScreenPosition can only be set when ModernCollectionBasePanel::IsTabNavigationWithVirtualizedItemsSupported() returns True.
 
     // True iff CheckAutomaticChanges have been called for this object at least once.
     // It is to make sure not to call costly UIARaisePropertyChangedEvent during the
@@ -3152,11 +3170,11 @@ protected:
     // Indicates this element has non-zero CornerRadius for any of the 4 corners, this requires a CompNode for rounded corner clipping
     unsigned int m_requiresCompNodeForRoundedCorners : 1;
 
-    unsigned int m_hasLayoutStorage : 1;
-
     // ********************************************************************
     // Bitfield group 3 (32 bits)
     // ********************************************************************
+    unsigned int m_hasLayoutStorage : 1;
+
     unsigned int m_hasTransform3D : 1;                              // Keeps track of if this element has a Transform3D (regardless of depth), so we can properly maintain a comp node.
     unsigned int m_isNonClippingSubtree : 1;
 
@@ -3228,11 +3246,11 @@ protected:
     // When true, the RenderWalk avoids culling this element.  Used for forcefully walking to hidden elements.  Has performance implications, use with care!
     unsigned int m_forceNoCulling : 1;
 
-    // Indicates that this UI element allows drag-and-drop events to pass through it for the purposes of hit-testing.
-    unsigned int m_allowsDragAndDropPassThrough : 1;
     // ********************************************************************
     // Bitfield group 4 (32 bits)
     // ********************************************************************
+    // Indicates that this UI element allows drag-and-drop events to pass through it for the purposes of hit-testing.
+    unsigned int m_allowsDragAndDropPassThrough : 1;
 
     // Used to store the KeyboardNavigationMode enum set through TabFocusNavigation/TabNavigation.
     unsigned int m_eKeyboardNavigationMode : 2;
@@ -3290,7 +3308,6 @@ protected:
 
     /* Remove one of these each time you use a new bit so we can keep track of when we'll pop to a new word of size, which we really should avoid
 
-    unsigned int m_unused21 : 1;
     unsigned int m_unused22 : 1;
     unsigned int m_unused23 : 1;
     unsigned int m_unused24 : 1;
@@ -3315,6 +3332,12 @@ public:
     bool RaiseAccessKeyInvoked();
     void RaiseAccessKeyShown(_In_z_ const wchar_t* strPressedKeys);
     void RaiseAccessKeyHidden();
+
+    static bool IsTabNavigationWithVirtualizedItemsSupported()
+    {
+        // Returns True to support ListviewBase.TabNavigation == KeyboardNavigationMode.Cycle and KeyboardNavigationMode.Local with virtualized items.
+        return WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_47048404>();
+    }
 
     static _Check_return_ HRESULT TabFocusNavigation(
         _In_ CDependencyObject *pObject,

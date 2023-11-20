@@ -432,6 +432,9 @@ _Check_return_ HRESULT ListViewBase::IsBuildTreeSuspendedImpl(_Out_ BOOLEAN* pRe
 // the async version of doWork that is being called by NWDrawTree
 _Check_return_ HRESULT ListViewBase::BuildTreeImpl(_Out_ BOOLEAN *workLeft) noexcept
 {
+    // m_useUnbudgetedContainerBuild only expected to be set when IsTabNavigationWithVirtualizedItemsSupported()==True
+    ASSERT(IsTabNavigationWithVirtualizedItemsSupported() || !m_useUnbudgetedContainerBuild);
+
     INT timeElapsedInMS = 0;
     ctl::ComPtr<BudgetManager> budget;
     UINT containersToClearCount = 0;
@@ -441,9 +444,13 @@ _Check_return_ HRESULT ListViewBase::BuildTreeImpl(_Out_ BOOLEAN *workLeft) noex
     *workLeft = TRUE;
 
     IFC_RETURN(DXamlCore::GetCurrent()->GetBudgetManager(budget));
-    IFC_RETURN(budget->GetElapsedMilliSecondsSinceLastUITick(&timeElapsedInMS));
 
-    if (static_cast<UINT>(timeElapsedInMS) <= m_budget)
+    if (!m_useUnbudgetedContainerBuild)
+    {
+        IFC_RETURN(budget->GetElapsedMilliSecondsSinceLastUITick(&timeElapsedInMS));
+    }
+
+    if (static_cast<UINT>(timeElapsedInMS) <= m_budget || m_useUnbudgetedContainerBuild)
     {
         IFC_RETURN(get_ItemsHost(&itemsHost));
         if (itemsHost)
@@ -542,7 +549,7 @@ _Check_return_ HRESULT ListViewBase::BuildTreeImpl(_Out_ BOOLEAN *workLeft) noex
                 IFC_RETURN(ProcessCurrentPosition());
 
                 while (processingPhase != std::numeric_limits<INT64>::max() &&
-                    static_cast<UINT>(timeElapsedInMS) < m_budget)
+                    (static_cast<UINT>(timeElapsedInMS) < m_budget || m_useUnbudgetedContainerBuild))
                 {
                     INT64 phase = 0;
                     ctl::ComPtr<xaml::IDependencyObject> container;
@@ -798,8 +805,12 @@ _Check_return_ HRESULT ListViewBase::BuildTreeImpl(_Out_ BOOLEAN *workLeft) noex
                     {
                         IFC_RETURN(ProcessCurrentPosition());
                     }
-                    // updates the time
-                    IFC_RETURN(budget->GetElapsedMilliSecondsSinceLastUITick(&timeElapsedInMS));
+
+                    if (!m_useUnbudgetedContainerBuild)
+                    {
+                        // updates the time
+                        IFC_RETURN(budget->GetElapsedMilliSecondsSinceLastUITick(&timeElapsedInMS));
+                    }
                 }
 
                 if (processingPhase == std::numeric_limits<INT64>::max())

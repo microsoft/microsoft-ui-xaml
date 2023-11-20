@@ -399,7 +399,7 @@ _Check_return_ HRESULT FocusManagerFactory::TryFocusAsyncImpl(
     wrl::ComPtr<TryFocusAsyncAction> spFocusAsyncOperation = TryFocusAsyncAction::CreateFocusAsyncOperation(movement.GetCorrelationId());
     IFCFAILFAST(spFocusAsyncOperation.CopyTo(asyncOperation));
 
-    if (FocusProperties::IsFocusable(static_cast<DirectUI::DependencyObject*>(pElement)->GetHandle()) == false)
+    if (FocusProperties::IsFocusable(static_cast<DirectUI::DependencyObject*>(pElement)->GetHandle(), false /*ignoreOffScreenPosition*/) == false)
     {
         // We need to start and complete the async operation since this is a no-op
         spFocusAsyncOperation->StartOperation();

@@ -14,6 +14,10 @@
 #include "DXamlServices.h"
 #include "CVisualStateManager2.h"
 #include <Theme.h>
+#include <FrameworkUdk/Containment.h>
+
+// Bug 47229546: [1.4 servicing] The File Explorer's Details pane steals focus unexpectedly
+#define WINAPPSDK_CHANGEID_47229546 47229546
 
 //  Class:  CControl
 //
@@ -1483,9 +1487,25 @@ CControl::Enabled(
                         if (pControl == pFocusable)
                         {
                             bool focusUpdated = false;
-                            // If we are trying to set focus in a changing focus event handler, we will end up leaving focus on the disabled control.
-                            // As a result, we fail fast here. This is being tracked by Bug 9840123
-                            IFCFAILFAST(pControl->Focus(DirectUI::FocusState::Programmatic, false /*animateIfBringIntoView*/, &focusUpdated));
+
+                            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_47229546>())
+                            {
+                                // In 1.4 servicing we started specifying NoActivate here.  In this function, we're setting focus just to avoid the state where no
+                                // focus is set, not because the user is interacting with it.  We don't want to activate the window for this kind of situation.
+                                IFCFAILFAST(pControl->Focus(
+                                    DirectUI::FocusState::Programmatic,
+                                    false /*animateIfBringIntoView*/,
+                                    &focusUpdated,
+                                    DirectUI::FocusNavigationDirection::None, 
+                                    InputActivationBehavior::NoActivate));
+                            }
+                            else
+                            {
+                                // If we are trying to set focus in a changing focus event handler, we will end up leaving focus on the disabled control.
+                                // As a result, we fail fast here. This is being tracked by Bug 9840123
+                                IFCFAILFAST(pControl->Focus(DirectUI::FocusState::Programmatic, false /*animateIfBringIntoView*/, &focusUpdated));
+                            }
+                            
                         }
                     }
                 }

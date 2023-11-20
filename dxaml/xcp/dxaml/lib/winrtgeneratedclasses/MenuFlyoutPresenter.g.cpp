@@ -36,12 +36,10 @@ HRESULT DirectUI::MenuFlyoutPresenterGenerated::QueryInterfaceImpl(_In_ REFIID i
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IMenuPresenter*>(this);
     }
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenterFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenter2)))
     {
-        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenterFeature_ExperimentalApi>(this);
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenter2>(this);
     }
-#endif
     else
     {
         RRETURN(DirectUI::ItemsControl::QueryInterfaceImpl(iid, ppObject));
@@ -169,12 +167,10 @@ HRESULT DirectUI::MenuFlyoutPresenterFactory::QueryInterfaceImpl(_In_ REFIID iid
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenterStatics*>(this);
     }
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenterStaticsFeature_ExperimentalApi)))
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenterStatics2)))
     {
-        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenterStaticsFeature_ExperimentalApi*>(this);
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenterStatics2*>(this);
     }
-#endif
     else
     {
         RRETURN(ctl::BetterAggregableCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));

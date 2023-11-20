@@ -86,6 +86,9 @@
 // Bug 46468883: [1.4 servicing] Explorer first frame - DesktopWindowXamlSource spends 30ms on RoGetActivationFactory
 #define WINAPPSDK_CHANGEID_46468883 46468883
 
+// Bug 46833401: [1.4 Servicing] AutoSuggestBox's dropdown flickers when focus moves back to the island
+#define WINAPPSDK_CHANGEID_46833401 46833401
+
 #undef max
 
 using namespace RuntimeFeatureBehavior;
@@ -6301,7 +6304,17 @@ CCoreServices::NWDrawTree(
             IFC(pTimeMgrNoRef->UpdateIATargets());
         }
 
-        if (isRenderEnabled)
+        if( WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46833401>() && isRenderEnabled && m_framesToSkip != 0)
+        {
+            m_framesToSkip--;
+            
+            ITickableFrameScheduler *pFrameScheduler = GetBrowserHost()->GetFrameScheduler();
+            if (pFrameScheduler != NULL)
+            {
+                IFC(pFrameScheduler->RequestAdditionalFrame(0 /* immediate */, RequestFrameReason::LayoutCompletedNeeded));
+            }
+        }
+        else if (isRenderEnabled)
         {
             bool canSubmitFrame = true;
 

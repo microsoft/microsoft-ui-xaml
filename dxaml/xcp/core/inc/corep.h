@@ -840,6 +840,8 @@ public:
 
     bool HasActiveAnimations();
 
+    void SkipFrames(int amountOfFramesToSkip) { m_framesToSkip = amountOfFramesToSkip; };
+
 // TransitionTargets can only be created during OnBegin of a DynamicTimeline
     void SetAllowTransitionTargetCreation(_In_ bool allow) { m_allowTransitionTargetsToBeCreated = allow; }
     bool IsAllowingTransitionTargetCreations() { return m_allowTransitionTargetsToBeCreated; }
@@ -1733,6 +1735,7 @@ public:
 
 public:
     XUINT32                  m_uFrameNumber;
+    int                      m_framesToSkip = 0;
 
     // If the render walk encountered an error while rendering some element, it can choose to request a subsequent
     // frame to try rendering the element again. In that case, we don't want to submit the frame where we encountered

@@ -93,6 +93,20 @@ public:
 
     CDependencyObject* GetFirstFocusableElementFromRoot(_In_ bool bReverse);
 
+    bool IsMovingFocusToNextTabStop() const
+    {
+        ASSERT(CUIElement::IsTabNavigationWithVirtualizedItemsSupported());
+
+        return m_isMovingFocusToNextTabStop;
+    }
+
+    bool IsMovingFocusToPreviousTabStop() const
+    {
+        ASSERT(CUIElement::IsTabNavigationWithVirtualizedItemsSupported());
+
+        return m_isMovingFocusToPreviousTabStop;
+    }
+
     bool CanProcessTabStop(_In_ bool isShiftPressed);
     bool CanTabOutOfPlugin() { return m_bCanTabOutOfPlugin; }
 
@@ -125,7 +139,7 @@ public:
 public:
     bool IsFocusedElementInPopup() { return m_pFocusedElement && GetRootOfPopupSubTree(m_pFocusedElement); }
 
-    bool IsFocusable(_In_ CDependencyObject *pObject );
+    bool IsFocusable(_In_ CDependencyObject *pObject, bool ignoreOffScreenPosition = false);
 
     FocusObserver* GetFocusObserverNoRef();
 
@@ -290,6 +304,9 @@ private:
     bool m_bCanTabOutOfPlugin;
 
     bool m_isPrevFocusTextControl;
+
+    bool m_isMovingFocusToNextTabStop = false;
+    bool m_isMovingFocusToPreviousTabStop = false;
 
     xref_ptr<CControl> m_spEngagedControl;
 

@@ -237,6 +237,9 @@ namespace DirectUI
 
         double AdjustViewportOffsetForDeserialization(double offset);
 
+        // Only used when IsTabNavigationWithVirtualizedItemsSupported() returns True.
+        static bool ElementIsPositionedInGarbageSection(_In_ const ctl::ComPtr<IUIElement>& spElement);
+
     protected:
         // The specifics of the layout is governed by a layout strategy. Subclasses like ItemsWrapGrid
         // tell us which strategy to use via these methods.
@@ -2026,10 +2029,11 @@ namespace DirectUI
             return spElement.Cast<UIElement>()->GetVirtualizationInformation()->GetBounds();
         }
 
-        static void SetBoundsForElement(_In_ const ctl::ComPtr<IUIElement>& spElement, _In_ wf::Rect bounds)
-        {
-            spElement.Cast<UIElement>()->GetVirtualizationInformation()->SetBounds(bounds);
-        }
+        // Only used when IsTabNavigationWithVirtualizedItemsSupported() returns True.
+        static void SetElementEmptySizeInGarbageSection(_In_ const ctl::ComPtr<IUIElement>& spElement);        
+        static void SetElementSizeInGarbageSection(_In_ const ctl::ComPtr<IUIElement>& spElement, _In_ wf::Size size);
+
+        static void SetBoundsForElement(_In_ const ctl::ComPtr<IUIElement>& spElement, _In_ wf::Rect bounds);
 
         static void SetElementIsRealized(_In_ const ctl::ComPtr<IUIElement>& spElement, bool isRealized)
         {
@@ -2094,6 +2098,12 @@ namespace DirectUI
         static bool GetIsContainerFromTemplateRoot(_In_ const ctl::ComPtr<IUIElement>& spElement)
         {
             return spElement.Cast<UIElement>()->GetVirtualizationInformation()->GetIsContainerFromTemplateRoot();
+        }
+
+        static bool IsTabNavigationWithVirtualizedItemsSupported()
+        {
+            // Returns True to support TabNavigation == KeyboardNavigationMode.Cycle and KeyboardNavigationMode.Local with virtualized items.
+            return WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_47048404>();
         }
 
         _Check_return_ HRESULT RegisterSpecialElementSize(_In_ xaml_controls::ElementType type, _In_ INT index, _In_ wf::Size desiredSize)

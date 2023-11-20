@@ -49,6 +49,9 @@ using namespace std::placeholders;
 // Bug 46253034: [Regression] WinAppSdk 1.4.preview2: Menus don't respect RequestedTheme on their target element, showing white text on a white background
 #define WINAPPSDK_CHANGEID_46253034 46253034
 
+// Bug 46832968: [1.4 Servicing] [Cross Product] [EEAP] - "Right-click pop-up menu" hides part of the popup outside the desktop
+#define WINAPPSDK_CHANGEID_46832968 46832968
+
 // #define DBG_FLYOUT
 
 #if defined(DBG) && defined(DBG_FLYOUT)
@@ -3309,10 +3312,20 @@ _Check_return_ HRESULT FlyoutBase::UpdateTargetPosition(
         flowDirection,
         &majorPlacementMode);
 
-    FlyoutBase::PreferredJustification justification = GetJustificationFromPlacementMode(placementMode);
+    FlyoutBase::PreferredJustification justification{};
+    
+    if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46832968>())
+    {
+        justification = GetJustificationFromPlacementMode(placementMode);
+    }
 
     FlyoutBase::MajorPlacementMode originalMajorPlacementMode = majorPlacementMode;
-    FlyoutBase::PreferredJustification originalJustification = justification;
+    FlyoutBase::PreferredJustification originalJustification{};
+    
+    if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46832968>())
+    {
+        originalJustification = justification;
+    }
 
     // If the desired placement of the flyout is inside the exclusion area, we'll shift it in the direction of the placement direction
     // so that it no longer is inside that area.
@@ -3423,10 +3436,13 @@ _Check_return_ HRESULT FlyoutBase::UpdateTargetPosition(
                 majorPlacementMode = FlyoutBase::MajorPlacementMode::Left;
             }
 
-            // If we were justified left, we're now justified right.
-            if (justification == FlyoutBase::PreferredJustification::Left)
+            if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46832968>())
             {
-                justification = FlyoutBase::PreferredJustification::Right;
+                // If we were justified left, we're now justified right.
+                if (justification == FlyoutBase::PreferredJustification::Left)
+                {
+                    justification = FlyoutBase::PreferredJustification::Right;
+                }
             }
         }
     }
@@ -3464,11 +3480,14 @@ _Check_return_ HRESULT FlyoutBase::UpdateTargetPosition(
             {
                 majorPlacementMode = FlyoutBase::MajorPlacementMode::Right;
             }
-
-            // If we were justified right, we're now justified left.
-            if (justification == FlyoutBase::PreferredJustification::Right)
+            
+            if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46832968>())
             {
-                justification = FlyoutBase::PreferredJustification::Left;
+                // If we were justified right, we're now justified left.
+                if (justification == FlyoutBase::PreferredJustification::Right)
+                {
+                    justification = FlyoutBase::PreferredJustification::Left;
+                }
             }
         }
     }
@@ -3487,10 +3506,13 @@ _Check_return_ HRESULT FlyoutBase::UpdateTargetPosition(
                 majorPlacementMode = FlyoutBase::MajorPlacementMode::Right;
             }
 
-            // If we were justified right, we're now justified left.
-            if (justification == FlyoutBase::PreferredJustification::Right)
+            if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46832968>())
             {
-                justification = FlyoutBase::PreferredJustification::Left;
+                // If we were justified right, we're now justified left.
+                if (justification == FlyoutBase::PreferredJustification::Right)
+                {
+                    justification = FlyoutBase::PreferredJustification::Left;
+                }
             }
         }
         else if (isRTL && targetPoint.X + presenterSize.Width >= availableRect.Width)
@@ -3504,10 +3526,13 @@ _Check_return_ HRESULT FlyoutBase::UpdateTargetPosition(
                 majorPlacementMode = FlyoutBase::MajorPlacementMode::Left;
             }
 
-            // If we were justified left, we're now justified right.
-            if (justification == FlyoutBase::PreferredJustification::Left)
+            if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46832968>())
             {
-                justification = FlyoutBase::PreferredJustification::Right;
+                // If we were justified left, we're now justified right.
+                if (justification == FlyoutBase::PreferredJustification::Left)
+                {
+                    justification = FlyoutBase::PreferredJustification::Right;
+                }
             }
         }
     }
@@ -3524,10 +3549,13 @@ _Check_return_ HRESULT FlyoutBase::UpdateTargetPosition(
             majorPlacementMode = FlyoutBase::MajorPlacementMode::Bottom;
         }
 
-        // If we were justified bottom, we're now justified top.
-        if (justification == FlyoutBase::PreferredJustification::Bottom)
+        if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46832968>())
         {
-            justification = FlyoutBase::PreferredJustification::Top;
+            // If we were justified bottom, we're now justified top.
+            if (justification == FlyoutBase::PreferredJustification::Bottom)
+            {
+                justification = FlyoutBase::PreferredJustification::Top;
+            }
         }
     }
 
@@ -3568,10 +3596,13 @@ _Check_return_ HRESULT FlyoutBase::UpdateTargetPosition(
             majorPlacementMode = FlyoutBase::MajorPlacementMode::Top;
         }
 
-        // If we were justified top, we're now justified bottom.
-        if (justification == FlyoutBase::PreferredJustification::Top)
+        if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46832968>())
         {
-            justification = FlyoutBase::PreferredJustification::Bottom;
+            // If we were justified top, we're now justified bottom.
+            if (justification == FlyoutBase::PreferredJustification::Top)
+            {
+                justification = FlyoutBase::PreferredJustification::Bottom;
+            }
         }
     }
 
@@ -3583,39 +3614,106 @@ _Check_return_ HRESULT FlyoutBase::UpdateTargetPosition(
     // The above accounting may have shifted our position, so we'll account for the exclusion rect again.
     accountForExclusionRect();
 
-    // Accounting for the exclusion rect is important, but keeping the popup fully in view is more important, if possible.
-    // If we switched sides but are still not completely in view at this point, then we'll give up, revert back to the
-    // original placement mode and justification, and put the popup as far in that direction as possible while still remaining in view.
-    if (originalMajorPlacementMode != majorPlacementMode ||
-        originalJustification != justification)
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_46832968>())
     {
-        if (presenterSize.Width <= availableRect.Width &&
+        // Accounting for the exclusion rect is important, but keeping the popup fully in view is more important, if possible.
+        // If we are still not completely in view at this point, we'll fall back to our original positioning and then
+        // nudge the popup into full view, as long as it will fit on screen.
+        const bool presenterIsOffScreenHorizontally = isRTL ?
+            (horizontalOffset - presenterSize.Width < availableRect.X ||
+                horizontalOffset > availableRect.X + availableRect.Width) :
             (horizontalOffset < availableRect.X ||
-                horizontalOffset + presenterSize.Width > availableRect.X + availableRect.Width))
+                horizontalOffset + presenterSize.Width > availableRect.X + availableRect.Width);
+
+        const bool presenterIsOffScreenVertically =
+            verticalOffset < availableRect.Y ||
+            verticalOffset + presenterSize.Height > availableRect.Y + availableRect.Height;
+
+        // First we'll put the positioning back and re-account for the exclusion rect.
+        if ((presenterSize.Width <= availableRect.Width && presenterIsOffScreenHorizontally) ||
+            (presenterSize.Height <= availableRect.Height && presenterIsOffScreenVertically))
         {
-            if (originalMajorPlacementMode == FlyoutBase::MajorPlacementMode::Left ||
-                originalJustification == FlyoutBase::PreferredJustification::Right)
+            majorPlacementMode = originalMajorPlacementMode;
+            accountForExclusionRect();
+        }
+
+        /// Now we'll nudge the popup into view.
+        if (presenterSize.Width <= availableRect.Width)
+        {
+            // In RTL, the horizontal offset represents the top-right corner instead of the top-left corner,
+            // so we need to adjust our calculations accordingly.
+            if (isRTL)
             {
-                horizontalOffset = availableRect.X;
+                if (horizontalOffset - presenterSize.Width < availableRect.X)
+                {
+                    horizontalOffset = availableRect.X + presenterSize.Width;
+                }
+                else if (horizontalOffset > availableRect.X + availableRect.Width)
+                {
+                    horizontalOffset = availableRect.X + availableRect.Width;
+                }
             }
             else
             {
-                horizontalOffset = availableRect.X + availableRect.Width - presenterSize.Width;
+                if (horizontalOffset < availableRect.X)
+                {
+                    horizontalOffset = availableRect.X;
+                }
+                else if (horizontalOffset + presenterSize.Width > availableRect.X + availableRect.Width)
+                {
+                    horizontalOffset = availableRect.X + availableRect.Width - presenterSize.Width;
+                }
             }
         }
 
-        if (presenterSize.Height <= availableRect.Height &&
-            (verticalOffset < availableRect.Y ||
-                verticalOffset + presenterSize.Height > availableRect.Y + availableRect.Height))
+        if (presenterSize.Height <= availableRect.Height)
         {
-            if (originalMajorPlacementMode == FlyoutBase::MajorPlacementMode::Top ||
-                originalJustification == FlyoutBase::PreferredJustification::Bottom)
+            if (verticalOffset < availableRect.Y)
             {
                 verticalOffset = availableRect.Y;
             }
-            else
+            else if (verticalOffset + presenterSize.Height > availableRect.Y + availableRect.Height)
             {
                 verticalOffset = availableRect.Y + availableRect.Height - presenterSize.Height;
+            }
+        }
+    }
+    else
+    {
+        // Accounting for the exclusion rect is important, but keeping the popup fully in view is more important, if possible.
+        // If we switched sides but are still not completely in view at this point, then we'll give up, revert back to the
+        // original placement mode and justification, and put the popup as far in that direction as possible while still remaining in view.
+        if (originalMajorPlacementMode != majorPlacementMode ||
+            originalJustification != justification)
+        {
+            if (presenterSize.Width <= availableRect.Width &&
+                (horizontalOffset < availableRect.X ||
+                    horizontalOffset + presenterSize.Width > availableRect.X + availableRect.Width))
+            {
+                if (originalMajorPlacementMode == FlyoutBase::MajorPlacementMode::Left ||
+                    originalJustification == FlyoutBase::PreferredJustification::Right)
+                {
+                    horizontalOffset = availableRect.X;
+                }
+                else
+                {
+                    horizontalOffset = availableRect.X + availableRect.Width - presenterSize.Width;
+                }
+            }
+
+            if (presenterSize.Height <= availableRect.Height &&
+                (verticalOffset < availableRect.Y ||
+                    verticalOffset + presenterSize.Height > availableRect.Y + availableRect.Height))
+            {
+                if (originalMajorPlacementMode == FlyoutBase::MajorPlacementMode::Top ||
+                    originalJustification == FlyoutBase::PreferredJustification::Bottom)
+                {
+                    verticalOffset = availableRect.Y;
+                }
+                else
+                {
+                    verticalOffset = availableRect.Y + availableRect.Height - presenterSize.Height;
+                }
             }
         }
     }

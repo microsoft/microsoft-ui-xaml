@@ -393,7 +393,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutItem IMenuFlyoutItem;
     typedef ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutItemBase IMenuFlyoutItemBase;
     typedef ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenter IMenuFlyoutPresenter;
-    typedef ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenterFeature_ExperimentalApi IMenuFlyoutPresenterFeature_ExperimentalApi;
+    typedef ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenter2 IMenuFlyoutPresenter2;
     typedef ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSeparator IMenuFlyoutSeparator;
     typedef ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSubItem IMenuFlyoutSubItem;
     typedef ABI::Microsoft::UI::Xaml::Controls::IPage IPage;

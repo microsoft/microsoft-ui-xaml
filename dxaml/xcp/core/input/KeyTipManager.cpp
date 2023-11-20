@@ -277,7 +277,7 @@ namespace BoundsHelper {
             CTextElement* childAsTextElement = do_pointer_cast<CTextElement>(child.get());
 
             if (childAsUIElement &&
-                FocusProperties::IsFocusable(child.get()) &&
+                FocusProperties::IsFocusable(child.get(), false /*ignoreOffScreenPosition*/) &&
                 !child->OfTypeByIndex<KnownTypeIndex::RootScrollViewer>())
             {
                 XRECTF_RB childBounds;
@@ -287,7 +287,7 @@ namespace BoundsHelper {
 
             }
             else if (childAsTextElement &&
-                FocusProperties::IsFocusable(child.get()))
+                FocusProperties::IsFocusable(child.get(), false /*ignoreOffScreenPosition*/))
             {
                 IFC_RETURN(AddBoundsForTextElement(
                     childAsTextElement,

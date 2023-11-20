@@ -9,6 +9,11 @@
 #include "ResourceAccessor.h"
 #include "TypeLogging.h"
 #include "Vector.h"
+#include "velocity.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 47050253: [1.4 servicing] Insiders report that even with the latest bug fixes in the dev channel they can still see the context menu with a transparent background sometimes
+#define WINAPPSDK_CHANGEID_47050253 47050253
 
 CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
 {
@@ -157,6 +162,19 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
             UpdateUI(!m_commandBarFlyoutIsOpening);
         }
     });
+}
+
+CommandBarFlyoutCommandBar::~CommandBarFlyoutCommandBar()
+{
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_47050253>())
+    {
+        // The SystemBackdrop DP has already been cleared out. Use our cached field.
+        if (auto systemBackdrop = m_systemBackdrop.get())
+        {
+            systemBackdrop.OnTargetDisconnected(m_backdropLink);
+            systemBackdrop.OnTargetDisconnected(m_overflowPopupBackdropLink);
+        }
+    }
 }
 
 void CommandBarFlyoutCommandBar::OnApplyTemplate()
@@ -1417,6 +1435,11 @@ void CommandBarFlyoutCommandBar::OnPropertyChanged(const winrt::DependencyProper
             {
                 oldSystemBackdrop.OnTargetDisconnected(m_backdropLink);
                 oldSystemBackdrop.OnTargetDisconnected(m_overflowPopupBackdropLink);
+            }
+
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_47050253>())
+            {
+                m_systemBackdrop = newSystemBackdrop;
             }
 
             if (newSystemBackdrop)

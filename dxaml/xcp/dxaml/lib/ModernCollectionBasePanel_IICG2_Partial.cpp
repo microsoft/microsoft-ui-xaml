@@ -374,7 +374,14 @@ _Check_return_ HRESULT ModernCollectionBasePanel::GenerateContainerAtIndexImpl(_
         IFC(LinkContainerToItem(spContainer.Get(), spItem.Get()));
     }
 
-    SetBoundsForElement(spContainer, RectUtil::CreateRect(GetOffScreenPosition(), wf::Size()));
+    if (IsTabNavigationWithVirtualizedItemsSupported())
+    {
+        SetElementEmptySizeInGarbageSection(spContainer);
+    }
+    else
+    {
+        SetBoundsForElement(spContainer, RectUtil::CreateRect(GetOffScreenPosition(), wf::Size()));
+    }
 
     if (spContainerFromItemTemplate && !isOwnContainer)
     {
@@ -585,7 +592,15 @@ _Check_return_ HRESULT ModernCollectionBasePanel::GenerateHeaderAtGroupIndexImpl
     }
 
     SetElementIsHeader(spHeader, TRUE);
-    SetBoundsForElement(spHeader, RectUtil::CreateRect(GetOffScreenPosition(), wf::Size()));
+
+    if (IsTabNavigationWithVirtualizedItemsSupported())
+    {
+        SetElementEmptySizeInGarbageSection(spHeader);
+    }
+    else
+    {
+        SetBoundsForElement(spHeader, RectUtil::CreateRect(GetOffScreenPosition(), wf::Size()));
+    }
 
     // put it in the pinned containers, so that lookups will work during the Link and Prepare phases
     if (!foundPinnedHeader)

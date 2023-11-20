@@ -331,7 +331,7 @@ namespace AccessKeys {
                     // We successfully found an element to be invoked, but it failed to find a valid pattern. As a result, we will give focus to the element
                     if (!invokeResult.invokeFoundValidPattern)
                     {
-                        if (FocusProperties::IsFocusable(invokedElement.get()))
+                        if (FocusProperties::IsFocusable(invokedElement.get(), false /*ignoreOffScreenPosition*/))
                         {
                             const Focus::FocusMovementResult result = m_pFocusManager->SetFocusedElement(
                                 Focus::FocusMovement(

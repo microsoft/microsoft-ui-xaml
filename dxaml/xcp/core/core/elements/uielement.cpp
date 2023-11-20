@@ -1578,8 +1578,11 @@ _Check_return_ HRESULT CUIElement::LeaveImpl(_In_ CDependencyObject *pNamescopeO
         params.fCoercedIsEnabled = FALSE;
     }
 
-    // Clear the skip focus subtree flag.
-    m_skipFocusSubtree = FALSE;
+    ASSERT(IsTabNavigationWithVirtualizedItemsSupported() || !m_skipFocusSubtree_OffScreenPosition);
+
+    // Clear the skip focus subtree flags.
+    m_skipFocusSubtree_OffScreenPosition = false;
+    m_skipFocusSubtree_Other = false;
 
     // When visual tree is being reset, (CCoreServices::ResetVisualTree) no need to coerce values/raise events.
     if (params.fIsLive && !params.fVisualTreeBeingReset)

@@ -833,7 +833,7 @@ _Check_return_ HRESULT CPopup::Close(bool forceCloseforTreeReset)
             if (m_pPreviousFocusWeakRef)
             {
                 CDependencyObject* pPreviousFocus = m_pPreviousFocusWeakRef.lock();
-                if (pPreviousFocus && FocusProperties::IsFocusable(pPreviousFocus))
+                if (pPreviousFocus && FocusProperties::IsFocusable(pPreviousFocus, false /*ignoreOffScreenPosition*/))
                 {
                     if (pPreviousFocus->OfTypeByIndex<KnownTypeIndex::UIElement>())
                     {

@@ -37,7 +37,7 @@ namespace FocusProperties
     }
 
     template<class DependencyObject>
-    bool IsFocusable(_In_ DependencyObject* const object)
+    bool IsFocusable(_In_ DependencyObject* const object, bool ignoreOffScreenPosition)
     {
         return object->IsFocusable() == TRUE;
     }
@@ -92,7 +92,7 @@ namespace FocusProperties
     template<> bool IsVisible<CDependencyObject>(_In_ CDependencyObject* const object);
     template<> bool AreAllAncestorsVisible<CDependencyObject>(_In_ CDependencyObject* const object);
     template<> bool IsEnabled<CDependencyObject>(_In_ CDependencyObject* const object);
-    template<> bool IsFocusable<CDependencyObject>(_In_ CDependencyObject* const object);
+    template<> bool IsFocusable<CDependencyObject>(_In_ CDependencyObject* const object, bool ignoreOffScreenPosition);
     template<> bool IsPotentialTabStop<CDependencyObject>(_In_ CDependencyObject* const object);
     template<> bool CanHaveFocusableChildren<CDependencyObject>(_In_ CDependencyObject* const parent);
     template<> bool IsFocusEngagementEnabled<CDependencyObject>(_In_ CDependencyObject* const object);

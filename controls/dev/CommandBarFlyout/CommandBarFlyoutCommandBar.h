@@ -19,6 +19,7 @@ class CommandBarFlyoutCommandBar :
 {
 public:
     CommandBarFlyoutCommandBar();
+    ~CommandBarFlyoutCommandBar();
 
     // IFrameworkElementOverrides
     void OnApplyTemplate();
@@ -130,6 +131,12 @@ private:
     // The one built into Popup is too high up in the Visual tree to be animated by a custom animation.
     winrt::ContentExternalBackdropLink m_backdropLink{ nullptr };
     winrt::ContentExternalBackdropLink m_overflowPopupBackdropLink{ nullptr };
+
+    // A copy of the value in the DependencyProperty. We need to unregister with this SystemBackdrop when this
+    // CommandBarFlyoutCommandBar is deleted, but the DP value is already cleared by the time we get to Unloaded or the
+    // dtor, so we cache a copy for ourselves to use during cleanup. Another possibility is to do cleanup during Closed,
+    // but the app can release and delete this CommandBarFlyoutCommandBar without ever closing it.
+    weak_ref<winrt::SystemBackdrop> m_systemBackdrop{ nullptr };
 
     // Localized string caches. Looking these up from MRTCore is expensive, so we don't want to put the lookups in a
     // loop. Instead, look them up once, cache them, use the cached values, then clear the cache. The values in these

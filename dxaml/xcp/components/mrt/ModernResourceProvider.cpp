@@ -427,9 +427,43 @@ HRESULT ModernResourceProvider::UpdateLanguageAndLayoutDirectionQualifiers()
         // Windows components use the Windows display language, can lead to an
         // inconsistent language experience if WinUI 3 always uses
         // ApplicationLanguages.Languages.
-        wchar_t lpLocaleName[LOCALE_NAME_MAX_LENGTH];
-        IFC_RETURN(GetUserDefaultLocaleName(lpLocaleName, LOCALE_NAME_MAX_LENGTH));
-        primaryLanguageName.Attach(wrl_wrappers::HStringReference(lpLocaleName).Get());
+        // We need to use GetUserDefaultUILanguage() to get the Windows display language,
+        // GetUserDefaultLocaleName() will return the "Regional format"/sort order instead
+        // if it has been set which could also be inconsistent with other OS UI.
+        // Example of setting the sort order:
+        // Win+R ->  intl.cpl -> "Change sorting method" -> "Format": "German (Germany)" ->
+        // "Change sorting method" -> "Select the sorting method:" "Phone book (DIN)"
+        boolean isLocaleValid = false;
+        boolean isWellFormedLanguage = false;
+
+        wrl::ComPtr<wg::ILanguageStatics> languageStatics;
+        IFC_RETURN(wf::GetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Windows_Globalization_Language).Get(),
+            &languageStatics));
+
+        wchar_t lpLocaleName[LOCALE_NAME_MAX_LENGTH] = { 0 };
+        isLocaleValid = GetLocaleInfo(MAKELCID(GetUserDefaultUILanguage(), SORT_DEFAULT), LOCALE_SNAME, lpLocaleName, LOCALE_NAME_MAX_LENGTH) != FALSE;
+
+        if (isLocaleValid)
+        {
+            IFC_RETURN(languageStatics->IsWellFormed(wrl_wrappers::HStringReference(lpLocaleName).Get(), &isWellFormedLanguage));
+        }
+
+        if (isLocaleValid && isWellFormedLanguage)
+        {
+            // CopyTo() calls WindowsDuplicateString() which will make a deep copy of the
+            // underlying fast-pass lpLocaleName buffer,
+            // making primaryLanguageName safe to use outside of lpLocaleName's scope
+            wrl_wrappers::HStringReference(lpLocaleName).CopyTo(primaryLanguageName.GetAddressOf());
+        }
+        else
+        {
+            // If the Windows display language isn't bcp47 compliant for some reason, fall back to the user's preferred language list.
+            // This could still be an inconsistent localization experience, but is the next best option.
+            wrl::ComPtr<wfc::IVectorView<HSTRING>> languages;
+            IFC_RETURN(applicationLanguagesStatics->get_Languages(languages.ReleaseAndGetAddressOf()));
+            IFC_RETURN(languages->GetAt(0, primaryLanguageName.GetAddressOf()));
+        }
     }
     else
     {

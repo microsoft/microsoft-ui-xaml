@@ -25,6 +25,9 @@ namespace DirectUI
         // clear work (on shutdown)
         _Check_return_ HRESULT ClearWork();
 
+        // returns the number of active workers
+        int ActiveWorkersCount() const;
+
     private:
         // stores everyone that likes to be called
         // first queue: active workers,

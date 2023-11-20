@@ -504,6 +504,12 @@ namespace DirectUI
             _Check_return_ HRESULT LoadMoreItemsIfNeeded(
                 _In_ wf::Size finalSize);
 
+            // Realizes, scrolls into view and prepares the item at the provided index so it can be tabbed into.
+            _Check_return_ HRESULT GetScrolledIntoViewAndPreparedContainer(
+                int index,
+                _In_opt_ xaml::IDependencyObject* itemContainerCandidate,
+                _Outptr_result_maybenull_ xaml::IDependencyObject** itemContainer);
+
             // Shared implementation for GetFirstFocusableElementOverride and GetLastFocusableElementOverride.
             _Check_return_ HRESULT GetFocusableElementForModernPanel(
                 _In_ BOOLEAN isBackward,
@@ -650,6 +656,12 @@ namespace DirectUI
             {
                 // Returns True to support TabNavigation == KeyboardNavigationMode.Cycle and KeyboardNavigationMode.Local.
                 return WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_45397110>();
+            }
+
+            static bool IsTabNavigationWithVirtualizedItemsSupported()
+            {
+                // Returns True to support TabNavigation == KeyboardNavigationMode.Cycle and KeyboardNavigationMode.Local with virtualized items.
+                return WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_47048404>();
             }
 
             // Get the next state from current one in the specified direction.
@@ -1665,6 +1677,11 @@ namespace DirectUI
             // budget that we have to do other work, measured since the last tick
             // once we get stl 11, we should convert to std::chrono
             UINT m_budget;
+
+            // exceptionally set to True when (shift) tabbing into an unrealized item to give the BuildTreeService
+            // enough time to prepare it to receive focus. This is specific to the Local/Cycle TabNavigation modes.
+            // Only set when IsTabNavigationWithVirtualizedItemsSupported() returns True.
+            bool m_useUnbudgetedContainerBuild;
 
             // the last known count of containers in the incremental visualization queue. this value is used when logging
             // our telemetry event in the case where BuildTreeImpl cannot perform work on the busy uiThread.
