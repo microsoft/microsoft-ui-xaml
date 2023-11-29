@@ -1,6 +1,0 @@
-LIBRARY
-
-EXPORTS
-DllMain PRIVATE
-DllGetActivationFactory PRIVATE
-DllCanUnloadNow PRIVATE

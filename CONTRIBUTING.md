@@ -8,6 +8,8 @@ Note that all community interactions must abide by the [Code of Conduct](CODE_OF
 
 ## How we work with contributions
 
+For reporting security issues please see the [Security Policy](docs/SECURITY.md).
+
 Contributions from the community in the form of feature requests and bugs are handled according to our [contribution handling](docs/contribution_handling.md) guidelines.
 
 ## New contributors
