@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- Copyright (C) Microsoft Corporation.  All rights reserved. -->
+
+    <!-- Temporary file while task 14117377 (Remove WIL's THROW_IF_FAILED dependencies) is active. -->
+    <!-- It should be delete when task 14117377 is completed                                       -->
+
+    <Import Project="$(XcpPath)\components\base.props"/>
+
+    <PropertyGroup>
+        <XamlPrecompiledShared>$(XcpPath)\components\pch\prodexcept\precomp.h</XamlPrecompiledShared>
+
+        <ProjectPreprocessorDefinitions>
+            $(ProjectPreprocessorDefinitions)
+            __WRL_STRICT__;
+            __WRL_FORCE_INSPECTABLE_CLASS_MACRO__;
+            _HAS_EXCEPTIONS=1;
+        </ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <ExceptionHandling>Sync</ExceptionHandling>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{d4b4d716-47d2-4b4b-8765-f879a171f1a2}'" Include="$(XcpPath)\components\pch\prodexcept\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{d4b4d716-47d2-4b4b-8765-f879a171f1a2}"/>
+    </ItemGroup>
+</Project>

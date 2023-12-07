@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="RemovePagesToTest" BeforeTargets="MarkupCompilePass1">
+    <ItemGroup>
+      <Page Remove="@(PageToTest)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="CustomAfterGenerateAppPackages" AfterTargets="_GenerateAppxPackage">
+    <RunPowershellScript Path="$(MUXCProjectRoot)tools\ExtractPackageDependencies.ps1" Parameters="-sourceFile $(OutDir)\$(MSBuildProjectName).build.appxrecipe -platform $(PlatformName) -outputFile $(AppxPackageTestDir)$(AppxPackageName).dependencies.txt" FilesWritten="$(AppxPackageTestDir)$(AppxPackageName).dependencies.txt">
+      <Output TaskParameter="MSBuildProcessId" ItemName="MSBuildProcessIdsToKill"/>
+    </RunPowershellScript>
+  </Target>
+  <Target Name="DefineThemePages" BeforeTargets="OutputPagesToTest">
+    <ItemGroup>
+      <StylePage Include="@(PageToTest)" Condition="'%(Type)' == 'DefaultStyle'" />
+      <ThemeResourcePage Include="@(PageToTest)" Condition="'%(Type)' == 'ThemeResources'" />
+    </ItemGroup>
+  </Target>
+  <PropertyGroup Condition="'$(IsTDPConfiguration)' == 'true'">
+    <AppxPackageName Condition="'$(AppxPackageName)'==''">$(TargetName)</AppxPackageName>
+    <AppxPackageExtension Condition="'$(AppxPackageExtension)'==''">.appx</AppxPackageExtension>
+    <AppxPackageTestDir Condition="'$(AppxPackageTestDir)'==''">$(AppxPackageDir)$(AppxPackageName)_Test\</AppxPackageTestDir>
+    <AppxPackageOutput Condition="'$(AppxPackageOutput)'==''">$(AppxPackageTestDir)$(AppxPackageName)$(AppxPackageExtension)</AppxPackageOutput>
+    <AppxIntermediateExtension Condition="'$(AppxIntermediateExtension)'==''">.intermediate</AppxIntermediateExtension>
+  </PropertyGroup>
+  <!-- For the purposes of code coverage, we need to know where the intermediates directory is,
+       since we need to re-pack MUXControlsTestApp.appx for code coverage.
+       We can't get it from any environment variable, so let's write it to a text file as a workaround. -->
+  <Target Name="AfterBuild" Condition="!Exists('$(OutDir)IntermediateDirectoryLocation.txt')">
+    <WriteLinesToFile File="$(OutDir)IntermediateDirectoryLocation.txt" Lines="$(IntermediateOutputPath)" Overwrite="true" Encoding="Ascii" />
+    <ItemGroup>
+      <FileWrites Include="$(OutDir)IntermediateDirectoryLocation.txt" />
+    </ItemGroup>
+  </Target>
+  <UsingTask TaskName="ReadFromFile" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <FilePath ParameterType="System.String" Required="true" />
+      <Contents ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs"><![CDATA[
+            Contents = File.ReadAllText(FilePath, System.Text.Encoding.UTF8);
+]]></Code>
+    </Task>
+  </UsingTask>
+  <UsingTask TaskName="WriteToFile" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <FilePath ParameterType="System.String" Required="true" />
+      <Contents ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs"><![CDATA[
+            File.WriteAllText(FilePath, Contents, System.Text.Encoding.UTF8);
+]]></Code>
+    </Task>
+  </UsingTask>
+  <Target Name="GenerateCustomAppxManifest" BeforeTargets="_ValidatePresenceOfAppxManifestItems" Inputs="$(MSBuildThisFileDirectory)AppxManifest.xml;$(PrivateMergedWinMDDir)\..\TestExtensions.xml" Outputs="$(OutDir)AppxManifest.g.xml">
+    <ItemGroup>
+      <AppxManifestReference Include="@(Reference)" />
+      <AppxManifestReference Include="$(ArtifactsObjDir)dxaml\xcp\dxaml\idl\winrt\controls\microsoft.ui.xaml.controls.controls.winmd">
+        <Implementation>Microsoft.UI.Xaml.dll</Implementation>
+      </AppxManifestReference>
+      <AppxManifestReference Include="$(ArtifactsObjDir)dxaml\xcp\dxaml\idl\winrt\controls\microsoft.ui.xaml.controls.controls2.winmd">
+        <Implementation>Microsoft.UI.Xaml.dll</Implementation>
+      </AppxManifestReference>
+      <AppxManifestReference Include="$(ArtifactsObjDir)dxaml\xcp\dxaml\idl\winrt\core\microsoft.ui.xaml.coretypes.winmd">
+        <Implementation>Microsoft.UI.Xaml.dll</Implementation>
+      </AppxManifestReference>
+      <AppxManifestReference Include="$(ArtifactsObjDir)dxaml\xcp\dxaml\idl\winrt\core\microsoft.ui.xaml.coretypes2.winmd">
+        <Implementation>Microsoft.UI.Xaml.dll</Implementation>
+      </AppxManifestReference>
+      <AppxManifestReference Include="$(ArtifactsObjDir)dxaml\xcp\dxaml\idl\winrt\main\microsoft.ui.xaml.winmd">
+        <Implementation>Microsoft.UI.Xaml.dll</Implementation>
+      </AppxManifestReference>
+      <AppxManifestReference Include="$(ArtifactsObjDir)dxaml\xcp\dxaml\idl\winrt\main\microsoft.ui.xaml.private.winmd">
+        <Implementation>Microsoft.UI.Xaml.dll</Implementation>
+      </AppxManifestReference>
+      <AppxManifestReference Include="$(ArtifactsObjDir)phone\idl\Microsoft.UI.Xaml.Phone.winmd">
+        <Implementation>Microsoft.UI.Xaml.Phone.dll</Implementation>
+      </AppxManifestReference>
+      <AppxManifestReference Include="$(OutDir)..\..\..\idl\Unmerged\Microsoft.UI.Xaml.Controls.winmd">
+        <Implementation>Microsoft.UI.Xaml.Controls.dll</Implementation>
+      </AppxManifestReference>
+      <AppxManifestReference Include="$(ArtifactsBinDir)Product\Microsoft.UI.Text.winmd">
+        <Implementation>WinUIEdit.dll</Implementation>
+      </AppxManifestReference>
+    </ItemGroup>
+    <PropertyGroup>
+      <IncludePrivateMetadata>true</IncludePrivateMetadata>
+    </PropertyGroup>
+    <ItemGroup>
+      <ReferenceWinMD Include="$(WindowsSdkPath)UnionMetadata\$(MuxSdkVersion)\Windows.winmd" />
+      <ReferenceWinMD Include="@(WinUIWinMDReferences)" />
+    </ItemGroup>
+    <Message Text="Getting types from references..." />
+    <ReadFromFile FilePath="$(PrivateMergedWinMDDir)\..\TestExtensions.xml">
+      <Output TaskParameter="Contents" PropertyName="TestExtensionsContents"/>
+    </ReadFromFile>
+    <MakeDir Directories="$(OutputPath)" Condition="!Exists('$(OutputPath)')" />
+    <Message Text="Generating file $(OutDir)AppxManifest.g.xml..." />
+    <ReadFromFile FilePath="$(MSBuildThisFileDirectory)AppxManifest.xml">
+      <Output TaskParameter="Contents" PropertyName="AppxManifestContents"/>
+    </ReadFromFile>
+    <PropertyGroup>
+      <AppxManifestContentsWithReplacement>$(AppxManifestContents.Replace('__EXTS__', '$(TestExtensionsContents)'))</AppxManifestContentsWithReplacement>
+    </PropertyGroup>
+    <WriteToFile FilePath="$(OutDir)AppxManifest.g.xml" Contents="$(AppxManifestContentsWithReplacement)" />
+    <ItemGroup>
+      <FileReads Include="$(MSBuildThisFileDirectory)AppxManifest.xml" />
+      <FileWrites Include="$(OutDir)AppxManifest.g.xml" />
+    </ItemGroup>
+  </Target>
+  <Target Name="EnsureMUXWasBuilt" BeforeTargets="Build">
+    <Error Text="$(ArtifactsBinDir)Product\Microsoft.UI.Xaml.dll does not exist, which is needed to compile XAML.  Please build $(MUXProjectRoot)dxaml\Microsoft.UI.Xaml.sln before building MUXControlsTestApp." Condition="!Exists('$(ArtifactsBinDir)Product\Microsoft.UI.Xaml.dll')" />
+    <Error Text="$(ArtifactsBinDir)Product\en-us\Microsoft.UI.Xaml.dll.mui does not exist, which is needed to compile XAML.  Please build $(MUXProjectRoot)dxaml\Microsoft.UI.Xaml.sln before building MUXControlsTestApp." Condition="!Exists('$(ArtifactsBinDir)Product\en-us\Microsoft.UI.Xaml.dll.mui')" />
+    <Error Text="$(ArtifactsBinDir)Product\Microsoft.UI.Xaml.Phone.dll does not exist, which is needed to compile XAML.  Please build $(MUXProjectRoot)dxaml\Microsoft.UI.Xaml.sln before building MUXControlsTestApp." Condition="!Exists('$(ArtifactsBinDir)Product\Microsoft.UI.Xaml.Phone.dll')" />
+    <Error Text="$(ArtifactsBinDir)Product\en-us\Microsoft.UI.Xaml.Phone.dll.mui does not exist, which is needed to compile XAML.  Please build $(MUXProjectRoot)dxaml\Microsoft.UI.Xaml.sln before building MUXControlsTestApp." Condition="!Exists('$(ArtifactsBinDir)Product\en-us\Microsoft.UI.Xaml.Phone.dll.mui')" />
+    <Error Text="$(ArtifactsBinDir)Product\Microsoft.ui.xaml.resources.19h1.dll does not exist, which is needed to compile XAML.  Please build $(MUXProjectRoot)dxaml\Microsoft.UI.Xaml.sln before building MUXControlsTestApp." Condition="!Exists('$(ArtifactsBinDir)Product\Microsoft.ui.xaml.resources.19h1.dll')" />
+    <Error Text="$(ArtifactsBinDir)Product\Microsoft.ui.xaml.resources.common.dll does not exist, which is needed to compile XAML.  Please build $(MUXProjectRoot)dxaml\Microsoft.UI.Xaml.sln before building MUXControlsTestApp." Condition="!Exists('$(ArtifactsBinDir)Product\Microsoft.ui.xaml.resources.common.dll')" />
+    <Error Text="$(ArtifactsBinDir)Product\Microsoft.Internal.FrameworkUdk.dll does not exist, which is needed to compile XAML.  Please build $(MUXProjectRoot)dxaml\Microsoft.UI.Xaml.sln before building MUXControlsTestApp." Condition="!Exists('$(ArtifactsBinDir)Product\Microsoft.Internal.FrameworkUdk.dll')" />
+  </Target>
+</Project>

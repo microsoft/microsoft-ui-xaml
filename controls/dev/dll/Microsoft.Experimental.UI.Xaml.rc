@@ -1,0 +1,4 @@
+#include <winresrc.h>
+var VER_INTERNALNAME_STR "Microsoft.Experimental.UI.Xaml.dll"
+#include "WinUIrc.ver"
+

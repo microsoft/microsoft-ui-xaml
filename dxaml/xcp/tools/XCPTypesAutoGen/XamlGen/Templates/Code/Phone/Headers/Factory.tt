@@ -1,0 +1,72 @@
+<#@ template language="C#" linePragmas="false" inherits="PhoneCppCodeGenerator<ClassDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+    class <#= Model.FactoryTypeName #>
+        :
+        public wrl::AgileActivationFactory<<#=GetPhoneActivationFactoryTemplateParameters(Model)#>>
+    {
+
+    friend class <#= Model.GeneratedClassName #>;
+    friend class <#= Model.Name #>;
+
+    public:
+         _Check_return_ HRESULT RuntimeClassInitialize();
+         static _Check_return_ HRESULT EnsureProperties();
+         static void ClearProperties();
+<# foreach (var ctor in Model.IdlClassInfo.CustomConstructors) { #>
+        <#= IncludeTemplate<Constructor>(ctor) #>
+<# } 
+   if (Model.NeedsActivateInstance) { #>
+        IFACEMETHOD(ActivateInstance)(
+            _Outptr_ IInspectable** ppInspectable);
+<# } #>
+
+        // Properties.
+
+        // Dependency properties.
+<# foreach (var p in Model.IdlClassInfo.DependencyProperties) { #>
+        IFACEMETHOD(get_<#= p.Name #>Property)(_Outptr_ <#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyProperty") #>** ppValue);
+<# } #>
+
+        // Attached properties.
+<# foreach (var p in Model.DeclaredAttachedProperties) { #>
+        <#= IncludeTemplate<AttachedProperty>(p) #>
+<# } #>
+
+        // Static methods.
+<# foreach (var m in Model.StaticMethods) { #>
+        <#= IncludeTemplate<Method>(m) #>
+<# } #>
+
+    private:
+<# foreach (var ctor in Model.CustomConstructors) { #>
+        <#= IncludeTemplate<ConstructorImpl>(ctor) #>
+<# }#>
+<# foreach (var m in Model.StaticMethods.Where(m => m.HasImplMethod)) { #>
+        <#= IncludeTemplate<MethodImpl>(m) #>
+<# } #>
+
+        // Properties' statics.
+<# foreach (var p in Model.DependencyProperties) { #>
+        static wrl::ComPtr<<#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyProperty") #>> s_<#= p.Name #>Property;
+<# }
+   foreach (var p in Model.DeclaredAttachedProperties) { #>
+        static wrl::ComPtr<<#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyProperty") #>> s_<#= p.Name #>Property;
+<# } #>
+
+        // Properties' initializers.
+<# foreach (var p in Model.DependencyProperties) { #>
+        _Check_return_ static HRESULT Initialize<#= p.Name #>Property();
+<# } 
+   foreach (var p in Model.DeclaredAttachedProperties) { #>
+        _Check_return_ static HRESULT Initialize<#= p.Name #>Property();
+<# } #>
+
+<# if (Model.HasPropertyChangeCallback && (Model.DependencyProperties.Any() || Model.DeclaredAttachedProperties.Any())) { #>
+        // Property changed event handler.
+        _Check_return_ static HRESULT OnPropertyChanged(_In_ <#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyObject") #>* pSender, _In_ <#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyProperty") #>ChangedEventArgs* pArgs);
+<# } #>
+    };

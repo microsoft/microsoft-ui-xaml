@@ -1,0 +1,711 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DuiSchema_ArgumentNotXamlDirective" xml:space="preserve">
+    <value>Argument must be of type XamlDirective</value>
+  </data>
+  <data name="DuiSchema_GetAllXamlTypeNotImpl" xml:space="preserve">
+    <value>GetAllXamlTypes is not implemented for namespace {0}</value>
+  </data>
+  <data name="DuiSchema_WRTAssembliesMissing" xml:space="preserve">
+    <value>SDK is not installed</value>
+  </data>
+  <data name="XamlCompiler_CantAccessNonPublicType" xml:space="preserve">
+    <value>Cannot access non-public type '{0}' in XMLnamespace '{1}'</value>
+  </data>
+  <data name="XamlCompiler_CantAssign" xml:space="preserve">
+    <value>Cannot assign '{0}' into property '{1}', type must be assignable to '{2}'</value>
+  </data>
+  <data name="XamlCompiler_CodeLangNotSupported" xml:space="preserve">
+    <value>XAML code behind generation is not supported for the language {0}</value>
+  </data>
+  <data name="XamlCompiler_IdPropertiesMustBeText" xml:space="preserve">
+    <value>Values for '{0}' property must be Text</value>
+  </data>
+  <data name="XamlCompiler_EventValuesMustBeText" xml:space="preserve">
+    <value>Invalid value for '{0}'. Event values must be text</value>
+  </data>
+  <data name="XamlCompiler_UnknownMember" xml:space="preserve">
+    <value>Unknown member '{0}' on element '{1}'</value>
+  </data>
+  <data name="XamlCompiler_UnknownObject" xml:space="preserve">
+    <value>Unknown type '{0}' in XML namespace '{1}'</value>
+  </data>
+  <data name="XamlDom_SealedNamespaceCollection" xml:space="preserve">
+    <value>Modification of a Namespace Collection failed because it was sealed</value>
+  </data>
+  <data name="XamlDom_IncorrectMemberConstructor" xml:space="preserve">
+    <value>Incorrect XamlDomMember constructor has been called</value>
+    <comment>XamlDomMember is a type name</comment>
+  </data>
+  <data name="XamlDom_UnknownAttachableMember" xml:space="preserve">
+    <value>Unknown Attachable Members '{0}' are not supported in the XAML Dom</value>
+    <comment>Attachable and Member are names in the API</comment>
+  </data>
+  <data name="XamlDom_MemberHasMoreThanOneItem" xml:space="preserve">
+    <value>This Member '{0}' has more than one item, use the Items property</value>
+    <comment>Member and Items are names in the API</comment>
+  </data>
+  <data name="XamlDom_MemberDifferentSchemas" xml:space="preserve">
+    <value>The passed SchemaContext must match the XamlMember's SchemaContext</value>
+  </data>
+  <data name="XamlDom_TypeDifferentSchemas" xml:space="preserve">
+    <value>The provided SchemaContext must match the XamlType's SchemaContext</value>
+  </data>
+  <data name="XamlDom_SealedXamlDomNode" xml:space="preserve">
+    <value>Modification of XamlDomNode failed because it was sealed</value>
+  </data>
+  <data name="XamlDom_UseHasAttachedMember" xml:space="preserve">
+    <value>Attachable members are not supported in HasMember.  Please call HasAttachableMember</value>
+    <comment>HasMember and HasAttachedMember are method names.</comment>
+  </data>
+  <data name="XamlDom_UseHasGetAttachedMember" xml:space="preserve">
+    <value>Attachable members are not supported in GetMemberNode.  Please call GetAttachableMemberNode</value>
+    <comment>GetMemberNode and GetAttachableMemberNode are method names</comment>
+  </data>
+  <data name="CppCodeGen_MissingMember" xml:space="preserve">
+    <value>Type code generation error.  Missing member '{0}' in the master member table</value>
+  </data>
+  <data name="XamlCompiler_MustNotSetLocalAssembly" xml:space="preserve">
+    <value>The LocalAssembly property of the CompileXaml Task must not be set when IsPass1 is set to True</value>
+    <comment>LocalAssembly, CompileXaml, Task, IsPass1 and True are all names.</comment>
+  </data>
+  <data name="XamlCompiler_MustSetLocalAssembly" xml:space="preserve">
+    <value>The LocalAssembly property of the CompileXaml Task must be set when IsPass1 is set to True</value>
+    <comment>LocalAssembly, CompileXaml, Task, IsPass1 and True are all names.</comment>
+  </data>
+  <data name="XamlCompiler_OnlyOneLocalAssembly" xml:space="preserve">
+    <value>LocalAssembly property may only have one Item</value>
+  </data>
+  <data name="XamlCompiler_NoXamlGiven" xml:space="preserve">
+    <value>CompileXaml Task invoked with no XAML to compile</value>
+    <comment>CompileXaml and Task are names.</comment>
+  </data>
+  <data name="XamlCompiler_LanguageUnsupported" xml:space="preserve">
+    <value>The language '{0}' is not supported</value>
+  </data>
+  <data name="XamlCompiler_DuplicationAssignment" xml:space="preserve">
+    <value>Duplication assignment to the '{0}' property of the '{1}' object</value>
+  </data>
+  <data name="XamlCompiler_CantAddToCollectionProperty" xml:space="preserve">
+    <value>Cannot add '{0}' into the collection property '{1}', type must be '{2}'</value>
+  </data>
+  <data name="XamlCompiler_CantAddToDictionaryProperty" xml:space="preserve">
+    <value>Cannot add '{0}' into the dictionary property '{1}', type must be '{2}'</value>
+  </data>
+  <data name="Harvester_ClassMustHaveANamespace" xml:space="preserve">
+    <value>Invalid class name '{0}'.  Class names must have a namespace followed by a name, separated by a '.'</value>
+  </data>
+  <data name="Harvester_ClassNameEmptyPathPart" xml:space="preserve">
+    <value>Invalid class name '{0}'.  Empty path components are not allowed</value>
+  </data>
+  <data name="Harvester_ClassNameNoWhiteSpace" xml:space="preserve">
+    <value>Invalid class name '{0}'.  Whitespace is not allowed in path components: '{1}'</value>
+  </data>
+  <data name="Harvester_ProjectFolderIsNotADirectory" xml:space="preserve">
+    <value>ProjectFolder is not a path to a Directory</value>
+  </data>
+  <data name="Harvester_DataTemplateDoesNotDefineDataType" xml:space="preserve">
+    <value>DataTemplates containing x:Bind need a DataType to be specified using 'x:DataType'</value>
+  </data>
+  <data name="XamlCompiler_CantResolveDataType" xml:space="preserve">
+    <value>Cannot resolve DataType {0}</value>
+  </data>
+  <data name="XamlCompiler_BadName" xml:space="preserve">
+    <value>The value '{0}' is an invalid value for '{1}' on object '{2}'</value>
+  </data>
+  <data name="XamlRewriter_EventsAcrossLine" xml:space="preserve">
+    <value>Event values cannot be broken across a line boundary</value>
+  </data>
+  <data name="XamlRewriter_EventsCannotBeInElementForm" xml:space="preserve">
+    <value>Events cannot be processed in Property Element form</value>
+  </data>
+  <data name="XamlRewriter_CompiledBindingsCannotBeInElementForm" xml:space="preserve">
+    <value>Compiled Bindings cannot be processed in Property Element form</value>
+  </data>
+  <data name="XamlRewriter_XamlRewriterErrorDataTypeLongForm" xml:space="preserve">
+    <value>Error processing DataType attribute</value>
+  </data>
+  <data name="XamlCompiler_xClassTypeIsNotFound" xml:space="preserve">
+    <value>x:Class type '{0}' is not found in '{1}'</value>
+    <comment>"x:Class" is a XAML language term.</comment>
+  </data>
+  <data name="XamlCompiler_CantNameValueTypes" xml:space="preserve">
+    <value>Type '{0}', and "Value Types" in general, cannot use x:Name</value>
+    <comment>x:Name is a keyword in XAML and "Value Type" is a technical term</comment>
+  </data>
+  <data name="XamlCompiler_CodeGenString_Bad" xml:space="preserve">
+    <value>Unrecognized substring of the CodeGenerationControlFlag '{0}'</value>
+    <comment>'CodeGenerationControlFlag' is a public property name.</comment>
+  </data>
+  <data name="XamlCompiler_CodeGenString_Using" xml:space="preserve">
+    <value>Code Generation Control Flag(s) are in effect: ({0})</value>
+  </data>
+  <data name="XamlCompiler_CodeGenString_NotSupported" xml:space="preserve">
+    <value>Code Generation Control Flag '{0}' is not supported</value>
+  </data>
+  <data name="DuiSchema_BadBindablePropertyProvider" xml:space="preserve">
+    <value>Marking class '{0}' '[Bindable]' will prevent use of its ICustomPropertyProvider Interface</value>
+    <comment>"[Bindable]" is a attribute name, like [Flags] in the CLR</comment>
+  </data>
+  <data name="DuiSchema_BindableNotSupportedOnGeneric" xml:space="preserve">
+    <value>'[Bindable]' on generic type '{0}' is not supported</value>
+  </data>
+  <data name="XamlCompiler_CantAssignTextToProperty" xml:space="preserve">
+    <value>Cannot assign text value '{0}' into property '{1}' of type '{2}'</value>
+  </data>
+  <data name="XamlCompiler_CantAssignToReadOnlyProperty" xml:space="preserve">
+    <value>Cannot assign '{0}' into the read only property '{1}'</value>
+  </data>
+  <data name="XamlCompiler_DictionaryItemsCannotBeText" xml:space="preserve">
+    <value>Dictionary Items cannot be Text: '{0}'</value>
+  </data>
+  <data name="XamlCompiler_DictionaryItemsMustHaveKeys" xml:space="preserve">
+    <value>Dictionary Item '{0}' must have a Key attribute</value>
+  </data>
+  <data name="XamlCompiler_InvalidCPA" xml:space="preserve">
+    <value>Invalid ContentPropertyAttribute on type '{0}', property '{1}' is not found</value>
+  </data>
+  <data name="XamlCompiler_MissingCPA" xml:space="preserve">
+    <value>Missing Content Property definition for Element '{0}' to receive content '{1}'</value>
+  </data>
+  <data name="XamlCompiler_UnknownAttachableMember" xml:space="preserve">
+    <value>Unknown attachable member '{0}.{1}' on element '{2}'</value>
+  </data>
+  <data name="DuiSchema_AmbiguousCollectionAdd" xml:space="preserve">
+    <value>Ambiguous match, the type '{0}' has more than one '{1}' method with '{2}' parameters</value>
+  </data>
+  <data name="DuiSchema_CustomAttributesTypeLoadException" xml:space="preserve">
+    <value>Type Load Exception reading assembly attributes for '{0}'</value>
+  </data>
+  <data name="DuiSchema_TypeLoadException" xml:space="preserve">
+    <value>Type Load Exception loading type '{0}' from reference '{1}'</value>
+  </data>
+  <data name="XamlCompiler_NoEventsInAppXaml" xml:space="preserve">
+    <value>Events cannot be set in the Application class XAML file</value>
+  </data>
+  <data name="XamlCompiler_CantResolveAssembly" xml:space="preserve">
+    <value>Cannot resolve Assembly or Windows Metadata file '{0}'</value>
+  </data>
+  <data name="XamlCompiler_CantAddToCollectionObject" xml:space="preserve">
+    <value>Cannot add '{0}' into the collection object '{1}', type must be '{2}'</value>
+  </data>
+  <data name="XamlCompiler_CantAddToDictionaryObject" xml:space="preserve">
+    <value>Cannot add '{0}' into the dictionary object '{1}', type must be '{2}'</value>
+  </data>
+  <data name="XamlCompiler_DictionaryItemsHasDuplicateKey" xml:space="preserve">
+    <value>Dictionary Item '{0}' has duplicate key '{1}'</value>
+  </data>
+  <data name="XamlCompiler_CantResolveWinUIMetadata" xml:space="preserve">
+    <value>Cannot resolve metadata for WinUI types. Please ensure that Nuget Restore was successful.</value>
+  </data>
+  <data name="XamlCompiler_NotConstructibleObj" xml:space="preserve">
+    <value>XAML {0} type cannot be constructed. In order to be constructed in XAML, a type cannot be abstract, interface, nested, generic or a struct, and must have a public default constructor</value>
+  </data>
+  <data name="XamlCompiler_StyleBasedOnBadStyleTargetType" xml:space="preserve">
+    <value>BasedOn TargetType '{0}' is not assignable to the Style's TargetType '{1}'</value>
+    <comment>Style TargetType, BasedOn are system names</comment>
+  </data>
+  <data name="XamlCompiler_StyleBasedOnMustBeStyle_SR" xml:space="preserve">
+    <value>Style BasedOn property must be a Style.  StaticResource '{0}' resolves to '{1}' not Style</value>
+    <comment>Style, BasedOn, StaticResource are system names</comment>
+  </data>
+  <data name="XamlCompiler_StyleMustHaveTargetType" xml:space="preserve">
+    <value>Style object must specify a String value for the TargetType property</value>
+    <comment>Style, String, TargetType are system names.</comment>
+  </data>
+  <data name="XamlCompiler_SetterMustHaveValue" xml:space="preserve">
+    <value>Setter object must specify a value for the Value Property</value>
+  </data>
+  <data name="XamlCompiler_SettersMustHaveProperty" xml:space="preserve">
+    <value>Setter object must specify a String value for the Property or Target property</value>
+    <comment>The name of the property is 'Property'.</comment>
+  </data>
+  <data name="XamlCompiler_SetterValueWrongType" xml:space="preserve">
+    <value>The type of Value '{0}' is not assignable to the type of the Property '{1}'</value>
+    <comment>The name of the property is 'Property'</comment>
+  </data>
+  <data name="XamlCompiler_UnknownSetterAttachableMember" xml:space="preserve">
+    <value>Unknown attachable member '{0}' on element '{1}'</value>
+  </data>
+  <data name="XamlCompiler_UnknownStyleTargetType" xml:space="preserve">
+    <value>Unknown target type '{0}'</value>
+  </data>
+  <data name="XamlCompiler_SetterPropertyMustBeDP" xml:space="preserve">
+    <value>Property '{0}' must be a DependencyProperty to be set with a Setter</value>
+  </data>
+  <data name="XamlCompiler_InvalidFieldModifier" xml:space="preserve">
+    <value>Invalid FieldModifier value: '{0}' on '{1}'.  Must be private, public, protected, internal or friend</value>
+    <comment>FieldModifier, public, protected, internal, private, friend are all names</comment>
+  </data>
+  <data name="XamlCompiler_TypeMustHaveANamespace" xml:space="preserve">
+    <value>Invalid class name '{0}'. Types must be in a namespace to be referenced in XAML; they cannot be declared in the global namespace</value>
+  </data>
+  <data name="XamlCompiler_InternalErrorProcessingStyle" xml:space="preserve">
+    <value>Internal error while processing Style</value>
+  </data>
+  <data name="XamlCompiler_InvalidSignedChar" xml:space="preserve">
+    <value>Type {0} on property {1} is invalid.  Signed Char is not a valid WinRT type</value>
+  </data>
+  <data name="XamlCompiler_xClassTypeDoesntMatchWinmd" xml:space="preserve">
+    <value>The type path of x:Class '{0}' does not match the name of the Windows metadata '{1}' file</value>
+  </data>
+  <data name="XamlCompiler_InvalidPropertyType" xml:space="preserve">
+    <value>Type {0} on property {1} is invalid</value>
+  </data>
+  <data name="DuiSchema_TypeLoadExceptionMessage" xml:space="preserve">
+    <value>Type Load problem with type '{0}': '{1}'</value>
+    <comment>Another error message is placed here.</comment>
+  </data>
+  <data name="XamlInternlError" xml:space="preserve">
+    <value>Xaml Internal Error</value>
+  </data>
+  <data name="XamlXmlParsingError" xml:space="preserve">
+    <value>Xaml Xml Parsing Error</value>
+  </data>
+  <data name="XamlCompiler_BadNameChar" xml:space="preserve">
+    <value>The value '{0}' is an invalid value for '{1}' on object '{2}'.  Illegal character '{3}'</value>
+  </data>
+  <data name="XbfGeneration_SyntaxError" xml:space="preserve">
+    <value>The XAML Binary Format (XBF) generator reported syntax error '{0}'</value>
+  </data>
+  <data name="XbfGeneration_PropertyNotFoundError" xml:space="preserve">
+    <value>The XAML Binary Format (XBF) generator reported syntax error '0x09C4' : Property Not Found</value>
+  </data>
+  <data name="XbfGeneration_SyntaxErrorME" xml:space="preserve">
+    <value>Type '{0}' used after '{{' must be a Markup Extension. Error code {1}.</value>
+  </data>
+  <data name="XbfGeneration_GeneralFailure" xml:space="preserve">
+    <value>Failure Generating XAML Binary Format: Exception={0}</value>
+    <comment>"XAML Binary Format" or XBF file</comment>
+  </data>
+  <data name="XamlCompiler_XamlFileMustEndInDotXaml" xml:space="preserve">
+    <value>XAML files must end in '.xaml'</value>
+  </data>
+  <data name="XbfGeneration_XamlInputFileOpenFailure" xml:space="preserve">
+    <value>Error opening XAML file for reading: {0}</value>
+  </data>
+  <data name="XbfGeneration_XbfOutputFileOpenFailure" xml:space="preserve">
+    <value>Error opening XBF File for writing: {0}</value>
+  </data>
+  <data name="XamlCompiler_NullablePropertyType" xml:space="preserve">
+    <value>Cannot assign to nullable type on property {0}</value>
+  </data>
+  <data name="XamlCompiler_StyleBasedOnMustBeStyle_BadObj" xml:space="preserve">
+    <value>Style BasedOn property must be a Style, not '{0}' object</value>
+  </data>
+  <data name="XamlCompiler_StyleBasedOnMustBeStyle_Text" xml:space="preserve">
+    <value>Style BasedOn property must be a Style, not text value '{0}'</value>
+  </data>
+  <data name="XamlCompiler_Deprecated" xml:space="preserve">
+    <value>'{0}' is deprecated: {1}</value>
+    <comment>{0} is a Type or Property.  Error Message {1} comes from the System.</comment>
+  </data>
+  <data name="XamlCompiler_BadValueInSupressWarningsList" xml:space="preserve">
+    <value>Bad Value '{0}' found in Suppressed XAML Warnings list.  Values must be integers seperated with ';'</value>
+  </data>
+  <data name="XbfGeneration_MissingXbfApi" xml:space="preserve">
+    <value>XBF generation failure due to missing Windows 10 Support, Set property &lt;DisableXbfGeneration&gt;true&lt;/DisableXbfGeneration&gt; in your Project file and try again.</value>
+  </data>
+  <data name="XamlCompiler_MoreThanOneApplicationXaml" xml:space="preserve">
+    <value>A project cannot have more than one ApplicationXaml item</value>
+  </data>
+  <data name="XamlCompiler_XamlFilesHaveTheSameName" xml:space="preserve">
+    <value>XAML files '{0}' and '{1}' have the same project path '{2}'.  Each file must have a unique project path.</value>
+  </data>
+  <data name="XamlCompiler_CannotNameElementTwice" xml:space="preserve">
+    <value>Cannot name element twice.</value>
+  </data>
+  <data name="XamlCompiler_ElementNameAlreadyUsed" xml:space="preserve">
+    <value>Element name '{0}' is already used in this scope.</value>
+  </data>
+  <data name="XbfGeneration_CouldNotLoadXbfGenerator" xml:space="preserve">
+    <value>Cannot resolve 'GenXbf.dll' under path '{0}'.  Please ensure that the Nuget was properly restored and that the path is available on disk.</value>
+  </data>
+  <data name="XbfGeneration_MissingGenXbfPath" xml:space="preserve">
+    <value>No path to 'GenXbf.dll' was supplied.  Please ensure that 'GenXbfPath' property is passed to the MarkupCompile task.</value>
+  </data>
+  <data name="BindAssignment_InvalidPropertyPathSyntax" xml:space="preserve">
+    <value>Invalid property path syntax</value>
+  </data>
+  <data name="BindAssignment_FunctionReturnTypeInvalid" xml:space="preserve">
+    <value>Function return type '{0}' must match binding target type '{1}'</value>
+  </data>
+  <data name="BindAssignment_BindBack_Unexpected" xml:space="preserve">
+    <value>Unexpected BindBack found</value>
+  </data>
+  <data name="BindAssignment_BindBack_NotFound" xml:space="preserve">
+    <value>BindBack was expected, but not found</value>
+  </data>
+  <data name="BindAssignment_BindBack_NotMethod" xml:space="preserve">
+    <value>BindBack must point to a method</value>
+  </data>
+  <data name="BindAssignment_BindBack_InvalidMethod" xml:space="preserve">
+    <value>BindBack must point to a method that takes one argument of type '{0}'</value>
+  </data>
+  <data name="BindAssignment_ConverterWithFunctionBindingNotSupported" xml:space="preserve">
+    <value>Using a converter with function binding is not supported</value>
+  </data>
+  <data name="BindAssignment_NeedsConverter" xml:space="preserve">
+    <value>Cannot directly bind type '{0}' to '{1}'. Use a cast, converter or function binding to change the type</value>
+  </data>
+  <data name="BindAssignment_OrphanConverterParam" xml:space="preserve">
+    <value>{0} cannot be specified without an actual converter</value>
+  </data>
+  <data name="BindAssignment_XamlXBindParseError" xml:space="preserve">
+    <value>Invalid binding path '{0}' : {1}</value>
+  </data>
+  <data name="BindAssignment_XamlXBindAssignmentValidationError" xml:space="preserve">
+    <value>Invalid binding assignment : {0}</value>
+  </data>
+  <data name="BindAssignment_XamlXBindUsedInStyleError" xml:space="preserve">
+    <value>Cannot use x:Bind in Styles</value>
+  </data>
+  <data name="XamlCompiler_BindingUpdateFailed" xml:space="preserve">
+    <value>Binding update failed for '{0}' : </value>
+  </data>
+  <data name="XamlCompiler_FileOpenFailure" xml:space="preserve">
+    <value>Error opening XAML file for reading: {0}</value>
+  </data>
+  <data name="XamlCompiler_BindingSetValueFailed" xml:space="preserve">
+    <value>Binding failure in assigning '{0}.{1}' = '{2}' at {3}, line {4} : </value>
+  </data>
+  <data name="XamlCompiler_DeferLoadStrategyMissingXName" xml:space="preserve">
+    <value>Element must have x:Name attribute specified since it uses x:DeferLoadStrategy.</value>
+    <comment>An element that uses x:DeferLoadStrategy attribute must specify a name through x:Name attribute</comment>
+  </data>
+  <data name="XamlValidationError_DeferLoadStrategyInvalidValue" xml:space="preserve">
+    <value>Invalid value specified for attribute '{0}'.</value>
+    <comment>The value provided for x:DeferLoadStrategy attribute is not valid</comment>
+  </data>
+  <data name="XamlValidationError_DataTypeOnlyAllowedOnDataTemplate" xml:space="preserve">
+    <value>DataType is only allowed for DataTemplate.</value>
+    <comment>DataType attribute is on a wrong element</comment>
+  </data>
+  <data name="XamlCompiler_BaseFilenamesMustBeTheSame" xml:space="preserve">
+    <value>The class named '{0}' is represented by files with more than one base filename: '{1}' and '{2}'. The base filenames for a single class must be unique.</value>
+  </data>
+  <data name="XamlCompiler_InvalidValueForPhase" xml:space="preserve">
+    <value>Phase value must be a positive integer less than 25.</value>
+  </data>
+  <data name="XamlCompiler_PhaseMustHaveAssociatedBind" xml:space="preserve">
+    <value>Phase must be used with Bind</value>
+  </data>
+  <data name="XamlCompiler_PhaseMustBeUsedWithinADataTemplate" xml:space="preserve">
+    <value>Phase can only be used within a DataTemplate</value>
+  </data>
+  <data name="BindPathParser_UnexpectedReflectionType" xml:space="preserve">
+    <value>Unexpected member type '{1}' when binding to '{0}'</value>
+  </data>
+  <data name="BoundEventAssignment_SignatureMismatch" xml:space="preserve">
+    <value>Invalid signature for event '{0}'. Parameter {1} of type '{2}' is not assignable from type '{3}'</value>
+  </data>
+  <data name="BoundEventAssignment_InvalidSignature" xml:space="preserve">
+    <value>Invalid signature for event '{0}'. Events can only be bound to methods that match the event signature or are parameterless</value>
+  </data>
+  <data name="BoundEventAssignment_NonDelegateProperty" xml:space="preserve">
+    <value>Event '{0}' can only be bound to properties of delegate type {1}</value>
+  </data>
+  <data name="BoundEventAssignment_NonLeafMethod" xml:space="preserve">
+    <value>Invalid path node '{0}'. Methods can only be used as the leaf node in an event binding</value>
+  </data>
+  <data name="BoundEventAssignment_NoOverloads" xml:space="preserve">
+    <value>Events can only be bound to non-overloaded methods</value>
+  </data>
+  <data name="BindPathParser_CantBindToMethods" xml:space="preserve">
+    <value>Binding to methods is not supported</value>
+  </data>
+  <data name="XamlCompiler_TwoWayTargetNotADependencyProperty" xml:space="preserve">
+    <value>TwoWay binding target '{0}' must be a dependency property</value>
+  </data>
+  <data name="XamlCompiler_XBindWithoutCodeBehind" xml:space="preserve">
+    <value>This Xaml file must have a code-behind class to use {x:Bind}. See http://go.microsoft.com/fwlink/?LinkID=532920&amp;clcid=0x409 for more information</value>
+  </data>
+  <data name="XamlCompiler_XBindTargetNullValueOnNonNullableType" xml:space="preserve">
+    <value>TargetNullValue cannot be applied on '{0}' because its type '{1}' is not nullable</value>
+  </data>
+  <data name="XamlCompiler_XBindInsideXBind" xml:space="preserve">
+    <value>Nested x:Bind expressions are not supported</value>
+  </data>
+  <data name="XamlCompiler_CannotHaveDeferLoadStrategy" xml:space="preserve">
+    <value>x:DeferLoadStrategy can only be used on UIElement or FlyoutBase type elements that are not direct children of a resource dictionary</value>
+  </data>
+  <data name="BindPathParser_PathSetTwice" xml:space="preserve">
+    <value>The value for Path is set twice.</value>
+    <comment>exception message when compiling xaml like "{x:Bind Username, Path=DataContext}"</comment>
+  </data>
+  <data name="BindPathParser_CantTwoWayCastStep" xml:space="preserve">
+    <value>TwoWay binding is invalid when the binding expression ends with a cast</value>
+  </data>
+  <data name="BindAssignment_InvalidCast" xml:space="preserve">
+    <value>Unable to cast type '{0}' to '{1}'.  Use a converter or function binding to change the type</value>
+  </data>
+  <data name="BindAssignment_CastCannotStartWithAttachedProperty" xml:space="preserve">
+    <value>Starting a cast with an attached property is not supported.  Try the "path.(owner.property)" syntax</value>
+  </data>
+  <data name="BindAssignment_RequiresConditionalNamespace" xml:space="preserve">
+    <value>Binding requires a conditional namespace because at least one step in the binding path is conditional</value>
+  </data>
+  <data name="BindAssignment_UpdateSourceTrigger_UnrecognizedValue" xml:space="preserve">
+    <value>Unrecognized value for 'UpdateSourceTrigger'</value>
+  </data>
+  <data name="BindAssignment_UpdateSourceTrigger_ExplicitUnsupported" xml:space="preserve">
+    <value>'Explicit' is not a supported value for 'UpdateSourceTrigger'</value>
+  </data>
+  <data name="BindAssignment_UpdateSourceTrigger_UpdateSourceTriggerOnlyWithTwoWay" xml:space="preserve">
+    <value>'UpdateSourceTrigger' may only be used with binding 'Mode=TwoWay'</value>
+  </data>
+  <data name="BindAssignment_UpdateSourceTrigger_LostFocusEventRequired" xml:space="preserve">
+    <value>'LostFocus' is only supported with members that expose a 'LostFocus' event</value>
+  </data>
+  <data name="BindAssignment_UpdateSourceTrigger_PropertyChangedOnlyOnDP" xml:space="preserve">
+    <value>'PropertyChanged' is only supported with members that are DependencyProperty</value>
+  </data>
+  <data name="XamlCompiler_LoadNotSupported" xml:space="preserve">
+    <value>x:Load cannot be used on the root of a Page, User Control or DataTemplate, or direct children of a Resource Dictionary, and can only be used on elements of type UIElement or FlyoutBase</value>
+  </data>
+  <data name="XamlCompiler_LoadMissingName" xml:space="preserve">
+    <value>Element must have x:Name attribute specified since it uses x:Load.</value>
+    <comment>An element that uses x:Load attribute must specify a name through x:Name attribute</comment>
+  </data>
+  <data name="XamlValidationError_InvalidAttributeValue" xml:space="preserve">
+    <value>Invalid value specified for attribute '{0}'.</value>
+    <comment>The value provided for x:Load attribute is not valid</comment>
+  </data>
+  <data name="XamlCompiler_LoadConflict" xml:space="preserve">
+    <value>An element cannot have both x:Load and x:DeferLoadStrategy</value>
+  </data>
+  <data name="CreateFromString_InvalidMethodSignature" xml:space="preserve">
+    <value>CreateFromString method '{0}' declared on type '{1}' must accept a string as its first argument</value>
+  </data>
+  <data name="CreateFromString_MethodOnTypeNotFound" xml:space="preserve">
+    <value>Could not find CreateFromString method '{0}' declared on type '{1}'</value>
+  </data>
+  <data name="CreateFromString_TypeNotFound" xml:space="preserve">
+    <value>Could not find type for CreateFromString method '{0}' declared on type '{1}'</value>
+  </data>
+  <data name="XamlCompiler_WrongTypeContract" xml:space="preserve">
+    <value>Type '{0}' is defined under contract '{1}' version '{2}', but the contract version for the targeted min version is '{3}'!</value>
+  </data>
+  <data name="XamlCompiler_TypeContractDoesNotExist" xml:space="preserve">
+    <value>Type '{0}' is defined under contract '{1}' version '{2}', but the contract doesn't exist in the targeted min version!</value>
+  </data>
+  <data name="XamlCompiler_MemberContractDoesNotExist" xml:space="preserve">
+    <value>Member '{3}' on type '{0}' is defined under contract '{1}' version '{2}', but the contract doesn't exist in the targeted min version!</value>
+  </data>
+  <data name="XamlCompiler_WrongMemberContract" xml:space="preserve">
+    <value>Member '{4}' on type '{0}' is defined under contract '{1}' version '{2}', but the contract version for the targeted min version is '{3}'!</value>
+  </data>
+  <data name="ConditionalNamespace_FailedToParse" xml:space="preserve">
+    <value>{1} while parsing conditional namespace expression '{0}'</value>
+  </data>
+  <data name="ConditionalNamespace_UnrecognizedApiInformation" xml:space="preserve">
+    <value>Unrecognized API information '{0}'</value>
+  </data>
+  <data name="ConditionalNamespace_UnmatchedApiInformationParameters" xml:space="preserve">
+    <value>Unmatched API information parameters for method '{0}'</value>
+  </data>
+  <data name="XamlCompiler_FeatureNotInMinVersion" xml:space="preserve">
+    <value>The '{0}' feature is not supported in Min Target Platform Version '{2}'. Update your Min Target Platform Version to '{1}' or above.</value>
+  </data>
+  <data name="XamlCompiler_FeatureOnlyInTargetVersion" xml:space="preserve">
+    <value>The '{0}' feature is not supported in your Min Target Platform Version. Update your Min Target Platform Version to match your Target Platform Version.</value>
+  </data>
+  <data name="XamlValidationError_DefaultBindModeInvalidValue" xml:space="preserve">
+    <value>Invalid value specified for attribute '{0}'.  Accepted values are 'OneWay', 'OneTime', or 'TwoWay'.</value>
+  </data>
+  <data name="XamlCompiler_Experimental" xml:space="preserve">
+    <value>{0} is for evaluation purposes only and is subject to change or removal in future updates.</value>
+  </data>
+  <data name="XamlCompiler_Preview" xml:space="preserve">
+    <value>{0} support is currently in preview and may change in future updates.</value>
+  </data>
+  <data name="XamlCompiler_UnresolvedForwardedTypeAssembly" xml:space="preserve">
+    <value>A type's assembly could not be resolved.  This is often because it was forwarded to an unresolved assembly: {0}</value>
+  </data>
+  <data name="ConditionalNamespace_MultipleApiInformations" xml:space="preserve">
+    <value>Multiple runtime conditionals found</value>
+  </data>
+  <data name="ConditionalNamespace_MultipleTargetPlatforms" xml:space="preserve">
+    <value>Multiple TargetPlatforms found</value>
+  </data>
+  <data name="ConditionalNamespace_ConditionalInStandard" xml:space="preserve">
+    <value>Cannot use a platform conditional expression in a strict Xaml Standard app</value>
+  </data>
+  <data name="XamlCompiler_PlatformUnsupported" xml:space="preserve">
+    <value>The platform '{0}' is not supported.  Use 'UWP', 'iOS', or 'Android' for XamlPlatform</value>
+  </data>
+  <data name="XamlCompiler_DuplicateTypeName" xml:space="preserve">
+    <value>A type with a full name of '{0}' already exists in an included reference.</value>
+  </data>
+  <data name="TypeInfoReflection_TypeViolatesNamingConvention" xml:space="preserve">
+    <value>Type info reflection is enabled, but type '{0}' is not under the root namespace '{1}'.  Either move the type under the root namespace, or disable type info reflection by adding '&lt;PropertyGroup&gt;&lt;EnableTypeInfoReflection&gt;false&lt;/EnableTypeInfoReflection&gt;&lt;/PropertyGroup&gt;' to your project file</value>
+  </data>
+  <data name="Harvester_ControlTemplateDoesNotDefineTargetType" xml:space="preserve">
+    <value>'TargetType' is required to use x:Bind inside a ControlTemplate</value>
+  </data>
+  <data name="XamlCompiler_XBindOnControlTemplate" xml:space="preserve">
+    <value>x:Bind is only supported inside the ControlTemplate</value>
+  </data>
+  <data name="BindAssignment_OneWay_NoWay" xml:space="preserve">
+    <value>OneWay bindings require at least one of their steps to support raising notifications when their value changes</value>
+  </data>
+  <data name="XamlCompiler_XPropertyUsageNotSupportedForLanguage" xml:space="preserve">
+    <value>This usage of x:Property is not supported for this language: '{0}'</value>
+  </data>
+  <data name="BindAssignment_InvalidFallbackValue" xml:space="preserve">
+    <value>Only string and {x:Null} are supported for FallbackValue</value>
+  </data>
+  <data name="XamlValidationError_AmbiguousEvent" xml:space="preserve">
+    <value>Objects which use an event, and whose type is defined in the currently building assembly, must also have an x:Name</value>
+  </data>
+  <data name="BindAssignment_FieldNameElementName_Conflict" xml:space="preserve">
+    <value>Ambiguous name '{0}' used in x:Bind.  Could either refer to a named element within template, or a field on the data root - assuming data root field</value>
+  </data>
+  <data name="BindAssignment_FieldNameElementName_ConflictBadConfig" xml:space="preserve">
+    <value>Name '{0}' used in x:Bind references an x:Name'd element, but there is also an unbindable field of the same name on the data root.  If you meant to bind to the data root, rename element '{0}'</value>
+  </data>
+  <data name="XamlCompiler_XBindOutOfScopeUnsupported" xml:space="preserve">
+    <value>Binding resolved to named element '{0}' on line {1}, but binding to named elements outside the current namescope is not supported in the app's targeted minimum version.</value>
+  </data>
+  <data name="XamlValidationError_SuccinctSyntaxError" xml:space="preserve">
+    <value>Error at line {0}, column {1} , offending symbol : {2}</value>
+  </data>
+  <data name="XamlCompiler_XClassDerivesFromXClass" xml:space="preserve">
+    <value>x:Class '{0}' derives from another x:Class '{1}'.  This can negatively affect performance as {1}'s .xaml file content will be loaded and then replaced by {0}'s .xaml content.  Consider using templates to control markup appearance instead.</value>
+  </data>
+  <data name="XamlCompiler_LocalAssemblyMissingWarning" xml:space="preserve">
+    <value>No LocalAssembly parameter given during MarkupCompilePass2 for the currently building project.  This will likely cause type resolution errors for any types from the current project.</value>
+  </data>
+  <data name="XamlCompiler_UnknownTypeError" xml:space="preserve">
+    <value>Could not resolve type '{0}'.</value>
+  </data>
+  <data name="XamlCompiler_XBindRootMustHaveLoading" xml:space="preserve">
+    <value>x:Bind requires the root element of your page to inherit from FrameworkElement or Window, but root type '{0}' does not</value>
+  </data>
+  <data name="XamlCompiler_CodeGenStaticAssert_IncompleteType" xml:space="preserve">
+    <value>Please #include the implementation header for '{0}' in your precompiled header '{1}'.</value>
+    <comment>{0} is a type name, {1} is a file name</comment>
+  </data>
+  <data name="XamlCompiler_CodeGenStaticAssert_IncompleteType_NoPch" xml:space="preserve">
+    <value>Please #include the implementation header for '{0}'.</value>
+    <comment>{0} is a type name</comment>
+  </data>
+</root>

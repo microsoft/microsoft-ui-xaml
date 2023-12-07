@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{418cb7c6-a4f4-452a-9087-439ab8a61a66}</ProjectGuid>
+    </PropertyGroup>
+
+    <!-- ******************************** File Header ******************************\ -->
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved.                   -->
+    <!--                                                                              -->
+    <!-- Project specific SOURCES file.                                               -->
+    <!--                                                                              -->
+    <!-- ***************************************************************************/ -->
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="..\sources.props"/>
+
+    <PropertyGroup>
+        <TargetDestination>retail</TargetDestination>
+
+        <XamlPrecompiledShared>..\winrtpch\precomp.h</XamlPrecompiledShared>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\HyperlinkAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\AppBarLightDismissAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ComboBoxLightDismissAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\AutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\FrameworkElementAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\TextBoxAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\PasswordBoxAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\TextBlockAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\RichTextBlockAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\RichTextBlockOverflowAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ButtonBaseAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ButtonAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\RepeatButtonAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ThumbAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ToggleButtonAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ToggleSwitchAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\RadioButtonAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\CheckBoxAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\RangeBaseAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\SliderAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\SeekSliderAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ScrollBarAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\HyperlinkButtonAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ItemsControlAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\SelectorAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ListBoxAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ListViewBaseAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ListViewAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\GridViewAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\FlipViewAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ScrollViewerAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ListBoxItemDataAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ListBoxItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ListViewBaseItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ListViewBaseItemDataAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ListViewItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ListViewItemDataAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\GridViewItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\GridViewItemDataAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\FlipViewItemDataAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\FlipViewItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\SelectorItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ComboBoxAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ComboBoxItemDataAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ComboBoxItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\SemanticZoomAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ImageAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\GroupItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\AppBarAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\AppBarButtonAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\AppBarToggleButtonAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\MediaPlayerElementAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\MediaTransportControlsAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ToolTipAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\PopupRootAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\PopupAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\RichEditBoxAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\FlyoutPresenterAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\DatePickerAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\TimePickerAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\HubAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\HubSectionAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\MenuFlyoutPresenterAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\MenuFlyoutItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\MenuFlyoutSubItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ToggleMenuFlyoutItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\GridViewHeaderItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ListViewBaseHeaderItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ListViewHeaderItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\FaceplateContentPresenterAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\AutoSuggestBoxAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\CalendarScrollViewerAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\CalendarViewAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\CalendarViewBaseItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\CalendarViewItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\CalendarViewDayItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\AutomationAnnotation_Partial.cpp"/>
+        <ClCompile Include="..\AutomationPeerAnnotation_Partial.cpp"/>
+        <ClCompile Include="..\SplitViewPaneAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\SplitViewLightDismissAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\LandmarkTargetAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\CalendarDatePickerAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\FullWindowMediaRootAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\ScrollItemAdapter_Partial.cpp"/>
+        <ClCompile Include="..\NamedContainerAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\AccessKeyStringBuilder.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <BuildClientcore>1</BuildClientcore>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\dxaml\idl\com\microsoft.ui.xaml-com.vcxproj" Project="{a1eb01c3-ac8b-45a8-97c8-c459b77ed690}"/>
+        <ProjectReference Include="$(XamlDiagPath)\idl\xamlom.vcxproj" Project="{c6e1e90c-ee33-4352-a8de-067b013c7cc9}"/>
+        <ProjectReference Include="..\winrtpch\wrtdxamlpch.vcxproj" Project="{845d8296-bec7-4e97-8da9-db26a3a6d8c9}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

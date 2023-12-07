@@ -1,0 +1,78 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- Managed References -->
+    <ItemGroup
+        Condition="($(MSBuildProjectExtension) == '.csproj' AND '$(UsingMicrosoftNETSdk)'!='true') Or $(MSBuildProjectExtension) == '.vbproj'"
+        >
+        <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="$(MicrosoftNETCoreUniversalWindowsPlatformVersion)" />
+    </ItemGroup>
+
+    <Target Name="InjectManagedProjectWinmdMetadata" DependsOnTargets="GetCppWinRTProjectWinMDReferences" BeforeTargets="CppWinRTSetMidlReferences">
+        <ItemGroup>
+            <_CppWinRTMissedDynamicProjectReferences Include="@(_ResolvedProjectReferencePaths)"
+                Condition= "'%(_ResolvedProjectReferencePaths.ProjectType)'==''  AND '%(_ResolvedProjectReferencePaths.WinMDFile)' == '' AND '%(_ResolvedProjectReferencePaths.Extension)' == '.winmd'">
+            </_CppWinRTMissedDynamicProjectReferences>
+            <CppWinRTDynamicProjectWinMDReferences Include="@(_CppWinRTMissedDynamicProjectReferences)">
+                <WinMDPath>%(FullPath)</WinMDPath>
+            </CppWinRTDynamicProjectWinMDReferences>
+        </ItemGroup>
+    </Target>
+
+    <!-- Normally our dependent dlls are included by the NuGet, but for consuming directly from the build we need to copy them ourselves -->
+    <Target Name="_UpdateMUXFilesToCopyForApp" BeforeTargets="_CopyFilesMarkedCopyLocal" Condition="'$(IncludeXamlDlls)' == 'true'">
+        <ItemGroup>
+            <ReferenceCopyLocalPaths Include="$(ArtifactsBinDir)\Product\*.dll" Exclude="$(ArtifactsBinDir)\Product\Microsoft.UI.Xaml.Design.dll" />
+            <ReferenceCopyLocalPaths Include="$(ArtifactsBinDir)\Product\*.pri" />
+            <ReferenceCopyLocalPaths Include="$(ArtifactsBinDir)\Product\en-us\*.mui">
+                <DestinationSubDirectory>en-us\</DestinationSubDirectory>
+            </ReferenceCopyLocalPaths>
+        </ItemGroup>
+    </Target>
+    
+    <ItemDefinitionGroup>
+        <XamlProduct>
+            <AssociatedSolution>$(ProjectRoot)dxaml\Microsoft.UI.Xaml.sln</AssociatedSolution>
+        </XamlProduct>
+    </ItemDefinitionGroup>
+
+    <Target Name="EnsureXamlWasBuilt" BeforeTargets="PrepareForBuild">
+        <PropertyGroup>
+            <XamlProductDir>$(ArtifactsBinDir)Product\</XamlProductDir>
+        </PropertyGroup>
+        <ItemGroup>
+            <XamlProduct Include="$(XamlProductDir)Microsoft.UI.Xaml.dll" />
+            <XamlProduct Include="$(XamlProductDir)en-us\Microsoft.UI.Xaml.dll.mui" />
+            <XamlProduct Include="$(XamlProductDir)Microsoft.UI.Xaml.Phone.dll" />
+            <XamlProduct Include="$(XamlProductDir)en-us\Microsoft.UI.Xaml.Phone.dll.mui" />
+            <XamlProduct Include="$(XamlProductDir)Microsoft.ui.xaml.resources.19h1.dll" />
+            <XamlProduct Include="$(XamlProductDir)Microsoft.ui.xaml.resources.common.dll" />
+            <XamlProduct Include="$(XamlProductDir)Microsoft.UI.Xaml.Internal.dll" />
+            <XamlProduct Include="$(XamlProductDir)Microsoft.Internal.FrameworkUdk.dll" />
+            <XamlProduct Include="$(XamlProductDir)WinUIEdit.dll" />
+            <XamlProduct Include="$(XamlProductDir)Microsoft.UI.Text.winmd" />
+            <XamlProduct Include="$(XamlProductDir)Microsoft.UI.winmd" />
+            <XamlProduct Include="$(XamlProductDir)Microsoft.UI.Xaml.winmd" />
+            <XamlProduct Include="@(WinUIWinMDReferences)" />
+            <XamlProduct Include="$(XamlProductDir)Microsoft.UI.Xaml.Controls.dll">
+                <AssociatedSolution>$(ProjectRoot)controls\MUXControls.sln</AssociatedSolution>
+            </XamlProduct>
+        </ItemGroup>
+        <Error Condition="!Exists('%(XamlProduct.Identity)')" Text="%(XamlProduct.Identity) does not exist.  Please build %(XamlProduct.AssociatedSolution) before building." />
+    </Target>
+
+    <PropertyGroup>
+        <CopyXamlWinMDFilesLocal Condition="'$(CopyXamlWinMDFilesLocal)' == ''">true</CopyXamlWinMDFilesLocal>
+    </PropertyGroup>
+
+    <Target Name="PreventXamlWinMDFilesCopyLocal" AfterTargets="ResolveAssemblyReferences" BeforeTargets="CopyFilesToOutputDirectory" Condition="'$(CopyXamlWinMDFilesLocal)' != 'true'">
+        <ItemGroup>
+            <ReferenceCopyLocalPaths Remove="$(ArtifactsBinDir)\Product\Microsoft.Foundation.winmd" />
+            <ReferenceCopyLocalPaths Remove="$(ArtifactsBinDir)\Product\Microsoft.Graphics.winmd" />
+            <ReferenceCopyLocalPaths Remove="$(ArtifactsBinDir)\Product\Microsoft.UI.Private.winmd" />
+            <ReferenceCopyLocalPaths Remove="$(ArtifactsBinDir)\Product\Microsoft.UI.winmd" />
+            <ReferenceCopyLocalPaths Remove="$(ArtifactsBinDir)\Product\Microsoft.UI.Text.winmd" />
+            <ReferenceCopyLocalPaths Remove="$(ArtifactsBinDir)\Product\Microsoft.UI.Xaml.winmd" />
+        </ItemGroup>
+    </Target>
+</Project>

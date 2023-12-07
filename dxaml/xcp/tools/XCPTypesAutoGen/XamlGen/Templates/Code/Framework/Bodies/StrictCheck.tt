@@ -1,0 +1,20 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<StrictCheckModel>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<# if (Model.MemberDefinition.DeclaringType.IsADependencyObject && !Model.MemberDefinition.DeclaringType.IsExcludedFromTypeTable &&
+       !Model.MemberDefinition.IsStatic &&
+       (Model.MemberDefinition.Modifier == Modifier.Public || Model.MemberDefinition.Modifier == Modifier.Protected)) { #>
+<#     if (Model.ForceIndent) { PushIndent("    "); } #>
+<#     if (!Model.MemberDefinition.DeclaringClass.IsStrict) { #>
+<#         if (Model.MemberDefinition.Strictness == null) { #>
+<#= Model.UseIfcReturn ? "IFC_RETURN" : "IFC" #>(DefaultStrictApiCheck(this));
+<#         } else if (Model.MemberDefinition.Strictness.Value == Strictness.StrictOnly) { #>
+<#= Model.UseIfcReturn ? "IFC_RETURN" : "IFC" #>(StrictOnlyApiCheck(this, L"<#= Model.MemberDefinition.Name #>"));
+<#         } else if (Model.MemberDefinition.Strictness.Value == Strictness.NonStrictOnly) { #>
+<#= Model.UseIfcReturn ? "IFC_RETURN" : "IFC" #>(NonStrictOnlyApiCheck(this, L"<#= Model.MemberDefinition.Name #>"));
+<#         } #>
+<#     } #>
+<# } #>

@@ -1,0 +1,42 @@
+﻿namespace MU_XM_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+[MUX_HAS_CUSTOM_FACTORY]
+unsealed runtimeclass AcrylicBrush : Microsoft.UI.Xaml.Media.XamlCompositionBrushBase
+{
+    AcrylicBrush();
+
+    [MUX_DEFAULT_VALUE("AcrylicBrush::sc_defaultTintColor")]
+    Windows.UI.Color TintColor { get; set; };
+
+    [MUX_DEFAULT_VALUE("AcrylicBrush::sc_defaultTintOpacity")]
+    [MUX_PROPERTY_VALIDATION_CALLBACK("CoerceToZeroOneRange")]
+    Double TintOpacity { get; set; };
+
+    [MUX_DEFAULT_VALUE("AcrylicBrush::sc_defaultTintTransitionDuration")]
+    Windows.Foundation.TimeSpan TintTransitionDuration { get; set; };
+
+    Boolean AlwaysUseFallback { get; set; };
+
+    [MUX_PUBLIC]
+    {
+        [MUX_PROPERTY_VALIDATION_CALLBACK("CoerceToZeroOneRange_Nullable")]
+        Windows.Foundation.IReference<Double> TintLuminosityOpacity{ get; set; };
+    }
+
+    static Microsoft.UI.Xaml.DependencyProperty TintColorProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty TintOpacityProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty TintTransitionDurationProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty AlwaysUseFallbackProperty { get; };
+
+    [MUX_PUBLIC]
+    {
+        static Microsoft.UI.Xaml.DependencyProperty TintLuminosityOpacityProperty { get; };
+    }
+}
+
+}

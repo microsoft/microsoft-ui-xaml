@@ -1,0 +1,214 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<ClassDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#include "<#= Model.CppFrameworkGeneratedHeaderFileName #>"
+<# foreach (var dependency in Model.Dependencies.OfType<ClassDefinition>().Where(d => d.GenerateFrameworkHFile && !d.IsValueType && !d.IsInterface && d != Model.BaseClass).OrderBy(d => d.CppFrameworkGeneratedHeaderFileName)) { #>
+#include "<#= dependency.CppFrameworkGeneratedHeaderFileName #>"
+<# } #>
+#include "XamlTelemetry.h"
+
+<# if (!Model.IsStatic) { #>
+// Constructors/destructors.
+<#= AsCppType(Model.GeneratedClassFullName) #>::<#= Model.GeneratedClassName #>()<#= GetFieldInitializerString(Model) #>
+{
+}
+
+<#= AsCppType(Model.GeneratedClassFullName) #>::~<#= Model.GeneratedClassName #>()
+{
+}
+
+HRESULT <#= AsCppType(Model.GeneratedClassFullName) #>::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
+{
+    if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(Model.AbiImplementationFullName) #>)))
+    {
+        *ppObject = static_cast<<#= AsCppType(Model.AbiImplementationFullName) #>*>(this);
+    }
+<#     if (Model.VelocityVersion != 0) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(Model.VelocityVersion) #>)
+<#     }#>
+<#     foreach (var version in Model.Versions.OrderBy(v => v.Version).Select(v => v.GetProjection())) {
+           if (VelocityFeatures.IsVelocityVersion(version.Version)) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(version.Version) #>)
+<#         }
+           if (version.IdlClassInfo.HasPrimaryInterface) { #>
+    else if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(version.IdlClassInfo.FullInterfaceName) #>))<#= VelocityFeatures.GetQueryInterfaceClause(version.VelocityVersion != 0 ? version.VelocityVersion : version.Version) #>)
+    {
+<#             if (version.IsVersionInterfaceForwarded()) { #>
+        *ppObject = ctl::interface_cast<<#= AsCppType(version.IdlClassInfo.FullInterfaceName) #>>(this);
+    }
+<#             } else { #>
+        *ppObject = static_cast<<#= AsCppType(version.IdlClassInfo.FullInterfaceName) #>*>(this);
+    }
+<#             }
+           }
+           if (version.IdlClassInfo.HasProtectedMembers) { #>
+    else if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(version.IdlClassInfo.FullProtectedMembersInterfaceName) #>))<#= VelocityFeatures.GetQueryInterfaceClause(version.VelocityVersion != 0 ? version.VelocityVersion : version.Version) #>)
+    {
+<#              if (version.IsVersionInterfaceForwarded()) { #>
+        *ppObject = ctl::interface_cast<<#= AsCppType(version.IdlClassInfo.FullProtectedMembersInterfaceName) #>>(this);
+    }
+<#              } else { #>
+        *ppObject = static_cast<<#= AsCppType(version.IdlClassInfo.FullProtectedMembersInterfaceName) #>*>(this);
+    }
+<#              }
+           }
+           if (version.IdlClassInfo.HasVirtualMembers) { #>
+    else if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(version.IdlClassInfo.FullVirtualMembersInterfaceName) #>))<#= VelocityFeatures.GetQueryInterfaceClause(version.VelocityVersion != 0 ? version.VelocityVersion : version.Version) #>)
+    {
+<#              if (version.IsVersionInterfaceForwarded()) { #>
+        *ppObject = ctl::interface_cast<<#= AsCppType(version.IdlClassInfo.FullVirtualMembersInterfaceName) #>>(this);
+    }
+<#              } else { #>
+        *ppObject = static_cast<<#= AsCppType(version.IdlClassInfo.FullVirtualMembersInterfaceName) #>*>(this);
+    }
+<#              }
+           }
+           foreach (var implementedInterface in version.ImplementedInterfaces.OrderBy(implementedInterface => implementedInterface.AbiFullName)) { #>
+    else if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(implementedInterface.AbiFullName) #>)))
+    {
+        *ppObject = static_cast<<#= AsCppType(implementedInterface.AbiFullName) #>*>(this);
+    }
+<#         }
+          if (VelocityFeatures.IsVelocityVersion(version.Version)) { #>
+#endif
+<#         }
+       } #>
+<#     if (Model.VelocityVersion != 0) { #>
+#endif
+<#     }#>
+    else
+    {
+        RRETURN(<#= GetBaseClassName(Model) #>::QueryInterfaceImpl(iid, ppObject));
+    }
+
+    AddRefOuter();
+    RRETURN(S_OK);
+}
+
+// Properties.
+<#     foreach (var property in Model.InstanceProperties.Where(m => m.GenerateStub).OrderBy(property => property.Name)) { #>
+<#= IncludeTemplate<Property>(property) #>
+<#     } #>
+
+<# if (Model.BaseClass.IsObjectType && Model.InstanceEvents.Where(m => !m.XamlEventFlags.IsHidden).Count() > 0) { #>
+HRESULT <#= AsCppType(Model.GeneratedClassFullName) #>::EventAddPreValidation(_In_ void* const pValue, EventRegistrationToken* const ptToken) const
+{
+    HRESULT hr = S_OK;
+
+    ARG_VALIDRETURNPOINTER(ptToken);
+    ARG_NOTNULL(pValue, "value");
+    IFC(CheckThread());
+
+Cleanup:
+    return S_OK;
+}
+<# } #>
+// Events.
+<#     foreach (var ev in Model.InstanceEvents.Where(m => m.GenerateStub && !m.XamlEventFlags.IsHidden).OrderBy(ev => ev.Name)) { #>
+<#= IncludeTemplate<Event>(ev) #>
+<#     } #>
+
+// Methods.
+<#     if (Model.TemplateParts.Any()) { #>
+<#= IncludeTemplate<ApplyTemplateMethod>(Model) #>
+<#     }
+       foreach (var method in Model.InstanceMethods.Where(m => m.GenerateStub).OrderBy(method => method.Name)) { #>
+<#= IncludeTemplate<Method>(method) #>
+<#     }
+   } #>
+
+<# // Only supports events on UIElements and their descendents
+    if (Model.IsAUIElement && Model.Events.Where(m => m.IdlEventInfo.ForwardDeclareIReference).Count() > 0) { #>
+_Check_return_ HRESULT <#= AsCppType(Model.GeneratedClassFullName) #>::EventAddHandlerByIndex(_In_ KnownEventIndex nEventIndex, _In_ IInspectable* pHandler, _In_ BOOLEAN handledEventsToo)
+{
+    switch (nEventIndex)
+    {
+<#     foreach (var ev in Model.Events.Where(m => m.IdlEventInfo.ForwardDeclareIReference).OrderBy(ev => ev.Name)) { #>
+    case <#= ev.IndexName #>:
+        {
+            ctl::ComPtr<<#= AsCppType(ev.EventHandlerType.AbiFullName) #>> spEventHandler;
+            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+
+            if (nullptr != spEventHandler)
+            {
+                <#= ev.EventSourceTypeName #>* pEventSource = nullptr;
+                IFC_RETURN(<#= ev.GetEventSourceName #>(&pEventSource));
+                IFC_RETURN(pEventSource->AddHandler(spEventHandler.Get()<# if (ev.IsRouted) { #>, handledEventsToo<# } #>));
+            }
+            else
+            {
+                IFC_RETURN(E_INVALIDARG);
+            }
+        }
+        break;
+<#     } #>
+<# if (Model.Name == "UIElement") { #>
+    default:
+        IFC_RETURN(E_INVALIDARG);
+<# } else { #>
+    default:
+        IFC_RETURN(<#= AsCppType(Model.BaseClass.GeneratedClassFullName) #>::EventAddHandlerByIndex(nEventIndex, pHandler, handledEventsToo));
+<# } #>
+        break;
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT <#= AsCppType(Model.GeneratedClassFullName) #>::EventRemoveHandlerByIndex(_In_ KnownEventIndex nEventIndex, _In_ IInspectable* pHandler)
+{
+    switch (nEventIndex)
+    {
+<#     foreach (var ev in Model.Events.Where(m => m.IdlEventInfo.ForwardDeclareIReference).OrderBy(ev => ev.Name)) { #>
+    case <#= ev.IndexName #>:
+        {
+            ctl::ComPtr<<#= AsCppType(ev.EventHandlerType.AbiFullName) #>> spEventHandler;
+            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+
+            if (nullptr != spEventHandler)
+            {
+                <#= ev.EventSourceTypeName #>* pEventSource = nullptr;
+                IFC_RETURN(<#= ev.GetEventSourceName #>(&pEventSource));
+                IFC_RETURN(pEventSource->RemoveHandler(spEventHandler.Get()));
+            }
+            else
+            {
+                IFC_RETURN(E_INVALIDARG);
+            }
+        }
+        break;
+<#     } #>
+<# if (Model.Name == "UIElement") { #>
+    default:
+        IFC_RETURN(E_INVALIDARG);
+<# } else { #>
+    default:
+        IFC_RETURN(<#= AsCppType(Model.BaseClass.GeneratedClassFullName) #>::EventRemoveHandlerByIndex(nEventIndex, pHandler));
+<# } #>
+        break;
+    }
+
+    return S_OK;
+}
+
+<# } #>
+<# if (Model.HasCustomFactory) { #>
+<#= IncludeTemplate<ClassFactory>(Model) #>
+<# } #>
+
+<# if (Model.IsActivatable || Model.IdlClassInfo.HasRuntimeClass) { #>
+namespace <#= OMContext.DefaultImplementationNamespace #>
+{
+<#     if (Model.HasFactory) { #>
+    _Check_return_ IActivationFactory* <#= Model.FactoryConstructor #>()
+    {
+        RRETURN(<#= GetFactoryFactory(Model) #>);
+    }
+<#     } #>
+}
+<# } #>

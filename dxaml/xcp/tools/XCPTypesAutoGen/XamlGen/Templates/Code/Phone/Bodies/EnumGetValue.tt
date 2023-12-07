@@ -1,0 +1,19 @@
+<#@ template language="C#" linePragmas="false" inherits="PhoneCppCodeGenerator<PropertyDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+case get_<#= Model.DeclaringType.TypeTableName #>_<#= Model.Name #>:
+{
+    wrl::ComPtr<<#= AsCppType(Model.DeclaringTypeFullInterfaceNameWithVersion) #>> obj;
+    wrl::ComPtr<<#= PrefixAbi("Windows::Foundation::IPropertyValue") #>> propertyValue;
+    <#= AsCppType(Model.PhoneImplTypeName) #> prop;
+    IFC(instance->QueryInterface(
+        __uuidof(<#= AsCppType(Model.DeclaringTypeFullInterfaceNameWithVersion) #>),
+        &obj));
+    IFC(obj->get_<#=Model.Name#>(&prop));
+    IFC(Private::ValueBoxer::CreateReference<<#=AsCppType(Model.PropertyType.Type.FullName)#>>(prop, &propertyValue));
+    IFC(propertyValue.CopyTo(value));
+    break;
+}

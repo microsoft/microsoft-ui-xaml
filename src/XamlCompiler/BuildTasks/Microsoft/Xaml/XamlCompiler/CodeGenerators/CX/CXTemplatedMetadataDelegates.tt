@@ -1,0 +1,91 @@
+﻿<#@ template language="C#" inherits="CppCX_CodeGenerator<TypeInfoDefinition>" visibility="internal" linePragmas="false"#>
+<#@ assembly name="System.Core" #>
+template<typename T>
+::Platform::Object^ ActivateType()
+{
+    return ref new T;
+}
+
+<# if (!ProjectInfo.EnableTypeInfoReflection) #>
+<# { #>
+template<typename TInstance, typename TItem>
+void CollectionAdd(::Platform::Object^ instance, ::Platform::Object^ item)
+{
+    safe_cast<TInstance^>(instance)->Append((TItem)item);
+}
+
+template<typename TInstance, typename TKey, typename TItem>
+void DictionaryAdd(::Platform::Object^ instance, ::Platform::Object^ key, ::Platform::Object^ item)
+{
+    safe_cast<TInstance^>(instance)->Insert((TKey)key, (TItem)item);
+}
+
+template<typename T>
+::Platform::Object^ FromStringConverter(::XamlTypeInfo::InfoProvider::XamlUserType^ userType, ::Platform::String^ input)
+{
+    return ref new ::Platform::Box<T>((T)userType->CreateEnumUIntFromString(input));
+}
+<#  foreach(String name in Model.AttachableMemberGetterUniqueNames) #>
+<#  { #>
+
+template<typename TDeclaringType, typename TargetType>
+::Platform::Object^ GetAttachableMember_<#=name#>(::Platform::Object^ instance)
+{
+    return TDeclaringType::Get<#=name#>(safe_cast<TargetType^>(instance));
+}
+<#  } #>
+<#  foreach(String name in Model.ValueTypeMemberGetterUniqueNames) #>
+<#  { #>
+
+template<typename TDeclaringType, typename TValue>
+::Platform::Object^ GetValueTypeMember_<#=name#>(::Platform::Object^ instance)
+{
+    return ref new ::Platform::Box<TValue>(safe_cast<TDeclaringType^>(instance)-><#=name#>);
+}
+<#  } #>
+<#  foreach(String name in Model.ReferenceTypeMemberGetterUniqueNames) #>
+<#  { #>
+
+template<typename TDeclaringType>
+::Platform::Object^ GetReferenceTypeMember_<#=name#>(::Platform::Object^ instance)
+{
+    return safe_cast<TDeclaringType^>(instance)-><#=name#>;
+}
+<#  } #>
+<#  foreach(String name in Model.AttachableMemberSetterUniqueNames) #>
+<#  { #>
+
+template<typename TDeclaringType, typename TTargetType, typename TValue>
+void SetAttachableMember_<#=name#>(::Platform::Object^ instance, ::Platform::Object^ value)
+{
+    TDeclaringType::Set<#=name#>(safe_cast<TTargetType^>(instance), (TValue)value);
+}
+<#  } #>
+<#  foreach(String name in Model.EnumTypeMemberSetterUniqueNames) #>
+<#  { #>
+
+template<typename TDeclaringType, typename TValue>
+void SetEnumMember_<#=name#>(::Platform::Object^ instance, ::Platform::Object^ value)
+{
+    safe_cast<TDeclaringType^>(instance)-><#=name#> = safe_cast<::Platform::IBox<TValue>^>(value)->Value;
+}
+<#  } #>
+<#  foreach(String name in Model.ValueTypeMemberSetterUniqueNames) #>
+<#  { #>
+
+template<typename TDeclaringType, typename TValue>
+void SetValueTypeMember_<#=name#>(::Platform::Object^ instance, ::Platform::Object^ value)
+{
+    safe_cast<TDeclaringType^>(instance)-><#=name#> = safe_cast<::Platform::IBox<TValue>^>(value)->Value;
+}
+<#  } #>
+<#  foreach(String name in Model.ReferenceTypeMemberSetterUniqueNames) #>
+<#  { #>
+
+template<typename TDeclaringType, typename TValue>
+void SetReferenceTypeMember_<#=name#>(::Platform::Object^ instance, ::Platform::Object^ value)
+{
+    safe_cast<TDeclaringType^>(instance)-><#=name#> = safe_cast<TValue^>(value);
+}
+<#  } #>
+<# } // End of type info reflection check #>

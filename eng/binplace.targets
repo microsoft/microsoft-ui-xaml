@@ -1,0 +1,78 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project>
+  <PropertyGroup>
+    <MuiBinDir>en-us</MuiBinDir>
+    <TargetDestination Condition="'$(TargetDestination)' == '' and '$(TestCode)' != 'true'">$(ProductBinplaceDestinationPath)</TargetDestination>
+    <TargetDestination Condition="'$(TargetDestination)' == ''">$(TestBinplaceDestinationPath)</TargetDestination>
+    <SymbolsBinDir Condition="'$(SymbolsBinDir)' == '' and '$(TestCode)'!='true'">$(ProductSymbolsBinplacePath)</SymbolsBinDir>
+    <SymbolsBinDir Condition="'$(SymbolsBinDir)'==''">$(TestSymbolsBinplacePath)</SymbolsBinDir>
+  </PropertyGroup>
+
+  <!--
+    The default binplace location points to the $(TargetDestination) MSBuild property. Projects can change where their items
+    are binplaced by setting this property, or specify the Destination metadata on the individual BinplaceItem's that are defined.
+   -->
+  <ItemDefinitionGroup>
+    <BinplaceItem>
+      <Destination>$(TargetDestination)</Destination>
+    </BinplaceItem>
+  </ItemDefinitionGroup>
+
+  <!--
+    The below target gathers the standard binplace items for projects. It's not complete, most notably any test app that builds an .appx
+    needs to manually binplace their dependencies, however there are currently only 2 projects that do this, and they specify so many other
+    dependencies, that there was no seemingly easy way to calculate them all.
+  -->
+  <Target Name="AddBinplaceItems" AfterTargets="Build">
+    <ItemGroup Condition="'$(BinplaceOutputAssemblies)'!='false'">
+      <BinplaceItem Include="$(MergedWinmdOutputLocation)\$(TargetName).winmd" Condition="Exists('$(MergedWinmdOutputLocation)\$(TargetName).winmd')" />
+      <BinplaceItem Include="$(OutDir)$(TargetName).dll" Condition="Exists('$(OutDir)$(TargetName).dll')"/>
+      <BinplaceItem Include="$(OutDir)$(TargetName).dll.mui" Condition="Exists('$(OutDir)$(TargetName).dll.mui')">
+        <Destination>$(TargetDestination)\$(MuiBinDir)</Destination>
+      </BinplaceItem>
+      <BinplaceItem Include="$(OutDir)$(TargetName).pri" Condition="Exists('$(OutDir)$(TargetName).pri')"/>
+      <BinplaceItem Include="$(OutDir)$(TargetName).exe" Condition="Exists('$(OutDir)$(TargetName).exe')"/>
+      <BinplaceItem Include="$(OutDir)$(TargetName).pgd" Condition="Exists('$(OutDir)$(TargetName).pgd')"/>
+      <BinplaceItem Include="$(OutDir)$(TargetName).pdb" Condition="Exists('$(OutDir)$(TargetName).pdb')">
+        <Destination>$(SymbolsBinDir)</Destination>
+      </BinplaceItem>
+
+      <!-- winmdobj type projects are .net projects that produce a .winmdobj that is run through the winmdexp tool that produces the .winmd -->
+      <BinplaceItem Include="$(OutDir)$(AssemblyName).winmd" Condition="'$(OutputType)' == 'winmdobj'"/>
+    </ItemGroup>
+
+    <!--
+      Binplace any generated xbf files and there accompanying xaml files for test code.  The BinplaceOutputAssemblies
+      property is used to determine whether or not the output assemblies are binplaced, and not these test files since
+      the customTypes projects produce assemblies that we want to ignore, we want to make sure these file are included
+
+      We exclude app.xbf and app.xaml because every project has one of those and they aren't used.
+    -->
+    <PropertyGroup>
+      <BinplaceGeneratedFiles Condition="'$(BinplaceGeneratedFiles)'==''">$(UseXamlCompiler)</BinplaceGeneratedFiles>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(TestCode)' == 'true' and '$(BinplaceGeneratedFiles)'=='true'">
+      <BinplaceItem Include="@(_GeneratedXamlFiles)" KeepDuplicates="false" Condition="%(Filename) != 'App'"/>
+      <BinplaceItem Include="@(_GeneratedXbfFiles)" KeepDuplicates="false" Condition="%(Filename) != 'App'"/>
+    </ItemGroup>
+  </Target>
+
+  <PropertyGroup>
+    <PrepareForRunDependsOn Condition="'$(UsingMicrosoftNoTargetsSdk)' != 'true' and '$(AdHocApp)'!='true'">
+      $(PrepareForRunDependsOn);
+      AddBinplaceItems
+    </PrepareForRunDependsOn>
+  </PropertyGroup>
+
+  <Target Name="Binplace"
+          BeforeTargets="Sign"
+          AfterTargets="AddBinplaceItems"
+          Condition="'@(BinplaceItem)' != ''"
+          Outputs="@(BinplaceItemCopied)">
+    <Copy SourceFiles="@(BinplaceItem)"
+          DestinationFiles="@(BinplaceItem->'$(ArtifactsBinRoot)%(Destination)\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true">
+        <Output TaskParameter="CopiedFiles" ItemName="BinplaceItemCopied" />
+    </Copy>
+  </Target>
+</Project>

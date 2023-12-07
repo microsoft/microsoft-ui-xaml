@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ProjectGuid>{42577057-854d-443d-ab59-f4e44c8f5207}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))" />
+  <Import Project="$(XamlSourcePath)\xcp\project-lift.props" />
+  <Import Project="$(XcpPath)\common.props" />
+  <Import Project="$(ProjectRoot)eng\winui-version.props"/>
+
+  <PropertyGroup>
+    <Dllentry>_DllMainCRTStartup</Dllentry>
+    <BinplaceOutputAssemblies>true</BinplaceOutputAssemblies>
+    <TargetDestination>$(ProductBinplaceDestinationPath)\GenericXaml</TargetDestination>
+    <TargetOsVersion>Windows7</TargetOsVersion>
+    <Mui>false</Mui>
+    <XamlPrecompiledInclude>precomp.h</XamlPrecompiledInclude>
+    <!-- Allow macro redefinition. -->
+    <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) WIL_SUPPRESS_PRIVATE_API_USE;</ProjectPreprocessorDefinitions>
+    <!-- Allow use of 'sealed' vs 'final' -->
+
+    <!-- Building GenXbf to be consumed by MSBuild, during the build, requires overriding the packaging output location -->
+    <GenXbfDllPackagingLocation Condition="'$(GenXbfDllPackagingLocation)'==''">$(ToolsPackageLocation)</GenXbfDllPackagingLocation>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalOptions>%(AdditionalOptions) /Zm300 /bigobj</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="DumpAdapterMetadataProvider.h" />
+    <ClInclude Include="DumpHelper.h" />
+    <ClInclude Include="precomp.h" />
+    <ClInclude Include="stubs.h" />
+    <ClInclude Include="XamlMetadataProviderStub.h" />
+    <ClInclude Include="XbfMetadataProvider.h" />
+    <ClInclude Include="XbfParserErrorService.h" />
+    <ResourceCompile Include="GenXbf.rc" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="PInvokesStub.cpp" />
+    <ClCompile Include="MetadataAPIStub.cpp" />
+    <ClCompile Include="comTemplateLibraryStub.cpp" />
+    <ClCompile Include="XbfCoreServices.cpp" />
+    <ClCompile Include="CoreServicesStub.cpp" />
+    <ClCompile Include="XbfParserErrorService.cpp" />
+    <ClCompile Include="XamlNativeRuntimeStub.cpp" />
+    <ClCompile Include="XamlManagedRuntimeStub.cpp" />
+    <ClCompile Include="XbfPal.cpp" />
+    <ClCompile Include="DependsStub.cpp" />
+    <ClCompile Include="PlatformStub.cpp" />
+    <ClCompile Include="XamlMetadataProviderStub.cpp" />
+    <ClCompile Include="DumpAdapterMetadataProvider.cpp" />
+    <ClCompile Include="DumpHelper.cpp" />
+    <ClCompile Include="ObjectWriterRuntimeFactory.cpp" />
+    <ClCompile Include="CFocusManagerStub.cpp" />
+    <ClCompile Include="VisualTreeStub.cpp" />
+    <ClCompile Include="InputManagerStub.cpp" />
+    <ClCompile Include="AccessKeyExportStub.cpp" />
+    <ClCompile Include="ContentRootCoordinatorStub.cpp" />
+  </ItemGroup>
+  <!--
+    GenXbf.dll is binplaced to two locations. The xaml compiler appends the platform to the path given for genxbf.dll,
+    so we can't point it to the regular binplace location that the repo follows
+  -->
+  <PropertyGroup>
+    <BinplaceSubdirectory Condition="'$(arch)' == 'amd64'">x64</BinplaceSubdirectory>
+    <BinplaceSubdirectory Condition="'$(arch)' != 'amd64'">$(arch.ToLowerInvariant())</BinplaceSubdirectory>
+  </PropertyGroup>
+  <ItemGroup>
+    <BinplaceItem Include="$(XamlBuildPath)\GenXbf.dll">
+      <Destination>GenXBF\$(BinplaceSubdirectory)\</Destination>
+    </BinplaceItem>
+
+    <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(GenXbfDllPackagingLocation)\$(BinplaceSubdirectory)"/>
+  </ItemGroup>
+  <PropertyGroup>
+    <ProjectIncludeDirectories>
+      $(ProjectIncludeDirectories);
+      $(XcpPath)\pal\win\inc;
+      $(XcpPath)\plat\win\common;
+      $(XcpPath)\plat\win\desktop;
+      $(XcpPath)\control\common\shared;
+      $(XcpPath)\core\inc;
+      $(XcpPath)\core\parser;
+      $(XcpPath)\control\inc;
+      $(XcpPath)\dxaml\lib;
+      $(XcpPath)\win\inc;
+      $(XcpPath)\core\dll;
+      $(XcpPath)\components\allocation\inc;
+      $(XcpPath)\components\terminateProcessOnOOM\inc;
+      $(XcpPath)\components\brushes\inc;
+      $(XcpPath)\components\scaling\inc;
+      $(XcpPath)\components\math\inc;
+      $(XcpPath)\components\accesskeys\inc;
+      $(XcpPath)\components\parser\inc;
+      $(XcpPath)\components\deferral\inc;
+      $(FrameworkUdkIncPath);
+    </ProjectIncludeDirectories>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <ModuleDefinitionFile>GenXbf.def</ModuleDefinitionFile>
+      <AdditionalDependencies>
+        %(AdditionalDependencies);
+        runtimeobject.lib;
+        oleaut32.lib;
+        xmllite.lib;
+        dbghelp.lib;
+        CoreMessaging.lib;
+      </AdditionalDependencies>
+      <!-- GenXBF is required to run on Windows Server 2012 R2,     -->
+      <!-- where some dlls do not exist. We need to delay load those. -->
+      <DelayLoadDLLs>$(delayload)</DelayLoadDLLs>
+    </Link>
+  </ItemDefinitionGroup>
+  <PropertyGroup>
+    <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) UNLOADABLE_DELAYLOAD_IMPLEMENTATION;</ProjectPreprocessorDefinitions>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(XcpPath)\components\base\lib\Microsoft.UI.Xaml.Base.vcxproj" Project="{47c659b9-130a-4eb2-b367-c556a179d0cb}" />
+    <ProjectReference Include="$(XcpPath)\components\dependencyLocator\lib\Microsoft.UI.Xaml.DependencyLocator.vcxproj" Project="{e2ffd843-5c31-491b-b58e-8a0bf55875ca}" />
+    <ProjectReference Include="$(XcpPath)\components\math\lib\Microsoft.UI.Xaml.Math.vcxproj" Project="{bbabdb8f-db10-4ca7-9d8e-0634b5b2a183}" />
+    <ProjectReference Include="$(XcpPath)\components\allocation\lib\Microsoft.UI.Xaml.Allocation.vcxproj" Project="{502b46a0-df35-4692-8275-ce66e7fdd741}" />
+    <ProjectReference Include="$(XcpPath)\components\terminateProcessOnOOM\lib\Microsoft.UI.Xaml.TerminateProcessOnOOM.vcxproj" Project="{950d68b3-b34b-4453-96f9-5d1517f539ca}" />
+    <ProjectReference Include="$(XcpPath)\components\runtimeEnabledFeatures\lib\Microsoft.UI.Xaml.RuntimeEnabledFeatures.vcxproj" Project="{968dc6e1-0f0a-4211-97cc-57ab0754206b}" />
+    <ProjectReference Include="$(XcpPath)\components\criticalsection\lib\Microsoft.UI.Xaml.CriticalSection.vcxproj" Project="{ee89d265-0c07-49a3-b39c-d2a40adf9d19}" />
+    <ProjectReference Include="$(XcpPath)\components\deferral\lib\Microsoft.UI.Xaml.Deferral.vcxproj" Project="{b686a4d4-ef60-411c-98c7-fd43225dc80f}" />
+    <ProjectReference Include="$(XcpPath)\components\dependencyObject\minlib\Microsoft.UI.Xaml.DependencyObjectMin.vcxproj" Project="{e0dd7555-841b-40e4-967a-b6ec2df39258}" />
+    <ProjectReference Include="$(XcpPath)\components\xstring\lib\Microsoft.UI.Xaml.XString.vcxproj" Project="{f9da8380-5504-4acc-bde0-72cd5981826d}" />
+    <ProjectReference Include="$(XcpPath)\components\legacy\lib\Microsoft.UI.Xaml.Legacy.vcxproj" Project="{95d07701-4af9-48e5-b726-0d42034811c8}" />
+    <ProjectReference Include="$(XcpPath)\components\staticpal\lib\Microsoft.UI.Xaml.StaticPal.vcxproj" Project="{c766b284-6b02-474b-9a87-58b2a997bc59}" />
+    <ProjectReference Include="$(XcpPath)\components\com\lib\Microsoft.UI.Xaml.Com.vcxproj" Project="{38506cdd-c34a-404c-b6e2-4d1ed278da88}" />
+    <ProjectReference Include="$(XcpPath)\components\metadata\lib\Microsoft.UI.Xaml.Metadata.vcxproj" Project="{23637f36-0cb9-4142-a60c-888b0efe9a4c}" />
+    <ProjectReference Include="$(XcpPath)\components\metadata\dynamicmetadatastorage\Microsoft.UI.Xaml.DynamicMetadataStorage.vcxproj" Project="{91cdc786-7b41-4339-b3dc-5854c6f04d4f}" />
+    <ProjectReference Include="$(XcpPath)\components\CValue\lib\Microsoft.UI.Xaml.CValue.vcxproj" Project="{a96cf4ea-7170-4aff-90a5-5fce1055270f}" />
+    <ProjectReference Include="$(XcpPath)\components\colors\lib\Microsoft.UI.Xaml.Colors.vcxproj" Project="{6b5aed1f-fd5d-47bc-9b9a-37d56e2c2e97}" />
+    <ProjectReference Include="$(XcpPath)\components\namescope\lib\Microsoft.UI.Xaml.NameScope.vcxproj" Project="{9589cb4a-53a6-42dc-a7ee-7e4374cd737d}" />
+    <ProjectReference Include="$(XcpPath)\components\flyweight\lib\Microsoft.UI.Xaml.Flyweight.vcxproj" Project="{88536608-bab9-49f1-9cc6-36b7f8e73d8a}" />
+    <ProjectReference Include="$(XcpPath)\components\simple\lib\Microsoft.UI.Xaml.Framework.SimpleProperties.vcxproj" Project="{4a1f0ce8-0b6e-4d29-9799-a629c067543a}" />
+    <ProjectReference Include="$(XcpPath)\core\parser\staticcore\Parser.Core.Static.vcxproj" Project="{bc600eb1-a9fd-45d5-8dff-28d793544e20}" />
+    <ProjectReference Include="$(XcpPath)\pal\debug\PALDebug.vcxproj" Project="{aebb76ae-fbd9-4c2d-b0c0-3b7ff5963d7d}" />
+    <ProjectReference Include="$(XcpPath)\dxaml\idl\winrt\merged\private\Microsoft.UI.Xaml.vcxproj" Project="{52b2ed64-1cfc-401b-8c5b-6d1e1deadf98}" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(XcpPath)\dxaml\idl\com\microsoft.ui.xaml-com.vcxproj" Project="{a1eb01c3-ac8b-45a8-97c8-c459b77ed690}" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(XcpPath)\hostpalplatmisc.vcxproj" Project="{379aa0e5-75bd-4ac3-9e9d-2168f400f1b0}"/>
+    
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

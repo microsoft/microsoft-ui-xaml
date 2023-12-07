@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <IsInWinUIRepo>true</IsInWinUIRepo>
+    <!-- Locations for props/targets that can be included to directly consume binaries from the build -->
+    <ConsumeBinariesProps>$(MSBuildThisFileDirectory)eng\consumebinaries.props</ConsumeBinariesProps>
+    <ConsumeBinariesTargets>$(MSBuildThisFileDirectory)eng\consumebinaries.targets</ConsumeBinariesTargets>
+    <ProjectRoot>$(MSBuildThisFileDirectory)</ProjectRoot>
+    <NugetPackageDirectory>$(ProjectRoot)packages</NugetPackageDirectory>
+    <!-- If testing local changes to WinUI details, then set this property to point to your local WinUI details repo -->
+    <WinUIDetailsRepoLocation></WinUIDetailsRepoLocation>
+    <WindowsSDKBuildToolsArchFolder Condition="'$(WindowsSDKBuildToolsArchFolder)' == '' And '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)'== 'X64'">x64</WindowsSDKBuildToolsArchFolder>
+    <WindowsSDKBuildToolsArchFolder Condition="'$(WindowsSDKBuildToolsArchFolder)' == ''">x86</WindowsSDKBuildToolsArchFolder>
+    <!-- WinAppSDK checks to ensure that customers always have the right version of the C#/WinRT runtime required by all our projection assemblies. 
+    (see https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKAggregator?path=/build/NuSpecs/build/Microsoft.WindowsAppSDK.targets)
+    There's often a lag in that becoming publicly available (via the .NET SDK), and for WinUI we're nearly always ahead of that.
+    So we opt out of the check and explicitly reference the latest Microsoft.Windows.Sdk.Net.Ref if necessary. -->
+    <WindowsAppSDKVerifyWinrtRuntimeVersion>false</WindowsAppSDKVerifyWinrtRuntimeVersion>
+    <!-- The sln files in this repo are not always "complete", but we still want to ensure Configuration/Platform are inherited correctly, in particular for graph builds. -->
+    <ShouldUnsetParentConfigurationAndPlatform>false</ShouldUnsetParentConfigurationAndPlatform>
+  </PropertyGroup>
+
+  <!--
+    Every project in this repository should include the root Directory.Build.props file. This allows us to create a 
+    single place where we can share common build infrastructure, without creating MSBuild duplicate import errors.
+    The files that this props file imports should be self-contained and not import other project files.
+    -->
+  <Import Project="eng\common.props" />
+  <Import Project="eng\configuration.props" />
+  <Import Project="eng\versions.props" />
+  <Import Project="eng\sdkconfig.props" Condition = "'$(UseLocalSDK)' != 'true'" />
+  <Import Project="eng\privatedependencies.props" />
+  <Import Project="eng\folderpaths.props" />
+  <Import Project="eng\tempfolder.props"/>
+  <Import Project="eng\midl.props" Condition="'$(IsWinmdProject)' == 'true'" />
+  <Import Project="eng\productmetadata.props" />
+  <Import Project="eng\packaging.props" />
+  <Import Project="eng\usexamlcompiler.props" Condition="'$(UseXamlCompiler)'=='true'" />
+  <Import Project="eng\testprojects.props" Condition="'$(TestCode)'=='true'" />
+  <Import Project="eng\muxfinalrelease.props" />
+  <Import Project="eng\adhocapp.props" Condition="'$(AdHocApp)'=='true'" />
+  <Import Project="eng\projectcaching.props" />
+</Project>

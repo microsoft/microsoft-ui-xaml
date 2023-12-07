@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <AppxPackageDir>$(OutDir)AppPackages\</AppxPackageDir>
+    <AppxPackageName>$(TargetName)</AppxPackageName>
+    <AppxPackageExtension>.appx</AppxPackageExtension>
+    <AppxPackageTestDir>$(AppxPackageDir)$(AppxPackageName)_Test\</AppxPackageTestDir>
+    <AppxPackageOutput>$(AppxPackageTestDir)$(AppxPackageName)$(AppxPackageExtension)</AppxPackageOutput>
+    <AppxIntermediateExtension>.intermediate</AppxIntermediateExtension>
+    <NoWarn>$(NoWarn);0105;8305</NoWarn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Page>
+      <IncludeInWindowsAppx>true</IncludeInWindowsAppx>
+    </Page>
+  </ItemDefinitionGroup>
+  <!-- We're going to include the .vcxitems in order to get their <Page> includes -
+       everything else is ignored, since this is a C# project. -->
+  <Import Project="$(MUXCProjectRoot)dev\**\*.vcxitems" />
+  <ItemGroup>
+    <PageToTest Include="@(Page)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="@(WinUIEditWinMD)" />
+    <Reference Include="@(WebView2WinMD)" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MUXProjectRoot)build\WinUITest.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\APITestBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\AxeScanTestPageAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\ExtendedObservableCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\TopLevelTestPageAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)VisualTreeTestHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
+      <DependentUpon>LeakTestPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)\MainPage.xaml.cs">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)\App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)\Properties\AssemblyInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\ApiTestAssemblyHandling.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\TestInventory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\CompositionPropertyLogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\CompositionPropertySpy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\ControlStateViewer\ControlStateViewer.xaml.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\IdleSynchronizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\MaterialHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\PrivateLoggingHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\RunOnUIThread.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\SemanticZoomTemplateItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\SemanticZoomTemplateSelector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\TestHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\TilePanel\TilePanel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\ViewHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\ThemeResourcesTests.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'" />
+    <Compile Include="$(MSBuildThisFileDirectory)\MiscTests\FocusTests.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\VisualTreeUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\LeakTests.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'" />
+    <Compile Include="$(MSBuildThisFileDirectory)\LocalizationTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertiesControl.xaml.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertyControlDiscardedEventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertyControlGeneratedEventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertyControlNeededEventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\TypeConverters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\Utilities\LoggingContentControl\LoggingContentControl.xaml.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildThisFileDirectory)ContentIncludes.props" />
+  <ItemGroup>
+    <AppContent Include="@(Content)" />
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="$(OutDir)AppxManifest.g.xml">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- In non Razzle environment, themeresource is packaged as .xaml other than .xbf, it's the same way as .png -->
+    <Content Include="@(PageToTest)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)\MainPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)\Themes\DisableAnimationsStyles.xaml" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <Link>Themes\DisableAnimationsStyles.xaml</Link>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)\Utilities\ControlStateViewer\ControlStateViewer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <Link>Utilities\ControlStateViewer\ControlStateViewer.xaml</Link>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertiesControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <Link>Utilities\EntityPropertiesControl\EntityPropertiesControl.xaml</Link>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="$(MSBuildThisFileDirectory)\App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+</Project>

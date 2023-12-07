@@ -1,0 +1,128 @@
+<#@ template language="C#" linePragmas="false" inherits="PhoneCppCodeGenerator<ClassDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+    class __declspec(novtable) <#= Model.GeneratedClassName #>
+        : public <#= Model.Name #>RuntimeClass
+<#
+if (Model.ImplementOverridesExplicitly) {
+    foreach (var virtualMemberInterface in Model.BaseClassesVirtualMemberInterfaces) {
+        if (VelocityFeatures.IsVelocityVersion(virtualMemberInterface.Version)) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(virtualMemberInterface.Version) #>)
+<#        }#>
+        , public <#= AsCppType(virtualMemberInterface.IdlClassInfo.FullVirtualMembersInterfaceName)  #>
+<#        if (VelocityFeatures.IsVelocityVersion(virtualMemberInterface.Version)) { #>
+#endif
+<#        }
+    }
+}#>
+    {
+<# if (Model.GeneratePartialClass) { #>
+        friend class <#= AsCppType(Model.IdlClassInfo.RuntimeClassFullName) #>;
+<# }
+   if (Model.IdlClassInfo.IsComposable) { #>
+        friend class pctl::AggregableComObject< 
+            <#= AsCppType(Model.IdlClassInfo.RuntimeClassFullName) #>,
+            <#= AsCppType(Model.IdlClassInfo.AbiInterfaceFullName) #>>;
+<# }
+   if (Model.IdlClassInfo.HasRuntimeClass) { #>
+        <#=Model.InspectableClassMacroName#>(<#= Model.IdlClassInfo.RuntimeClassString #>, TrustLevel::BaseTrust);
+<# } #>
+
+    public:
+        // Constructors/destructors.
+        <#= Model.GeneratedClassName #>() {};
+        virtual ~<#= Model.GeneratedClassName #>() {};
+
+<# if (!Model.IsAbstract) {
+        if (!Model.HasParameterlessConstructor) { #>
+        _Check_return_ HRESULT RuntimeClassInitialize();
+<#      }
+        foreach (ConstructorDefinition ctor in Model.Constructors) { #>
+        _Check_return_ HRESULT RuntimeClassInitialize(<#= GetParameterListAsString(ctor.Parameters) #>);
+<#      }
+
+   } #>
+
+<# if (Model.ImplementOverridesExplicitly) { #>
+        _Success_(return) _Check_return_ bool QueryInterfaceOverride(_In_ REFIID riid, _COM_Outptr_ void** ppInterface) override;
+        STDMETHOD(GetIids)(_Out_ ULONG *iidCount,
+            _When_(*iidCount == 0, _At_(*iids, _Post_null_))
+            _When_(*iidCount > 0, _At_(*iids, _Post_notnull_))
+            _Outptr_result_buffer_maybenull_(*iidCount) _Result_nullonfailure_ IID **iids) override;
+
+ <# } #>
+        // Properties.
+<# foreach (var property in Model.InstanceProperties.Where(p => p.GenerateStub)) { #>
+        <#= IncludeTemplate<Property>(property) #>
+<# } #>
+
+        // Virtual properties.
+
+        // Protected properties.
+
+        // Methods.
+<# foreach (var method in Model.InstanceMethods) { #>
+        <#= IncludeTemplate<Method>(method) #>
+<# } #>
+
+        // Virtual methods.
+
+        // Protected methods.
+
+        // Events.
+<# foreach (var ev in Model.InstanceEvents.Where(ev => !ev.XamlEventFlags.IsHidden)) { #>
+        <#= IncludeTemplate<Event>(ev) #>
+<# } #>
+
+    protected:
+
+        // Override Interfaces
+<# foreach (var overrideInterface in Model.OverrideInterfaces) { #>
+
+<#    if (VelocityFeatures.IsVelocityVersion(overrideInterface.Version)) {#>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(overrideInterface.Version) #>)
+<#    }#>
+        // <#= overrideInterface.IdlClassInfo.VirtualMembersInterfaceName #>
+<#      foreach (var property in overrideInterface.InstanceProperties.Where(p => p.GenerateStub && (p.IsVirtual))) { #>
+        <#= IncludeTemplate<InterfaceMethod>(property.GetGetMethod()) #>
+<# } #>
+<#      foreach (var method in overrideInterface.InstanceMethods.Where(m => m.GenerateStub && (m.IsAbstract || m.IsVirtual))) { #>
+        <#= IncludeTemplate<InterfaceMethod>(method) #>
+<#      } #>
+<# if (VelocityFeatures.IsVelocityVersion(overrideInterface.Version)) { #>
+#endif
+<# }#>
+<# } #>
+
+    private:
+        // Private Setters
+<# foreach (var property in Model.InstanceProperties.Where(p => p.GenerateStub && p.SetterModifier == Modifier.Private && !p.IsReadOnly)) { #>
+        <#= IncludeTemplate<PrivateProperty>(property) #>
+<# } #>
+
+        // Private properties.
+
+        // Customized properties.
+<# foreach (var property in Model.InstanceProperties.Where(m => m.HasImplMethod)) { #>
+        <#= IncludeTemplate<PropertyImpl>(property) #>
+<# } #>
+
+<# if (Model.IdlClassInfo.IsComposable) { #>
+        // Initialization methods required by AggregableComObject to make this an aggregable class.
+        virtual _Check_return_ HRESULT InitializeImpl(_In_opt_ IInspectable* pOuter = nullptr);
+<# } else { #>
+        // Initialization methods
+        virtual _Check_return_ HRESULT InitializeImpl();
+<# }
+   foreach (ConstructorDefinition ctor in Model.CustomConstructors) { #>
+        virtual _Check_return_ HRESULT InitializeImpl(<#= GetPhoneInitializeImplParameterListAsString(Model, ctor.Parameters) #>);
+<# } #>
+
+        // Event Sources
+<# foreach (EventDefinition ev in Model.InstanceEvents.Where(ev => !ev.XamlEventFlags.IsHidden)) {#>
+        Private::TrackerEventSource<<#= AsCppType(ev.EventHandlerType.AbiFullName) #>> <#= ev.EventSourceMemberName #>;
+<# }#>
+    };

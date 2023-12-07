@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{d3ee2594-dbb3-44a0-b2e1-303cc27ce041}</ProjectGuid>
+    </PropertyGroup>
+
+    <!-- ******************************** File Header ******************************\ -->
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved.                   -->
+    <!--                                                                              -->
+    <!-- Project specific SOURCES file.                                               -->
+    <!--                                                                              -->
+    <!-- ***************************************************************************/ -->
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+
+    <Import Project="$(XcpPath)\core\common.props"/>
+
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) BUILD_FOR_MEDIAENGINE;</ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="precomp.h"/>
+
+        <ClCompile Include="MediaPlayerPresenter.cpp"/>
+        <ClCompile Include="MediaPlayerElement.cpp"/>
+        <ClCompile Include="PowerModeRequestor.cpp"/>
+        <ClCompile Include="MediaPlayerExtensions.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+          $(ProjectIncludeDirectories);
+          $(XcpPath)\core\elements;
+          $(XcpPath)\components\Collection\inc;
+          $(XcpPath)\components\math\inc;
+          $(XcpPath)\components\OneCoreTransforms\inc;
+          $(XcpPath)\core\hw;
+          $(XcpPath)\core\inc;
+          $(XcpPath)\core\animation;
+          $(XcpPath)\core\compositor;
+          $(XcpPath)\core\sw;
+          $(XcpPath)\core\text\inc;
+          $(XcpPath)\core\text\RichTextServices\inc;
+          $(XcpPath)\win\inc;
+          $(XcpPath)\core\native\inc;
+          $(XcpPath)\dxaml\lib;
+          $(XcpPath)\dxaml\lib\winrtgeneratedclasses;
+          $(FrameworkUdkIncPath);
+        </ProjectIncludeDirectories>
+        <XamlPrecompiledInclude>precomp.h</XamlPrecompiledInclude>
+        <XamlPrecompiledPch>mediaengine.pch</XamlPrecompiledPch>
+        <XamlPrecompiledObj>mediaengine.obj</XamlPrecompiledObj>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

@@ -1,0 +1,17 @@
+﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+[MUX_INTERNAL]
+[default_interface]
+[webhosthidden]
+runtimeclass ItemsViewTestHooks
+{
+    static event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.ItemsView, Object> KeyboardNavigationReferenceOffsetChanged;
+
+    static Windows.Foundation.Point GetKeyboardNavigationReferenceOffset(MU_XC_NAMESPACE.ItemsView itemsView);
+    static MU_XC_NAMESPACE.ScrollView GetScrollViewPart(MU_XC_NAMESPACE.ItemsView itemsView);
+    static MU_XC_NAMESPACE.ItemsRepeater GetItemsRepeaterPart(MU_XC_NAMESPACE.ItemsView itemsView);
+    static MU_XC_NAMESPACE.SelectionModel GetSelectionModel(MU_XC_NAMESPACE.ItemsView itemsView);
+}
+
+}

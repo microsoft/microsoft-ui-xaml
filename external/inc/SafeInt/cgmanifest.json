@@ -1,0 +1,16 @@
+{
+    "$schema": "https://json.schemastore.org/component-detection-manifest.json",
+    "version": 1,
+    "registrations": [
+        {
+            "component": {
+                "type": "git",
+                "git": { 
+                    "repositoryUrl": "https://github.com/dcleblanc/SafeInt/", 
+                    "commitHash": "fdba0c20be0810ab0cb8da0bac3e3e1e9e524539", 
+                },
+            },
+            "developmentDependency": false,
+        }
+    ],
+}

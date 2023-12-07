@@ -1,0 +1,224 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- TAEF requires an appx extension -->
+    <AppxPackageExtension>.appx</AppxPackageExtension>
+    <DefineConstants>$(DefineConstants);USING_TAEF</DefineConstants>
+    <ProjectGuid>{02800516-6BE8-42A9-9665-5446896BB5C5}</ProjectGuid>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <TargetPlatformVersion>10.0.18362.0</TargetPlatformVersion>
+    <WindowsAppSdkUndockedRegFreeWinRTInitialize>false</WindowsAppSdkUndockedRegFreeWinRTInitialize>
+    <BinplaceGeneratedFiles>false</BinplaceGeneratedFiles>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ProjectGuid>{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}</ProjectGuid>
+    <!-- Don't warn about using experimental APIs -->
+    <NoWarn>$(NoWarn);8305</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(MUXProjectRoot)\Samples\AppTestAutomationHelpers\AppTestAutomationHelpers.vcxproj">
+      <Project>{128e6f7a-578c-48dc-bd3f-750ec662c268}</Project>
+      <Name>AppTestAutomationHelpers</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(environment.props))" />
+  <Import Project="$(MUXCProjectRoot)mux.controls.props" Condition="Exists('$(MUXCProjectRoot)mux.controls.props')" />
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>c86d3f1a-cd11-406d-abee-ae4c9f23b8fe</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>IXMPTestApp</Import_RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProjectGuid>{FCC396F5-26DD-4CA3-981E-C7BC9FEA4546}</ProjectGuid>
+    <OutputType>AppContainerExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>IXMPTestApp</RootNamespace>
+    <AssemblyName>IXMPTestApp</AssemblyName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">$(MuxSdkVersion)</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <PackageCertificateKeyFile>$(MUXProjectRoot)build\WinUITest.pfx</PackageCertificateKeyFile>
+    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+    <AppxPackageName>IXMPTestApp</AppxPackageName>
+    <!-- needed to work with TDP -->
+    <GenerateAppxPackageOnBuild Condition="'$(IsDebugTestConfiguration)' == 'true'">true</GenerateAppxPackageOnBuild>
+    <!-- Override appx version for PackageES build -->
+    <XefAppxManifestVersion>1.1.0.0</XefAppxManifestVersion>
+    <LangVersion>$(CSLangVersion)</LangVersion>
+    <IlcOutputPath>$(OutputPath)ilc\out\</IlcOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86' Or '$(Configuration)|$(Platform)' == 'Debug_test|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <DefineConstants>$(DefineConstants);TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+    <UseDotNetNativeToolchain>false</UseDotNetNativeToolchain>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64' Or '$(Configuration)|$(Platform)' == 'Debug_test|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <DefineConstants>$(DefineConstants);TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+    <UseDotNetNativeToolchain>false</UseDotNetNativeToolchain>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM64' Or '$(Configuration)|$(Platform)' == 'Debug_test|ARM64'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>$(DefineConstants);DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>ARM64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM64'">
+    <DefineConstants>$(DefineConstants);TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>ARM64</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+    <UseDotNetNativeToolchain>false</UseDotNetNativeToolchain>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);0105;2008</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(MUXCProjectRoot)dev\dll\Microsoft.UI.Xaml.Controls.vcxproj" ReferenceOutputAssembly="False" />
+    <ProjectReference Include="$(MUXProjectRoot)MergedWinMD\private\MergedWinMD.vcxproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MUXProjectRoot)build\WinUITest.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="MainPage.xaml.cs">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Tests\MetadataProviderTests.cs" />
+    <Compile Include="WaitForDebugger.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Properties\App.rd.xml" />
+    <Content Include="Assets\LockScreenLogo.scale-200.png" />
+    <Content Include="Assets\SplashScreen.scale-200.png" />
+    <Content Include="Assets\Square150x150Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Assets\StoreLogo.png" />
+    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AppContent Include="Properties\App.rd.xml" />
+    <AppContent Include="Assets\LockScreenLogo.scale-200.png" />
+    <AppContent Include="Assets\SplashScreen.scale-200.png" />
+    <AppContent Include="Assets\Square150x150Logo.scale-200.png" />
+    <AppContent Include="Assets\Square44x44Logo.scale-200.png" />
+    <AppContent Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <AppContent Include="Assets\StoreLogo.png" />
+    <AppContent Include="Assets\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="MainPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="$(WindowsAppSdkPackageVersion)" />
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="$(MicrosoftNETCoreUniversalWindowsPlatformVersion)" />
+    <PackageReference Include="Microsoft.Taef" Version="$(TaefNugetPackageVersion)" />
+    <PackageReference Include="MUXCustomBuildTasks" Version="$(MuxCustomBuildTasksPackageVersion)" />
+  </ItemGroup>
+  <Import Project="$(MUXCProjectRoot)dev\CommonManaged\CommonManaged.projitems" Label="Shared" />
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '15.0' ">
+    <VisualStudioVersion>15.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Project="$(CSharpTargetsFilePath)" />
+  <Import Project="..\RetargetCopyLocalFiles.targets" />
+  <Import Project="$(MUXCProjectRoot)CustomInlineTasks.targets" />
+  <Import Project="..\TestApp.targets" />
+  <Target Name="CustomAfterGenerateAppPackages" AfterTargets="_GenerateAppxPackage">
+    <RunPowershellScript Path="$(MUXCProjectRoot)tools\ExtractPackageDependencies.ps1" Parameters="-sourceFile $(OutDir)\$(MSBuildProjectName).build.appxrecipe -platform $(PlatformName) -outputFile $(AppxPackageTestDir)$(AppxPackageName).dependencies.txt" FilesWritten="$(AppxPackageTestDir)$(AppxPackageName).dependencies.txt">
+      <Output TaskParameter="MSBuildProcessId" ItemName="MSBuildProcessIdsToKill" />
+    </RunPowershellScript>
+  </Target>
+  <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' != 'true'">
+    <TargetDestination>$(TestBinplaceDestinationPath)</TargetDestination>
+    <AppxDependencyPlatform Condition="'$(Platform)' == '' or '$(Platform)' == 'AnyCPU'">$(arch)</AppxDependencyPlatform>
+    <AppxDependencyPlatform Condition="'$(Platform)' == 'Win32'">x86</AppxDependencyPlatform>
+    <AppxDependencyPlatform Condition="'$(AppxDependencyPlatform)' == ''">$(Platform)</AppxDependencyPlatform>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(BuildingInsideVisualStudio)' != 'true'">
+    <BinplaceItem Include="$(AppxPackageDir)$(TargetName)_Test\$(TargetName).appx" />
+    <BinplaceItem Include="$(AppxPackageDir)$(TargetName)_Test\$(TargetName).cer">
+      <Destination>$(TestDependenciesResourcesDestinationPath)</Destination>
+    </BinplaceItem>
+    <BinplaceItem Include="$(ExtensionSdkDir)\Microsoft.VCLibs\14.0\Appx\Debug\$(AppxDependencyPlatform)\*.appx">
+      <Destination>$(TestDependenciesResourcesDestinationPath)\AppX</Destination>
+    </BinplaceItem>
+    <BinplaceItem Include="$(ExtensionSdkDir)\Microsoft.VCLibs\14.0\Appx\Retail\$(AppxDependencyPlatform)\*.appx">
+      <Destination>$(TestDependenciesResourcesDestinationPath)\AppX</Destination>
+    </BinplaceItem>
+    <BinplaceItem Include="$(ExtensionSdkDir)\Microsoft.VCLibs.Desktop\14.0\Appx\Debug\$(AppxDependencyPlatform)\*.appx">
+      <Destination>$(TestDependenciesResourcesDestinationPath)\AppX</Destination>
+    </BinplaceItem>
+    <BinplaceItem Include="$(ExtensionSdkDir)\Microsoft.VCLibs.Desktop\14.0\Appx\Retail\$(AppxDependencyPlatform)\*.appx">
+      <Destination>$(TestDependenciesResourcesDestinationPath)\AppX</Destination>
+    </BinplaceItem>
+  </ItemGroup>
+  <!-- Override WindowsAppSdkSelfContained support that disables UWP -->
+  <Target Name="_RemoveWinMDFromAppxManifest" />
+</Project>

@@ -1,0 +1,86 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass RatingItemInfo : Microsoft.UI.Xaml.DependencyObject
+{
+    RatingItemInfo();
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass RatingItemFontInfo : RatingItemInfo
+{
+    RatingItemFontInfo();
+
+    String DisabledGlyph { get; set; };
+    String Glyph { get; set; };
+    String PointerOverGlyph { get; set; };
+    String PointerOverPlaceholderGlyph { get; set; };
+    String PlaceholderGlyph { get; set; };
+    String UnsetGlyph { get; set; };
+
+    static Microsoft.UI.Xaml.DependencyProperty DisabledGlyphProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty GlyphProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty PlaceholderGlyphProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty PointerOverGlyphProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty PointerOverPlaceholderGlyphProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty UnsetGlyphProperty { get; };
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass RatingItemImageInfo : RatingItemInfo
+{
+    RatingItemImageInfo();
+
+    Microsoft.UI.Xaml.Media.ImageSource DisabledImage { get; set; };
+    Microsoft.UI.Xaml.Media.ImageSource Image { get; set; };
+    Microsoft.UI.Xaml.Media.ImageSource PlaceholderImage { get; set; };
+    Microsoft.UI.Xaml.Media.ImageSource PointerOverImage { get; set; };
+    Microsoft.UI.Xaml.Media.ImageSource PointerOverPlaceholderImage { get; set; };
+    Microsoft.UI.Xaml.Media.ImageSource UnsetImage { get; set; };
+
+    static Microsoft.UI.Xaml.DependencyProperty DisabledImageProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty ImageProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty PlaceholderImageProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty PointerOverImageProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty PointerOverPlaceholderImageProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty UnsetImageProperty { get; };
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass RatingControl : Microsoft.UI.Xaml.Controls.Control
+{
+    RatingControl();
+
+    String Caption { get; set; };
+    [MUX_DEFAULT_VALUE("1")]
+    Int32 InitialSetValue { get; set; };
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsClearEnabled { get; set; };
+    Boolean IsReadOnly { get; set; };
+    [MUX_DEFAULT_VALUE("5")]
+    Int32 MaxRating { get; set; };
+    [MUX_DEFAULT_VALUE("-1")]
+    Double PlaceholderValue { get; set; };
+    RatingItemInfo ItemInfo { get; set; };
+    [MUX_DEFAULT_VALUE("-1")]
+    Double Value { get; set; };
+    event Windows.Foundation.TypedEventHandler<RatingControl, Object> ValueChanged;
+
+    static Microsoft.UI.Xaml.DependencyProperty CaptionProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty InitialSetValueProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsClearEnabledProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty MaxRatingProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty PlaceholderValueProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty ItemInfoProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty ValueProperty { get; };
+}
+
+}

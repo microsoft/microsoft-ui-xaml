@@ -1,0 +1,671 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.Samples.LinedFlowLayoutDemo"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp">
+
+    <Grid x:Name="root" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition x:Name="cdEvents" Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Orientation="Horizontal" Grid.ColumnSpan="5">
+            <CheckBox x:Name="chkLinedFlowLayout" 
+                      Content="LinedFlowLayout" 
+                      Checked="ChkLinedFlowLayout_Checked" 
+                      Unchecked="ChkLinedFlowLayout_Unchecked" 
+                      IsChecked="True" 
+                      IsThreeState="False"
+                      Margin="2,0,0,0"/>
+            <CheckBox x:Name="chkLayoutPanel" 
+                      Content="LayoutPanel" 
+                      Checked="ChkLayoutPanel_Checked" 
+                      Unchecked="ChkLayoutPanel_Unchecked" 
+                      IsChecked="True" 
+                      IsThreeState="False"
+                      Margin="2,0,0,0"/>
+            <CheckBox x:Name="chkScrollView"
+                      Content="ScrollView"
+                      Checked="ChkScrollView_Checked"
+                      Unchecked="ChkScrollView_Unchecked"
+                      IsChecked="True"
+                      IsThreeState="False"
+                      Margin="2,0,0,0"/>
+            <CheckBox x:Name="chkEvents" 
+                      Content="Events" 
+                      Checked="ChkEvents_Checked" 
+                      Unchecked="ChkEvents_Unchecked" 
+                      IsChecked="True"
+                      IsThreeState="False"
+                      Margin="2,0,0,0"/>
+        </StackPanel>
+
+        <ScrollView x:Name="scrollView" Height="800" Grid.Row="1" Margin="1" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+            <LayoutPanel x:Name="layoutPanel" VerticalAlignment="Top">
+                <LayoutPanel.Layout>
+                    <LinedFlowLayout x:Name="linedFlowLayout"/>
+                </LayoutPanel.Layout>
+            </LayoutPanel>
+        </ScrollView>
+
+        <Canvas x:Name="canvasLinedFlowLayoutLockedItems" Visibility="Collapsed" Grid.Row="1" Margin="1" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
+
+        <ScrollViewer x:Name="svLinedFlowLayout" Grid.Row="1" Grid.Column="1">
+            <Grid Background="{ThemeResource SystemListLowColor}" Margin="4,0,4,0" Padding="6"
+                  BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="LinedFlowLayout" Grid.ColumnSpan="5" Foreground="Red"/>
+                
+                <TextBlock Text="LinedFlowLayout Properties" Grid.Row="1" Grid.ColumnSpan="5" Foreground="DarkOrange"/>
+
+                <TextBlock Text="RealizedItemIndexDbg:" Grid.Row="2" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                    <TextBox x:Name="txtLinedFlowLayoutFirstRealizedItemIndexDbg" Text="-1" IsReadOnly="True" Margin="0,0,4,0"/>
+                    <TextBox x:Name="txtLinedFlowLayoutLastRealizedItemIndexDbg" Text="-1" IsReadOnly="True"/>
+                </StackPanel>
+                <Button x:Name="btnGetLinedFlowLayoutRealizedItemIndexesDbg" Content="G" Margin="1" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutRealizedItemIndexesDbg_Click"/>
+
+                <TextBlock Text="FrozenItemIndexDbg:" Grid.Row="3" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                    <TextBox x:Name="txtLinedFlowLayoutFirstFrozenItemIndexDbg" Text="-1" IsReadOnly="True" Margin="0,0,4,0"/>
+                    <TextBox x:Name="txtLinedFlowLayoutLastFrozenItemIndexDbg" Text="-1" IsReadOnly="True"/>
+                </StackPanel>
+                <Button x:Name="btnGetLinedFlowLayoutFrozenItemIndexesDbg" Content="G" Margin="1" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutFrozenItemIndexesDbg_Click"/>
+
+                <TextBlock Text="SnappedAverageItemsPerLineDbg:" Grid.Row="4" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLinedFlowLayoutSnappedAverageItemsPerLineDbg" Text="0.0" IsReadOnly="True" MaxWidth="130" Grid.Row="4" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLinedFlowLayoutSnappedAverageItemsPerLineDbg" Content="G" Margin="1" Grid.Row="4" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutSnappedAverageItemsPerLineDbg_Click"/>
+
+                <TextBlock Text="ForcedAvgItemsPerLineDividerDbg:" Grid.Row="5" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLinedFlowLayoutForcedAverageItemsPerLineDividerDbg" Text="0.0" Grid.Row="5" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLinedFlowLayoutForcedAverageItemsPerLineDividerDbg" Content="G" Margin="1" Grid.Row="5" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutForcedAverageItemsPerLineDividerDbg_Click"/>
+                <Button x:Name="btnSetLinedFlowLayoutForcedAverageItemsPerLineDividerDbg" Content="S" Margin="1" Grid.Row="5" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLinedFlowLayoutForcedAverageItemsPerLineDividerDbg_Click"/>
+
+                <TextBlock Text="AverageItemAspectRatioDbg:" Grid.Row="6" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLinedFlowLayoutAverageItemAspectRatioDbg" Text="0.0" IsReadOnly="True" MaxWidth="130" Grid.Row="6" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLinedFlowLayoutAverageItemAspectRatioDbg" Content="G" Margin="1" Grid.Row="6" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutAverageItemAspectRatioDbg_Click"/>
+
+                <TextBlock Text="ForcedAvgItemAspectRatioDbg:" Grid.Row="7" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLinedFlowLayoutForcedAverageItemAspectRatioDbg" Text="0.0" Grid.Row="7" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLinedFlowLayoutForcedAverageItemAspectRatioDbg" Content="G" Margin="1" Grid.Row="7" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutForcedAverageItemAspectRatioDbg_Click"/>
+                <Button x:Name="btnSetLinedFlowLayoutForcedAverageItemAspectRatioDbg" Content="S" Margin="1" Grid.Row="7" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLinedFlowLayoutForcedAverageItemAspectRatioDbg_Click"/>
+
+                <TextBlock Text="ForcedWrapMultiplierDbg:" Grid.Row="8" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLinedFlowLayoutForcedWrapMultiplierDbg" Text="0.0" Grid.Row="8" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLinedFlowLayoutForcedWrapMultiplierDbg" Content="G" Margin="1" Grid.Row="8" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutForcedWrapMultiplierDbg_Click"/>
+                <Button x:Name="btnSetLinedFlowLayoutForcedWrapMultiplierDbg" Content="S" Margin="1" Grid.Row="8" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLinedFlowLayoutForcedWrapMultiplierDbg_Click"/>
+
+                <TextBlock Text="LogItemIndexDbg:" Grid.Row="9" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLinedFlowLayoutLogItemIndexDbg" Text="-1" Grid.Row="9" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLinedFlowLayoutLogItemIndexDbg" Content="G" Margin="1" Grid.Row="9" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutLogItemIndexDbg_Click"/>
+                <Button x:Name="btnSetLinedFlowLayoutLogItemIndexDbg" Content="S" Margin="1" Grid.Row="9" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLinedFlowLayoutLogItemIndexDbg_Click"/>
+
+                <TextBlock Text="ActualLineHeight:" Grid.Row="10" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLinedFlowLayoutActualLineHeight" Text="0" Grid.Row="10" Grid.Column="1" IsReadOnly="True" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLinedFlowLayoutActualLineHeight" Content="G" Margin="1" Grid.Row="10" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutActualLineHeight_Click"/>
+
+                <TextBlock Text="LineHeight:" Grid.Row="11" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLinedFlowLayoutLineHeight" Text="NaN" Grid.Row="11" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLinedFlowLayoutLineHeight" Content="G" Margin="1" Grid.Row="11" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutLineHeight_Click"/>
+                <Button x:Name="btnSetLinedFlowLayoutLineHeight" Content="S" Margin="1" Grid.Row="11" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLinedFlowLayoutLineHeight_Click"/>
+
+                <TextBlock Text="LineSpacing:" Grid.Row="12" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLinedFlowLayoutLineSpacing" Text="0" Grid.Row="12" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLinedFlowLayoutLineSpacing" Content="G" Margin="1" Grid.Row="12" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutLineSpacing_Click"/>
+                <Button x:Name="btnSetLinedFlowLayoutLineSpacing" Content="S" Margin="1" Grid.Row="12" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLinedFlowLayoutLineSpacing_Click"/>
+
+                <TextBlock Text="MinItemSpacing:" Grid.Row="13" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLinedFlowLayoutMinItemSpacing" Text="0" Grid.Row="13" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLinedFlowLayoutMinItemSpacing" Content="G" Margin="1" Grid.Row="13" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutMinItemSpacing_Click"/>
+                <Button x:Name="btnSetLinedFlowLayoutMinItemSpacing" Content="S" Margin="1" Grid.Row="13" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLinedFlowLayoutMinItemSpacing_Click"/>
+
+                <TextBlock Text="ItemsStretch:" Grid.Row="14" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbLinedFlowLayoutItemsStretch" Margin="1" Grid.Row="14" Grid.Column="1"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="0" SelectionChanged="CmbLinedFlowLayoutItemsStretch_SelectionChanged">
+                    <ComboBoxItem>None</ComboBoxItem>
+                    <ComboBoxItem>Fill</ComboBoxItem>
+                </ComboBox>
+
+                <TextBlock Text="ItemsJustification:" Grid.Row="15" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbLinedFlowLayoutItemsJustification" Margin="1" Grid.Row="15" Grid.Column="1"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="0" SelectionChanged="CmbLinedFlowLayoutItemsJustification_SelectionChanged">
+                    <ComboBoxItem>Start</ComboBoxItem>
+                    <ComboBoxItem>Center</ComboBoxItem>
+                    <ComboBoxItem>End</ComboBoxItem>
+                    <ComboBoxItem>SpaceAround</ComboBoxItem>
+                    <ComboBoxItem>SpaceBetween</ComboBoxItem>
+                    <ComboBoxItem>SpaceEvenly</ComboBoxItem>
+                </ComboBox>
+
+                <TextBlock Text="LinedFlowLayout Methods" Grid.Row="16" Foreground="DarkOrange" Grid.ColumnSpan="2"/>
+
+                <Button x:Name="btnLayoutInvalidateMeasure" Content="InvalidateMeasure" Margin="1" Grid.Row="17" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Click="BtnLayoutInvalidateMeasure_Click"/>                
+                <Button x:Name="btnLayoutInvalidateItemsInfo" Content="InvalidateItemsInfo" Margin="1" Grid.Row="18" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Click="BtnLayoutInvalidateItemsInfo_Click"/>
+
+                <TextBlock Text="Index:" Grid.Row="19" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLinedFlowLayoutItemIndex" Text="0" Margin="1" Grid.Row="19" Grid.Column="1" VerticalAlignment="Center"/>
+
+                <Button x:Name="btnLinedFlowLayoutLockItemToLine" Content="LockItemToLine" Margin="1" Grid.Row="20" Click="BtnLinedFlowLayoutLockItemToLine_Click"/>
+                <TextBox x:Name="txtLinedFlowLayoutLockLine" IsReadOnly="True" Margin="1" Grid.Row="20" Grid.Column="1" VerticalAlignment="Center"/>
+
+                <Button x:Name="btnLinedFlowLayoutUnlockItems" Content="UnlockItems" Margin="1" Grid.Row="21" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Click="BtnLinedFlowLayoutUnlockItems_Click"/>
+
+                <CheckBox x:Name="chkLinedFlowLayoutShowLockedItems" Content="Show locked items?" Margin="1" Grid.Row="22" Grid.ColumnSpan="2" Checked="ChkLinedFlowLayoutShowLockedItems_Checked" Unchecked="ChkLinedFlowLayoutShowLockedItems_Unchecked"/>
+
+                <CheckBox x:Name="chkLinedFlowLayoutHandleItemsInfoRequested" Content="Handle ItemsInfoRequested?" IsChecked="True" Margin="1" Grid.Row="23" Grid.ColumnSpan="2" Checked="ChkLinedFlowLayoutHandleItemsInfoRequested_IsCheckedChanged" Unchecked="ChkLinedFlowLayoutHandleItemsInfoRequested_IsCheckedChanged"/>
+
+                <CheckBox x:Name="chkLinedFlowLayoutIsFastPathSupportedDbg" Content="Is fast path supported?" IsChecked="True" Margin="1" Grid.Row="24" Grid.ColumnSpan="6" Checked="ChkLinedFlowLayoutIsFastPathSupportedDbg_IsCheckedChanged" Unchecked="ChkLinedFlowLayoutIsFastPathSupportedDbg_IsCheckedChanged"/>
+            </Grid>
+        </ScrollViewer>
+
+        <ScrollViewer x:Name="svLayoutPanel" Grid.Row="1" Grid.Column="2">
+            <Grid Margin="4,0,4,0" Padding="6"                
+                BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="LayoutPanel" Grid.ColumnSpan="5" Foreground="Red"/>
+
+                <TextBlock Text="LayoutPanel Properties" Grid.Row="1" Grid.ColumnSpan="5" Foreground="DarkOrange"/>
+
+                <TextBlock Text="Background:" Grid.Row="2" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbLayoutPanelBackground" Margin="1" Grid.Row="2" Grid.Column="1" 
+                    HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="2" SelectionChanged="CmbLayoutPanelBackground_SelectionChanged">
+                    <ComboBoxItem>null</ComboBoxItem>
+                    <ComboBoxItem>Transparent</ComboBoxItem>
+                    <ComboBoxItem>AliceBlue</ComboBoxItem>
+                    <ComboBoxItem>Aqua</ComboBoxItem>
+                </ComboBox>
+
+                <TextBlock Text="BorderBrush:" Grid.Row="3" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbLayoutPanelBorderBrush" Margin="1" Grid.Row="3" Grid.Column="1" 
+                    HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbLayoutPanelBorderBrush_SelectionChanged">
+                    <ComboBoxItem>null</ComboBoxItem>
+                    <ComboBoxItem>Transparent</ComboBoxItem>
+                    <ComboBoxItem>Blue</ComboBoxItem>
+                    <ComboBoxItem>Green</ComboBoxItem>
+                </ComboBox>
+
+                <TextBlock Text="BorderThickness:" Grid.Row="4" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutPanelBorderThickness" Grid.Row="4" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLayoutPanelBorderThickness" Content="G" Margin="1" Grid.Row="4" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelBorderThickness_Click"/>
+                <Button x:Name="btnSetLayoutPanelBorderThickness" Content="S" Margin="1" Grid.Row="4" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutPanelBorderThickness_Click"/>
+
+                <TextBlock Text="Margin:" Grid.Row="5" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutPanelMargin" Grid.Row="5" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLayoutPanelMargin" Content="G" Margin="1" Grid.Row="5" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelMargin_Click"/>
+                <Button x:Name="btnSetLayoutPanelMargin" Content="S" Margin="1" Grid.Row="5" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutPanelMargin_Click"/>
+
+                <TextBlock Text="Padding:" Grid.Row="6" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutPanelPadding" Grid.Row="6" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLayoutPanelPadding" Content="G" Margin="1" Grid.Row="6" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelPadding_Click"/>
+                <Button x:Name="btnSetLayoutPanelPadding" Content="S" Margin="1" Grid.Row="6" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutPanelPadding_Click"/>
+
+                <TextBlock Text="Width:" Grid.Row="7" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutPanelWidth" Grid.Row="7" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLayoutPanelWidth" Content="G" Margin="1" Grid.Row="7" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelWidth_Click"/>
+                <Button x:Name="btnSetLayoutPanelWidth" Content="S" Margin="1" Grid.Row="7" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutPanelWidth_Click"/>
+
+                <TextBlock Text="Height:" Grid.Row="8" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutPanelHeight" Grid.Row="8" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLayoutPanelHeight" Content="G" Margin="1" Grid.Row="8" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelHeight_Click"/>
+                <Button x:Name="btnSetLayoutPanelHeight" Content="S" Margin="1" Grid.Row="8" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutPanelHeight_Click"/>
+
+                <TextBlock Text="MaxWidth:" Grid.Row="9" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutPanelMaxWidth" Grid.Row="9" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLayoutPanelMaxWidth" Content="G" Margin="1" Grid.Row="9" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelMaxWidth_Click"/>
+                <Button x:Name="btnSetLayoutPanelMaxWidth" Content="S" Margin="1" Grid.Row="9" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutPanelMaxWidth_Click"/>
+
+                <TextBlock Text="MaxHeight:" Grid.Row="10" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutPanelMaxHeight" Grid.Row="10" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLayoutPanelMaxHeight" Content="G" Margin="1" Grid.Row="10" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelMaxHeight_Click"/>
+                <Button x:Name="btnSetLayoutPanelMaxHeight" Content="S" Margin="1" Grid.Row="10" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutPanelMaxHeight_Click"/>
+
+                <TextBlock Text="CornerRadius:" Grid.Row="11" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutPanelCornerRadius" Grid.Row="11" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLayoutPanelCornerRadius" Content="G" Margin="1" Grid.Row="11" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelCornerRadius_Click"/>
+                <Button x:Name="btnSetLayoutPanelCornerRadius" Content="S" Margin="1" Grid.Row="11" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutPanelCornerRadius_Click"/>
+
+                <TextBlock Text="HorizontalAlignment:" Grid.Row="12" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbLayoutPanelHorizontalAlignment" Width="115" Margin="1" Grid.Row="12" Grid.Column="1" VerticalAlignment="Center">
+                    <ComboBoxItem>Left</ComboBoxItem>
+                    <ComboBoxItem>Center</ComboBoxItem>
+                    <ComboBoxItem>Right</ComboBoxItem>
+                    <ComboBoxItem>Stretch</ComboBoxItem>
+                </ComboBox>
+                <Button x:Name="btnGetLayoutPanelHorizontalAlignment" Content="G" Margin="1" Grid.Row="12" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelHorizontalAlignment_Click"/>
+                <Button x:Name="btnSetLayoutPanelHorizontalAlignment" Content="S" Margin="1" Grid.Row="12" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutPanelHorizontalAlignment_Click"/>
+
+                <TextBlock Text="VerticalAlignment:" Grid.Row="18" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbLayoutPanelVerticalAlignment" Width="115" Margin="1" Grid.Row="18" Grid.Column="1" VerticalAlignment="Center">
+                    <ComboBoxItem>Top</ComboBoxItem>
+                    <ComboBoxItem>Center</ComboBoxItem>
+                    <ComboBoxItem>Bottom</ComboBoxItem>
+                    <ComboBoxItem>Stretch</ComboBoxItem>
+                </ComboBox>
+                <Button x:Name="btnGetLayoutPanelVerticalAlignment" Content="G" Margin="1" Grid.Row="18" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelVerticalAlignment_Click"/>
+                <Button x:Name="btnSetLayoutPanelVerticalAlignment" Content="S" Margin="1" Grid.Row="18" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutPanelVerticalAlignment_Click"/>
+
+                <Button x:Name="btnLayoutPanelResetLayout" Content="Reset Layout" Margin="1" Grid.Row="19" Grid.ColumnSpan="4" VerticalAlignment="Center" Click="BtnLayoutPanelResetLayout_Click"/>
+                <Button x:Name="btnLayoutPanelSetLayout" Content="Set Layout" Margin="1" Grid.Row="20" Grid.ColumnSpan="4" VerticalAlignment="Center" Click="BtnLayoutPanelSetLayout_Click"/>
+
+                <TextBlock Text="LayoutPanel Children" Grid.Row="21" Grid.ColumnSpan="5" Foreground="DarkOrange"/>
+
+                <TextBlock Text="Child Type:" Grid.Row="22" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbLayoutPanelElementType" Margin="1" Grid.Row="22" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="0">
+                    <ComboBoxItem>Grid</ComboBoxItem>
+                    <ComboBoxItem>ItemContainer</ComboBoxItem>
+                    <ComboBoxItem>Border</ComboBoxItem>
+                </ComboBox>
+
+                <TextBlock Text="Set MinWidth:" Grid.Row="23" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="23" Grid.Column="1" Grid.ColumnSpan="3">
+                    <CheckBox x:Name="chkSetLayoutPanelElementMinWidth" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="1"/>
+                    <TextBox x:Name="txtLayoutPanelElementMinWidthAll" Text="100" VerticalAlignment="Center" Margin="1"/>
+                </StackPanel>
+                
+                <TextBlock Text="Set MaxWidth:" Grid.Row="24" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="24" Grid.Column="1" Grid.ColumnSpan="3">
+                    <CheckBox x:Name="chkSetLayoutPanelElementMaxWidth" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="1"/>
+                    <TextBox x:Name="txtLayoutPanelElementMaxWidthAll" Text="100" VerticalAlignment="Center" Margin="1"/>
+                </StackPanel>
+
+                <TextBlock Text="Children Count:" Grid.Row="25" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtChildrenCount" Text="0" Grid.Row="25" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetChildrenCount" Content="G" Margin="1" Grid.Row="25" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnGetChildrenCount_Click"/>
+                <Button x:Name="btnSetChildrenCount" Content="S" Margin="1" Grid.Row="25" Grid.Column="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnSetChildrenCount_Click"/>
+
+                <Button x:Name="btnAddChild" Content="Add Child" Margin="1" Grid.Row="26" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnAddChild_Click"/>
+                <Button x:Name="btnRemoveAllChildren" Content="Remove All Children" Margin="1" Grid.Row="27" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnRemoveAllChildren_Click"/>
+
+                <TextBlock Text="ChildIndex:" Grid.Row="28" VerticalAlignment="Center" Margin="0, 4, 0, 0"/>
+                <TextBox x:Name="txtChildIndex" Text="0" Grid.Row="28" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+
+                <Button x:Name="btnReplaceChild" Content="Replace Child" Margin="1, 7, 1, 1" Grid.Row="29" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnReplaceChild_Click"/>
+                <Button x:Name="btnInsertChild" Content="Insert Child" Margin="1" Grid.Row="30" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnInsertChild_Click"/>
+                <Button x:Name="btnRemoveChild" Content="Remove Child" Margin="1" Grid.Row="31" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnRemoveChild_Click"/>
+
+                <TextBlock Text="LayoutPanel Child" Grid.Row="32" Grid.ColumnSpan="5" Foreground="DarkOrange"/>
+
+                <TextBlock Text="Index:" Grid.Row="33" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutPanelElementIndex" Text="0" Width="115" Margin="1" Grid.Row="33" Grid.Column="1" VerticalAlignment="Center"/>
+
+                <TextBlock Text="IsEnabled:" Grid.Row="34" VerticalAlignment="Center"/>
+                <CheckBox x:Name="chkLayoutPanelElementIsEnabled" VerticalAlignment="Center" Grid.Row="34" Grid.Column="1" Margin="1"/>
+                <Button x:Name="btnGetLayoutPanelElementIsEnabled" Content="G" Margin="1" Grid.Row="34" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelElementIsEnabled_Click"/>
+                <Button x:Name="btnSetLayoutPanelElementIsEnabled" Content="S" Margin="1" Grid.Row="34" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutPanelElementIsEnabled_Click"/>
+
+                <TextBlock Text="MinWidth:" Grid.Row="35" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutPanelElementMinWidth" VerticalAlignment="Center" Grid.Row="35" Grid.Column="1" Margin="1"/>
+                <Button x:Name="btnGetLayoutPanelElementMinWidth" Content="G" Margin="1" Grid.Row="35" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelElementMinWidth_Click"/>
+                <Button x:Name="btnSetLayoutPanelElementMinWidth" Content="S" Margin="1" Grid.Row="35" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutPanelElementMinWidth_Click"/>
+
+                <TextBlock Text="MaxWidth:" Grid.Row="36" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutPanelElementMaxWidth" VerticalAlignment="Center" Grid.Row="36" Grid.Column="1" Margin="1"/>
+                <Button x:Name="btnGetLayoutPanelElementMaxWidth" Content="G" Margin="1" Grid.Row="36" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelElementMaxWidth_Click"/>
+                <Button x:Name="btnSetLayoutPanelElementMaxWidth" Content="S" Margin="1" Grid.Row="36" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutPanelElementMaxWidth_Click"/>
+
+                <TextBlock Text="Width:" Grid.Row="37" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutPanelElementWidth" VerticalAlignment="Center" Grid.Row="37" Grid.Column="1" Margin="1"/>
+                <Button x:Name="btnGetLayoutPanelElementWidth" Content="G" Margin="1" Grid.Row="37" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelElementWidth_Click"/>
+                <Button x:Name="btnSetLayoutPanelElementWidth" Content="S" Margin="1" Grid.Row="37" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutPanelElementWidth_Click"/>
+
+                <TextBlock Text="ActualWidth:" Grid.Row="38" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutPanelElementActualWidth" VerticalAlignment="Center" Grid.Row="38" Grid.Column="1" Margin="1"/>
+                <Button x:Name="btnGetLayoutPanelElementActualWidth" Content="G" Margin="1" Grid.Row="38" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelElementActualWidth_Click"/>
+
+                <TextBlock Text="MinHeight:" Grid.Row="39" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutPanelElementMinHeight" VerticalAlignment="Center" Grid.Row="39" Grid.Column="1" Margin="1"/>
+                <Button x:Name="btnGetLayoutPanelElementMinHeight" Content="G" Margin="1" Grid.Row="39" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelElementMinHeight_Click"/>
+                <Button x:Name="btnSetLayoutPanelElementMinHeight" Content="S" Margin="1" Grid.Row="39" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutPanelElementMinHeight_Click"/>
+
+                <TextBlock Text="MaxHeight:" Grid.Row="40" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutPanelElementMaxHeight" VerticalAlignment="Center" Grid.Row="40" Grid.Column="1" Margin="1"/>
+                <Button x:Name="btnGetLayoutPanelElementMaxHeight" Content="G" Margin="1" Grid.Row="40" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelElementMaxHeight_Click"/>
+                <Button x:Name="btnSetLayoutPanelElementMaxHeight" Content="S" Margin="1" Grid.Row="40" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutPanelElementMaxHeight_Click"/>
+
+                <TextBlock Text="Height:" Grid.Row="41" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutPanelElementHeight" VerticalAlignment="Center" Grid.Row="41" Grid.Column="1" Margin="1"/>
+                <Button x:Name="btnGetLayoutPanelElementHeight" Content="G" Margin="1" Grid.Row="41" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelElementHeight_Click"/>
+                <Button x:Name="btnSetLayoutPanelElementHeight" Content="S" Margin="1" Grid.Row="41" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutPanelElementHeight_Click"/>
+
+                <TextBlock Text="ActualHeight:" Grid.Row="42" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutPanelElementActualHeight" VerticalAlignment="Center" Grid.Row="42" Grid.Column="1" Margin="1"/>
+                <Button x:Name="btnGetLayoutPanelElementActualHeight" Content="G" Margin="1" Grid.Row="42" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelElementActualHeight_Click"/>
+
+                <TextBlock Text="CornerRadius:" Grid.Row="43" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutPanelElementCornerRadius" Grid.Row="43" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLayoutPanelElementCornerRadius" Content="G" Margin="1" Grid.Row="43" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutPanelElementCornerRadius_Click"/>
+                <Button x:Name="btnSetLayoutPanelElementCornerRadius" Content="S" Margin="1" Grid.Row="43" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutPanelElementCornerRadius_Click"/>
+            </Grid>
+        </ScrollViewer>
+
+        <ScrollViewer x:Name="svScrollView" Grid.Row="1" Grid.Column="3">
+            <Grid Margin="4,0,4,0" Padding="6"
+                Background="{ThemeResource SystemListLowColor}"
+                BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="ScrollView" Grid.Row="0" Grid.ColumnSpan="5" Foreground="Red"/>
+
+                <TextBlock Text="ScrollView Properties" Grid.Row="1" Grid.ColumnSpan="5" Foreground="DarkOrange"/>
+
+                <TextBlock Text="Background:" Grid.Row="2" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbScrollViewBackground" Margin="1" Grid.Row="2" Grid.Column="1" 
+                    HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="3" SelectionChanged="CmbScrollViewBackground_SelectionChanged">
+                    <ComboBoxItem>null</ComboBoxItem>
+                    <ComboBoxItem>Transparent</ComboBoxItem>
+                    <ComboBoxItem>AliceBlue</ComboBoxItem>
+                    <ComboBoxItem>Aqua</ComboBoxItem>
+                </ComboBox>
+
+                <TextBlock Text="BorderBrush:" Grid.Row="3" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbScrollViewBorderBrush" Margin="1" Grid.Row="3" Grid.Column="1" 
+                    HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbScrollViewBorderBrush_SelectionChanged">
+                    <ComboBoxItem>null</ComboBoxItem>
+                    <ComboBoxItem>Transparent</ComboBoxItem>
+                    <ComboBoxItem>Blue</ComboBoxItem>
+                    <ComboBoxItem>Green</ComboBoxItem>
+                </ComboBox>
+
+                <TextBlock Text="BorderThickness:" Grid.Row="4" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtScrollViewBorderThickness" Grid.Row="4" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetScrollViewBorderThickness" Content="G" Margin="1" Grid.Row="4" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewBorderThickness_Click"/>
+                <Button x:Name="btnSetScrollViewBorderThickness" Content="S" Margin="1" Grid.Row="4" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewBorderThickness_Click"/>
+
+                <TextBlock Text="Margin:" Grid.Row="5" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtScrollViewMargin" Grid.Row="5" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetScrollViewMargin" Content="G" Margin="1" Grid.Row="5" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewMargin_Click"/>
+                <Button x:Name="btnSetScrollViewMargin" Content="S" Margin="1" Grid.Row="5" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewMargin_Click"/>
+
+                <TextBlock Text="Padding:" Grid.Row="6" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtScrollViewPadding" Grid.Row="6" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetScrollViewPadding" Content="G" Margin="1" Grid.Row="6" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewPadding_Click"/>
+                <Button x:Name="btnSetScrollViewPadding" Content="S" Margin="1" Grid.Row="6" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewPadding_Click"/>
+
+                <TextBlock Text="Width:" Grid.Row="7" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtScrollViewWidth" Grid.Row="7" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetScrollViewWidth" Content="G" Margin="1" Grid.Row="7" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewWidth_Click"/>
+                <Button x:Name="btnSetScrollViewWidth" Content="S" Margin="1" Grid.Row="7" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewWidth_Click"/>
+
+                <TextBlock Text="Height:" Grid.Row="8" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtScrollViewHeight" Grid.Row="8" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetScrollViewHeight" Content="G" Margin="1" Grid.Row="8" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewHeight_Click"/>
+                <Button x:Name="btnSetScrollViewHeight" Content="S" Margin="1" Grid.Row="8" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewHeight_Click"/>
+
+                <TextBlock Text="MaxWidth:" Grid.Row="9" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtScrollViewMaxWidth" Grid.Row="9" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetScrollViewMaxWidth" Content="G" Margin="1" Grid.Row="9" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewMaxWidth_Click"/>
+                <Button x:Name="btnSetScrollViewMaxWidth" Content="S" Margin="1" Grid.Row="9" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewMaxWidth_Click"/>
+
+                <TextBlock Text="MaxHeight:" Grid.Row="10" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtScrollViewMaxHeight" Grid.Row="10" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetScrollViewMaxHeight" Content="G" Margin="1" Grid.Row="10" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewMaxHeight_Click"/>
+                <Button x:Name="btnSetScrollViewMaxHeight" Content="S" Margin="1" Grid.Row="10" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewMaxHeight_Click"/>
+
+                <TextBlock Text="CornerRadius:" Grid.Row="11" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtScrollViewCornerRadius" Grid.Row="11" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetScrollViewCornerRadius" Content="G" Margin="1" Grid.Row="11" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewCornerRadius_Click"/>
+                <Button x:Name="btnSetScrollViewCornerRadius" Content="S" Margin="1" Grid.Row="11" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewCornerRadius_Click"/>
+
+                <CheckBox x:Name="chkScrollViewIsEnabled" Content="IsEnabled?" Grid.Row="12" Grid.ColumnSpan="4" Margin="1" Checked="ChkScrollViewIsEnabled_Checked" Unchecked="ChkScrollViewIsEnabled_Unchecked"/>
+                <CheckBox x:Name="chkScrollViewIsTabStop" Content="IsTabStop?" Grid.Row="13" Grid.ColumnSpan="4" Margin="1" Checked="ChkScrollViewIsTabStop_Checked" Unchecked="ChkScrollViewIsTabStop_Unchecked"/>
+
+                <TextBlock Text="ContentOrientation:" Grid.Row="14" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbScrollViewContentOrientation" Width="115" Margin="1" Grid.Row="14" Grid.Column="1" VerticalAlignment="Center">
+                    <ComboBoxItem>Vertical</ComboBoxItem>
+                    <ComboBoxItem>Horizontal</ComboBoxItem>
+                    <ComboBoxItem>None</ComboBoxItem>
+                    <ComboBoxItem>Both</ComboBoxItem>
+                </ComboBox>
+                <Button x:Name="btnGetScrollViewContentOrientation" Content="G" Margin="1" Grid.Row="14" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewContentOrientation_Click"/>
+                <Button x:Name="btnSetScrollViewContentOrientation" Content="S" Margin="1" Grid.Row="14" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewContentOrientation_Click"/>
+
+                <TextBlock Text="ZoomMode:" Grid.Row="15" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbScrollViewZoomMode" Width="115" Margin="1" Grid.Row="15" Grid.Column="1" VerticalAlignment="Center">
+                    <ComboBoxItem>Enabled</ComboBoxItem>
+                    <ComboBoxItem>Disabled</ComboBoxItem>
+                </ComboBox>
+                <Button x:Name="btnGetScrollViewZoomMode" Content="G" Margin="1" Grid.Row="15" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewZoomMode_Click"/>
+                <Button x:Name="btnSetScrollViewZoomMode" Content="S" Margin="1" Grid.Row="15" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewZoomMode_Click"/>
+
+                <TextBlock Text="HorizontalScrollMode:" Grid.Row="16" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbScrollViewHorizontalScrollMode" Width="115" Margin="1" Grid.Row="16" Grid.Column="1" VerticalAlignment="Center">
+                    <ComboBoxItem>Enabled</ComboBoxItem>
+                    <ComboBoxItem>Disabled</ComboBoxItem>
+                </ComboBox>
+                <Button x:Name="btnGetScrollViewHorizontalScrollMode" Content="G" Margin="1" Grid.Row="16" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewHorizontalScrollMode_Click"/>
+                <Button x:Name="btnSetScrollViewHorizontalScrollMode" Content="S" Margin="1" Grid.Row="16" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewHorizontalScrollMode_Click"/>
+
+                <TextBlock Text="VerticalScrollMode:" Grid.Row="17" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbScrollViewVerticalScrollMode" Width="115" Margin="1" Grid.Row="17" Grid.Column="1" VerticalAlignment="Center">
+                    <ComboBoxItem>Enabled</ComboBoxItem>
+                    <ComboBoxItem>Disabled</ComboBoxItem>
+                </ComboBox>
+                <Button x:Name="btnGetScrollViewVerticalScrollMode" Content="G" Margin="1" Grid.Row="17" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewVerticalScrollMode_Click"/>
+                <Button x:Name="btnSetScrollViewVerticalScrollMode" Content="S" Margin="1" Grid.Row="17" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewVerticalScrollMode_Click"/>
+
+                <TextBlock Text="HorizontalScrollBarVisibility:" Grid.Row="18" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbScrollViewHorizontalScrollBarVisibility" Width="115" Grid.Row="18" Grid.Column="1" Margin="1" VerticalAlignment="Center">
+                    <ComboBoxItem>Auto</ComboBoxItem>
+                    <ComboBoxItem>Visible</ComboBoxItem>
+                    <ComboBoxItem>Hidden</ComboBoxItem>
+                </ComboBox>
+                <Button x:Name="btnGetScrollViewHorizontalScrollBarVisibility" Content="G" Margin="1" Grid.Row="18" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewHorizontalScrollBarVisibility_Click"/>
+                <Button x:Name="btnSetScrollViewHorizontalScrollBarVisibility" Content="S" Margin="1" Grid.Row="18" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewHorizontalScrollBarVisibility_Click"/>
+
+                <TextBlock Text="VerticalScrollBarVisibility:" Grid.Row="19" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbScrollViewVerticalScrollBarVisibility" Width="115" Grid.Row="19" Grid.Column="1" Margin="1" VerticalAlignment="Center">
+                    <ComboBoxItem>Auto</ComboBoxItem>
+                    <ComboBoxItem>Visible</ComboBoxItem>
+                    <ComboBoxItem>Hidden</ComboBoxItem>
+                </ComboBox>
+                <Button x:Name="btnGetScrollViewVerticalScrollBarVisibility" Content="G" Margin="1" Grid.Row="19" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewVerticalScrollBarVisibility_Click"/>
+                <Button x:Name="btnSetScrollViewVerticalScrollBarVisibility" Content="S" Margin="1" Grid.Row="19" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewVerticalScrollBarVisibility_Click"/>
+
+                <TextBlock Text="HorizontalAnchorRatio:" Grid.Row="20" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtScrollViewHorizontalAnchorRatio" Width="115" Margin="1" Grid.Row="20" Grid.Column="1" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetScrollViewHorizontalAnchorRatio" Content="G" Margin="1" Grid.Row="20" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewHorizontalAnchorRatio_Click"/>
+                <Button x:Name="btnSetScrollViewHorizontalAnchorRatio" Content="S" Margin="1" Grid.Row="20" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewHorizontalAnchorRatio_Click"/>
+
+                <TextBlock Text="VerticalAnchorRatio:" Grid.Row="21" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtScrollViewVerticalAnchorRatio" Width="115" Margin="1" Grid.Row="21" Grid.Column="1" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetScrollViewVerticalAnchorRatio" Content="G" Margin="1" Grid.Row="21" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewVerticalAnchorRatio_Click"/>
+                <Button x:Name="btnSetScrollViewVerticalAnchorRatio" Content="S" Margin="1" Grid.Row="21" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewVerticalAnchorRatio_Click"/>
+
+                <TextBlock Text="HorizontalOffset:" Grid.Row="22" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtScrollViewHorizontalOffset" Width="115" Margin="1" Grid.Row="22" Grid.Column="1" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetScrollViewHorizontalOffset" Content="G" Margin="1" Grid.Row="22" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewHorizontalOffset_Click"/>
+                <Button x:Name="btnSetScrollViewHorizontalOffset" Content="S" Margin="1" Grid.Row="22" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewHorizontalOffset_Click"/>
+
+                <TextBlock Text="VerticalOffset:" Grid.Row="23" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtScrollViewVerticalOffset" Width="115" Margin="1" Grid.Row="23" Grid.Column="1" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetScrollViewVerticalOffset" Content="G" Margin="1" Grid.Row="23" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewVerticalOffset_Click"/>
+                <Button x:Name="btnSetScrollViewVerticalOffset" Content="S" Margin="1" Grid.Row="23" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewVerticalOffset_Click"/>
+
+                <TextBlock Text="Vertical Constant Velocity:" Grid.Row="24" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtScrollViewVerticalConstantVelocity" Text="0" Width="115" Margin="1" Grid.Row="24" Grid.Column="1" VerticalAlignment="Center"/>
+                <Button x:Name="btnSetScrollViewVerticalConstantVelocity" Content="S" Margin="1" Grid.Row="24" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewVerticalConstantVelocity_Click"/>
+
+                <TextBlock Text="ExtentWidth:" Grid.Row="25" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtScrollViewExtentWidth" Width="115" Margin="1" Grid.Row="25" Grid.Column="1" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetScrollViewExtentWidth" Content="G" Margin="1" Grid.Row="25" Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Center" Click="BtnGetScrollViewExtentWidth_Click"/>
+
+                <TextBlock Text="ExtentHeight:" Grid.Row="26" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtScrollViewExtentHeight" Width="115" Margin="1" Grid.Row="26" Grid.Column="1" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetScrollViewExtentHeight" Content="G" Margin="1" Grid.Row="26" Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Center" Click="BtnGetScrollViewExtentHeight_Click"/>
+            </Grid>
+        </ScrollViewer>
+
+        <Grid x:Name="grdEvents" Grid.Row="1" Grid.Column="4" Margin="4,0,4,0" Padding="6"
+                  BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="Events" Foreground="Red"/>
+
+            <StackPanel Grid.Row="1">
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="btnClearItemsViewEvents" Content="Clear" Click="BtnClearItemsViewEvents_Click" Margin="1"/>
+                    <Button x:Name="btnCopyItemsViewEvents" Content="Copy into Clipboard" Click="BtnCopyItemsViewEvents_Click" Margin="1"/>
+                    <CheckBox x:Name="chkOutputDebugString" Content="OutputDebugString?" IsChecked="False" Margin="1"/>
+                </StackPanel>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <CheckBox x:Name="chkLogScrollViewMessages" Content="Log ScrollView Messages?" Margin="1" Checked="ChkLogScrollViewMessages_Checked" Unchecked="ChkLogScrollViewMessages_Unchecked"/>
+                    <CheckBox x:Name="chkLogScrollViewEvents" Content="Log ScrollView Events?" Margin="1" Grid.Column="1" Checked="ChkLogScrollViewEvents_Checked" Unchecked="ChkLogScrollViewEvents_Unchecked"/>
+                    <CheckBox x:Name="chkLogLinedFlowLayoutMessages" Content="Log LinedFlowLayout Messages?" Margin="1" Grid.Row="1" Checked="ChkLogLinedFlowLayoutMessages_Checked" Unchecked="ChkLogLinedFlowLayoutMessages_Unchecked"/>
+                    <CheckBox x:Name="chkLogLinedFlowLayoutEvents" Content="Log LinedFlowLayout Events?" Margin="1" Grid.Row="1" Grid.Column="1"/>
+                </Grid>
+            </StackPanel>
+            
+            <ListBox x:Name="lstEvents" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollMode="Auto" Margin="1" Grid.Row="2"/>
+        </Grid>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.ColumnSpan="5">
+            <TextBlock Text="Exception Report" Margin="2" VerticalAlignment="Center"/>
+            <Button x:Name="btnClearExceptionReport" Content="Clear Exception Report" Click="BtnClearExceptionReport_Click" Margin="2"/>
+            <TextBox x:Name="txtExceptionReport" IsReadOnly="True" Margin="2"/>
+        </StackPanel>
+    </Grid>
+</local:TestPage>

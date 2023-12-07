@@ -1,0 +1,14 @@
+<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<AttachedPropertyDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+wrl::ComPtr<IInspectable> spValueAsII;
+
+ARG_NOTNULL(<#=Model.TargetType.AbiParameterName#>, "<#=Model.TargetType.AbiParameterName#>");
+
+IFC(Initialize<#=Model.Name#>Property());
+
+IFC(<#= AsCppType(Model.PropertyType.AbiParameterName) #>->QueryInterface(__uuidof(IInspectable), &spValueAsII));
+IFC(<#= Model.TargetType.AbiParameterName #>->SetValue(s_<#= Model.Name #>Property.Get(), spValueAsII.Get()));

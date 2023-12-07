@@ -1,0 +1,15 @@
+﻿namespace MU_PRIVATE_MEDIA_NAMESPACE
+{
+
+[MUX_INTERNAL]
+[webhosthidden]
+[default_interface]
+runtimeclass MaterialHelperTestApi : Microsoft.UI.Xaml.DependencyObject
+{
+    MaterialHelperTestApi();
+
+    static Boolean SimulateDisabledByPolicy { get; set; };
+    static Boolean IgnoreAreEffectsFast { get; set; };
+}
+
+}

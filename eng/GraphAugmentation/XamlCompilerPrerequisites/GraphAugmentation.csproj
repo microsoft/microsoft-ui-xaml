@@ -1,0 +1,45 @@
+<Project ToolsVersion="Current">
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\dxaml\phone\idl\phone.vcxproj">
+      <Targets>BuildGenerateSources;GetPackagingOutputs;GetTargetPathWithTargetPlatformMoniker</Targets>
+      <Properties>Configuration=$(Configuration);Platform=$(WindowsSDKBuildToolsArchFolder);CurrentSolutionConfigurationContents=;ShouldUnsetParentConfigurationAndPlatform=false</Properties>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\components\xamldiagnostics\idl\xamlom.vcxproj">
+      <Targets>GetTargetPathWithTargetPlatformMoniker</Targets>
+      <Properties>Configuration=$(Configuration);Platform=$(WindowsSDKBuildToolsArchFolder);CurrentSolutionConfigurationContents=;ShouldUnsetParentConfigurationAndPlatform=false</Properties>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\dxaml\idl\com\microsoft.ui.xaml-com.vcxproj">
+      <Targets>BuildGenerateSources;GetPackagingOutputs;GetTargetPathWithTargetPlatformMoniker</Targets>
+      <Properties>Configuration=$(Configuration);Platform=$(WindowsSDKBuildToolsArchFolder);CurrentSolutionConfigurationContents=;ShouldUnsetParentConfigurationAndPlatform=false</Properties>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\dxaml\idl\winrt\controls\Microsoft.ui.xaml.controls.controls.vcxproj">
+      <Targets>BuildGenerateSources;GetPackagingOutputs;GetTargetPathWithTargetPlatformMoniker</Targets>
+      <Properties>Configuration=$(Configuration);Platform=$(WindowsSDKBuildToolsArchFolder);CurrentSolutionConfigurationContents=;ShouldUnsetParentConfigurationAndPlatform=false</Properties>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\dxaml\idl\winrt\core\Microsoft.ui.xaml.coretypes.vcxproj">
+      <Targets>BuildGenerateSources;GetPackagingOutputs;GetTargetPathWithTargetPlatformMoniker</Targets>
+      <Properties>Configuration=$(Configuration);Platform=$(WindowsSDKBuildToolsArchFolder);CurrentSolutionConfigurationContents=;ShouldUnsetParentConfigurationAndPlatform=false</Properties>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\dxaml\idl\winrt\main\Microsoft.ui.xaml-main.vcxproj">
+      <Targets>BuildGenerateSources;GetPackagingOutputs;GetTargetPathWithTargetPlatformMoniker</Targets>
+      <Properties>Configuration=$(Configuration);Platform=$(WindowsSDKBuildToolsArchFolder);CurrentSolutionConfigurationContents=;ShouldUnsetParentConfigurationAndPlatform=false</Properties>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\dxaml\idl\winrt\merged\private\Microsoft.UI.Xaml.vcxproj">
+      <Targets>BuildGenerateSources;GetPackagingOutputs;GetTargetPathWithTargetPlatformMoniker</Targets>
+      <Properties>Configuration=$(Configuration);Platform=$(WindowsSDKBuildToolsArchFolder);CurrentSolutionConfigurationContents=;ShouldUnsetParentConfigurationAndPlatform=false</Properties>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\dxaml\manifest\manifest.vcxproj">
+      <Targets>GetPackagingOutputs;GetTargetPathWithTargetPlatformMoniker</Targets>
+      <Properties>Configuration=$(Configuration);Platform=$(WindowsSDKBuildToolsArchFolder);CurrentSolutionConfigurationContents=;ShouldUnsetParentConfigurationAndPlatform=false</Properties>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\eng\gencompheadersandidl\gencompheadersandidl.vcxproj">
+      <Targets>GetTargetPathWithTargetPlatformMoniker</Targets>
+      <Properties>Configuration=$(Configuration);Platform=$(WindowsSDKBuildToolsArchFolder);CurrentSolutionConfigurationContents=;ShouldUnsetParentConfigurationAndPlatform=false</Properties>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\eng\genmrtheadersandidl\genmrtheadersandidl.vcxproj">
+      <Targets>GetTargetPathWithTargetPlatformMoniker</Targets>
+      <Properties>Configuration=$(Configuration);Platform=$(WindowsSDKBuildToolsArchFolder);CurrentSolutionConfigurationContents=;ShouldUnsetParentConfigurationAndPlatform=false</Properties>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="..\GraphAugmentation.targets" />
+</Project>

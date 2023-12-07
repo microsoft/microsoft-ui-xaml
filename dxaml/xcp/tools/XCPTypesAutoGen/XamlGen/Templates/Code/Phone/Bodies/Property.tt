@@ -1,0 +1,11 @@
+<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<PropertyDefinition>" debug="true"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<PropertyGetter>(Model) #>
+<# if (!Model.IsReadOnly) { #>
+
+<#= IncludeTemplate<PropertySetter>(Model) #>
+<# } #>

@@ -1,0 +1,35 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#pragma once
+
+namespace DirectUISynonyms
+{
+<#  foreach (var ns in Model.Namespaces.OrderBy(ns => ns.Name))
+    {
+        foreach (var type in ns.NonGenericReferenceClasses.OrderBy(t => t.Name))
+        {
+            foreach (var version in type.Versions.OrderBy(v => v.Version))
+            {
+                var versionedType = version.GetProjection();
+                if (versionedType.IdlClassInfo.HasPrimaryInterface)
+                { #>
+    typedef <#= this.AsCppType(versionedType.IdlClassInfo.FullInterfaceName) #> <#= versionedType.IdlClassInfo.InterfaceName #>;
+<#              }
+                if (versionedType.IdlClassInfo.HasVirtualMembers)
+                { #>
+    typedef <#=  this.AsCppType(versionedType.IdlClassInfo.FullVirtualMembersInterfaceName) #> <#= versionedType.IdlClassInfo.VirtualMembersInterfaceName #>;
+<#              }
+                if (versionedType.IdlClassInfo.HasProtectedMembers)
+                { #>
+    typedef <#=  this.AsCppType(versionedType.IdlClassInfo.FullProtectedMembersInterfaceName) #> <#= versionedType.IdlClassInfo.ProtectedMembersInterfaceName #>;
+<#              }
+            }
+        }
+   }#>
+}

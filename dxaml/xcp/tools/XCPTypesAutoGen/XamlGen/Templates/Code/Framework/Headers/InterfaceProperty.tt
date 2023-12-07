@@ -1,0 +1,10 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<PropertyDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+IFACEMETHOD(<#= Model.GetterName #>)(<#= AsCppType(Model.PropertyType.AnnotatedAbiReturnParameterName) #>) = 0;
+<# if (!Model.IsReadOnly) { #>
+IFACEMETHOD(<#= Model.SetterName #>)(<#= AsCppType(Model.PropertyType.AnnotatedAbiParameterName) #>) = 0;
+<# } #>

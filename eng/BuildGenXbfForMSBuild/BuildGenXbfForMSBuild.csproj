@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project Sdk="Microsoft.Build.NoTargets" TreatAsLocalProperty="CurrentSolutionConfigurationContents">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <!-- Ensure the Configuration and Platform are what we set. See comments below -->
+    <CurrentSolutionConfigurationContents></CurrentSolutionConfigurationContents>
+    <ShouldUnsetParentConfigurationAndPlatform>false</ShouldUnsetParentConfigurationAndPlatform>
+  </PropertyGroup>
+  <!--
+     GenXBF is loaded by MSBuild during the build, but the Platform/Configuration that we're building for the product
+     binaries may not be the same as the architecture of MSBuild that's doing the building. Therefore we need to invoke
+     MSBuild on the GenXbf.vcxproj overriding the Platform to be that of MSBuild. We pass through the same Configuration
+     to help with the case where the MSBuild arch *is* the product arch and therefore we can avoid double-building
+     a bunch of code.
+
+     Also note that we need to pass in the ToolsPackageLocation from here so that GenXbf.vcxproj can know where it is
+     supposed to copy its GenXbf.dll output into the packaging folder.
+
+     We also have to clear CurrentSolutionConfigurationContents and set ShouldUnsetParentConfigurationAndPlatform to 
+     false in order to get the built-in AssignProjectConfiguration task to stop applying the parent solution configurations
+     and clobbering our requested Platform/Configuration choices.
+  -->
+  <ItemGroup>
+    <!-- Build genxbf.dll for current product arch -->
+    <ProjectReference Include="$(XamlSourcePath)\xcp\tools\GenXbfDLL\GenXbf.vcxproj" Condition="'$(WindowsSDKBuildToolsArchFolder)'!='x64'">
+      <Properties>Configuration=$(Configuration);Platform=$(WindowsSDKBuildToolsArchFolder);CurrentSolutionConfigurationContents=;ShouldUnsetParentConfigurationAndPlatform=false</Properties>
+    </ProjectReference>
+    <!-- Also ensure mock WindowsAppSDK packages for all arches can load x64 genxbf.dll via managed XamlCompiler.exe on x64 -->
+    <ProjectReference Include="$(XamlSourcePath)\xcp\tools\GenXbfDLL\GenXbf.vcxproj">
+      <Properties>Configuration=$(Configuration);Platform=x64;CurrentSolutionConfigurationContents=;ShouldUnsetParentConfigurationAndPlatform=false</Properties>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,20 @@
+﻿namespace MU_XAP_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass NavigationViewItemAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer, Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
+{
+    [method_name("CreateInstanceWithOwner")] NavigationViewItemAutomationPeer(MU_XC_NAMESPACE.NavigationViewItem owner);
+}
+
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass NavigationViewAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    NavigationViewAutomationPeer(MU_XC_NAMESPACE.NavigationView owner);
+}
+
+
+}

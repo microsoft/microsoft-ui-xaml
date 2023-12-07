@@ -1,0 +1,226 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project>
+  <!--
+    This file is a central and single place to encapsulate all folder paths that are used in this repository.
+    To maintain MSBuild cleanliness, this file should not import any other files that may still contain folder
+    paths. Instead, those paths should be moved into this file, as this file should be included by every project
+    in this repository.
+
+    This file should be imported fairly early on in the build process, but after sdkconfig.props - since that
+    redefines some MSBuild properties that we use in this file to generate well known paths.
+  -->
+
+  <!-- Convert $(arch) to Nuget-compatible value -->
+  <PropertyGroup>
+    <NugetArch Condition="'$(arch)' == 'amd64'">x64</NugetArch>
+    <NugetArch Condition="'$(arch)' != 'amd64'">$(arch.ToLowerInvariant())</NugetArch>
+  </PropertyGroup>
+
+  <!-- Source related paths-->
+  <PropertyGroup>
+    <ProjectRelativePath>$([MSBuild]::MakeRelative($(ProjectRoot), $(MSBuildProjectDirectory)))</ProjectRelativePath>
+    <XamlSourcePath>$(ProjectRoot)dxaml\</XamlSourcePath>
+    <XamlTargetsPath>$(XamlSourcePath)MSBuild\</XamlTargetsPath>
+    <XamlBuildSettingsPath>$(XamlTargetsPath)BuildSettings\</XamlBuildSettingsPath>
+
+    <XcpPath>$(XamlSourcePath)\xcp</XcpPath>
+    <XcpPhonePath>$(XamlSourcePath)\phone</XcpPhonePath>
+    <TestPath>$(XamlSourcePath)\test</TestPath>
+
+    <MuxControlsPath>$(ProjectRoot)controls</MuxControlsPath>
+  </PropertyGroup>
+
+ <!-- Build artifacts related paths -->
+  <PropertyGroup>
+    <ArtifactsRoot Condition="'$(ArtifactsRoot)' == ''">$(ProjectRoot)BuildOutput\</ArtifactsRoot>
+    <ArtifactsBinRoot>$(ArtifactsRoot)bin\</ArtifactsBinRoot>
+
+    <CurrentEnvironmentSubDir>$(MUXOutputPlatform)$(MUXOutputConfiguration)</CurrentEnvironmentSubDir>
+    <ArtifactsBinDir>$(ArtifactsBinRoot)$(CurrentEnvironmentSubDir)\</ArtifactsBinDir>
+    <ArtifactsObjDir>$(ArtifactsRoot)obj\$(CurrentEnvironmentSubDir)\</ArtifactsObjDir>
+    <XamlBuildOutputRoot>$(ArtifactsObjDir)</XamlBuildOutputRoot>
+
+    <TempRoot>$(ArtifactsRoot)Temp</TempRoot>
+    <TempDir>$(TempRoot)\$(CurrentEnvironmentSubDir)</TempDir>
+
+    <!--
+      Customize the location of where we want our outputs to go. The default for BaseIntermediateOutputPath and IntermediateOutputPath only
+      differ in that the IntermediateOutputPath appends the configuration to the BaseIntermediateOutputPath. Both default to the "obj" folder
+      that is relative to the project/solution.  The default for OutputPath and OutDir are the "bin" folder, and this is where binaries and
+      generated WinMD headers/files are placed.  Since neither of this is really what we want, we point them all to the same location and then
+      binplace what we want to the "bin" directory. See binplace.targets in this directory for how that is done.
+
+      BaseIntermediateOutputPath needs to be relative to each project due to the way Nuget writes files to this location.
+      See https://github.com/microsoft/msbuild/issues/1603 for more discussion about this.
+
+      If the BaseIntermediateOutputPath property is supplied, just use that. Our CsWinRT generation creates projects that are already located
+      in the buildoutput, so we don't use the project relative path for that
+    -->
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'==''">$(XamlBuildOutputRoot)$(ProjectRelativePath)\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath Condition="'$(GenerateProjectSpecificOutputFolder)' == 'true'">$(BaseIntermediateOutputPath)$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <!--Trimming down path length to prevent MAX_PATH -->
+    <BaseIntermediateOutputPath>$(BaseIntermediateOutputPath.Replace("src\XamlCompiler\Tests\RegressionProjects\Features\CompiledBinding", "CompilerTests"))</BaseIntermediateOutputPath>
+    <GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
+
+    <!-- NuGet restore is run before we apply any target frameworks, so we don't want the assets files' directory structure
+         to take the target framework into account if we have one. -->
+    <MSBuildProjectExtensionsPath>$(BaseIntermediateOutputPath)</MSBuildProjectExtensionsPath>
+    <ProjectAssetsFile>$(BaseIntermediateOutputPath)project.assets.json</ProjectAssetsFile>
+    <ProjectAssetsFile>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(ProjectAssetsFile)))</ProjectAssetsFile>
+    <ProjectAssetsCacheFile>$(BaseIntermediateOutputPath)$(MSBuildProjectName).assets.cache</ProjectAssetsCacheFile>
+    <ProjectAssetsCacheFile>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(ProjectAssetsCacheFile)))</ProjectAssetsCacheFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BaseIntermediateOutputPath Condition="'$(TargetFramework)' != '' and '$(IgnoreTargetFramework)' != 'true'">$(BaseIntermediateOutputPath)$(TargetFramework)\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
+    <OutputPath>$(IntermediateOutputPath)</OutputPath>
+    <OutDir>$(OutputPath)</OutDir>
+    <OutDirWasSpecified>true</OutDirWasSpecified>
+
+    <GeneratedFilesDir>$(BaseIntermediateOutputPath)generated\</GeneratedFilesDir>
+    <IntDir>$(BaseIntermediateOutputPath)</IntDir>
+    <XamlBinaryPath>$(XamlBuildOutputRoot)dxaml</XamlBinaryPath>
+    <XamlBuildPath>$(XamlBuildOutputRoot)\$(ProjectRelativePath)\</XamlBuildPath>
+
+    <XcpObjPath>$(XamlBinaryPath)\xcp</XcpObjPath>
+    <XcpPhoneObjPath>$(XamlBinaryPath)\phone</XcpPhoneObjPath>
+    <TestObjPath>$(XamlBinaryPath)\test</TestObjPath>
+
+    <MergedWinMDOutputDir>Merged</MergedWinMDOutputDir>
+    <MergedWinmdOutputLocation>$(Outdir)$(MergedWinMDOutputDir)\</MergedWinmdOutputLocation>
+    <UnmergedWinmdOutputLocation>$(Outdir)</UnmergedWinmdOutputLocation>
+
+    <InfraTestObjPath>$(TestObjPath)\infra</InfraTestObjPath>
+    <MockDCompTestObjPath>$(TestObjPath)\dcomp</MockDCompTestObjPath>
+
+    <PrivateInfrastructureWin32HostingObjPath>$(InfraTestObjPath)\Win32Hosting</PrivateInfrastructureWin32HostingObjPath>
+  </PropertyGroup>
+
+  <!-- Header/Winmd specific paths -->
+  <PropertyGroup>
+    <XamlPublicHeadersPath>$(XamlBinaryPath)\publicHeaders</XamlPublicHeadersPath>
+    <XamlPrivateComHeadersPath>$(XamlBinaryPath)\xcp\dxaml\idl\com</XamlPrivateComHeadersPath>
+    <PrivateMUXDir>$(XamlBinaryPath)\xcp\dxaml\idl\winrt\merged\private\$(MergedWinMDOutputDir)</PrivateMUXDir>
+    <PublicMergedWinMDDir>$(XamlBuildOutputRoot)MergedWinMD\$(MergedWinMDOutputDir)</PublicMergedWinMDDir>
+    <PrivateMergedWinMDDir>$(XamlBuildOutputRoot)MergedWinMD\private\$(MergedWinMDOutputDir)</PrivateMergedWinMDDir>
+    <SDKReferencesPath>$(WindowsSdkDir)\References\$(WindowsTargetPlatformVersion)</SDKReferencesPath>
+
+    <PrivateInfrastructureMergedWinMdPath>$(InfraTestObjPath)\client\idl\$(MergedWinMDOutputDir)</PrivateInfrastructureMergedWinMdPath>
+    <MockDCompMergedWinMdPath>$(MockDCompTestObjPath)\idl\$(MergedWinMDOutputDir)</MockDCompMergedWinMdPath>
+    <PrivateInfrastructureWin32HostingMergedWinMdPath>$(PrivateInfrastructureWin32HostingObjPath)\idl\$(MergedWinMDOutputDir)</PrivateInfrastructureWin32HostingMergedWinMdPath>
+    <PrivateInfrastructureHostingHelpersGeneratedWinMdPath>$(PrivateInfrastructureWin32HostingObjPath)\WPF\HostingHelpers\</PrivateInfrastructureHostingHelpersGeneratedWinMdPath>
+  </PropertyGroup>
+
+  <!-- Binplace sub-paths -->
+  <PropertyGroup>
+    <BinplaceRootPath>$(CurrentEnvironmentSubDir)</BinplaceRootPath>
+    <ProductBinplaceDestinationPath>$(BinplaceRootPath)\Product</ProductBinplaceDestinationPath>
+    <ProductSymbolsBinplacePath>$(BinplaceRootPath)\Symbols\Product</ProductSymbolsBinplacePath>
+    <TestBinplaceDestinationPath>$(BinplaceRootPath)\Test</TestBinplaceDestinationPath>
+    <TestSymbolsBinplacePath>$(BinplaceRootPath)\Symbols\Test</TestSymbolsBinplacePath>
+    <TestBinplaceResourcesDestinationPath>$(TestBinplaceDestinationPath)\resources</TestBinplaceResourcesDestinationPath>
+    <TestDependenciesResourcesDestinationPath>$(BinplaceRootPath)\TestDependencies</TestDependenciesResourcesDestinationPath>
+  </PropertyGroup>
+
+  <!-- External SDK/nuget related paths -->
+  <PropertyGroup>
+    <TaefPkgDirectory>$(NugetPackageDirectory)\Microsoft.Taef.$(TaefNugetPackageVersion)\</TaefPkgDirectory>
+    <AbiWinRtPackageDirectory>$(NugetPackageDirectory)\Microsoft.Windows.AbiWinRT.$(AbiWinRtVersion)\</AbiWinRtPackageDirectory>
+    <AbiWinRtExePath>$(AbiWinRtPackageDirectory)bin\abi.exe</AbiWinRtExePath>
+    <TestInProductionPkgDirectory>$(NugetPackageDirectory)\Microsoft.Windows.TestInProduction.$(TestInProductionPackageVersion)</TestInProductionPkgDirectory>
+  </PropertyGroup>
+
+  <!-- Lifted IXP paths -->
+  <PropertyGroup>
+    <LiftedIXPPackagePath>$(NugetPackageDirectory)\$(LiftedIXPTransportPackageName)\$(IxpTransportPackageVersion)</LiftedIXPPackagePath>
+    <LiftedIXPBuildPath>$(LiftedIXPPackagePath)\build\native</LiftedIXPBuildPath>
+    <LiftedIXPRuntimePath>$(LiftedIXPPackagePath)\runtimes\win10-$(NugetArch)\native</LiftedIXPRuntimePath>
+    <LiftedIXPWinmdPath>$(LiftedIXPPackagePath)\lib\uap$(CurrentLiftedIXPTargetPlatformVersion.Substring(0,10))</LiftedIXPWinmdPath>
+    <LiftedIXPGeneratedIncludePath>$(ArtifactsObjDir)liftedixp-$(IxpTransportPackageVersion)\generated\inc</LiftedIXPGeneratedIncludePath>
+    <LiftedIXPGeneratedIdlPath>$(ArtifactsObjDir)liftedixp-$(IxpTransportPackageVersion)\generated\idl</LiftedIXPGeneratedIdlPath>
+    <LiftedIXPIncludePath>$(LiftedIXPPackagePath)\include</LiftedIXPIncludePath>
+
+    <LiftedIXPInternalPackagePath>$(NugetPackageDirectory)\$(LiftedIXPInternalPackageName)\$(IxpInternalPackageVersion)</LiftedIXPInternalPackagePath>
+    <LiftedIXPInternalIncludePath>$(LiftedIXPInternalPackagePath)\include</LiftedIXPInternalIncludePath>
+    <LiftedIXPInternalBuildPath>$(LiftedIXPInternalPackagePath)\build\native</LiftedIXPInternalBuildPath>
+    <LiftedIXPInternalPGIRuntimePath>$(LiftedIXPInternalPackagePath)\runtimes\win10-$(NugetArch)\native\pgi</LiftedIXPInternalPGIRuntimePath>
+    <LiftedIXPInternalLibPath>$(LiftedIXPInternalPackagePath)\lib\native\win10-$(NugetArch)</LiftedIXPInternalLibPath>
+
+    <LiftedIXPIncludePaths>$(LiftedIXPIncludePath);$(LiftedIXPInternalIncludePath);$(LiftedIXPGeneratedIncludePath)</LiftedIXPIncludePaths>
+  </PropertyGroup>
+
+  <!-- Lifted MRT paths -->
+  <PropertyGroup>
+    <LiftedMRTPackagePath>$(NugetPackageDirectory)\$(ProjectReunionFoundationTransportPackageName)\$(FoundationTransportPackageVersion)</LiftedMRTPackagePath>
+    <LiftedMRTBuildPath>$(LiftedMRTPackagePath)\build</LiftedMRTBuildPath>
+    <LiftedMRTLibPath>$(LiftedMRTPackagePath)\lib</LiftedMRTLibPath>
+    <LiftedMRTRuntimesPath>$(LiftedMRTPackagePath)\runtimes\win10-$(NugetArch)\native</LiftedMRTRuntimesPath>
+    <LiftedMRTGeneratedIncludePath>$(ArtifactsObjDir)liftedmrt-$(FoundationTransportPackageVersion)\generated\inc</LiftedMRTGeneratedIncludePath>
+    <LiftedMRTGeneratedIdlPath>$(ArtifactsObjDir)liftedmrt-$(FoundationTransportPackageVersion)\generated\idl</LiftedMRTGeneratedIdlPath>
+    <LiftedMRTIncludePaths>$(LiftedMRTGeneratedIncludePath)</LiftedMRTIncludePaths>
+  </PropertyGroup>
+
+  <!-- Localized Resources paths -->
+  <PropertyGroup>
+    <LocalizedMUIFilesPath>$(NugetPackageDirectory)\$(LocalizedMUIFilesPackageName).$(LocalizedMUIFilesPackageVersion)\LocalizedResources\BuildOutput\Temp\localizationResources</LocalizedMUIFilesPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <FrameworkUdkIncPath>$(LiftedIXPInternalIncludePath)\FrameworkUdk</FrameworkUdkIncPath>
+    <FrameworkUdkNativePath>$(LiftedIXPPackagePath)\runtimes\win10-$(NugetArch)\native</FrameworkUdkNativePath>
+    <FrameworkUdkLibPath>$(LiftedIXPInternalPackagePath)\lib\native\win10-$(NugetArch)</FrameworkUdkLibPath>
+  </PropertyGroup>
+
+  <!-- Core WebView2 SDK (Need to binplace Microsoft.Web.WebView2.Core.dll) -->
+  <PropertyGroup>
+    <WebView2PackagePath>$(NugetPackageDirectory)\$(WebView2PackageName).$(WebView2Version)</WebView2PackagePath>
+    <WebView2WinrtLibPath>$(WebView2PackagePath)\runtimes\win-$(NugetArch)\native_uap</WebView2WinrtLibPath>
+    <WebView2WinMDPath>$(WebView2PackagePath)\lib</WebView2WinMDPath>
+
+  </PropertyGroup>
+
+  <!-- WinUIDetails paths -->
+  <PropertyGroup>
+    <WinUIDetailsArch Condition="'$(Platform)' == 'Win32'">x86</WinUIDetailsArch>
+    <WinUIDetailsArch Condition="'$(WinUIDetailsArch)' == ''">$(Platform.ToLowerInvariant())</WinUIDetailsArch>
+    <WinUIDetailsPackagePath Condition="'$(WinUIDetailsRepoLocation)' == ''">$(NugetPackageDirectory)\$(WinUIDetailsPackageName)\$(WinUIDetailsNugetVersion)</WinUIDetailsPackagePath>
+    <WinUIDetailsPackagePath Condition="'$(WinUIDetailsRepoLocation)' != ''">$(WinUIDetailsRepoLocation)\Bin\NugetStaging\WinUIDetails</WinUIDetailsPackagePath>
+    <WinUIDetailsLibPath>$(WinUIDetailsPackagePath)\lib\uap10.0</WinUIDetailsLibPath>
+    <WinUIDetailsRuntimesPath>$(WinUIDetailsPackagePath)\runtimes\win10-$(WinUIDetailsArch)\native</WinUIDetailsRuntimesPath>
+    <WinUIDetailsIncludePath>$(WinUIDetailsPackagePath)\build\native\include</WinUIDetailsIncludePath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PkgMicrosoft_Build_Msix>$(NugetPackageDirectory)\Microsoft.Build.Msix\$(MicrosoftBuildMsixVersion)\</PkgMicrosoft_Build_Msix>
+
+    <objtarget Condition="'$(arch)' == 'x86'">i386</objtarget>
+    <objtarget Condition="'$(arch)' != 'x86'">$(arch)</objtarget>
+
+    <WindowsUmLibPath>$(WindowsSDKCppArchRoot)um\$(WindowsSDKArch)</WindowsUmLibPath>
+    <UCRTPath>$(WindowsSDKCppArchRoot)ucrt\$(WindowsSDKArch)</UCRTPath>
+    <ProjectSDKMetadataPath>$(WindowsSdkDir)\UnionMetadata\$(WindowsTargetPlatformVersion)</ProjectSDKMetadataPath>
+
+    <AppAnalysisPath>$(XamlSourcePath)\xcp\dxaml\tools\AppAnalysis</AppAnalysisPath>
+
+    <DetoursPath>$(XamlSourcePath)\test\tools\detours</DetoursPath>
+
+    <CLR_REF_PATH Condition="'$(arch)'=='amd64'">$(SystemRoot)\Microsoft.NET\Framework64\v4.0.30319</CLR_REF_PATH>
+    <CLR_REF_PATH Condition="'$(arch)'=='x86'">$(SystemRoot)\Microsoft.NET\Framework\v4.0.30319</CLR_REF_PATH>
+    <CLR_REF_PATH Condition="'$(arch)'=='ARM64'">$(SystemRoot)\Microsoft.NET\Framework64\v4.0.30319</CLR_REF_PATH>
+  </PropertyGroup>
+
+  <Target Name="SanityCheck" BeforeTargets="Build;CoreCompile;Midl;ResolveAssemblyReferences" Condition="'$(DEBUG_BUILD)'!=''">
+      <Message Text="Platform=$(Platform), Arch=$(arch), DefaultProjectPlatform=$(DefaultProjectPlatform)"/>
+      <Message Text="Configuration=$(Configuration), Flavor=$(flavor)"/>
+      <Message Text="ManagedCode=$(ManagedCode)"/>
+      <Message Text="ObjTarget=$(objtarget)"/>
+      <Message Text="Managed=$(ManagedCode)"/>
+      <Message Text="WindowsSDKArch=$(WindowsSDKArch)"/>
+      <Message Text="WindowsSDKCppArchRoot=$(WindowsSDKCppArchRoot)"/>
+      <Error Condition="'$(arch)'=='' And '$(ManagedCode)'!='true'" Text="Architecture isn't defined!"/>
+      <Error Condition="'$(flavor)'==''" Text="Flavor isn't defined!"/>
+      <Error Condition="'$(objtarget)'==''" Text="Obj target isn't defined. Platform=$(Platform)"/>
+      <Error Condition="'$(WindowsSdkDir)'==''" Text="Couldn't find the Windows SDK"/>
+  </Target>
+</Project>

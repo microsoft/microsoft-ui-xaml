@@ -1,0 +1,21 @@
+﻿namespace MU_PRIVATE_MEDIA_NAMESPACE
+{
+
+[MUX_INTERNAL]
+[webhosthidden]
+unsealed runtimeclass XamlAmbientLight : Microsoft.UI.Xaml.Media.XamlLight
+{
+    XamlAmbientLight();
+
+    [MUX_DEFAULT_VALUE("{ 255, 255, 255, 255 }")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Windows.UI.Color Color { get; set; };
+
+    static Microsoft.UI.Xaml.DependencyProperty ColorProperty { get; };
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnIsTargetPropertyChanged")]
+    static Microsoft.UI.Xaml.DependencyProperty IsTargetProperty { get; };
+    static void SetIsTarget(Microsoft.UI.Xaml.DependencyObject object, Boolean value);
+    static Boolean GetIsTarget(Microsoft.UI.Xaml.DependencyObject object);
+}
+
+}

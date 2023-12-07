@@ -1,0 +1,124 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<ClassDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#include "precomp.h"
+#include "<#= Model.CppFrameworkGeneratedHeaderFileName #>"
+#include "CoreEventArgsGroup.h"
+
+using namespace <#= OMContext.DefaultImplementationNamespace #>;
+
+// Constructors/destructors.
+<#= AsCppType(Model.GeneratedClassFullName) #>::<#= Model.GeneratedClassName #>()<#= GetFieldInitializerString(Model) #>
+{
+}
+
+<#= AsCppType(Model.GeneratedClassFullName) #>::~<#= Model.GeneratedClassName #>()
+{
+}
+
+HRESULT <#= AsCppType(Model.GeneratedClassFullName) #>::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
+{
+    if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(Model.AbiImplementationFullName) #>)))
+    {
+        *ppObject = static_cast<<#= AsCppType(Model.AbiImplementationFullName) #>*>(this);
+    }
+<#     if (Model.VelocityVersion != 0) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(Model.VelocityVersion) #>)
+<#     }#>
+<# foreach (var version in Model.Versions.OrderBy(v => v.Version).Select(v => v.GetProjection())) {
+           if (VelocityFeatures.IsVelocityVersion(version.Version)) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(version.Version) #>)
+<#         }
+       if (version.IdlClassInfo.HasPrimaryInterface) { #>
+    else if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(version.IdlClassInfo.FullInterfaceName) #>))<#= VelocityFeatures.GetQueryInterfaceClause(version.VelocityVersion) #>)
+    {
+        *ppObject = static_cast<<#= AsCppType(version.IdlClassInfo.FullInterfaceName) #>*>(this);
+    }
+<#     }
+       if (version.IdlClassInfo.HasProtectedMembers) { #>
+    else if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(version.IdlClassInfo.FullProtectedMembersInterfaceName) #>))<#= VelocityFeatures.GetQueryInterfaceClause(version.VelocityVersion) #>)
+    {
+        *ppObject = static_cast<<#= AsCppType(version.IdlClassInfo.FullProtectedMembersInterfaceName) #>*>(this);
+    }
+<#     }
+       if (version.IdlClassInfo.HasVirtualMembers) { #>
+    else if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(version.IdlClassInfo.FullVirtualMembersInterfaceName) #>))<#= VelocityFeatures.GetQueryInterfaceClause(version.VelocityVersion) #>)
+    {
+        *ppObject = static_cast<<#= AsCppType(version.IdlClassInfo.FullVirtualMembersInterfaceName) #>*>(this);
+    }
+<#     }
+       foreach (var implementedInterface in version.ImplementedInterfaces) { #>
+    else if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(implementedInterface.AbiFullName) #>))<#= VelocityFeatures.GetQueryInterfaceClause(version.VelocityVersion) #>)
+    {
+        *ppObject = static_cast<<#= AsCppType(implementedInterface.AbiFullName) #>*>(this);
+    }
+<#     }
+        if (VelocityFeatures.IsVelocityVersion(version.Version)) { #>
+#endif
+<#       }
+   } #>
+<#     if (Model.VelocityVersion != 0) { #>
+#endif
+<#     }#>
+    else
+    {
+        RRETURN(<#= GetBaseClassName(Model) #>::QueryInterfaceImpl(iid, ppObject));
+    }
+
+    AddRefOuter();
+    RRETURN(S_OK);
+}
+
+<# if (Model.IdlClassInfo.IsActivatable && Model.IsEventArgsWithCorePeer) { #>
+CEventArgs* <#= AsCppType(Model.GeneratedClassFullName) #>::CreateCorePeer()
+{
+<#     if (Model.XamlClassFlags.RequiresCoreServices) { #>
+    return new <#= Model.CoreName #>(DXamlCore::GetCurrent()->GetHandle());
+<#     } else { #>
+    return new <#= Model.CoreName #>();
+<#     } #>
+}
+<# } #>
+
+// Properties.
+<# foreach (var property in Model.InstanceProperties.Where(m => m.GenerateStub)) { #>
+<#= IncludeTemplate<Property>(property) #>
+<# } #>
+
+// Methods.
+<# foreach (var method in Model.InstanceMethods.Where(m => m.GenerateStub)) { #>
+<#= IncludeTemplate<Method>(method) #>
+<# } #>
+
+<# if (Model.HasCustomFactory) { #>
+<#= IncludeTemplate<ClassFactory>(Model) #>
+<# } #>
+
+<# if (Model.IsActivatable || Model.IdlClassInfo.HasRuntimeClass) { #>
+namespace <#= OMContext.DefaultImplementationNamespace #>
+{
+<#     if (Model.IsActivatable) { #>
+    _Check_return_ HRESULT <#= Model.EventArgsFrameworkDefaultConstructor #>(_In_ CEventArgs* pCoreObject, _Out_ IInspectable** ppNewInstance)
+    {
+        HRESULT hr = S_OK;
+        ctl::ComPtr<<#= AsCppType(Model.AbiImplementationFullName) #>> spInstance;
+        *ppNewInstance = nullptr;
+        IFC(ctl::make(pCoreObject, &spInstance));
+        *ppNewInstance = ctl::iinspectable_cast(spInstance.Detach());
+    Cleanup:
+        RRETURN(hr);
+    }
+<#     }
+       if (Model.IdlClassInfo.HasRuntimeClass) { #>
+    _Check_return_ IActivationFactory* <#= Model.FactoryConstructor #>()
+    {
+        RRETURN(ctl::ActivationFactoryCreator<<#= GetFactoryFullName(Model) #>>::CreateActivationFactory());
+    }
+<#     } #>
+}
+<# } #>

@@ -1,0 +1,8 @@
+XamlPreCompile
+MarkupCompilePass1
+MarkupCompilePass2
+CompileXaml
+Rebuild
+ClCompile
+CompileXamlGeneratedFiles
+MSBuild

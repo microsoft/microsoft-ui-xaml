@@ -1,0 +1,65 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="XbfMetadataCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#include "precomp.h"
+#include "StableXbfIndexes.g.h"
+#include "Indexes.g.h"
+
+namespace Parser
+{
+    // Map stable Xbf type indexes to known type indexes
+    extern const <#= IndexGenerator.KnownTypeIndexEnumName #> c_aStableXbfTypeToKnownType[StableXbfTypeCount] =
+    {
+<# foreach (var type in StableIndexes.GetStableTypeIndexes()) { #>
+        <#= IndexGenerator.KnownTypeIndexEnumName + "::" + type.knownIndexName #>,
+<# } #>
+    };
+
+    // Map known type indexes to stable Xbf type indexes
+    extern const <#= StableXbfIndexGenerator.StableXbfTypeIndexEnumName #> c_aKnownTypeToStableXbfType[KnownTypeCount] =
+    {
+        <#= StableXbfIndexGenerator.StableXbfTypeIndexEnumName + "::" + ClassDefinition.UnknownType.IndexNameWithoutPrefix #>,
+<# foreach (var type in Model.GetAllTypeTableTypes()) { #>
+        <#= StableXbfIndexGenerator.StableXbfTypeIndexEnumName + "::" + StableIndexes.GetStableTypeIndexNameFromKnownTypeIndexName(type.IndexNameWithoutPrefix) #>,
+<# } #>
+    };
+
+    // Map stable Xbf property indexes to known property indexes
+    extern const <#= IndexGenerator.KnownPropertyIndexEnumName #> c_aStableXbfPropertyToKnownProperty[StableXbfPropertyCount] =
+    {
+<# foreach (var prop in StableIndexes.GetStablePropertyIndexes()) { #>
+        <#= IndexGenerator.KnownPropertyIndexEnumName + "::" + prop.knownIndexName #>,
+<# } #>
+    };
+
+    // Map known property indexes to stable Xbf property indexes
+    extern const <#= StableXbfIndexGenerator.StableXbfPropertyIndexEnumName #> c_aKnownPropertyToStableXbfProperty[KnownPropertyCount] =
+    {
+        <#= StableXbfIndexGenerator.StableXbfPropertyIndexEnumName + "::" + PropertyDefinition.UnknownProperty.IndexNameWithoutPrefix #>,
+<# foreach (var prop in Model.GetAllTypeTableProperties()) { #>
+        <#= StableXbfIndexGenerator.StableXbfPropertyIndexEnumName + "::" + StableIndexes.GetStablePropertyIndexNameFromKnownPropertyIndexName(prop.IndexNameWithoutPrefix) #>,
+<# } #>
+    };
+
+	// Map stable event indexes to known event indexes
+    extern const <#= IndexGenerator.KnownEventIndexEnumName #> c_aStableEventToKnownEvent[StableEventCount] =
+    {
+<# foreach (var evt in StableIndexes.GetStableEventIndexes()) { #>
+        <#= IndexGenerator.KnownEventIndexEnumName + "::" + evt.knownIndexName #>,
+<# } #>
+    };
+
+    // Map known event indexes to stable event indexes
+    extern const <#= StableXbfIndexGenerator.StableEventIndexEnumName #> c_aKnownEventToStableEvent[KnownEventCount] =
+    {
+        <#= StableXbfIndexGenerator.StableEventIndexEnumName + "::" + EventDefinition.UnknownEvent.IndexNameWithoutPrefix #>,
+<# foreach (var evt in Model.GetAllEvents()) { #>
+        <#= StableXbfIndexGenerator.StableEventIndexEnumName + "::" + StableIndexes.GetStableEventIndexNameFromKnownEventIndexName(evt.IndexNameWithoutPrefix) #>,
+<# } #>
+    };
+}

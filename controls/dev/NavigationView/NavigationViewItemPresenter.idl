@@ -1,0 +1,38 @@
+﻿namespace MU_XCP_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass NavigationViewItemPresenter : Microsoft.UI.Xaml.Controls.ContentControl
+{
+    NavigationViewItemPresenter();
+
+    Microsoft.UI.Xaml.Controls.IconElement Icon { get; set; };
+    NavigationViewItemPresenterTemplateSettings TemplateSettings{ get; };
+    
+    static Microsoft.UI.Xaml.DependencyProperty IconProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
+
+
+    [MUX_PUBLIC_V3]
+    {
+        Microsoft.UI.Xaml.Controls.InfoBadge InfoBadge{ get; set; };
+        static Microsoft.UI.Xaml.DependencyProperty InfoBadgeProperty{ get; };
+    }
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass NavigationViewItemPresenterTemplateSettings : Microsoft.UI.Xaml.DependencyObject
+{
+    NavigationViewItemPresenterTemplateSettings();
+
+    Double IconWidth{ get; };
+    Double SmallerIconWidth{ get; };
+
+    static Microsoft.UI.Xaml.DependencyProperty IconWidthProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty SmallerIconWidthProperty{ get; };
+
+}
+
+}

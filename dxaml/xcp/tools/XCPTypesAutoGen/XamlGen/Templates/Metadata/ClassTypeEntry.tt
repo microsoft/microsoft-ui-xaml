@@ -1,0 +1,12 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="MetadataCodeGenerator<ClassDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+// <#= Model.GenericClrFullName #>
+{
+    <#= Model.IndexName #>, // Index name
+    <#= Model.BaseClassInTypeTable.IndexName #>, // Base index name
+    <#= GetTypeFlagsString(Model) #>, // Type flags
+}

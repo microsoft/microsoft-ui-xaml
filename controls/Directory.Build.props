@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- This is a special MSBuild file that is parsed before everything else when MSBuild detects it in our directory structure.
+     Adding Sdk="Microsoft.NET.Sdk" to a project causes NuGet files to be generated very early on, so we need these defines to be here
+     to ensure that all of our build output files end up in the same location.  This is parsed too late when put in mux.controls.props. -->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <SkipXamlCompilerProjectReferences Condition="'$(SkipXamlCompilerProjectReferences)' == ''">true</SkipXamlCompilerProjectReferences>
+    <UseXamlCompiler Condition="'$(UseXamlCompiler)'==''">true</UseXamlCompiler>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <IsTDPConfiguration>false</IsTDPConfiguration>
+    <IsTDPConfiguration Condition="'$(Configuration)' == 'Debug_test'">true</IsTDPConfiguration>
+    <!-- We don't want MUXC using the WinUI Details -->
+    <UseWinUIDetails>false</UseWinUIDetails>
+
+    <MakePriExeFullPath>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\c\bin\$(WindowsTargetPlatformVersion)\$(WindowsSDKBuildToolsArchFolder)\makepri.exe</MakePriExeFullPath>
+    <MakeAppxExeFullPath>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\c\bin\$(WindowsTargetPlatformVersion)\$(WindowsSDKBuildToolsArchFolder)\makeappx.exe</MakeAppxExeFullPath>
+    <SignAppxPackageExeFullPath>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\c\bin\$(WindowsTargetPlatformVersion)\$(WindowsSDKBuildToolsArchFolder)\signtool.exe</SignAppxPackageExeFullPath>
+    <AppxPackagingComponentManifestPath>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\c\bin\$(WindowsTargetPlatformVersion)\$(WindowsSDKBuildToolsArchFolder)\Microsoft.Windows.Build.Appx.AppxPackaging.dll.manifest</AppxPackagingComponentManifestPath>
+    <MrmSupportLibraryPath>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\c\bin\$(WindowsTargetPlatformVersion)\$(WindowsSDKBuildToolsArchFolder)\MrmSupport.dll</MrmSupportLibraryPath>
+    
+    <UwpUnitTestSdkPkgVersion>16.7.1</UwpUnitTestSdkPkgVersion>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,411 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
+  
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(environment.props))" />
+  <Import Project="$(MUXCProjectRoot)mux.controls.props" Condition="Exists('$(MUXCProjectRoot)mux.controls.props')" />
+  <Import Project="$(MUXCProjectRoot)FeatureAreas.props" />
+  
+  <PropertyGroup>
+    <!-- Temporary workaround for CsWinRT 1.3.3 causing corruption of patched DLLs on exception -->
+    <CsWinRTIIDOptimizerOptOut>true</CsWinRTIIDOptimizerOptOut>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>$(DotNetCoreTargetFrameworkMoniker)</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <CsWinRTIncludes>AppTestAutomationHelpers</CsWinRTIncludes>
+    <CsWinRTWindowsMetadata>$(WindowsTargetPlatformVersion)</CsWinRTWindowsMetadata>
+    <BinplaceOutputAssemblies>true</BinplaceOutputAssemblies>
+    <NoWarn>
+      0105;
+      0108; <!-- 'x' hides inherited member 'y'. Use the new keyword if hiding was intended. -->
+      0252; <!-- Possible unintended reference comparison; to get a value comparison, cast the left hand side to type 'x' -->
+      0253; <!-- Possible unintended reference comparison; to get a value comparison, cast the right hand side to type 'x' -->
+      8305; <!-- 'x' is for evaluation purposes only and is subject to change or removal in future updates. -->
+    </NoWarn>
+    <MSBuildWarningsAsMessages>
+      CA1416; <!-- 'x' is supported on 'Windows' 10.0.18362.0 and later -->
+    </MSBuildWarningsAsMessages>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+    <UseWinUI>true</UseWinUI>
+    <RunSettingsFilePath>$(OutDir)$(MSBuildProjectName).runsettings</RunSettingsFilePath>
+    <!-- 
+      Because of transitive project dependencies, two different files named "microsoft.ui.xaml.winmd"
+      try to end up in the package payload:
+      * [objdir]\dxaml\xcp\dxaml\idl\winrt\main\microsoft.ui.xaml.winmd
+        An intermediate .winmd produced by \dxaml\xcp\dxaml\idl\winrt\main\Microsoft.ui.xaml-main.vcxproj.
+      * [objdir]\dxaml\xcp\dxaml\idl\winrt\merged\private\Merged\Microsoft.UI.Xaml.winmd
+        Another intermediate .winmd, produced by 
+        \dxaml\xcp\dxaml\idl\winrt\merged\private\Microsoft.UI.Xaml.vcxproj. The result of merging various
+        external .winmds along with our own intermediates (e.g. the previously listed .winmd).
+      
+      There are two options for resolving this:
+      1. Rename one of the conflicting .winmds (likely the one produced by Microsoft.ui.xaml-main.vcxproj).
+         This would be a fairly intrusive change as numerous files within the repo would need to be updated
+         with the new name.
+      2. Set the property $(IncludeCopyWinmdArtifactsOutputGroup) to false in this project file as the test
+         app doesn't need every referenced project's .winmd artifacts to be available at run-time, and
+         setting this property to false tells Single-project MSIX Packaging to not include them in the
+         package payload. If that requirement changes in the future then we'll have to go with option 1 above.
+   -->
+    <IncludeCopyWinmdArtifactsOutputGroup>false</IncludeCopyWinmdArtifactsOutputGroup>
+
+    <!-- Enable appx manifest activatable class entries, for execution on RS5 (system reg-free WinRT added with 19H1) -->
+    <EnableMUXWinRTRegistrations>true</EnableMUXWinRTRegistrations>        
+  </PropertyGroup>
+
+  <!-- We're going to include the .vcxitems in order to get their <Page> includes -
+       everything else is ignored, since this is a C# project. -->
+  <ItemGroup>
+    <Page Remove="@(Page)" />
+  </ItemGroup>
+  <Import Project="$(MUXCProjectRoot)dev\**\*.vcxitems" />
+  <ItemGroup>
+    <PageToTest Include="@(Page)" />
+    <Page Include="LeakTestPage.xaml" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MainPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\DisableAnimationsStyles.xaml" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <Link>Themes\DisableAnimationsStyles.xaml</Link>
+    </Page>
+    <Page Include="Utilities\ControlStateViewer\ControlStateViewer.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <Link>Utilities\ControlStateViewer\ControlStateViewer.xaml</Link>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Utilities\EntityPropertiesControl\EntityPropertiesControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <Link>Utilities\EntityPropertiesControl\EntityPropertiesControl.xaml</Link>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="@(WinUIEditWinMD)" />
+    <Reference Include="@(WebView2WinMD)" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MUXProjectRoot)build\WinUITest.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="LeakTestPage.xaml.cs" Condition="$(SolutionName) == 'MUXControlsInnerLoop'" />
+    <Compile Remove="ThemeResourcesTests.cs" Condition="$(SolutionName) == 'MUXControlsInnerLoop'" />
+    <Compile Remove="MiscTests\FocusTests.cs" Condition="$(SolutionName) == 'MUXControlsInnerLoop'" />
+    <Compile Remove="LeakTests.cs" Condition="$(SolutionName) == 'MUXControlsInnerLoop'" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="**\*.png">
+      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Content>
+    <Content Include="**\*.mp4">
+      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Content>
+    <Content Include="**\*.jpg">
+      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Content>
+    <Content Include="**\*.html">
+      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Content>
+    <Content Include="Properties\App.rd.xml" />
+    <Content Include="verification\*.xml">
+      <Link>verification\%(Filename)%(Extension)</Link>
+    </Content>
+    <Content Include="$(MUXCProjectRoot)dev\dll\DensityStyles\Compact.xaml" />
+    <Content Include="$(XamlBuildOutputRoot)controls\dev\dll\generated\DensityStyles\Compact.xbf" />
+  </ItemGroup>
+  <ItemGroup>
+    <AppContent Include="@(Content)" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- In non Razzle environment, themeresource is packaged as .xaml other than .xbf, it's the same way as .png -->
+    <Content Include="@(PageToTest)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- TestHost.exe from this package is needed for Test Explorer test discovery to function properly,
+         even though we don't use it for test execution. -->
+    <PackageReference Include="Microsoft.TestPlatform.TestHost" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
+    <PackageReference Include="Microsoft.Taef" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="DiffPlex">
+      <NoWarn>
+        NU1701; <!-- Package 'x' was restored using 'y' instead of the project target framework 'z'. This package may not be fully compatible with your project. -->
+      </NoWarn>
+    </PackageReference>
+    <PackageReference Include="MUXCustomBuildTasks" />
+    <!-- When updating to the winui3 compatible win2d, remove the FixWUXReferences target -->
+    <PackageReference Include="Win2d.WinUI" GeneratePathProperty="true" />
+    <Manifest Include="$(ApplicationManifest)" />
+
+    <!--
+    Newtonsoft.Json is pulled in transitively through VSSDK and contains vulnerability
+    GHSA-5crp-9r3c-p9vr. Manually reference a fixed version of Newtonsoft.Json rather than
+    upgrade to a newer version of VSSDK to avoid noise.
+    -->
+    <PackageReference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectCapability Include="TestContainer" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="$(XamlBuildOutputRoot)Samples\AppTestAutomationHelpers\AppTestAutomationHelpers.dll" />
+  </ItemGroup>
+
+  <Import Project="$(MUXCProjectRoot)CustomInlineTasks.targets" />
+  <Import Project="..\RetargetCopyLocalFiles.targets" />
+  <Import Project="..\TestApp.targets" />
+  
+  <Target Name="RemovePagesToTest" BeforeTargets="MarkupCompilePass1">
+    <ItemGroup>
+      <Page Remove="@(PageToTest)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="CustomAfterGenerateAppPackages" AfterTargets="_GenerateAppxPackage">
+    <RunPowershellScript Path="$(MUXCProjectRoot)tools\ExtractPackageDependencies.ps1" Parameters="-sourceFile $(OutDir)\$(MSBuildProjectName).build.appxrecipe -platform $(PlatformName) -outputFile $(AppxPackageTestDir)$(AppxPackageName).dependencies.txt" FilesWritten="$(AppxPackageTestDir)$(AppxPackageName).dependencies.txt">
+      <Output TaskParameter="MSBuildProcessId" ItemName="MSBuildProcessIdsToKill"/>
+    </RunPowershellScript>
+  </Target>
+  <Target Name="DefineThemePages" BeforeTargets="OutputPagesToTest">
+    <ItemGroup>
+      <StylePage Include="@(PageToTest)" Condition="'%(Type)' == 'DefaultStyle'" />
+      <ThemeResourcePage Include="@(PageToTest)" Condition="'%(Type)' == 'ThemeResources'" />
+    </ItemGroup>
+  </Target>
+  <Target Name="EnsureMUXWasBuilt" BeforeTargets="Build">
+    <Error Text="$(ArtifactsBinDir)Product\Microsoft.UI.Xaml.dll does not exist, which is needed to compile XAML.  Please build $(MUXProjectRoot)dxaml\Microsoft.UI.Xaml.sln before building MUXControlsTestApp." Condition="!Exists('$(ArtifactsBinDir)Product\Microsoft.UI.Xaml.dll')" />
+    <Error Text="$(ArtifactsBinDir)Product\en-us\Microsoft.UI.Xaml.dll.mui does not exist, which is needed to compile XAML.  Please build $(MUXProjectRoot)dxaml\Microsoft.UI.Xaml.sln before building MUXControlsTestApp." Condition="!Exists('$(ArtifactsBinDir)Product\en-us\Microsoft.UI.Xaml.dll.mui')" />
+    <Error Text="$(ArtifactsBinDir)Product\Microsoft.UI.Xaml.Phone.dll does not exist, which is needed to compile XAML.  Please build $(MUXProjectRoot)dxaml\Microsoft.UI.Xaml.sln before building MUXControlsTestApp." Condition="!Exists('$(ArtifactsBinDir)Product\Microsoft.UI.Xaml.Phone.dll')" />
+    <Error Text="$(ArtifactsBinDir)Product\en-us\Microsoft.UI.Xaml.Phone.dll.mui does not exist, which is needed to compile XAML.  Please build $(MUXProjectRoot)dxaml\Microsoft.UI.Xaml.sln before building MUXControlsTestApp." Condition="!Exists('$(ArtifactsBinDir)Product\en-us\Microsoft.UI.Xaml.Phone.dll.mui')" />
+    <Error Text="$(ArtifactsBinDir)Product\Microsoft.ui.xaml.resources.19h1.dll does not exist, which is needed to compile XAML.  Please build $(MUXProjectRoot)dxaml\Microsoft.UI.Xaml.sln before building MUXControlsTestApp." Condition="!Exists('$(ArtifactsBinDir)Product\Microsoft.ui.xaml.resources.19h1.dll')" />
+    <Error Text="$(ArtifactsBinDir)Product\Microsoft.ui.xaml.resources.common.dll does not exist, which is needed to compile XAML.  Please build $(MUXProjectRoot)dxaml\Microsoft.UI.Xaml.sln before building MUXControlsTestApp." Condition="!Exists('$(ArtifactsBinDir)Product\Microsoft.ui.xaml.resources.common.dll')" />
+    <Error Text="$(ArtifactsBinDir)Product\Microsoft.Internal.FrameworkUdk.dll does not exist, which is needed to compile XAML.  Please build $(MUXProjectRoot)dxaml\Microsoft.UI.Xaml.sln before building MUXControlsTestApp." Condition="!Exists('$(ArtifactsBinDir)Product\Microsoft.Internal.FrameworkUdk.dll')" />
+  </Target>
+  
+  <Import Project="$(MUXCProjectRoot)dev\Interactions\ButtonInteraction\TestUI\ButtonInteraction_TestUI.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' And $(UseInternalSDK) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\Interactions\SliderInteraction\TestUI\SliderInteraction_TestUI.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' And $(UseInternalSDK) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\Interactions\ButtonInteraction\APITests\ButtonInteraction_APITests.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' And $(UseInternalSDK) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\Interactions\SliderInteraction\APITests\SliderInteraction_APITests.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' And $(UseInternalSDK) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\CommonManaged\CommonManaged.projitems" Label="Shared" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\TestAppUtils\TestAppUtils.projitems" Label="Shared" />
+  <Import Project="$(MUXCProjectRoot)dev\ColorPicker\TestUI\ColorPicker_TestUI.projitems" Label="Shared" Condition="$(FeatureColorPickerEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\CommandBarFlyout\TestUI\CommandBarFlyout_TestUI.projitems" Label="Shared" Condition="$(FeatureCommandBarFlyoutEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\CommonStyles\TestUI\CommonStyles_TestUI.projitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\DropDownButton\TestUI\DropDownButton_TestUI.projitems" Label="Shared" Condition="$(FeatureDropDownButtonEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\Lights\ApiTests\Lights_ApiTests\Lights_ApiTests.projitems" Condition="$(FeatureLightsEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\Materials\Acrylic\TestUI\AcrylicBrush_TestUI.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\Materials\Reveal\TestUI\Reveal_TestUI.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\MenuBar\MenuBar_TestUI\MenuBar_TestUI.projitems" Label="Shared" Condition="$(FeatureMenuBarEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\NavigationView\TestUI\NavigationView_TestUI.projitems" Label="Shared" Condition="$(FeatureNavigationViewEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ParallaxView\TestUI\ParallaxView_TestUI.projitems" Label="Shared" Condition="$(FeatureParallaxViewEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\PersonPicture\TestUI\PersonPicture_TestUI.projitems" Label="Shared" Condition="$(FeaturePersonPictureEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\PullToRefresh\RefreshVisualizer\TestUI\RefreshVisualizer_TestUI.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\PullToRefresh\RefreshContainer\TestUI\RefreshContainer_TestUI.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\TestUI\ScrollViewerAdapter_TestUI.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\PullToRefresh\TestUI\PTR_TestUI.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\RadioMenuFlyoutItem\TestUI\RadioMenuFlyoutItem_TestUI.projitems" Label="Shared" Condition="$(FeatureRadioMenuFlyoutItemEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\RatingControl\TestUI\RatingControl_TestUI.projitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\Repeater\TestUI\Repeater_TestUI.projitems" Label="Shared" Condition="$(FeatureRepeaterEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ScrollPresenter\TestUI\ScrollPresenter_TestUI.projitems" Label="Shared" Condition="$(FeatureScrollPresenterEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ScrollView\TestUI\ScrollView_TestUI.projitems" Label="Shared" Condition="$(FeatureScrollViewEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ItemsView\TestUI\ItemsView_TestUI.projitems" Label="Shared" Condition="$(FeatureItemsViewEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\SplitButton\TestUI\SplitButton_TestUI.projitems" Label="Shared" Condition="$(FeatureSplitButtonEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\SwipeControl\SwipeControl_TestUI\SwipeControl_TestUI.projitems" Label="Shared" Condition="$(FeatureSwipeControlEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\TeachingTip\TestUI\TeachingTip_TestUI.projitems" Label="Shared" Condition="$(FeatureTeachingTipEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\TeachingTip\APITests\TeachingTip_APITests.projitems" Label="Shared" Condition="$(FeatureTeachingTipEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\TreeView\TestUI\TreeView_TestUI.projitems" Label="Shared" Condition="$(FeatureTreeViewEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\TwoPaneView\TestUI\TwoPaneView_TestUI.projitems" Label="Shared" Condition="$(FeatureTwoPaneViewEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ColorPicker\APITests\ColorPicker_APITests.projitems" Label="Shared" Condition="$(FeatureColorPickerEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\CommandBarFlyout\APITests\CommandBarFlyout_APITests.projitems" Label="Shared" Condition="$(FeatureCommandBarFlyoutEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\IconSource\APITests\IconSource_APITests.projitems" Label="Shared" Condition="$(FeatureIconSourceEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\LayoutPanel\APITests\LayoutPanel_APITests.projitems" Label="Shared" Condition="$(FeatureLayoutPanelEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\Materials\Acrylic\APITests\AcrylicBrush_ApiTests.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\Materials\Reveal\APITests\Reveal_APITests.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\NavigationView\NavigationView_ApiTests\NavigationView_ApiTests.projitems" Label="Shared" Condition="$(FeatureNavigationViewEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ParallaxView\APITests\ParallaxView_APITests.projitems" Label="Shared" Condition="$(FeatureParallaxViewEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\PersonPicture\APITests\PersonPicture_APITests.projitems" Label="Shared" Condition="$(FeaturePersonPictureEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\PullToRefresh\RefreshVisualizer\APITests\RefreshVisualizer_APITests.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\APITests\APITests.projitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\RadioButtons\APITests\RadioButtons_APITests.projitems" Label="Shared" Condition="$(FeatureRadioButtonsEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\RadioButtons\TestUI\RadioButtons_TestUI.projitems" Label="Shared" Condition="$(FeatureRadioButtonsEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\RatingControl\APITests\RatingControl_APITests.projitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\Repeater\APITests\Repeater_APITests.projitems" Label="Shared" Condition="$(FeatureRepeaterEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ScrollPresenter\APITests\ScrollPresenter_APITests.projitems" Label="Shared" Condition="$(FeatureScrollPresenterEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ScrollView\APITests\ScrollView_APITests.projitems" Label="Shared" Condition="$(FeatureScrollViewEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ItemsView\APITests\ItemsView_APITests.projitems" Label="Shared" Condition="$(FeatureItemsViewEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\SplitButton\APITests\SplitButton_APITests.projitems" Label="Shared" Condition="$(FeatureSplitButtonEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\SwipeControl\SwipeControl_APITests\SwipeControl_APITests.projitems" Label="Shared" Condition="$(FeatureSwipeControlEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\TreeView\APITests\TreeView_APITests.projitems" Label="Shared" Condition="$(FeatureTreeViewEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\TwoPaneView\APITests\TwoPaneView_APITests.projitems" Label="Shared" Condition="$(FeatureTwoPaneViewEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\AnimatedVisualPlayer\TestUI\AnimatedVisualPlayer_TestUI.projitems" Label="Shared" Condition="$(FeatureAnimatedVisualPlayerEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\CommonStyles\APITests\CommonStyles_ApiTests.projitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\AutoSuggestBox\APITests\AutoSuggestBox_APITests.projitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\AutoSuggestBox\TestUI\AutoSuggestBox_TestUI.projitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\TabView\TestUI\TabView_TestUI.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\TabView\APITests\TabView_APITests.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ComboBox\TestUI\ComboBox_TestUI.projitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ComboBox\APITests\ComboBox_APITests.projitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\NumberBox\APITests\NumberBox_APITests.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\NumberBox\TestUI\NumberBox_TestUI.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\SplitView\TestUI\SplitView_TestUI.projitems" Label="Shared" Condition="$(FeatureSplitViewEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ProgressBar\TestUI\ProgressBar_TestUI.projitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ProgressRing\TestUI\ProgressRing_TestUI.projitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\RadialGradientBrush\TestUI\RadialGradientBrush_TestUI.projitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\InfoBar\TestUI\InfoBar_TestUI.projitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\Expander\TestUI\Expander_TestUI.projitems" Label="Shared" Condition="$(FeatureExpanderEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\Expander\APITests\Expander_APITests.projitems" Label="Shared" Condition="$(FeatureExpanderEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\PagerControl\TestUI\PagerControl_TestUI.projitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\PagerControl\APITests\PagerControl_APITests.projitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\Breadcrumb\TestUI\Breadcrumb_TestUI.projitems" Label="Shared" Condition="$(FeatureBreadcrumbEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\Breadcrumb\APITests\Breadcrumb_APITests.projitems" Label="Shared" Condition="$(FeatureBreadcrumbEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\PipsPager\TestUI\PipsPager_TestUI.projitems" Label="Shared" Condition="$(FeaturePipsPagerEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\PipsPager\APITests\PipsPager_APITests.projitems" Label="Shared" Condition="$(FeaturePipsPagerEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ImageIcon\TestUI\ImageIcon_TestUI.projitems" Label="Shared" Condition="$(FeatureImageIconEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ImageIcon\APITests\ImageIcon_APITests.projitems" Label="Shared" Condition="$(FeatureImageIconEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\AnimatedIcon\TestUI\AnimatedIcon_TestUI.projitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\AnimatedIcon\APITests\AnimatedIcon_APITests.projitems" Label="Shared" Condition="$(FeatureAnimatedIconEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\MonochromaticOverlayPresenter\TestUI\MonochromaticOverlayPresenter_TestUI.projitems" Label="Shared" Condition="$(FeatureMonochromaticOverlayPresenterEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\InfoBadge\TestUI\InfoBadge_TestUI.projitems" Label="Shared" Condition="$(FeatureInfoBadgeEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\InfoBadge\APITests\InfoBadge_APITests.projitems" Label="Shared" Condition="$(FeatureInfoBadgeEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\WebView2\TestUI\WebView2_TestUI.projitems" Label="Shared" Condition="$(FeatureWebView2Enabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ProgressRing\APITests\ProgressRing_APITests.projitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ProgressBar\APITests\ProgressBar_APITests.projitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ItemContainer\TestUI\ItemContainer_TestUI.projitems" Label="Shared" Condition="$(FeatureItemContainerEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\ItemContainer\APITests\ItemContainer_APITests.projitems" Label="Shared" Condition="$(FeatureItemContainerEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\AnnotatedScrollBar\TestUI\AnnotatedScrollBar_TestUI.projitems" Label="Shared" Condition="$(FeatureAnnotatedScrollBarEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\AnnotatedScrollBar\APITests\AnnotatedScrollBar_APITests.projitems" Label="Shared" Condition="$(FeatureAnnotatedScrollBarEnabled) == 'true'" />
+
+  <!-- For some reason, TAEF binplaces the wrong version of Wex.Logger.Interop.dll - we need to fix that.
+       Removing the version from the binaries directory to allow us to use the version from the lib directory is sufficient here.-->
+  <Target Name="RemoveIncorrectWexLoggerInteropDll" BeforeTargets="_HandlePackageFileConflicts;GetPackagingOutputs">
+    <PropertyGroup>
+      <TaefBinariesDirectory>$(NugetPackageDirectory)\Microsoft.Taef\$(TaefNugetPackageVersion)\build\Binaries\$(PlatformTarget)\</TaefBinariesDirectory>
+    </PropertyGroup>
+    <ItemGroup>
+      <TaefFilesToRemove Include="$(TaefBinariesDirectory)Wex.Logger.Interop.dll" />
+      <ReferenceCopyLocalPaths Remove="@(TaefFilesToRemove)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- The TAEF binaries provide this functionality, so we'll remove it from our list of references. -->
+  <Target Name="RemoveTestNetSdkReferences" AfterTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <ReferenceSatellitePaths Remove="@(ReferenceSatellitePaths)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="RemoveTestNetSdkAssets" AfterTargets="ResolvePackageAssets">
+    <ItemGroup>
+      <RuntimeCopyLocalItems Remove="$(NugetPackageDirectory)\microsoft.testplatform.testhost\$(MicrosoftTestNetSdkVersion)\lib\netcoreapp2.1\testhost.dll" />
+      <ResolvedCompileFileDefinitions Remove="$(NugetPackageDirectory)\microsoft.testplatform.testhost\$(MicrosoftTestNetSdkVersion)\lib\netcoreapp2.1\testhost.dll" />
+      <ResourceCopyLocalItems Remove="@(ResourceCopyLocalItems)" Condition="'%(NuGetPackageId)' == 'Microsoft.TestPlatform.ObjectModel' or '%(NuGetPackageId)' == 'Microsoft.TestPlatform.TestHost'" />
+    </ItemGroup>
+  </Target>
+  
+  <!-- Win2D has a dependency on Microsoft.VCLibs, so we need to place its binaries next to the Win2D binaries to satisfy that. -->
+  <Target Name="CopyVCLibs">
+    <PropertyGroup>
+      <AppxPlatform Condition="'$(Platform)' == '' or '$(Platform)' == 'AnyCPU'">$(arch)</AppxPlatform>
+      <AppxPlatform Condition="'$(Platform)' == 'Win32'">x86</AppxPlatform>
+      <AppxPlatform Condition="'$(AppxPlatform)' == ''">$(Platform)</AppxPlatform>
+      <UnzipDirectory>$(TempDir)\Microsoft.VCLibs_unzipped</UnzipDirectory>
+    </PropertyGroup>
+    <Unzip SourceFiles="$(ExtensionSdkDir)\Microsoft.VCLibs\14.0\Appx\Retail\$(AppxPlatform)\Microsoft.VCLibs.$(AppxPlatform).14.00.appx" DestinationFolder="$(UnzipDirectory)" OverwriteReadOnlyFiles="true" />
+    <ItemGroup>
+      <VCLibsDll Include="$(UnzipDirectory)\*.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(VCLibsDll)" DestinationFiles="@(VCLibsDll->'$(OutDir)%(Filename)%(Extension)')" />
+    <RemoveDir Directories="$(UnzipDirectory)" />
+    <ItemGroup>
+      <FileWrites Include="@(VCLibsDll->'$(OutDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+  </Target>
+    
+  <!-- TAEF requires that the version of .NET it uses be in a subfolder, so this copies it there. -->
+  <Target Name="CopyDotNet">
+    <Copy SourceFiles="@(RuntimePackAsset)" DestinationFiles="@(RuntimePackAsset->'$(OutDir)localDotNet\%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <FileWrites Include="@(RuntimePackAsset->'$(OutDir)localDotNet\%(Filename)%(Extension)')" />
+    </ItemGroup>
+  </Target>
+    
+  <!-- API tests are run within the context of TE.ProcessHost.exe, whose SxS app manifest doesn't contain our types.
+       To fix that, we'll extract its SxS manifest, merge in the WinAppSDK self-contained manifest, and reapply the modified manifest. -->
+  <Target Name="ApplyManifestToTeProcessHostExe" DependsOnTargets="CreateWinRTRegistration" Inputs="$(ApplicationManifest)" Outputs="$(OutDir)TE.ProcessHost.exe">
+    <PropertyGroup>
+      <TeProcessHostExePath>$(OutDir)TE.ProcessHost.exe</TeProcessHostExePath>
+      <TeProcessHostManifestPath>$(TempDir)\te.processhost.manifest</TeProcessHostManifestPath>
+      <TeProcessHostMergedManifestPath>$(TempDir)\te.processhost.merged.manifest</TeProcessHostMergedManifestPath>
+    </PropertyGroup>
+    <Exec Command="&quot;$(ManifestTool)&quot; -nologo -inputresource:&quot;$(TeProcessHostExePath)&quot; -out:&quot;$(TeProcessHostManifestPath)&quot;" WorkingDirectory="$(MSBuildProjectDirectory)" />
+    <Exec Command="&quot;$(ManifestTool)&quot; -nologo -manifest &quot;$(ApplicationManifest)&quot; &quot;$(TeProcessHostManifestPath)&quot; -out:&quot;$(TeProcessHostMergedManifestPath)&quot; &gt; nul 2&gt;&amp;1" WorkingDirectory="$(MSBuildProjectDirectory)" />
+    <Exec Command="&quot;$(ManifestTool)&quot; -nologo -manifest &quot;$(TeProcessHostMergedManifestPath)&quot; -outputresource:&quot;$(TeProcessHostExePath)&quot;" WorkingDirectory="$(MSBuildProjectDirectory)" />
+    <ItemGroup>
+      <FileWrites Include="$(TeProcessHostManifestPath);$(TeProcessHostMergedManifestPath)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="CopyPayloadFiles">
+    <Copy SourceFiles="@(Content)" DestinationFiles="@(Content->'$(OutDir)%(Link)')" Condition="'%(Content.Link)' != ''" />
+    <Copy SourceFiles="@(Content)" DestinationFiles="@(Content->'$(OutDir)%(Identity)')" Condition="'%(Content.Link)' == '' and !$([System.IO.Path]::IsPathRooted('%(Identity)'))" />
+    <Copy SourceFiles="@(Content)" DestinationFiles="@(Content->'$(OutDir)%(Filename)%(Extension)')" Condition="'%(Content.Link)' == '' and $([System.IO.Path]::IsPathRooted('%(Identity)'))" />
+  </Target>
+    
+  <Target Name="BinplaceOutDir" BeforeTargets="Binplace" DependsOnTargets="CopyVCLibs;CopyDotNet;ApplyManifestToTeProcessHostExe;CopyPayloadFiles">
+    <PropertyGroup>
+      <UnpackagedAppsDirectory>$(ArtifactsObjDir)controls\test\MUXControls.Test\UnpackagedApps\$(MSBuildProjectName)\</UnpackagedAppsDirectory>
+    </PropertyGroup>
+    <ItemGroup>
+      <BinplaceItem Include="$(OutDir)**\*" Exclude="$(GeneratedFilesDir)**\*;$(IntermediateOutputPath)**\*;$(OutDir)arm\**\*;$(OutDir)arm64\**\*;$(OutDir)x64\**\*;$(OutDir)x86\**\*">
+        <Destination>$(TestBinplaceDestinationPath)\UnpackagedApps\$(MSBuildProjectName)</Destination>
+      </BinplaceItem>
+    </ItemGroup>
+    <Copy SourceFiles="@(BinplaceItem)" DestinationFiles="@(BinplaceItem->'$(UnpackagedAppsDirectory)%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
+  <!-- TODO: Remove this target once the fix for 45817705 is ingested into our WindowsAppSDKAggregator submodule. -->
+  <Target Name="AddXamlAndXbfPayloadFiles" AfterTargets="AddMicrosoftWindowsAppSDKPayloadFiles">
+    <ItemGroup>
+      <AdditionalMicrosoftWindowsAppSDKFiles Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.xaml"/>
+      <AdditionalMicrosoftWindowsAppSDKFiles Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.xbf"/>
+    </ItemGroup>
+    <CreateItem Include="@(AdditionalMicrosoftWindowsAppSDKFiles)"
+        AdditionalMetadata="CopyToOutputDirectory=PreserveNewest;Link=%(AdditionalMicrosoftWindowsAppSDKFiles.RecursiveDir)%(AdditionalMicrosoftWindowsAppSDKFiles.Filename)%(AdditionalMicrosoftWindowsAppSDKFiles.Extension)" >
+      <Output TaskParameter="Include" ItemName="None"/>
+    </CreateItem>
+  </Target>
+  
+  <Target Name="GenerateRunSettings" BeforeTargets="Build" Outputs="$(RunSettingsFilePath)">
+    <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="%3CRunSettings%3E" Overwrite="true" />
+    <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="  %3CRunConfiguration%3E" />
+    <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="    %3CTargetPlatform%3E$(Platform)%3C/TargetPlatform%3E" />
+    <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="    %3CTargetFrameworkVersion%3E.NETCoreApp,Version=v6.0%3C/TargetFrameworkVersion%3E" />
+    <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="    %3CResultsDirectory%3E$(OutDir)TestResults%3C/ResultsDirectory%3E" />
+    <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="    %3CTestAdaptersPaths%3E$(OutDir)%3C/TestAdaptersPaths%3E" />
+    <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="  %3C/RunConfiguration%3E" />
+    <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="%3C/RunSettings%3E" />
+    <ItemGroup>
+      <FileWrites Include="$(RunSettingsFilePath)" />
+    </ItemGroup>
+  </Target>
+</Project>

@@ -1,0 +1,11 @@
+﻿namespace MU_XAP_NAMESPACE
+{
+
+[MUX_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass ScrollPresenterAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    ScrollPresenterAutomationPeer(MU_XCP_NAMESPACE.ScrollPresenter owner);
+}
+
+}

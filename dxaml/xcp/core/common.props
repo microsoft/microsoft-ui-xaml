@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <Import Project="$(XcpPath)\common.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(LiftedIXPIncludePaths);
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\core\inc;
+            $(XcpPath)\core\controls\generated;
+            $(XcpPath)\core\parser;
+            $(XcpPath)\components\criticalsection\inc;
+            $(XcpPath)\components\scaling\inc;
+            $(XcpPath)\components\brushes\inc;
+            $(XcpPath)\components\vsm\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <!--                                                                      -->
+        <!-- The -Zm flag below addresses a compiler limitation in that it        -->
+        <!-- must know in advance the total max size of the precompiled header    -->
+        <!-- The code included in this precompiled header substantially exceeds   -->
+        <!-- the default limit. The compiler will, when this limit is reached,    -->
+        <!-- suggest a number that is large enough, but just large enough, to     -->
+        <!-- fix the compilation. Using the number provided will lead to frequent -->
+        <!-- churn on the sources.                                                -->
+        <!--                                                                      -->
+        <!-- !! to reduce churn, please increment the number in the -Zm flag by a -->
+        <!-- !! multiple of 50 when changing it.                                  -->
+        <!--                                                                      -->
+        <ClCompile>
+            <AdditionalOptions>%(AdditionalOptions) /Zm200 /bigobj</AdditionalOptions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+</Project>

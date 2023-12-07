@@ -1,0 +1,50 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#include "precomp.h"
+#include <UIElement.h>
+
+// This auto-generated file registers callbacks for simple properties implemented on CUIElement, to ensure any simple property update also affects the element visually.
+// If you've added a new simple property to CUIElement, you will need to add a Set<property name>Impl method as well, which runs after the property has been set
+// and should do any additional work to reflect the updated value.  See SetRotationImpl or any of the other methods below for an example.
+
+<# var simpleProperties = Model.GetAllTypeTableSimpleProperties().Where((def) => def.Modifier == Modifier.Public && def.SimpleDeclaringClass == "CUIElement"); #>
+
+<# foreach (var simpleProperty in simpleProperties) { #>
+<# // Handle the float/double discrepancy between the API and storage layer #>
+<# string propertyTypeName = simpleProperty.PropertyType.Type.IsPrimitive ? AsCppType(simpleProperty.PropertyType.Type.AbiReferenceFullName) : AsCppType(simpleProperty.PropertyType.AbiFullName); #>
+static void Set<#= simpleProperty.Name #>Callback(_In_ SimpleProperty::objid_t obj, _In_opt_ const <#=propertyTypeName#>* old<#= simpleProperty.Name #>)
+{
+    CUIElement* pElement = SimpleProperty::MapObjIdToInstance<CUIElement>(obj);
+    <#=propertyTypeName#> old<#= simpleProperty.Name #>Value;
+    if (old<#= simpleProperty.Name #> != nullptr)
+    {
+        old<#= simpleProperty.Name #>Value = *old<#= simpleProperty.Name #>;
+    }
+    else
+    {
+        old<#= simpleProperty.Name #>Value = SimpleProperty::Property::Default<<#= simpleProperty.IndexName #>>();
+    }
+    pElement->Set<#= simpleProperty.Name #>Impl(old<#= simpleProperty.Name #>Value);
+}
+
+<# } #>
+
+void CUIElement::RegisterSimplePropertyCallbacks()
+{
+<# foreach (var simpleProperty in simpleProperties) { #>
+    SimpleProperty::Property::id<<#= simpleProperty.IndexName #>>::RegisterHandler(&Set<#= simpleProperty.Name #>Callback, true);
+<# } #>
+}
+
+void CUIElement::UnregisterSimplePropertyCallbacks()
+{
+<# foreach (var simpleProperty in simpleProperties) { #>
+    SimpleProperty::Property::id<<#= simpleProperty.IndexName #>>::UnregisterHandler(&Set<#= simpleProperty.Name #>Callback);
+<# } #>
+}

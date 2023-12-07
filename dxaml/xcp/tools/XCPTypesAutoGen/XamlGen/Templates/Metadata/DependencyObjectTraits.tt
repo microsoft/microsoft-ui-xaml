@@ -1,0 +1,18 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="MetadataCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#pragma once
+
+<# foreach (var type in Model.GetAllTypeTableTypes().OfType<ClassDefinition>().Where(c => c.IsADependencyObject && !c.IsGenericType)) { #>
+class <#= type.CoreName #>;
+template<>
+struct DependencyObjectTraits<<#= type.CoreName #>>
+{
+    static const <#= IndexGenerator.KnownTypeIndexEnumName #> Index = <#= type.IndexName #>;
+};
+<# } #>

@@ -1,0 +1,11 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass DropDownButton : Microsoft.UI.Xaml.Controls.Button
+{
+    DropDownButton();
+}
+
+}

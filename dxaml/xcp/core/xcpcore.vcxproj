@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{86eab859-48aa-4efe-b2c2-8c6a345a318a}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+
+    <Import Project="$(XcpPath)\core\common.props"/>
+
+    <PropertyGroup>
+        <TargetDestination>retail</TargetDestination>
+
+        <BuildClientcore>1</BuildClientcore>
+
+        <XamlPrecompiledInclude>precomp.h</XamlPrecompiledInclude>
+        <XamlPrecompiledPch>precomp.pch</XamlPrecompiledPch>
+        <XamlPrecompiledObj>precomp.obj</XamlPrecompiledObj>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="precomp.h"/>
+
+        <ClCompile Include="animation\Timeline.cpp"/>
+        <ClCompile Include="animation\TimelineGroup.cpp"/>
+        <ClCompile Include="animation\TimingCollection.cpp"/>
+        <ClCompile Include="animation\TimelineCollection.cpp"/>
+        <ClCompile Include="animation\ParallelTimeline.cpp"/>
+        <ClCompile Include="animation\DynamicTimeline.cpp"/>
+        <ClCompile Include="animation\Animation.cpp"/>
+        <ClCompile Include="animation\DoubleAnimation.cpp"/>
+        <ClCompile Include="animation\ColorAnimation.cpp"/>
+        <ClCompile Include="animation\PointAnimation.cpp"/>
+        <ClCompile Include="animation\ObjectAnimationUsingKeyFrames.cpp"/>
+        <ClCompile Include="animation\PointerAnimationUsingKeyFrames.cpp"/>
+        <ClCompile Include="animation\KeyFrame.cpp"/>
+        <ClCompile Include="animation\KeyFrameCollection.cpp"/>
+        <ClCompile Include="animation\KeySpline.cpp"/>
+        <ClCompile Include="animation\KeyTime.cpp"/>
+        <ClCompile Include="animation\DoubleKeyFrame.cpp"/>
+        <ClCompile Include="animation\ColorKeyFrame.cpp"/>
+        <ClCompile Include="animation\PointKeyFrame.cpp"/>
+        <ClCompile Include="animation\ObjectKeyFrame.cpp"/>
+        <ClCompile Include="animation\PointerKeyFrame.cpp"/>
+        <ClCompile Include="animation\storyboard.cpp"/>
+        <ClCompile Include="animation\timemgr.cpp"/>
+        <ClCompile Include="animation\timespan.cpp"/>
+        <ClCompile Include="animation\Duration.cpp"/>
+        <ClCompile Include="animation\RepeatBehavior.cpp"/>
+        <ClCompile Include="animation\triggers.cpp"/>
+        <ClCompile Include="animation\timer.cpp"/>
+        <ClCompile Include="animation\DeferredAnimationOperation.cpp"/>
+
+        <ClCompile Include="packaging\deployment.cpp"/>
+        <ClCompile Include="packaging\application.cpp"/>
+
+        <ClCompile Include="common\memorysurface.cpp"/>
+        <ClCompile Include="common\rastpath.cpp"/>
+        <ClCompile Include="common\values.cpp"/>
+        <ClCompile Include="common\HeaderDependencyBridges.cpp"/>
+
+        <ClCompile Include="compositor\compositorscheduler.cpp"/>
+        <ClCompile Include="compositor\compositortree.cpp"/>
+        <ClCompile Include="compositor\hardwarecommand.cpp"/>
+        <ClCompile Include="compositor\windowrendertarget.cpp"/>
+        <ClCompile Include="compositor\CompositorDirectManipulationViewport.cpp"/>
+        <ClCompile Include="compositor\UIThreadScheduler.cpp"/>
+        <ClCompile Include="compositor\RefreshAlignedClock.cpp"/>
+
+        <ClCompile Include="dll\eventmgr.cpp"/>
+        <ClCompile Include="dll\focusmgr.cpp"/>
+        <ClCompile Include="dll\purecall.cpp"/>
+        <ClCompile Include="dll\rendertargetbitmapmgr.cpp"/>
+        <ClCompile Include="dll\xcpcore.cpp"/>
+        <ClCompile Include="dll\xcpcore_namescope.cpp"/>
+        <ClCompile Include="dll\CoreImports.cpp"/>
+        <ClCompile Include="dll\services.cpp"/>
+        <ClCompile Include="dll\VisualTree.cpp"/>
+        <ClCompile Include="dll\UriValidator.cpp"/>
+        <ClCompile Include="dll\ImageReloadManager.cpp"/>
+        <ClCompile Include="dll\DebugSource.cpp"/>
+
+        <ClCompile Include="error\errorservice.cpp"/>
+        <ClCompile Include="error\erroreventargs.cpp"/>
+
+        <ClCompile Include="networking\NetworkingUtilities.cpp"/>
+
+        <ClCompile Include="native\elements\printdocument.cpp"/>
+        <ClCompile Include="native\elements\Image.cpp"/>
+
+        <ClCompile Include="optional\elements\printing\printpageeventargs.cpp"/>
+        <ClCompile Include="optional\elements\printing\printroot.cpp"/>
+
+        <ClCompile Include="optional\elements\touch\UIDMContainer.cpp"/>
+        <ClCompile Include="optional\elements\touch\UIDMContainerHandler.cpp"/>
+
+        <ClCompile Include="layout\layoutmanager.cpp"/>
+        <ClCompile Include="layout\layoutstorage.cpp"/>
+        <ClCompile Include="layout\EffectiveViewportChangedEventArgs.cpp"/>
+
+        <ClCompile Include="sw\utils.cpp"/>
+        <ClCompile Include="sw\bezierflattener.cpp"/>
+        <ClCompile Include="sw\bezierd.cpp"/>
+        <ClCompile Include="sw\figuretask.cpp"/>
+        <ClCompile Include="sw\cpen.cpp"/>
+        <ClCompile Include="sw\strokefigure.cpp"/>
+
+        <ClCompile Include="dethunk\elements\mediaqueue.cpp"/>
+
+        <ClCompile Include="imaging\ImagingProvider\AsyncImageFactory.cpp"/>
+        <ClCompile Include="imaging\ImagingProvider\ImageProvider.cpp"/>
+        <ClCompile Include="imaging\ImagingProvider\ImageProviderDecodeHandlerTask.cpp"/>
+        <ClCompile Include="imaging\ImagingProvider\LoadedImageSurface.cpp"/>
+
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\comptree\inc;
+            $(XcpPath)\components\brushes\inc;
+            $(XcpPath)\components\math\inc;
+            $(XcpPath)\components\transforms\inc;
+            $(XcpPath)\core\animation;
+            $(XcpPath)\core\hw;
+            $(XcpPath)\core\sw;
+            $(XcpPath)\core\inc;
+            $(XcpPath)\core\text\inc;
+            $(XcpPath)\core\text\richtextservices\inc;
+            $(XcpPath)\control\inc;
+            $(XcpPath)\core\compositor;
+            $(XcpPath)\plat\win\desktop;
+            $(XcpPath)\win\inc;
+            $(XcpPath)\core\imaging\ImagingProvider;
+            $(XcpPath)\core\native\text\Controls;
+            $(XcpPath)\core\native\inc;
+            $(XcpPath)\dxaml\lib;
+            $(XcpPath)\components\OneCoreTransforms\inc;
+            $(XcpPath)\core\native\text\Common;
+            $(XcpPath)\control\common\shared;
+            $(XcpPath)\host\win\browserdesktop;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

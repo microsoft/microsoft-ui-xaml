@@ -1,0 +1,62 @@
+<Project ToolsVersion="Current">
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj">
+      <Targets>GetTargetPathWithTargetPlatformMoniker</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\controls\idl\Microsoft.UI.Xaml.Controls.idl.vcxproj">
+      <Targets>BuildGenerateSources;GetPackagingOutputs;GetTargetPathWithTargetPlatformMoniker</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\phone\idl\phone.vcxproj">
+      <Targets>BuildGenerateSources;GetPackagingOutputs;GetTargetPathWithTargetPlatformMoniker</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\components\pch\prod\Microsoft.UI.Xaml.Precomp.vcxproj">
+      <Targets>GetTargetFrameworks;GetTargetFrameworksWithPlatformForSingleTargetFramework</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\components\xamldiagnostics\idl\xamlom.vcxproj">
+      <Targets>GetTargetFrameworks;GetTargetFrameworksWithPlatformForSingleTargetFramework</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\core\parser\staticpch\Parser.pch.vcxproj">
+      <Targets>GetTargetFrameworks;GetTargetFrameworksWithPlatformForSingleTargetFramework</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\dxaml\idl\com\microsoft.ui.xaml-com.vcxproj">
+      <Targets>BuildGenerateSources;GetPackagingOutputs;GetTargetPathWithTargetPlatformMoniker</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\dxaml\idl\winrt\controls\Microsoft.ui.xaml.controls.controls.vcxproj">
+      <Targets>BuildGenerateSources;GetPackagingOutputs;GetTargetPathWithTargetPlatformMoniker</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\dxaml\idl\winrt\core\Microsoft.ui.xaml.coretypes.vcxproj">
+      <Targets>BuildGenerateSources;GetPackagingOutputs;GetTargetPathWithTargetPlatformMoniker</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\dxaml\idl\winrt\main\Microsoft.ui.xaml-main.vcxproj">
+      <Targets>BuildGenerateSources;GetPackagingOutputs;GetTargetPathWithTargetPlatformMoniker</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\dxaml\idl\winrt\merged\microsoft.ui.xaml.vcxproj">
+      <Targets>GetTargetFrameworks;GetTargetFrameworksWithPlatformForSingleTargetFramework</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\dxaml\idl\winrt\merged\private\Microsoft.UI.Xaml.vcxproj">
+      <Targets>GetTargetPathWithTargetPlatformMoniker</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\dxaml\manifest\manifest.vcxproj">
+      <Targets>GetTargetPathWithTargetPlatformMoniker</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\hostpalplatmisc.vcxproj">
+      <Targets>GetTargetFrameworks;GetTargetFrameworksWithPlatformForSingleTargetFramework</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\pal\debug\PALDebug.vcxproj">
+      <Targets>GetTargetFrameworks;GetTargetFrameworksWithPlatformForSingleTargetFramework</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\eng\gencompheadersandidl\gencompheadersandidl.vcxproj">
+      <Targets>GetTargetPathWithTargetPlatformMoniker</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\eng\genmrtheadersandidl\genmrtheadersandidl.vcxproj">
+      <Targets>GetTargetPathWithTargetPlatformMoniker</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\projection\Microsoft.WinUI.csproj">
+      <Targets>GetTargetFrameworks;GetTargetPathWithTargetPlatformMoniker;GetNativeManifest;GetCopyToOutputDirectoryItems;GetTargetFrameworksWithPlatformForSingleTargetFramework</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\projection\private\Microsoft.WinUI.csproj">
+      <Targets>GetTargetPathWithTargetPlatformMoniker</Targets>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="..\GraphAugmentation.targets" />
+</Project>
