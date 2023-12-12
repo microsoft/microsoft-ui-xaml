@@ -33,7 +33,7 @@ For more info about our longer-term planning, see the [Windows App SDK feature r
 
 ### WinUI 2
 
-The WinUI team is currently spending its time on WinUI 3. To help with this focus, new bugs filed against WinUI 2 are closed in this repo unless they're a security issue or are business critical.
+The WinUI team is currently spending its time on WinUI 3. To help with this focus, any new bug filed against WinUI 2 is closed in this repo unless it's a security issue or is critical to our business priorities.
 
 ### WinUI 3
 
