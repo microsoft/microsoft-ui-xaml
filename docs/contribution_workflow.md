@@ -46,7 +46,7 @@ have one).
 ## DOs and DON'Ts
 
 Please do:
-* **DO** follow our [coding style](code_style_and_conventions.md).
+* **DO** follow existing coding style.
 * **DO** give priority to the current style of the project or file you're 
 changing even if it diverges from the general guidelines.
 * **DO** include tests when adding new features. When fixing bugs, start with 
