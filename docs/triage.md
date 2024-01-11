@@ -77,5 +77,3 @@ We also need to monitor:
 1. Remove `needs-triage` when a closed issue has a reply by someone with write access to the repo.
 1. Replace `needs-author-feedback` label with `needs-assignee-attention` (if assigned) or `needs-triage` (if unassigned).
 
-
-[Admin panel](https://fabric-cp.azurewebsites.net/bot/)

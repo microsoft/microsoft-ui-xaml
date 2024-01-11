@@ -27,13 +27,12 @@ have one).
     from upstream. They also enable you to create multiple PRs from the same 
     fork.
 4. Make and commit your changes. 
-    * Please follow our [Commit Messages](contribution_workflow.md#Commit-Messages) 
+    * Please follow our [Commit Messages](#Commit-Messages) 
     guidance.
-5. Add [new tests](developer_guide.md#Testing) corresponding to your change, if applicable.
+5. Add new tests corresponding to your change, if applicable.
 6. Build the repository with your changes. 
     * Make sure that the builds are clean.
-    * Make sure that the [tests](developer_guide.md#Testing) are all passing, including your new 
-    tests.
+    * Make sure that the tests are all passing, including your new tests.
 7. Create a pull request (PR) against the upstream repository's main branch. 
     * Push your changes to your fork on GitHub (if you haven't already).
     - Note: It is okay for your PR to include a large number of commits. Once 
@@ -47,7 +46,7 @@ have one).
 ## DOs and DON'Ts
 
 Please do:
-* **DO** follow our [coding style](code_style_and_conventions.md).
+* **DO** follow existing coding style.
 * **DO** give priority to the current style of the project or file you're 
 changing even if it diverges from the general guidelines.
 * **DO** include tests when adding new features. When fixing bugs, start with 
@@ -91,8 +90,7 @@ bot will then trigger the build.
 
 In order to have PRs automatically merge once all checks have passed (including optional 
 checks), maintainers can apply the [auto merge](https://github.com/Microsoft/microsoft-ui-xaml/labels/auto%20merge) 
-label. It will take effect after an 8 hour delay, 
-[more info here (internal link)](https://microsoft.sharepoint.com/teams/FabricBot/SitePages/AutoMerge,-Bot-Templates-and.aspx).
+label. It will take effect after an 8 hour delay.
 
 ### Other Pipelines
 
