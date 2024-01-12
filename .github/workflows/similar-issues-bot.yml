@@ -16,7 +16,7 @@ jobs:
         with:
           issuetitle: ${{ github.event.issue.title }}
           repo: ${{ github.repository }}
-          similaritytolerance: "0.75"
+          similaritytolerance: "0.70"
           commentBody: | 
             Hi I'm an AI powered bot that finds similar issues based off the issue title.
 
@@ -26,6 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       issues: write
+    if: needs.getsimilarissues.outputs.message != ''
     steps:
       - name: Add comment
         run: gh issue comment "$NUMBER" --repo "$REPO" --body "$BODY"
