@@ -343,17 +343,17 @@ CCueStyler::SetRegionConfiguration(
 
         if (padding.Unit == wmc::TimedTextUnit_Percentage)
         {
-            xamlPadding.Top +=  parentHeight * (padding.Start / 100);
-            xamlPadding.Bottom += parentHeight * (padding.End / 100);
-            xamlPadding.Left += parentWidth * (padding.Before / 100);
-            xamlPadding.Right += parentWidth * (padding.After / 100);
+            xamlPadding.Top +=  parentHeight * (padding.Before / 100);
+            xamlPadding.Bottom += parentHeight * (padding.After / 100);
+            xamlPadding.Left += parentWidth * (padding.Start / 100);
+            xamlPadding.Right += parentWidth * (padding.End / 100);
         }
         else
         {
-            xamlPadding.Top += padding.Start;
-            xamlPadding.Bottom += padding.End;
-            xamlPadding.Left += padding.Before;
-            xamlPadding.Right += padding.After;
+            xamlPadding.Top += padding.Before;
+            xamlPadding.Bottom += padding.After;
+            xamlPadding.Left += padding.Start;
+            xamlPadding.Right += padding.End;
         }
         IFC_RETURN(pRegion->put_Padding(xamlPadding));
     }
