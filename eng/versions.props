@@ -65,7 +65,7 @@
     <MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>29</MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>
     <dotNetSdkChannel>7.0.1xx</dotNetSdkChannel>
     <dotNetSdkVNextChannel>8.0.1xx</dotNetSdkVNextChannel>
-    <CppWinRTVersion>2.0.221104.6</CppWinRTVersion>
+    <CppWinRTVersion>2.0.230706.1</CppWinRTVersion>
     <WebView2Version>1.0.1823.32</WebView2Version>
     <Win2DWinUIVersion>0.1.0.3</Win2DWinUIVersion>
     <Win2DUWPVersion>1.25.0</Win2DUWPVersion>

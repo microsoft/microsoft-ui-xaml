@@ -16,6 +16,7 @@
       <Midl Remove="@(OriginalMidl)" />
       <Midl Include="$(ProjectMergedIdl)">
         <MetadataFileName>$(ProjectUnmergedWinmd)</MetadataFileName>
+        <AdditionalOptions>%(AdditionalOptions) /nomidl</AdditionalOptions>
       </Midl>
     </ItemGroup>
     <MakeDir Directories="$(IntermediateOutputPath)Unmerged" Condition="!Exists('$(IntermediateOutputPath)Unmerged')" />

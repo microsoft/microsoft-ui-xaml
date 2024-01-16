@@ -5,6 +5,13 @@
 
 #define NOMINMAX
 
+// By default C++/WinRT will include some extra source and type info in the exception structs that it creates.
+// This is useful diagnostic info, but it comes at a high cost due to the fact that it breaks COMDAT folding
+// due to template functions that would previously compile down to identical binary code (which gets folded by
+// the compiler) now end up unique for each instantiation of the template.
+// This bloats the file size of MUXC.dll by 50%, so we turn this C++/WinRT feature off.
+#define WINRT_NO_SOURCE_LOCATION
+
 #pragma warning(disable : 6221) // Disable implicit cast warning for C++/WinRT headers (tracked by Bug 17528784: C++/WinRT headers trigger C6221 comparing e.code() to int-typed things)
 
 // Disable factory caching in CppWinRT as the global COM pointers that are released during dll/process

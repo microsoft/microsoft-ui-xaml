@@ -230,6 +230,22 @@
                     <AppBarButton Label="Text" />
                 </muxc:CommandBarFlyout.SecondaryCommands>
             </muxc:CommandBarFlyout>
+            <muxc:CommandBarFlyout Placement="Right" x:Name="Flyout12" AutomationProperties.AutomationId="Flyout12" Opened="OnFlyoutOpened" Closed="OnFlyoutClosed">
+                <AppBarButton x:Name="CutButton12" AutomationProperties.AutomationId="CutButton12" Label="Cut" Icon="Cut" Click="OnElementClicked"/>
+                <AppBarSeparator />
+                <AppBarButton x:Name="CopyButton12" AutomationProperties.AutomationId="CopyButton12" Label="Copy" Icon="Copy" Click="OnElementClicked" />
+                <AppBarButton x:Name="PasteButton12" AutomationProperties.AutomationId="PasteButton12" Label="Paste" Icon="Paste" Click="OnElementClicked" />
+                <AppBarButton x:Name="BoldButton12" AutomationProperties.AutomationId="BoldButton12" Label="Bold" Icon="Bold" Click="OnElementClicked" />
+                <AppBarButton x:Name="ItalicButton12" AutomationProperties.AutomationId="ItalicButton12" Label="Italic" Icon="Italic" Click="OnElementClicked" />
+                <AppBarToggleButton x:Name="UnderlineButton12" AutomationProperties.AutomationId="UnderlineButton12" Label="Underline" Icon="Underline" Click="OnElementClicked" />
+                <muxc:CommandBarFlyout.SecondaryCommands>
+                    <AppBarButton x:Name="UndoButton12" AutomationProperties.AutomationId="UndoButton12" Label="Undo" Icon="Undo" Click="OnElementClicked" />
+                    <AppBarSeparator IsTabStop="False" />
+                    <AppBarButton x:Name="RedoButton12" AutomationProperties.AutomationId="RedoButton12" Label="Redo" Icon="Redo" Click="OnElementClicked" />
+                    <AppBarButton x:Name="SelectAllButton12" AutomationProperties.AutomationId="SelectAllButton12" Label="Select all" Click="OnElementClicked" />
+                    <AppBarToggleButton x:Name="FavoriteToggleButton12" AutomationProperties.AutomationId="FavoriteToggleButton12" Label="Favorite" Icon="Favorite" Checked="OnElementChecked" Unchecked="OnElementUnchecked" />
+                </muxc:CommandBarFlyout.SecondaryCommands>
+            </muxc:CommandBarFlyout>
         </Grid.Resources>
         <ScrollViewer>
             <StackPanel>
@@ -247,6 +263,7 @@
                 <Button x:Name="FlyoutTarget9" Content="Show CommandBarFlyout with AlwaysExpanded" Margin="10" Click="OnFlyoutTarget9Click" />
                 <Button x:Name="FlyoutTarget10" Content="Show Windows.UI.Xaml.Controls.CommandBarFlyout" Margin="10" Click="OnFlyoutTarget10Click" />
                 <Button x:Name="FlyoutTarget11" Content="Show CommandBarFlyout with potential layout cycle at 125% scale" Margin="10" Click="OnFlyoutTarget11Click" />
+                <Button x:Name="FlyoutTarget12" Content="Show CommandBarFlyout after a five-second delay" Margin="10" Click="OnFlyoutTarget12Click" />
                 <CheckBox x:Name="IsRTLCheckBox" Content="Is Page in RightToLeft FlowDirection?" AutomationProperties.AutomationId="IsRTLCheckBox" Margin="10,10,10,2" Checked="IsRTLCheckBox_Checked" Unchecked="IsRTLCheckBox_Unchecked" />
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,2">
                     <CheckBox x:Name="AddPrimaryCommandDynamicallyCheckBox" Content="Add Primary Commands Dynamically?" AutomationProperties.AutomationId="AddPrimaryCommandDynamicallyCheckBox" />

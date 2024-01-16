@@ -15,6 +15,9 @@
 // Bug 47050253: [1.4 servicing] Insiders report that even with the latest bug fixes in the dev channel they can still see the context menu with a transparent background sometimes
 #define WINAPPSDK_CHANGEID_47050253 47050253
 
+// Bug 48006563: [1.4 servicing] File Explorer crash due to bad reentrancy from CommandBarFlyoutCommandBar calling FocusCommand (STOWED_EXCEPTION_8000ffff_Microsoft.UI.Xaml.dll!CXcpDispatcher::OnReentrancyProtectedWindowMessage)
+#define WINAPPSDK_CHANGEID_48006563 48006563
+
 CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
 {
     SetDefaultStyleKey(this);
@@ -49,12 +52,24 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
                         {
                             if (firstCommandAsFrameworkElement.IsLoaded())
                             {
-                                FocusCommand(
-                                    commands,
-                                    usingPrimaryCommands ? m_moreButton.get() : nullptr /*moreButton*/,
-                                    winrt::FocusState::Programmatic /*focusState*/,
-                                    true /*firstCommand*/,
-                                    ensureTabStopUniqueness);
+                                if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_48006563>())
+                                {
+                                    FocusCommandAsync(
+                                        commands,
+                                        usingPrimaryCommands ? m_moreButton.get() : nullptr /*moreButton*/,
+                                        winrt::FocusState::Programmatic /*focusState*/,
+                                        true /*firstCommand*/,
+                                        ensureTabStopUniqueness);
+                                }
+                                else
+                                {
+                                    FocusCommandSync(
+                                        commands,
+                                        usingPrimaryCommands ? m_moreButton.get() : nullptr /*moreButton*/,
+                                        winrt::FocusState::Programmatic /*focusState*/,
+                                        true /*firstCommand*/,
+                                        ensureTabStopUniqueness);
+                                }
                             }
                             else
                             {
@@ -62,12 +77,25 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
                                 {
                                     [this, commands, usingPrimaryCommands, ensureTabStopUniqueness](winrt::IInspectable const& sender, auto const&)
                                     {
-                                        FocusCommand(
-                                            commands,
-                                            usingPrimaryCommands ? m_moreButton.get() : nullptr /*moreButton*/,
-                                            winrt::FocusState::Programmatic /*focusState*/,
-                                            true /*firstCommand*/,
-                                            ensureTabStopUniqueness);
+                                        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_48006563>())
+                                        {
+                                            FocusCommandAsync(
+                                                commands,
+                                                usingPrimaryCommands ? m_moreButton.get() : nullptr /*moreButton*/,
+                                                winrt::FocusState::Programmatic /*focusState*/,
+                                                true /*firstCommand*/,
+                                                ensureTabStopUniqueness);
+                                        }
+                                        else
+                                        {
+                                            FocusCommandSync(
+                                                commands,
+                                                usingPrimaryCommands ? m_moreButton.get() : nullptr /*moreButton*/,
+                                                winrt::FocusState::Programmatic /*focusState*/,
+                                                true /*firstCommand*/,
+                                                ensureTabStopUniqueness);
+                                        }
+
                                         m_firstItemLoadedRevoker.revoke();
                                     }
                                 });
@@ -1029,12 +1057,24 @@ void CommandBarFlyoutCommandBar::OnKeyDown(
             IsOpen(true);
 
             // ... and focus the first focusable command
-            FocusCommand(
-                SecondaryCommands() /*commands*/,
-                nullptr /*moreButton*/,
-                winrt::FocusState::Keyboard /*focusState*/,
-                true /*firstCommand*/,
-                true /*ensureTabStopUniqueness*/);
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_48006563>())
+            {
+                FocusCommandAsync(
+                    SecondaryCommands() /*commands*/,
+                    nullptr /*moreButton*/,
+                    winrt::FocusState::Keyboard /*focusState*/,
+                    true /*firstCommand*/,
+                    true /*ensureTabStopUniqueness*/);
+            }
+            else
+            {
+                FocusCommandSync(
+                    SecondaryCommands() /*commands*/,
+                    nullptr /*moreButton*/,
+                    winrt::FocusState::Keyboard /*focusState*/,
+                    true /*firstCommand*/,
+                    true /*ensureTabStopUniqueness*/);
+            }
         }
         break;
     }
@@ -1124,14 +1164,28 @@ void CommandBarFlyoutCommandBar::OnKeyDown(
                     }
                 }
 
-                if (FocusControl(
-                    accessibleControls.GetAt(i) /*newFocus*/,
-                    focusedControl /*oldFocus*/,
-                    winrt::FocusState::Keyboard /*focusState*/,
-                    true /*updateTabStop*/))
+                if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_48006563>())
                 {
+                    FocusControlAsync(
+                        accessibleControls.GetAt(i) /*newFocus*/,
+                        focusedControl /*oldFocus*/,
+                        winrt::FocusState::Keyboard /*focusState*/,
+                        true /*updateTabStop*/);
+
                     args.Handled(true);
                     break;
+                }
+                else
+                {
+                    if (FocusControlSync(
+                        accessibleControls.GetAt(i) /*newFocus*/,
+                        focusedControl /*oldFocus*/,
+                        winrt::FocusState::Keyboard /*focusState*/,
+                        true /*updateTabStop*/))
+                    {
+                        args.Handled(true);
+                        break;
+                    }
                 }
             }
         }
@@ -1174,7 +1228,103 @@ winrt::Control CommandBarFlyoutCommandBar::GetFirstTabStopControl(
     return nullptr;
 }
 
-bool CommandBarFlyoutCommandBar::FocusControl(
+winrt::IAsyncOperation<bool> CommandBarFlyoutCommandBar::FocusControlAsync(
+    winrt::Control newFocus,
+    winrt::Control oldFocus,
+    winrt::FocusState focusState,
+    bool updateTabStop)
+{
+    MUX_ASSERT(newFocus);
+
+    if (updateTabStop)
+    {
+        newFocus.IsTabStop(true);
+    }
+
+    // Setting focus can cause us to enter the window message handler loop, which is bad if
+    // CXcpDispatcher::OnReentrancyProtectedWindowMessage is on the callstack, since that can lead to reentry.
+    // Switching to a background thread and then back to the UI thread ensures that this call to Control.Focus()
+    // occurs outside that callstack.
+    winrt::apartment_context uiThread;
+    co_await winrt::resume_background();
+    co_await uiThread;
+
+    if (newFocus.Focus(focusState))
+    {
+        if (oldFocus && updateTabStop)
+        {
+            oldFocus.IsTabStop(false);
+        }
+        co_return true;
+    }
+    co_return false;
+}
+
+winrt::IAsyncOperation<bool> CommandBarFlyoutCommandBar::FocusCommandAsync(
+    winrt::IObservableVector<winrt::ICommandBarElement> commands,
+    winrt::Control moreButton,
+    winrt::FocusState focusState,
+    bool firstCommand,
+    bool ensureTabStopUniqueness)
+{
+    COMMANDBARFLYOUT_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, nullptr);
+
+    MUX_ASSERT(commands);
+
+    // Give focus to the first or last focusable command
+    winrt::Control focusedControl = nullptr;
+    int startIndex = 0;
+    int endIndex = static_cast<int>(commands.Size());
+    int deltaIndex = 1;
+
+    if (!firstCommand)
+    {
+        deltaIndex = -1;
+        startIndex = endIndex - 1;
+        endIndex = -1;
+    }
+
+    for (int index = startIndex; index != endIndex; index += deltaIndex)
+    {
+        auto command = commands.GetAt(index);
+
+        if (auto commandAsControl = command.try_as<winrt::Control>())
+        {
+            if (IsControlFocusable(commandAsControl, !ensureTabStopUniqueness /*checkTabStop*/))
+            {
+                if (!focusedControl)
+                {
+                    if (co_await FocusControlAsync(
+                        commandAsControl /*newFocus*/,
+                        nullptr /*oldFocus*/,
+                        focusState /*focusState*/,
+                        ensureTabStopUniqueness /*updateTabStop*/))
+                    {
+                        if (ensureTabStopUniqueness && moreButton && moreButton.IsTabStop())
+                        {
+                            moreButton.IsTabStop(false);
+                        }
+
+                        focusedControl = commandAsControl;
+
+                        if (!ensureTabStopUniqueness)
+                        {
+                            break;
+                        }
+                    }
+                }
+                else if (focusedControl && commandAsControl.IsTabStop())
+                {
+                    commandAsControl.IsTabStop(false);
+                }
+            }
+        }
+    }
+
+    co_return focusedControl != nullptr;
+}
+
+bool CommandBarFlyoutCommandBar::FocusControlSync(
     winrt::Control const& newFocus,
     winrt::Control const& oldFocus,
     winrt::FocusState const& focusState,
@@ -1198,7 +1348,7 @@ bool CommandBarFlyoutCommandBar::FocusControl(
     return false;
 }
 
-bool CommandBarFlyoutCommandBar::FocusCommand(
+bool CommandBarFlyoutCommandBar::FocusCommandSync(
     winrt::IObservableVector<winrt::ICommandBarElement> const& commands,
     winrt::Control const& moreButton,
     winrt::FocusState const& focusState,
@@ -1232,7 +1382,7 @@ bool CommandBarFlyoutCommandBar::FocusCommand(
             {
                 if (!focusedControl)
                 {
-                    if (FocusControl(
+                    if (FocusControlSync(
                             commandAsControl /*newFocus*/,
                             nullptr /*oldFocus*/,
                             focusState /*focusState*/,

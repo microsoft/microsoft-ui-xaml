@@ -70,12 +70,23 @@ private:
         bool checkTabStop);
     static winrt::Control GetFirstTabStopControl(
         winrt::IObservableVector<winrt::ICommandBarElement> const& commands);
-    static bool FocusControl(
+    static winrt::IAsyncOperation<bool> FocusControlAsync(
+        winrt::Control newFocus,
+        winrt::Control oldFocus,
+        winrt::FocusState focusState,
+        bool updateTabStop);
+    static winrt::IAsyncOperation<bool> FocusCommandAsync(
+        winrt::IObservableVector<winrt::ICommandBarElement> commands,
+        winrt::Control moreButton,
+        winrt::FocusState focusState,
+        bool firstCommand,
+        bool ensureTabStopUniqueness);
+    static bool FocusControlSync(
         winrt::Control const& newFocus,
         winrt::Control const& oldFocus,
         winrt::FocusState const& focusState,
         bool updateTabStop);
-    static bool FocusCommand(
+    static bool FocusCommandSync(
         winrt::IObservableVector<winrt::ICommandBarElement> const& commands,
         winrt::Control const& moreButton,
         winrt::FocusState const& focusState,
