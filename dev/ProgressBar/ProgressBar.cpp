@@ -8,6 +8,8 @@
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
+#pragma warning( disable : 26478)
+
 ProgressBar::ProgressBar()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_ProgressBar);
