@@ -13,6 +13,8 @@
 #include "../ResourceHelper/Utils.h"
 #include <enum_array.h>
 
+#pragma warning( disable : 26478)
+
 static constexpr auto c_TitleTextBlockVisibleStateName = L"ShowTitleTextBlock"sv;
 static constexpr auto c_TitleTextBlockCollapsedStateName = L"CollapseTitleTextBlock"sv;
 static constexpr auto c_SubtitleTextBlockVisibleStateName = L"ShowSubtitleTextBlock"sv;
