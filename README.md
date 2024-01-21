@@ -24,7 +24,7 @@ You can build new Windows apps using WinUI 3, which ships as a part of the Windo
 
 See the [installation instructions](https://docs.microsoft.com/windows/apps/windows-app-sdk/set-up-your-development-environment), and guidelines on [creating your first WinUI 3 app](https://docs.microsoft.com/windows/apps/winui/winui3/create-your-first-winui3-app). 
 
-The source code for WinUI 3 can be found [here](https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/main).
+The source code for WinUI 3 can be found [here](https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/release/1.4-stable).
 
 ## Using WinUI 2
 You can download and use WinUI packages in your app using the NuGet package manager: see the [Getting Started with the Windows UI Library](https://docs.microsoft.com/uwp/toolkits/winui/getting-started) page for more information.
