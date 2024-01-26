@@ -168,6 +168,24 @@ Cleanup:
     }
     RRETURN(hr);
 }
+IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::GetHasRightLabel(_Out_ BOOLEAN* pResult)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AppBarToggleButton_GetHasRightLabel", 0);
+    }
+    ARG_VALIDRETURNPOINTER(pResult);
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<AppBarToggleButton*>(this)->GetHasRightLabelImpl(pResult));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "AppBarToggleButton_GetHasRightLabel", hr);
+    }
+    RRETURN(hr);
+}
 IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::SetDefaultLabelPosition(_In_ ABI::Microsoft::UI::Xaml::Controls::CommandBarDefaultLabelPosition defaultLabelPosition)
 {
     HRESULT hr = S_OK;

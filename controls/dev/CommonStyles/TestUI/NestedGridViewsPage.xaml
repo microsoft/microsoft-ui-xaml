@@ -9,6 +9,10 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
+    <local:TestPage.Resources>
+        <local:PrefixConverter x:Name="prefixConverter"/>
+    </local:TestPage.Resources>
+
     <Grid x:Name="rootGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
         Margin="4" TabFocusNavigation="Cycle"
         ColumnDefinitions="Auto, *">
@@ -126,11 +130,15 @@
                                     </GridView.ItemContainerStyle>
                                     <GridView.ItemTemplate>
                                         <DataTemplate>
-                                            <Grid Width="100" Height="100" Background="White" CornerRadius="4">
+                                            <Grid Width="130" Height="100" Background="White" CornerRadius="4">
                                                 <TextBlock
-                                                    VerticalAlignment="Center"
                                                     HorizontalTextAlignment="Center"
+                                                    VerticalAlignment="Center"
                                                     Text="{Binding}"/>
+                                                <Button
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Bottom"
+                                                    Content="{Binding Converter={StaticResource prefixConverter}, ConverterParameter='Focusable'}"/>
                                             </Grid>
                                         </DataTemplate>
                                     </GridView.ItemTemplate>

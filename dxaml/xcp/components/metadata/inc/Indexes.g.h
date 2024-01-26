@@ -3336,6 +3336,7 @@ enum class KnownMethodIndex: UINT16
     AppBar_OnBackButtonPressed,
     AppBarButton_SetDefaultLabelPosition,
     AppBarButton_GetHasBottomLabel,
+    AppBarButton_GetHasRightLabel,
     AppBarButton_PrepareSubMenu,
     AppBarButton_OpenSubMenu,
     AppBarButton_PositionSubMenu,
@@ -3348,6 +3349,7 @@ enum class KnownMethodIndex: UINT16
     AppBarButton_SetSubMenuDirection,
     AppBarToggleButton_SetDefaultLabelPosition,
     AppBarToggleButton_GetHasBottomLabel,
+    AppBarToggleButton_GetHasRightLabel,
     AutoSuggestBoxTextChangedEventArgs_CheckCurrent,
     BudgetManager_GetElapsedMilliSecondsSinceLastUITick,
     CalendarDatePicker_SetDisplayDate,
@@ -4047,6 +4049,7 @@ enum class KnownMethodIndex: UINT16
     XamlIslandRoot_SetScreenOffsetOverride,
     XamlIslandRoot_TrySetFocus,
     XamlIslandRoot_GetIslandFromElement,
+    XamlShutdownCompletedOnThreadEventArgs_GetDispatcherQueueDeferral,
     XamlDirect_GetDefault,
     XamlDirect_GetObject,
     XamlDirect_GetXamlDirectObject,
@@ -4388,6 +4391,7 @@ enum class KnownEventIndex: UINT16
     PrintDocument_AddPages,
     DesktopWindowXamlSource_TakeFocusRequested,
     DesktopWindowXamlSource_GotFocus,
+    WindowsXamlManager_XamlShutdownCompletedOnThread,
 };
 
 constexpr UINT16 KnownNamespaceCount            = static_cast<UINT16>(KnownNamespaceIndex::Microsoft_UI_Xaml_Automation_Provider) + 1;
@@ -4396,5 +4400,5 @@ constexpr UINT16 KnownPropertyCount             = static_cast<UINT16>(KnownPrope
 constexpr UINT16 KnownDependencyPropertyCount   = static_cast<UINT16>(KnownPropertyIndex::RadioButton_GroupName) + 1;
 constexpr UINT16 KnownSimplePropertyCount       = 29; // KnownPropertyIndex::LinearGradientBrush_Translation
 constexpr UINT16 KnownMethodCount               = static_cast<UINT16>(KnownMethodIndex::XamlDirect_RemoveEventHandler) + 1;
-constexpr UINT16 KnownEventCount                = static_cast<UINT16>(KnownEventIndex::DesktopWindowXamlSource_GotFocus) + 1;
+constexpr UINT16 KnownEventCount                = static_cast<UINT16>(KnownEventIndex::WindowsXamlManager_XamlShutdownCompletedOnThread) + 1;
 constexpr KnownEventIndex LastControlEvent = KnownEventIndex::Control_InheritedPropertyChanged;

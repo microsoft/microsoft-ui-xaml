@@ -1290,7 +1290,7 @@ _Check_return_ HRESULT ListViewBase::OnReorderDrop(
         // The index at which reordered items should be inserted.
         INT insertIndex = -1;
         INT draggedItemIndex = -1;
-        INT focusedIndex = m_iFocusedIndex;
+        INT focusedIndex = GetFocusedIndex();
 
         // The indexes of the items we'll be reordering.
         std::vector<UINT> reorderItemIndexes;
@@ -1337,7 +1337,7 @@ _Check_return_ HRESULT ListViewBase::OnReorderDrop(
             std::binary_search(
                 begin(reorderItemIndexes),
                 end(reorderItemIndexes),
-                static_cast<UINT>(m_iFocusedIndex)))
+                static_cast<UINT>(GetFocusedIndex())))
         {
             // If focused item was dragged, set the focus and scroll it into view.
             // Since this code is only called for pointer input, we can set the FocusState appropriately

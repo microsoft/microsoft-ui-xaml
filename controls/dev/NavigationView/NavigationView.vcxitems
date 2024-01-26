@@ -49,7 +49,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemExpandingEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewHelper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenterTemplateSettings.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemRevokers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemBaseRevokers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemsFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewTemplateSettings.h" />

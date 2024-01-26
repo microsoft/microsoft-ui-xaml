@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include <DCompExtras.h>
 #include <dcompinternal.h>
 #include <dcompprivate.h>
 

@@ -1563,6 +1563,7 @@ public:
     bool UseUiaOnMainWindow() const { return GetInitializationType() != InitializationType::IslandsOnly; }
     bool HandleInputOnMainWindow() const { return GetInitializationType() != InitializationType::IslandsOnly; }
     bool BackButtonSupported() const { return GetInitializationType() != InitializationType::IslandsOnly; }
+    bool UseWindowPosChanged() const { return GetInitializationType() != InitializationType::IslandsOnly; }
 
     // Perform deferred operation for each entry in  m_deferredAnimationOperationQueue
     _Check_return_ HRESULT FlushDeferredAnimationOperationQueue(bool doDeferredOperation = true);

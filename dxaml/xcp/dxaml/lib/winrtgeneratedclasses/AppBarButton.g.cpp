@@ -299,6 +299,24 @@ Cleanup:
     }
     RRETURN(hr);
 }
+IFACEMETHODIMP DirectUI::AppBarButtonGenerated::GetHasRightLabel(_Out_ BOOLEAN* pResult)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AppBarButton_GetHasRightLabel", 0);
+    }
+    ARG_VALIDRETURNPOINTER(pResult);
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<AppBarButton*>(this)->GetHasRightLabelImpl(pResult));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "AppBarButton_GetHasRightLabel", hr);
+    }
+    RRETURN(hr);
+}
 IFACEMETHODIMP DirectUI::AppBarButtonGenerated::OpenSubMenu(_In_ ABI::Windows::Foundation::Point position)
 {
     HRESULT hr = S_OK;

@@ -283,8 +283,7 @@ namespace Microsoft.UI.Xaml.Controls
     [FrameworkTypePattern]
     [Implements(typeof(Microsoft.UI.Xaml.Controls.IMenuPresenter))]
     [Guids(ClassGuid = "a21c5006-9b67-4df9-829a-0ed60a5ad01e")]
-    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
-    [Velocity(Feature = "Feature_ExperimentalApi")]
+    [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 5)]
     public class MenuFlyoutPresenter
      : Microsoft.UI.Xaml.Controls.ItemsControl
     {
@@ -300,7 +299,7 @@ namespace Microsoft.UI.Xaml.Controls
         public MenuFlyoutPresenter() { }
 
         [RequiresMultipleAssociationCheck]
-        [VelocityFeature("Feature_ExperimentalApi")]
+        [Version(2)]
         public Microsoft.UI.Xaml.Media.SystemBackdrop SystemBackdrop { get; set; }
     }
 }

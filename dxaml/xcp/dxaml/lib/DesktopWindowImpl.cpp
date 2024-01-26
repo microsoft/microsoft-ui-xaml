@@ -102,7 +102,7 @@ void DesktopWindowImpl::OnCreate() noexcept
 
     ::ABI::Microsoft::UI::WindowId bridgeWindowId {};
     IFCFAILFAST(desktopSiteBridge->get_WindowId(&bridgeWindowId));
-    IFCFAILFAST(::ABI::Microsoft::UI::GetWindowFromWindowId(bridgeWindowId, &m_bridgeWindowHandle));
+    IFCFAILFAST(::ABI::Microsoft::UI::GetWindowFromWindowId(bridgeWindowId, &m_positioningBridgeWindowHandle));
 
     IFCFAILFAST(m_desktopWindowXamlSource->put_Content(m_windowChrome.Get()));
 
@@ -121,6 +121,9 @@ void DesktopWindowImpl::OnCreate() noexcept
     IFCFAILFAST(ixamlIslandRoot.As(&xamlIslandRoot));
     CXamlIslandRoot* cXamlIslandRoot = static_cast<CXamlIslandRoot*>(xamlIslandRoot->GetHandle());
     cXamlIslandRoot->SetHasTransparentBackground(false);
+
+    // Keep a reference to the IslandInputSite so that we can compare focus HWNDs on losing activation.
+    m_islandInputSite = cXamlIslandRoot->GetIslandInputSite();
 
     // calling this api first time creates an appwindow object in ixp layer
     // we call it here so that the newly created appwindow object can subclass desktopwindow during init itself
@@ -670,10 +673,12 @@ LRESULT DesktopWindowImpl::OnMessage(
     WPARAM wParam,
     LPARAM lParam) noexcept
 {
-    // Exit FrameworkApplication::ProcessMessage when the last WinUI Desktop Window
-    // is destroyed.
+    // When DispatcherShutdownMode is OnLastWindowClose, exit FrameworkApplication::ProcessMessage when the last WinUI
+    // Desktop Window is destroyed.
     auto dxamlCore = DirectUI::DXamlCore::GetCurrent();
-    if ((WM_DESTROY == uMsg) && dxamlCore->m_handleToDesktopWindowMap.empty())
+    if ((WM_DESTROY == uMsg) 
+        && dxamlCore->m_handleToDesktopWindowMap.empty()
+        && dxamlCore->GetDispatcherShutdownMode() == xaml::DispatcherShutdownMode_OnLastWindowClose)
     {
         PostQuitMessage(0);
 
@@ -794,10 +799,10 @@ _Check_return_ HRESULT DesktopWindowImpl::OnActivate(WPARAM wParam, LPARAM lPara
     {
         // Set the focus to the child window that last had focus when this window was deactivated.
         // also enters when on such deactivation cases where m_lastFocusedWindowHandle didn't get set like in case of window minimize
-        if (m_lastFocusedWindowHandle == nullptr || (m_lastFocusedWindowHandle == m_bridgeWindowHandle))
+        if (m_lastFocusedWindowHandle == nullptr || (m_lastFocusedWindowHandle == CInputServices::GetUnderlyingInputHwndFromIslandInputSite(m_islandInputSite.Get())))
         {
-            // If focus is being set back on the bridge, set window focus to it and restore focus position.
-            SetFocusToBridgeWindow();
+            // If focus is being set back on the island, set window focus to it and restore focus position.
+            SetFocusToContentIsland();
 
             // WasFocusMoved may be false, but no action is required
             ctl::ComPtr<xaml_hosting::IXamlSourceFocusNavigationResult> spResult;
@@ -814,8 +819,8 @@ _Check_return_ HRESULT DesktopWindowImpl::OnActivate(WPARAM wParam, LPARAM lPara
     //
     if (m_bInitialWindowActivation)
     {
-        // Force focus on the bridge
-        SetFocusToBridgeWindow();
+        // Force focus on the island.
+        SetFocusToContentIsland();
 
         // Raise VisibilityChanged on initial Window Activation
         m_bInitialWindowActivation = false;
@@ -879,13 +884,13 @@ _Check_return_ HRESULT DesktopWindowImpl::OnNonClientRegionButtonUp(WPARAM wPara
     return S_OK;
 }
 
-void DesktopWindowImpl::SetFocusToBridgeWindow()
+void DesktopWindowImpl::SetFocusToContentIsland()
 {
     if (xaml_hosting::IXamlIslandRoot* island = m_desktopWindowXamlSource->GetXamlIslandRootNoRef())
     {
         boolean success = false;
         VERIFYHR(island->TrySetFocus(&success));
-        ASSERT(success, L"Moving focus to bridge window failed");
+        ASSERT(success, L"Moving focus to content island failed");
     }
 }
 
@@ -1078,7 +1083,8 @@ void DesktopWindowImpl::Shutdown()
     IFCFAILFAST(m_desktopWindowXamlSource->remove_TakeFocusRequested(m_takeFocusRequestedEventToken));
     m_takeFocusRequestedEventToken.value = 0;
 
-    m_bridgeWindowHandle = NULL;
+    m_islandInputSite = nullptr;
+    m_positioningBridgeWindowHandle = NULL;
     IFCFAILFAST(m_desktopWindowXamlSource->put_Content(nullptr));
     // Explicitly close the private DesktopWindowXamlSource instance
     VERIFYHR(m_desktopWindowXamlSource->Close());

@@ -1483,7 +1483,7 @@ IFACEMETHODIMP FlipView::OnGotFocus(
                 if (isOriginalSource)
                 {
                     IFC(put_IsSelectionActive(hasFocus));
-                    IFC(SetFocusedItem(m_iFocusedIndex < 0 ? 0 : m_iFocusedIndex, TRUE));
+                    IFC(SetFocusedItem(GetFocusedIndex() < 0 ? 0 : GetFocusedIndex(), TRUE));
                 }
                 else
                 {
@@ -1530,7 +1530,7 @@ IFACEMETHODIMP FlipView::OnLostFocus(
         IFC(put_IsSelectionActive(hasFocus));
         if (hasFocus)
         {
-            IFC(SetFocusedItem(m_iFocusedIndex < 0 ? 0 : m_iFocusedIndex, TRUE));
+            IFC(SetFocusedItem(GetFocusedIndex() < 0 ? 0 : GetFocusedIndex(), TRUE));
         }
     }
 

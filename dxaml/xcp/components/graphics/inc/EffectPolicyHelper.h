@@ -5,8 +5,9 @@
 
 #include "NamespaceAliases.h"
 #include "palnetwork.h"
-#include <windows.foundation.h>
 #include <microsoft.ui.composition.interop.h>
+#include <windows.foundation.h>
+#include <windows.system.power.h>
 
 class CCoreServices;
 

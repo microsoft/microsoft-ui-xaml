@@ -18,10 +18,10 @@ public:
     ~ItemContainer();
 
     // IFrameworkElement
-    void OnApplyTemplate();
+    virtual void OnApplyTemplate();
 
     // IUIElement
-    winrt::AutomationPeer OnCreateAutomationPeer();
+    virtual winrt::AutomationPeer OnCreateAutomationPeer();
 
     void OnDoubleTapped(winrt::DoubleTappedRoutedEventArgs const& args);
     void OnKeyDown(winrt::KeyRoutedEventArgs const& args);

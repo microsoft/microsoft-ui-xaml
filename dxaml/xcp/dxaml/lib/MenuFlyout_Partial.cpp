@@ -25,6 +25,7 @@
 #include "FlyoutShowOptions.g.h"
 #include "ElevationHelper.h"
 #include "WrlHelper.h"
+#include "XamlTelemetry.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -378,6 +379,8 @@ MenuFlyout::ShowAtImpl(
     _In_opt_ xaml::IUIElement* pTargetElement,
     wf::Point targetPoint)
 {
+    PerfXamlEvent_RAII perfXamlEvent(reinterpret_cast<uint64_t>(this), "MenuFlyout::ShowAt", true);
+
     ctl::ComPtr<IUIElement> targetElement = pTargetElement;
 
     ctl::ComPtr<xaml::IDependencyObject> targetAsDO;

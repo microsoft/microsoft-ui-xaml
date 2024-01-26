@@ -8,27 +8,29 @@
 class LayoutCycleDebugSettings
 {
 public:
-    static DirectUI::LayoutCycleDebugBreakLevel GetDebugBreakLevel() { return m_layoutCycleDebugBreaks; }
-    static void SetDebugBreakLevel(DirectUI::LayoutCycleDebugBreakLevel level) { m_layoutCycleDebugBreaks = level; }
+    static DirectUI::LayoutCycleDebugBreakLevel GetDebugBreakLevel() { return m_layoutCycleDebugBreakLevel; }
+    static void SetDebugBreakLevel(DirectUI::LayoutCycleDebugBreakLevel level) { m_layoutCycleDebugBreakLevel = level; }
 
-    static DirectUI::LayoutCycleTracingLevel GetTracingLevel() { return m_layoutCycleTracing; }
-    static void SetTracingLevel(DirectUI::LayoutCycleTracingLevel level) { m_layoutCycleTracing = level; }
+    static DirectUI::LayoutCycleTracingLevel GetTracingLevel() { return m_layoutCycleTracingLevel; }
+    static void SetTracingLevel(DirectUI::LayoutCycleTracingLevel level) { m_layoutCycleTracingLevel = level; }
 
     static bool ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel level)
     {
-        return (m_layoutCycleDebugBreaks >= level) && IsDebuggerPresent();
+        return (m_layoutCycleDebugBreakLevel >= level) && IsDebuggerPresent();
     }
 
     static bool ShouldTrace(DirectUI::LayoutCycleTracingLevel level)
     {
-        return (m_layoutCycleTracing >= level);
+        return (m_layoutCycleTracingLevel >= level);
     }
 
 private:
-    static DirectUI::LayoutCycleDebugBreakLevel m_layoutCycleDebugBreaks;
-    static DirectUI::LayoutCycleTracingLevel m_layoutCycleTracing;
+    static DirectUI::LayoutCycleDebugBreakLevel m_layoutCycleDebugBreakLevel;
+    static DirectUI::LayoutCycleTracingLevel m_layoutCycleTracingLevel;
 };
 
-DirectUI::LayoutCycleDebugBreakLevel LayoutCycleDebugSettings::m_layoutCycleDebugBreaks{ DirectUI::LayoutCycleDebugBreakLevel::Off };
-DirectUI::LayoutCycleTracingLevel LayoutCycleDebugSettings::m_layoutCycleTracing{ DirectUI::LayoutCycleTracingLevel::Off };
+__declspec(selectany)
+DirectUI::LayoutCycleDebugBreakLevel LayoutCycleDebugSettings::m_layoutCycleDebugBreakLevel{ DirectUI::LayoutCycleDebugBreakLevel::None };
 
+__declspec(selectany)
+DirectUI::LayoutCycleTracingLevel LayoutCycleDebugSettings::m_layoutCycleTracingLevel{ DirectUI::LayoutCycleTracingLevel::None };

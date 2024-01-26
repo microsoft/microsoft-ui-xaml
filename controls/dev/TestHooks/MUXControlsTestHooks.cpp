@@ -5,6 +5,10 @@
 #include "common.h"
 #include "MUXControlsTestHooksFactory.h"
 
+#ifdef SELECTORBAR_INCLUDED
+#include "SelectorBarTrace.h"
+#endif
+
 #ifdef ANNOTATEDSCROLLBAR_INCLUDED
 #include "AnnotatedScrollBarTrace.h"
 #endif
@@ -85,6 +89,13 @@ UCHAR MUXControlsTestHooks::GetLoggingLevelForInstance(const winrt::IInspectable
 
 void MUXControlsTestHooks::SetOutputDebugStringLevelForTypeImpl(const wstring_view& type, bool isLoggingInfoLevel, bool isLoggingVerboseLevel)
 {
+#ifdef SELECTORBAR_INCLUDED
+    if (type == L"SelectorBar" || type.empty())
+    {
+        SelectorBarTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
+        SelectorBarTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
+    }
+#endif
 #ifdef ANNOTATEDSCROLLBAR_INCLUDED
 if (type == L"AnnotatedScrollBar" || type.empty())
 {

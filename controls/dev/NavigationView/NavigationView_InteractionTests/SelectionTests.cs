@@ -530,5 +530,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 Verify.IsNotNull(newMenuItem, "A new menu item should have been added to the list.");
             }
         }
+
+        [TestMethod]
+        public void VerifySettingCustomSelectedItemInConstructorWorks()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationViewCustomMenuItemPage" }))
+            {
+                Log.Comment("Verifying first item is selected.");
+                var firstItem = FindElement.ById("nvi1");
+                Verify.IsTrue(Convert.ToBoolean(firstItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+
+                var secondItem = FindElement.ById("nvi2");
+                Verify.IsFalse(Convert.ToBoolean(secondItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+
+                var thirdItem = FindElement.ById("nvi3");
+                Verify.IsFalse(Convert.ToBoolean(thirdItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+            }
+        }
     }
 }

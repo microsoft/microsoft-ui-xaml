@@ -676,6 +676,45 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
         rectangleClip.BottomRightRadius({static_cast<float>(cornerRadius.BottomRight), static_cast<float>(cornerRadius.BottomRight)});
         placementVisual.Clip(rectangleClip);
     }
+
+    auto hasVisibleLabel = []<class TCommand>(TCommand const& command)
+    {
+        return command &&
+            command.Label().size() > 0 &&
+            command.Visibility() == winrt::Visibility::Visible &&
+            command.LabelPosition() == winrt::CommandBarLabelPosition::Default;
+    };
+
+    // If no primary command has labels, then we'll shrink down the size of primary commands since the extra space to accommodate labels is unnecessary.
+    bool hasPrimaryCommandLabels = false;
+    for (auto const& primaryCommand : PrimaryCommands())
+    {
+        if (hasVisibleLabel(primaryCommand.try_as<winrt::AppBarButton>()) ||
+            hasVisibleLabel(primaryCommand.try_as<winrt::AppBarToggleButton>()))
+        {
+            hasPrimaryCommandLabels = true;
+            break;
+        }
+    }
+
+    for (auto const& command : PrimaryCommands())
+    {
+        if (auto commandControl = command.try_as<winrt::Control>())
+        {
+            winrt::VisualStateManager::GoToState(commandControl, hasPrimaryCommandLabels ? L"HasPrimaryLabels" : L"NoPrimaryLabels", useTransitions);
+        }
+    }
+
+    // Secondary commands by definition will not have any primary commands that they need to accommodate, so we'll set all of them to that state.
+    for (auto const& command : SecondaryCommands())
+    {
+        if (auto commandControl = command.try_as<winrt::Control>())
+        {
+            winrt::VisualStateManager::GoToState(commandControl, L"NoPrimaryLabels", useTransitions);
+        }
+    }
+
+    winrt::VisualStateManager::GoToState(*this, hasPrimaryCommandLabels ? L"HasPrimaryLabels" : L"NoPrimaryLabels", useTransitions);
 }
 
 void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
@@ -799,7 +838,11 @@ void CommandBarFlyoutCommandBar::UpdateTemplateSettings()
 
         if (PrimaryCommands().Size() > 0)
         {
-            flyoutTemplateSettings->ExpandDownOverflowVerticalPosition(Height());
+            // This needs to be calculated like these other properties, but because this property needs to be set on the CommandBarFlyoutCommandBar itself,
+            // we can't use a template setting.  So we'll just set the property itself here.
+            Height(primaryItemsRootDesiredSize.Height);
+
+            flyoutTemplateSettings->ExpandDownOverflowVerticalPosition(primaryItemsRootDesiredSize.Height);
         }
         else
         {
@@ -1092,15 +1135,14 @@ void CommandBarFlyoutCommandBar::OnKeyDown(
                     }
                 }
 
-                if (FocusControl(
+                FocusControl(
                     accessibleControls.GetAt(i) /*newFocus*/,
                     focusedControl /*oldFocus*/,
                     winrt::FocusState::Keyboard /*focusState*/,
-                    true /*updateTabStop*/))
-                {
-                    args.Handled(true);
-                    break;
-                }
+                    true /*updateTabStop*/);
+
+                args.Handled(true);
+                break;
             }
         }
 
@@ -1142,10 +1184,10 @@ winrt::Control CommandBarFlyoutCommandBar::GetFirstTabStopControl(
     return nullptr;
 }
 
-bool CommandBarFlyoutCommandBar::FocusControl(
-    winrt::Control const& newFocus,
-    winrt::Control const& oldFocus,
-    winrt::FocusState const& focusState,
+winrt::IAsyncOperation<bool> CommandBarFlyoutCommandBar::FocusControl(
+    winrt::Control newFocus,
+    winrt::Control oldFocus,
+    winrt::FocusState focusState,
     bool updateTabStop)
 {
     MUX_ASSERT(newFocus);
@@ -1155,21 +1197,29 @@ bool CommandBarFlyoutCommandBar::FocusControl(
         newFocus.IsTabStop(true);
     }
 
+    // Setting focus can cause us to enter the window message handler loop, which is bad if
+    // CXcpDispatcher::OnReentrancyProtectedWindowMessage is on the callstack, since that can lead to reentry.
+    // Switching to a background thread and then back to the UI thread ensures that this call to Control.Focus()
+    // occurs outside that callstack.
+    winrt::apartment_context uiThread;
+    co_await winrt::resume_background();
+    co_await uiThread;
+
     if (newFocus.Focus(focusState))
     {
         if (oldFocus && updateTabStop)
         {
             oldFocus.IsTabStop(false);
         }
-        return true;
+        co_return true;
     }
-    return false;
+    co_return false;
 }
 
-bool CommandBarFlyoutCommandBar::FocusCommand(
-    winrt::IObservableVector<winrt::ICommandBarElement> const& commands,
-    winrt::Control const& moreButton,
-    winrt::FocusState const& focusState,
+winrt::IAsyncOperation<bool> CommandBarFlyoutCommandBar::FocusCommand(
+    winrt::IObservableVector<winrt::ICommandBarElement> commands,
+    winrt::Control moreButton,
+    winrt::FocusState focusState,
     bool firstCommand,
     bool ensureTabStopUniqueness)
 {
@@ -1200,11 +1250,11 @@ bool CommandBarFlyoutCommandBar::FocusCommand(
             {
                 if (!focusedControl)
                 {
-                    if (FocusControl(
-                            commandAsControl /*newFocus*/,
-                            nullptr /*oldFocus*/,
-                            focusState /*focusState*/,
-                            ensureTabStopUniqueness /*updateTabStop*/))
+                    if (co_await FocusControl(
+                        commandAsControl /*newFocus*/,
+                        nullptr /*oldFocus*/,
+                        focusState /*focusState*/,
+                        ensureTabStopUniqueness /*updateTabStop*/))
                     {
                         if (ensureTabStopUniqueness && moreButton && moreButton.IsTabStop())
                         {
@@ -1227,7 +1277,7 @@ bool CommandBarFlyoutCommandBar::FocusCommand(
         }
     }
 
-    return focusedControl != nullptr;
+    co_return focusedControl != nullptr;
 }
 
 void CommandBarFlyoutCommandBar::EnsureTabStopUniqueness(

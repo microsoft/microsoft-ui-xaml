@@ -55,7 +55,6 @@ ListViewBase::ListViewBase()
     , m_currentAutoPanVelocity()
     , m_lowestPhaseInQueue(-1)
     , m_budget(BUDGET_MANAGER_DEFAULT_LIMIT)
-    , m_useUnbudgetedContainerBuild(false)
     , m_itemsAreTabStops(TRUE)
     , m_groupsAreTabStops(TRUE)
     , m_allowDrop(FALSE)
@@ -652,8 +651,6 @@ Cleanup:
     RRETURN(hr);
 }
 
-
-
 // sets a clip the same size as we are, so that elements can portal and be clipped appropriately
 
 // make sure to call this after an arrange has occurred, since that is the moment the ItemsHost
@@ -1022,13 +1019,15 @@ _Check_return_ HRESULT ListViewBase::GetFocusableElement(
     _Outptr_ DependencyObject** ppFocusable)
 {
 #ifdef LVB_DEBUG
-    IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"LVB(%s)[0x%p]: GetFocusableElement. isBackward=%d", 
+    IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"LVB(%s)[0x%p]: GetFocusableElement. isBackward=%d",
         ctl::is<xaml_controls::IGridView>(this) ? L"GV" : L"LV", this, isBackward));
 #endif
 
     HRESULT hr = S_OK;
     BOOLEAN shouldCustomizeTabNavigation = FALSE;
     xaml_input::KeyboardNavigationMode navigationMode;
+    ctl::ComPtr<xaml_controls::IGroupItem> spGroupItem;
+    ctl::ComPtr<IDependencyObject> spFirstFocusableResult;
 
     *ppFocusable = nullptr;
 
@@ -1037,204 +1036,117 @@ _Check_return_ HRESULT ListViewBase::GetFocusableElement(
 
     IFC(get_TabNavigation(&navigationMode));
 
+    // The modern panels may not have to use this GetFirst/GetLast mechanism for controlling tab stop navigation, but rather
+    // ProcessTabStopOverride and ProcessCandidateTabStopOverride as those methods work for some scenarios involving
+    // enter, in-LVB and exit transitions. 
+    // There are cases though requiring the following custom processing, even for modern panels and the default Once TabNavigation:
+    // - ListViewBaseItem instances have nested focusable elements and the 2 overrides above are not invoked for this ListViewBase.
+    // - irrespective of the TabNavigation mode, the last focused index (returned by GetLastFocusedIndex()) may not be realized
+    //   anymore and may require item realization, scrolling and preparation.
     const bool isUsingTabNavigationOnce = navigationMode == xaml_input::KeyboardNavigationMode::KeyboardNavigationMode_Once;
+    const bool isUsingTabNavigationCycle = navigationMode == xaml_input::KeyboardNavigationMode::KeyboardNavigationMode_Cycle;
+    bool scrollIntoViewAndPrepareContainer = false;
+    BOOLEAN isGrouping = FALSE;
+    BOOLEAN hasFocus = FALSE;
+    INT targetFocusedIndex = -1;
+    INT targetGroupFocusedIndex = -1;
 
-    // The modern panels are not using GetFirst/GetLast mechanism for controlling tab stop navigation, but rather
-    // ProcessTabStopOverride and ProcessCandidateTabStopOverride as this method works for all scenarios involving
-    // enter, in-LVB and exit transitions.
-    // But even for modern panels (i.e. shouldCustomizeTabNavigation == True), when the ListViewBase's TabNavigation is 
-    // Local or Cycle, the default behavior must be overridden as the first (for isBackward==False) or last (for isBackward==True) 
-    // item may not be realized. In those cases, that item must be realized and prepared first and selected as the focusable element.
-    if (!shouldCustomizeTabNavigation || !isUsingTabNavigationOnce)
+    IFC(get_IsGrouping(&isGrouping));
+    IFC(HasFocus(&hasFocus));
+
+    // For modern panels (i.e. shouldCustomizeTabNavigation == True), 
+    // - for TabNavigation modes Local or Cycle, the first (for isBackward==False) or last (for isBackward==True) item may not be realized,
+    // - for TabNavigation mode Once, the last focused item may not be realized.
+    // In those cases, that item must be realized and prepared first and selected as the focusable element.
+    if (!isGrouping && shouldCustomizeTabNavigation)
     {
-        const bool isUsingTabNavigationCycle = navigationMode == xaml_input::KeyboardNavigationMode::KeyboardNavigationMode_Cycle;
-        bool scrollIntoViewAndPrepareContainer = false;
-        ctl::ComPtr<xaml_controls::IGroupItem> spGroupItem;
-        ctl::ComPtr<IDependencyObject> spFirstFocusableResult;
-        BOOLEAN isGrouping = FALSE;
-        BOOLEAN hasFocus = FALSE;
+        CFocusManager* focusManager = VisualTree::GetFocusManagerForElement(GetHandle());
 
-        INT targetFocusedIndex = -1;
-        INT targetGroupFocusedIndex = -1;
+        ASSERT(focusManager);
 
-        IFC(get_IsGrouping(&isGrouping));
-        IFC(HasFocus(&hasFocus));
-
-        if (!isGrouping && shouldCustomizeTabNavigation && !isUsingTabNavigationOnce)
+        if ((!isBackward && focusManager->IsMovingFocusToNextTabStop()) || (isBackward && focusManager->IsMovingFocusToPreviousTabStop()))
         {
-            CFocusManager* focusManager = VisualTree::GetFocusManagerForElement(GetHandle());
+            // The FocusManager is processing the Tab key to actually navigate to an element (as opposed to only accessing a tab stop).
+            scrollIntoViewAndPrepareContainer = true;
+        }
+    }
 
-            ASSERT(focusManager);
-
-            if ((!isBackward && focusManager->IsMovingFocusToNextTabStop()) || (isBackward && focusManager->IsMovingFocusToPreviousTabStop()))
-            {
-                // The FocusManager is processing the Tab key to actually navigate to an element (as opposed to only accessing a tab stop).
-                scrollIntoViewAndPrepareContainer = true;
-            }
+    // If neither focused item nor focused group exists, retrieve GroupItem for last focused item, if grouping.
+    // If not grouping, get container for last focused item.
+    // Additional check for HasFocus is necessary because focused index, etc. are set on OnGotFocus/LostFocus and this is async,
+    // so even if the indices are set they may be slightly out of sync. Check that focus is within this ListViewBase before using the indices.
+    // There is still a possibility that they will not be up to date if focus was rapidly changed within the ListViewBase, but that is not an important
+    // scenario.
+    // Even when HasFocus is True, when TabNavigation is Cycle, the target index may have to be realized and prepared when cycling from the first to
+    // the last item or vice-versa.
+    if ((GetFocusedIndex() < 0 && GetFocusedGroupIndex() < 0) ||
+        (isUsingTabNavigationCycle && scrollIntoViewAndPrepareContainer) ||
+        !hasFocus)
+    {
+        if (isGrouping)
+        {
+            ctl::ComPtr<xaml_data::ICollectionViewGroup> spGroup;
+            IFC(GetGroupFromItem(
+                GetLastFocusedIndex(),
+                &spGroup,
+                &spGroupItem,
+                &targetGroupFocusedIndex,
+                NULL));
         }
 
-        // If neither focused item nor focused group exists, retrieve GroupItem for last focused item, if grouping.
-        // If not grouping, get container for last focused item.
-        // Additional check for HasFocus is necessary because focused index, etc. are set on OnGotFocus/LostFocus and this is async,
-        // so even if the indices are set they may be slightly out of sync. Check that focus is within this ListViewBase before using the indices.
-        // There is still a possibility that they will not be up to date if focus was rapidly changed within the ListViewBase, but that is not an important
-        // scenario.
-        // Even when HasFocus is True, when TabNavigation is Cycle, the target index may have to be realized and prepared when cycling from the first to
-        // the last item or vice-versa.
-        if ((m_iFocusedIndex < 0 && m_focusedGroupIndex < 0) ||
-            (isUsingTabNavigationCycle && scrollIntoViewAndPrepareContainer) ||
-            !hasFocus)
+        if (!spGroupItem)
         {
-            if (isGrouping)
+            if (!isUsingTabNavigationOnce)
             {
-                ctl::ComPtr<xaml_data::ICollectionViewGroup> spGroup;
-                IFC(GetGroupFromItem(
-                    GetLastFocusedIndex(),
-                    &spGroup,
-                    &spGroupItem,
-                    &targetGroupFocusedIndex,
-                    NULL));
-            }
+                UINT itemCount = 0;
 
-            if (!spGroupItem)
-            {
-                if (!isUsingTabNavigationOnce)
+                IFC(GetItemCount(itemCount));
+
+                if (itemCount > 0)
                 {
-                    UINT itemCount = 0;
+                    ASSERT(!(isUsingTabNavigationCycle && isBackward && GetFocusedIndex() == 0 && !hasFocus));
+                    ASSERT(!(isUsingTabNavigationCycle && !isBackward && GetFocusedIndex() == itemCount - 1 && !hasFocus));
 
-                    IFC(GetItemCount(itemCount));
-
-                    if (itemCount > 0)
+                    if (!isUsingTabNavigationCycle ||                                                     // TabNavigation is Local, tabbing into the first item or shift-tabbing into the last one.
+                        (isUsingTabNavigationCycle && !hasFocus) ||                                       // TabNavigation is Cycle, hasFocus is False, tabbing into the first item or shift-tabbing into the last one.
+                        (isUsingTabNavigationCycle && isBackward && GetFocusedIndex() == 0) ||            // TabNavigation is Cycle, hasFocus is True, alter the default behavior when shift-tabbing from the first to the last item.
+                        (isUsingTabNavigationCycle && !isBackward && GetFocusedIndex() == itemCount - 1)) // TabNavigation is Cycle, hasFocus is True, alter the default behavior when tabbing from the last to the first item.
                     {
-                        ASSERT(!(isUsingTabNavigationCycle && isBackward && m_iFocusedIndex == 0 && !hasFocus));
-                        ASSERT(!(isUsingTabNavigationCycle && !isBackward && m_iFocusedIndex == itemCount - 1 && !hasFocus));
-
-                        if (!isUsingTabNavigationCycle ||                                                   // TabNavigation is Local, tabbing into the first item or shift-tabbing into the last one.
-                            (isUsingTabNavigationCycle && !hasFocus) ||                                     // TabNavigation is Cycle, hasFocus is False, tabbing into the first item or shift-tabbing into the last one.
-                            (isUsingTabNavigationCycle && isBackward && m_iFocusedIndex == 0) ||            // TabNavigation is Cycle, hasFocus is True, alter the default behavior when shift-tabbing from the first to the last item.
-                            (isUsingTabNavigationCycle && !isBackward && m_iFocusedIndex == itemCount - 1)) // TabNavigation is Cycle, hasFocus is True, alter the default behavior when tabbing from the last to the first item.
-                        {
-                            targetFocusedIndex = (!isBackward) ? 0 : itemCount - 1;
-                        }
+                        targetFocusedIndex = (!isBackward) ? 0 : itemCount - 1;
                     }
                 }
-                else
-                {
-                    targetFocusedIndex = static_cast<INT>(GetLastFocusedIndex());
-                }
             }
-        }
-
-        if (spGroupItem)
-        {
-            ASSERT(targetFocusedIndex < 0);
-            IFC(spGroupItem.As<IDependencyObject>(&spFirstFocusableResult));
-        }
-        else if (targetFocusedIndex >= 0)
-        {
-            IFC(ContainerFromIndex(targetFocusedIndex, &spFirstFocusableResult));
-
-            if (scrollIntoViewAndPrepareContainer)
+            else
             {
-                ctl::ComPtr<IDependencyObject> itemContainerCandidate = spFirstFocusableResult;
-
-                // Make sure the target index is realized and prepared so it can be declared focusable and tabbed into.
-                // Since this method brings the target index into view, it is only invoked when the FocusManager is processing
-                // the Tab key to actually navigate to an element (as opposed to only accessing a tab stop).
-                IFC(GetScrolledIntoViewAndPreparedContainer(targetFocusedIndex, itemContainerCandidate.Detach(), &spFirstFocusableResult));
+                targetFocusedIndex = static_cast<INT>(GetLastFocusedIndex());
             }
         }
-
-        *ppFocusable = static_cast<DependencyObject*>(spFirstFocusableResult.Detach());
     }
+
+    if (spGroupItem)
+    {
+        ASSERT(targetFocusedIndex < 0);
+        IFC(spGroupItem.As<IDependencyObject>(&spFirstFocusableResult));
+    }
+    else if (targetFocusedIndex >= 0)
+    {
+        IFC(ContainerFromIndex(targetFocusedIndex, &spFirstFocusableResult));
+
+        if (scrollIntoViewAndPrepareContainer)
+        {
+            ctl::ComPtr<IDependencyObject> itemContainerCandidate = spFirstFocusableResult;
+
+            // Make sure the target index is realized and prepared so it can be declared focusable and tabbed into.
+            // Since this method brings the target index into view, it is only invoked when the FocusManager is processing
+            // the Tab key to actually navigate to an element (as opposed to only accessing a tab stop).
+            IFC(GetScrolledIntoViewAndPreparedContainer(targetFocusedIndex, itemContainerCandidate.Detach(), &spFirstFocusableResult));
+        }
+    }
+
+    *ppFocusable = static_cast<DependencyObject*>(spFirstFocusableResult.Detach());
 
 Cleanup:
     RRETURN(hr);
-}
-
-// Realizes, scrolls into view and prepares the item at the provided index so it can be tabbed into.
-_Check_return_ HRESULT ListViewBase::GetScrolledIntoViewAndPreparedContainer(
-    int index, 
-    _In_opt_ xaml::IDependencyObject* itemContainerCandidate,
-    _Outptr_result_maybenull_ xaml::IDependencyObject** itemContainer)
-{
-    ASSERT(index >= 0);
-    ASSERT(itemContainer);
-
-    bool isPositionedInGarbageSection = false;
-
-    *itemContainer = itemContainerCandidate;
-
-    if (*itemContainer)
-    {
-        // Check if the candidate item is currently off screen so it can be brought into view first.
-        ctl::ComPtr<IUIElement> itemContainerUIE;
-
-        if (SUCCEEDED(ctl::do_query_interface(itemContainerUIE, *itemContainer)))
-        {
-            ctl::ComPtr<IPanel> itemsPanel;
-            
-            IFC_RETURN(get_ItemsHost(&itemsPanel));
-
-            if (ctl::is<IModernCollectionBasePanel>(itemsPanel))
-            {
-                isPositionedInGarbageSection = itemsPanel.Cast<ModernCollectionBasePanel>()->ElementIsPositionedInGarbageSection(itemContainerUIE);
-            }
-        }
-    }
-        
-    if (!*itemContainer || isPositionedInGarbageSection)
-    {
-        // Synchronously realize item at the provided index.
-        IFC_RETURN(Selector::ScrollIntoView(
-            index,
-            FALSE /*isGroupItemIndex*/,
-            FALSE /*isHeader*/,
-            FALSE /*isFooter*/,
-            FALSE /*isFromPublicAPI*/,
-            TRUE  /*ensureContainerRealized*/,
-            FALSE /*animateIfBringIntoView*/,
-            xaml_controls::ScrollIntoViewAlignment::ScrollIntoViewAlignment_Default));
-
-        // Retrieve the item now that it was realized.
-        IFC_RETURN(ContainerFromIndex(index, itemContainer));
-
-        // This last phase makes sure the target container is fully prepared to be eligible for focus.
-        if (*itemContainer)
-        {
-            ctl::ComPtr<BuildTreeService> buildTreeService;
-
-            IFC_RETURN(DXamlCore::GetCurrent()->GetBuildTreeService(buildTreeService));
-
-            if (buildTreeService)
-            {
-                // Temporarily turning off the new container build budget to guarantee that the target item
-                // at the provided index is fully prepared (gets its new Content and DataContext) so that it
-                // can be declared focusable my the FocusManager. Otherwise the default 40ms allocation 
-                // comes short and it may be declared ineligible for focus, not having a Content set.
-                m_useUnbudgetedContainerBuild = true;
-
-                auto scopeGuard = wil::scope_exit([&]
-                {
-                    m_useUnbudgetedContainerBuild = false;
-                });
-
-                bool workLeft = false;
-                // Allow as many BuildTrees calls as there are active workers so that the ListViewBase worker 
-                // gets a chance to do its work as it is progressively moved into the front of the active list.
-                int maxBuildTreesCalls = buildTreeService->ActiveWorkersCount();
-
-                do
-                {
-                    IFC_RETURN(buildTreeService->BuildTrees(&workLeft));
-                    maxBuildTreesCalls--;
-                } 
-                while (maxBuildTreesCalls > 0 && workLeft);
-            }
-        }
-    }
-
-    return S_OK;
 }
 
 // Shared implementation for GetFirstFocusableElementOverride and GetLastFocusableElementOverride.
@@ -1243,7 +1155,7 @@ _Check_return_ HRESULT ListViewBase::GetFocusableElementForModernPanel(
     _Outptr_ DependencyObject** ppFocusable)
 {
 #ifdef LVB_DEBUG
-    IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"LVB(%s)[0x%p]: GetFocusableElementForModernPanel. isBackward=%d", 
+    IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"LVB(%s)[0x%p]: GetFocusableElementForModernPanel. isBackward=%d",
         ctl::is<xaml_controls::IGridView>(this) ? L"GV" : L"LV", this, isBackward));
 #endif
 
@@ -1346,21 +1258,21 @@ _Check_return_ HRESULT DirectUI::ListViewBase::FocusImpl(
     if (!isFocusable)
     {
         // Next check to see if the ListViewBase currently has focus on an item/group using HasFocus and focused indices.
-        // If nothing is currently focused, we'll fall back to the FocusManager::GetFirstFocusableChild path which will
+        // If nothing is currently focused, we'll fall back to the FocusManager::GetFirstFocusableElement path which will
         // return the previously focused item or group. However, if an item within ListViewBase is currently
-        // focused the GetFirstFocusableChild callback will not return anything, since it mainly handles the case
+        // focused the GetFirstFocusableElement callback will not return anything, since it mainly handles the case
         // where focus is coming from outside. This is necessary because FocusManager calls GetFirst/LastFocusable child both for
         // tabbing and programmatic focus and doesn't have any specific overrides for tabs, which is what ListViewBase really requires.
         IFC(HasFocus(&hasFocus));
         if (hasFocus)
         {
-            if (m_iFocusedIndex >= 0)
+            if (GetFocusedIndex() >= 0)
             {
-                targetFocusedIndex = static_cast<INT>(m_iFocusedIndex);
+                targetFocusedIndex = static_cast<INT>(GetFocusedIndex());
             }
-            else if (m_focusedGroupIndex >= 0)
+            else if (GetFocusedGroupIndex() >= 0)
             {
-                targetGroupFocusedIndex = static_cast<INT>(m_focusedGroupIndex);
+                targetGroupFocusedIndex = static_cast<INT>(GetFocusedGroupIndex());
             }
         }
 
@@ -1531,23 +1443,6 @@ _Check_return_ HRESULT ListViewBase::ProcessCandidateTabStopOverride(
     }
 
     return S_OK;
-}
-
-// Helper for determining if LVB uses IModernCollectionBasePanel implementing panel.
-_Check_return_ HRESULT ListViewBase::ShouldCustomizeTabNavigation(
-    _Out_ BOOLEAN* pShouldCustomizeTabNavigation)
-{
-    HRESULT hr = S_OK;
-    ctl::ComPtr<IPanel> spItemsPanel;
-
-    *pShouldCustomizeTabNavigation = FALSE;
-
-    IFC(get_ItemsHost(&spItemsPanel));
-
-    *pShouldCustomizeTabNavigation = !!ctl::is<IModernCollectionBasePanel>(spItemsPanel);
-
-Cleanup:
-    RRETURN(hr);
 }
 
 // Ensure itemIndex is within valid range for group with index of groupIndex.  If forceSet is TRUE, then
@@ -1831,7 +1726,7 @@ _Check_return_ HRESULT ListViewBase::UpdateTabStopFlags()
 
                 if (spContainer)
                 {
-                    IFC(Selector::IsSelectableHelper(
+                    IFC(ItemsControl::IsFocusableHelper(
                         ctl::iinspectable_cast(spContainer.Get()),
                         m_itemsAreTabStops));
                 }
@@ -1873,7 +1768,7 @@ _Check_return_ HRESULT ListViewBase::UpdateTabStopFlags()
 
                 if (spHeader)
                 {
-                    IFC(Selector::IsSelectableHelper(
+                    IFC(ItemsControl::IsFocusableHelper(
                         ctl::iinspectable_cast(spHeader.Get()),
                         m_groupsAreTabStops));
                 }
@@ -1999,51 +1894,6 @@ Cleanup:
     RRETURN(hr);
 }
 
-// Returns the Header or Footer container if it exists and is selectable.
-_Check_return_ HRESULT ListViewBase::GetSelectableHeaderOrFooterContainer(
-    bool isForHeader, 
-    _Outptr_ ContentControl** container)
-{
-    *container = nullptr;
-
-    ctl::ComPtr<IItemsPresenter> itemsPresenter;
-
-    IFC_RETURN(get_ItemsPresenter(&itemsPresenter));
-
-    if (!itemsPresenter)
-    {
-        return S_OK;
-    }
-
-    ctl::ComPtr<ContentControl> contentContainer;
-
-    if (isForHeader)
-    {
-        IFC_RETURN(itemsPresenter.Cast<ItemsPresenter>()->get_HeaderContainer(&contentContainer));
-    }
-    else
-    {
-        IFC_RETURN(itemsPresenter.Cast<ItemsPresenter>()->LoadFooter(TRUE));
-        IFC_RETURN(itemsPresenter.Cast<ItemsPresenter>()->get_FooterContainer(&contentContainer));
-    }
-
-    if (!contentContainer)
-    {
-        return S_OK;
-    }
-
-    BOOLEAN isSelectable = FALSE;
-
-    IFC_RETURN(Selector::IsSelectableHelper(ctl::iinspectable_cast(contentContainer.Get()), isSelectable));
-
-    if (isSelectable)
-    {
-        IFC_RETURN(contentContainer.CopyTo(container));
-    }
-
-    return S_OK;
-}
-
 // State machine for determining next tab stop.
 // Given the current state information it tests if the transition to candidate state is a valid one
 // and if so, it returns a container for the next tab stop.  If the candidate is not accepted, it
@@ -2094,12 +1944,12 @@ _Check_return_ HRESULT ListViewBase::TryNextElementType(
             else
             {
                 // If not, get appropriate content control and if it is selectable, return it to caller.
-                ctl::ComPtr<ContentControl> selectableFooterContainer;
+                ctl::ComPtr<ContentControl> focusableFooterContainer;
                 BOOLEAN isHeader = (candidateElementType == Header);
 
-                IFC_RETURN(GetSelectableHeaderOrFooterContainer(isHeader, &selectableFooterContainer));
+                IFC_RETURN(GetFocusableHeaderOrFooterContainer(isHeader, &focusableFooterContainer));
 
-                if (selectableFooterContainer)
+                if (focusableFooterContainer)
                 {
                     IFC_RETURN(Selector::ScrollIntoView(
                         0,
@@ -2111,7 +1961,7 @@ _Check_return_ HRESULT ListViewBase::TryNextElementType(
                         FALSE /*animateIfBringIntoView*/,
                         xaml_controls::ScrollIntoViewAlignment::ScrollIntoViewAlignment_Default));
 
-                    IFC_RETURN(selectableFooterContainer.As(&spNextElement));
+                    IFC_RETURN(focusableFooterContainer.As(&spNextElement));
                 }
 
                 if (!spNextElement)
@@ -2129,7 +1979,7 @@ _Check_return_ HRESULT ListViewBase::TryNextElementType(
                 // and the last focused element type.
                 if (!isBackward)
                 {
-                    m_lastFocusedGroupIndex = 0;
+                    SetLastFocusedGroupIndex(0);
                     SetLastFocusedIndex(0);
 
                     // Forward navigation with local/cycle should try to hit group headers first,
@@ -2153,7 +2003,7 @@ _Check_return_ HRESULT ListViewBase::TryNextElementType(
                     if (isGrouping &&
                         groupCount > 0)
                     {
-                        m_lastFocusedGroupIndex = groupCount - 1;
+                        SetLastFocusedGroupIndex(groupCount - 1);
                     }
 
                     // Backward navigation with local/cycle should try to hit items first,
@@ -2218,7 +2068,7 @@ _Check_return_ HRESULT ListViewBase::TryNextElementType(
                         // should restore it.
 
                         isGroupHeader = (m_lastFocusedElementType == ElementType::GroupHeader);
-                        newFocusIndex = (isGroupHeader ? m_lastFocusedGroupIndex : GetLastFocusedIndex());
+                        newFocusIndex = (isGroupHeader ? GetLastFocusedGroupIndex() : GetLastFocusedIndex());
                         if (newFocusIndex >= 0 && newFocusIndex < (isGroupHeader ? groupCount : static_cast<int>(itemCount)))
                         {
                             // Last focused element was an item that is currently available in the data.
@@ -2272,7 +2122,7 @@ _Check_return_ HRESULT ListViewBase::TryNextElementType(
                             &isGroupHeader));
                     }
                     else if (m_lastFocusedElementType == ElementType::GroupHeader
-                        && (!isBackward || m_lastFocusedGroupIndex > 0))
+                        && (!isBackward || GetLastFocusedGroupIndex() > 0))
                     {
                         ASSERT(supportsGroupHeadersAsTabStops);
 
@@ -2281,7 +2131,7 @@ _Check_return_ HRESULT ListViewBase::TryNextElementType(
                         BOOLEAN isValid = FALSE;
 
                         IFC_RETURN(GetGroupInformation(
-                            static_cast<unsigned int>((isBackward) ? m_lastFocusedGroupIndex - 1 : m_lastFocusedGroupIndex),
+                            static_cast<unsigned int>((isBackward) ? GetLastFocusedGroupIndex() - 1 : GetLastFocusedGroupIndex()),
                             &newGroupStartIndex,
                             &newGroupSize,
                             &isValid));
@@ -2298,7 +2148,7 @@ _Check_return_ HRESULT ListViewBase::TryNextElementType(
                                 else
                                 {
                                     // The previous group is empty, so focus its header instead.
-                                    newFocusIndex = m_lastFocusedGroupIndex - 1;
+                                    newFocusIndex = GetLastFocusedGroupIndex() - 1;
                                     isGroupHeader = true;
                                 }
                             }
@@ -2309,10 +2159,10 @@ _Check_return_ HRESULT ListViewBase::TryNextElementType(
                                     // Focus the first item in the current group.
                                     newFocusIndex = newGroupStartIndex;
                                 }
-                                else if (m_lastFocusedGroupIndex < (groupCount - 1))
+                                else if (GetLastFocusedGroupIndex() < (groupCount - 1))
                                 {
                                     // The current group is empty, so focus the next group's header instead.
-                                    newFocusIndex = m_lastFocusedGroupIndex + 1;
+                                    newFocusIndex = GetLastFocusedGroupIndex() + 1;
                                     isGroupHeader = true;
                                 }
                             }
@@ -2361,12 +2211,13 @@ _Check_return_ HRESULT ListViewBase::TryNextElementType(
                             IFC_RETURN(ContainerFromIndex(currentIndex, &container));
                             if (container)
                             {
-                                BOOLEAN isSelectable = FALSE;
-                                IFC_RETURN(Selector::IsSelectableHelper(
-                                    ctl::iinspectable_cast(container.Get()),
-                                    isSelectable));
+                                BOOLEAN isFocusable = FALSE;
 
-                                if (isSelectable)
+                                IFC_RETURN(ItemsControl::IsFocusableHelper(
+                                    ctl::iinspectable_cast(container.Get()),
+                                    isFocusable));
+
+                                if (isFocusable)
                                 {
                                     spNextElement = container;
                                     break;
@@ -2557,7 +2408,8 @@ _Check_return_ HRESULT ListViewBase::GetFocusCandidateFromPanel(
     _Outptr_ xaml::IDependencyObject** ppFocusCandidate)
 {
 #ifdef LVB_DEBUG
-    IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"LVB(%s)[0x%p]: GetFocusCandidateFromPanel.", ctl::is<xaml_controls::IGridView>(this) ? L"GV" : L"LV", this));
+    IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"LVB(%s)[0x%p]: GetFocusCandidateFromPanel.",
+        ctl::is<xaml_controls::IGridView>(this) ? L"GV" : L"LV", this));
 #endif
 
     INT itemIndex = -1;
@@ -2593,13 +2445,13 @@ _Check_return_ HRESULT ListViewBase::GetFocusCandidateFromPanel(
                     nullptr /* GroupItem */,
                     &groupIndex,
                     nullptr /* IndexInGroup */));
-                m_lastFocusedGroupIndex = groupIndex;
+                SetLastFocusedGroupIndex(groupIndex);
                 SetLastFocusedIndex(itemIndex);
             }
             else
             {
                 ASSERT(groupIndex != -1);
-                m_lastFocusedGroupIndex = groupIndex;
+                SetLastFocusedGroupIndex(groupIndex);
             }
         }
         else
@@ -2622,15 +2474,15 @@ _Check_return_ HRESULT ListViewBase::ProcessTabStopInternal(
     _Outptr_ DependencyObject** ppTabStop)
 {
 #ifdef LVB_DEBUG
-    IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"LVB(%s)[0x%p]: ProcessTabStopInternal. isBackward=%d", 
+    IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"LVB(%s)[0x%p]: ProcessTabStopInternal. isBackward=%d",
         ctl::is<xaml_controls::IGridView>(this) ? L"GV" : L"LV", this, isBackward));
 #endif
 
     HRESULT hr = S_OK;
     bool isUsingModernPanel = false;
     bool isUsingOrientedVirtualizingPanel = false;
-    bool isUsingSelectableHeader = false;
-    bool isUsingSelectableFooter = false;
+    bool isUsingFocusableHeader = false;
+    bool isUsingFocusableFooter = false;
     bool isUsingLocalOrCycleTabNavigation = false;
     bool isTabIntoOrientedVirtualizingPanel = false;
     ctl::ComPtr<IDependencyObject> spCurrentParent;
@@ -2657,19 +2509,19 @@ _Check_return_ HRESULT ListViewBase::ProcessTabStopInternal(
 
         if (!isUsingOrientedVirtualizingPanel && !isBackward)
         {
-            ctl::ComPtr<ContentControl> selectableFooterContainer;
+            ctl::ComPtr<ContentControl> focusableFooterContainer;
 
-            IFC(GetSelectableHeaderOrFooterContainer(false /*isForHeader*/, &selectableFooterContainer));
+            IFC(GetFocusableHeaderOrFooterContainer(false /*isForHeader*/, &focusableFooterContainer));
 
-            isUsingSelectableFooter = selectableFooterContainer != nullptr;
+            isUsingFocusableFooter = focusableFooterContainer != nullptr;
         }
         else if (isBackward)
         {
-            ctl::ComPtr<ContentControl> selectableHeaderContainer;
+            ctl::ComPtr<ContentControl> focusableFooterContainer;
 
-            IFC(GetSelectableHeaderOrFooterContainer(true /*isForHeader*/, &selectableHeaderContainer));
+            IFC(GetFocusableHeaderOrFooterContainer(true /*isForHeader*/, &focusableFooterContainer));
 
-            isUsingSelectableHeader = selectableHeaderContainer != nullptr;
+            isUsingFocusableHeader = focusableFooterContainer != nullptr;
         }
 
         // isTabIntoOrientedVirtualizingPanel is set to True when tabbing into a VirtualizingStackPanel to ensure its potential 
@@ -2697,8 +2549,8 @@ _Check_return_ HRESULT ListViewBase::ProcessTabStopInternal(
         isTabIntoOrientedVirtualizingPanel ||                                                                                                                 // #2
         isUsingLocalOrCycleTabNavigation ||                                                                                                                   // #3
         (currentParentType == Header && candidateParentType == Other && !isBackward) ||                                                                       // #4
-        (isUsingSelectableHeader && currentParentType == ItemOrGroupHeader && candidateParentType == Other) ||                                                // #5
-        (isUsingSelectableFooter && pCurrentFocus && pFocusCandidate && currentParentType == ItemOrGroupHeader && candidateParentType == Other) ||            // #6
+        (isUsingFocusableHeader && currentParentType == ItemOrGroupHeader && candidateParentType == Other) ||                                                 // #5
+        (isUsingFocusableFooter && pCurrentFocus && pFocusCandidate && currentParentType == ItemOrGroupHeader && candidateParentType == Other) ||             // #6
         (!isUsingOrientedVirtualizingPanel && pCurrentFocus && pFocusCandidate && currentParentType == Footer && candidateParentType == Other && isBackward)) // #7
     {
         // This custom handling is not only needed for modern panels in general (#1), but also with a VirtualizingStackPanel or StackPanel:
@@ -3070,12 +2922,12 @@ ListViewBase::OnGettingFocus(_In_ xaml::IUIElement* sender, _In_ xaml_input::IGe
         if ((isFocusComingFromOutside || isFocusComingFromHeaderOrFooter) && isFocusMovingOntoItemOrGroupHeader)
         {
             ctl::ComPtr<IItemContainerMapping> itemMapping;
-            BOOLEAN isSelectable = FALSE;
+            BOOLEAN isFocusable = FALSE;
 
             IFC_RETURN(GetItemContainerMapping(&itemMapping));
-            IFC_RETURN(IsItemSelectable(itemMapping.Get(), focusIndex, &isSelectable));
+            IFC_RETURN(IsItemFocusable(itemMapping.Get(), focusIndex, &isFocusable));
 
-            if (isSelectable)
+            if (isFocusable)
             {
                 // Make sure the focused index is clear so that when we scroll to the focused item
                 // and end up realizing items we won't try to set focus to any of them because setting
@@ -3083,7 +2935,7 @@ ListViewBase::OnGettingFocus(_In_ xaml::IUIElement* sender, _In_ xaml_input::IGe
                 // error.
                 // This will get set back to the focused item index when it receives focus, as a result
                 // of this GettingFocus handler, in SelectorItem::ItemFocused.
-                m_iFocusedIndex = -1;
+                SetFocusedIndex(-1);
 
                 IFC_RETURN(Selector::ScrollIntoView(
                     focusIndex,
@@ -3096,11 +2948,19 @@ ListViewBase::OnGettingFocus(_In_ xaml::IUIElement* sender, _In_ xaml_input::IGe
                     xaml_controls::ScrollIntoViewAlignment::ScrollIntoViewAlignment_Default));
 
                 ctl::ComPtr<IDependencyObject> focusIndexContainer;
-                IFC_RETURN(ContainerFromIndex(focusIndex, &focusIndexContainer));
 
-                BOOLEAN focusMoved = false;
-                IFC_RETURN(static_cast<GettingFocusEventArgs*>(args)->TrySetNewFocusedElement(focusIndexContainer.Get(), &focusMoved));
-                IFC_RETURN(args->put_Handled(focusMoved));
+                IFC_RETURN(ContainerFromIndex(focusIndex, &focusIndexContainer));
+                IFC_RETURN(focusIndexContainer.Cast<DependencyObject>()->IsAncestorOf(newFocusedElement.Cast<DependencyObject>(), &isAncestor));
+
+                // When isAncestor is True, focus is about to move to a child of focusIndexContainer. No need to alter this imminent focus change.
+                // In particular, setting focus to the container instead of its child would break the tab order when Shift-Tabbing into the ListViewBase.
+                if (!isAncestor)
+                {
+                    BOOLEAN focusMoved = false;
+
+                    IFC_RETURN(static_cast<GettingFocusEventArgs*>(args)->TrySetNewFocusedElement(focusIndexContainer.Get(), &focusMoved));
+                    IFC_RETURN(args->put_Handled(focusMoved));
+                }
             }
         }
     }

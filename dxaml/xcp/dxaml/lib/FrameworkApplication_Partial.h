@@ -162,6 +162,9 @@ namespace DirectUI
             return model;
         }
 
+        _Check_return_ HRESULT get_DispatcherShutdownModeImpl(_Out_ xaml::DispatcherShutdownMode* value);
+        _Check_return_ HRESULT put_DispatcherShutdownModeImpl(_In_ xaml::DispatcherShutdownMode value);
+
     protected:
         FrameworkApplication();
         ~FrameworkApplication() override;

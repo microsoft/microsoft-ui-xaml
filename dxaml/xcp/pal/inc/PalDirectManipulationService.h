@@ -18,11 +18,11 @@ class DMDeferredRelease;
 
 struct IPALDirectManipulationService : public IObject
 {
-    virtual _Check_return_ HRESULT EnsureDirectManipulationManager(_In_ XHANDLE hWindow, _In_ bool fIsForCrossSlideViewports) = 0;
+    virtual _Check_return_ HRESULT EnsureDirectManipulationManager(_In_ IUnknown* pIslandInputSite, _In_ bool fIsForCrossSlideViewports) = 0;
     virtual _Check_return_ HRESULT RegisterViewportEventHandler(_In_opt_ IXcpDirectManipulationViewportEventHandler* pEventHandler) = 0;
     virtual _Check_return_ HRESULT ActivateDirectManipulationManager() = 0;
     virtual _Check_return_ HRESULT DeactivateDirectManipulationManager() = 0;
-    virtual _Check_return_ HRESULT EnsureHwnd(HWND hwnd) = 0;
+    virtual _Check_return_ HRESULT EnsureElementIslandInputSite(_In_ IUnknown* pIslandInputSite) = 0;
 
     virtual _Check_return_ HRESULT UnregisterViewport(_In_ IObject* pViewport) = 0;
 

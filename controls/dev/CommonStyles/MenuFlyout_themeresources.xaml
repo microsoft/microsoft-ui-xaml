@@ -274,7 +274,7 @@
     <Setter Property="ScrollViewer.IsHorizontalRailEnabled" Value="False" />
     <Setter Property="ScrollViewer.IsVerticalRailEnabled" Value="False" />
     <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
-    <Setter Property="MaxWidth" Value="{ThemeResource FlyoutThemeMaxWidth}" />
+    <Setter Property="MinWidth" Value="{ThemeResource FlyoutThemeMinWidth}" />
     <Setter Property="MinHeight" Value="{StaticResource MenuFlyoutThemeMinHeight}" />
     <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
     <Setter Property="Template">

@@ -10,8 +10,6 @@
 #pragma once
 
 #include <ComTemplates.h>
-
-#include <DCompExtras.h>
 #include <dcompinternal.h>
 
 class DCompTreeHost;

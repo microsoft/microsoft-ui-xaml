@@ -20,6 +20,10 @@
       <StackReserveSize>0x40000</StackReserveSize>
       <Version>10.0</Version>
       <EnableUAC>false</EnableUAC>
+      <!-- Moving to UCRT in Windows SDK 19041+, we need to ensure that our printf 
+          rounding behavior remains consistent for test visual tree dump comparisons, etc.
+          https://learn.microsoft.com/en-us/cpp/c-runtime-library/link-options?view=msvc-170 -->
+      <AdditionalOptions Condition="'$(ResourceOnlyDll)' != 'true'">legacy_stdio_float_rounding.obj %(AdditionalOptions)</AdditionalOptions>
     </Link>
 
     <ProjectReference>

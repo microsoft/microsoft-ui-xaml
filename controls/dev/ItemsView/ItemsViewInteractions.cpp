@@ -10,6 +10,7 @@
 #include "ItemsViewTestHooks.h"
 #include "ItemsViewItemInvokedEventArgs.h"
 #include "NullSelector.h"
+#include "SharedHelpers.h"
 #include "SingleSelector.h"
 #include "ItemContainerRevokers.h"
 
@@ -197,7 +198,7 @@ int ItemsView::GetAdjacentFocusableElementByDirection(
 
         MUX_ASSERT(element != nullptr);
 
-        if (IsFocusableElement(element))
+        if (SharedHelpers::IsFocusableElement(element))
         {
             float navigationDirectionDistance = std::numeric_limits<float>::max();
             float noneNavigationDirectionDistance = std::numeric_limits<float>::max();
@@ -315,7 +316,7 @@ int ItemsView::GetAdjacentFocusableElementByIndex(
 
         MUX_ASSERT(element != nullptr);
 
-        if (IsFocusableElement(element))
+        if (SharedHelpers::IsFocusableElement(element))
         {
             return itemIndex;
         }
@@ -582,19 +583,6 @@ bool ItemsView::IsCancelingNavigationKey(
     return false;
 }
 
-bool ItemsView::IsFocusableElement(
-    winrt::UIElement const& element) const
-{
-    if (element.Visibility() == winrt::Visibility::Collapsed)
-    {
-        return false;
-    }
-
-    auto const& control = element.try_as<winrt::Control>();
-
-    return control && (control.IsEnabled() || control.AllowFocusWhenDisabled()) && control.IsTabStop();
-}
-
 bool ItemsView::IsLayoutOrientationIndexBased(bool horizontal)
 {
     const winrt::IndexBasedLayoutOrientation indexBasedLayoutOrientation = GetLayoutIndexBasedLayoutOrientation();
@@ -663,16 +651,40 @@ void ItemsView::OnItemsViewElementGettingFocus(
                     // Tabbing (direction == FocusNavigationDirection::Next) or Shift-Tabbing (direction == FocusNavigationDirection::Previous) into
                     // the ItemsRepeater while there is no current element.
 
-                    // Retrieve the focusable index on the top/left corner for Tabbing, or bottom/right corner for Shift-Tabbing.
-                    int cornerFocusableItem = ItemsView::GetCornerFocusableItem(direction == winrt::FocusNavigationDirection::Next /*isForTopLeftItem*/);
-                    MUX_ASSERT(cornerFocusableItem != -1);
+                    int focusableItemIndex{ -1 };
+
+                    // When these conditions are fulfilled, set the selected item as the current one.
+                    // - TabNavigation is Once
+                    // - SelectionMode is Single
+                    // - an item is selected and is focusable
+                    if (TabNavigation() == winrt::KeyboardNavigationMode::Once &&
+                        SelectionMode() == winrt::ItemsViewSelectionMode::Single)
+                    {
+                        const auto selectedItem = m_selectionModel.SelectedItem().as<winrt::UIElement>();
+
+                        if (selectedItem && SharedHelpers::IsFocusableElement(selectedItem))
+                        {
+                            winrt::IndexPath selectedItemIndexPath = m_selectionModel.SelectedIndex();
+                            MUX_ASSERT(selectedItemIndexPath != nullptr && selectedItemIndexPath.GetSize() == 1);
+
+                            focusableItemIndex = selectedItemIndexPath.GetAt(0);
+                            MUX_ASSERT(focusableItemIndex != -1);
+                        }
+                    }
+
+                    if (focusableItemIndex == -1)
+                    {
+                        // Retrieve the focusable index on the top/left corner for Tabbing, or bottom/right corner for Shift-Tabbing.
+                        focusableItemIndex = ItemsView::GetCornerFocusableItem(direction == winrt::FocusNavigationDirection::Next /*isForTopLeftItem*/);
+                        MUX_ASSERT(focusableItemIndex != -1);
+                    }
 
                     // Set that index as the current one.
-                    SetCurrentElementIndex(cornerFocusableItem, winrt::FocusState::Unfocused, false /*forceKeyboardNavigationReferenceReset*/);
-                    MUX_ASSERT(cornerFocusableItem == GetCurrentElementIndex());
+                    SetCurrentElementIndex(focusableItemIndex, winrt::FocusState::Unfocused, false /*forceKeyboardNavigationReferenceReset*/);
+                    MUX_ASSERT(focusableItemIndex == GetCurrentElementIndex());
 
                     // Allow TrySetNewFocusedElement to be called below for that new current element.
-                    currentElementIndex = cornerFocusableItem;
+                    currentElementIndex = focusableItemIndex;
                 }
             }
 

@@ -27,10 +27,10 @@ static constexpr wstring_view s_error_cwv2_not_present{ L"Failed because a valid
 // White matches CoreWebView2Controller.DefaultBackgroundColor
 const winrt::Color WebView2::sc_controllerDefaultBackgroundColor{ 255, 255, 255, 255 };
 
-// When the Xaml window is closed (eg by user clickng 'x'), CoreWebView2
+// When the Xaml window is closed (eg by user clicking 'x'), CoreWebView2
 // (associated with child "Input HWND") is notified ahead of Xaml WebView2
 // resulting in a window of time when calls into the CoreWebView2 APIs
-// fail with ERROR_INVALID_STATE. The helper functions below areavailable
+// fail with ERROR_INVALID_STATE. The helper functions below are available
 // to detect and gracefully handle this situation.
 
 // Checks CoreWebView2Controller status, use at start of simple/short functions
@@ -458,11 +458,11 @@ winrt::IAsyncAction WebView2::OnSourceChanged(winrt::Uri providedUri)
         {
             MUX_ASSERT(m_isExplicitCreationInProgress || m_isImplicitCreationInProgress);
 
-            // If the in-flight creation is explicit (EnsureCWV2()), navigate to new source when that ends
+            // If the in-flight creation is explicit (EnsureCWV2*Async()), navigate to new source when that ends
             // Otherwise it's implicit (another Source set), we are done; first Source will use updated Source value
             if (m_isExplicitCreationInProgress)
             {
-                // If EnsureCWV2() call is in flight, wait for it to complete then set Source
+                // If EnsureCWV2*Async() call is in flight, wait for it to complete then set Source
                 co_await *m_creationInProgressAsync;
             }
             else if (m_isImplicitCreationInProgress)
@@ -483,10 +483,6 @@ winrt::IAsyncAction WebView2::OnSourceChanged(winrt::Uri providedUri)
     {
         // TODO_WebView2: Should we use RawUri() instead of AbsoluteUri()?
         // Try to apply latest source (could have changed during the co_await's above)
-        if (m_isClosed)
-        {
-            throw winrt::hresult_error(RO_E_CLOSED, s_error_wv2_closed);
-        }
         const auto updatedUri = this->Source();
         if (!updatedUri.Equals(providedUri) && ShouldNavigate(updatedUri))
         {
@@ -731,7 +727,7 @@ void WebView2::UnregisterCoreEventHandlers()
     }
 }
 
-winrt::IAsyncAction WebView2::CreateCoreObjects()
+winrt::IAsyncAction WebView2::CreateCoreObjects(winrt::CoreWebView2Environment environment, winrt::CoreWebView2ControllerOptions controllerOptions)
 {
     MUX_ASSERT((m_isImplicitCreationInProgress && !m_isExplicitCreationInProgress) ||
                (!m_isImplicitCreationInProgress && m_isExplicitCreationInProgress));
@@ -751,15 +747,15 @@ winrt::IAsyncAction WebView2::CreateCoreObjects()
         // so clear any previous 'Missing Anaheim Warning'
         Children().Clear();
 
+        // Normally we always need a new environment, the exception being when Anaheim process failed and we get to reuse the existing one
         if (!m_isCoreFailure_BrowserExited_State)
         {
-            // Normally we always need a new environment, the exception being when Anaheim process failed and we get to reuse the existing one
-            co_await CreateCoreEnvironment();
+            m_coreWebViewEnvironment = environment ? environment : co_await CreateDefaultCoreEnvironment();
         }
 
         if (m_coreWebViewEnvironment)
         {
-            co_await CreateCoreWebViewFromEnvironment(GetHostHwnd());
+            co_await CreateCoreWebViewFromEnvironment(GetHostHwnd(), controllerOptions);
 
             // Do initialization including rendering setup.
             // Try this now but defer to Loaded event if it hasn't fired yet.
@@ -774,28 +770,26 @@ winrt::IAsyncAction WebView2::CreateCoreObjects()
     co_return;
 }
 
-winrt::IAsyncAction WebView2::CreateCoreEnvironment() noexcept
+winrt::IAsyncOperation<winrt::CoreWebView2Environment> WebView2::CreateDefaultCoreEnvironment() noexcept
 {
     hstring browserInstall;
     hstring userDataFolder;
+    winrt::CoreWebView2Environment returnedValue = nullptr;
 
     auto strongThis = get_strong(); // ensure object lifetime during coroutines
+        
+    // NOTE: To enable Anaheim logging, add: environmentOptions.AdditionalBrowserArguments(L"--enable-logging=stderr --v=1");
+    winrt::CoreWebView2EnvironmentOptions environmentOptions =  winrt::CoreWebView2EnvironmentOptions();
 
-    if (!m_options)
+    auto applicationLanguagesList = winrt::ApplicationLanguages::Languages();
+    if (applicationLanguagesList.Size() > 0)
     {
-        // NOTE: To enable Anaheim logging, add: m_options.AdditionalBrowserArguments(L"--enable-logging=stderr --v=1");
-        m_options = winrt::CoreWebView2EnvironmentOptions();
-
-        auto applicationLanguagesList = winrt::ApplicationLanguages::Languages();
-        if (applicationLanguagesList.Size() > 0)
-        {
-            m_options.Language(applicationLanguagesList.GetAt(0));
-        }
+        environmentOptions.Language(applicationLanguagesList.GetAt(0));
     }
 
     try
     {
-        m_coreWebViewEnvironment = co_await winrt::CoreWebView2Environment::CreateWithOptionsAsync(browserInstall, userDataFolder, m_options);
+        returnedValue = co_await winrt::CoreWebView2Environment::CreateWithOptionsAsync(browserInstall, userDataFolder, environmentOptions);
     }
     catch (winrt::hresult_error e)
     {
@@ -804,10 +798,10 @@ winrt::IAsyncAction WebView2::CreateCoreEnvironment() noexcept
         FireCoreWebView2Initialized(hr);
     }
 
-    co_return;
+    co_return returnedValue;
 }
 
-winrt::IAsyncAction WebView2::CreateCoreWebViewFromEnvironment(HWND hwndParent)
+winrt::IAsyncAction WebView2::CreateCoreWebViewFromEnvironment(HWND hwndParent, winrt::CoreWebView2ControllerOptions controllerOptions)
 {
     auto strongThis = get_strong(); // ensure object lifetime during coroutines
 
@@ -821,7 +815,15 @@ winrt::IAsyncAction WebView2::CreateCoreWebViewFromEnvironment(HWND hwndParent)
         auto windowRef = winrt::CoreWebView2ControllerWindowReference::CreateFromWindowHandle(reinterpret_cast<UINT64>(hwndParent));
         // CreateCoreWebView2CompositionController(Async) creates a CompositionController and is in visual hosting mode.
         // Calling CreateCoreWebView2Controller would create a Controller and would be in windowed mode.
-        m_coreWebViewCompositionController = co_await m_coreWebViewEnvironment.CreateCoreWebView2CompositionControllerAsync(windowRef);
+        if (!controllerOptions)
+        {
+            m_coreWebViewCompositionController = co_await m_coreWebViewEnvironment.CreateCoreWebView2CompositionControllerAsync(windowRef);
+        }
+        else
+        {
+            m_customCoreWebViewControllerOptions = controllerOptions;
+            m_coreWebViewCompositionController = co_await m_coreWebViewEnvironment.CreateCoreWebView2CompositionControllerAsync(windowRef, controllerOptions);
+        }
         m_coreWebViewController = m_coreWebViewCompositionController.as<winrt::CoreWebView2Controller>();
         m_coreWebViewController.DefaultBackgroundColor(this->DefaultBackgroundColor());
         m_coreWebViewController.ShouldDetectMonitorScaleChanges(false);
@@ -1354,11 +1356,49 @@ winrt::IUnknown WebView2::GetProviderForHwnd(HWND hwnd)
 
 winrt::IAsyncAction WebView2::EnsureCoreWebView2Async()
 {
+    co_await EnsureCoreWebView2Async(nullptr, nullptr);
+}
+
+winrt::IAsyncAction WebView2::EnsureCoreWebView2Async(winrt::CoreWebView2Environment environment)
+{
+    co_await EnsureCoreWebView2Async(environment, nullptr);
+}
+
+winrt::IAsyncAction WebView2::EnsureCoreWebView2Async(winrt::CoreWebView2Environment environment, winrt::CoreWebView2ControllerOptions controllerOptions)
+{
     auto strongThis = get_strong(); // ensure object lifetime during coroutines
 
-    // If CWV2 exists already, return immediately/synchronously
+    if (m_isClosed)
+    {
+        throw winrt::hresult_error(RO_E_CLOSED, s_error_wv2_closed);
+    }
+
+    // If CWV2 exists already, return immediately provided that current call to EnsureCWV2Async is compatible with original creation
+    // Specifically, if current call has: 
+    //    a. Null args       : Always compatible  [i.e. E() == E(nullptr) == E(nullptr, nullptr))]
+    //    b. Non-null arg(s) : Compatible iff called with same args as call that created current core objecs.
+    //                         Note comparison is via reference equality for both args.
     if (m_coreWebView)
     {
+        if (environment != nullptr || controllerOptions != nullptr)
+        {
+             if (m_coreWebViewEnvironment != environment) 
+             {
+                throw winrt::hresult_invalid_argument(
+                    L"WebView2 was already initialized with a different CoreWebView2Environment. "
+                    L"Check to see if the Source property was already set or EnsureCoreWebView2Async was previously called with different values."
+                    );
+             }
+             if (m_customCoreWebViewControllerOptions != controllerOptions)
+             {
+                throw winrt::hresult_invalid_argument(
+                    L"WebView2 was already initialized with different CoreWebView2ControllerOptions. "
+                    L"Check to see if the Source property was already set or EnsureCoreWebView2Async was previously called with different values."
+                    );
+             }
+        }
+
+        // Synchronous return - existing core objects are compatible
         MUX_ASSERT(m_coreWebViewEnvironment && m_coreWebViewController);
         co_return;
     }
@@ -1374,7 +1414,15 @@ winrt::IAsyncAction WebView2::EnsureCoreWebView2Async()
     else
     {
         m_isExplicitCreationInProgress = true;
-        co_await CreateCoreObjects();
+        if (environment != nullptr)
+        {
+            m_isExplicitEnvironment = true;
+        }
+        if (controllerOptions != nullptr)
+        {
+            m_isExplicitControllerOptions = true;
+        }
+        co_await CreateCoreObjects(environment, controllerOptions);
     }
 
     MUX_ASSERT(!m_isImplicitCreationInProgress && !m_isExplicitCreationInProgress);

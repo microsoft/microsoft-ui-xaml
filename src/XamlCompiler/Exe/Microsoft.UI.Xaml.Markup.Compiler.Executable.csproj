@@ -5,6 +5,7 @@
     <RootNamespace>Microsoft.Windows.UI.Xaml.Build.Tasks</RootNamespace>
     <AssemblyName>XamlCompiler</AssemblyName>
     <TargetFrameworks>net472</TargetFrameworks>
+    <TargetDestination>$(MarkupCompilerDestinationPath).Executable</TargetDestination>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <NoWarn>$(NoWarn);0419;1570;1572;1573;1574;1591;3021;0618;0672;0436;0108;SYSLIB0003;SYSLIB0005;SYSLIB0012;SYSLIB0019;SYSLIB0021;CA2002;CA1060;CA1063;CA2229;CA1001;CA1033;CA1416;CA2101;CA2213;CA2231</NoWarn>
     <!-- USE_CLR_V4 is only for the LMR code -->

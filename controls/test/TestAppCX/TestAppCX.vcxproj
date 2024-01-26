@@ -2,7 +2,7 @@
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$([MSBuild]::GetPathOfFileAbove(environment.props))" />
-  <Import Project="$(MUXCProjectRoot)mux.controls.props" Condition="Exists('$(MUXCProjectRoot)mux.controls.props')" />
+  <Import Project="$(MUXCProjectRoot)mux.controls.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{92081f61-98bb-4105-a90f-b6d524b4f5c9}</ProjectGuid>
     <RootNamespace>TestAppCX</RootNamespace>
@@ -10,8 +10,6 @@
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <AppContainerApplication>true</AppContainerApplication>
     <ApplicationType>Windows Store</ApplicationType>
-    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)'==''">$(MuxSdkVersion)</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformMinVersion>10.0.17763.0</WindowsTargetPlatformMinVersion>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
     <PackageCertificateKeyFile>$(MUXProjectRoot)build\WinUITest.pfx</PackageCertificateKeyFile>
   </PropertyGroup>

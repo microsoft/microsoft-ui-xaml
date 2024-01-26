@@ -39,6 +39,11 @@ namespace MUXControlsTestApp
                 Frame.NavigateWithoutAnimation(typeof(UniformGridLayoutDemo));
             };
 
+            keyboardNavigationSample.Click += delegate 
+            {
+                Frame.NavigateWithoutAnimation(typeof(KeyboardNavigationSample));
+            };
+
             itemsSourceDemo.Click += delegate 
             {
                 Frame.NavigateWithoutAnimation(typeof(ElementsInItemsSourcePage));

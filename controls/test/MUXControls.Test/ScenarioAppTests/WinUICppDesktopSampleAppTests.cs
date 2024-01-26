@@ -194,6 +194,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TestEnvironment.VerifyAreEqualWithRetry(20,
                 () => "Flyout.Closed - buttonWithContextFlyout",
                 () => textBlock.DocumentText);
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -242,6 +244,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TestEnvironment.VerifyAreEqualWithRetry(20,
                 () => "DropDownButton.Click",
                 () => textBlock.DocumentText);
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         private void SelectMUXCControlsUI()
@@ -277,8 +281,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Log.Comment("Wait For Idle");
             Wait.ForIdle();
 
-            Log.Comment("Killing app process because exiting normally will crash.  Investigate: http://task.ms/44784011");
-            TestEnvironment.Application.KillAndWaitForExit();
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         private void SelectExternalControlsUI()
@@ -314,6 +317,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             WinUISampleAppTestsUtils.ResetText("buttonResetTitle", "textBoxTitle");
             WinUISampleAppTestsUtils.VerifyPropertyAccessor("buttonGetTitle", "textBoxTitle", "WinUICppDesktopSampleApp");
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -334,6 +339,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             WinUISampleAppTestsUtils.SetEditText("textBoxTitle", "WinUICppDesktopSampleApp");
             WinUISampleAppTestsUtils.InvokeButton("buttonSetTitle");
             WinUISampleAppTestsUtils.VerifyPropertyAccessor("buttonGetTitle", "textBoxTitle", "WinUICppDesktopSampleApp");
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -346,6 +353,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             WinUISampleAppTestsUtils.ResetText("buttonResetHandle", "textBlockHandle");
             WinUISampleAppTestsUtils.InvokeButton("buttonGetHandle");
             WinUISampleAppTestsUtils.VerifyPropertyAccessor("buttonGetHandle", "textBlockHandle", null);
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -406,6 +415,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             Verify.AreEqual(originalWidth, finalWidth);
             Verify.AreEqual(originalHeight, finalHeight);
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         private void ReadWindowBounds()
@@ -481,6 +492,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             expectedLogEvents.Add("ButtonDiscardWindow_Click - entry");
             expectedLogEvents.Add("ButtonDiscardWindow_Click - exit");
             WinUISampleAppTestsUtils.VerifyLogEvents(expectedLogEvents.ToArray());
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -541,6 +554,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             expectedLogEvents.Add("ButtonDiscardWindow_Click - entry");
             expectedLogEvents.Add("ButtonDiscardWindow_Click - exit");
             WinUISampleAppTestsUtils.VerifyLogEvents(expectedLogEvents.ToArray());
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -593,6 +608,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             // Log.Comment("Verify that app has been exited successfully");
             Verify.IsTrue(isClosed);
+            TestEnvironment.Application.WaitForExit(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -636,6 +652,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             // Log.Comment("Verify that app has been exited successfully");
             Verify.IsTrue(isClosed);
+            TestEnvironment.Application.WaitForExit(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -678,6 +695,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             // Log.Comment("Verify that app has been exited successfully");
             Verify.IsTrue(isClosed);
+            TestEnvironment.Application.WaitForExit(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -730,6 +748,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             expectedLogEvents.Add("Window_SizeChanged - Handled=False");
             expectedLogEvents.Add("XamlRoot_Changed event");
             WinUISampleAppTestsUtils.VerifyLogEvents(expectedLogEvents.ToArray());
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -751,6 +771,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForSeconds(3); // instead the test will wait for a fixed amount of time
             Verify.IsTrue(TestHelpers.IsWindowClosed(processID));  // don't add a retry here as certain bugs will missed
             Log.Comment("Window has been closed successfully");
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -801,8 +823,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             WinUISampleAppTestsUtils.VerifyText("TestTextBlock", "Loaded");
             WinUISampleAppTestsUtils.VerifyText("titleTextBlock", "Welcome to Page 1!");
 
-            Log.Comment("Killing app process because exiting normally will crash.  Investigate: http://task.ms/44784011");
-            TestEnvironment.Application.KillAndWaitForExit();
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         private void SelectWindowUI()
@@ -876,7 +897,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
 
             Verify.IsTrue(TestHelpers.IsWindowClosed(processID));
-
+            TestEnvironment.Application.WaitForExit(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -901,6 +922,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             IntPtr systemMenuHwndViaRightClick = TestHelpers.NativeMethods.FindWindowEx(IntPtr.Zero, IntPtr.Zero, TestHelpers.NativeMethods.CLASSID_CONTEXTMENU, "");
             Verify.AreNotEqual(systemMenuHwndViaRightClick, IntPtr.Zero, "system menu did get created by right click on custom titlebar");
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -999,6 +1022,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             closeMenuItem = root.Descendants.Find(closecondition);
             Verify.IsNotNull(closeMenuItem);
             Verify.IsTrue(closeMenuItem.IsEnabled, "Close system menu item is enabled on maximized window");
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -1042,6 +1067,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForMilliseconds(1500); // instead the test will wait for a fixed amount of time
             Verify.IsTrue(TestHelpers.IsWindowClosed(processID));
 
+            TestEnvironment.Application.WaitForExit(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -1069,6 +1095,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Log.Comment("Final window dimensions Width:{0} Height:{1}", finalDimensionsRect.Width, finalDimensionsRect.Height);
             Verify.IsGreaterThan(finalDimensionsRect.Width, initialDimensionsRect.Width, "window width did increase");
             Verify.AreEqual(finalDimensionsRect.Height, initialDimensionsRect.Height, "window height remains same");
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -1095,6 +1123,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Log.Comment("Final window dimensions X:{0} Y:{1}", finalDimensionsRect.X, finalDimensionsRect.Y);
             Verify.IsGreaterThan(finalDimensionsRect.X, initialDimensionsRect.X, "window did move right in X axis");
             Verify.AreEqual(finalDimensionsRect.Y, initialDimensionsRect.Y, "window did not move in Y axis");
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -1114,6 +1144,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Y = customtitlebar.BoundingRectangle.Y + 10
             };
             DragTest(startPoint);
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -1147,6 +1179,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             };
 
             ResizeTest(startPoint, -150); // decreases width by resizing on right side of the window near the middle height
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -1190,6 +1224,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
             Verify.IsTrue(didNotThrowException, "automation did find custom titlebar as it has been reactivated");
 
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -1209,6 +1244,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             InputHelper.LeftDoubleClick(customtitlebar, 5, 10);
             Wait.ForIdle();
             Verify.IsTrue(TestHelpers.IsWindowRestored());
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -1231,6 +1268,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             };
             startPoint.Y += 200; // pick a point in now very large titlebar, this would fail in a normal size titlebar
             DragTest(startPoint);
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -1302,6 +1341,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Y = windowDimensionsRect.Y + TestHelpers.CAPTION_BUTTON_HEIGHT / 2
             };
             DragTest(startPoint);
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -1348,6 +1389,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             };
             DragTest(startPoint, 150, false); // drag should fail
             
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -1359,6 +1401,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Target TextBlock's Text is bound via ElementName to the Text of a TextBlock that
             // lives on the root StackPanel via custom attached property
             WinUISampleAppTestsUtils.VerifyText("elementNameBindingTextBlock", "lorem ipsum");
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -1370,6 +1414,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             SelectTestFromSpecialTestsMenu("appwindowobj");
             Log.Comment("Testing AppWindow.IsVisible() api accessible through Window.AppWindow");
             WinUISampleAppTestsUtils.VerifyText("textBlockMUXControls", "AppWindow api : true");
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -1390,6 +1436,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             // Verify that the "404" page has been loaded
             WinUISampleAppTestsUtils.VerifyText("titleTextBlock", "Error 404 - Page Not Found");
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -1404,8 +1452,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             datePicker.Click();
             Wait.ForIdle();
 
-            Log.Comment("Killing app process because exiting normally will crash.  Investigate: http://task.ms/44784011");
-            TestEnvironment.Application.KillAndWaitForExit();
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         [TestMethod]
@@ -1414,6 +1461,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             var textBlock = new TextBlock(FindElement.ById("ViewModelBindingTextBlock"));
             Verify.AreEqual<string>("Text from ViewModel", textBlock.DocumentText);
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
         }
 
         private void SelectBindingUI()

@@ -82,6 +82,13 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)CustomResources\NavigationViewCustomMenuItemPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)CustomResources\CustomNavigationViewItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -177,6 +184,12 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)CustomResources\NavigationViewItemTemplatePage.xaml.cs">
       <DependentUpon>NavigationViewItemTemplatePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)CustomResources\NavigationViewCustomMenuItemPage.xaml.cs">
+      <DependentUpon>NavigationViewCustomMenuItemPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)CustomResources\CustomNavigationViewItem.xaml.cs">
+      <DependentUpon>CustomNavigationViewItem.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewPage.xaml.cs">
       <DependentUpon>NavigationViewPage.xaml</DependentUpon> 

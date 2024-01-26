@@ -67,8 +67,8 @@
         and remove this custom build logic
       -->
       <_WinMdReferenceDirectories Include="%(ReferencePath.RootDir)%(ReferencePath.Directory)" Condition="'%(ReferencePath.Merge)'=='false'" />
-      <_WinMdReferenceDirectories Include="$(ProjectSDKMetadataPath)\Facade"/>
-      <_WinMdReferenceDirectories Include="$(SDKReferencesPath)"/>
+      <_WinMdReferenceDirectories Include="$(FacadeWinmdDir)"/>
+      <_WinMdReferenceDirectories Condition="'$(XamlLightup)'=='true'" Include="$(SDKReferencesPath)"/>
       <_WinMdReferenceDirectories Include="@(_PossibleWinMdInputsForMerge->'%(RelativeDir)'->Distinct())" Condition="'$(TestCode)'=='true'"/>
     </ItemGroup>
   </Target>

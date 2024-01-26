@@ -59,11 +59,11 @@ void ItemContainer::OnApplyTemplate()
 
     // If the Child property is already set, add it to the tree. After this point, the
     // property changed event for Child property will add it to the tree.
-    if (Child() != nullptr)
+    if (const auto& child = Child())
     {
         if (auto&& rootPanel = m_rootPanel.get())
         {
-            rootPanel.Children().InsertAt(0, Child());
+            rootPanel.Children().InsertAt(0, child);
         }
     }
 
@@ -183,6 +183,7 @@ void ItemContainer::UpdateVisualState(bool useTransitions)
     if (!IsEnabled())
     {
         GoToState(s_disabledStateName, useTransitions);
+        GoToState(IsSelected() ? s_selectedNormalStateName : s_unselectedNormalStateName, useTransitions);
     }
     else
     {

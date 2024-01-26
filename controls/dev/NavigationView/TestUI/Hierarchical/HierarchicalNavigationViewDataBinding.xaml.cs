@@ -198,5 +198,15 @@ namespace MUXControlsTestApp
             var mode = (NavigationViewPaneDisplayMode)Enum.Parse(typeof(NavigationViewPaneDisplayMode), tag);
             navview.PaneDisplayMode = mode;
         }
+
+        private void NavView_PaneClosed(NavigationView sender, object args)
+        {
+            PaneOpenedOrClosedEvent.Text = "Closed";
+        }
+
+        private void NavView_PaneOpened(NavigationView sender, object args)
+        {
+            PaneOpenedOrClosedEvent.Text = "Opened";
+        }
     }
 }

@@ -253,7 +253,7 @@ namespace DirectUI
             _In_ BOOLEAN animateIfBringIntoView,
             _In_ xaml_controls::ScrollIntoViewAlignment alignment,
             _In_ DOUBLE offset = 0.0,
-            _In_ UINT currentGroupIndex = 0);
+            _In_ UINT currentGroupIndex = 0) override;
 
         _Check_return_ HRESULT ScrollRectToViewport(
             _In_ wf::Rect containerRect,
@@ -290,11 +290,6 @@ namespace DirectUI
 
         // Selects the previous item in the list.
         _Check_return_ HRESULT SelectPrev(_Inout_ INT& index);
-
-        // This method returns a value indicating whether the object is selectable.
-        static _Check_return_ HRESULT IsSelectableHelper(
-            _In_ IInspectable* pObject,
-            _Out_ BOOLEAN& isSelectable);
 
         // Check whether the item at a given index is a data virtualized
         // placeholder, and update its visuals if that's the case.
@@ -535,6 +530,9 @@ namespace DirectUI
         // Allows the insertion of custom values by not reverting values outside the item source.
         bool m_customValuesAllowed = false;
 
+        // Can be negative. (-1) means nothing focused.
+        INT m_focusedIndex;
+
         // Holds the last focused index just before focusing out of the selector.
         UINT m_lastFocusedIndex;
 
@@ -548,6 +546,21 @@ namespace DirectUI
         bool IsInit()
         {
             return m_pInitializingData != NULL;
+        }
+
+        // GetFocusedIndex and SetFocusedIndex are consistently used instead of 
+        // m_focusedIndex to make it easier to track when this field is read & written.
+        INT GetFocusedIndex() const
+        {
+            return m_focusedIndex;
+        }
+
+        void SetFocusedIndex(INT focusedIndex)
+        {
+            if (m_focusedIndex != focusedIndex)
+            {
+                m_focusedIndex = focusedIndex;
+            }
         }
 
         // GetLastFocusedIndex and SetLastFocusedIndex are consistently used instead of 
@@ -568,9 +581,6 @@ namespace DirectUI
         // The Selection instance responsible for managing our selected items list and
         // providing the transactional API required for modifying that list.
         Selection m_selection;
-
-        // Can be negative. (-1) means nothing focused.
-        INT m_iFocusedIndex;
 
         // If true, do not scroll Selector Item into view. We will use this flag to prevent Selector from scrolling
         // into view the item we will be animating in FlipView.

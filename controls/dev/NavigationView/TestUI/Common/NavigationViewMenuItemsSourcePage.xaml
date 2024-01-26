@@ -20,7 +20,7 @@
                 </DataTemplate>
             </muxcontrols:NavigationView.MenuItemTemplate>
             <StackPanel>
-                <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Navigation View Content"/>
+                <Button x:Name="BtnInsertItemsFromBeginning" AutomationProperties.Name="BtnInsertItemsFromBeginning" Content="Insert Items From Beginning" Margin="10" Click="BtnInsertItemsFromBeginning_Click"/>
             </StackPanel>
         </muxcontrols:NavigationView>
     </Grid>

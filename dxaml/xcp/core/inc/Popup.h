@@ -10,6 +10,7 @@
 #include <XYFocus.h>
 #include <fwd/windows.ui.composition.h>
 #include <Microsoft.UI.Content.h>
+#include <Microsoft.UI.Input.Partner.h>
 
 class HitTestPolygon;
 class CKeyEventArgs;
@@ -65,8 +66,9 @@ private:
 //      which needs to be transformed from the pointer's target window to the
 //      root window (see DxamlCore::GetTranslationFromTargetWindowToRootWindow),
 //      and initialization of DirectManipulationContainer, which needs to
-//      use the popup's window (see CInputServices::InitializeDirectManipulationContainer's
-//      usage of CDependencyObject::GetElementInputWindow.)
+//      use the popup's island input site's window (see 
+//      CInputServices::InitializeDirectManipulationContainer's usage of
+//      CDependencyObject::GetElementIslandInputSite.)
 //    - Windowed popups must be closed when the Jupiter window is moved, because
 //      they will no longer be positioned at the location of the popup element.
 //    - For rendering, a windowed popup uses HWWindowedPopupCompTreeNode, which
@@ -265,12 +267,12 @@ public:
 
     _Check_return_ HRESULT SetIsWindowedIfNeeded();
     _Check_return_ HRESULT SetIsWindowed();
-    HWND GetWindowHandle();
 
     bool WasEverOpened() const { return m_everOpened; }
     bool IsWindowed() const { return !!m_isWindowed; }
+    bool WindowedPopupHasFocus() const;
 
-    HWND GetPopupWindow();
+    HWND GetPopupPositioningWindow() const;
 
     ixp::IVisual* GetWindowRootVisual_TestHook();
 
@@ -316,6 +318,8 @@ public:
     bool ReplayPointerUpdate();
     void ClearLastPointerPointForReplay();
     wrl::ComPtr<ixp::IPointerPoint> GetPreviousPointerPoint();
+
+    wrl::ComPtr<ixp::IIslandInputSitePartner> GetIslandInputSite() const;
 
     wf::Point GetTranslationFromMainWindow() { return m_offsetFromMainWindow; }
 

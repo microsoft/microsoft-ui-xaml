@@ -16,6 +16,10 @@
 
     <PropertyGroup>
         <XamlPrecompiledShared>$(XcpPath)\core\core\elements\pch\precomp.h</XamlPrecompiledShared>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(FrameworkUdkIncPath);
+        </ProjectIncludeDirectories>
     </PropertyGroup>
 
     <ItemGroup>

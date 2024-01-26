@@ -1924,10 +1924,7 @@ namespace Microsoft.UI.Xaml.Controls
         Boolean IsDefaultShadowEnabled;
         static Microsoft.UI.Xaml.DependencyProperty IsDefaultShadowEnabledProperty{ get; };
     
-        [contract(Microsoft.UI.Xaml.WinUIContract, 6)]
-        [feature(Feature_ExperimentalApi)]
-        [static_name("Microsoft.UI.Xaml.Controls.IMenuFlyoutPresenterStaticsFeature_ExperimentalApi")]
-        [interface_name("Microsoft.UI.Xaml.Controls.IMenuFlyoutPresenterFeature_ExperimentalApi")]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 5)]
         {
             Microsoft.UI.Xaml.Media.SystemBackdrop SystemBackdrop;
             static Microsoft.UI.Xaml.DependencyProperty SystemBackdropProperty{ get; };

@@ -236,9 +236,9 @@ CFocusManager::GetFirstFocusableElement(_In_ CDependencyObject* pSearchStart, _I
 
     pFirstFocus = GetFirstFocusableElementInternal(pSearchStart, pFirstFocus);
 
-    // GetFirstFocusableElementInternal can return the TabStop element that might not a focusable
+    // GetFirstFocusableElementInternal can return the TabStop element that might not be a focusable
     // container like as UserControl(IsTabStop=FALSE) even though it have a focusable child.
-    // If the pFirstFocus is not focusable and have a focusable child, the below code will find
+    // If the pFirstFocus is not focusable and has a focusable child, the below code will find
     // a first focusable child
     // Keep finding the first focusable child
 
@@ -334,9 +334,9 @@ CFocusManager::GetLastFocusableElement(_In_ CDependencyObject* pSearchStart, _In
 {
     pLastFocus = GetLastFocusableElementInternal(pSearchStart, pLastFocus);
 
-    // GetLastFocusableElementInternal can return the TabStop element that might not a focusable
+    // GetLastFocusableElementInternal can return the TabStop element that might not be a focusable
     // container like as UserControl(IsTabStop=FALSE) even though it have a focusable child.
-    // If the pLastFocus is not focusable and have a focusable child, the below code will find
+    // If the pLastFocus is not focusable and has a focusable child, the below code will find
     // a last focusable child
     if (pLastFocus && CanHaveFocusableChildren(pLastFocus))
     {
@@ -903,7 +903,7 @@ CFocusManager::GetNextTabStop(
                 }
                 else
                 {
-                    // Assign the parent that can have a focusable children.
+                    // Assign the parent that can have a focusable child.
                     // If there is no parent that can be a TapStop, assign the root
                     // to figure out the next focusable element from the root
                     if (pParentElement)
@@ -919,7 +919,7 @@ CFocusManager::GetNextTabStop(
 
             pNewTabStop = GetNextTabStopInternal(pParent, pCurrent, pNewTabStop, &bCurrentPassed, &pCurrentCompare);
 
-            // GetNextTabStoopInternal can return the not focusable element which has a focusable child
+            // GetNextTabStopInternal can return the not focusable element which has a focusable child
             if (pNewTabStop && !IsFocusable(pNewTabStop) && CanHaveFocusableChildren(pNewTabStop))
             {
                 pNewTabStop = GetFirstFocusableElement(pNewTabStop, NULL);
@@ -1181,7 +1181,7 @@ CFocusManager::GetPreviousTabStop(_In_opt_ CDependencyObject* pCurrentTabStop)
                 }
                 else
                 {
-                    // Assign the parent that can have a focusable children.
+                    // Assign the parent that can have a focusable child.
                     // If there is no parent that can be a TabStop, assign the root
                     // to figure out the next focusable element from the root
                     if (pParentElement)
@@ -1774,7 +1774,7 @@ bool CFocusManager::ShouldSetWindowFocus(const FocusMovement& movement) const
     // When an element gets light-dismissed, XAML sets focus back to the previously-focused element (CPopup::Close).
     // If the light-dismiss is due to the focus moving away from our window, we don't want this focus change to
     // activate our window again.
-    const bool focusIsForLightDismissOnInactiveWindow = movement.isForLightDismiss && !m_contentRoot.IsWindowActivated();
+    const bool focusIsForLightDismissOnInactiveWindow = movement.isForLightDismiss && !m_contentRoot.GetIsInputActive();
     if (focusIsForLightDismissOnInactiveWindow)
     {
         return false;

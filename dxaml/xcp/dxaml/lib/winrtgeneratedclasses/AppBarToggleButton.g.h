@@ -78,6 +78,7 @@ namespace DirectUI
 
         // Methods.
         IFACEMETHOD(GetHasBottomLabel)(_Out_ BOOLEAN* pResult) override;
+        IFACEMETHOD(GetHasRightLabel)(_Out_ BOOLEAN* pResult) override;
         IFACEMETHOD(SetDefaultLabelPosition)(_In_ ABI::Microsoft::UI::Xaml::Controls::CommandBarDefaultLabelPosition defaultLabelPosition) override;
 
 

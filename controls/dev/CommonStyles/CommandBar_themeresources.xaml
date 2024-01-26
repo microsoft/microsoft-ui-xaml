@@ -807,7 +807,17 @@
                 </Grid.ColumnDefinitions>
                 <!-- Use a ContentControl rather than a ContentPresenter so that IsEnabled can be set to false
                                      in the Minimal/HiddenClosed states to remove it from being a tab-stop candidate. -->
-                <ContentControl x:Name="ContentControl" Margin="{TemplateBinding Padding}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" ContentTransitions="{TemplateBinding ContentTransitions}" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" IsTabStop="False" />
+                <ContentControl x:Name="ContentControl"
+                  Margin="{TemplateBinding Padding}"
+                  Content="{TemplateBinding Content}"
+                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                  ContentTransitions="{TemplateBinding ContentTransitions}"
+                  Foreground="{TemplateBinding Foreground}"
+                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                  IsTabStop="False" />
                 <ItemsControl x:Name="PrimaryItemsControl" HorizontalAlignment="Right" MinHeight="{ThemeResource AppBarThemeCompactHeight}" IsTabStop="False" Grid.Column="1">
                   <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -816,7 +826,16 @@
                   </ItemsControl.ItemsPanel>
                 </ItemsControl>
               </Grid>
-              <Button x:Name="MoreButton" Foreground="{TemplateBinding Foreground}" Style="{ThemeResource EllipsisButton}" Padding="{ThemeResource CommandBarMoreButtonMargin}" MinHeight="{ThemeResource AppBarThemeCompactHeight}" VerticalAlignment="Top" Grid.Column="1" Control.IsTemplateKeyTipTarget="True" IsAccessKeyScope="True" Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.EffectiveOverflowButtonVisibility}">
+              <Button x:Name="MoreButton"
+                Foreground="{TemplateBinding Foreground}"
+                Style="{ThemeResource EllipsisButton}"
+                Padding="{ThemeResource CommandBarMoreButtonMargin}"
+                MinHeight="{ThemeResource AppBarThemeCompactHeight}"
+                VerticalAlignment="Top"
+                Grid.Column="1"
+                Control.IsTemplateKeyTipTarget="True"
+                IsAccessKeyScope="True"
+                Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.EffectiveOverflowButtonVisibility}">
                 <FontIcon x:Name="EllipsisIcon" VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="20" Glyph="&#xE712;" Height="{ThemeResource AppBarExpandButtonCircleDiameter}" />
               </Button>
               <Rectangle x:Name="HighContrastBorder" x:DeferLoadStrategy="Lazy" Grid.ColumnSpan="2" Visibility="Collapsed" VerticalAlignment="Stretch" Stroke="{ThemeResource CommandBarHighContrastBorder}" StrokeThickness="1" />
@@ -832,7 +851,11 @@
                   <TranslateTransform x:Name="OverflowContentRootTransform" X="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentHorizontalOffset}" />
                 </TransformGroup>
               </Popup.RenderTransform>
-              <Grid x:Name="OverflowContentRoot" Opacity="0" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentMinWidth}" MaxWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentMaxWidth}" MaxHeight="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentMaxHeight}">
+              <Grid x:Name="OverflowContentRoot"
+                Opacity="0"
+                MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentMinWidth}"
+                MaxWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentMaxWidth}"
+                MaxHeight="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.OverflowContentMaxHeight}">
                 <Grid.RowDefinitions>
                   <RowDefinition />
                   <RowDefinition Height="Auto" />
@@ -882,7 +905,13 @@
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="CommandBarOverflowPresenter">
-          <Grid x:Name="LayoutRoot" Background="{TemplateBinding Background}" BackgroundSizing="InnerBorderEdge" Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{ThemeResource CommandBarOverflowPresenterBorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+          <Grid x:Name="LayoutRoot"
+            Background="{TemplateBinding Background}"
+            BackgroundSizing="InnerBorderEdge"
+            Padding="{TemplateBinding Padding}"
+            BorderBrush="{TemplateBinding BorderBrush}"
+            BorderThickness="{ThemeResource CommandBarOverflowPresenterBorderThickness}"
+            CornerRadius="{TemplateBinding CornerRadius}">
             <VisualStateManager.VisualStateGroups>
               <VisualStateGroup x:Name="DisplayModeStates">
                 <VisualState x:Name="DisplayModeDefault" />
@@ -900,7 +929,13 @@
                 </VisualState>
               </VisualStateGroup>
             </VisualStateManager.VisualStateGroups>
-            <ScrollViewer HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}" HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}" VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}" VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}" ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}" AutomationProperties.AccessibilityView="Raw">
+            <ScrollViewer
+              HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+              HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+              VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+              VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+              ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
+              AutomationProperties.AccessibilityView="Raw">
               <ItemsPresenter x:Name="ItemsPresenter" Margin="{ThemeResource CommandBarOverflowPresenterMargin}" />
             </ScrollViewer>
           </Grid>
@@ -974,7 +1009,19 @@
                 </VisualState>
               </VisualStateGroup>
             </VisualStateManager.VisualStateGroups>
-            <ContentPresenter x:Name="ContentPresenter" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" ContentTransitions="{TemplateBinding ContentTransitions}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="{StaticResource AppBarEllipsisButtonInnerBorderMargin}" Padding="0" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" AutomationProperties.AccessibilityView="Raw" Control.IsTemplateFocusTarget="True" />
+            <ContentPresenter x:Name="ContentPresenter"
+              Background="{TemplateBinding Background}"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}"
+              CornerRadius="{TemplateBinding CornerRadius}"
+              ContentTransitions="{TemplateBinding ContentTransitions}"
+              ContentTemplate="{TemplateBinding ContentTemplate}"
+              Margin="{StaticResource AppBarEllipsisButtonInnerBorderMargin}"
+              Padding="0"
+              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+              AutomationProperties.AccessibilityView="Raw"
+              Control.IsTemplateFocusTarget="True" />
           </Grid>
         </ControlTemplate>
       </Setter.Value>

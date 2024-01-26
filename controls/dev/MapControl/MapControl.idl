@@ -1,0 +1,83 @@
+namespace MU_XC_NAMESPACE
+{
+
+[MUX_PUBLIC_V6]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass MapControl : Microsoft.UI.Xaml.Controls.Control
+{
+    MapControl();
+
+    String MapServiceToken{ get;set; };
+    Windows.Devices.Geolocation.Geopoint Center{ get;set; };
+    Windows.Foundation.Collections.IVector<MapLayer> Layers{ get;set; };
+    Double ZoomLevel{ get;set; };
+    Boolean InteractiveControlsVisible{ get;set; };
+
+    static Microsoft.UI.Xaml.DependencyProperty LayersProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty MapServiceTokenProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty CenterProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty ZoomLevelProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty InteractiveControlsVisibleProperty{ get; };
+
+    event Windows.Foundation.TypedEventHandler<MapControl, MapElementClickEventArgs> MapElementClick;
+    event Windows.Foundation.TypedEventHandler<MapControl, MapControlMapServiceErrorOccurredEventArgs> MapServiceErrorOccurred;
+}
+
+[MUX_PUBLIC_V6]
+[webhosthidden]
+unsealed runtimeclass MapElement : Microsoft.UI.Xaml.DependencyObject
+{
+}
+
+[MUX_PUBLIC_V6]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass MapIcon : Microsoft.UI.Xaml.Controls.MapElement
+{
+    MapIcon();
+    Windows.Devices.Geolocation.Geopoint Location{ get;set; };
+
+    static Microsoft.UI.Xaml.DependencyProperty LocationProperty{ get; };
+}
+
+[MUX_PUBLIC_V6]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass MapLayer : Microsoft.UI.Xaml.DependencyObject
+{
+}
+
+[MUX_PUBLIC_V6]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass MapElementsLayer : Microsoft.UI.Xaml.Controls.MapLayer
+{
+    MapElementsLayer();
+
+    Windows.Foundation.Collections.IVector<MapElement> MapElements{ get;set; };
+    static Microsoft.UI.Xaml.DependencyProperty MapElementsProperty{ get; };
+
+    event Windows.Foundation.TypedEventHandler<MapElementsLayer, MapElementClickEventArgs> MapElementClick;
+}
+
+[MUX_PUBLIC_V6]
+[webhosthidden]
+runtimeclass MapElementClickEventArgs
+{
+    Windows.Devices.Geolocation.Geopoint Location{ get; };
+    MapElement Element{ get; };
+}
+
+[MUX_PUBLIC_V6]
+[webhosthidden]
+runtimeclass MapControlMapServiceErrorOccurredEventArgs
+{
+    String DiagnosticMessage{ get; };
+}
+
+}

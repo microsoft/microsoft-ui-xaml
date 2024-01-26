@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetDestination>$(MarkupCompilerDestinationPath).Executable</TargetDestination>
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 

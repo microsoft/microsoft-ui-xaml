@@ -298,6 +298,8 @@
                     <ComboBoxItem>Small ObservableCollection&lt;Recipe&gt;</ComboBoxItem>
                     <ComboBoxItem>Small Uniform ObservableCollection&lt;Recipe&gt;</ComboBoxItem>
                     <ComboBoxItem>ObservableCollection&lt;Recipe&gt;</ComboBoxItem>
+                    <ComboBoxItem>Small ObservableCollection&lt;ItemContainer&gt;</ComboBoxItem>
+                    <ComboBoxItem>Small ObservableCollection&lt;Image&gt;</ComboBoxItem>
                 </ComboBox>
 
                 <TextBlock Text="Layout:" Grid.Row="4" VerticalAlignment="Center"/>

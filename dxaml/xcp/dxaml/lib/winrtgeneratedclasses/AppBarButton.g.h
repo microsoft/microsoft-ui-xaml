@@ -89,6 +89,7 @@ namespace DirectUI
         IFACEMETHOD(CloseSubMenuTree)() override;
         IFACEMETHOD(DelayCloseSubMenu)() override;
         IFACEMETHOD(GetHasBottomLabel)(_Out_ BOOLEAN* pResult) override;
+        IFACEMETHOD(GetHasRightLabel)(_Out_ BOOLEAN* pResult) override;
         IFACEMETHOD(OpenSubMenu)(_In_ ABI::Windows::Foundation::Point position) override;
         IFACEMETHOD(PositionSubMenu)(_In_ ABI::Windows::Foundation::Point position) override;
         IFACEMETHOD(PrepareSubMenu)() override;

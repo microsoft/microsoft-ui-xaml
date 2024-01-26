@@ -25,6 +25,7 @@
 
         <ProjectIncludeDirectories>
             $(ProjectIncludeDirectories);
+            $(FrameworkUdkIncPath);
             $(XcpPath)\components\collection\inc;
             $(XcpPath)\components\KeyboardAccelerator\inc;
             $(XcpPath)\components\input\inc;

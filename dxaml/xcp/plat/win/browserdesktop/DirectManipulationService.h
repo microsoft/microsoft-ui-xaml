@@ -10,6 +10,7 @@
 #pragma once
 
 #include <Microsoft.DirectManipulation.h>
+#include <Microsoft.UI.Input.Partner.h>
 #include "XcpDirectManipulationViewportEventHandler.h"
 #include "XcpAutoLock.h"
 
@@ -38,8 +39,8 @@ class CDirectManipulationService final :
 
         // IPALDirectManipulationService interface
 
-        // Creates a DirectManipulation manager for hWindow if it was not created already.
-        _Check_return_ HRESULT EnsureDirectManipulationManager(_In_ XHANDLE hWindow, _In_ bool fIsForCrossSlideViewports) override;
+        // Creates a DirectManipulation manager for the IslandInputSite if it was not created already.
+        _Check_return_ HRESULT EnsureDirectManipulationManager(_In_ IUnknown* pIslandInputSite, _In_ bool fIsForCrossSlideViewports) override;
 
         // Provides an IXcpDirectManipulationViewportEventHandler implementation that this service can use to provide DM feedback to
         // the input manager.
@@ -51,9 +52,9 @@ class CDirectManipulationService final :
         // Deactivates the DirectManipulation manager.
         _Check_return_ HRESULT DeactivateDirectManipulationManager() override;
 
-        // Ensure we're associated with the correct hwnd. We can switch between hwnds if ScrollViewers move between
-        // islands or windowed popups.
-        _Check_return_ HRESULT EnsureHwnd(HWND hwnd) override;
+        // Ensure we're associated with the correct IslandInputSite for a particular UIElement.
+        // UIElements can switch between IslandInputSites if ScrollViewers move between islands or windowed popups.
+        _Check_return_ HRESULT EnsureElementIslandInputSite(_In_ IUnknown* pIslandInputSite) override;
 
         // Removes the viewport from our internal m_mapViewports storage,
         // unhooks the two event listeners and releases the viewport DM interface.
@@ -290,7 +291,8 @@ private:
     CDirectManipulationService(std::shared_ptr<DirectManipulationServiceSharedState> sharedState)
         : m_sharedState(std::move(sharedState))
         , m_fManagerActive(FALSE)
-        , m_hWnd(NULL)
+        , m_islandInputSite(nullptr)
+        , m_activeHwnd(nullptr)
         , m_pViewportEventHandler(NULL)
         , m_pDMManager(NULL)
         , m_pDMUpdateManager(NULL)
@@ -565,8 +567,13 @@ private:
     // Set to True when the DM manager is currently activated
     bool m_fManagerActive;
 
-    // Window associated with this service
-    HWND m_hWnd;
+    // Island input site associated with this service
+    wrl::ComPtr<ixp::IIslandInputSitePartner> m_islandInputSite;
+
+    // Cached for teardown scenarios where the m_islandInputSite's hwnd has already been cleared out
+    // Potentially removable after this IXP bug is resolved:
+    // https://task.ms/47915632 - Should the InputSiteHwnd cache its internal hwnd on Destroy so that it can return something to callers of get_UnderlyingInputHwnd instead of failing
+    HWND m_activeHwnd;
 
     // Listener used to provide DM feedback to an input manager
     IXcpDirectManipulationViewportEventHandler* m_pViewportEventHandler;

@@ -473,7 +473,7 @@ XamlDiagnostics::PopulateElementInfo(
     else
     {
         wrl_wrappers::HString strName;
-        if (runtimeElement->IsDesktopWindowXamlSource())
+        if (runtimeElement->IsDesktopWindowXamlSource() || runtimeElement->IsXamlIsland())
         {
             VERIFYHR(runtimeElement->GetBackingObject()->GetRuntimeClassName(typeName.GetAddressOf()));
         }

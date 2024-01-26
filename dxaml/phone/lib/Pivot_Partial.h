@@ -407,7 +407,6 @@ private:
     _Check_return_ HRESULT OnUnloaded(_In_ IInspectable* pSender, _In_ xaml::IRoutedEventArgs* pArgs);
 
     _Check_return_ HRESULT OnSizeChanged(_In_ IInspectable* pSender, _In_ xaml::ISizeChangedEventArgs* pArgs);
-    _Check_return_ HRESULT OnDisplayOrientationChanged(_In_ wgrd::IDisplayInformation* pSender, _In_ IInspectable* pArgs);
 #pragma endregion
 
 #pragma region Event Handlers Helpers
@@ -489,7 +488,6 @@ private:
     EventRegistrationToken m_headerLostFocusToken;
     EventRegistrationToken m_headerKeyDownToken;
     EventRegistrationToken m_layoutElementKeyDownToken;
-    EventRegistrationToken m_orientationChangedToken;
     EventRegistrationToken m_pointerEnteredHeaderToken;
     EventRegistrationToken m_pointerExitedHeaderToken;
     EventRegistrationToken m_pointerEnteredPreviousButtonToken;

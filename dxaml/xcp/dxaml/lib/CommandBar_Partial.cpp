@@ -1712,30 +1712,61 @@ CommandBar::PropagateDefaultLabelPositionToElement(xaml_controls::ICommandBarEle
     return S_OK;
 }
 
+// hasLabelAtPosition is set to True when there is a Visible Dynamic Primary Command with a Label at the provided Bottom or Right position.
 _Check_return_ HRESULT
-CommandBar::HasBottomLabel(BOOLEAN *hasBottomLabel)
+CommandBar::HasLabelAtPosition(_In_ xaml_controls::CommandBarDefaultLabelPosition labelPosition, _Out_ bool* hasLabelAtPosition)
 {
-    xaml_controls::CommandBarDefaultLabelPosition defaultLabelPosition = xaml_controls::CommandBarDefaultLabelPosition_Bottom;
-    *hasBottomLabel = FALSE;
+    ASSERT(labelPosition == xaml_controls::CommandBarDefaultLabelPosition_Bottom || labelPosition == xaml_controls::CommandBarDefaultLabelPosition_Right);
+
+    *hasLabelAtPosition = false;
+
+    xaml_controls::CommandBarDefaultLabelPosition defaultLabelPosition{};
 
     IFC_RETURN(get_DefaultLabelPosition(&defaultLabelPosition));
 
-    if (defaultLabelPosition == xaml_controls::CommandBarDefaultLabelPosition_Bottom)
+    if (defaultLabelPosition == labelPosition)
     {
         UINT32 primaryItemsCount = 0;
+
         IFC_RETURN(m_tpDynamicPrimaryCommands.Get()->get_Size(&primaryItemsCount));
+
         for (UINT32 i = 0; i < primaryItemsCount; ++i)
         {
             ctl::ComPtr<xaml_controls::ICommandBarElement> element;
+
             IFC_RETURN(m_tpDynamicPrimaryCommands.Get()->GetAt(i, &element));
 
-            auto elementAsLabeledElement = element.AsOrNull<xaml_controls::ICommandBarLabeledElement>();
+            const auto elementAsUIE = element.AsOrNull<xaml::IUIElement>();
+
+            if (elementAsUIE)
+            {
+                xaml::Visibility visibility{};
+
+                IFC_RETURN(elementAsUIE->get_Visibility(&visibility));
+                if (visibility == xaml::Visibility_Collapsed)
+                {
+                    continue;
+                }
+            }
+
+            const auto elementAsLabeledElement = element.AsOrNull<xaml_controls::ICommandBarLabeledElement>();
+
             if (elementAsLabeledElement)
             {
-                IFC_RETURN(elementAsLabeledElement->GetHasBottomLabel(hasBottomLabel));
+                BOOLEAN hasBottomOrRightLabel{};
 
-                if (*hasBottomLabel)
+                if (labelPosition == xaml_controls::CommandBarDefaultLabelPosition_Bottom)
                 {
+                    IFC_RETURN(elementAsLabeledElement->GetHasBottomLabel(&hasBottomOrRightLabel));
+                }
+                else
+                {
+                    IFC_RETURN(elementAsLabeledElement->GetHasRightLabel(&hasBottomOrRightLabel));
+                }
+
+                if (hasBottomOrRightLabel)
+                {
+                    *hasLabelAtPosition = true;
                     break;
                 }
             }
@@ -1744,7 +1775,6 @@ CommandBar::HasBottomLabel(BOOLEAN *hasBottomLabel)
 
     return S_OK;
 }
-
 
 // Used to *reset* overflow style state on items that are leaving
 // the secondary items vector.
@@ -2246,11 +2276,11 @@ CommandBar::UpdateTemplateSettings()
             switch (closedDisplayMode)
             {
             case xaml_controls::AppBarClosedDisplayMode_Compact:
-                contentHeightForAnimation -= m_compactHeight;
+                contentHeightForAnimation -= GetCompactHeight();
                 break;
 
             case xaml_controls::AppBarClosedDisplayMode_Minimal:
-                contentHeightForAnimation -= m_minimalHeight;
+                contentHeightForAnimation -= GetMinimalHeight();
                 break;
 
             case xaml_controls::AppBarClosedDisplayMode_Hidden:
@@ -2281,10 +2311,11 @@ CommandBar::UpdateTemplateSettings()
     }
     else if (overflowButtonVisibility == xaml_controls::CommandBarOverflowButtonVisibility_Auto)
     {
-        // In the auto case, we should show the overflow button in one of three circumstances:
-        // when we have at least one element in the secondary items collection, or when there is
-        // a delta between the compact height and the height of the CommandBar, or when our
-        // closed display mode is something other than compact.
+        // In the auto case, we should show the overflow button in one of four circumstances:
+        // - when we have at least one element in the secondary items collection, 
+        // - or when there is a delta between the compact height and the height of the CommandBar, 
+        // - or when there is a Visible ICommandBarLabeledElement Primary Command with a Bottom Label,
+        // - or when our closed display mode is something other than compact.
         UINT32 secondaryItemsCount = 0;
 
         IFC_RETURN(m_tpDynamicSecondaryCommands.Get()->get_Size(&secondaryItemsCount));
@@ -2307,7 +2338,21 @@ CommandBar::UpdateTemplateSettings()
                 DOUBLE compactVerticalDelta;
                 IFC_RETURN(appBarTemplateSettings->get_CompactVerticalDelta(&compactVerticalDelta));
 
-                shouldShowOverflowButton = !DoubleUtil::IsZero(compactVerticalDelta);
+                if (!DoubleUtil::IsZero(compactVerticalDelta))
+                {
+                    shouldShowOverflowButton = true;
+                }
+                else
+                {
+                    bool hasBottomLabel{};
+
+                    IFC_RETURN(HasLabelAtPosition(xaml_controls::CommandBarDefaultLabelPosition_Bottom, &hasBottomLabel));
+
+                    if (hasBottomLabel)
+                    {
+                        shouldShowOverflowButton = true;
+                    }
+                }
             }
         }
     }
@@ -2439,6 +2484,65 @@ CommandBar::GetShouldOpenUp(bool* shouldOpenUp)
 
         // Since we open down by default, we'll open up only if we *don't* have space in the down direction for either component.
         *shouldOpenUp = !appBarHasSpaceToOpenDown || !overflowPopupHasSpaceToOpenDown;
+    }
+
+    return S_OK;
+}
+
+// hasRightLabelDynamicPrimaryCommand is set to True when there is a Visible Dynamic Primary Command that is an ICommandBarLabeledElement with a Right Label.
+_Check_return_ HRESULT CommandBar::HasRightLabelDynamicPrimaryCommand(_Out_ bool* hasRightLabelDynamicPrimaryCommand)
+{
+    IFC_RETURN(HasLabelAtPosition(xaml_controls::CommandBarDefaultLabelPosition_Right, hasRightLabelDynamicPrimaryCommand));
+
+    return S_OK;
+}
+
+
+// hasNonLabeledDynamicPrimaryCommand is set to True when there is a Visible Dynamic Primary Command that is not an AppBarSeparator, 
+// and not an ICommandBarLabeledElement (i.e. it is something like an AppBarElementContainer).
+_Check_return_ HRESULT CommandBar::HasNonLabeledDynamicPrimaryCommand(_Out_ bool* hasNonLabeledDynamicPrimaryCommand)
+{
+    *hasNonLabeledDynamicPrimaryCommand = false;
+
+    UINT32 primaryItemsCount = 0;
+
+    IFC_RETURN(m_tpDynamicPrimaryCommands.Get()->get_Size(&primaryItemsCount));
+
+    for (UINT32 i = 0; i < primaryItemsCount; ++i)
+    {
+        ctl::ComPtr<xaml_controls::ICommandBarElement> element;
+
+        IFC_RETURN(m_tpDynamicPrimaryCommands.Get()->GetAt(i, &element));
+
+        const auto elementAsUIE = element.AsOrNull<xaml::IUIElement>();
+
+        if (elementAsUIE)
+        {
+            xaml::Visibility visibility{};
+
+            IFC_RETURN(elementAsUIE->get_Visibility(&visibility));
+            if (visibility == xaml::Visibility_Collapsed)
+            {
+                continue;
+            }
+        }
+
+        const auto elementAsLabeledElement = element.AsOrNull<xaml_controls::ICommandBarLabeledElement>();
+
+        if (elementAsLabeledElement)
+        {
+            continue;
+        }
+
+        const auto elementAsSeparator = element.AsOrNull<xaml_controls::IAppBarSeparator>();
+
+        if (elementAsSeparator)
+        {
+            continue;
+        }
+        
+        *hasNonLabeledDynamicPrimaryCommand = true;
+        break;
     }
 
     return S_OK;

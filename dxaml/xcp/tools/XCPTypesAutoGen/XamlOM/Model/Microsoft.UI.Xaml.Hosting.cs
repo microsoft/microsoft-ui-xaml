@@ -315,6 +315,19 @@ namespace Microsoft.UI.Xaml.Hosting
         }
     }
 
+    [VelocityFeature("Feature_ExperimentalApi")]
+    [Contract(typeof(WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [FrameworkTypePattern]
+    [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
+    [CodeGen(partial: true)]
+    [Guids(ClassGuid = "c21339b3-e8f2-42b1-b5fc-335b78e66879")]
+    public sealed class XamlShutdownCompletedOnThreadEventArgs
+    {
+        internal XamlShutdownCompletedOnThreadEventArgs() { }
+
+        public Windows.Foundation.Deferral GetDispatcherQueueDeferral() { return null; }
+    }
+
     [Contract(typeof(WinUIContract), 5, ForcePrimaryInterfaceGeneration = true)]
     [DXamlIdlGroup("coretypes2")]
     [CodeGen(partial: true)]
@@ -323,6 +336,7 @@ namespace Microsoft.UI.Xaml.Hosting
     [Guids(ClassGuid = "3b953d5c-2c9f-4e49-88a7-c030616de1f0")]
     [ThreadingModel(ThreadingModel.Both)]
     [Implements(typeof(Windows.Foundation.IClosable))]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
     public sealed class WindowsXamlManager
     {
         internal WindowsXamlManager() {}
@@ -331,5 +345,14 @@ namespace Microsoft.UI.Xaml.Hosting
         {
             return default(WindowsXamlManager);
         }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [EventHandlerType(EventHandlerKind.TypedSenderAndArgs)]
+        public event Windows.Foundation.TypedEventHandler<WindowsXamlManager, XamlShutdownCompletedOnThreadEventArgs> XamlShutdownCompletedOnThread;
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [TypeTable(IsExcludedFromDXaml = true)]
+	    static public bool IsXamlRunningOnCurrentThread { get; }
     }
 }

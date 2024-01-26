@@ -306,6 +306,7 @@
 #define ERROR_API_NOT_SUPPORTED_WIN32                                                   4152
 #define ERROR_FINDNEXTELEMENT_WITHOUT_FINDNEXTELEMENTOPTIONS_WIN32                      4153
 #define ERROR_TRYMOVEFOCUS_WITHOUT_FINDNEXTELEMENTOPTIONS_WIN32                         4154
+#define ERROR_XAMLROOT_REQUIRED                                                         4155
 
 //
 //

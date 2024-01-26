@@ -3,6 +3,7 @@
 
 using Common;
 using MUXControlsTestApp.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -216,26 +217,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 flyout = new CommandBarFlyout() { Placement = FlyoutPlacementMode.Right };
 
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 1" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 2" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 3" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 4" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 5" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 6" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 7" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 8" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 9" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 10" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 11" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 12" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 13" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 14" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 15" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 16" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 17" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 18" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 19" });
-                flyout.PrimaryCommands.Add(new AppBarButton() { Label = "Item 20" });
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
+                flyout.PrimaryCommands.Add(new AppBarButton());
 
                 flyout.SecondaryCommands.Add(new AppBarButton() { Label = "Item 21" });
                 flyout.SecondaryCommands.Add(new AppBarButton() { Label = "Item 22" });
@@ -269,6 +270,100 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(17, secondaryItemsControl.Items.Count);
             });
             
+            CloseFlyout(flyout);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that labels cause primary commmands to be wider than without, and to have their labels be visible.")]
+        public void VerifyPrimaryCommandLabelsAffectLayout()
+        {
+            CommandBarFlyout flyout = null;
+            Button flyoutTarget = null;
+            AppBarButton button1 = null;
+            AppBarButton button2 = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                flyout = new CommandBarFlyout() { Placement = FlyoutPlacementMode.Right };
+
+                button1 = new AppBarButton();
+                button2 = new AppBarButton();
+
+                flyout.PrimaryCommands.Add(button1);
+                flyout.PrimaryCommands.Add(button2);
+
+                flyoutTarget = new Button() { Content = "Click for flyout" };
+                Content = flyoutTarget;
+                Content.UpdateLayout();
+            });
+
+            OpenFlyout(flyout, flyoutTarget);
+
+            double originalWidth = 0;
+            double originalHeight = 0;
+
+            CommandBar commandBar = null;
+            TextBlock button1TextLabel = null;
+            TextBlock button2TextLabel = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                button1TextLabel = TestUtilities.FindDescendents<TextBlock>(button1).Where(textBlock => textBlock.Name == "TextLabel").Single();
+                button2TextLabel = TestUtilities.FindDescendents<TextBlock>(button2).Where(textBlock => textBlock.Name == "TextLabel").Single();
+
+                Log.Comment("We expect the TextLabel template parts to be collapsed when the Label property is empty.");
+                Verify.AreEqual(Visibility.Collapsed, button1TextLabel.Visibility);
+                Verify.AreEqual(Visibility.Collapsed, button2TextLabel.Visibility);
+
+                Popup flyoutPopup = VisualTreeHelper.GetOpenPopupsForXamlRoot(flyoutTarget.XamlRoot).Last();
+                commandBar = TestUtilities.FindDescendents<CommandBar>(flyoutPopup).Single();
+
+                originalWidth = commandBar.ActualWidth;
+                originalHeight = commandBar.ActualHeight;
+            });
+            
+            CloseFlyout(flyout);
+
+            RunOnUIThread.Execute(() =>
+            {
+                button1.Label = "Item 1";
+            });
+
+            OpenFlyout(flyout, flyoutTarget);
+
+            double finalWidth = 0;
+            double finalHeight = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("We expect the TextLabel template parts to be visible when the Label property is set.");
+                Verify.AreEqual(Visibility.Visible, button1TextLabel.Visibility);
+                Verify.AreEqual(Visibility.Visible, button2TextLabel.Visibility);
+
+                finalWidth = commandBar.ActualWidth;
+                finalHeight = commandBar.ActualHeight;
+
+                Log.Comment("We also expect the width and height of the AppBarButtons to be larger when the Label property is set on at least one primary command.");
+                Verify.IsGreaterThan(finalWidth, originalWidth);
+                Verify.IsGreaterThan(finalHeight, originalHeight);
+            });
+
+            CloseFlyout(flyout);
+
+            RunOnUIThread.Execute(() =>
+            {
+                button2.Label = "Item 2";
+            });
+
+            OpenFlyout(flyout, flyoutTarget);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Having all labels set should not make things any wider or taller than only some labels set.");
+                Verify.AreEqual(Math.Round(finalWidth), Math.Round(commandBar.ActualWidth));
+                Verify.AreEqual(Math.Round(finalHeight), Math.Round(commandBar.ActualHeight));
+            });
+
             CloseFlyout(flyout);
         }
 

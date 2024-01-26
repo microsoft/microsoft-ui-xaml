@@ -47,8 +47,11 @@ namespace ");
             this.Write("\r\n{\r\n#if !DISABLE_XAML_GENERATED_MAIN\r\n    /// <summary>\r\n    /// Program class\r\n" +
                     "    /// </summary>\r\n    public static class Program\r\n    {\r\n");
   if (ProjectInfo.IsWin32App) { 
-            this.Write("        [global::System.Runtime.InteropServices.DllImport(\"Microsoft.ui.xaml.dll\"" +
-                    ")]\r\n        private static extern void XamlCheckProcessRequirements();\r\n\r\n");
+            this.Write(@"        [global::System.Runtime.InteropServices.DllImport(""Microsoft.ui.xaml.dll"")]
+        [global::System.Runtime.InteropServices.DefaultDllImportSearchPaths(global::System.Runtime.InteropServices.DllImportSearchPath.SafeDirectories)]
+        private static extern void XamlCheckProcessRequirements();
+
+");
   } 
             this.Write("        ");
             this.Write(this.ToStringHelper.ToStringWithCulture(GeneratedCodeAttribute));

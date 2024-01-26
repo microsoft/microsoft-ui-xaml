@@ -2,9 +2,8 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
     <PropertyGroup Label="Common Project Defaults" >
-        <TargetPlatformVersion Condition="'$(TargetPlatformVersionOverride)' == ''">10.0.18362.0</TargetPlatformVersion>
-        <TargetPlatformVersion Condition="'$(TargetPlatformVersionOverride)' != ''">$(TargetPlatformVersionOverride)</TargetPlatformVersion>
-        <TargetPlatformMinVersion>$(TargetPlatformVersion)</TargetPlatformMinVersion>
+        <TargetPlatformVersion>$(WindowsSdkTargetPlatformVersion)</TargetPlatformVersion>
+        <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
         <WindowsTargetPlatformVersion>$(TargetPlatformVersion)</WindowsTargetPlatformVersion>
         <WindowsTargetPlatformMinVersion>$(TargetPlatformMinVersion)</WindowsTargetPlatformMinVersion>
         <EnableTypeInfoReflection>false</EnableTypeInfoReflection>

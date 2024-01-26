@@ -314,6 +314,11 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void ShowFooterItemButton_Click(object sender, RoutedEventArgs e)
+        {
+            FooterItem.Visibility = Visibility.Visible;
+        }
+
         private void AddFooterItemButton_Click(object sender, RoutedEventArgs e)
         {
             var menuItem = new NavigationViewItem();
@@ -606,6 +611,14 @@ namespace MUXControlsTestApp
         private void SetHeaderButton_Click(object sender, RoutedEventArgs args)
         {
             NavView.Header = new TextBlock() { Text = "Bananas" };
+        }
+
+        private void IsPaneFooterVisibleCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            if (IsPaneFooterVisibleCheckBox != null && PaneFooter != null)
+            {
+                PaneFooter.Visibility = IsPaneFooterVisibleCheckBox.IsChecked==true ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
 
         private void BackButtonVisibilityCheckbox_Checked(object sender, RoutedEventArgs e)

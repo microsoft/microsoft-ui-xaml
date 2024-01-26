@@ -64,6 +64,8 @@ namespace RuntimeProfiler
         ProfId_ItemContainer,
         ProfId_LinedFlowLayout,
         ProfId_AnnotatedScrollBar,
+        ProfId_MapControl,
+        ProfId_SelectorBar,
         ProfId_Size // ProfId_Size is the last always. 
     } ProfilerClassId;
 
@@ -101,6 +103,7 @@ namespace RuntimeProfiler
             RuntimeProfiler::RegisterMethod(RuntimeProfiler::PG_Class, (UINT16)typeindex, (UINT16)memberindex, &__RuntimeProfiler_Counter); \
         } \
     }
+
 
 
 

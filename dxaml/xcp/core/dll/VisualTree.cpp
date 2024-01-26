@@ -813,6 +813,12 @@ VisualTree::GetPopupRootForElementNoRef(
         return S_OK;
     }
 
+#ifdef DBG
+    if (core->GetInitializationType() == InitializationType::IslandsOnly)
+    {
+        ::OutputDebugString(L"[VisualTree::GetPopupRootForElementNoRef] WARNING: Returning dummy PopupRoot, popups using this root may not be visible.\n");
+    }
+#endif
     *ppPopupRoot = core->GetMainPopupRoot();
 
     return S_OK; // RRETURN_REMOVAL
@@ -1776,7 +1782,7 @@ _Check_return_ HRESULT VisualTree::GetUniqueVisualTreeNoRef(
             // If we started in an "islands-only way" (e.g., DesktopWindowXamlSource) there in no XAML content
             // attached to the main window.  In this case, we can't fall back to the main visual tree -- this is
             // an error.
-            IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_INVALIDARG, ERROR_XAMLROOT_AMBIGUOUS));
+            IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_INVALIDARG, ERROR_XAMLROOT_REQUIRED));
         }
         // The answer is unclear, so fall back to the MainVisualTree (the XAML content on the CoreWindow)
         result = core->GetMainVisualTree();

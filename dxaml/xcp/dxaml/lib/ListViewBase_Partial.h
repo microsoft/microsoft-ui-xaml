@@ -7,7 +7,6 @@
 #pragma once
 
 #include "ListViewBase.g.h"
-#include "ContentControl.g.h"
 #include <DataTemplate.g.h>
 #include "LiveReorderHelper.h"
 #include "DirectManipulationStateChangeHandler.h"
@@ -324,8 +323,37 @@ namespace DirectUI
             // Invoked when ItemsHost is available
             _Check_return_ HRESULT OnItemsHostAvailable() override;
 
-        public:
+            // GetFocusedGroupIndex and SetFocusedGroupIndex are consistently used instead of 
+            // m_focusedGroupIndex to make it easier to track when this field is read & written.
+            INT GetFocusedGroupIndex() const
+            {
+                return m_focusedGroupIndex;
+            }
 
+            void SetFocusedGroupIndex(INT focusedGroupIndex)
+            {
+                if (m_focusedGroupIndex != focusedGroupIndex)
+                {
+                    m_focusedGroupIndex = focusedGroupIndex;
+                }
+            }
+
+            // GetLastFocusedGroupIndex and SetLastFocusedGroupIndex are consistently used instead of 
+            // m_lastFocusedGroupIndex to make it easier to track when this field is read & written.
+            INT GetLastFocusedGroupIndex() const
+            {
+                return m_lastFocusedGroupIndex;
+            }
+
+            void SetLastFocusedGroupIndex(INT lastFocusedGroupIndex)
+            {
+                if (m_lastFocusedGroupIndex != lastFocusedGroupIndex)
+                {
+                    m_lastFocusedGroupIndex = lastFocusedGroupIndex;
+                }
+            }
+
+        public:
             _Check_return_ HRESULT IsScrollable(_Out_ bool* scrollable);
 
             // Returns true if the ListView is both source and target
@@ -500,12 +528,6 @@ namespace DirectUI
             _Check_return_ HRESULT LoadMoreItemsIfNeeded(
                 _In_ wf::Size finalSize);
 
-            // Realizes, scrolls into view and prepares the item at the provided index so it can be tabbed into.
-            _Check_return_ HRESULT GetScrolledIntoViewAndPreparedContainer(
-                int index,
-                _In_opt_ xaml::IDependencyObject* itemContainerCandidate,
-                _Outptr_result_maybenull_ xaml::IDependencyObject** itemContainer);
-
             // Shared implementation for GetFirstFocusableElementOverride and GetLastFocusableElementOverride.
             _Check_return_ HRESULT GetFocusableElementForModernPanel(
                 _In_ BOOLEAN isBackward,
@@ -546,10 +568,6 @@ namespace DirectUI
 
             ctl::EventPtr<UIElementGettingFocusEventCallback> m_gettingFocusHandler;
 
-            // Helper for determining if LVB uses IModernCollectionBasePanel implementing panel.
-            _Check_return_ HRESULT ShouldCustomizeTabNavigation(
-                _Out_ BOOLEAN* shouldCustomizeTabNavigation);
-
             // Helper for getting next focusable control outside of LVB.
             _Check_return_ HRESULT GetNextFocusablePeer(
                 const bool isBackward,
@@ -580,11 +598,6 @@ namespace DirectUI
                 _In_opt_ IDependencyObject* pChild,
                 _Out_ ElementType* pParentElementType,
                 _Outptr_ IDependencyObject** pParent);
-
-            // Returns the Header or Footer container if it exists and is selectable.
-            _Check_return_ HRESULT GetSelectableHeaderOrFooterContainer(
-                bool isForHeader,
-                _Outptr_ ContentControl** container);
 
             // Given a starting element type transition states until the next tab stop is found.
             _Check_return_ HRESULT GetNextTabStopForElementType(
@@ -828,7 +841,7 @@ namespace DirectUI
             // Returns TRUE if there is a currently focused GroupItem.
             BOOLEAN HasFocusedGroup()
             {
-                return m_focusedGroupIndex >= 0;
+                return GetFocusedGroupIndex() >= 0;
             }
 
             // Tells our KeyDown handler that the key down args came from an item so we should handle them.
@@ -941,7 +954,6 @@ namespace DirectUI
                 _Out_ xaml_controls::ElementType* pNewFocusedType,
                 _Out_ BOOLEAN* pIsHandled,
                 _Out_ BOOLEAN* pUseFallback);
-
 
             // Asks the default Selector key navigation logic what to do
             // with the given navigation key. Never call this if we're
@@ -1121,18 +1133,18 @@ namespace DirectUI
             _Check_return_ HRESULT ClearHoldingState();
 
             // Checks whether the group item returned for the given index
-            // by pGenerator is Selectable.
-            static _Check_return_ HRESULT IsGroupItemSelectable(
+            // by pGenerator is focusable.
+            static _Check_return_ HRESULT IsGroupItemFocusable(
                 _In_ DirectUI::IGroupHeaderMapping* pMapping,
                 _In_ UINT groupIndex,
-                _Out_ BOOLEAN* pIsSelectable);
+                _Out_ BOOLEAN* pIsFocusable);
 
             // Checks whether the item container returned for the given index
-            // by pGenerator is Selectable.
-            static _Check_return_ HRESULT IsItemSelectable(
+            // by pGenerator is focusable.
+            static _Check_return_ HRESULT IsItemFocusable(
                 _In_ xaml_controls::IItemContainerMapping* pMapping,
                 _In_ UINT itemIndex,
-                _Out_ BOOLEAN* pIsSelectable);
+                _Out_ BOOLEAN* pIsFocusable);
 
         #pragma endregion
 
@@ -1579,14 +1591,6 @@ namespace DirectUI
             _Check_return_ HRESULT get_CanSemanticZoomGroup(
                 _Out_ BOOLEAN* pCanGroup);
 
-            // Get the ICollectionViewGroup associated with an item.
-            _Check_return_ HRESULT GetGroupFromItem(
-                _In_ UINT itemIndex,
-                _Outptr_ xaml_data::ICollectionViewGroup** ppGroup,
-                _Outptr_result_maybenull_ xaml_controls::IGroupItem** ppGroupItem,
-                _Out_opt_ INT* pGroupIndex,
-                _Out_opt_ INT* pIndexInGroup);
-
             // Find the first item
             _Check_return_ HRESULT FindFirstItem(
                 _In_ UINT groupIndex,
@@ -1661,10 +1665,6 @@ namespace DirectUI
             // budget that we have to do other work, measured since the last tick
             // once we get stl 11, we should convert to std::chrono
             UINT m_budget;
-
-            // exceptionally set to True when (shift) tabbing into an unrealized item to give the BuildTreeService
-            // enough time to prepare it to receive focus. This is specific to the Local/Cycle TabNavigation modes.
-            bool m_useUnbudgetedContainerBuild;
 
             // the last known count of containers in the incremental visualization queue. this value is used when logging
             // our telemetry event in the case where BuildTreeImpl cannot perform work on the busy uiThread.

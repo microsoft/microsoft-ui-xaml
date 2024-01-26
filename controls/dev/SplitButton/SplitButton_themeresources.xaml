@@ -114,7 +114,7 @@
     <Setter Property="FocusVisualMargin" Value="-3" />
     <Setter Property="IsTabStop" Value="True" />
     <Setter Property="Padding" Value="12,8,4,8" />
-    <Setter Property="Height" Value="{ThemeResource AppBarThemeCompactHeight}" />
+    <Setter Property="MinHeight" Value="{ThemeResource AppBarThemeCompactHeight}" />
     <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
     <Setter Property="Template">
       <Setter.Value>

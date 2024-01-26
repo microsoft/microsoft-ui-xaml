@@ -7,20 +7,14 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:local2="using:Breadcrumb_TestUI"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12"
+        RowDefinitions="Auto, *, Auto">
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        
-        <StackPanel Orientation="Vertical" Grid.Row="0">
-            <controls:BreadcrumbBarItem />
+        <StackPanel>
+            <BreadcrumbBarItem />
 
             <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
                 <Grid.ColumnDefinitions>
@@ -29,9 +23,9 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Orientation="Vertical" Padding="12"
+                <StackPanel Padding="12"
                     Background="{ThemeResource SystemChromeLowColor}"
-                    MinWidth="250" Grid.Column="0">
+                    MinWidth="250">
                     <TextBlock Text="BreadcrumbBar control width" Style="{ThemeResource StandardGroupHeader}"/>
                     <Slider x:Name="WidthSlider" Minimum="100" Maximum="700" Value="700" AutomationProperties.Name="WidthSlider" ValueChanged="WidthSlider_ValueChanged"/>
 
@@ -39,7 +33,7 @@
 
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Last clicked element: " />
-                        <TextBlock x:Name="LastClickedItem" AutomationProperties.Name="LastClickedItem" Text="" />
+                        <TextBlock x:Name="LastClickedItem" AutomationProperties.Name="LastClickedItem" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
@@ -48,34 +42,34 @@
                     </StackPanel>
                 </StackPanel>
 
-                <controls:BreadcrumbBar ItemsSource="{x:Bind breadCrumbList}"
+                <BreadcrumbBar ItemsSource="{x:Bind breadCrumbList}"
                     x:Name="BreadcrumbControl"
                     AutomationProperties.Name="BreadcrumbControl"
                     ItemClicked="BreadcrumbControl_ItemClicked"
                     Grid.Column="1">
-                    <controls:BreadcrumbBar.ItemTemplate>
+                    <BreadcrumbBar.ItemTemplate>
                         <DataTemplate x:DataType="local2:TreeNode">
-                            <controls:BreadcrumbBarItem Content="{Binding}">
-                                <controls:BreadcrumbBarItem.ContentTemplate>
+                            <BreadcrumbBarItem Content="{Binding}">
+                                <BreadcrumbBarItem.ContentTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Name}" />
                                     </DataTemplate>
-                                </controls:BreadcrumbBarItem.ContentTemplate>
-                            </controls:BreadcrumbBarItem>
+                                </BreadcrumbBarItem.ContentTemplate>
+                            </BreadcrumbBarItem>
                         </DataTemplate>
-                    </controls:BreadcrumbBar.ItemTemplate>
-                </controls:BreadcrumbBar>
+                    </BreadcrumbBar.ItemTemplate>
+                </BreadcrumbBar>
 
                 <Grid Background="Gray" Grid.Column="2" />
             </Grid>
         </StackPanel>
 
         <StackPanel Grid.Row="1">
-            <ScrollViewer VerticalScrollMode="Auto" HorizontalScrollMode="Disabled" Grid.Row="1" >
-                <controls:ItemsRepeater x:Name="ChildrenItemsRepeater"
+            <ScrollViewer VerticalScrollMode="Auto" HorizontalScrollMode="Disabled" Grid.Row="1">
+                <ItemsRepeater x:Name="ChildrenItemsRepeater"
                     ItemsSource="{x:Bind currentNodeChildrenList}"
                     ElementPrepared="Child_ElementPrepared">
-                    <controls:ItemsRepeater.ItemTemplate>
+                    <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="local2:TreeNode">
                             <Button Content="{Binding}" Click="ItemsRepeater_ButtonClick">
                                 <Button.ContentTemplate>
@@ -85,34 +79,31 @@
                                 </Button.ContentTemplate>
                             </Button>
                         </DataTemplate>
-                    </controls:ItemsRepeater.ItemTemplate>
-                </controls:ItemsRepeater>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
             </ScrollViewer>
         </StackPanel>
 
-        <StackPanel Orientation="Vertical" Grid.Row="2">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="500px"/>
-                </Grid.ColumnDefinitions>
-
-                <controls:BreadcrumbBar ItemsSource="{x:Bind breadCrumbList}"
+        <StackPanel Grid.Row="2">
+            <Grid ColumnDefinitions="*, 500px">
+                <BreadcrumbBar ItemsSource="{x:Bind breadCrumbList}"
                     x:Name="BreadcrumbControl2"
-                    ItemClicked="BreadcrumbControl_ItemClicked"
-                    Grid.Column="0">
-                    <controls:BreadcrumbBar.ItemTemplate>
+                    ItemClicked="BreadcrumbControl_ItemClicked">
+                    <BreadcrumbBar.ItemTemplate>
                         <DataTemplate x:DataType="local2:TreeNode">
-                            <controls:BreadcrumbBarItem Content="{Binding}">
-                                <controls:BreadcrumbBarItem.ContentTemplate>
+                            <BreadcrumbBarItem
+                                AutomationProperties.Name="{Binding CustomAutomationName}"
+                                AutomationProperties.LocalizedControlType="Custom localized control type for breadcrumb bar item"
+                                Content="{Binding}">
+                                <BreadcrumbBarItem.ContentTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Name}" />
                                     </DataTemplate>
-                                </controls:BreadcrumbBarItem.ContentTemplate>
-                            </controls:BreadcrumbBarItem>
+                                </BreadcrumbBarItem.ContentTemplate>
+                            </BreadcrumbBarItem>
                         </DataTemplate>
-                    </controls:BreadcrumbBar.ItemTemplate>
-                </controls:BreadcrumbBar>
+                    </BreadcrumbBar.ItemTemplate>
+                </BreadcrumbBar>
             </Grid>
         </StackPanel>
     </Grid>

@@ -33,8 +33,6 @@
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <AppContainerApplication>true</AppContainerApplication>
     <ApplicationType>Windows Store</ApplicationType>
-    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)'==''">$(MuxSdkVersion)</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformMinVersion>10.0.17763.0</WindowsTargetPlatformMinVersion>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
     <!-- Use 64-bit compilers because 32-bit compilers run out of heap space -->
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
@@ -47,24 +45,6 @@
     -->
     <DisableEmbeddedXbf Condition="'$(BuildingInsideVisualStudio)' != 'true'">false</DisableEmbeddedXbf>
     <AppxBundlePlatforms>x86|x64|ARM64</AppxBundlePlatforms>
-    <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
-    <CppWinRTAddXamlMetaDataProviderIdl>false</CppWinRTAddXamlMetaDataProviderIdl>
-
-    <!-- There's a C++/WinRT generation bug that includes all types that start with ScrollView*
-         despite the fact that only "ScrollView" exactly is the type we want from MUXC:
-
-             https://github.com/microsoft/cppwinrt/issues/835
-
-         This -exclude directive is needed until that issue is fixed. -->
-    <CppWinRTParameters>$(CppWinRTParameters) -exclude Microsoft.UI.Xaml.Controls.ScrollViewer</CppWinRTParameters>
-    
-    <!-- In release builds our "experimental" features are under feature velocity as AlwaysDisabled. C++/WinRT assumes that
-         AlwaysDisabled features should be excluded by default, but we need them included for our component implementation.
-         Use -ignore_velocity to have the feature attributes be ignored by the tool.
-         -->
-    <CppWinRTParameters>$(CppWinRTParameters) -ignore_velocity</CppWinRTParameters>
-    <CppWinRTOptimized>true</CppWinRTOptimized>
-    <CppWinRTHeapEnforcement>true</CppWinRTHeapEnforcement>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">

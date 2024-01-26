@@ -10,6 +10,7 @@
 //------------------------------------------------------------------------
 
 #include "XamlIsland.g.h"
+#include "SystemBackdrop.g.h"
 #include "UIElement.g.h"
 #include "XamlTelemetry.h"
 
@@ -32,6 +33,10 @@ HRESULT DirectUI::XamlIslandGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outp
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlIsland)) && Feature_ExperimentalApi::IsEnabled())
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IXamlIsland>(this);
+    }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop*>(this);
     }
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::IClosable)))
     {
@@ -72,6 +77,24 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlIslandGenerated::get_Cont
     ARG_VALIDRETURNPOINTER(ppValue);
     
     IFC(static_cast<XamlIsland*>(this)->get_ContentIslandImpl(ppValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlIslandGenerated::get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    
+    IFC(static_cast<XamlIsland*>(this)->get_SystemBackdropImpl(ppValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlIslandGenerated::put_SystemBackdrop(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop* pValue)
+{
+    HRESULT hr = S_OK;
+    
+    
+    IFC(static_cast<XamlIsland*>(this)->put_SystemBackdropImpl(pValue));
 Cleanup:
     RRETURN(hr);
 }

@@ -1688,6 +1688,19 @@ HRESULT DiagnosticsInterop::GetXamlRoot(
         *xamlRoot = spXamlRoot.Detach();
         return S_OK;
     }
+    else if (auto xamlIslandSource = spObject.AsOrNull<DirectUI::XamlIsland>())
+    {
+        ctl::ComPtr<IInspectable> spXamlRootInspectable;
+        ctl::ComPtr<xaml::IXamlRoot> spXamlRoot;
+        auto coreIsland = checked_cast<CXamlIslandRoot>(static_cast<DirectUI::XamlIslandRoot *>(xamlIslandSource->GetXamlIslandRootNoRef())->GetHandle());
+
+        spXamlRootInspectable = coreIsland->GetVisualTreeNoRef()->GetOrCreateXamlRootNoRef();
+        IFC_RETURN(spXamlRootInspectable.As(&spXamlRoot));
+
+        // GetOrCreateXamlRootNoRef didn't add a reference, so we need to Detach here
+        *xamlRoot = spXamlRoot.Detach();
+        return S_OK;
+    }
 
     return E_INVALIDARG;
 }

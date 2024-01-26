@@ -58,6 +58,7 @@
 
             <TextBlock Text="Custom resources"/>
             <Button x:Name="NavigateToItemTemplatePage" AutomationProperties.Name="NavigationView ItemTemplate Test" Margin="2" HorizontalAlignment="Stretch">NavigationView ItemTemplate Test</Button>
+            <Button x:Name="NavigationViewCustomMenuItemPage" AutomationProperties.Name="NavigationViewCustomMenuItemPage" Margin="2" HorizontalAlignment="Stretch">NavigationView CustomMenuItem Page</Button>
             <Button x:Name="NavigateToCustomThemeResourcesPage" AutomationProperties.Name="NavigationView custom ThemeResources Test" Margin="2" HorizontalAlignment="Stretch">NavigationView with custom ThemeResources Test</Button>
         </StackPanel>
 

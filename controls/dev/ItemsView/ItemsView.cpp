@@ -18,6 +18,9 @@
 #include "ItemContainer.h"
 #include "ItemContainerRevokers.h"
 #include "ScrollView.h"
+#include "SelectionNode.h"
+#include "SelectionModel.h"
+#include "SharedHelpers.h"
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool ItemsViewTrace::s_IsDebugOutputEnabled{ false };
@@ -197,6 +200,7 @@ void ItemsView::InvertSelection()
 
 #pragma region IControlOverrides
 
+#ifdef DBG
 void ItemsView::OnGotFocus(
     winrt::RoutedEventArgs const& args)
 {
@@ -204,6 +208,7 @@ void ItemsView::OnGotFocus(
 
     __super::OnGotFocus(args);
 }
+#endif
 
 #pragma endregion
 
@@ -279,16 +284,41 @@ void ItemsView::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArg
 // Make sure the default ItemTemplate is used when the ItemsSource is non-null and the ItemTemplate is null.
 // Prevents ViewManager::GetElementFromElementFactory from setting the ItemsRepeater.ItemTemplate property 
 // which would clear the template-binding between the ItemsView & ItemsRepeater ItemTemplate properties.
+// This is not needed though when the ItemsSource points to UIElements instead of data items. In that case,
+// ViewManager::GetElementFromElementFactory will not set a default ItemTemplate. It must remain null.
 void ItemsView::EnsureItemTemplate()
 {
     ITEMSVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    if (ItemsSource() != nullptr && ItemTemplate() == nullptr)
+    if (ItemsSource() == nullptr || ItemTemplate() != nullptr)
     {
-        // The default ItemTemplate uses an ItemContainer for its root element since this is an ItemsView requirement for now.
-        auto const defaultItemTemplate = winrt::XamlReader::Load(L"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><ItemContainer><TextBlock Text='{Binding}'/></ItemContainer></DataTemplate>").as<winrt::DataTemplate>();
+        return;
+    }
 
-        ItemTemplate(defaultItemTemplate);
+    if (auto const& itemsRepeater = m_itemsRepeater.get())
+    {
+        if (auto const& itemsSourceView = itemsRepeater.ItemsSourceView())
+        {
+            const auto itemCount = itemsSourceView.Count();
+
+            if (itemCount == 0)
+            {
+                return;
+            }
+
+            const auto data = itemsSourceView.GetAt(0);
+
+            if (auto const& dataAsUIElement = data.try_as<winrt::UIElement>())
+            {
+                // No need to set a default ItemTemplate with an ItemContainer when the ItemsSource is a list of UIElements.
+                return;
+            }
+
+            // The default ItemTemplate uses an ItemContainer for its root element since this is an ItemsView requirement for now.
+            auto const defaultItemTemplate = winrt::XamlReader::Load(L"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><ItemContainer><TextBlock Text='{Binding}'/></ItemContainer></DataTemplate>").as<winrt::DataTemplate>();
+
+            ItemTemplate(defaultItemTemplate);
+        }
     }
 }
 
@@ -312,6 +342,7 @@ void ItemsView::UpdateItemsRepeater(
     m_itemsRepeater.set(itemsRepeater);
 
     HookItemsRepeaterEvents();
+    HookItemsSourceViewEvents();
 }
 
 void ItemsView::UpdateScrollView(
@@ -428,6 +459,24 @@ void ItemsView::RaiseSelectionChanged()
         auto itemsViewSelectionChangedEventArgs = winrt::make_self<ItemsViewSelectionChangedEventArgs>();
 
         m_selectionChangedEventSource(*this, *itemsViewSelectionChangedEventArgs);
+    }
+}
+
+void ItemsView::HookItemsSourceViewEvents()
+{
+    ITEMSVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
+    m_itemsSourceViewChangedRevoker.revoke();
+
+    if (auto const& itemsRepeater = m_itemsRepeater.get())
+    {
+        if (auto const& itemsSourceView = itemsRepeater.ItemsSourceView())
+        {
+            m_itemsSourceViewChangedRevoker = itemsSourceView.CollectionChanged(winrt::auto_revoke, { this, &ItemsView::OnSourceListChanged });
+
+            // Make sure the default ItemTemplate is used when the ItemsSource is non-null and the ItemTemplate is null.
+            EnsureItemTemplate();
+        }
     }
 }
 
@@ -746,9 +795,28 @@ void ItemsView::OnItemsRepeaterElementPrepared(
             }
 #endif
 
-            winrt::IReference<bool> isItemContainerSelected = m_selectionModel.IsSelected(index);
+            winrt::IReference<bool> isSelectionModelSelectedAsNullable = m_selectionModel.IsSelected(index);
+            bool isSelectionModelSelected = isSelectionModelSelectedAsNullable != nullptr && isSelectionModelSelectedAsNullable.Value();
 
-            itemContainer.IsSelected(isItemContainerSelected != nullptr && isItemContainerSelected.Value());
+            if (itemContainer.IsSelected())
+            {
+                // The ItemsSource may be a list of ItemContainers, some of them having IsSelected==True. Account for this situation
+                // by updating the selection model accordingly. Only selected containers are pushed into the selection model to avoid
+                // clearing any potential selections already present in that model, which are pushed into the ItemContainers next.
+                if (!isSelectionModelSelected && SelectionMode() != winrt::ItemsViewSelectionMode::None)
+                {
+                    // When SelectionMode is None, ItemContainer.IsSelected will be reset below.
+                    // For all other selection modes, simply select the item.
+                    // No need to go through the SingleSelector, MultipleSelector or ExtendedSelector policy.
+                    m_selectionModel.Select(index);
+
+                    // Access the new selection status for the same ItemContainer so it can be updated accordingly below.
+                    isSelectionModelSelectedAsNullable = m_selectionModel.IsSelected(index);
+                    isSelectionModelSelected = isSelectionModelSelectedAsNullable != nullptr && isSelectionModelSelectedAsNullable.Value();
+                }
+            }
+
+            itemContainer.IsSelected(isSelectionModelSelected);
 
             SetItemsViewItemContainerRevokers(itemContainer);
         }
@@ -847,15 +915,7 @@ void ItemsView::OnItemsRepeaterItemsSourceChanged(
 {
     ITEMSVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    m_itemsSourceViewChangedRevoker.revoke();
-
-    if (auto const& itemsRepeater = m_itemsRepeater.get())
-    {
-        if (auto const& itemsSourceView = itemsRepeater.ItemsSourceView())
-        {
-            m_itemsSourceViewChangedRevoker = itemsSourceView.CollectionChanged(winrt::auto_revoke, { this, &ItemsView::OnSourceListChanged });
-        }
-    }
+    HookItemsSourceViewEvents();
 
     auto const& itemsSource = ItemsSource();
 
@@ -1166,9 +1226,6 @@ void ItemsView::OnItemsSourceChanged()
         m_selectionModel.Source(itemsSource);
         m_currentElementSelectionModel.Source(itemsSource);
     }
-
-    // Make sure the default ItemTemplate is used when the ItemsSource is non-null and the ItemTemplate is null.
-    EnsureItemTemplate();
 }
 
 void ItemsView::OnVerticalScrollControllerChanged()
@@ -1313,6 +1370,42 @@ void ItemsView::OnSelectionModelSelectionChanged(
 {
     ITEMSVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
+    // Unfortunately using an internal hook to see whether this notification orginated from a collection change or not.
+    const bool selectionInvalidatedDueToCollectionChange =
+        winrt::get_self<SelectionModel>(selectionModel)->SelectionInvalidatedDueToCollectionChange();
+
+    /*
+    Another option, besides a public API on SelectionModel, would have been to apply the changes
+    asynchronously like below. But that seems fragile compared to delaying the application until
+    the synchronous call to ItemsView::OnSourceListChanged that is about to occur.
+    DispatcherQueue().TryEnqueue(
+        winrt::DispatcherQueuePriority::Low,
+        winrt::DispatcherQueueHandler([weakThis{ get_weak() }]()
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->ApplySelectionModelSelectionChange();
+            }
+        }));
+    */
+
+    if (selectionInvalidatedDueToCollectionChange)
+    {
+        // Delay the SelectionModel's selection changes until the upcoming ItemsView::OnSourceListChanged
+        // call because neither m_itemsRepeater's Children nor m_itemsRepeater's ItemsSourceView have been updated yet.
+        // ApplySelectionModelSelectionChange which uses both is thus delayed, but is still going to be called synchronously.
+        m_applySelectionChangeOnSourceListChanged = true;
+    }
+    else
+    {
+        ApplySelectionModelSelectionChange();
+    }
+}
+
+void ItemsView::ApplySelectionModelSelectionChange()
+{
+    ITEMSVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
     // Update ItemsView properties
     SelectedItem(m_selectionModel.SelectedItem());
 
@@ -1320,6 +1413,13 @@ void ItemsView::OnSelectionModelSelectionChanged(
     if (auto const& itemsRepeater = m_itemsRepeater.get())
     {
         const auto count = winrt::VisualTreeHelper::GetChildrenCount(itemsRepeater);
+
+#ifdef DBG
+        if (const auto itemsSourceView = itemsRepeater.ItemsSourceView())
+        {
+            const auto itemsSourceViewCount = itemsSourceView.Count();
+        }
+#endif
 
         for (int32_t childIndex = 0; childIndex < count; childIndex++)
         {
@@ -1383,6 +1483,19 @@ void ItemsView::OnSourceListChanged(
     const winrt::IInspectable& dataSource,
     const winrt::NotifyCollectionChangedEventArgs& args)
 {
+    if (m_applySelectionChangeOnSourceListChanged)
+    {
+        m_applySelectionChangeOnSourceListChanged = false;
+
+        // Finally apply the SelectionModel's changes notified in ItemsView::OnSelectionModelSelectionChanged
+        // now that both m_itemsRepeater's Children & m_itemsRepeater's ItemsSourceView are up-to-date.
+        ApplySelectionModelSelectionChange();
+    }
+
+    // When the item count goes from 0 to strictly positive, the ItemTemplate property may
+    // have to be set to a default template which includes an ItemContainer.
+    EnsureItemTemplate();
+
     m_keyboardNavigationReferenceResetPending = true;
 
     if (const auto itemsRepeater = m_itemsRepeater.get())
@@ -1634,7 +1747,7 @@ int ItemsView::GetItemInternal(
 
                 if (element != nullptr)
                 {
-                    if (forFocusableItemsOnly && !IsFocusableElement(element))
+                    if (forFocusableItemsOnly && !SharedHelpers::IsFocusableElement(element))
                     {
                         continue;
                     }

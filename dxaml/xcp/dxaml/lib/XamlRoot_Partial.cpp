@@ -227,7 +227,7 @@ _Check_return_ HRESULT XamlRoot::get_HostWindow(_Out_ HWND* pValue)
     if (DesktopUtility::IsOnDesktop())
     {
         auto cr = m_visualTree->GetContentRootNoRef();
-        HWND hwnd = cr->GetOwnerWindow();
+        HWND hwnd = cr->GetHostingHWND();
         *pValue = hwnd;
     }
 
@@ -254,9 +254,14 @@ _Check_return_ HRESULT XamlRoot::GetApplicationBarService(_Out_ ctl::ComPtr<IApp
     {
         IFC_RETURN(ctl::ComObject<ApplicationBarService>::CreateInstance(m_applicationBarService.ReleaseAndGetAddressOf()));
         m_applicationBarService->UpdatePeg(true);
-    }
 
-    IFC_RETURN(ctl::do_query_interface(service, m_applicationBarService.Get()));
+        IFC_RETURN(ctl::do_query_interface(service, m_applicationBarService.Get()));
+        service->SetXamlRoot(this);
+    }
+    else
+    {
+        IFC_RETURN(ctl::do_query_interface(service, m_applicationBarService.Get()));
+    }
 
     return S_OK;
 }

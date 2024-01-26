@@ -9,6 +9,11 @@
 #include "ScrollView.properties.h"
 #include "ScrollViewBringIntoViewOperation.h"
 
+namespace winrt::Windows::UI::ViewManagement
+{
+    struct UISettingsAutoHideScrollBarsChangedEventArgs;
+};
+
 class ScrollView :
     public ReferenceTracker<ScrollView, winrt::implementation::ScrollViewT>,
     public ScrollViewProperties
@@ -158,7 +163,6 @@ private:
     void OnAutoHideScrollBarsChanged(
         winrt::UISettings const& uiSettings,
         winrt::UISettingsAutoHideScrollBarsChangedEventArgs const& args);
-
     // Internal event handlers
     void OnScrollPresenterExtentChanged(
         const winrt::IInspectable& sender,
@@ -319,9 +323,10 @@ private:
 
     winrt::FocusInputDeviceKind m_focusInputDeviceKind{ winrt::FocusInputDeviceKind::None };
 
-    // Used to detect changes for UISettings.AutoHiScrollBars.
-    winrt::IUISettings5 m_uiSettings5{ nullptr };
-    winrt::IUISettings5::AutoHideScrollBarsChanged_revoker m_autoHideScrollBarsChangedRevoker{};
+    // Used to detect changes for UISettings.AutoHideScrollBars
+    struct AutoHideScrollBarsState; // type erasure for lightup compilation
+    static std::unique_ptr<AutoHideScrollBarsState> MakeAutoHideScrollBarsState();
+    std::unique_ptr<AutoHideScrollBarsState> m_autoHideScrollBarsState = MakeAutoHideScrollBarsState();
 
     bool m_autoHideScrollControllersValid{ false };
     bool m_autoHideScrollControllers{ false };
@@ -373,3 +378,6 @@ private:
     static constexpr std::wstring_view s_scrollBarsSeparatorDisplayedWithoutAnimation{ L"ScrollBarsSeparatorDisplayedWithoutAnimation"sv };
     static constexpr std::wstring_view s_scrollBarsSeparatorExpandedWithoutAnimation{ L"ScrollBarsSeparatorExpandedWithoutAnimation"sv };
 };
+
+extern template void std::default_delete<ScrollView::AutoHideScrollBarsState>::operator()(ScrollView::AutoHideScrollBarsState*) const noexcept;
+extern template void std::default_delete<const ScrollView::AutoHideScrollBarsState>::operator()(const ScrollView::AutoHideScrollBarsState*) const noexcept;

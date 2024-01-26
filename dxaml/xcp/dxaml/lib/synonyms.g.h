@@ -25,7 +25,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IDataTemplateKey IDataTemplateKey;
     typedef ABI::Microsoft::UI::Xaml::IDebugSettings IDebugSettings;
     typedef ABI::Microsoft::UI::Xaml::IDebugSettings2 IDebugSettings2;
-    typedef ABI::Microsoft::UI::Xaml::IDebugSettingsFeature_ExperimentalApi IDebugSettingsFeature_ExperimentalApi;
+    typedef ABI::Microsoft::UI::Xaml::IDebugSettings3 IDebugSettings3;
     typedef ABI::Microsoft::UI::Xaml::IDependencyObject IDependencyObject;
     typedef ABI::Microsoft::UI::Xaml::IDependencyProperty IDependencyProperty;
     typedef ABI::Microsoft::UI::Xaml::IDependencyPropertyChangedEventArgs IDependencyPropertyChangedEventArgs;
@@ -48,6 +48,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IApplication2 IApplication2;
     typedef ABI::Microsoft::UI::Xaml::IApplicationFeature_UwpSupportApi IApplicationFeature_UwpSupportApi;
     typedef ABI::Microsoft::UI::Xaml::IApplicationOverridesFeature_UwpSupportApi IApplicationOverridesFeature_UwpSupportApi;
+    typedef ABI::Microsoft::UI::Xaml::IApplicationFeature_ExperimentalApi IApplicationFeature_ExperimentalApi;
     typedef ABI::Microsoft::UI::Xaml::IFrameworkElement IFrameworkElement;
     typedef ABI::Microsoft::UI::Xaml::IFrameworkElementOverrides IFrameworkElementOverrides;
     typedef ABI::Microsoft::UI::Xaml::IFrameworkElementProtected IFrameworkElementProtected;
@@ -395,7 +396,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutItem IMenuFlyoutItem;
     typedef ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutItemBase IMenuFlyoutItemBase;
     typedef ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenter IMenuFlyoutPresenter;
-    typedef ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenterFeature_ExperimentalApi IMenuFlyoutPresenterFeature_ExperimentalApi;
+    typedef ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutPresenter2 IMenuFlyoutPresenter2;
     typedef ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSeparator IMenuFlyoutSeparator;
     typedef ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSubItem IMenuFlyoutSubItem;
     typedef ABI::Microsoft::UI::Xaml::Controls::IPage IPage;
@@ -564,7 +565,9 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSourceTakeFocusRequestedEventArgs IDesktopWindowXamlSourceTakeFocusRequestedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IElementCompositionPreview IElementCompositionPreview;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager IWindowsXamlManager;
+    typedef ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerFeature_ExperimentalApi IWindowsXamlManagerFeature_ExperimentalApi;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IXamlIslandRoot IXamlIslandRoot;
+    typedef ABI::Microsoft::UI::Xaml::Hosting::IXamlShutdownCompletedOnThreadEventArgs IXamlShutdownCompletedOnThreadEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest IXamlSourceFocusNavigationRequest;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationResult IXamlSourceFocusNavigationResult;
     typedef ABI::Microsoft::UI::Xaml::Input::IAccessKeyDisplayDismissedEventArgs IAccessKeyDisplayDismissedEventArgs;

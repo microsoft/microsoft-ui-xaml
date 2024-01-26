@@ -13,7 +13,7 @@
 using namespace Microsoft::WRL;
 
 #ifndef MUX_EXPERIMENTAL
-#include "TraceLogging.h"
+#include "MuxcTraceLogging.h"
 #endif
 
 HINSTANCE g_hInstance = nullptr;

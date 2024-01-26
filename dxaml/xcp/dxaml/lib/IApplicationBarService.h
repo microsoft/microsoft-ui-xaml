@@ -79,6 +79,9 @@ namespace DirectUI
             _In_ BOOLEAN startFromEnd,
             _Outptr_ CDependencyObject **ppNewTabStop) = 0;
 
+        virtual void SetXamlRoot(
+            _In_ XamlRoot* xamlRoot) = 0;
+
     }; // interface IApplicationBarService
 
     class ApplicationBarServiceStatics

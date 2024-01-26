@@ -21,7 +21,5 @@
     <Company>Microsoft Corporation</Company>
     <Copyright>Copyright (c) Microsoft Corporation. All rights reserved.</Copyright>
     <RepositoryUrl>https://github.com/microsoft/WindowsAppSDK</RepositoryUrl>
-    <!-- These projects will manually binplace output as required -->
-    <BinplaceOutputAssemblies>false</BinplaceOutputAssemblies>
   </PropertyGroup>
 </Project>

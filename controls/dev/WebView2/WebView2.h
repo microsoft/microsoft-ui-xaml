@@ -80,6 +80,8 @@ public:
     void UpdateCoreWebViewScale();
 
     winrt::IAsyncAction EnsureCoreWebView2Async();
+    winrt::IAsyncAction EnsureCoreWebView2Async(winrt::CoreWebView2Environment environment);
+    winrt::IAsyncAction EnsureCoreWebView2Async(winrt::CoreWebView2Environment environment, winrt::CoreWebView2ControllerOptions controllerOptions);
     winrt::IAsyncOperation<winrt::hstring> ExecuteScriptAsync(winrt::hstring javascriptCode);
     void Reload();
     void NavigateToString(winrt::hstring htmlContent);
@@ -120,9 +122,9 @@ private:
     HWND EnsureTemporaryHostHwnd();
     void UpdateParentWindow(HWND newParentWindow);
 
-    winrt::IAsyncAction CreateCoreObjects();
-    winrt::IAsyncAction CreateCoreEnvironment() noexcept;
-    winrt::IAsyncAction CreateCoreWebViewFromEnvironment(HWND hwndParent);
+    winrt::IAsyncAction CreateCoreObjects(winrt::CoreWebView2Environment environment = nullptr, winrt::CoreWebView2ControllerOptions controllerOptions = nullptr);
+    winrt::IAsyncOperation<winrt::CoreWebView2Environment> CreateDefaultCoreEnvironment() noexcept;
+    winrt::IAsyncAction CreateCoreWebViewFromEnvironment(HWND hwndParent, winrt::CoreWebView2ControllerOptions controllerOptions = nullptr);
     void CreateMissingAnaheimWarning();
 
     void RegisterXamlEventHandlers();
@@ -193,9 +195,11 @@ private:
         bool m_isPending{};
     };
 
-    winrt::CoreWebView2EnvironmentOptions m_options{ nullptr };
+    bool m_isExplicitEnvironment = false;
+    bool m_isExplicitControllerOptions = false;
     winrt::CoreWebView2Environment m_coreWebViewEnvironment{ nullptr };
     winrt::CoreWebView2Controller m_coreWebViewController{ nullptr };
+    winrt::CoreWebView2ControllerOptions m_customCoreWebViewControllerOptions{ nullptr };
     winrt::CoreWebView2CompositionController m_coreWebViewCompositionController{ nullptr };
     winrt::CoreWebView2 m_coreWebView{ nullptr };
 
@@ -264,7 +268,7 @@ private:
     bool m_isClosed{};    // True after WebView2::Close() has been called - no core objects can be created
 
     bool m_isImplicitCreationInProgress{};    // True while we are creating CWV2 due to Source property being set
-    bool m_isExplicitCreationInProgress{};    // True while we are creating CWV2 due to EnsureCoreWebView2Async() being called
+    bool m_isExplicitCreationInProgress{};    // True while we are creating CWV2 due to EnsureCoreWebView2*Async() being called
     std::unique_ptr<AsyncWebViewOperations> m_creationInProgressAsync{ nullptr }; // Awaitable object for any currently active creation. There should be only one active operation at a time.
 
     float m_rasterizationScale{};

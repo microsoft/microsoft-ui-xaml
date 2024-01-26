@@ -28,6 +28,7 @@
 #include <WRLHelper.h>
 #include <NavigateFocusResult.h>
 #include <Microsoft.UI.Content.Private.h>
+#include "XamlTelemetry.h"
 
 using namespace DirectUI;
 
@@ -38,6 +39,8 @@ namespace DirectUI
 
 _Check_return_ HRESULT DesktopWindowXamlSource::InitializeImpl(_In_ mu::WindowId parentWnd)
 {
+    PerfXamlEvent_RAII perfXamlEvent(reinterpret_cast<uint64_t>(this), "DWXS::Initialize", true);
+
     HWND parentHwnd;
 
     IFC_RETURN(Windowing_GetWindowFromWindowId(parentWnd, &parentHwnd));
@@ -302,11 +305,14 @@ IFACEMETHODIMP DesktopWindowXamlSource::get_SystemBackdrop(_Outptr_result_mayben
 
     IFC_RETURN(CheckThread());
 
-    IFCEXPECT_RETURN(m_contentBridge);
-
     ctl::ComPtr<ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop> compositionSupportsSystemBackdrop;
 
-    IFC_RETURN(m_contentBridge.As(&compositionSupportsSystemBackdrop));
+    DirectUI::XamlIslandRoot* xamlIsland = m_spXamlIsland.Cast<XamlIslandRoot>();
+    CXamlIslandRoot* pXamlIslandCore = static_cast<CXamlIslandRoot*>(xamlIsland->GetHandle());
+
+    ctl::ComPtr<ixp::IContentIsland> contentIsland = pXamlIslandCore->GetContentIsland();
+
+    IFC_RETURN(contentIsland.As(&compositionSupportsSystemBackdrop));
 
     IFC_RETURN(compositionSupportsSystemBackdrop->get_SystemBackdrop(systemBackdropBrush));
 
@@ -317,11 +323,14 @@ IFACEMETHODIMP DesktopWindowXamlSource::put_SystemBackdrop(_In_opt_ ABI::Windows
 {
     IFC_RETURN(CheckThread());
 
-    IFCEXPECT_RETURN(m_contentBridge);
-
     ctl::ComPtr<ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop> compositionSupportsSystemBackdrop;
 
-    IFC_RETURN(m_contentBridge.As(&compositionSupportsSystemBackdrop));
+    DirectUI::XamlIslandRoot* xamlIsland = m_spXamlIsland.Cast<XamlIslandRoot>();
+    CXamlIslandRoot* pXamlIslandCore = static_cast<CXamlIslandRoot*>(xamlIsland->GetHandle());
+
+    ctl::ComPtr<ixp::IContentIsland> contentIsland = pXamlIslandCore->GetContentIsland();
+
+    IFC_RETURN(contentIsland.As(&compositionSupportsSystemBackdrop));
 
     IFC_RETURN(compositionSupportsSystemBackdrop->put_SystemBackdrop(systemBackdropBrush));
 
@@ -576,11 +585,7 @@ _Check_return_ HRESULT DesktopWindowXamlSource::ConnectToHwndIslandSite(_In_ HWN
     IFCFAILFAST(contentIsland.As(&contentIslandPartner));
     wrl::ComPtr<ixp::IIslandInputSitePartner> islandInputSitePartner;
     IFCFAILFAST(contentIslandPartner->get_IslandInputSite(&islandInputSitePartner));
-    ABI::Microsoft::UI::WindowId inputWindowId;
-    IFCFAILFAST(islandInputSitePartner->get_WindowId(&inputWindowId));
-    HWND inputHwnd;
-    IFCFAILFAST(Windowing_GetWindowFromWindowId(inputWindowId, &inputHwnd));
-    pXamlIslandCore->SetInputWindow(inputHwnd);
+    pXamlIslandCore->SetIslandInputSite(islandInputSitePartner.Get());
 
     // Now that we've initialized the DesktopWindowXamlBridge, it's safe to tell the XamlIslandRoot to
     // do the initialization it needs which depends on it being property setup (eg setting up WindowInformation).

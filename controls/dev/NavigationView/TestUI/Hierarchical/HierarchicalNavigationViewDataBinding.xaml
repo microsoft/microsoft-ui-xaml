@@ -25,7 +25,9 @@
             Expanding="OnItemExpanding" 
             Collapsed="OnItemCollapsed" 
             SelectionChanged="OnSelectionChanged" 
-            PaneDisplayMode="Left">
+            PaneDisplayMode="Left"
+            PaneClosed="NavView_PaneClosed"
+            PaneOpened="NavView_PaneOpened">
             <StackPanel Margin="10,10,0,0" Spacing="5">
                 <TextBlock x:Name="SelectedItemLabel" AutomationProperties.Name="SelectedItemLabel" Text="uninitialized"/>
                 <Button Content="Get Selected Item Label" x:Name="GetSelectedItemLabelButton" AutomationProperties.Name="GetSelectedItemLabelButton" Click="PrintSelectedItem"/>
@@ -75,6 +77,8 @@
                     <ComboBoxItem Content="LeftCompact" Tag="LeftCompact"/>
                     <ComboBoxItem Content="LeftMinimal" Tag="LeftMinimal"/>
                 </ComboBox>
+
+                <TextBlock x:Name="PaneOpenedOrClosedEvent" AutomationProperties.Name="PaneOpenedOrClosedEvent" Text="Unknown" />
             </StackPanel>
         </muxcontrols:NavigationView>
     </Grid>

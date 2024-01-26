@@ -35,6 +35,21 @@
         </ProjectIncludeDirectories>
     </PropertyGroup>
 
+    <!-- This will batch a separate CL task due to %PrecompiledHeader = NotUsing -->
+    <Target Name="NonPreCompClCompile" AfterTargets="PreCompClCompileOptions">
+        <ItemGroup>
+            <!-- Compile without PCH to permit latest UAP contract for light-up code.
+                In future, if we add more lightup sources, we can generate a light-up PCH. 
+                See DXamlCoreLightup.cpp for details. -->
+            <ClCompile Include="..\DXamlCoreLightup.cpp">
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <PrecompiledHeaderFile />
+                <PrecompiledHeaderOutputFile />
+                <DisableAnalyzeExternal />
+            </ClCompile>
+        </ItemGroup>
+    </Target>
+
     <ItemGroup>
         <ClCompile Include="..\JupiterControl.cpp"/>
         <ClCompile Include="..\JupiterWindow.cpp"/>

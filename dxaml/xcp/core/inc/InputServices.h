@@ -18,6 +18,7 @@
 #include "InteractionManager.h"
 #include "FrameworkInputViewHandler.h"
 #include "TextInputProducerHelper.h"
+#include <Microsoft.UI.Input.Partner.h>
 
 enum MouseCursor : uint8_t;
 
@@ -399,7 +400,8 @@ public:
     void SetCoreWindow(_In_ wuc::ICoreWindow* pCoreWindow);
     wuc::ICoreWindow* GetCoreWindow() const;
 
-    void SetApplicationHwnd(_In_ HWND hWnd);
+    void SetApplicationIslandInputSite(_In_ ixp::IIslandInputSitePartner* pIslandInputSite);
+    wrl::ComPtr<ixp::IIslandInputSitePartner> GetApplicationIslandInputSite() const { return m_islandInputSite; }
 
     void SetLastInputDeviceType(XPointerInputType deviceType)
     {
@@ -423,6 +425,11 @@ public:
 
     // Called when the focus is changed from the focus manager
     static BOOL IsTextEditableControl(_In_ const CDependencyObject* const pObject);
+
+    // Helper method to retrieve the underlying input HWND from an IslandInputSite.
+    // Solutions that maintain the encapsulation around the input HWND should be preferred.
+    // If this function must be used, the use case is potentially a candidate for a better IXP API.
+    static HWND GetUnderlyingInputHwndFromIslandInputSite(_In_opt_ ixp::IIslandInputSitePartner* pIslandInputSite);
 
     void NotifyWindowDestroyed(_In_ XHANDLE hDestroyedWindow);
 
@@ -939,8 +946,6 @@ public:
     // irrespective of its manipulatable element. Only non-unregistering viewports qualify.
     _Maybenull_ CDMViewport* GetViewport(_In_ CUIElement* pDMContainer) const;
 
-    HWND GetHwnd() const { return static_cast<HWND>(m_hWnd); }
-
 #ifdef DM_DEBUG
     bool IsDMInfoTracingEnabled() const { return m_fIsDMInfoTracingEnabled; }
 #endif // DM_DEBUG
@@ -963,8 +968,9 @@ public:
 
     CInteractionManager& GetInteractionManager() { return m_interactionManager; }
 
-    // Returns the DM service for the provided DM container
-    _Check_return_ HRESULT EnsureHwndForDManipService(_In_ CUIElement* pDMContainer, HWND hwnd);
+    // Updates the island input site set on the DManip service.
+    // This is an existing stopgap function to avoid a crash when ScrollViewers move between windows/islands/popups.
+    _Check_return_ HRESULT EnsureElementIslandInputSiteForDManipService(_In_ CUIElement* pDMContainer);
 
 private:
     void Init(_In_ CCoreServices *pCoreService);
@@ -1072,7 +1078,7 @@ private:
 
     bool CanDMContainerInitialize() const
     {
-        return m_hWnd != nullptr && m_hWnd != INVALID_HANDLE_VALUE;
+        return (nullptr != m_islandInputSite);
     }
 
     bool CanDMContainerInitialize(_In_ CUIElement* const dmContainer) const
@@ -1558,8 +1564,9 @@ private:
     std::shared_ptr<DirectManipulationServiceSharedState> m_DMServiceSharedState;
 
     XUINT32 m_cCrossSlideContainers; // Number of registered cross-slide containers.
-    XHANDLE m_hWnd;     // Window handle used to initialize DirectManipulation managers before any pointer message is processed.
     std::unique_ptr<std::vector < xref::weakref_ptr<CUIElement>>> m_pDMContainersNeedingInitialization;
+    
+    wrl::ComPtr<ixp::IIslandInputSitePartner> m_islandInputSite;
 
 #ifdef DM_DEBUG
     bool m_fIsDMInfoTracingEnabled : 1;

@@ -30,16 +30,6 @@ Environment:
 
 #pragma once
 
-// Configuration macro for use in TRACELOGGING_DEFINE_PROVIDER. The definition
-// in this file configures the provider as a normal (non-telemetry) provider.
-#define TraceLoggingOptionMicrosoftTelemetry() \
-    // Empty definition for TraceLoggingOptionMicrosoftTelemetry
-
-// Configuration macro for use in TRACELOGGING_DEFINE_PROVIDER. The definition
-// in this file configures the provider as a normal (non-telemetry) provider.
-#define TraceLoggingOptionWindowsCoreTelemetry() \
-    // Empty definition for TraceLoggingOptionWindowsCoreTelemetry
-
 // Event privacy tags. Use the PDT macro values for the tag parameter, e.g.:
 // TraceLoggingWrite(...,
 //   TelemetryPrivacyDataTag(PDT_BrowsingHistory | PDT_ProductAndServiceUsage),

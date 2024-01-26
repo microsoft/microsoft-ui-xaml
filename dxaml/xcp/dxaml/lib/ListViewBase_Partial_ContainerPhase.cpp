@@ -445,12 +445,12 @@ _Check_return_ HRESULT ListViewBase::BuildTreeImpl(_Out_ BOOLEAN *workLeft) noex
 
     IFC_RETURN(DXamlCore::GetCurrent()->GetBudgetManager(budget));
 
-    if (!m_useUnbudgetedContainerBuild)
+    if (!budget->UseUnbudgetedContainerBuild())
     {
         IFC_RETURN(budget->GetElapsedMilliSecondsSinceLastUITick(&timeElapsedInMS));
     }
 
-    if (static_cast<UINT>(timeElapsedInMS) <= m_budget || m_useUnbudgetedContainerBuild)
+    if (static_cast<UINT>(timeElapsedInMS) <= m_budget || budget->UseUnbudgetedContainerBuild())
     {
         IFC_RETURN(get_ItemsHost(&itemsHost));
         if (itemsHost)
@@ -549,7 +549,7 @@ _Check_return_ HRESULT ListViewBase::BuildTreeImpl(_Out_ BOOLEAN *workLeft) noex
                 IFC_RETURN(ProcessCurrentPosition());
 
                 while (processingPhase != std::numeric_limits<INT64>::max() &&
-                    (static_cast<UINT>(timeElapsedInMS) < m_budget || m_useUnbudgetedContainerBuild))
+                    (static_cast<UINT>(timeElapsedInMS) < m_budget || budget->UseUnbudgetedContainerBuild()))
                 {
                     INT64 phase = 0;
                     ctl::ComPtr<xaml::IDependencyObject> container;
@@ -804,7 +804,7 @@ _Check_return_ HRESULT ListViewBase::BuildTreeImpl(_Out_ BOOLEAN *workLeft) noex
                         IFC_RETURN(ProcessCurrentPosition());
                     }
 
-                    if (!m_useUnbudgetedContainerBuild)
+                    if (!budget->UseUnbudgetedContainerBuild())
                     {
                         // updates the time
                         IFC_RETURN(budget->GetElapsedMilliSecondsSinceLastUITick(&timeElapsedInMS));

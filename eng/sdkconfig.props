@@ -29,40 +29,17 @@
 
     <SdkCppArchitectureNeutralPropsFile>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\build\native\$(WindowsSdkNugetPackageName).cpp.props</SdkCppArchitectureNeutralPropsFile>
     <SdkCppArchitectureSpecificPropsFile>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).cpp.$(WindowsSdkArch).$(MicrosoftWindowsSDKCppNugetPackageVersion)\build\native\$(WindowsSdkNugetPackageName).cpp.$(WindowsSdkArch).props</SdkCppArchitectureSpecificPropsFile>
-    <SdkManagedPropsFile>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).UWP.Managed.$(MicrosoftWindowsSDKUWPManagedVersion)\build\$(WindowsSdkNugetPackageName).UWP.Managed.props</SdkManagedPropsFile>
-    <ManagedConfig Condition="'$(MSBuildProjectExtension)' == '.csproj' or '$(MSBuildProjectExtension)' == '.vbproj'">true</ManagedConfig>
 
     <!-- ensure this is set for cswinrt -->
     <CsWinRTWindowsMetadata>$(WindowsTargetPlatformVersion)</CsWinRTWindowsMetadata>
   </PropertyGroup>
 
   <ImportGroup Condition="'$(UseWindowsSdk)' == 'true'">
-    <Import Project="$(SdkCppArchitectureNeutralPropsFile)" Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and Exists('$(SdkCppArchitectureNeutralPropsFile)')" />
-    <Import Project="$(SdkCppArchitectureSpecificPropsFile)" Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and '$(WindowsSDKArch)' != '' and Exists('$(SdkCppArchitectureNeutralPropsFile)')" />
-    <Import Project="$(SdkManagedPropsFile)" Condition="'$(ManagedConfig)' == 'true' and Exists('$(SdkManagedPropsFile)')" />
+    <Import Project="$(SdkCppArchitectureNeutralPropsFile)" Condition="('$(MSBuildProjectExtension)' == '.vcxproj' or '$(MSBuildProjectExtension)' == '.csproj') and Exists('$(SdkCppArchitectureNeutralPropsFile)')" />
+    <Import Project="$(SdkCppArchitectureSpecificPropsFile)" Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and '$(WindowsSDKArch)' != '' and Exists('$(SdkCppArchitectureSpecificPropsFile)')" />
     <Import Project="$(NugetPackageDirectory)\$(WilPackageName).$(CurrentWilPackageVersion)\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and Exists('$(NugetPackageDirectory)\$(WilPackageName).$(CurrentWilPackageVersion)\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
   </ImportGroup>
 
-  <!-- The NuGet SDK reference WinMDs aren't added as references by default, unlike installed SDKs.
-        To work around that, we'll add them as references if need be before we resolve our references. -->
-  <Target Name="AddNugetSdkReferences"
-          DependsOnTargets="$(ResolveAssemblyReferencesDependsOn)"
-          BeforeTargets="ResolveAssemblyReferences"
-          Condition="'$(UseWindowsSdk)' == 'true'">
-    <ItemGroup Condition="'$(AddNugetSdkReferences)'=='true' or ('$(WinMDAssembly)' == 'true' and '$(TargetPlatformWinMDLocation)' != '')">
-      <!-- MSBuild will add a number of winmds from the standard intalled windows kit sdk.  We don't want these, so remove them.  It would be nice to find a way -->
-      <!-- to not have MSBuild add them, but short of rewriting the entire _PrepareReferenceResolution that doesn't seem possible                                 -->
-      <Reference Remove="$([Microsoft.Build.Utilities.ToolLocationHelper]::GetTargetPlatformReferences($(SDKIdentifier), $(SDKVersion), $(TargetPlatformIdentifier), $(TargetPlatformMinVersion), $(TargetPlatformVersion)))"/>
-      <Reference Remove="$(WindowsSdkPath)References\$(WindowsTargetPlatformVersion)\*.winmd"/>
-      <Reference Include="$(WindowsSdkPath)References\$(WindowsTargetPlatformVersion)\*.winmd">
-          <IsWinMDFile>true</IsWinMDFile>
-          <CopyLocal>false</CopyLocal>
-          <IsSystemReference>True</IsSystemReference>
-          <Implicit>true</Implicit>
-      </Reference>
-    </ItemGroup>
-  </Target>
- 
     <PropertyGroup Condition="'$(UseWindowsSdk)' == 'true'">
 
     <!-- Disable Appx package signing if skipsigning is set to true -->
@@ -76,6 +53,9 @@
     <WindowsSDKCppRoot>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\c\</WindowsSDKCppRoot>
     <WindowsSdkDir_10>$(WindowsSDKCppRoot)</WindowsSdkDir_10>
     <WindowsSdkDir>$(WindowsSDKCppRoot)</WindowsSdkDir>
+    <!-- Microsoft.Cpp.WindowsSDK.props makes assumptions about the SDK layout, causing warnings about missing lib paths -->
+    <WindowsSDK_LibraryPath_x86>;</WindowsSDK_LibraryPath_x86>
+    <WindowsSDK_LibraryPath_x64>;</WindowsSDK_LibraryPath_x64>
 
     <WindowsSdkPath>$(WindowsSDKCppRoot)</WindowsSdkPath>
 

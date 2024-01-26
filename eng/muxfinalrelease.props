@@ -7,10 +7,10 @@
 
   <ItemDefinitionGroup Condition="$(MUXFinalRelease) != 'true'">
     <ClCompile>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);MUX_PRERELEASE;WINUI_PRERELEASE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);MUX_PRERELEASE;WINUI_PRERELEASE;</PreprocessorDefinitions>
     </ClCompile>
     <Midl>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);MUX_PRERELEASE;WINUI_PRERELEASE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);MUX_PRERELEASE;WINUI_PRERELEASE;</PreprocessorDefinitions>
     </Midl>
   </ItemDefinitionGroup>
 </Project>

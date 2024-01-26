@@ -346,6 +346,19 @@ bool SharedHelpers::IsAncestor(
     return false;
 }
 
+bool SharedHelpers::IsFocusableElement(
+    winrt::UIElement const& element)
+{
+    if (element.Visibility() == winrt::Visibility::Collapsed)
+    {
+        return false;
+    }
+
+    auto const& control = element.try_as<winrt::Control>();
+
+    return control && (control.IsEnabled() || control.AllowFocusWhenDisabled()) && control.IsTabStop();
+}
+
 #if defined(TITLEBAR_INCLUDED) || defined(SWIPECONTROL_INCLUDED) || defined(TEACHINGTIP_INCLUDED) || defined(TABVIEW_INCLUDED)
 
 winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& iconSource)

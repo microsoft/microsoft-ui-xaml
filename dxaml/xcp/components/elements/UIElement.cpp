@@ -3340,9 +3340,9 @@ _Check_return_ HRESULT CUIElement::TabFocusNavigation(
             uiElement->SetTabNavigation(newValue);
         }
 
-        if (pResult && currentValue != newValue)
+        if (pResult)
         {
-            pResult->Set(newValue, KnownTypeIndex::KeyboardNavigationMode);
+            pResult->SetBool(currentValue != newValue);
         }
     }
     else if (pResult)

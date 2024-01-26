@@ -47,6 +47,7 @@
 #include "isapipresent.h"
 
 #include <ReentrancyGuard.h>
+#include <Windowing.h>
 
 #undef max
 #undef min
@@ -99,7 +100,7 @@ CInputServices::Init(_In_ CCoreServices *pCoreService)
     m_pDMCrossSlideService = NULL;
     m_DMServiceSharedState = std::make_shared<DirectManipulationServiceSharedState>();
     m_cCrossSlideContainers = 0;
-    m_hWnd = NULL;
+    m_islandInputSite = nullptr;
 
     if (!static_cast<CCoreServices*>(pCoreService)->IsTSF3Enabled())
     {
@@ -143,14 +144,26 @@ void CInputServices::ResetCrossSlideService()
     }
 }
 
-void CInputServices::SetApplicationHwnd(_In_ HWND hWnd)
+void CInputServices::SetApplicationIslandInputSite(_In_ ixp::IIslandInputSitePartner* pIslandInputSite)
 {
-    XHANDLE previousHWnd = m_hWnd;
-    m_hWnd = static_cast<XHANDLE>(hWnd);
-    if (previousHWnd && previousHWnd != m_hWnd)
+    wrl::ComPtr<IUnknown> previousIslandInputSiteAsIUnknown{ nullptr };
+    if (nullptr != m_islandInputSite)
     {
-        // The cross slide service directly references the hwnd we created it with
-        // so if the hwnd changes, we need to recreate the service.
+        FAIL_FAST_IF_FAILED(m_islandInputSite.As(&previousIslandInputSiteAsIUnknown));
+    }
+
+    m_islandInputSite = pIslandInputSite;
+
+    wrl::ComPtr<IUnknown> newIslandInputSiteAsIUnknown{ nullptr };
+    if (nullptr != m_islandInputSite)
+    {
+        FAIL_FAST_IF_FAILED(m_islandInputSite.As(&newIslandInputSiteAsIUnknown));
+    }
+
+    if (previousIslandInputSiteAsIUnknown.Get() != newIslandInputSiteAsIUnknown.Get())
+    {
+        // The cross slide service directly references the IslandInputSite we created it with
+        // so if the IslandInputSite changes, we need to recreate the service.
         ResetCrossSlideService();
     }
 }
@@ -2996,6 +3009,22 @@ CInputServices::IsTextEditableControl(_In_ const CDependencyObject* const pObjec
     return isEditableControl;
 }
 
+// static
+HWND
+CInputServices::GetUnderlyingInputHwndFromIslandInputSite(_In_opt_ ixp::IIslandInputSitePartner* pIslandInputSite)
+{
+    if (nullptr != pIslandInputSite)
+    {
+        ABI::Microsoft::UI::WindowId inputWindowId;
+        IFCFAILFAST(pIslandInputSite->get_UnderlyingInputWindowId(&inputWindowId));
+        HWND inputHwnd;
+        IFCFAILFAST(Windowing_GetWindowFromWindowId(inputWindowId, &inputHwnd));
+        return inputHwnd;
+    }
+
+    return nullptr;
+}
+
 //------------------------------------------------------------------------
 //
 //  Method:   RegisterDirectManipulationContainer
@@ -3256,7 +3285,7 @@ CInputServices::InitializeDirectManipulationContainer(
     pDirectManipulationService = pNewDirectManipulationService;
     pNewDirectManipulationService = NULL;
 
-    IFC(pDirectManipulationService->EnsureDirectManipulationManager(pDMContainer->GetElementInputWindow(), FALSE /*fIsForCrossSlideViewports*/));
+    IFC(pDirectManipulationService->EnsureDirectManipulationManager(pDMContainer->GetElementIslandInputSite().Get(), FALSE /*fIsForCrossSlideViewports*/));
 
     IFC(GetDirectManipulationViewportEventHandler(&pDirectManipulationViewportEventHandler));
     IFC(pDirectManipulationService->RegisterViewportEventHandler(pDirectManipulationViewportEventHandler));
@@ -3537,10 +3566,11 @@ CInputServices::InitializeDirectManipulationContainers()
                     this, m_pDMCrossSlideService, m_cCrossSlideContainers));
             }
 #endif // DM_DEBUG
-            // CInputServices storing an m_hwnd which is a per-tree object, but CInputServices is a per-thread type.
-            // InputServices always ends up with hwnd of latest window created. If we close last window, InputServices will end up having dangling hwnd.
-            // This was causing DManip to fail in activation. Using InputSites instead of hwnd as a member could fix the issue Task#29938158
-            IFC_RETURN(m_pDMCrossSlideService->EnsureDirectManipulationManager(m_hWnd, TRUE /*fIsForCrossSlideViewports*/));
+            // CInputServices is storing an IslandInputSite which is a per-tree (XamlIslandRoot) object, but CInputServices is a per-thread type.
+            // This is matching the previous behavior where CInputServices was storing an application hwnd directly set via XamlIslandRoot.
+            // Does this need to be refined to hold some sort of map structure to map XamlIslandRoots<->IslandInputSites?
+            // Right now the last XamlIslandRoot created on a thread will end up setting the "application" IslandInputSite on CInputServices.
+            IFC_RETURN(m_pDMCrossSlideService->EnsureDirectManipulationManager(m_islandInputSite.Get(), TRUE /*fIsForCrossSlideViewports*/));
             IFC_RETURN(m_pDMCrossSlideService->ActivateDirectManipulationManager());
 
             if (m_shouldRegisterDMViewportCallback)
@@ -4466,13 +4496,13 @@ CInputServices::GetDMService(
     return S_OK;
 }
 
-_Check_return_ HRESULT CInputServices::EnsureHwndForDManipService(_In_ CUIElement* pDMContainer, HWND hwnd)
+_Check_return_ HRESULT CInputServices::EnsureElementIslandInputSiteForDManipService(_In_ CUIElement* pDMContainer)
 {
     wrl::ComPtr<IPALDirectManipulationService> dmanipService;
     IFC_RETURN(GetDMService(pDMContainer, dmanipService.ReleaseAndGetAddressOf()));
 
     ASSERT(dmanipService);
-    IFC_RETURN(dmanipService->EnsureHwnd(hwnd));
+    IFC_RETURN(dmanipService->EnsureElementIslandInputSite(pDMContainer->GetElementIslandInputSite().Get()));
 
     return S_OK;
 }

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "common.h"
-#include "TraceLogging.h"
+#include "MuxcTraceLogging.h"
 #include "Utils.h"
 #include "MUXControlsTestHooks.h"
 

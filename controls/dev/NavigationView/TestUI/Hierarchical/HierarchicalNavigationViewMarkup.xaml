@@ -11,7 +11,15 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <muxcontrols:NavigationView x:Name="navview" ItemInvoked="{x:Bind ClickedItem}" Expanding="OnItemExpanding" Collapsed="OnItemCollapsed" PaneDisplayMode="Left" IsSettingsVisible="False">
+        <muxcontrols:NavigationView 
+            x:Name="navview" 
+            ItemInvoked="{x:Bind ClickedItem}" 
+            Expanding="OnItemExpanding" 
+            Collapsed="OnItemCollapsed" 
+            PaneDisplayMode="Left" 
+            IsSettingsVisible="False"
+            PaneClosed="NavView_PaneClosed"
+            PaneOpened="NavView_PaneOpened">
             <muxcontrols:NavigationView.MenuItems>
                 <muxcontrols:NavigationViewItem Content="Menu Item 1" x:Name="MI1" SelectsOnInvoked="False"  Icon="Home">
                     <muxcontrols:NavigationViewItem.MenuItems>
@@ -140,6 +148,8 @@
                     <ComboBoxItem Content="LeftCompact" Tag="LeftCompact"/>
                     <ComboBoxItem Content="LeftMinimal" Tag="LeftMinimal"/>
                 </ComboBox>
+
+                <TextBlock x:Name="PaneOpenedOrClosedEvent" AutomationProperties.Name="PaneOpenedOrClosedEvent" Text="Unknown" />
             </StackPanel>
         </muxcontrols:NavigationView>
 

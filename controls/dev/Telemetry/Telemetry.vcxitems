@@ -20,7 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)TypeLogging.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)TraceLogging.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MuxcTraceLogging.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RuntimeProfiler.cpp" />
   </ItemGroup>
 </Project>

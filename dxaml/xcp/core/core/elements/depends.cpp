@@ -304,12 +304,11 @@ void CDependencyObject::SetHasUsageName(XUINT32 fHasUsageName)
     m_bitFields.fHasUsageName = fHasUsageName;
 }
 
-// Get element's window. This can be different from the main Jupiter window for an element
-// in a windowed popup.
-HWND CDependencyObject::GetElementInputWindow()
+wrl::ComPtr<ixp::IIslandInputSitePartner> CDependencyObject::GetElementIslandInputSite()
 {
     xref_ptr<CPopup> spPopup;
     CUIElement *pUIElementNoRef = do_pointer_cast<CUIElement>(this);
+    auto coreServices = GetContext();
 
     if (pUIElementNoRef)
     {
@@ -318,31 +317,26 @@ HWND CDependencyObject::GetElementInputWindow()
             pUIElementNoRef,
             spPopup.ReleaseAndGetAddressOf()));
 
-        // If the popup is windowed, return its window
+        // If the popup is windowed, return its own IslandInputSite.
         if (spPopup && spPopup->IsWindowed())
         {
-            return spPopup->GetPopupWindow();
+            return spPopup->GetIslandInputSite();
         }
 
-        if (GetContext()->HasXamlIslandRoots())
+        if (coreServices->HasXamlIslandRoots())
         {
-            // If this element is in a XamlIslandRoot tree, return the HWND for that island
-            auto root = GetContext()->GetRootForElement(this);
+            // If this element is in a XamlIslandRoot tree, return the IslandInputSite for that island.
+            auto root = coreServices->GetRootForElement(this);
             auto xamlIslandRoot = do_pointer_cast<CXamlIslandRoot>(root);
             if (xamlIslandRoot)
             {
-                return xamlIslandRoot->GetInputHWND();
+                return xamlIslandRoot->GetIslandInputSite();
             }
         }
     }
 
-    // Default return value is the Jupiter window
-    if (GetContext()->GetHostSite())
-    {
-        return static_cast<HWND>(GetContext()->GetHostSite()->GetXcpControlWindow());
-    }
-
-    return nullptr;
+    // By default, return the application-wide IslandInputSite that was registered with InputServices on startup.
+    return coreServices->GetInputServices()->GetApplicationIslandInputSite();
 }
 
 HWND CDependencyObject::GetElementPositioningWindow()
@@ -357,10 +351,10 @@ HWND CDependencyObject::GetElementPositioningWindow()
             pUIElementNoRef,
             spPopup.ReleaseAndGetAddressOf()));
 
-        // If the popup is windowed, return its window
+        // If the popup is windowed, return its positioning window
         if (spPopup && spPopup->IsWindowed())
         {
-            return spPopup->GetPopupWindow();
+            return spPopup->GetPopupPositioningWindow();
         }
 
         if (GetContext()->HasXamlIslandRoots())

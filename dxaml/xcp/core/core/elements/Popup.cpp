@@ -457,17 +457,18 @@ _Check_return_ HRESULT CPopup::Open()
         // The one exception would have been if the child was unloading, but we just cancelled that transition if it existed.
         ASSERT(!IsInPCScene() && !m_pChild->IsInPCScene());
 
-        // Create window for windowed popups. Do this before adding the child to the tree. If the child has a
-        // ScrollViewer in its subtree, then the ScrollViewer will look for this windowed popup's hwnd to use for
-        // DManip, and the hwnd comes from the popup window bridge.
+        // Create window and ContentIsland for windowed popups. Do this before adding the child to the tree. If the child has a
+        // ScrollViewer in its subtree, then the ScrollViewer will look for this windowed popup's IslandInputSite to use for
+        // DManip, and the IslandInputSite comes from the popup window bridge's ContentIsland.
         if (IsWindowed())
         {
             IFC_RETURN(EnsureWindowForWindowedPopup());
+            IFC_RETURN(EnsureDCompResourcesForWindowedPopup());
         }
 
         // Initial phase of popup addition to open popup list: just add the popup to the m_pOpenPopups list and add-ref it.
-        // This phase is performed *before* the AddChild call just below so that CUIElement::EnterImpl for any 
-        // ScrollViewer finds the correct HWND to hand off to DManip through GetElementInputWindow().
+        // This phase is performed *before* the AddChild call just below so that CUIElement::EnterImpl for any
+        // ScrollViewer finds the correct IslandInputSite to hand off to DManip through GetElementIslandInputSite().
         IFC_RETURN(pPopupRoot->StartAdditionToOpenPopupList(this));
 
         HRESULT hr = pPopupRoot->AddChild(m_pChild);
@@ -884,6 +885,12 @@ _Check_return_ HRESULT CPopup::Close(bool forceCloseforTreeReset)
     return S_OK;
 }
 
+bool CPopup::WindowedPopupHasFocus() const
+{
+    FAIL_FAST_IF(!IsWindowed());
+    return (nullptr != m_inputSiteAdapter) ? m_inputSiteAdapter->HasFocus() : false;
+}
+
 bool CPopup::SkipRenderForLayoutTransition()
 {
     if (m_pChild == nullptr && !m_unloadingChild)
@@ -1017,12 +1024,6 @@ bool CPopup::HasPointerCapture() const
     return false;
 }
 
-// Return window handle for test hook and automation
-HWND CPopup::GetWindowHandle()
-{
-    return m_windowedPopupWindow;
-}
-
 // Create windowed popup's window, if it doesn't exit
 _Check_return_ HRESULT CPopup::EnsureWindowForWindowedPopup()
 {
@@ -1103,6 +1104,10 @@ _Check_return_ HRESULT CPopup::EnsureWindowForWindowedPopup()
                 IFCFAILFAST(closableNotifier->add_FrameworkClosed(
                     WRLHelper::MakeAgileCallback<mu::IClosableNotifierHandler>(frameworkClosedCallback).Get(),
                     &m_bridgeClosedToken));
+
+                // We just successfully set up a new bridge along with the event handler to inform us when it is Closed.
+                // Reset our flag tracking if the bridge is closed to false.
+                m_bridgeClosed = false;
             }
 
         }
@@ -1140,6 +1145,20 @@ _Check_return_ HRESULT CPopup::GetScreenOffsetFromOwner(_Out_ XPOINTF_COORDS* of
     offset->y = static_cast<float>(origin.y - ownerOrigin.y);
 
     return S_OK;
+}
+
+wrl::ComPtr<ixp::IIslandInputSitePartner> CPopup::GetIslandInputSite() const
+{
+    if (IsWindowed())
+    {
+        // If we're windowed, we have our own ContentIsland connected to a PopupWindowBridge.
+        // Our ContentIsland will have its own IslandInputSite stored in our InputSiteAdpater when connected to the bridge.
+        return (nullptr != m_inputSiteAdapter) ? m_inputSiteAdapter->GetIslandInputSite() : nullptr;
+    }
+
+    // If we are not windowed we can simply return the default ElementIslandInputSite.
+    // This really should be possible to be make const, but the do_pointer_cast is blocking (see depends.cpp).
+    return const_cast<CPopup*>(this)->GetElementIslandInputSite();
 }
 
 // Ensure that DComp resources are created for windowed popup
@@ -1569,6 +1588,9 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
         static_cast<float>(popupWindowHeight),
     };
     IFC_RETURN(AdjustWindowedPopupBoundsForDropShadow(&popupWindowBounds));
+
+    // The system backdrop visual is placed based on the MoveAndResize rect. Update it as well.
+    ApplyRootRoundedCornerClipToSystemBackdrop();
 
     // Tell the windowed popup inputsite adapter the offset of the popup window from the content
     // root. We do this by using the position passed to MoveAndSize (either earlier in this function
@@ -2156,8 +2178,8 @@ void CPopup::EnsureUIAWindow()
     }
 }
 
-// If popup is windowed, return popup's window. Else, return Jupiter window.
-HWND CPopup::GetPopupWindow()
+// If popup is windowed, return popup's positioning (host/non-input) window. Else, return Jupiter window.
+HWND CPopup::GetPopupPositioningWindow() const
 {
     // Note: We can't assume that the popup hwnd exists. We won't create one of someone opens a windowed popup
     // after Xaml has shut down and has destroyed the main hwnd.

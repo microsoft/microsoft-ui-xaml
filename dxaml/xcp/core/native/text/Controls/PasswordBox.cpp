@@ -738,16 +738,19 @@ _Check_return_ HRESULT CPasswordBox::UpdateIhmSkinToBitLocker(bool skinBitLocker
 {
     if (DesktopUtility::IsOnDesktop())
     {
-        HWND hwnd = GetElementInputWindow();
-        if (skinBitLocker)
+        HWND hwnd = CInputServices::GetUnderlyingInputHwndFromIslandInputSite(GetElementIslandInputSite().Get());
+        if (nullptr != hwnd)
         {
-            IFC_RETURN(::TextInput_SetKeyboardSkin(::TextInput_KeyboardSkins::Bitlocker, hwnd));
-            TraceSetIhmKeyboardSkinInfo(static_cast<UINT32>(::TextInput_KeyboardSkins::Bitlocker));
-        }
-        else
-        {
-            IFC_RETURN(::TextInput_SetKeyboardSkin(::TextInput_KeyboardSkins::Default, hwnd));
-            TraceSetIhmKeyboardSkinInfo(static_cast<UINT32>(::TextInput_KeyboardSkins::Default));
+            if (skinBitLocker)
+            {
+                IFC_RETURN(::TextInput_SetKeyboardSkin(::TextInput_KeyboardSkins::Bitlocker, hwnd));
+                TraceSetIhmKeyboardSkinInfo(static_cast<UINT32>(::TextInput_KeyboardSkins::Bitlocker));
+            }
+            else
+            {
+                IFC_RETURN(::TextInput_SetKeyboardSkin(::TextInput_KeyboardSkins::Default, hwnd));
+                TraceSetIhmKeyboardSkinInfo(static_cast<UINT32>(::TextInput_KeyboardSkins::Default));
+            }
         }
     }
 

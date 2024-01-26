@@ -9,7 +9,7 @@
         </Link>
     </ItemDefinitionGroup>
     <Import Project="eng\sdkconfig.targets" />
-    <Import Project="eng\crtstl.targets" Condition="'$(UseLocalSDK)' != 'true'" />
+    <Import Project="eng\crtstl.targets" Condition="'$(UseLocalSDK)' != 'true' and '$(ResourceOnlyDll)' != 'true'" />
     <Import Project="eng\winuidetails.targets" />
     <Import Project="eng\binplace.targets"/>
     <Import Project="eng\externalbinaries.targets"/>
@@ -21,4 +21,5 @@
     <Import Project="eng\adhocapp.targets" Condition="'$(AdHocApp)'=='true'"/>
     <Import Project="eng\graph.targets" Condition="'$(IsGraphBuild)' == 'true'" />
     <Import Project="eng\projectcaching.targets" />
+    <Import Project="eng\lightup.targets" />
 </Project>

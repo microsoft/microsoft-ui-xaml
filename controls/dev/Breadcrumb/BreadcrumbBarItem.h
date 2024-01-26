@@ -96,7 +96,7 @@ private:
     // BreadcrumbBarItem visual representation
     tracker_ref<winrt::Button> m_button{ this };
     // Parent BreadcrumbBarItem to ask for hidden elements
-    tracker_ref<winrt::BreadcrumbBar> m_parentBreadcrumb{ this };
+    winrt::weak_ref<winrt::BreadcrumbBar> m_parentBreadcrumb{ nullptr };
 
     // Flyout content for ellipsis item
     tracker_ref<winrt::Flyout> m_ellipsisFlyout{ this };

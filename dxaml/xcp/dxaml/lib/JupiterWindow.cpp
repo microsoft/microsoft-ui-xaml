@@ -44,6 +44,7 @@
 #include "InputSiteAdapter.h"
 
 #include <FrameworkUdk/CoreWindowIntegration.h>
+#include <Microsoft.UI.Input.Partner.h>
 #include <WindowingCoreContentApi.h>
 
 #include "WrlHelper.h"
@@ -1400,7 +1401,10 @@ _Check_return_ HRESULT CJupiterWindow::RegisterCoreWindowEvents()
             &m_sizeChangedToken));
     }
 
-    IFC_RETURN(WindowPositionChanged_RegisterListener(this));
+    if (m_pControl->GetBrowserHost()->GetContextInterface()->UseWindowPosChanged())
+    {
+        IFC_RETURN(WindowPositionChanged_RegisterListener(this));
+    }
 
     if (IsXamlBehaviorEnabledForCurrentSku(JupiterWindow_PluginFocusFromActivated)
         || XamlOneCoreTransforms::IsEnabled())
@@ -1429,10 +1433,16 @@ void CJupiterWindow::EnsureInputSiteAdapterForCoreWindow(_In_ ixp::IContentIslan
 
     m_inputSiteAdapter = std::make_unique<InputSiteAdapter>();
     m_inputSiteAdapter->Initialize(coreWindowContentIsland, GetCoreWindowContentRootNoRef(), this);
+    m_inputSiteAdapter->RegisterApplicationIslandInputSiteWithInputServicesForDManip();
 }
 
 void CJupiterWindow::UninitializeInputSiteAdapterForCoreWindow()
 {
+    if (nullptr != m_inputSiteAdapter)
+    {
+        m_inputSiteAdapter->UnregisterApplicationIslandInputSiteWithInputServicesForDManip();
+    }
+
     m_inputSiteAdapter = nullptr;
 }
 
@@ -1790,8 +1800,11 @@ _Check_return_ HRESULT CJupiterWindow::NotifyFirstFrameDrawn()
 
     // Handle deferred focus. If our window was focused before the XAML content was available, we need
     // to take the same actions as if we were focused after the content was available. To do so
-    // synthesize a WM_SETFOCUS message.
-    if (GetFocus() == m_hwnd && focusManager != nullptr && !focusManager->IsPluginFocused())
+    // synthesize a WM_SETFOCUS message. If we're hosting ContentIslands in UWPs (CoreWindows), focus
+    // will be on the ContentIsland, which can be retrieved via the InputSiteAdapter.
+    const auto hwndInFocus = ::GetFocus();
+    bool isIslandInFocus = (nullptr != m_inputSiteAdapter) ? m_inputSiteAdapter->HasFocus() : false;
+    if ((hwndInFocus == m_hwnd || isIslandInFocus) && focusManager != nullptr && !focusManager->IsPluginFocused())
     {
         m_pControl->HandleWindowMessage(WM_SETFOCUS, 0, 0, GetCoreWindowContentRootNoRef());
     }

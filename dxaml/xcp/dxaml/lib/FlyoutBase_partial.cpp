@@ -42,6 +42,8 @@
 #include "RootScale.h"
 #include "ElementSoundPlayerService_Partial.h"
 #include "MenuFlyoutPresenter_Partial.h"
+#include "XamlTelemetry.h"
+#include <Microsoft.UI.Input.Partner.h>
 
 using namespace std::placeholders;
 
@@ -939,6 +941,8 @@ _Check_return_ HRESULT FlyoutBase::ShowAtWithOptionsImpl(
     _In_opt_ xaml::IDependencyObject* pPlacementTarget,
     _In_opt_ xaml_primitives::IFlyoutShowOptions* pShowOptions)
 {
+    PerfXamlEvent_RAII perfXamlEvent(reinterpret_cast<uint64_t>(this), "FlyoutBase::ShowAt[WithOptions]", true);
+
     DBG_FLYOUT_TRACE(L">>> FlyoutBase::ShowAtWithOptionsImpl()");
 
     BOOLEAN shouldConstrainToRootBounds;
@@ -2184,26 +2188,6 @@ Cleanup:
     RRETURN(hr);
 }
 
-// Use WM_CHANGEUISTATE/WM_QUERYUISTATE messages to determine if we should show focus indicators (based on the
-// most recently-used input device of the system).  Note some top level windows (e.g., WPF) don't seem to propagate
-// the WM_CHANGEUISTATE/WM_UPDATEUISTATE messages like DefWindowProc does, which blocks this from working on arbitrary
-// child windows.  For MenuFlyout, the Popup window HWND works well here because it has no parent window that could
-// interfere with the messages.
-bool AreSystemFocusIndicatorsVisible(_In_ HWND wnd)
-{
-    ::SendMessage(wnd, WM_CHANGEUISTATE, MAKEWPARAM(UIS_INITIALIZE, 0), 0);
-    auto uiState = ::SendMessage(wnd, WM_QUERYUISTATE, 0, 0);
-
-    // Windows has different flags to hide accelerators (UISF_HIDEACCEL) and focus indicators (UISF_HIDEFOCUS),
-    // but in XAML we don't track this distinction, so we just show the focus visuals if either flag is set.
-    if ((uiState & (UISF_HIDEFOCUS | UISF_HIDEACCEL)) == 0)
-    {
-        return true;
-    }
-    return false;
-}
-
-
 _Check_return_ HRESULT FlyoutBase::OnPresenterLoaded(
     _In_ IInspectable* pSender,
     _In_ xaml::IRoutedEventArgs* pArgs)
@@ -2234,13 +2218,16 @@ _Check_return_ HRESULT FlyoutBase::OnPresenterLoaded(
         // In some islands scenarios (e.g., Win+X menu) the app calls ShowAt in response to input that XAML is not aware of (because
         // it's happening outside the island)  Since XAML won't know then what the last input device _really_ was, we update XAML's
         // notion of last input device with what the system has here, and open the Flyout with the appropriate FocusState.
+        // We only care about this for windowed popups.
         if (m_tpPopup && contentRoot->GetType() == CContentRoot::XamlIslandRoot)
         {
             CPopup* corePopup {static_cast<CPopup*>(m_tpPopup.Cast<Popup>()->GetHandle())};
-            HWND popupWnd = corePopup->GetWindowHandle();
-            if (popupWnd)
+            wrl::ComPtr<ixp::IIslandInputSitePartner> islandInputSite = corePopup->GetIslandInputSite();
+            if (nullptr != islandInputSite && corePopup->IsWindowed())
             {
-                const bool shouldShowKeyboardIndicators = AreSystemFocusIndicatorsVisible(popupWnd);
+                boolean showFocusRectangles{ false };
+                IFCFAILFAST(islandInputSite->get_ShouldShowFocusRectangles(&showFocusRectangles));
+                const bool shouldShowKeyboardIndicators = static_cast<bool>(showFocusRectangles);
                 if (shouldShowKeyboardIndicators && focusState != DirectUI::FocusState::Keyboard)
                 {
                     inputManager.SetLastInputDeviceType(DirectUI::InputDeviceType::Keyboard);

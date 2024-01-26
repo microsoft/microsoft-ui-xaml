@@ -77,8 +77,13 @@ namespace DirectUI
 
         virtual _Check_return_ HRESULT GetShouldOpenUp(_Out_ bool* shouldOpenUp);
 
+        virtual _Check_return_ HRESULT HasRightLabelDynamicPrimaryCommand(_Out_ bool* hasRightLabelDynamicPrimaryCommand);
+        virtual _Check_return_ HRESULT HasNonLabeledDynamicPrimaryCommand(_Out_ bool* hasNonLabeledDynamicPrimaryCommand);
+
         _Check_return_ HRESULT HasSpaceForAppBarToOpenDown(_Out_ bool* hasSpace);
 
+        double GetCompactHeight() const { return m_compactHeight; }
+        double GetMinimalHeight() const { return m_minimalHeight; }
         double GetContentHeight() const { return m_contentHeight; }
 
         // Dismisses an inline appbar if it is not sticky.
@@ -90,9 +95,6 @@ namespace DirectUI
         TrackerPtr<xaml::IFrameworkElement>         m_tpContentRoot;
         TrackerPtr<xaml_primitives::IButtonBase>    m_tpExpandButton;
         TrackerPtr<xaml::IVisualStateGroup>         m_tpDisplayModesStateGroup;
-
-        double m_compactHeight;
-        double m_minimalHeight;
 
         bool m_openedWithExpandButton;
 
@@ -137,6 +139,43 @@ namespace DirectUI
         _Check_return_ HRESULT PlayOverlayOpeningAnimation();
         _Check_return_ HRESULT PlayOverlayClosingAnimation();
 
+        double GetMinCompactHeight() const
+        {
+            return m_minCompactHeight;
+        }
+
+        void SetMinCompactHeight(double value)
+        {
+            if (m_minCompactHeight != value)
+            {
+                m_minCompactHeight = value;
+            }
+        }
+
+        void SetCompactHeight(double value) 
+        {
+            if (m_compactHeight != value)
+            {
+                m_compactHeight = value;
+            }
+        }
+
+        void SetMinimalHeight(double value)
+        {
+            if (m_minimalHeight != value)
+            {
+                m_minimalHeight = value;
+            }
+        }
+
+        void SetContentHeight(double value) 
+        {
+            if (m_contentHeight != value)
+            {
+                m_contentHeight = value;
+            }
+        }
+
         AppBarMode m_Mode;
 
         // Focus state to be applied on loaded.
@@ -171,6 +210,10 @@ namespace DirectUI
 
         // We refresh this value in the OnSizeChanged() & OnContentSizeChanged() handlers.
         double m_contentHeight;
+
+        double m_minCompactHeight;
+        double m_compactHeight;
+        double m_minimalHeight;
 
         bool m_isOverlayVisible;
         TrackerPtr<xaml_animation::IStoryboard> m_overlayOpeningStoryboard;

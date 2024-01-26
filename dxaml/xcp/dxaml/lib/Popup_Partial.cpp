@@ -30,18 +30,19 @@ Popup::~Popup()
 {
     if (DXamlCore::GetCurrent() != nullptr)
     {
-        VERIFYHR(BackButtonIntegration_UnregisterListener(this));
-
         // Clear the caches on the current window
         ClearWindowCaches();
     }
+    
+    // These handlers don't require a DXamlCore on the thread.
+    IGNOREHR(BackButtonIntegration_UnregisterListener(this));
+    IGNOREHR(WindowPositionChanged_UnregisterListener(this));
 }
 
 void Popup::ClearWindowCaches()
 {
     IGNOREHR(UnregisterForXamlRootChangedEvents());
     IGNOREHR(UnregisterForWindowActivatedEvents());
-    IGNOREHR(WindowPositionChanged_UnregisterListener(this));
 }
 
 _Check_return_ HRESULT Popup::Initialize()
@@ -68,7 +69,8 @@ _Check_return_ HRESULT Popup::HookupWindowPositionChangedHandler(_In_ CDependenc
 // Window position changed events for light dismiss of windowed popups.
 _Check_return_ HRESULT Popup::HookupWindowPositionChangedHandlerImpl()
 {
-    if (CPopup::DoesPlatformSupportWindowedPopup(DXamlCore::GetCurrent()->GetHandle()))
+    if (CPopup::DoesPlatformSupportWindowedPopup(DXamlCore::GetCurrent()->GetHandle())
+        && DXamlCore::GetCurrent()->GetHandle()->UseWindowPosChanged())
     {
         IFC_RETURN(WindowPositionChanged_RegisterListener(this));
     }

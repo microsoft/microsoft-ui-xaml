@@ -6,7 +6,6 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp
 {
-    [TopLevelTestPage(Name = "CommandBar")]
     public sealed partial class CommandBarPage : Page
     {
         public CommandBarPage()

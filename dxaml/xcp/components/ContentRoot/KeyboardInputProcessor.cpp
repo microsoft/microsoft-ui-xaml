@@ -755,7 +755,7 @@ CDependencyObject* KeyboardInputProcessor::GetKeyRoutedSource(_In_ CDependencyOb
         // if window chrome the is top most element on a visual tree, return its content as
         // the real root element of the visual tree
         // TODO: Task 38535248
-        if (pRoutedSource->OfTypeByIndex<KnownTypeIndex::WindowChrome>())
+        if (pRoutedSource && pRoutedSource->OfTypeByIndex<KnownTypeIndex::WindowChrome>())
         {
             CContentControl* pWindowChrome = do_pointer_cast<CContentControl>(pRoutedSource);
             CValue windowContent;

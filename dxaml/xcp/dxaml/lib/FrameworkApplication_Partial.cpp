@@ -209,6 +209,10 @@ _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_ xaml::IApplic
     // init Jupiter for this thread
     IFC_RETURN(DXamlCore::Initialize(InitializationType::IslandsOnly));
 
+    // By spec, when an app initializes Xaml for use in a WinUI Desktop scenario, DispatcherShutdownMode
+    // defaults to "OnLastWindowClose".
+    DXamlCore::GetCurrent()->SetDispatcherShutdownMode(xaml::DispatcherShutdownMode_OnLastWindowClose);
+
     //  Invoke the ApplicationInitialization callback set by FrameworkApplication::StartImpl
     if (g_spApplicationInitializationCallback)
     {
@@ -938,18 +942,21 @@ _Check_return_ HRESULT FrameworkApplication::ExitImpl()
     {
         if (DXamlCore* dxamlCore = DirectUI::DXamlCore::GetCurrent())
         {
-            if (bool anyWindowLeftToClose = !dxamlCore->m_handleToDesktopWindowMap.empty())
+            const bool anyWindowLeftToClose = !dxamlCore->m_handleToDesktopWindowMap.empty();
+            if (anyWindowLeftToClose)
             {
-                // Close all windows, which will trigger PostQuitMessage(0) and initiate XAML shutdown
-                // closing the last window will also exit the app
+                // Close all windows.
                 for (auto const& [hwnd, window] : dxamlCore->m_handleToDesktopWindowMap)
                 {
                     window->Close();
                 }
             }
-            else
+            
+            // If there were no Windows, PostQuitMessage didn't called, so call it now.
+            // If DispatcherShutdownMode was OnExplicitShutdown, PostQuitMessage() didn't get called either.
+            // In both cases, call PostQuitMessage() here so that Exit() reliably exits the event loop.
+            if (!anyWindowLeftToClose || dxamlCore->GetDispatcherShutdownMode() == xaml::DispatcherShutdownMode_OnExplicitShutdown)
             {
-                // for applications which never create a Xaml window, this will initiate XAML shutdown
                 ::PostQuitMessage(0);
             }
         }
@@ -1236,6 +1243,35 @@ _Check_return_ HRESULT FrameworkApplication::put_ShutdownModelImpl(_In_ xaml::Sh
     }
     IFC_RETURN(E_INVALIDARG);
 }
+
+        
+_Check_return_ HRESULT FrameworkApplication::get_DispatcherShutdownModeImpl(_Out_ xaml::DispatcherShutdownMode* value)
+{
+    auto dxamlCore = DXamlCore::GetCurrent();
+    if (!dxamlCore)
+    {
+        IFC_RETURN(RPC_E_WRONG_THREAD);
+    }
+
+    *value = dxamlCore->GetDispatcherShutdownMode();
+
+    return S_OK;
+}
+
+
+_Check_return_ HRESULT FrameworkApplication::put_DispatcherShutdownModeImpl(_In_ xaml::DispatcherShutdownMode value)
+{
+    auto dxamlCore = DXamlCore::GetCurrent();
+    if (!dxamlCore)
+    {
+        IFC_RETURN(RPC_E_WRONG_THREAD);
+    }
+
+    dxamlCore->SetDispatcherShutdownMode(value);
+
+    return S_OK;
+}
+
 
 _Check_return_ HRESULT FrameworkApplication::DispatchBackgroundActivated(
     _In_ IInspectable* pComponent,

@@ -1830,5 +1830,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 Verify.AreEqual("88", paneFooterNavViewItemWidthTextBlock.DocumentText);
             }
         }
+
+        [TestMethod]
+        public void VerifyAddingNewItemsFromIndexZero()
+        {
+            // Regression test for #46242746
+            // Before fix, adding new items in this manner would result in
+            // two NavigationViewItems to show up both named Item 0.
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationViewMenuItemsSourcePage" }))
+            {
+                // Verify that "Item 0" does not exist
+                var item0 = FindElement.ByName("Item 0");
+                Verify.IsNull(item0, "Item 0 should not exist");
+
+                // Verify that "Item 1" does not exist
+                var item1 = FindElement.ByName("Item 1");
+                Verify.IsNull(item1, "Item 1 should not exist");
+
+                // Find and click the button "BtnInsertItemsFromBeginning"
+                var btnInsertItemsFromBeginning = FindElement.ByName<Button>("BtnInsertItemsFromBeginning");
+                Verify.IsNotNull(btnInsertItemsFromBeginning, "BtnInsertItemsFromBeginning should be non-null!");
+                btnInsertItemsFromBeginning.InvokeAndWait();
+
+                // Verify that "Item 0" exists
+                item0 = FindElement.ByName("Item 0");
+                Verify.IsNotNull(item0, "Item 0 should exist");
+
+                // Verify that "Item 1" exists
+                item1 = FindElement.ByName("Item 1");
+                Verify.IsNotNull(item1, "Item 1 should exist");
+            }
+        }
     }
 }

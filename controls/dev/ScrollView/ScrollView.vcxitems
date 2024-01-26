@@ -19,6 +19,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ScrollView.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollBarController.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollView.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewLightup.cpp">
+      <XamlLightup>true</XamlLightup>
+    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewBringIntoViewOperation.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewTestHooks.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewTestHooksFactory.cpp" />

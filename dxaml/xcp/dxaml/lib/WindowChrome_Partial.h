@@ -25,7 +25,7 @@ namespace DirectUI
         void ResizeContainer(WPARAM wParam, LPARAM lParam);
         void MoveContainer(WPARAM wParam, LPARAM lParam);
         DesktopWindowImpl* GetDesktopWindowNoRef() const { return m_desktopWindow; }
-        HWND GetBridgeWindowHandle() const;
+        HWND GetPositioningBridgeWindowHandle() const;
         ctl::ComPtr<ixp::IAppWindow> GetAppWindow() const;
         bool CanDrag() const;
         void UpdateCanDragStatus(bool enabled);

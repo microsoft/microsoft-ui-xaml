@@ -199,6 +199,9 @@ namespace MUXControlsTestApp
             ParentHiddenThenVisibleTest,
             LifetimeTabTest,
             DragDropIntoWebView2Test,
+            CustomConfiguration_BasicTest,
+            CustomConfiguration_EnsureAgainAfterDefaultTest,
+            CustomConfiguration_EnsureAgainAfterCustomTest
         };
 
         // Map of TestList entry to its webpage (index in TestPageNames[])
@@ -269,6 +272,9 @@ namespace MUXControlsTestApp
             { TestList.ParentHiddenThenVisibleTest, 1 },
             { TestList.LifetimeTabTest, 0 },
             { TestList.DragDropIntoWebView2Test, 3 },
+            { TestList.CustomConfiguration_BasicTest, 0 },
+            { TestList.CustomConfiguration_EnsureAgainAfterDefaultTest, 0 },
+            { TestList.CustomConfiguration_EnsureAgainAfterCustomTest, 0 }
         };
 
         readonly string[] TestPageNames =
@@ -289,6 +295,7 @@ namespace MUXControlsTestApp
         bool _isRedirected = false;
         bool _areWebviewElementsCleanedUp = false;
         bool _isApplicationLanguageOverrideSet = false;
+        string _customUserDataFolder = string.Empty;
 
         double _originalHeight;
         double _originalWidth;
@@ -780,6 +787,14 @@ namespace MUXControlsTestApp
                         AddWebViewEventHandlers(newWebView2);
                     }
                     break;
+
+                case TestList.CustomConfiguration_BasicTest:
+                case TestList.CustomConfiguration_EnsureAgainAfterCustomTest:
+                    {
+                        // Defer load so we can use custom Environment and ControllerOptions
+                    }
+                    break;
+
                 default:
                     WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[test]]);
                     break;
@@ -1991,6 +2006,328 @@ namespace MUXControlsTestApp
                         }
                         break;
 
+                    case TestList.CustomConfiguration_BasicTest:
+                        {
+                            // Create a custom environment
+                            var exePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                            var userDataFolder = exePath + ".CustomUDF";
+
+                            CoreWebView2EnvironmentOptions environmentOptions = new CoreWebView2EnvironmentOptions();
+                            environmentOptions.Language = "zh-Hans";
+
+                            CoreWebView2Environment environment =
+                                await Microsoft.Web.WebView2.Core.CoreWebView2Environment.CreateWithOptionsAsync(
+                                    String.Empty /* browserExecutableFolder */, userDataFolder, environmentOptions);
+
+                            // Create custom ControllerOptions
+                            CoreWebView2ControllerOptions controllerOptions = environment.CreateCoreWebView2ControllerOptions();
+                            controllerOptions.IsInPrivateModeEnabled = true;
+
+                            // Create the WebView2 using the custom Environment
+                            await MyWebView2.EnsureCoreWebView2Async(environment, controllerOptions);
+
+                            var navCompletedTask = MyWebView2.GetNavigationCompletedTask();
+                            WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[selectedTest]]);
+                            await navCompletedTask;
+
+                            // Save the UDF path so we can delete it later
+                            _customUserDataFolder = MyWebView2.CoreWebView2.Environment.UserDataFolder;
+
+                            // Check that the WebView2 has the language set by custom CoreWebView2EnvironmentOptions
+                            string expectedLanguage = "\"zh-Hans\"";
+                            string actualLanguage = await MyWebView2.ExecuteScriptAsync("getLanguage();");
+
+                            logger.Verify((actualLanguage == expectedLanguage),
+                                          string.Format("Test {0}: Custom Environment's Language {1} did not match expected value {2}",
+                                                         selectedTest.ToString(), actualLanguage, expectedLanguage));
+                        }
+                        break;
+
+                    case TestList.CustomConfiguration_EnsureAgainAfterDefaultTest:
+                        {
+                            // Ensure again after (automatic) Source-based creation
+                            var navCompletedTask = MyWebView2.GetNavigationCompletedTask();
+
+                            // TEST 1: EnsureCoreWebView2Async() : <--- should succeed for any configuration
+                            try
+                            {
+                                LogHeader("TEST 1", "Ensure again with (), expecting: SUCCESS");
+                                await MyWebView2.EnsureCoreWebView2Async();
+                                WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[selectedTest]]);
+                                await navCompletedTask;
+                                LogSuccess("TEST 1");
+                            }
+                            catch (Exception e)
+                            {
+                                LogFailure_Exception(logger, "TEST 1", e);
+                            }
+
+                            // TODO: Investigate if null RuntimeClass parameter can be passed in WinRT/MIDL3 
+                            //       Bug 48553811: [WebView2] Calling EnsureCoreWebView2Async(null, [null])
+                            //                     throws in projection layer (both cpp/winrt and C#)
+                            //
+                            //// TEST 2: EnsureCoreWebView2Async(null) <--- should succeed for any configuration
+                            //try
+                            //{
+                            //    LogHeader("TEST 2", "Ensure again with (null), expecting: SUCCESS");
+                            //    await MyWebView2.EnsureCoreWebView2Async(null);
+                            //    WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[selectedTest]]);
+                            //    await navCompletedTask;
+                            //    LogSuccess("TEST 2");
+                            //}
+                            //catch (Exception e)
+                            //{
+                            //    LogFailure_Exception(logger, "TEST 2", e);
+                            //}
+                            //
+                            //// TEST 3: EnsureCoreWebView2Async(null, null) <--- should succeed for any configuration
+                            //try
+                            //{
+                            //    LogHeader("TEST 3", "Ensure again with (null, null), expecting: SUCCESS");
+                            //    await MyWebView2.EnsureCoreWebView2Async(null, null);
+                            //    WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[selectedTest]]);
+                            //    await navCompletedTask;
+                            //    LogSuccess("TEST 3");
+                            //}
+                            //catch (Exception e)
+                            //{
+                            //    LogFailure_Exception(logger, "TEST 3", e);
+                            //}
+
+                            CoreWebView2Environment DefaultEnvironment = MyWebView2.CoreWebView2.Environment;
+
+                            // TODO : Different CoreWebView2Environment instance is returned from CoreWebView2.Environment getter than 
+                            //        the one cached during implicit CoreWebView2 creation. Need to follow up with  Edge team on this.
+                            //        Bug 48528478: WebView2: myWV2.EnsureCoreWebView2Async(myWV2.CoreWebView2.CoreWebView2Environment) 
+                            //                      unexpectedly fails on default-initialized WebView2
+                            //
+                            // // TEST  4: EnsureCoreWebView2Async(DefaultEnvironment) <--- should succeed (Default Environment & ControllerOptions)
+                            // try
+                            // {
+                            //     LogHeader("TEST 4", "Ensure again with (DefaultEnvironment), expecting: SUCCESS");
+                            //     await MyWebView2.EnsureCoreWebView2Async(DefaultEnvironment);
+                            //     WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[selectedTest]]);
+                            //     await navCompletedTask;
+                            //     LogSuccess("TEST 4");
+                            // }
+                            // catch (Exception e)
+                            // {
+                            //     LogFailure_Exception(logger, "TEST 4", e);
+                            // }
+
+                            // Create an equivalent custom environment to the default
+                            CoreWebView2EnvironmentOptions environmentOptions = new CoreWebView2EnvironmentOptions();
+                            CoreWebView2Environment EquivalentCustomEnvironment =
+                                await Microsoft.Web.WebView2.Core.CoreWebView2Environment.CreateWithOptionsAsync(
+                                    String.Empty /* browserExecutableFolder */, String.Empty /* UserDataFolder */, environmentOptions);
+
+                            // Ensure Again Test 5: EnsureCoreWebView2Async(EquivalentCustomEnvironment) <--- should fail (different environment instance)
+                            try
+                            {
+                                _helpers.AppendMessage("[TEST 5] Ensure again with (EquivalentCustomEnvironment), expecting: ARGUMENT_EXCEPTION");
+                                await MyWebView2.EnsureCoreWebView2Async(EquivalentCustomEnvironment);
+                                LogFailure(logger, "[TEST 5]", "ArgumentException wasn't raised.");
+                            }
+                            catch (ArgumentException e)
+                            {
+                               if (e is ArgumentException)
+                               {
+                                    LogSuccess("TEST 5");
+                               }
+                               else
+                               {
+                                    LogFailure_Exception(logger, "TEST 5", e);
+                               }
+                            }
+
+                            CoreWebView2ControllerOptions EquivalentCustomOptions = DefaultEnvironment.CreateCoreWebView2ControllerOptions();
+
+                            // Ensure Again Test 6: EnsureCoreWebView2Async(DefaultEnvironment, EquivalentCustomOptions) <--- should fail (different options instance)
+                            try
+                            {
+                                _helpers.AppendMessage("[TEST 6] Ensure again with (DefaultEnvironment, EquivalentCustomOptions), expecting: ARGUMENT_EXCEPTION");
+                                await MyWebView2.EnsureCoreWebView2Async(DefaultEnvironment, EquivalentCustomOptions);
+                                LogFailure(logger, "[TEST 6]", "ArgumentException wasn't raised.");
+                            }
+                            catch (ArgumentException e)
+                            {
+                               if (e is ArgumentException)
+                               {
+                                    LogSuccess("TEST 6");
+                               }
+                               else
+                               {
+                                    LogFailure_Exception(logger, "TEST 6", e);
+                               }
+                            }
+                        }
+                        break;
+
+                    case TestList.CustomConfiguration_EnsureAgainAfterCustomTest:
+                        {
+                            // Create a custom environment
+                            CoreWebView2EnvironmentOptions environmentOptions = new CoreWebView2EnvironmentOptions();
+                            environmentOptions.Language = "zh-Hans";
+
+                            CoreWebView2Environment CustomEnvironment =
+                                await Microsoft.Web.WebView2.Core.CoreWebView2Environment.CreateWithOptionsAsync(
+                                    String.Empty /* browserExecutableFolder */, String.Empty /* UserDataFolder */, environmentOptions);
+
+                            CoreWebView2ControllerOptions CustomOptions = CustomEnvironment.CreateCoreWebView2ControllerOptions();
+                            CustomOptions.IsInPrivateModeEnabled = true;
+
+                            // Create the WebView2 using the custom environment and options: EnsureCoreWebView2Async(customEnvironment, customOptions);
+                            _helpers.AppendMessage("[SETUP] Create WebView2 & initialize with (CustomEnvironment, CustomOptions)...");
+                            await MyWebView2.EnsureCoreWebView2Async(CustomEnvironment, CustomOptions);
+                            var navCompletedTask = MyWebView2.GetNavigationCompletedTask();
+                            WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[selectedTest]]);
+                            await navCompletedTask;
+
+                            // TEST 1: EnsureCoreWebView2Async() : <--- should succeed for any configuration
+                            try
+                            {
+                                LogHeader("TEST 1", "Ensure again with (), expecting: SUCCESS");
+                                await MyWebView2.EnsureCoreWebView2Async();
+                                WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[selectedTest]]);
+                                await navCompletedTask;
+                                LogSuccess("TEST 1");
+                            }
+                            catch (Exception e)
+                            {
+                                LogFailure_Exception(logger, "TEST 1", e);
+                            }
+
+                            // TODO: Investigate if null RuntimeClass parameter can be passed in WinRT/MIDL3 
+                            //       Bug 48553811: [WebView2] Calling EnsureCoreWebView2Async(null, [null])
+                            //                     throws in projection layer (both cpp/winrt and C#)
+                            //
+                            //// TEST 2: EnsureCoreWebView2Async(null) <--- should succeed for any configuration
+                            //try
+                            //{
+                            //    LogHeader("TEST 2", "Ensure again with (null), expecting: SUCCESS");
+                            //    await MyWebView2.EnsureCoreWebView2Async(null);
+                            //    WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[selectedTest]]);
+                            //    await navCompletedTask;
+                            //    LogSuccess("TEST 2");
+                            //}
+                            //catch (Exception e)
+                            //{
+                            //    LogFailure_Exception(logger, "TEST 2", e);
+                            //}
+                            //
+                            //// TEST 3: EnsureCoreWebView2Async(null, null) <--- should succeed for any configuration
+                            //try
+                            //{
+                            //    LogHeader("TEST 3", "Ensure again with (null, null), expecting: SUCCESS");
+                            //    await MyWebView2.EnsureCoreWebView2Async(null, null);
+                            //    WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[selectedTest]]);
+                            //    await navCompletedTask;
+                            //    LogSuccess("TEST 3");
+                            //}
+                            //catch (Exception e)
+                            //{
+                            //    LogFailure_Exception(logger, "TEST 3", e);
+                            //}
+
+                            // TEST 4: EnsureCoreWebView2Async(CustomEnvironment) <--- should fail (different ControllerOptions)
+                            try
+                            {
+                                LogHeader("TEST 4", "Ensure again with (CustomEnvironment), expecting: ARGUMENT_EXCEPTION.");
+                                await MyWebView2.EnsureCoreWebView2Async(CustomEnvironment);
+                                LogFailure(logger, "TEST 4", " ArgumentException wasn't raised");
+                            }
+                            catch (Exception e)
+                            {
+                               if (e is ArgumentException)
+                               {
+                                    LogSuccess("TEST 4");
+                               }
+                               else
+                               {
+                                    LogFailure_Exception(logger, "TEST 4", e);
+                               }
+                            }
+
+                            // TEST  5: EnsureCoreWebView2Async(CustomEnvironment, CustomOptions) <--- should succeed (same Environment & CotnrollerOptions)
+                            try
+                            {
+                                LogHeader("TEST 5", "Ensure again with (CustomEnvironment, CustomOptions), expecting: SUCCESS");
+                                await MyWebView2.EnsureCoreWebView2Async(CustomEnvironment, CustomOptions);
+                                WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[selectedTest]]);
+                                await navCompletedTask;
+                                LogSuccess("TEST 5");
+                            }
+                            catch (Exception e)
+                            {
+                                LogFailure_Exception(logger, "TEST 5", e);
+                            }
+
+                            CoreWebView2Environment EquivalentCustomEnvironment =
+                                await Microsoft.Web.WebView2.Core.CoreWebView2Environment.CreateWithOptionsAsync(
+                                    String.Empty /* browserExecutableFolder */, String.Empty /* UserDataFolder */, environmentOptions);
+
+                            // Ensure Again Test 6: EnsureCoreWebView2Async(EquivalentCustomEnvironment>) <--- should fail (different environment instance)
+                            try
+                            {
+                                _helpers.AppendMessage("[TEST 6] Ensure again with (EquivalentCustomEnvironment), expecting: ARGUMENT_EXCEPTION");
+                                await MyWebView2.EnsureCoreWebView2Async(EquivalentCustomEnvironment);
+                                LogFailure(logger, "[TEST 6]", "ArgumentException wasn't raised.");
+                            }
+                            catch (ArgumentException e)
+                            {
+                               if (e is ArgumentException)
+                               {
+                                    LogSuccess("TEST 6");
+                               }
+                               else
+                               {
+                                    LogFailure_Exception(logger, "TEST 6", e);
+                               }
+                            }
+
+                            // Ensure Again Test 7: EnsureCoreWebView2Async(EquivalentCustomEnvironment, CustomOptions>) <--- should fail (different environment instance)
+                            try
+                            {
+                                _helpers.AppendMessage("[TEST 7] Ensure again with (EquivalentCustomEnvironment, CustomOptions), expecting: ARGUMENT_EXCEPTION");
+                                await MyWebView2.EnsureCoreWebView2Async(EquivalentCustomEnvironment, CustomOptions);
+                                LogFailure(logger, "[TEST 7]", "ArgumentException wasn't raised.");
+                            }
+                            catch (ArgumentException e)
+                            {
+                               if (e is ArgumentException)
+                               {
+                                    LogSuccess("TEST 7");
+                               }
+                               else
+                               {
+                                    LogFailure_Exception(logger, "TEST 7", e);
+                               }
+                            }
+
+                            CoreWebView2ControllerOptions EquivalentCustomOptions = CustomEnvironment.CreateCoreWebView2ControllerOptions();
+                            EquivalentCustomOptions.IsInPrivateModeEnabled = true;
+
+                            // Ensure Again Test 8 EnsureCoreWebView2Async(CustomEnvironment, EquivalentCustomOptions>) <--- should fail (different options instance)
+                            try
+                            {
+                                _helpers.AppendMessage("[TEST 8] Ensure again with (CustomEnvironment, EquivalentCustomOptions), expecting: ARGUMENT_EXCEPTION");
+                                await MyWebView2.EnsureCoreWebView2Async(CustomEnvironment, EquivalentCustomOptions);
+                                LogFailure(logger, "[TEST 8]", "ArgumentException wasn't raised.");
+                            }
+                            catch (ArgumentException e)
+                            {
+                               if (e is ArgumentException)
+                               {
+                                    LogSuccess("TEST 8");
+                               }
+                               else
+                               {
+                                    LogFailure_Exception(logger, "TEST 8", e);
+                               }
+                            }
+                        }
+                        break;
+
                     default:
                         break;
                 }
@@ -2007,6 +2344,13 @@ namespace MUXControlsTestApp
             {
                 ApplicationLanguages.PrimaryLanguageOverride = string.Empty;
                 _isApplicationLanguageOverrideSet = false;
+            }
+
+            if (_customUserDataFolder != string.Empty)
+            {
+                // Delete the custom UserDataFolder
+                System.IO.Directory.Delete(_customUserDataFolder, true);
+                _customUserDataFolder = string.Empty;
             }
 
             CleanupResultTextBox.Text = "Cleanup completed.";
@@ -2027,12 +2371,35 @@ namespace MUXControlsTestApp
                     CleanupCurrentTest(null, null);
                 }
             }
-
         }
 
         private void AppendMessage(string message)
         {
             MessageLog.Text = MessageLog.Text + message + Environment.NewLine;
+        }
+
+        private void LogHeader(string testName, string header)
+        {
+            _helpers.AppendMessage(string.Format("[{0}]: {1}.", testName, header));
+        }
+
+        private void LogSuccess(string testName)
+        {
+            _helpers.AppendMessage(string.Format("[{0}] Passed.", testName));
+        }
+
+        private void LogFailure(ResultsLogger logger, string testName, string message)
+        {
+            string failureText = string.Format("[{0}] Failed: {1}.", testName, message);
+            _helpers.AppendMessage(failureText);
+            logger.LogError(failureText);
+        }
+
+        private void LogFailure_Exception(ResultsLogger logger, string testName, Exception e)
+        {
+            string failureText = string.Format("[{0}] Failed: Got {1}({2}).", testName, e, e.Message);
+            _helpers.AppendMessage(failureText);
+            logger.LogError(failureText);
         }
     }
 

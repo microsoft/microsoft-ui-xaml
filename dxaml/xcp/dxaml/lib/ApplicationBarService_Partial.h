@@ -156,6 +156,8 @@ namespace DirectUI
                 _In_ BOOLEAN startFromEnd,
                 _Outptr_result_maybenull_ CDependencyObject **ppNewTabStop) override;
 
+            void SetXamlRoot(_In_ XamlRoot* xamlRoot) override;
+
        private:
             _Check_return_ HRESULT CleanupOpenEventHooks();
             _Check_return_ HRESULT CleanupWindowActivatedEventHook();

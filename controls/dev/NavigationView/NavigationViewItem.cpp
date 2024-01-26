@@ -70,6 +70,7 @@ void NavigationViewItem::OnApplyTemplate()
 {
     // Stop UpdateVisualState before template is applied. Otherwise the visuals may be unexpected
     m_appliedTemplate = false;
+    m_restoreToExpandedState = false;
 
     UnhookEventsAndClearFields();
 
@@ -226,6 +227,7 @@ void NavigationViewItem::OnSplitViewPropertyChanged(const winrt::DependencyObjec
     {
         UpdateIsClosedCompact();
         ReparentRepeater();
+        HandleExpansionStateMemory();
     }
 }
 
@@ -252,6 +254,28 @@ void NavigationViewItem::UpdateIsClosedCompact()
             && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline);
 
         UpdateVisualState(true /*useTransitions*/);
+    }
+}
+
+// NavigationView needs to force collapse top level items when the pane closes.
+// This is done to avoid a compact state with children showing.
+// This is done in a way that allows the control to restore the expanded
+// state when the pane is opened again.
+void NavigationViewItem::HandleExpansionStateMemory()
+{
+    if (IsTopLevelItem())
+    {
+        if (const auto splitView = GetSplitView())
+        {
+            if (splitView.IsPaneOpen())
+            {
+                RestoreExpandedState();
+            }
+            else
+            {
+                ForceCollapse();
+            }
+        }
     }
 }
 
@@ -307,6 +331,8 @@ void NavigationViewItem::SuggestedToolTipChanged(winrt::IInspectable const& newC
 
 void NavigationViewItem::OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    m_restoreToExpandedState = false;
+    
     if (winrt::AutomationPeer peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
     {
         auto navViewItemPeer = peer.as<winrt::NavigationViewItemAutomationPeer>();
@@ -424,6 +450,7 @@ void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
     case NavigationViewRepeaterPosition::TopPrimary:
     case NavigationViewRepeaterPosition::TopFooter:
         stateName = c_OnTopNavigationPrimary;
+        m_restoreToExpandedState = false;
         if (winrt::Application::Current().FocusVisualKind() == winrt::FocusVisualKind::Reveal)
         {
             // OnTopNavigationPrimaryReveal is introduced in RS6 and only in the V1 style.
@@ -436,6 +463,7 @@ void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
         break;
     case NavigationViewRepeaterPosition::TopOverflow:
         stateName = c_OnTopNavigationOverflow;
+        m_restoreToExpandedState = false;
         break;
     }
 
@@ -730,7 +758,16 @@ bool NavigationViewItem::IsOnLeftNav() const
 
 bool NavigationViewItem::IsOnTopPrimary() const
 {
-    return Position() == NavigationViewRepeaterPosition::TopPrimary;
+    bool isPaneDisplayModeTop = true;
+    if (const auto navigationView = GetNavigationView())
+    {
+        // There is a delay between the NavigationViewPaneDisplayMode update and the 
+        // position property of NavigationViewItem being updated. This function gets called
+        // in that delay period, so we need to check the PaneDisplayMode as further verification
+        // of whether we are in Top mode or switching away from it.
+        isPaneDisplayModeTop = navigationView.PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::Top;
+    }
+    return Position() == NavigationViewRepeaterPosition::TopPrimary && isPaneDisplayModeTop;
 }
 
 winrt::UIElement const NavigationViewItem::GetPresenterOrItem() const
@@ -790,6 +827,24 @@ void NavigationViewItem::ShowHideChildren()
                 }
             }
         }
+    }
+}
+
+void NavigationViewItem::ForceCollapse()
+{
+    if (IsExpanded())
+    {
+        IsExpanded(false);
+        m_restoreToExpandedState = true;
+    }
+}
+
+void NavigationViewItem::RestoreExpandedState()
+{
+    if (m_restoreToExpandedState)
+    {
+        IsExpanded(true);
+        m_restoreToExpandedState = false;
     }
 }
 

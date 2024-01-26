@@ -31,6 +31,8 @@ namespace ctl
         IFACEMETHOD(get_Content)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue) override { return This()->get_Content(ppValue); }
         IFACEMETHOD(put_Content)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue) override { return This()->put_Content(pValue); }
         IFACEMETHOD(get_ContentIsland)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IContentIsland** ppValue) override { return This()->get_ContentIsland(ppValue); }
+        IFACEMETHOD(get_SystemBackdrop)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue) override { return This()->get_SystemBackdrop(ppValue); }
+        IFACEMETHOD(put_SystemBackdrop)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop* pValue) override { return This()->put_SystemBackdrop(pValue); }
     };
 }
 #endif
@@ -39,12 +41,14 @@ namespace ctl
 namespace DirectUI
 {
     class XamlIsland;
+    class SystemBackdrop;
     class UIElement;
 
     class __declspec(novtable) XamlIslandGenerated:
         public ctl::WeakReferenceSource
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IXamlIsland, XamlIslandGenerated >
+        , public ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop
         , public ABI::Windows::Foundation::IClosable
 #endif
     {
@@ -55,6 +59,7 @@ namespace DirectUI
         BEGIN_INTERFACE_MAP(XamlIslandGenerated, ctl::WeakReferenceSource)
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
             INTERFACE_ENTRY(XamlIslandGenerated, ABI::Microsoft::UI::Xaml::IXamlIsland)
+            INTERFACE_ENTRY(XamlIslandGenerated, ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop)
             INTERFACE_ENTRY(XamlIslandGenerated, ABI::Windows::Foundation::IClosable)
 #else
             INTERFACE_ENTRY(DUMMYINTERFACE, IUnknown)
@@ -72,6 +77,8 @@ namespace DirectUI
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Content(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_Content(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_ContentIsland(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IContentIsland** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_SystemBackdrop(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop* pValue);
 
         // Events.
 

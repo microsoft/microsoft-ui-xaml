@@ -5,6 +5,7 @@
 
 #include "IGeneratorHost.g.h"
 #include "ItemsControl.g.h"
+#include "ContentControl.g.h"
 
 namespace DirectUI
 {
@@ -17,7 +18,6 @@ namespace DirectUI
     PARTIAL_CLASS(ItemsControl)
         , public IGeneratorHost
     {
-
         friend class ListViewBaseItem;
         friend class ItemCollection;
 
@@ -26,7 +26,6 @@ namespace DirectUI
         static const INT32 loadCounterToken = INT32_MAX;
 
     public:
-
         _Check_return_ HRESULT get_ItemsHost(_Outptr_ xaml_controls::IPanel** pValue) override;
 
         _Check_return_ HRESULT get_IsItemsHostInvalid(_Out_ BOOLEAN* pValue) override;
@@ -111,6 +110,11 @@ namespace DirectUI
         _Check_return_ HRESULT IndexFromHeaderImpl(_In_ xaml::IDependencyObject* header, _In_ BOOLEAN excludeHiddenEmptyGroups, _Out_ INT* returnValue);
         _Check_return_ HRESULT HeaderFromIndexImpl(_In_ INT index, _Outptr_ xaml::IDependencyObject** returnValue);
 
+        _Check_return_ HRESULT GetFirstFocusableElementOverride(
+            _Outptr_ DependencyObject** ppFirstFocusable) override;
+
+        _Check_return_ HRESULT GetLastFocusableElementOverride(
+            _Outptr_ DependencyObject** ppLastFocusable) override;
 
         // Calls ChangeVisualState on all child SelectorItems (including items inside a GroupItem),
         // with optimizations for the virtualization provided by IOrientedVirtualizingPanel.
@@ -157,7 +161,6 @@ namespace DirectUI
             _In_ CItemsControl* pNativeItemsControl);
 
     public:
-
         #pragma region IGeneratorHost interface
 
         _Check_return_ IFACEMETHOD(get_View)(
@@ -306,6 +309,18 @@ namespace DirectUI
         virtual _Check_return_ HRESULT GetHeaderForGroupOverrideImpl(
             _Outptr_ xaml::IDependencyObject** returnValue);
 
+        virtual _Check_return_ HRESULT ScrollIntoView(
+            _In_ UINT index,
+            _In_ BOOLEAN isGroupItemIndex,
+            _In_ BOOLEAN isHeader,
+            _In_ BOOLEAN isFooter,
+            _In_ BOOLEAN isFromPublicAPI,
+            _In_ BOOLEAN ensureContainerRealized,
+            _In_ BOOLEAN animateIfBringIntoView,
+            _In_ xaml_controls::ScrollIntoViewAlignment alignment,
+            _In_ DOUBLE offset = 0.0,
+            _In_ UINT currentGroupIndex = 0);
+
     private:
         _Check_return_ HRESULT OnGeneratorItemsChanged(
             _In_ IInspectable* pSender,
@@ -374,10 +389,64 @@ namespace DirectUI
 
         _Check_return_ HRESULT RefreshContainers();
 
+        _Check_return_ HRESULT GetElementType(
+            _In_ DependencyObject* element,
+            _Out_ bool* isAChild,
+            _Out_ bool* isInHeader,
+            _Out_ bool* isInFooter);
+
+        _Check_return_ HRESULT GetFirstOrLastFocusableElement(
+            const bool isForFirstFocusableElement,
+            const bool isBackward,
+            const bool skipHeader,
+            const bool skipItemsAndGroupHeaders,
+            const bool skipFooter,
+            _Outptr_ DependencyObject** ppFocusable);
+
+        // Helper for determining if this ItemsControl uses the default control template made of a single CItemsPresenter child.
+        _Check_return_ HRESULT UsesDefaultControlTemplate(
+            _Out_ bool* usesDefaultControlTemplate);
+
     protected:
         // constructor/destructor
         ItemsControl();
         ~ItemsControl() override;
+
+        // This method returns a value indicating whether the object is focusable.
+        static _Check_return_ HRESULT IsFocusableHelper(
+            _In_ IInspectable* pObject,
+            _Out_ BOOLEAN& isFocusable);
+
+        // Returns the Header or Footer container if it exists and is focusable.
+        _Check_return_ HRESULT GetFocusableHeaderOrFooterContainer(
+            const bool isForHeader,
+            _Outptr_ ContentControl** container);
+
+        // Get the ICollectionViewGroup associated with an item.
+        _Check_return_ HRESULT GetGroupFromItem(
+            _In_ UINT itemIndex,
+            _Outptr_ xaml_data::ICollectionViewGroup** ppGroup,
+            _Outptr_result_maybenull_ xaml_controls::IGroupItem** ppGroupItem,
+            _Out_opt_ INT* pGroupIndex,
+            _Out_opt_ INT* pIndexInGroup);
+
+        // Realizes, scrolls into view and prepares the item at the provided index so it can be tabbed into.
+        _Check_return_ HRESULT GetScrolledIntoViewAndPreparedContainer(
+            int index,
+            _In_opt_ xaml::IDependencyObject* itemContainerCandidate,
+            _Outptr_result_maybenull_ xaml::IDependencyObject** itemContainer);
+
+        // Helper for determining if this ItemsControl uses an IModernCollectionBasePanel implementing panel.
+        _Check_return_ HRESULT ShouldCustomizeTabNavigation(
+            _Out_ BOOLEAN* shouldCustomizeTabNavigation);
+
+        _Check_return_ HRESULT ProcessTabStopOverride(
+            _In_opt_ DependencyObject* pFocusedElement,
+            _In_opt_ DependencyObject* pCandidateTabStopElement,
+            const bool isBackward,
+            const bool didCycleFocusAtRootVisualScope,
+            _Outptr_ DependencyObject** ppNewTabStop,
+            _Out_ BOOLEAN* pIsTabStopOverridden) override;
 
         // Prepares object's state.
         _Check_return_ HRESULT PrepareState() override;
@@ -482,6 +551,7 @@ namespace DirectUI
             TrackerPtr<xaml::IDataTemplate> m_tpSelectedTemplate;
             TrackerPtr<IInspectable> m_tpDataItem;
         };
+
         DataTemplateSelectorRecyclingContext m_dataSelectorRecyclingContext;
 
         ctl::EventPtr<VectorChangedEventCallback> m_epItemCollectionVectorChangedHandler;

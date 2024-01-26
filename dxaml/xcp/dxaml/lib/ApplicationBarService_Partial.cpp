@@ -215,6 +215,11 @@ Cleanup:
     RRETURN(hr);
 }
 
+void ApplicationBarService::SetXamlRoot(_In_ DirectUI::XamlRoot* xamlRoot)
+{
+    IFCFAILFAST(ctl::AsWeak(xamlRoot, &m_weakXamlRoot));
+}
+
 // registers an applicationbar so it can be toggled globally
 _Check_return_
 HRESULT

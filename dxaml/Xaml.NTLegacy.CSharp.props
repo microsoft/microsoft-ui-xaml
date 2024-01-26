@@ -74,7 +74,7 @@
   <ItemGroup>
     <Reference Include="mscorlib"/>
     <Reference Include="$(SDKReferencesPath)\*.winmd"/>
-    <Reference Include="$(ProjectSDKMetadataPath)\Facade\Windows.winmd" />
+    <Reference Include="$(FacadeWinmdPath)" />
     <Reference Include="@(WinUIWinMDReferences)" />
   </ItemGroup>
 

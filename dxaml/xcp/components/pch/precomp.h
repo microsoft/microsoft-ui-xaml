@@ -68,6 +68,7 @@
 // WinRT includes
 #include <windows.foundation.h>
 #include <windows.foundation.collections.h>
+#include <windows.foundation.declarations.h>
 
 // XAML includes
 #include <XamlStructCollectionDeclarations.h>
@@ -118,6 +119,5 @@
 #undef min
 #undef max
 
-#include <DCompExtras.h>
 #include <dcompinternal.h>
 #include <dcompprivate.h>

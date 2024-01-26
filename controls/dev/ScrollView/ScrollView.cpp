@@ -913,23 +913,6 @@ void ScrollView::OnHideIndicatorsTimerTick(
     }
 }
 
-void ScrollView::OnAutoHideScrollBarsChanged(
-    winrt::UISettings const& uiSettings,
-    winrt::UISettingsAutoHideScrollBarsChangedEventArgs const& args)
-{
-    // OnAutoHideScrollBarsChanged is called on a non-UI thread, process notification on the UI thread using a dispatcher.
-    m_dispatcherQueue.TryEnqueue(winrt::DispatcherQueueHandler(
-        [strongThis = get_strong()]()
-    {
-        strongThis->m_autoHideScrollControllersValid = false;
-        strongThis->UpdateVisualStates(
-            true  /*useTransitions*/,
-            false /*showIndicators*/,
-            false /*hideIndicators*/,
-            true  /*scrollControllersAutoHidingChanged*/);
-    }));
-}
-
 void ScrollView::OnScrollPresenterExtentChanged(
     const winrt::IInspectable& /*sender*/,
     const winrt::IInspectable& args)
@@ -1158,23 +1141,6 @@ void ScrollView::ResetHideIndicatorsTimer(bool isForDestructor, bool restart)
         if (restart)
         {
             hideIndicatorsTimer.Start();
-        }
-    }
-}
-
-void ScrollView::HookUISettingsEvent()
-{
-    // Introduced in 19H1, IUISettings5 exposes the AutoHideScrollBars property and AutoHideScrollBarsChanged event.
-    if (!m_uiSettings5)
-    {
-        winrt::UISettings uiSettings;
-
-        m_uiSettings5 = uiSettings.try_as<winrt::IUISettings5>();
-        if (m_uiSettings5)
-        {
-            m_autoHideScrollBarsChangedRevoker = m_uiSettings5.AutoHideScrollBarsChanged(
-                winrt::auto_revoke,
-                { this, &ScrollView::OnAutoHideScrollBarsChanged });
         }
     }
 }
@@ -1696,40 +1662,6 @@ bool ScrollView::AreBothScrollControllersVisible() const
         SharedHelpers::IsAncestor(m_verticalScrollControllerElement.try_as<winrt::DependencyObject>() /*child*/, static_cast<winrt::DependencyObject>(*this) /*parent*/, true /*checkVisibility*/);
 }
 
-bool ScrollView::AreScrollControllersAutoHiding()
-{
-    // Use the cached value unless it was invalidated.
-    if (m_autoHideScrollControllersValid)
-    {
-        return m_autoHideScrollControllers;
-    }
-
-    m_autoHideScrollControllersValid = true;
-
-    if (auto globalTestHooks = ScrollViewTestHooks::GetGlobalTestHooks())
-    {
-        winrt::IReference<bool> autoHideScrollControllers = globalTestHooks->GetAutoHideScrollControllers(*this);
-
-        if (autoHideScrollControllers)
-        {
-            // Test hook takes precedence over UISettings and registry key settings.
-            m_autoHideScrollControllers = autoHideScrollControllers.Value();
-            return m_autoHideScrollControllers;
-        }
-    }
-
-    if (m_uiSettings5)
-    {
-        m_autoHideScrollControllers = m_uiSettings5.AutoHideScrollBars();
-    }
-    else
-    {
-        m_autoHideScrollControllers = RegUtil::UseDynamicScrollbars();
-    }
-
-    return m_autoHideScrollControllers;
-}
-
 bool ScrollView::IsScrollControllersSeparatorVisible() const
 {
     return m_scrollControllersSeparatorElement && m_scrollControllersSeparatorElement.get().Visibility() == winrt::Visibility::Visible;
@@ -1780,29 +1712,6 @@ void ScrollView::HideIndicatorsAfterDelay()
         }
 
         hideIndicatorsTimer.Start();
-    }
-}
-
-// On RS4 and RS5, update m_autoHideScrollControllers based on the DynamicScrollbars registry key value
-// and update the visual states if the value changed.
-void ScrollView::UpdateScrollControllersAutoHiding(
-    bool forceUpdate)
-{
-    if ((forceUpdate || !m_uiSettings5) && m_autoHideScrollControllersValid)
-    {
-        m_autoHideScrollControllersValid = false;
-
-        const bool oldAutoHideScrollControllers = m_autoHideScrollControllers;
-        const bool newAutoHideScrollControllers = AreScrollControllersAutoHiding();
-
-        if (oldAutoHideScrollControllers != newAutoHideScrollControllers)
-        {
-            UpdateVisualStates(
-                true  /*useTransitions*/,
-                false /*showIndicators*/,
-                false /*hideIndicators*/,
-                true  /*scrollControllersAutoHidingChanged*/);
-        }
     }
 }
 

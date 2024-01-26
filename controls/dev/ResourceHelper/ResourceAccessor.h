@@ -20,8 +20,10 @@ private:
     /// String containing the resource location
     /// </summary>
     static PCWSTR c_resourceLoc;
+    static PCWSTR c_assetLoc;
     static PCWSTR c_resourceLocWinUI;
 
+    static winrt::Microsoft::Windows::ApplicationModel::Resources::ResourceMap GetAssetMap();
     static winrt::Microsoft::Windows::ApplicationModel::Resources::ResourceMap GetResourceMap();
     static winrt::Microsoft::Windows::ApplicationModel::Resources::ResourceManager GetResourceManagerImpl();
     static winrt::Microsoft::Windows::ApplicationModel::Resources::ResourceManager GetResourceManager();
@@ -35,6 +37,7 @@ public:
 #endif
 
     static winrt::LoadedImageSurface GetImageSurface(const wstring_view &assetName, winrt::Size imageSize);
+    static winrt::Windows::Foundation::IAsyncOperation<winrt::hstring> GetFileContents(const wstring_view& assetFileName);
     static winrt::IInspectable ResourceLookup(const winrt::Control& control, const winrt::IInspectable& key);
 
     static bool IsResourceIdNull(ResourceIdType resourceId)
@@ -190,6 +193,7 @@ public:
 #define SR_NumberBoxMinimumValueStatus L"NumberBoxMinimumValueStatus"
 #define SR_ExpanderDefaultControlName L"ExpanderDefaultControlName"
 #define SR_ItemContainerDefaultControlName L"ItemContainerDefaultControlName"
+#define SR_SelectorBarItemDefaultControlName L"SelectorBarItemDefaultControlName"
 
 #define SR_InfoBarCloseButtonName L"InfoBarCloseButtonName"
 #define SR_InfoBarOpenedNotification L"InfoBarOpenedNotification"
@@ -215,3 +219,5 @@ public:
 #define SR_DownloadWebView2Runtime L"DownloadWebView2Runtime"
 
 #define IR_NoiseAsset_256X256_PNG L"NoiseAsset_256X256_PNG"
+
+#define FR_Map_Html L"map.html"

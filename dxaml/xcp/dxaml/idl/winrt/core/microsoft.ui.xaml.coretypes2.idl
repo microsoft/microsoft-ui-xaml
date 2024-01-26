@@ -230,23 +230,21 @@ namespace Microsoft.UI.Xaml
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 6)]
-    [feature(Feature_ExperimentalApi)]
     [webhosthidden]
     enum LayoutCycleDebugBreakLevel
     {
-        Off,
-        Level1,
-        Level2,
+        None,
+        Low,
+        High,
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 6)]
-    [feature(Feature_ExperimentalApi)]
     [webhosthidden]
     enum LayoutCycleTracingLevel
     {
-        Off,
-        Level1,
-        Level2,
+        None,
+        Low,
+        High,
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
@@ -2190,7 +2188,8 @@ namespace Microsoft.UI.Xaml.Core.Direct
         Popup_PlacementTarget,
         Popup_SystemBackdrop,
         FlyoutBase_SystemBackdrop,
-        Window_SystemBackdrop = 2464,
+        MenuFlyoutPresenter_SystemBackdrop,
+        Window_SystemBackdrop,
         Window_Title,
     };
 
@@ -2615,11 +2614,9 @@ namespace Microsoft.UI.Xaml
         }
     
         [contract(Microsoft.UI.Xaml.WinUIContract, 6)]
-        [feature(Feature_ExperimentalApi)]
-        [interface_name("Microsoft.UI.Xaml.IDebugSettingsFeature_ExperimentalApi")]
         {
-            Microsoft.UI.Xaml.LayoutCycleTracingLevel LayoutCycleTracing;
-            Microsoft.UI.Xaml.LayoutCycleDebugBreakLevel LayoutCycleDebugBreaks;
+            Microsoft.UI.Xaml.LayoutCycleTracingLevel LayoutCycleTracingLevel;
+            Microsoft.UI.Xaml.LayoutCycleDebugBreakLevel LayoutCycleDebugBreakLevel;
         }
     };
 
@@ -2676,6 +2673,13 @@ namespace Microsoft.UI.Xaml
             overridable void OnCachedFileUpdaterActivated(Windows.ApplicationModel.Activation.CachedFileUpdaterActivatedEventArgs args);
             overridable void OnBackgroundActivated(Windows.ApplicationModel.Activation.BackgroundActivatedEventArgs args);
             overridable void OnWindowCreated(Microsoft.UI.Xaml.WindowCreatedEventArgs args);
+        }
+    
+        [contract(Microsoft.UI.Xaml.WinUIContract, 6)]
+        [feature(Feature_ExperimentalApi)]
+        [interface_name("Microsoft.UI.Xaml.IApplicationFeature_ExperimentalApi")]
+        {
+            Microsoft.UI.Xaml.DispatcherShutdownMode DispatcherShutdownMode;
         }
     };
 
@@ -4203,6 +4207,15 @@ namespace Microsoft.UI.Xaml.Hosting
         Windows.Foundation.IClosable
     {
         static Microsoft.UI.Xaml.Hosting.WindowsXamlManager InitializeForCurrentThread();
+    
+        [contract(Microsoft.UI.Xaml.WinUIContract, 6)]
+        [feature(Feature_ExperimentalApi)]
+        [static_name("Microsoft.UI.Xaml.Hosting.IWindowsXamlManagerStaticsFeature_ExperimentalApi")]
+        [interface_name("Microsoft.UI.Xaml.Hosting.IWindowsXamlManagerFeature_ExperimentalApi")]
+        {
+            event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Hosting.WindowsXamlManager,Microsoft.UI.Xaml.Hosting.XamlShutdownCompletedOnThreadEventArgs> XamlShutdownCompletedOnThread;
+            static Boolean IsXamlRunningOnCurrentThread{ get; };
+        }
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 5)]

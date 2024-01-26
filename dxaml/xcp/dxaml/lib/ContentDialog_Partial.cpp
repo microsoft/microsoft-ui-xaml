@@ -44,6 +44,7 @@
 #include <XamlRoot_Partial.h>
 #include "WindowChrome_Partial.h"
 #include "ElementSoundPlayerService_Partial.h"
+#include "XamlTelemetry.h"
 
 #undef min
 #undef max
@@ -882,6 +883,8 @@ ContentDialog::ShowAsyncWithPlacementImpl(
     xaml_controls::ContentDialogPlacement placement,
     _Outptr_ wf::IAsyncOperation<xaml_controls::ContentDialogResult>** returnValue)
 {
+    PerfXamlEvent_RAII perfXamlEvent(reinterpret_cast<uint64_t>(this), "ContentDialog::ShowAsync[WithPlacement]", true);
+
     auto cleanupOnFailure = wil::scope_exit([&]
     {
         m_placementMode = PlacementMode::Undetermined;
@@ -1669,58 +1672,8 @@ ContentDialog::GetDialogInnerMargin(
     _Out_ xaml::Thickness* innerMargin)
 {
     *innerMargin = { 0, 0, 0, 0 };
-    uint32_t regionCount = 0;
 
     if (m_simulateRegions)
-    {
-        regionCount = 2;
-    }
-    else
-    {
-        // Find out if the API is available (currently behind a velocity key)
-        ctl::ComPtr<wf::Metadata::IApiInformationStatics> apiInformationStatics;
-        IFC_RETURN(ctl::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Windows_Foundation_Metadata_ApiInformation).Get(),
-            &apiInformationStatics));
-
-        boolean isPresent = false;
-        IFC_RETURN(apiInformationStatics->IsMethodPresent(
-            HStringReference(L"Windows.UI.ViewManagement.ApplicationView").Get(),
-            HStringReference(L"GetDisplayRegions").Get(),
-            &isPresent));
-
-        if (isPresent)
-        {
-            // Get regions for current view
-            ctl::ComPtr<wuv::IApplicationViewStatics2> applicationViewStatics;
-            IFC_RETURN(ctl::GetActivationFactory(wrl_wrappers::HStringReference(
-                                                 RuntimeClass_Windows_UI_ViewManagement_ApplicationView)
-                                                 .Get(),
-                                                 &applicationViewStatics));
-
-            // Get Display Regions doesn't work on Win32 Apps, because there is no
-            // application view.
-            ctl::ComPtr<wuv::IApplicationView> applicationView;
-            if (SUCCEEDED(applicationViewStatics->GetForCurrentView(&applicationView)))
-            {
-                ctl::ComPtr<wuv::IApplicationView9> applicationView9;
-                IFC_RETURN(applicationView.As(&applicationView9));
-
-                HRESULT hrGetForCurrentView;
-                ctl::ComPtr<wfc::IVectorView<wuwm::DisplayRegion*>> regions;
-                hrGetForCurrentView = applicationView9->GetDisplayRegions(&regions);
-                if (FAILED(hrGetForCurrentView))
-                {
-                    // bug 14084372: APIs currently return a failure when there is only one display region.
-                    return S_OK;
-                }
-
-                IFC_RETURN(regions->get_Size(&regionCount));
-            }
-        }
-    }
-
-    if (regionCount == 2)
     {
         // Get the position of the focused element to determine which region it's in
         wf::Point focusedPosition = {};

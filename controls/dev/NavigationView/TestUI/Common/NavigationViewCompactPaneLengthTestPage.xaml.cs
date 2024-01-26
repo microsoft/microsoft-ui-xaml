@@ -30,6 +30,22 @@ namespace MUXControlsTestApp
             NavView.OpenPaneLength = tag;
         }
 
+        private void IsSettingsVisibleCheckbox_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            if (IsSettingsVisibleCheckbox != null && NavView != null)
+            {
+                NavView.IsSettingsVisible = (bool)IsSettingsVisibleCheckbox.IsChecked;
+            }
+        }
+
+        private void IsPaneFooterVisibleCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            if (IsPaneFooterVisibleCheckBox != null && PaneFooter != null)
+            {
+                PaneFooter.Visibility = IsPaneFooterVisibleCheckBox.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
         private void PaneToggleButtonVisiblityCheckbox_Checked(object sender, RoutedEventArgs e)
         {
             NavView.IsPaneToggleButtonVisible = true;

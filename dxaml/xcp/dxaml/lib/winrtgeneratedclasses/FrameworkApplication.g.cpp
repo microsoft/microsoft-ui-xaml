@@ -58,6 +58,12 @@ HRESULT DirectUI::FrameworkApplicationGenerated::QueryInterfaceImpl(_In_ REFIID 
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IApplicationOverridesFeature_UwpSupportApi*>(this);
     }
 #endif
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IApplicationFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
+    {
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IApplicationFeature_ExperimentalApi>(this);
+    }
+#endif
     else
     {
         RRETURN(ctl::WeakReferenceSource::QueryInterfaceImpl(iid, ppObject));
@@ -74,6 +80,24 @@ IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::get_DebugSettings(_Outpt
     ARG_VALIDRETURNPOINTER(ppValue);
     
     IFC(static_cast<FrameworkApplication*>(this)->get_DebugSettingsImpl(ppValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FrameworkApplicationGenerated::get_DispatcherShutdownMode(_Out_ ABI::Microsoft::UI::Xaml::DispatcherShutdownMode* pValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(pValue);
+    
+    IFC(static_cast<FrameworkApplication*>(this)->get_DispatcherShutdownModeImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FrameworkApplicationGenerated::put_DispatcherShutdownMode(_In_ ABI::Microsoft::UI::Xaml::DispatcherShutdownMode value)
+{
+    HRESULT hr = S_OK;
+    
+    
+    IFC(static_cast<FrameworkApplication*>(this)->put_DispatcherShutdownModeImpl(value));
 Cleanup:
     RRETURN(hr);
 }

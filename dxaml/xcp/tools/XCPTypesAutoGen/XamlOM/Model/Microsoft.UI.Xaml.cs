@@ -2625,26 +2625,24 @@ namespace Microsoft.UI.Xaml
         internal XamlResourceReferenceFailedEventArgs() { }
     }
 
-    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
-    [VelocityFeature("Feature_ExperimentalApi")]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), 6)]
     [DXamlIdlGroup("coretypes2")]
     [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
     public enum LayoutCycleTracingLevel
     {
-        Off = 0,
-        Level1 = 1,
-        Level2 = 2,
+        None = 0,
+        Low = 1,
+        High = 2,
     }
 
-    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
-    [VelocityFeature("Feature_ExperimentalApi")]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), 6)]
     [DXamlIdlGroup("coretypes2")]
     [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
     public enum LayoutCycleDebugBreakLevel
     {
-        Off = 0,
-        Level1 = 1,
-        Level2 = 2,
+        None = 0,
+        Low = 1,
+        High = 2,
     }
 
     [CodeGen(partial: true)]
@@ -2653,7 +2651,7 @@ namespace Microsoft.UI.Xaml
     [Guids(ClassGuid = "818dd7e4-0203-478d-a556-6b89215287e0")]
     [DXamlIdlGroup("coretypes2")]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 4)]
-    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [Platform(3, typeof(Microsoft.UI.Xaml.WinUIContract), 6)]
     public sealed class DebugSettings
      : Microsoft.UI.Xaml.DependencyObject
     {
@@ -2720,6 +2718,28 @@ namespace Microsoft.UI.Xaml
         }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [Version(3)]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [AllowCrossThreadAccess]
+        [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public LayoutCycleTracingLevel LayoutCycleTracingLevel
+        {
+            get;
+            set;
+        }
+
+        [Version(3)]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [AllowCrossThreadAccess]
+        [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public LayoutCycleDebugBreakLevel LayoutCycleDebugBreakLevel
+        {
+            get;
+            set;
+        }
+
         [AllowCrossThreadAccess]
         [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
         [PropertyKind(PropertyKind.PropertyOnly)]
@@ -2907,6 +2927,16 @@ namespace Microsoft.UI.Xaml
         ShutdownModel ShutdownModel {get; set;}
     }
 
+    [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
+    [EnumFlags(HasTypeConverter = true)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    [Contract(typeof(WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    public enum DispatcherShutdownMode
+    {
+        OnLastWindowClose = 0,
+        OnExplicitShutdown = 1
+    }
+
     [CodeGen(partial: true)]
     [DXamlName("Application")]
     [CustomNames(RealTypeName = "Microsoft.UI.Xaml.Application")]
@@ -2914,6 +2944,7 @@ namespace Microsoft.UI.Xaml
     [ClassFlags(IsFreeThreaded = true)]
     [ThreadingModel(ThreadingModel.Both)]
     [Platform("Feature_UwpSupportApi", typeof(Microsoft.UI.Xaml.WinUIContract), 1)]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 5)]
     [Implements(typeof(Microsoft.UI.Xaml.IFrameworkApplicationStaticsPrivate), IsStaticInterface = true)]
     [Implements(typeof(Microsoft.UI.Xaml.IFrameworkApplicationPrivate))]
@@ -3100,6 +3131,10 @@ namespace Microsoft.UI.Xaml
         protected virtual void OnBackgroundActivated(Windows.ApplicationModel.Activation.BackgroundActivatedEventArgs args)
         {
         }
+
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [VelocityFeature("Feature_ExperimentalApi")]
+        public DispatcherShutdownMode DispatcherShutdownMode {get; set;}
     }
 
     [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), 5)]
@@ -5915,6 +5950,7 @@ namespace Microsoft.UI.Xaml
     [Guids(ClassGuid = "0eb21081-a1b7-4942-925d-23cf4bafd8e1")]
     [ThreadingModel(ThreadingModel.Both)]
     [Implements(typeof(Windows.Foundation.IClosable))]
+    [Implements(typeof(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop), Version = 1)]
     public class XamlIsland
     {
         public XamlIsland()
@@ -5934,6 +5970,16 @@ namespace Microsoft.UI.Xaml
         [PropertyKind(PropertyKind.PropertyOnly)]
         [TypeTable(IsExcludedFromDXaml = true)]
         public Microsoft.UI.Content.ContentIsland ContentIsland { get; }
+
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [TypeTable(IsExcludedFromDXaml = true)]
+        [RequiresMultipleAssociationCheck]
+        public Microsoft.UI.Xaml.Media.SystemBackdrop SystemBackdrop
+        {
+            get;
+            set;
+        }
     }
 
 }

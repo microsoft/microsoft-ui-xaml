@@ -37,6 +37,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        [TestProperty("IsolationLevel", "Method")]
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext);
@@ -51,6 +52,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public TestContext TestContext { get; set; }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void CloseReasonIsAccurate()
         {
             using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
@@ -128,6 +130,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void TargetUnloadingClosesTeachingTip()
         {
             using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
@@ -149,6 +152,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void PreviousTargetUnloadingLeavesTeachingTipOpen()
         {
             using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
@@ -172,6 +176,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void TeachingTipRemovalClosesPopup()
         {
             using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
@@ -195,6 +200,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void TipCanFollowTarget()
         {
             using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
@@ -251,6 +257,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "A")]
         [TestProperty("Ignore", "True")] // #2219 Unreliable test: TeachingTipTests.TipFollowsTargetOnWindowResize 
         public void TipFollowsTargetOnWindowResize()
         {
@@ -310,6 +317,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod] 
+        [TestProperty("TestSuite", "B")]
         [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
         public void AutoPlacement()
         {
@@ -337,6 +345,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "B")]
         [TestProperty("Ignore", "True")]
         [TestProperty("data:TipLocationOptions", "{ResourceDictionary, VisualTree}")]
         [TestProperty("data:TestCase", "{1, 2, 3, 4, 5}")]
@@ -540,6 +549,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "B")]
         [TestProperty("Ignore", "True")]
         [TestProperty("data:TipLocationOptions", "{ResourceDictionary, VisualTree}")]
         [TestProperty("data:TestCase", "{1, 2, 3, 4, 5}")]
@@ -748,6 +758,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
 
         [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void NoIconDoesNotCrash()
         {
             using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
@@ -773,6 +784,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
 
         [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void CanSwitchShouldConstrainToRootBounds()
         {
             using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
@@ -807,6 +819,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
 
         [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void TipsWhichDoNotFitDoNotOpen()
         {
             using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
@@ -842,6 +855,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
 
         [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void VerifyTheming()
         {
             using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
@@ -879,6 +893,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod] //Disabled with issue #1769
+        [TestProperty("TestSuite", "B")]
         [TestProperty("Ignore", "True")]
         public void SettingTitleOrSubtitleToEmptyStringCollapsesTextBox()
         {
@@ -903,6 +918,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void TestTeachingTipInXamlPage()
         {
             using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTipInXamlPage Test" }))
@@ -976,6 +992,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void AutomationNameIsForwardedToPopup()
         {
             using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
@@ -998,6 +1015,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "C")]
         [TestProperty("Ignore", "True")]
         public void F6PutsFocusOnCloseButton()
         {
@@ -1018,6 +1036,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void VerifyTeachingTipNotIncludedInTabOrder()
         {
             using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTipFocus Test" }))
@@ -1086,6 +1105,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void VerifyTeachingTipButtonsNameAutomationProperty()
         {
             using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))

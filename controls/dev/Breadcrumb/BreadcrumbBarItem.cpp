@@ -149,7 +149,7 @@ void BreadcrumbBarItem::SetParentBreadcrumb(const winrt::BreadcrumbBar& parent)
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
-    m_parentBreadcrumb.set(parent);
+    m_parentBreadcrumb = winrt::make_weak(parent);
 }
 
 void BreadcrumbBarItem::SetEllipsisDropDownItemDataTemplate(const winrt::IInspectable& newDataTemplate)
@@ -286,11 +286,13 @@ winrt::IInspectable BreadcrumbBarItem::CloneEllipsisItemSource(const winrt::Coll
 
     // The new list contains all the elements in reverse order
     const int itemsSourceSize = ellipsisItemsSource.Size();
-
-    for (int i = itemsSourceSize - 1; i >= 0; --i)
+    if(itemsSourceSize > 0)
     {
-        const auto& item = ellipsisItemsSource.GetAt(i);
-        newItemsSource.Append(item);
+        for (int i = itemsSourceSize - 1; i >= 0; --i)
+        {
+            const auto& item = ellipsisItemsSource.GetAt(i);
+            newItemsSource.Append(item);
+        }
     }
 
     return newItemsSource;
@@ -493,7 +495,7 @@ void BreadcrumbBarItem::InstantiateFlyout()
     {
         if (const auto& ellipsisFlyout = m_ellipsisFlyout.get())
         {
-            // Create ItemsRepeater and set the DataTemplate 
+            // Create ItemsRepeater and set the DataTemplate
             const auto& ellipsisItemsRepeater = winrt::ItemsRepeater();
             ellipsisItemsRepeater.Name(s_ellipsisItemsRepeaterPartName);
             winrt::AutomationProperties::SetName(ellipsisItemsRepeater, s_ellipsisItemsRepeaterAutomationName);

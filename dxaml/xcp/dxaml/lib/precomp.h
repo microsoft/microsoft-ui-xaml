@@ -51,9 +51,10 @@
 #include <HStringUtil.h>
 
 #include <wrl\async.h>
-#include <windows.foundation.collections.h>
-#include <windows.ui.viewmanagement.h>
 #include <windows.foundation.h>
+#include <windows.foundation.collections.h>
+#include <windows.foundation.declarations.h>
+#include <windows.ui.viewmanagement.h>
 #include <robuffer.h>
 
 #include <windows.system.h>

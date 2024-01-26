@@ -104,7 +104,7 @@ public:
     void SetXamlIslandRoot(_In_ CXamlIslandRoot* xamlIslandRoot);
     void SetXamlIslandType(_In_ CContentRoot::IslandType islandType);
 
-    HWND GetOwnerWindow() const;
+    HWND GetHostingHWND() const;
 
     // CKeyboardAcceleratorCollection can be added multiple times through initial Live Enters and then
     // Flyouts Open operations ( I can think of). We need reference counting on accelerator collection
@@ -141,8 +141,6 @@ public:
     bool ShouldUseVisualRelativePixels();
 
     void PrepareToClose();
-
-    bool IsWindowActivated() const;
 
     void SetIsInputActive(bool isInputActive);
     bool GetIsInputActive() const;

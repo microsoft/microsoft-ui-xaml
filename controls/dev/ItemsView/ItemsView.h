@@ -51,8 +51,10 @@ public:
 #endif
 
 #pragma region IControlOverrides
+#ifdef DBG
     void OnGotFocus(
         winrt::RoutedEventArgs const& args);
+#endif
     void OnKeyDown(
         winrt::KeyRoutedEventArgs const& args);
 #pragma endregion
@@ -80,6 +82,7 @@ private:
 
     void RaiseSelectionChanged();
 
+    void HookItemsSourceViewEvents();
     void HookItemsRepeaterEvents();
     void UnhookItemsRepeaterEvents(
         bool isForDestructor);
@@ -210,6 +213,7 @@ private:
         const winrt::IInspectable& sender,
         const winrt::RoutedEventArgs& args);
 
+    void ApplySelectionModelSelectionChange();
     int GetAdjacentFocusableElementByDirection(
         const winrt::FocusNavigationDirection& focusNavigationDirection,
         bool hasIndexBasedLayoutOrientation);
@@ -296,9 +300,6 @@ private:
         const winrt::VirtualKey& key,
         bool isRepeatKey);
 
-    bool IsFocusableElement(
-        winrt::UIElement const& element) const;
-
     bool IsLayoutOrientationIndexBased(
         bool horizontal);
 
@@ -352,6 +353,10 @@ private:
     bool m_isProcessingInteraction{ false };
 
     bool m_setVerticalScrollControllerOnLoaded{ false };
+
+    // Set to True in ItemsView::OnSelectionModelSelectionChanged to delay the application
+    // of the selection changes until the imminent ItemsView::OnSourceListChanged call.
+    bool m_applySelectionChangeOnSourceListChanged{ false };
 
     std::shared_ptr<SelectorBase> m_selector;
 

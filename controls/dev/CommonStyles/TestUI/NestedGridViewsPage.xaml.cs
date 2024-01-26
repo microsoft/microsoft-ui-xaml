@@ -4,6 +4,7 @@
 using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 
 namespace MUXControlsTestApp
@@ -92,6 +93,21 @@ namespace MUXControlsTestApp
             {
                 txtItemsStackPanelCacheLength.Text = ex.ToString();
             }
+        }
+    }
+
+    public class PrefixConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            string prefix = parameter as string;
+
+            return prefix + " " + (value as string);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
         }
     }
 }

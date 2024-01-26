@@ -72,7 +72,7 @@
   <PropertyGroup>
     <BeforeBuildCompileTargets>$(BeforeBuildCompileTargets);BuildWinUISourceRevisionHeader</BeforeBuildCompileTargets>
   </PropertyGroup>
-  <Target Name="BuildWinUISourceRevisionHeader" AfterTargets="Build">
+  <Target Name="BuildWinUISourceRevisionHeader" Condition="'$(BuildWinUISourceRevisionHeader)'!='false'" AfterTargets="Build">
     <Exec Command="git rev-parse  HEAD" ConsoleToMsBuild="True">
       <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
     </Exec>

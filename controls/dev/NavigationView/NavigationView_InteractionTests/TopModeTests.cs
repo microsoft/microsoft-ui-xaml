@@ -396,6 +396,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        public void TopNavigationWithHierarchyOverflowButtonClickTest()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
+            {
+                Log.Comment("Set PaneDisplayMode to Top");
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                panelDisplayModeComboBox.SelectItemByName("Top");
+                Wait.ForIdle();
+
+                InvokeOverflowButton();
+
+                UIObject overflowItem = FindElement.ByName("Menu Item 15");
+                Verify.IsNotNull(overflowItem, "Menu Item 15 should be in overflow");
+            }
+        }
+
+        [TestMethod]
         public void TopNavigationItemsAccessibilitySetTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))

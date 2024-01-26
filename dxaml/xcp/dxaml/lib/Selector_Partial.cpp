@@ -28,7 +28,7 @@ using namespace DirectUISynonyms;
 //#define SLTR_DEBUG
 
 Selector::Selector() :
-    m_iFocusedIndex(-1),
+    m_focusedIndex(-1),
     m_lastFocusedIndex(0),
     m_fUpdatingCurrentItemInCollectionView(false),
     m_fSynchronizeCurrentItem(false),
@@ -1066,12 +1066,12 @@ _Check_return_
             bool arePropertyValuesEqual = false;
             ctl::ComPtr<xaml::IDependencyObject> spFocusedContainer;
 
-            if (m_iFocusedIndex > -1)
+            if (GetFocusedIndex() > -1)
             {
                 // before we tell the panel about the reset, let's get the focused container
-                IFC(ContainerFromIndex(m_iFocusedIndex, &spFocusedContainer));
-                // set m_iFocusedIndex to -1 so that we don't get confused during prepare
-                m_iFocusedIndex = -1; // notice: in a reset, the index is not guaranteed anymore
+                IFC(ContainerFromIndex(GetFocusedIndex(), &spFocusedContainer));
+                // set m_focusedIndex to -1 so that we don't get confused during prepare
+                SetFocusedIndex(-1); // notice: in a reset, the index is not guaranteed anymore
             }
 
             IFC(m_selection.GetNumItemsSelected(nSelectedCount));
@@ -1119,7 +1119,7 @@ _Check_return_
                 if (newFocusedIndex > -1)
                 {
                     // well, the old container still has focus, it just might have a different index
-                    m_iFocusedIndex = newFocusedIndex;
+                    SetFocusedIndex(newFocusedIndex);
                     shouldResetFocus = false;
                 }
             }
@@ -1134,14 +1134,19 @@ _Check_return_
         {
             BOOLEAN isSelected = FALSE;
             UINT itemIndex = 0;
+            INT focusedIndex = GetFocusedIndex();
+
             IFC(e->get_Index(&itemIndex));
 
             // An item was inserted before the focused item, we need
             // to update our focused item's index to reflect that.
-            if (m_iFocusedIndex >= static_cast<int>(itemIndex))
+            if (focusedIndex >= static_cast<int>(itemIndex))
             {
-                ASSERT(m_iFocusedIndex != -1);
-                SetLastFocusedIndex(++m_iFocusedIndex);
+                ASSERT(focusedIndex != -1);
+
+                focusedIndex++;
+                SetFocusedIndex(focusedIndex);
+                SetLastFocusedIndex(focusedIndex);
             }
 
             IFC(m_selection.AddSelectedIndex(itemIndex));
@@ -1352,6 +1357,7 @@ _Check_return_ HRESULT
 
             const int itemIndexInt = itemIndex;
             UINT itemsCount;
+            INT focusedIndex = GetFocusedIndex();
             ctl::ComPtr<wfc::IObservableVector<IInspectable*>> items;
 
             IFC(get_Items(&items));
@@ -1361,21 +1367,24 @@ _Check_return_ HRESULT
             // unless, of course, it's not possible because of the reduced items count.
             // We had to wait until SelectorGenerated::OnItemsChanged to give the items host
             // panel the chance to handle the collection change and update its container mapping.
-            if (m_iFocusedIndex == itemIndexInt)
+            if (focusedIndex == itemIndexInt)
             {
                 IFC(SetFocusedItem(std::min(static_cast<int>(itemsCount) - 1, itemIndexInt), false /* shouldScrollIntoView */));
             }
             // An item was removed before our focused item, we need to update
             // the focused item's index to reflect that.
-            else if (m_iFocusedIndex > itemIndexInt)
+            else if (focusedIndex > itemIndexInt)
             {
-                ASSERT(m_iFocusedIndex > 0);
-                SetLastFocusedIndex(--m_iFocusedIndex);
+                ASSERT(focusedIndex > 0);
+                focusedIndex--;
+
+                SetFocusedIndex(focusedIndex);
+                SetLastFocusedIndex(focusedIndex);
             }
-            // If focus moved outside the selector, m_iFocusedIndex will be -1 and will not match the removed item index.
+            // If focus moved outside the selector, m_focusedIndex will be -1 and will not match the removed item index.
             // However, m_lastFocusedIndex could end up going outside the data range now - so make sure that we clamp it back.
             // This can happen if there is a context menu on the item, that deletes the item.
-            else if (m_iFocusedIndex == -1 && itemsCount > 0 && GetLastFocusedIndex() >= static_cast<int>(itemsCount))
+            else if (focusedIndex == -1 && itemsCount > 0 && GetLastFocusedIndex() >= static_cast<int>(itemsCount))
             {
                 SetLastFocusedIndex(0);
             }
@@ -1465,7 +1474,7 @@ IFACEMETHODIMP
         }
 
         // we cannot check for focus on every container here, since that is very expensive
-        if (newIndex == m_iFocusedIndex)
+        if (newIndex == GetFocusedIndex())
         {
             ctl::ComPtr<xaml_controls::IPanel> spPanel;
 
@@ -2392,10 +2401,10 @@ _Check_return_
 
     if (shouldFocus)
     {
-        m_iFocusedIndex = index;
+        SetFocusedIndex(index);
     }
 
-    if (m_iFocusedIndex == -1)
+    if (GetFocusedIndex() == -1)
     {
         if (shouldFocus)
         {
@@ -2445,50 +2454,50 @@ Cleanup:
 }
 
 // Handler for when a SelectorItem received focus
-_Check_return_
-    HRESULT
+_Check_return_ 
+    HRESULT 
     Selector::ItemFocused(
     _In_ SelectorItem* pSelectorItem)
 {
-    HRESULT hr = S_OK;
+    INT focusedIndex{ -1 };
 
     // Set the focused index correctly
-    IFC(IndexFromContainer(pSelectorItem, &m_iFocusedIndex));
-    if (m_iFocusedIndex >= 0)
+    IFC_RETURN(IndexFromContainer(pSelectorItem, &focusedIndex));
+    SetFocusedIndex(focusedIndex);
+
+    if (focusedIndex >= 0)
     {
-        SetLastFocusedIndex(m_iFocusedIndex);
+        SetLastFocusedIndex(focusedIndex);
     }
 
 #ifdef SLTR_DEBUG
-    IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"SLTR[0x%p]: ItemFocused. index=%d", this, m_iFocusedIndex));
+    IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"SLTR[0x%p]: ItemFocused. index=%d", this, GetFocusedIndex()));
 #endif
 
-Cleanup:
-    RRETURN(hr);
+    return S_OK;
 }
 
 // Handler for when a SelectorItem lost focus
-_Check_return_
-    HRESULT
+_Check_return_ 
+    HRESULT 
     Selector::ItemUnfocused(
     _In_ SelectorItem* pSelectorItem)
 {
-    HRESULT hr = S_OK;
-    INT itemIndex = -1;
+    INT itemIndex{ -1 };
 
     // Set the focused index correctly
-    IFC(IndexFromContainer(pSelectorItem, &itemIndex));
-    if (m_iFocusedIndex == itemIndex)
+    IFC_RETURN(IndexFromContainer(pSelectorItem, &itemIndex));
+
+    if (GetFocusedIndex() == itemIndex)
     {
-        m_iFocusedIndex = -1;
+        SetFocusedIndex(-1);
     }
 
 #ifdef SLTR_DEBUG
     IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"SLTR[0x%p]: ItemUnfocused. index=%d", this, itemIndex));
 #endif
 
-Cleanup:
-    RRETURN(hr);
+    return S_OK;
 }
 
 // Selects the next item in the list.
@@ -2560,7 +2569,7 @@ _Check_return_
     HRESULT hr = S_OK;
     ctl::ComPtr<wfc::IObservableVector<IInspectable*>> spItems;
     UINT nCount = 0;
-    BOOLEAN isSelectable = FALSE;
+    BOOLEAN isFocusable = FALSE;
 
     IFC(get_Items(&spItems));
     IFC(spItems.Cast<ItemCollection>()->get_Size(&nCount));
@@ -2568,91 +2577,28 @@ _Check_return_
     for (; index > -1 && index < static_cast<INT>(nCount); index += increment)
     {
         ctl::ComPtr<IInspectable> spItem;
+
         IFC(spItems.Cast<ItemCollection>()->GetAt(index, &spItem));
-        IFC(Selector::IsSelectableHelper(spItem.Get(), isSelectable));
-        if (isSelectable)
+        IFC(ItemsControl::IsFocusableHelper(spItem.Get(), isFocusable));
+
+        if (isFocusable)
         {
             ctl::ComPtr<xaml::IDependencyObject> spContainer;
+
             IFC(ContainerFromIndex(index, &spContainer));
-            IFC(Selector::IsSelectableHelper(spContainer.Get(), isSelectable));
-            if (isSelectable)
+            IFC(ItemsControl::IsFocusableHelper(spContainer.Get(), isFocusable));
+
+            if (isFocusable)
             {
                 break;
             }
         }
     }
 
-    if (!isSelectable)
+    if (!isFocusable)
     {
-        // If no selectable item was found, set index to -1 so selection will not be updated.
+        // If no focusable item was found, set index to -1 so selection will not be updated.
         index = -1;
-    }
-
-Cleanup:
-    RRETURN(hr);
-}
-
-
-// This method returns a value indicating whether the object is selectable.
-_Check_return_
-    HRESULT
-    Selector::IsSelectableHelper(
-    _In_ IInspectable* pObject,
-    _Out_ BOOLEAN& isSelectable)
-{
-    HRESULT hr = S_OK;
-    ctl::ComPtr<IInspectable> spValue;
-    ctl::ComPtr<xaml_controls::IControl> spControl;
-    ctl::ComPtr<xaml::IUIElement> spUIElement;
-
-    //TODO: We'll never succeed the QI in the else. Bug?
-    if (SUCCEEDED(ctl::do_query_interface(spValue, pObject)))
-    {
-        spControl = spValue.AsOrNull<xaml_controls::IControl>();
-        spUIElement = spValue.AsOrNull<xaml::IUIElement>();
-    }
-    else
-    {
-        spControl = ctl::query_interface_cast<IControl>(pObject);
-        spUIElement = ctl::query_interface_cast<IUIElement>(pObject);
-    }
-
-    isSelectable = !spControl;
-    if (spControl)
-    {
-        BOOLEAN isEnabled = FALSE;
-        BOOLEAN isTabStop = FALSE;
-        bool canHaveFocusableChildren = false;
-
-        IFC(spControl->get_IsEnabled(&isEnabled));
-        IFC(spUIElement->get_IsTabStop(&isTabStop));
-
-        if (!isTabStop &&
-            isEnabled)
-        {
-            // If IsTabStop = FALSE, we cannot set focus on this element. But it may be possible to set focus on
-            // an element in its subtree, in which case, it should still be selectable. FocusManager::CanHaveFocusableChildren
-            // checks for a focusable child in the subtree.
-            // The isEnabled check saves the p/invoke in the case that the item is not enabled, when it wouldn't be selectable anyway.
-            IFC(CoreImports::FocusManager_CanHaveFocusableChildren(
-                spControl.Cast<Control >()->GetHandle(),
-                &canHaveFocusableChildren));
-        }
-
-        isSelectable = isEnabled && (isTabStop || canHaveFocusableChildren);
-    }
-
-    if (isSelectable)
-    {
-        ctl::ComPtr<IUIElement> spObjectAsIUIE = nullptr;
-
-        spObjectAsIUIE = ctl::query_interface_cast<IUIElement>(pObject);
-        if (spObjectAsIUIE)
-        {
-            xaml::Visibility visibility = xaml::Visibility_Collapsed;
-            IFC(spObjectAsIUIE->get_Visibility(&visibility));
-            isSelectable = visibility != xaml::Visibility_Collapsed;
-        }
     }
 
 Cleanup:
@@ -3045,9 +2991,9 @@ _Check_return_
     ctl::ComPtr<wfc::IObservableVector<IInspectable*>> spItems;
     ctl::ComPtr<IInspectable> spItem;
 
-    newFocusedIndex = m_iFocusedIndex;
+    newFocusedIndex = GetFocusedIndex();
     IFC(get_Items(&spItems));
-    if (m_iFocusedIndex >= 0)
+    if (newFocusedIndex >= 0)
     {
         IFC(spItems.Cast<ItemCollection>()->GetAt(newFocusedIndex, &spItem));
     }
@@ -3090,9 +3036,9 @@ _Check_return_
     else
     {
         IFC(GetFirstItemOnCurrentPage(newFocusedIndex, forward));
-        if (newFocusedIndex == m_iFocusedIndex)
+        if (newFocusedIndex == GetFocusedIndex())
         {
-            INT focusedIndex = m_iFocusedIndex;
+            INT focusedIndex = newFocusedIndex;
             if (m_tpScrollViewer)
             {
                 xaml_controls::Orientation physicalOrientation = xaml_controls::Orientation_Vertical;
@@ -3749,7 +3695,7 @@ _Check_return_
                 IFC(SelectPrev(newFocusedIndex));
             }
 
-            if (m_iFocusedIndex == newFocusedIndex && scrollViewport)
+            if (GetFocusedIndex() == newFocusedIndex && scrollViewport)
             {
                 IFC(ElementScrollViewerScrollInDirection(wsy::VirtualKey_Left));
             }
@@ -3765,7 +3711,7 @@ _Check_return_
             IFC(SelectPrev(newFocusedIndex));
         }
 
-        if (m_iFocusedIndex == newFocusedIndex && scrollViewport)
+        if (GetFocusedIndex() == newFocusedIndex && scrollViewport)
         {
             IFC(ElementScrollViewerScrollInDirection(wsy::VirtualKey_Up));
         }
@@ -3786,7 +3732,7 @@ _Check_return_
                 IFC(SelectNext(newFocusedIndex));
             }
 
-            if (m_iFocusedIndex == newFocusedIndex && scrollViewport)
+            if (GetFocusedIndex() == newFocusedIndex && scrollViewport)
             {
                 IFC(ElementScrollViewerScrollInDirection(wsy::VirtualKey_Right));
             }
@@ -3802,7 +3748,7 @@ _Check_return_
             IFC(SelectNext(newFocusedIndex));
         }
 
-        if (m_iFocusedIndex == newFocusedIndex && scrollViewport)
+        if (GetFocusedIndex() == newFocusedIndex && scrollViewport)
         {
             IFC(ElementScrollViewerScrollInDirection(wsy::VirtualKey_Down));
         }
@@ -3972,8 +3918,6 @@ _Check_return_ HRESULT Selector::GetFirstFocusableElementOverride(
     IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"SLTR[0x%p]: GetFirstFocusableElementOverride."));
 #endif
 
-    HRESULT hr = S_OK;
-
     *ppFirstFocusable = nullptr;
 
     if (!m_skipFocusSuggestion)
@@ -3983,12 +3927,11 @@ _Check_return_ HRESULT Selector::GetFirstFocusableElementOverride(
         // For ListView it is important to check if the focus is coming from outside due to issues in scenarios with header and group header.
         // Since we do not support those scenarios with the rest of the selectors, every time we are asked for first focusable element
         // we can give out the last focused element.
-        IFC(ContainerFromIndex(static_cast<INT>(GetLastFocusedIndex()), &spFirstFocusableResult));
+        IFC_RETURN(ContainerFromIndex(static_cast<INT>(GetLastFocusedIndex()), &spFirstFocusableResult));
         *ppFirstFocusable = static_cast<DependencyObject*>(spFirstFocusableResult.Detach());
     }
 
-Cleanup:
-    RRETURN(hr);
+    return S_OK;
 }
 
 // Gets last element that should take focus after Shift+Tab.

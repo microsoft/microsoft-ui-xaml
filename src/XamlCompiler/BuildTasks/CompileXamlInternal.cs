@@ -803,7 +803,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
             if (this.CodeGenerationControlFlags != CodeGenCtrlFlags.Nothing)
             {
-                LogWarning(new XamlValidationWarningUsingCodeGenFlags(this.CodeGenerationControlFlags));
+                //Treat this as a Diagnostic message, not an actual warning
+                LogWarningAsInfo(new XamlValidationWarningUsingCodeGenFlags(this.CodeGenerationControlFlags));
             }
 
             if (this.Language.IsExperimental)
@@ -2938,6 +2939,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 string subcategory = "XamlCompiler";
                 Log.LogWarning(subcategory, warning.Code.AsErrorCode(), null, xamlFile, warning.LineNumber, warning.LineOffset, 0, 0, warning.Message);
             }
+        }
+
+        private void LogWarningAsInfo(XamlCompileWarning warning)
+        {
+            Log.LogDiagnosticMessage(warning.Message);
         }
 
         private void LogWarning(XamlCompileWarning warning)

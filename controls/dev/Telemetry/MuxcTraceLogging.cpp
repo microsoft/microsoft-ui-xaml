@@ -2,15 +2,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include <pch.h>
-#include "TraceLogging.h"
+#include "MuxcTraceLogging.h"
 
 // GUID for Microsoft.UI.Xaml.Controls : {21e0ae07-56a7-55b5-12f9-011e6bc08cca}
 // GUID for Microsoft.UI.Xaml.Controls : {21e0ae07-56a7-55b5-12f9-011e6bc08ccb}
 TRACELOGGING_DEFINE_PROVIDER(
     g_hTelemetryProvider,
     TELEMETRY_PROVIDER_NAME,
-    (0x21e0ae07, 0x56a7, 0x55b5, 0x12, 0xf9, 0x01, 0x1e, 0x6b, 0xc0, 0x8c, 0xca),
-    TraceLoggingOptionMicrosoftTelemetry());
+    (0x21e0ae07, 0x56a7, 0x55b5, 0x12, 0xf9, 0x01, 0x1e, 0x6b, 0xc0, 0x8c, 0xca));
 
 bool g_IsTelemetryProviderEnabled{};
 UCHAR g_TelemetryProviderLevel{};

@@ -6765,6 +6765,7 @@ namespace Parser
         KnownEventIndex::DebugSettings_XamlResourceReferenceFailed,
         KnownEventIndex::UnknownType_UnknownEvent,
         KnownEventIndex::FrameworkApplication_ResourceManagerRequested,
+        KnownEventIndex::WindowsXamlManager_XamlShutdownCompletedOnThread,
     };
 
     // Map known event indexes to stable event indexes
@@ -7054,5 +7055,6 @@ namespace Parser
         StableEventIndex::PrintDocument_AddPages,
         StableEventIndex::DesktopWindowXamlSource_TakeFocusRequested,
         StableEventIndex::DesktopWindowXamlSource_GotFocus,
+        StableEventIndex::WindowsXamlManager_XamlShutdownCompletedOnThread,
     };
 }

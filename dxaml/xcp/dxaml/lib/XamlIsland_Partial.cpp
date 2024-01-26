@@ -14,6 +14,8 @@
 #include "DCompTreeHost.h"
 #include "Microsoft.UI.Input.h"
 #include "WrlHelper.h"
+#include "SystemBackdrop.g.h"
+#include <Microsoft.UI.Content.Private.h>
 
 using namespace DirectUI;
 
@@ -67,6 +69,9 @@ _Check_return_ HRESULT XamlIsland::Initialize()
 
     // Get and store the XamlIslandRoot
     m_pXamlIslandCore = static_cast<CXamlIslandRoot *>(m_xamlIsland->GetHandle());
+
+    // Set the background transparent so that the SystemBackdrop is not occluded.
+    m_pXamlIslandCore->SetHasTransparentBackground(true);
 
     m_pXamlIslandCore->SetContentRequested(true);
 
@@ -171,6 +176,73 @@ _Check_return_ HRESULT XamlIsland::get_ContentIslandImpl(_Outptr_ ixp::IContentI
     return S_OK;
 }
 
+// Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop implementation
+IFACEMETHODIMP XamlIsland::get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Windows::UI::Composition::ICompositionBrush **systemBackdropBrush)
+{
+    ARG_VALIDRETURNPOINTER(systemBackdropBrush);
+    *systemBackdropBrush = nullptr;
+
+    IFC_RETURN(CheckThread());
+
+    ctl::ComPtr<ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop> compositionSupportsSystemBackdrop;
+    ctl::ComPtr<ixp::IContentIsland> contentIsland = m_pXamlIslandCore->GetContentIsland();
+
+    IFC_RETURN(contentIsland.As(&compositionSupportsSystemBackdrop));
+
+    IFC_RETURN(compositionSupportsSystemBackdrop->get_SystemBackdrop(systemBackdropBrush));
+
+    return S_OK;
+}
+
+IFACEMETHODIMP XamlIsland::put_SystemBackdrop(_In_opt_ ABI::Windows::UI::Composition::ICompositionBrush *systemBackdropBrush)
+{
+    IFC_RETURN(CheckThread());
+
+    ctl::ComPtr<ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop> compositionSupportsSystemBackdrop;
+    ctl::ComPtr<ixp::IContentIsland> contentIsland = m_pXamlIslandCore->GetContentIsland();
+
+    IFC_RETURN(contentIsland.As(&compositionSupportsSystemBackdrop));
+
+    IFC_RETURN(compositionSupportsSystemBackdrop->put_SystemBackdrop(systemBackdropBrush));
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT XamlIsland::get_SystemBackdropImpl(_Outptr_result_maybenull_ xaml::Media::ISystemBackdrop **iSystemBackdrop)
+{
+    return m_systemBackdrop.CopyTo(iSystemBackdrop);
+}
+
+_Check_return_ HRESULT XamlIsland::put_SystemBackdropImpl(_In_opt_ xaml::Media::ISystemBackdrop *iSystemBackdrop)
+{
+    // If nothing changed then do nothing. Otherwise we'd call OnTargetDisconnected and OnTargetConnected
+    // back-to-back on the same SystemBackdrop.
+    if (m_systemBackdrop.Get() != iSystemBackdrop)
+    {
+        if (m_systemBackdrop.Get() != nullptr)
+        {
+            ctl::ComPtr<DirectUI::SystemBackdrop> systemBackdrop;
+            IFC_RETURN(m_systemBackdrop.As(&systemBackdrop));
+            IFC_RETURN(systemBackdrop->InvokeOnTargetDisconnected(this));
+        }
+
+        m_systemBackdrop = iSystemBackdrop;
+        if (iSystemBackdrop != nullptr)
+        {
+            ctl::ComPtr<xaml::IUIElement> content;
+            IFC_RETURN(get_ContentImpl(&content));
+            ctl::ComPtr<xaml::IXamlRoot> xamlRoot;
+            IFC_RETURN(content->get_XamlRoot(&xamlRoot));
+
+            ctl::ComPtr<DirectUI::SystemBackdrop> systemBackdrop;
+            IFC_RETURN(m_systemBackdrop.As(&systemBackdrop));
+            systemBackdrop->InvokeOnTargetConnected(this, xamlRoot.Get());
+        }
+    }
+
+    return S_OK;
+}
+
 _Check_return_ xaml_hosting::IXamlIslandRoot* XamlIsland::GetXamlIslandRootNoRef()
 {
     return m_spXamlIsland.Get();
@@ -186,6 +258,15 @@ IFACEMETHODIMP XamlIsland::Close()
     IFC_RETURN(CheckThread());
 
     m_bClosed = true;
+
+    if (m_systemBackdrop.Get() != nullptr)
+    {
+        ctl::ComPtr<DirectUI::SystemBackdrop> systemBackdrop;
+        IFC_RETURN(m_systemBackdrop.As(&systemBackdrop));
+        IFC_RETURN(systemBackdrop->InvokeOnTargetDisconnected(this));
+        systemBackdrop = nullptr;
+        m_systemBackdrop = nullptr;
+    }
 
     if (m_inputFocusController2 != nullptr)
     {

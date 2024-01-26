@@ -18,9 +18,14 @@
 #endif
 
 #include <Unknwn.h>
-#include "HeaderTrimming.h"
 #include <inspectable.h>
+#include "Windows.Foundation.h"
 #include <windows.foundation.h>
+#include <windows.foundation.collections.h>
+#include "XamlStructCollectionDeclarations.h"
+#include "HeaderTrimming.h"
+
+#include "Windows.Foundation.Numerics.h"
 
 // Standard Windows error handling helpers.
 #include <wil\Result.h>

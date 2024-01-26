@@ -21,7 +21,7 @@
 
     <!-- midl sources lines -->
     <PropertyGroup>
-        <MidlFlags>$(MidlFlags) /noproxy</MidlFlags>
+        <MidlFlags>$(MidlFlags) /noproxy /noattributename /winrt</MidlFlags>
     </PropertyGroup>
 
     <ItemGroup>

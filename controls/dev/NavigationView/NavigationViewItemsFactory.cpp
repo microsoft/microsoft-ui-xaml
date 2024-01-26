@@ -121,7 +121,6 @@ void NavigationViewItemsFactory::RecycleElementCore(winrt::ElementFactoryRecycle
         bool isSettingsItem = m_settingsItem && m_settingsItem == args.Element();
         
         UnlinkElementFromParent(args);
-        UnlinkElementFromParent(args);
         if (m_itemTemplateWrapper && !isSettingsItem)
         {
             m_itemTemplateWrapper.RecycleElement(args);

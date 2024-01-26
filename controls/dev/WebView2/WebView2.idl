@@ -18,7 +18,13 @@ unsealed runtimeclass WebView2 : Microsoft.UI.Xaml.FrameworkElement
 {
     WebView2();
     Microsoft.Web.WebView2.Core.CoreWebView2 CoreWebView2{ get; };
+    
     Windows.Foundation.IAsyncAction EnsureCoreWebView2Async();
+    [MUX_PUBLIC_V6]
+    [overload("EnsureCoreWebView2Async")] Windows.Foundation.IAsyncAction EnsureCoreWebView2WithEnvironmentAsync(Microsoft.Web.WebView2.Core.CoreWebView2Environment environment);
+    [MUX_PUBLIC_V6]
+    [overload("EnsureCoreWebView2Async")] Windows.Foundation.IAsyncAction EnsureCoreWebView2WithEnvironmentAndOptionsAsync(Microsoft.Web.WebView2.Core.CoreWebView2Environment environment, Microsoft.Web.WebView2.Core.CoreWebView2ControllerOptions controllerOptions);
+
     Windows.Foundation.IAsyncOperation<String> ExecuteScriptAsync(String javascriptCode);
     Windows.Foundation.Uri Source{ get; set; };
     Boolean CanGoForward{ get; set; };

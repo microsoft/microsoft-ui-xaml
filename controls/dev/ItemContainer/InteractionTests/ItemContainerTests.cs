@@ -38,12 +38,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
-        [TestMethod]
-        public void BasicTest()
-        {
-            Log.Comment("ItemContainer Basic Test");
-        }
-
 #if MUX_PRERELEASE
         [TestMethod]
         [TestProperty("Description", "Verify ItemInvoked via mouse")]
@@ -150,7 +144,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             Log.Comment("Retrieving IsSelectedTextBlock");
             Edit isSelectedTextBlock = new Edit(FindElement.ById("IsSelectedTextBlock"));
-            Verify.IsNotNull(btnGetIsSelected, "Verifying that IsSelectedTextBlock was found");
+            Verify.IsNotNull(isSelectedTextBlock, "Verifying that IsSelectedTextBlock was found");
 
             btnGetIsSelected.Invoke();
             Wait.ForIdle();

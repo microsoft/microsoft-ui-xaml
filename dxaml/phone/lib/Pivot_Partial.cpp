@@ -67,7 +67,6 @@ Pivot::Pivot()
     , m_scrollViewerLoadedToken()
     , m_headerKeyDownToken()
     , m_layoutElementKeyDownToken()
-    , m_orientationChangedToken()
     , m_fIndexChangeReentryGuard(FALSE)
     , m_fItemChangeReentryGuard(FALSE)
     , m_automationIsLocked(FALSE)
@@ -98,17 +97,6 @@ Pivot::Pivot()
 
 Pivot::~Pivot()
 {
-    if (m_orientationChangedToken.value != 0 && Private::GetIsDllInitialized())
-    {
-        wrl::ComPtr<wgrd::IDisplayInformationStatics> spDisplayInformationStatics;
-        wrl::ComPtr<wgrd::IDisplayInformation> spDisplayInformation;
-        VERIFYHR(wf::GetActivationFactory(wrl_wrappers::HStringReference(
-            RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(), &spDisplayInformationStatics));
-        VERIFYHR(spDisplayInformationStatics->GetForCurrentView(&spDisplayInformation));
-        VERIFYHR(spDisplayInformation->remove_OrientationChanged(m_orientationChangedToken));
-        m_orientationChangedToken.value = 0;
-    }
-
     VERIFYHR(UnregisterNavigationButtonEvents());
     VERIFYHR(m_headerManager.Dispose());
 }
@@ -369,42 +357,6 @@ Pivot::InitializeImpl(_In_opt_ IInspectable* pOuter)
 
         wrl::ComPtr<xaml::IUIElement> spThisAsUIE;
         IFC(spNonDelegatingInnerInspectable.As(&spThisAsUIE));
-    }
-
-    {
-        wrl::ComPtr<wgrd::IDisplayInformationStatics> spDisplayInformationStatics;
-        wrl::ComPtr<wgrd::IDisplayInformation> spDisplayInformation;
-        wrl::WeakRef wrThis;
-
-        IFC(wf::GetActivationFactory(wrl_wrappers::HStringReference(
-            RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(),
-            &spDisplayInformationStatics
-        ));
-        IFCEXPECT(spDisplayInformationStatics);
-
-        if (SUCCEEDED(spDisplayInformationStatics->GetForCurrentView(&spDisplayInformation)))
-        {
-            IFCEXPECT(spDisplayInformation);
-
-            IFC(spDisplayInformation->add_OrientationChanged(
-                wrl::Callback<wf::ITypedEventHandler<wgrd::DisplayInformation*, IInspectable*>>(
-                    [wrThis](_In_ wgrd::IDisplayInformation* pSender, _In_ IInspectable* pArgs) mutable
-                    {
-                        HRESULT hr = S_OK;
-                        wrl::ComPtr<xaml_controls::IPivot> spThis;
-
-                        IGNOREHR(wrThis.As(&spThis));
-                        if (spThis)
-                        {
-                            Pivot* pThis = static_cast<Pivot*>(spThis.Get());
-                            IFC(pThis->OnDisplayOrientationChanged(pSender, pArgs));
-                        }
-
-                    Cleanup:
-                        RRETURN(hr);
-                    }).Get(),
-                        &m_orientationChangedToken));
-        }
     }
 
     {
@@ -3184,14 +3136,6 @@ Pivot::OnSizeChanged(_In_ IInspectable* pSender, _In_ xaml::ISizeChangedEventArg
     return S_OK;
 }
 
-_Check_return_ HRESULT
-Pivot::OnDisplayOrientationChanged(_In_ wgrd::IDisplayInformation* pSender, _In_ IInspectable* pArgs)
-{
-    UNREFERENCED_PARAMETER(pSender);
-    UNREFERENCED_PARAMETER(pArgs);
-    RRETURN(GoToOrientationState());
-}
-
 _Check_return_ HRESULT Pivot::OnPointerEnteredHeader(_In_ IInspectable* /*sender*/, _In_ xaml_input::IPointerRoutedEventArgs* args)
 {
     bool isPointerTouch;
@@ -3850,26 +3794,8 @@ Cleanup:
 _Check_return_ HRESULT
 Pivot::GetOrientation(_Out_ wgrd::DisplayOrientations* pOrientation)
 {
-    HRESULT hr = S_OK;
-
-    wrl::ComPtr<wgrd::IDisplayInformationStatics> spDisplayInformationStatics;
-    wrl::ComPtr<wgrd::IDisplayInformation> spDisplayInformation;
-
     *pOrientation = wgrd::DisplayOrientations_Portrait;
-
-    IGNOREHR(wf::GetActivationFactory(wrl_wrappers::HStringReference(
-        RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(), &spDisplayInformationStatics));
-    if (spDisplayInformationStatics)
-    {
-        IGNOREHR(spDisplayInformationStatics->GetForCurrentView(&spDisplayInformation));
-        if (spDisplayInformation)
-        {
-            IFC(spDisplayInformation->get_CurrentOrientation(pOrientation));
-        }
-    }
-
-Cleanup:
-    RRETURN(hr);
+    return S_OK;
 }
 
 #pragma endregion

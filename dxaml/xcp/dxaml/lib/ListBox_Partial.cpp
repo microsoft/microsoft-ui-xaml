@@ -233,7 +233,7 @@ ListBox::FocusChanged(
 
         if (hasFocus)
         {
-            IFC(SetFocusedItem(m_iFocusedIndex < 0 ? 0 : m_iFocusedIndex, TRUE));
+            IFC(SetFocusedItem(GetFocusedIndex() < 0 ? 0 : GetFocusedIndex(), TRUE));
         }
     }
 
@@ -308,7 +308,7 @@ ListBox::OnKeyDown(
         case wsy::VirtualKey_Right:
         case wsy::VirtualKey_Down:
             {
-                newFocusedIndex = m_iFocusedIndex;
+                newFocusedIndex = GetFocusedIndex();
                 IFC(HandleNavigationKey(key, /*scrollViewport*/ TRUE, newFocusedIndex));
             }
             break;
@@ -351,7 +351,7 @@ ListBox::OnKeyDown(
             break;
     }
 
-    if (newFocusedIndex != -1 && newFocusedIndex != m_iFocusedIndex)
+    if (newFocusedIndex != -1 && newFocusedIndex != GetFocusedIndex())
     {
         handled = TRUE;
         IFC(get_Items(&spItems));

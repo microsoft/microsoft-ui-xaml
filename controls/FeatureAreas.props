@@ -213,6 +213,12 @@
   <!-- Dependencies for AnnotatedScrollBar -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureAnnotatedScrollBarEnabled) == 'true'">
   </PropertyGroup>
+  <!-- Dependencies for MapControl -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureMapControlEnabled) == 'true'">
+  </PropertyGroup>
+  <!-- Dependencies for SelectorBar -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureSelectorBarEnabled) == 'true'">
+  </PropertyGroup>
   <!-- Features to include for official build (should be all features) -->
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
     <FeatureAnimatedVisualPlayerEnabled>true</FeatureAnimatedVisualPlayerEnabled>
@@ -272,6 +278,8 @@
     <FeatureWebView2Enabled>true</FeatureWebView2Enabled>
     <FeatureItemContainerEnabled>true</FeatureItemContainerEnabled>
     <FeatureAnnotatedScrollBarEnabled>true</FeatureAnnotatedScrollBarEnabled>
+    <FeatureMapControlEnabled>true</FeatureMapControlEnabled>
+    <FeatureSelectorBarEnabled>true</FeatureSelectorBarEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>

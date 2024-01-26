@@ -14,11 +14,13 @@
 #include <winrt\Windows.ApplicationModel.DataTransfer.DragDrop.h>
 #include <winrt\Windows.ApplicationModel.Resources.h>
 #include <winrt\Windows.ApplicationModel.Resources.Core.h>
+#include <winrt\Windows.Devices.Geolocation.h>
 #include <winrt\Windows.Globalization.h>
 #include <winrt\Windows.Globalization.NumberFormatting.h>
 #include <winrt\Windows.Graphics.Imaging.h>
 #include <winrt\Windows.Graphics.Display.h>
 #include <winrt\Windows.Graphics.Effects.h>
+#include <winrt\Windows.Storage.h>
 #include <winrt\Windows.Storage.Streams.h>
 #include <winrt\Windows.System.h>
 #include <winrt\Windows.System.Power.h>
@@ -31,6 +33,7 @@
 #include <winrt\Windows.UI.Text.h>
 #include <winrt\Windows.UI.ViewManagement.h>
 #include <winrt\Windows.UI.Xaml.Interop.h>
+#include <winrt\Windows.Data.Json.h>
 
 #include <winrt\Microsoft.Windows.ApplicationModel.Resources.h>
 #include <winrt\Microsoft.UI.Dispatching.h>
@@ -76,6 +79,7 @@ namespace winrt
     using namespace ::winrt::Windows::ApplicationModel::Resources;
     using namespace ::winrt::Windows::ApplicationModel::Resources::Core;
     using namespace ::winrt::Windows::Devices::Input;
+    using namespace ::winrt::Windows::Devices::Geolocation;
     using namespace ::winrt::Windows::Foundation;
     using namespace ::winrt::Windows::Foundation::Collections;
     using namespace ::winrt::Windows::Foundation::Metadata;
@@ -85,6 +89,7 @@ namespace winrt
     using namespace ::winrt::Windows::Graphics::Display;
     using namespace ::winrt::Windows::Graphics::Imaging;
     using namespace ::winrt::Windows::Graphics::Effects;
+    using namespace ::winrt::Windows::Storage;
     using namespace ::winrt::Windows::Storage::Streams;
     using namespace ::winrt::Windows::System::Power;
     using namespace ::winrt::Windows::System::Profile;
@@ -94,7 +99,6 @@ namespace winrt
     using namespace ::winrt::Windows::UI::Core;
     using namespace ::winrt::Windows::UI::Text;
     using namespace ::winrt::Windows::UI::ViewManagement;
-    using namespace ::winrt::Windows::UI::WindowManagement;
     using namespace ::winrt::Windows::Web;
 
     using namespace ::winrt::Microsoft::UI::Dispatching;

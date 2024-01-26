@@ -376,6 +376,7 @@ ERROR_HIT_TEST_IS_NOT_ASSOCIATED_WITH_CONTENT_TREE "VisualTreeHelper::FindElemen
 ERROR_POPUP_SHOULDCONSTRAINTOROOTBOUNDS_CANNOT_BE_CHANGED_AFTER_OPEN "The value of ShouldConstrainToRootBounds cannot be changed after the popup has been opened." // {Locked}
 ERROR_XAMLROOT_AMBIGUOUS "This element is already associated with a XamlRoot, it cannot be associated with a different one until it is removed from the previous XamlRoot." // {Locked}
 ERROR_CANNOT_SET_XAMLROOT_WHEN_NOT_NULL "Cannot change XamlRoot when it is already set" // {Locked}
+ERROR_XAMLROOT_REQUIRED "This element does not have a XamlRoot. Either set the XamlRoot property or add the element to a tree." // {Locked}
 
 ERROR_RASTERIZATIONSCALE_MUST_BE_POSITIVE "RasterizationScale must be a positive number." // {Locked}
 ERROR_CONNECTED_ANIMATIONS_BETWEEN_ELEMENTS_IN_DIFFERENT_XAMLROOTS_ARE_NOT_SUPPORTED "Connected animations between elements in different XamlRoots are not supported." // {Locked}

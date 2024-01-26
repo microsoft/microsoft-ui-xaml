@@ -38,48 +38,49 @@ using namespace RuntimeFeatureBehavior;
 // Handler for when a GroupItem receives focus.
 _Check_return_ HRESULT ListViewBase::GroupItemFocused(_In_ GroupItem* pItem)
 {
-    HRESULT hr = S_OK;
-    IFC(pItem->GetGroupIndex(&m_focusedGroupIndex));
-    m_lastFocusedGroupIndex = m_focusedGroupIndex;
+    INT focusedGroupIndex{ -1 };
 
-Cleanup:
-    RRETURN(hr);
+    IFC_RETURN(pItem->GetGroupIndex(&focusedGroupIndex));
+    SetFocusedGroupIndex(focusedGroupIndex);
+    SetLastFocusedGroupIndex(focusedGroupIndex);
+
+    return S_OK;
 }
 
 // Handler for when a GroupItem loses focus.
 _Check_return_ HRESULT ListViewBase::GroupItemUnfocused(_In_ GroupItem* pItem)
 {
-    HRESULT hr = S_OK;
     INT groupIndex = -1;
 
-    IFC(pItem->GetGroupIndex(&groupIndex));
-    if (m_focusedGroupIndex == groupIndex)
+    IFC_RETURN(pItem->GetGroupIndex(&groupIndex));
+
+    if (GetFocusedGroupIndex() == groupIndex)
     {
-        m_focusedGroupIndex = -1;
+        SetFocusedGroupIndex(-1);
     }
 
-Cleanup:
-    RRETURN(hr);
+    return S_OK;
 }
 
 // Handler called by ListViewBaseHeaderItem when it receives focus.
 _Check_return_ HRESULT ListViewBase::GroupHeaderItemFocused(
     _In_ ListViewBaseHeaderItem* pItem)
 {
-    HRESULT hr = S_OK;
+    INT focusedGroupIndex{ -1 };
 
-    IFC(IndexFromHeader(pItem, FALSE /*excludeHiddenEmptyGroups*/, &m_focusedGroupIndex));
+    IFC_RETURN(IndexFromHeader(pItem, FALSE /*excludeHiddenEmptyGroups*/, &focusedGroupIndex));
+    SetFocusedGroupIndex(focusedGroupIndex);
 
-    if (m_focusedGroupIndex >= 0)
+    if (focusedGroupIndex >= 0)
     {
         BOOLEAN groupHasElements = FALSE;
 
-        m_lastFocusedGroupIndex = m_focusedGroupIndex;
+        SetLastFocusedGroupIndex(focusedGroupIndex);
         m_lastFocusedElementType = ElementType::GroupHeader;
         m_wasItemOrGroupHeaderFocused = true;
 
-        IFC(GroupHasElements(
-            m_lastFocusedGroupIndex,
+        IFC_RETURN(GroupHasElements(
+            GetLastFocusedGroupIndex(),
             &groupHasElements));
 
         if (groupHasElements)
@@ -87,9 +88,9 @@ _Check_return_ HRESULT ListViewBase::GroupHeaderItemFocused(
             UINT lastFocusedIndex;
 
             // Make sure the last focused index falls within range applicable for this group.
-            IFC(ValidateItemIndexForGroup(
+            IFC_RETURN(ValidateItemIndexForGroup(
                 GetLastFocusedIndex(),
-                m_lastFocusedGroupIndex,
+                GetLastFocusedGroupIndex(),
                 TRUE,
                 FALSE,
                 &lastFocusedIndex));
@@ -97,26 +98,23 @@ _Check_return_ HRESULT ListViewBase::GroupHeaderItemFocused(
         }
     }
 
-Cleanup:
-    RRETURN(hr);
+    return S_OK;
 }
 
 // Handler called by ListViewBaseHeaderItem when it loses focus.
 _Check_return_ HRESULT ListViewBase::GroupHeaderItemUnfocused(
     _In_ ListViewBaseHeaderItem* pItem)
 {
-    HRESULT hr = S_OK;
     INT groupIndex = -1;
 
-    IFC(IndexFromHeader(pItem, FALSE /*excludeHiddenEmptyGroups*/, &groupIndex));
+    IFC_RETURN(IndexFromHeader(pItem, FALSE /*excludeHiddenEmptyGroups*/, &groupIndex));
 
-    if (m_focusedGroupIndex == groupIndex)
+    if (GetFocusedGroupIndex() == groupIndex)
     {
-        m_focusedGroupIndex = -1;
+        SetFocusedGroupIndex(-1);
     }
 
-Cleanup:
-    RRETURN(hr);
+    return S_OK;
 }
 
 // Handler for when a SelectorItem received focus
@@ -126,69 +124,68 @@ _Check_return_ HRESULT ListViewBase::ItemFocused(_In_ SelectorItem* pSelectorIte
     IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"LVB(%s)[0x%p]: ItemFocused.", ctl::is<xaml_controls::IGridView>(this) ? L"GV" : L"LV", this));
 #endif
 
-    HRESULT hr = S_OK;
     BOOLEAN shouldCustomizeTabNavigation = FALSE;
 
-    IFC(ListViewBaseGenerated::ItemFocused(pSelectorItem));
+    IFC_RETURN(ListViewBaseGenerated::ItemFocused(pSelectorItem));
 
     m_lastFocusedElementType = ElementType::Item;
     m_wasItemOrGroupHeaderFocused = true;
 
-    IFC(ShouldCustomizeTabNavigation(&shouldCustomizeTabNavigation));
+    IFC_RETURN(ShouldCustomizeTabNavigation(&shouldCustomizeTabNavigation));
 
     if (shouldCustomizeTabNavigation)
     {
         BOOLEAN isGrouping = FALSE;
 
-        IFC(get_IsGrouping(&isGrouping));
+        IFC_RETURN(get_IsGrouping(&isGrouping));
 
         if (isGrouping)
         {
             ctl::ComPtr<xaml_data::ICollectionViewGroup> spGroup;
+            INT lastFocusedGroupIndex{ -1 };
 
-            IFC(GetGroupFromItem(
-                m_iFocusedIndex,
+            IFC_RETURN(GetGroupFromItem(
+                GetFocusedIndex(),
                 &spGroup,
                 nullptr,
-                &m_lastFocusedGroupIndex,
+                &lastFocusedGroupIndex,
                 nullptr));
+            SetLastFocusedGroupIndex(lastFocusedGroupIndex);
         }
 
         // Sometimes when focus moves from a header to an item (disconnected)
         // the header does not get the GroupHeaderItemUnfocused call. In order to
         // workaround that, if an item gets focus, we set the focused group index to -1.
-        m_focusedGroupIndex = -1;
+        SetFocusedGroupIndex(-1);
     }
 
     // When SelectionMode is 'Single', SingleSelectionFollowsFocus is True, TabNavigation is 'Cycle' or 'Local',
     // the focused item needs to be selected.
     xaml_input::KeyboardNavigationMode navigationMode;
 
-    IFC(get_TabNavigation(&navigationMode));
+    IFC_RETURN(get_TabNavigation(&navigationMode));
 
     if (navigationMode != xaml_input::KeyboardNavigationMode::KeyboardNavigationMode_Once)
     {
         BOOLEAN singleSelectionFollowsFocus = FALSE;
 
-        IFC(get_SingleSelectionFollowsFocus(&singleSelectionFollowsFocus));
+        IFC_RETURN(get_SingleSelectionFollowsFocus(&singleSelectionFollowsFocus));
 
         if (singleSelectionFollowsFocus)
         {
             xaml_controls::ListViewSelectionMode selectionMode;
 
-            IFC(get_SelectionMode(&selectionMode));
+            IFC_RETURN(get_SelectionMode(&selectionMode));
 
             if (selectionMode == xaml_controls::ListViewSelectionMode_Single)
             {
-                IFC(MakeSingleSelection(GetLastFocusedIndex(), FALSE /*animateIfBringIntoView*/, nullptr /*pSelectedItem*/));
+                IFC_RETURN(MakeSingleSelection(GetLastFocusedIndex(), FALSE /*animateIfBringIntoView*/, nullptr /*pSelectedItem*/));
             }
         }
     }
 
-Cleanup:
-    RRETURN(hr);
+    return S_OK;
 }
-
 
 // Automation Helper for ItemClick
 _Check_return_ HRESULT ListViewBase::AutomationItemClick(_In_ ListViewBaseItem* pItem)
@@ -291,9 +288,12 @@ _Check_return_ HRESULT ListViewBase::OnItemPrimaryInteractionGesture(
 
         if (spSemanticZoom)
         {
+            INT focusedIndex{ -1 };
+
             // Make the item the target of our jump
             IFC_RETURN(FocusItem(isKeyboardInput ? xaml::FocusState_Keyboard : xaml::FocusState_Pointer, pItem));
-            IFC_RETURN(IndexFromContainer(pItem, &m_iFocusedIndex));
+            IFC_RETURN(IndexFromContainer(pItem, &focusedIndex));
+            SetFocusedIndex(focusedIndex);
 
             // Jump to this item
             spSemanticZoomConcrete = spSemanticZoom.Cast<SemanticZoom>();
@@ -1482,7 +1482,7 @@ _Check_return_ HRESULT ListViewBase::OnGroupKeyboardNavigation(
 
     if (spKeyboardHeaderNavigationPanel)
     {
-        UINT currentGroupIndex = static_cast<UINT>(m_focusedGroupIndex);
+        UINT currentGroupIndex = static_cast<UINT>(GetFocusedGroupIndex());
         UINT newGroupIndex = 0;
         BOOLEAN isActionHandled = FALSE;
         ctl::ComPtr<IDependencyObject> spHeaderDO;
@@ -1502,7 +1502,8 @@ _Check_return_ HRESULT ListViewBase::OnGroupKeyboardNavigation(
                 if (currentGroupIndex != newGroupIndex)
                 {
                     // Handled, new index
-                    BOOLEAN isSelectable = FALSE;
+                    BOOLEAN isFocusable = FALSE;
+
                     IFC(Selector::ScrollIntoView(
                         newGroupIndex,
                         TRUE  /*isGroupItemIndex*/,
@@ -1513,17 +1514,17 @@ _Check_return_ HRESULT ListViewBase::OnGroupKeyboardNavigation(
                         animateIfBringIntoView,
                         xaml_controls::ScrollIntoViewAlignment::ScrollIntoViewAlignment_Default,
                         0.0 /*offset*/,
-                        m_focusedGroupIndex /*currentGroupIndex*/));
+                        GetFocusedGroupIndex() /*currentGroupIndex*/));
 
                     IFC(HeaderFromIndex(newGroupIndex, &spHeaderDO));
 
-                    IFC(Selector::IsSelectableHelper(
+                    IFC(ItemsControl::IsFocusableHelper(
                         ctl::iinspectable_cast(spHeaderDO.Get()),
-                        isSelectable));
+                        isFocusable));
 
-                    if (isSelectable)
+                    if (isFocusable)
                     {
-                        // This one is selectable.
+                        // This one is focusable.
                         break;
                     }
                     else
@@ -1547,7 +1548,7 @@ _Check_return_ HRESULT ListViewBase::OnGroupKeyboardNavigation(
         }
 
         if (isActionHandled &&
-            m_focusedGroupIndex != newGroupIndex)
+            GetFocusedGroupIndex() != newGroupIndex)
         {
             ctl::ComPtr<xaml::IUIElement> spHeaderAsUIElement = spHeaderDO.AsOrNull<xaml::IUIElement>();
             if (spHeaderAsUIElement)
@@ -1557,8 +1558,8 @@ _Check_return_ HRESULT ListViewBase::OnGroupKeyboardNavigation(
                 IFC(spHeaderAsUIElement->Focus(xaml::FocusState_Keyboard, &isHandled));
 
                 // Set focused group indices.  This will be set again in GroupHeaderItemFocused.
-                m_focusedGroupIndex = newGroupIndex;
-                m_lastFocusedGroupIndex = newGroupIndex;
+                SetFocusedGroupIndex(newGroupIndex);
+                SetLastFocusedGroupIndex(newGroupIndex);
             }
         }
 
@@ -1579,11 +1580,11 @@ _Check_return_ HRESULT ListViewBase::OnGroupKeyboardNavigation(
             IFC(QueryPanelForItemNavigation(
                     spOuterPanel.Get(),
                     action,
-                    m_lastFocusedGroupIndex, /*sourceFocusedIndex*/
+                    GetLastFocusedGroupIndex(), /*sourceFocusedIndex*/
                     xaml_controls::ElementType_GroupHeader,
-                    [this](UINT groupIndex, xaml_controls::ElementType /*type*/, BOOLEAN* pIsSelectable) -> HRESULT
+                    [this](UINT groupIndex, xaml_controls::ElementType /*type*/, BOOLEAN* pIsFocusable) -> HRESULT
                     {
-                        RRETURN(ListViewBase::IsGroupItemSelectable(this, groupIndex, pIsSelectable));
+                        RRETURN(ListViewBase::IsGroupItemFocusable(this, groupIndex, pIsFocusable));
                     },
                     !XboxUtility::IsGamepadNavigationDirection(originalKey), /*allowWrap*/
                     -1, /*itemIndexHintForHeaderNavigation*/
@@ -1600,7 +1601,7 @@ _Check_return_ HRESULT ListViewBase::OnGroupKeyboardNavigation(
                 // thus we need to do inter-group navigation ourselves.
                 IFC(QueryGroupFallbackForGroupNavigation(
                     key,
-                    m_lastFocusedGroupIndex,
+                    GetLastFocusedGroupIndex(),
                     &newGroupIndex,
                     &isHandled));
             }
@@ -1624,7 +1625,7 @@ _Check_return_ HRESULT ListViewBase::OnGroupKeyboardNavigation(
                     animateIfBringIntoView,
                     xaml_controls::ScrollIntoViewAlignment::ScrollIntoViewAlignment_Default,
                     0.0 /*offset*/,
-                    m_focusedGroupIndex /*currentGroupIndex*/));
+                    GetFocusedGroupIndex() /*currentGroupIndex*/));
                 IFC(HeaderFromIndex(newGroupIndex, &spGroupItemAsIDO));
                 spGroupItem = spGroupItemAsIDO.AsOrNull<IGroupItem>();
 
@@ -1633,7 +1634,7 @@ _Check_return_ HRESULT ListViewBase::OnGroupKeyboardNavigation(
                     IFC(spGroupItem.Cast<GroupItem>()->FocusHeader(xaml::FocusState_Keyboard, pHandled));
                 }
 
-                if (!spGroupItem || newGroupIndex == m_lastFocusedGroupIndex)
+                if (!spGroupItem || newGroupIndex == GetLastFocusedGroupIndex())
                 {
                     // Safety check, shouldn't happen. If this is hit, we should break out because either the panel or the ICG is acting wonky.
                     // Note the key will still be handled if focus was taken above. Determining whether or not a key is handled
@@ -1648,12 +1649,12 @@ _Check_return_ HRESULT ListViewBase::OnGroupKeyboardNavigation(
     #if DBG
                     ASSERT(spGroupItemAsIDO, L"Expected a container to be available after ScrollIntoView.");
                     ASSERT(spGroupItem, L"Expected an IGroupItem from ContainerFromGroupIndex.");
-                    ASSERT(newGroupIndex != m_lastFocusedGroupIndex, L"Panel handled key, but gave us an index that is the same as the current index.");
+                    ASSERT(newGroupIndex != GetLastFocusedGroupIndex(), L"Panel handled key, but gave us an index that is the same as the current index.");
     #endif
                     break;
                 }
 
-                m_lastFocusedGroupIndex = newGroupIndex;
+                SetLastFocusedGroupIndex(newGroupIndex);
             }
             else
             {
@@ -1839,7 +1840,7 @@ _Check_return_ HRESULT ListViewBase::OnKeyboardNavigation(
                 // we can test for by validating that considerNestedPanels is false.
                 if (!considerNestedPanels && HasFocusedGroup())
                 {
-                    startIndex = m_focusedGroupIndex;
+                    startIndex = GetFocusedGroupIndex();
                     startType = xaml_controls::ElementType_GroupHeader;
                 }
 
@@ -1849,10 +1850,10 @@ _Check_return_ HRESULT ListViewBase::OnKeyboardNavigation(
                     action,
                     startIndex,
                     startType,
-                    [&panelStartIndexInCollection, &spMapping, &spGroupMapping](UINT index, xaml_controls::ElementType type, BOOLEAN* pIsSelectable) -> HRESULT
+                    [&panelStartIndexInCollection, &spMapping, &spGroupMapping](UINT index, xaml_controls::ElementType type, BOOLEAN* pIsFocusable) -> HRESULT
                     {
                         HRESULT hr = S_OK; // WARNING_IGNORES_FAILURES
-                        *pIsSelectable = FALSE;
+                        *pIsFocusable = FALSE;
                         if (type == xaml_controls::ElementType_GroupHeader)
                         {
                             // Since group headers are treated the same as items, use the same selector logic for
@@ -1862,11 +1863,11 @@ _Check_return_ HRESULT ListViewBase::OnKeyboardNavigation(
                             // Here the index is just the GroupIndex and we don't need to translate its values depending
                             // on which panel we're querying, like we do for items.
                             IFC(spGroupMapping->HeaderFromIndex(index, &groupItemDO));
-                            IFC(Selector::IsSelectableHelper(ctl::iinspectable_cast(groupItemDO.Get()), *pIsSelectable));
+                            IFC(ItemsControl::IsFocusableHelper(ctl::iinspectable_cast(groupItemDO.Get()), *pIsFocusable));
                         }
                         else
                         {
-                            IFC(ListViewBase::IsItemSelectable(spMapping.Get(), panelStartIndexInCollection + index, pIsSelectable));
+                            IFC(ListViewBase::IsItemFocusable(spMapping.Get(), panelStartIndexInCollection + index, pIsFocusable));
                         }
 
                     Cleanup:
@@ -2002,9 +2003,9 @@ _Check_return_ HRESULT ListViewBase::OnKeyboardNavigation(
                 action,
                 sourceGroupIndex, /*sourceFocusedIndex*/
                 xaml_controls::ElementType_GroupHeader,
-                [this](UINT groupIndex, xaml_controls::ElementType type, BOOLEAN* pIsSelectable) -> HRESULT
+                [this](UINT groupIndex, xaml_controls::ElementType type, BOOLEAN* pIsFocusable) -> HRESULT
                 {
-                    RRETURN(ListViewBase::IsGroupItemSelectable(this, groupIndex, pIsSelectable));
+                    RRETURN(ListViewBase::IsGroupItemFocusable(this, groupIndex, pIsFocusable));
                 },
                 !XboxUtility::IsGamepadNavigationDirection(originalKey), /*allowWrap*/
                 -1, /*itemIndexHintForHeaderNavigation*/
@@ -2085,7 +2086,8 @@ _Check_return_ HRESULT ListViewBase::OnKeyboardNavigation(
                 if (foundSelectableItem)
                 {
                     *pNewFocusedIndex = targetItemIndexInCollection;
-                    m_lastFocusedGroupIndex = m_focusedGroupIndex = newGroupIndex;
+                    SetFocusedGroupIndex(newGroupIndex);
+                    SetLastFocusedGroupIndex(newGroupIndex);
                 }
                 else
                 {
@@ -2188,7 +2190,7 @@ _Check_return_ HRESULT ListViewBase::GetClosestIndexToItemInGroupPanel(
                 ctl::ComPtr<IItemLookupPanel> spTargetGroupPanelAsILP;
                 xaml_primitives::ElementInfo targetElementInfoInTargetPanel = {-1, FALSE};
                 INT targetIndexInCollection = -1;
-                BOOLEAN isTargetSelectable = FALSE;
+                BOOLEAN isTargetFocusable = FALSE;
 
                 // Get the source point relative to the source item.
                 IFC(GetNavigationSourcePoint(spSourceContainerAsFE.Cast<FrameworkElement>(), action, &sourcePointRelativeToSourceItem));
@@ -2225,9 +2227,9 @@ _Check_return_ HRESULT ListViewBase::GetClosestIndexToItemInGroupPanel(
                 targetIndexInCollection = targetElementInfoInTargetPanel.m_childIndex + targetGroupStartIndex;
 
                 // See if the target is selectable.
-                IFC(ListViewBase::IsItemSelectable(spMapping.Get(), targetIndexInCollection, &isTargetSelectable))
+                IFC(ListViewBase::IsItemFocusable(spMapping.Get(), targetIndexInCollection, &isTargetFocusable))
 
-                if (isTargetSelectable)
+                if (isTargetFocusable)
                 {
                     *pUseFallback = FALSE;
                 }
@@ -2317,7 +2319,7 @@ _Check_return_ HRESULT ListViewBase::FindFirstSelectableItemInGroup(
     UINT groupStartIndex = 0;
     UINT groupSize = 0;
     BOOLEAN isGroupValid = FALSE;
-    BOOLEAN isSelectable = FALSE;
+    BOOLEAN isFocusable = FALSE;
     INT startIndex = -1;
 
     *pFoundSelectableItem = FALSE;
@@ -2352,16 +2354,16 @@ _Check_return_ HRESULT ListViewBase::FindFirstSelectableItemInGroup(
     {
         ctl::ComPtr<IInspectable> spItem = nullptr;
         IFC(spItems.Cast<ItemCollection>()->GetAt(currentItemIndex, &spItem));
-        IFC(Selector::IsSelectableHelper(spItem.Get(), isSelectable));
-        if (isSelectable)
+        IFC(ItemsControl::IsFocusableHelper(spItem.Get(), isFocusable));
+        if (isFocusable)
         {
             if (!spMapping)
             {
                 IFC(GetItemContainerMapping(&spMapping));
             }
 
-            IFC(ListViewBase::IsItemSelectable(spMapping.Get(), currentItemIndex, &isSelectable));
-            if (isSelectable)
+            IFC(ListViewBase::IsItemFocusable(spMapping.Get(), currentItemIndex, &isFocusable));
+            if (isFocusable)
             {
                 *pFoundSelectableItem = TRUE;
                 *pFirstSelectableItemIndexInCollection = currentItemIndex;
@@ -2716,15 +2718,16 @@ _Check_return_ HRESULT ListViewBase::QueryGroupFallbackForGroupNavigation(
         ((sourceGroupIndex + indexDeltaPerStep) < groupCount)
         )
     {
-        BOOLEAN isTargetSelectable = FALSE;
+        BOOLEAN isTargetFocusable = FALSE;
 
         do
         {
             newGroupIndex += indexDeltaPerStep;
-            IFC(ListViewBase::IsGroupItemSelectable(this, newGroupIndex, &isTargetSelectable));
-        } while ( !isTargetSelectable && newGroupIndex > 0 && newGroupIndex < groupCount - 1);
+            IFC(ListViewBase::IsGroupItemFocusable(this, newGroupIndex, &isTargetFocusable));
+        } 
+        while (!isTargetFocusable && newGroupIndex > 0 && newGroupIndex < groupCount - 1);
 
-        if (isTargetSelectable)
+        if (isTargetFocusable)
         {
             *pIsHandled = TRUE;
             *pNewGroupIndex = newGroupIndex;
@@ -2923,21 +2926,22 @@ _Check_return_ HRESULT ListViewBase::OnFocusChanged(
     if (hasFocus)
     {
         INT targetFocusedItem = -1;
-        if (m_focusedGroupIndex >= 0)
+
+        if (GetFocusedGroupIndex() >= 0)
         {
             // Tabbing from group header to items.
             UINT groupStartIndex = 0;
             UINT groupSize = 0;
             BOOLEAN isValid = FALSE;
-            IFC(GetGroupInformation(m_focusedGroupIndex, &groupStartIndex, &groupSize, &isValid));
+            IFC(GetGroupInformation(GetFocusedGroupIndex(), &groupStartIndex, &groupSize, &isValid));
             if (isValid)
             {
                 targetFocusedItem = static_cast<INT>(groupStartIndex);
             }
         }
-        else if (m_iFocusedIndex >= 0)
+        else if (GetFocusedIndex() >= 0)
         {
-            targetFocusedItem = m_iFocusedIndex;
+            targetFocusedItem = GetFocusedIndex();
         }
         else
         {
@@ -2951,7 +2955,7 @@ _Check_return_ HRESULT ListViewBase::OnFocusChanged(
     }
     else
     {
-        m_focusedGroupIndex = -1;
+        SetFocusedGroupIndex(-1);
     }
 
 Cleanup:
@@ -2969,15 +2973,15 @@ _Check_return_ HRESULT ListViewBase::OnGroupFocusChanged(
 
     if (hasFocus)
     {
-        m_focusedGroupIndex = m_focusedGroupIndex >= 0 ? m_focusedGroupIndex : m_lastFocusedGroupIndex;
-        m_lastFocusedGroupIndex = m_focusedGroupIndex;
+        SetFocusedGroupIndex(GetFocusedGroupIndex() >= 0 ? GetFocusedGroupIndex() : GetLastFocusedGroupIndex());
+        SetLastFocusedGroupIndex(GetFocusedGroupIndex());
 
         // Redirect focus if the header has focus.
         if (headerHasFocus)
         {
             ctl::ComPtr<xaml::IDependencyObject> spGroupItemAsIDO;
             ctl::ComPtr<IGroupItem> spGroupItem;
-            IFC(HeaderFromIndex(m_focusedGroupIndex, &spGroupItemAsIDO));
+            IFC(HeaderFromIndex(GetFocusedGroupIndex(), &spGroupItemAsIDO));
             spGroupItem = spGroupItemAsIDO.AsOrNull<IGroupItem>();
             if (spGroupItem)
             {
@@ -3211,18 +3215,18 @@ BOOLEAN ListViewBase::IsInExclusiveInteraction()
 }
 
 // Checks whether the group item returned for the given index
-// by pGenerator is Selectable.
-_Check_return_ HRESULT ListViewBase::IsGroupItemSelectable(
+// by pGenerator is focusable.
+_Check_return_ HRESULT ListViewBase::IsGroupItemFocusable(
     _In_ DirectUI::IGroupHeaderMapping* pMapping,
     _In_ UINT groupIndex,
-    _Out_ BOOLEAN* pIsSelectable)
+    _Out_ BOOLEAN* pIsFocusable)
 {
     HRESULT hr = S_OK;
     ctl::ComPtr<xaml::IDependencyObject> spGroupItemAsIDO;
     ctl::ComPtr<IControl> spGroupItemAsControl;
-    BOOLEAN isSelectable = FALSE;
+    BOOLEAN isFocusable = FALSE;
 
-    *pIsSelectable = FALSE;
+    *pIsFocusable = FALSE;
 
     IFC(pMapping->HeaderFromIndex(groupIndex, &spGroupItemAsIDO));
 
@@ -3230,15 +3234,15 @@ _Check_return_ HRESULT ListViewBase::IsGroupItemSelectable(
 
     if (spGroupItemAsControl)
     {
-        IFC(spGroupItemAsControl->get_IsEnabled(&isSelectable));
+        IFC(spGroupItemAsControl->get_IsEnabled(&isFocusable));
     }
     else
     {
-        // Non-Controls selectable by default (see Selector::IsSelectableHelper).
-        isSelectable = TRUE;
+        // Non-Controls focusable by default (see ItemsControl::IsFocusableHelper).
+        isFocusable = TRUE;
     }
 
-    if (isSelectable)
+    if (isFocusable)
     {
         ctl::ComPtr<IUIElement> spGroupItemAsUIE;
 
@@ -3247,11 +3251,11 @@ _Check_return_ HRESULT ListViewBase::IsGroupItemSelectable(
         {
             xaml::Visibility visibility = xaml::Visibility_Collapsed;
             IFC(spGroupItemAsUIE->get_Visibility(&visibility));
-            isSelectable = visibility != xaml::Visibility_Collapsed;
+            isFocusable = visibility != xaml::Visibility_Collapsed;
         }
     }
 
-    *pIsSelectable = isSelectable;
+    *pIsFocusable = isFocusable;
 
 Cleanup:
     RRETURN(hr);
@@ -3259,23 +3263,23 @@ Cleanup:
 
 // Checks whether the item container returned for the given index
 // by pGenerator is Selectable.
-_Check_return_ HRESULT ListViewBase::IsItemSelectable(
+_Check_return_ HRESULT ListViewBase::IsItemFocusable(
     _In_ IItemContainerMapping* pMapping,
     _In_ UINT itemIndex,
-    _Out_ BOOLEAN* pIsSelectable)
+    _Out_ BOOLEAN* pIsFocusable)
 {
     HRESULT hr = S_OK;
     ctl::ComPtr<xaml::IDependencyObject> spContainerAsIDO;
     ctl::ComPtr<IInspectable> spContainerAsI;
-    BOOLEAN isSelectable = FALSE;
+    BOOLEAN isFocusable = FALSE;
 
-    *pIsSelectable = FALSE;
+    *pIsFocusable = FALSE;
 
     IFC(pMapping->ContainerFromIndex(itemIndex, &spContainerAsIDO));
 
     spContainerAsI = spContainerAsIDO.AsOrNull<IInspectable>();
-    IFC(Selector::IsSelectableHelper(spContainerAsI.Get(), isSelectable));
-    *pIsSelectable = isSelectable;
+    IFC(ItemsControl::IsFocusableHelper(spContainerAsI.Get(), isFocusable));
+    *pIsFocusable = isFocusable;
 
 Cleanup:
     RRETURN(hr);

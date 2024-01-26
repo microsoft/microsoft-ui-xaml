@@ -18,7 +18,7 @@
     <NativeAssemblyPackageLocation>$(PackageOutputLocation)\runtimes\$(WinUIRuntimeIdentifier)\native</NativeAssemblyPackageLocation>
     <ToolsPackageLocation>$(PackageOutputLocation)\tools</ToolsPackageLocation>
     <BuildTargetsPackageLocation>$(PackageOutputLocation)\build</BuildTargetsPackageLocation>
-    <CSWinRTInteropAssemblyPackageLocation>$(PackageOutputLocation)\lib\$(DotNetCoreTargetFrameworkMonikerForPackaging)</CSWinRTInteropAssemblyPackageLocation>
+    <CSWinRTInteropAssemblyPackageLocation>$(PackageOutputLocation)\lib\$(WindowsAppSdkTargetFrameworkMoniker)</CSWinRTInteropAssemblyPackageLocation>
     <IncludesPackageLocation>$(PackageOutputLocation)\include</IncludesPackageLocation>
   </PropertyGroup>
 </Project>

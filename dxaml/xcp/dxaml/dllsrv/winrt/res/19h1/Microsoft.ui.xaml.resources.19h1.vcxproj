@@ -5,6 +5,7 @@
     <PropertyGroup Label="Globals">
         <ConfigurationType>DynamicLibrary</ConfigurationType>
         <ProjectGuid>{c0955fbb-8fb9-40c1-a7e4-a93a0757ff66}</ProjectGuid>
+        <ResourceOnlyDll>true</ResourceOnlyDll>
     </PropertyGroup>
 
     <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>

@@ -556,6 +556,9 @@ namespace DirectUI
 
         ctl::ComPtr<DirectUI::NullKeyedResource> GetCachedNullKeyedResource();
 
+        xaml::DispatcherShutdownMode GetDispatcherShutdownMode() const { return m_dispatcherShutdownMode; }
+        void SetDispatcherShutdownMode(xaml::DispatcherShutdownMode value) { m_dispatcherShutdownMode = value; }
+
 #pragma region IXamlTestHooks
 
         _Check_return_ HRESULT SimulateDeviceLost(bool resetVisuals, bool resetDManip);
@@ -835,6 +838,8 @@ namespace DirectUI
         EventRegistrationToken m_animationsEnabledChangedToken = {};
 
         wil::unique_registry_watcher_nothrow m_regKeyWatcher;
+
+        xaml::DispatcherShutdownMode m_dispatcherShutdownMode {xaml::DispatcherShutdownMode_OnExplicitShutdown};
 
         static bool s_dynamicScrollbars;
         static bool s_dynamicScrollbarsDirty;

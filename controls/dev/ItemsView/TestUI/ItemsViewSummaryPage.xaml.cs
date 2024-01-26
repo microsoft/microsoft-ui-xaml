@@ -76,6 +76,8 @@ namespace MUXControlsTestApp
         private ObservableCollection<Recipe> _colRecipes = null;
         private ObservableCollection<Recipe> _colSmallRecipes = null;
         private ObservableCollection<Recipe> _colSmallUniformRecipes = null;
+        private ObservableCollection<ItemContainer> _colSmallItemContainers = null;
+        private ObservableCollection<Image> _colSmallImages = null;
         private List<Recipe> _lstRecipes = null;
         private DataTemplate[] _recipeTemplates = new DataTemplate[17];
         private StackLayout _stackLayout = null;
@@ -330,7 +332,9 @@ namespace MUXControlsTestApp
 
             foreach (var selectedItem in sender.SelectedItems)
             {
-                selectedItems += (selectedItem == null) ? "<null>, " : selectedItem.ToString().Substring(0, 9) + ", ";
+                string selectedItemAsString = selectedItem.ToString();
+
+                selectedItems += (selectedItem == null) ? "<null>, " : selectedItemAsString.Substring(0, Math.Min(selectedItemAsString.Length, 9)) + ", ";
             }
 
             AppendAsyncEventMessage($"ItemsView.SelectionChanged SelectedItems={selectedItems}");
@@ -1085,6 +1089,14 @@ namespace MUXControlsTestApp
                 else if (_itemsView.ItemsSource == _colRecipes)
                 {
                     txtDataSourceItemCount.Text = _colRecipes.Count.ToString();
+                }
+                else if (_itemsView.ItemsSource == _colSmallItemContainers)
+                {
+                    txtDataSourceItemCount.Text = _colSmallItemContainers.Count.ToString();
+                }
+                else if (_itemsView.ItemsSource == _colSmallImages)
+                {
+                    txtDataSourceItemCount.Text = _colSmallImages.Count.ToString();
                 }
             }
         }
@@ -1881,7 +1893,9 @@ namespace MUXControlsTestApp
                 }
                 else
                 {
-                    txtSelectedItem.Text = _itemsView.SelectedItem.ToString().Substring(0, 12);
+                    string selectedItemAsString = _itemsView.SelectedItem.ToString();
+
+                    txtSelectedItem.Text = selectedItemAsString.Substring(0, Math.Min(selectedItemAsString.Length, 12));
                 }
             }
         }
@@ -1900,7 +1914,9 @@ namespace MUXControlsTestApp
 
                     foreach (var selectedItem in _itemsView.SelectedItems)
                     {
-                        txtSelectedItems.Text += (selectedItem == null) ? "<null>, " : selectedItem.ToString().Substring(0, 9) + ", ";
+                        string selectedItemAsString = selectedItem.ToString();
+
+                        txtSelectedItems.Text += (selectedItem == null) ? "<null>, " : selectedItemAsString.Substring(0, Math.Min(selectedItemAsString.Length, 9)) + ", ";
                     }
                 }
             }
@@ -4439,7 +4455,6 @@ namespace MUXControlsTestApp
                         case 2:
                             if (_colSmallRecipes == null)
                             {
-                                var rnd = new Random();
                                 _colSmallRecipes = new ObservableCollection<Recipe>();
 
                                 for (int itemIndex = 0; itemIndex < 7; itemIndex++)
@@ -4486,6 +4501,34 @@ namespace MUXControlsTestApp
                                 }
                             }
                             _itemsView.ItemsSource = _colRecipes;
+                            break;
+                        case 5:
+                            if (_colSmallItemContainers == null)
+                            {
+                                _colSmallItemContainers = new ObservableCollection<ItemContainer>();
+
+                                for (int itemIndex = 0; itemIndex < 7; itemIndex++)
+                                {
+                                    ItemContainer itemContainer = GetItemContainerAsItemsSourceItem(itemIndex);
+
+                                    _colSmallItemContainers.Add(itemContainer);
+                                }
+                            }
+                            _itemsView.ItemsSource = _colSmallItemContainers;
+                            break;
+                        case 6:
+                            if (_colSmallImages == null)
+                            {
+                                _colSmallImages = new ObservableCollection<Image>();
+
+                                for (int itemIndex = 0; itemIndex < 7; itemIndex++)
+                                {
+                                    Image image = GetImageAsItemsSourceItem(itemIndex);
+
+                                    _colSmallImages.Add(image);
+                                }
+                            }
+                            _itemsView.ItemsSource = _colSmallImages;
                             break;
                     }
                 }
@@ -4965,6 +5008,78 @@ namespace MUXControlsTestApp
                             _itemsView.ItemsSource = _colRecipes;
                         }
                     }
+
+                    if (_itemsView.ItemsSource == null || _itemsView.ItemsSource == _colSmallItemContainers)
+                    {
+                        bool setItemsSource = _itemsView.ItemsSource != null && _itemsView.ItemsSource == _colSmallItemContainers;
+                        int currentItemCount = _colSmallItemContainers == null ? 0 : _colSmallItemContainers.Count;
+
+                        if (currentItemCount < newItemCount)
+                        {
+                            var colItemContainersEnd = new ObservableCollection<ItemContainer>();
+
+                            for (int itemIndex = currentItemCount; itemIndex < newItemCount; itemIndex++)
+                            {
+                                ItemContainer itemContainer = GetItemContainerAsItemsSourceItem(itemIndex);
+
+                                colItemContainersEnd.Add(itemContainer);
+                            }
+
+                            if (currentItemCount == 0)
+                            {
+                                _colSmallItemContainers = colItemContainersEnd;
+                            }
+                            else
+                            {
+                                _colSmallItemContainers = new ObservableCollection<ItemContainer>(_colSmallItemContainers.Concat(colItemContainersEnd));
+                            }
+                        }
+                        else if (currentItemCount > newItemCount)
+                        {
+                            _colSmallItemContainers = new ObservableCollection<ItemContainer>(_colSmallItemContainers.Take(newItemCount));
+                        }
+
+                        if (setItemsSource)
+                        {
+                            _itemsView.ItemsSource = _colSmallItemContainers;
+                        }
+                    }
+
+                    if (_itemsView.ItemsSource == null || _itemsView.ItemsSource == _colSmallImages)
+                    {
+                        bool setItemsSource = _itemsView.ItemsSource != null && _itemsView.ItemsSource == _colSmallImages;
+                        int currentItemCount = _colSmallImages == null ? 0 : _colSmallImages.Count;
+
+                        if (currentItemCount < newItemCount)
+                        {
+                            var colImagesEnd = new ObservableCollection<Image>();
+
+                            for (int itemIndex = currentItemCount; itemIndex < newItemCount; itemIndex++)
+                            {
+                                Image image = GetImageAsItemsSourceItem(itemIndex);
+
+                                colImagesEnd.Add(image);
+                            }
+
+                            if (currentItemCount == 0)
+                            {
+                                _colSmallImages = colImagesEnd;
+                            }
+                            else
+                            {
+                                _colSmallImages = new ObservableCollection<Image>(_colSmallImages.Concat(colImagesEnd));
+                            }
+                        }
+                        else if (currentItemCount > newItemCount)
+                        {
+                            _colSmallImages = new ObservableCollection<Image>(_colSmallImages.Take(newItemCount));
+                        }
+
+                        if (setItemsSource)
+                        {
+                            _itemsView.ItemsSource = _colSmallImages;
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -5019,6 +5134,28 @@ namespace MUXControlsTestApp
                             };
 
                             colRecipes.Add(recipe);
+                        }
+                        else
+                        {
+                            ObservableCollection<ItemContainer> colItemContainers = _itemsView.ItemsSource as ObservableCollection<ItemContainer>;
+
+                            if (colItemContainers != null)
+                            {
+                                ItemContainer itemContainer = GetItemContainerAsItemsSourceItem(colItemContainers.Count);
+
+                                colItemContainers.Add(itemContainer);
+                            }
+                            else
+                            {
+                                ObservableCollection<Image> colImages = _itemsView.ItemsSource as ObservableCollection<Image>;
+
+                                if (colImages != null)
+                                {
+                                    Image image = GetImageAsItemsSourceItem(colImages.Count);
+
+                                    colImages.Add(image);
+                                }
+                            }
                         }
                     }
                 }
@@ -5076,6 +5213,28 @@ namespace MUXControlsTestApp
 
                             colRecipes.Insert(newItemIndex, recipe);
                         }
+                        else
+                        {
+                            ObservableCollection<ItemContainer> colItemContainers = _itemsView.ItemsSource as ObservableCollection<ItemContainer>;
+
+                            if (colItemContainers != null)
+                            {
+                                ItemContainer itemContainer = GetItemContainerAsItemsSourceItem(colItemContainers.Count);
+
+                                colItemContainers.Insert(newItemIndex, itemContainer);
+                            }
+                            else
+                            {
+                                ObservableCollection<Image> colImages = _itemsView.ItemsSource as ObservableCollection<Image>;
+
+                                if (colImages != null)
+                                {
+                                    Image image = GetImageAsItemsSourceItem(colImages.Count);
+
+                                    colImages.Insert(newItemIndex, image);
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -5108,6 +5267,14 @@ namespace MUXControlsTestApp
                     {
                         _colRecipes.Clear();
                     }
+                    else if (_itemsView.ItemsSource == _colSmallItemContainers)
+                    {
+                        _colSmallItemContainers.Clear();
+                    }
+                    else if (_itemsView.ItemsSource == _colSmallImages)
+                    {
+                        _colSmallImages.Clear();
+                    }
                 }
             }
             catch (Exception ex)
@@ -5138,6 +5305,14 @@ namespace MUXControlsTestApp
                     else if (_itemsView.ItemsSource == _colRecipes)
                     {
                         _colRecipes.RemoveAt(oldItemIndex);
+                    }
+                    else if (_itemsView.ItemsSource == _colSmallItemContainers)
+                    {
+                        _colSmallItemContainers.RemoveAt(oldItemIndex);
+                    }
+                    else if (_itemsView.ItemsSource == _colSmallImages)
+                    {
+                        _colSmallImages.RemoveAt(oldItemIndex);
                     }
                 }
             }
@@ -6166,6 +6341,71 @@ namespace MUXControlsTestApp
             }
 
             return -1;
+        }
+
+        private ItemContainer GetItemContainerAsItemsSourceItem(int itemIndex)
+        {
+            Grid grid = new Grid() {
+                Name = "itemPanel"
+            };
+
+            BitmapImage bitmapImage = new BitmapImage() {
+                DecodePixelHeight = 96,
+                UriSource = new Uri(string.Format("ms-appx:///Images/Rect{0}.png", itemIndex % 6))
+            };
+
+            Image image = new Image() {
+                Name = "image",
+                Stretch = Stretch.UniformToFill,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Source = bitmapImage
+            };
+
+            grid.Children.Add(image);
+
+            TextBlock textBlock = new TextBlock() {
+                Text = itemIndex.ToString(),
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(4),
+                Foreground = new SolidColorBrush(Colors.Yellow),
+                FontSize = 14.0,
+                MaxWidth = 68.0,
+                MaxHeight = 48.0,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Bottom
+            };
+
+            grid.Children.Add(textBlock);
+
+            ItemContainer itemContainer = new ItemContainer() {
+                MinWidth = 72.0,
+                Height = 96.0,
+                Background = new SolidColorBrush(Colors.Gray),
+                Child = grid
+            };
+
+            return itemContainer;
+        }
+
+        private Image GetImageAsItemsSourceItem(int itemIndex)
+        {
+            BitmapImage bitmapImage = new BitmapImage() {
+                DecodePixelHeight = 96,
+                UriSource = new Uri(string.Format("ms-appx:///Images/Rect{0}.png", itemIndex % 6))
+            };
+
+            Image image = new Image() {
+                Name = "image",
+                MinWidth = 72.0,
+                Height = 96.0,
+                Stretch = Stretch.UniformToFill,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Source = bitmapImage
+            };
+
+            return image;
         }
 
         private Thickness GetThicknessFromString(string thickness)

@@ -29,6 +29,13 @@ namespace DirectUI
 
         _Check_return_ HRESULT get_ContentIslandImpl(_Outptr_ ixp::IContentIsland **ppValue);
 
+        // Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop implementation
+        IFACEMETHOD(get_SystemBackdrop)(_Outptr_result_maybenull_ ABI::Windows::UI::Composition::ICompositionBrush * *systemBackdropBrush) override;
+        IFACEMETHOD(put_SystemBackdrop)(_In_opt_ ABI::Windows::UI::Composition::ICompositionBrush * systemBackdropBrush) override;
+
+        _Check_return_ HRESULT get_SystemBackdropImpl(_Outptr_result_maybenull_ xaml::Media::ISystemBackdrop * *iSystemBackdrop);
+        _Check_return_ HRESULT put_SystemBackdropImpl(_In_opt_ xaml::Media::ISystemBackdrop * iSystemBackdrop);
+
         _Check_return_ xaml_hosting::IXamlIslandRoot *GetXamlIslandRootNoRef();
 
     protected:
@@ -44,6 +51,8 @@ namespace DirectUI
         CXamlIslandRoot * m_pXamlIslandCore;
         ctl::ComPtr<ABI::Microsoft::UI::Input::IInputFocusController2> m_inputFocusController2;
         EventRegistrationToken m_focusNavigationRequestedToken = {};
+
+        ctl::ComPtr<xaml::Media::ISystemBackdrop> m_systemBackdrop;
     };
 }
 

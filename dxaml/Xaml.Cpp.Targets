@@ -8,20 +8,6 @@
   <!-- If we have MIDL sources, but didn't include the custom midl target file.  default to OLE -->
   <Import Condition="'$(XamlMidlOptions)'==''" Project="msbuild\BuildSettings\MIDLOle.props"/>
 
-  <!-- TODO:  Convert these to Prreprocessor Definitions Insead of options -->
-  <PropertyGroup>
-    <TargetOsVersion Condition="'$(TargetOsVersion)'==''">WindowsLatest</TargetOsVersion>
-    <WinVer>0x0A00</WinVer>
-    <XamlSDKOptions Condition="'$(TargetOsVersion)'=='WindowsLatest'">-D_APISET_MINCORE_VERSION=0x010A -D_APISET_MINWIN_VERSION=0x010B /DNTDDI_VERSION=0x0A000007</XamlSDKOptions>
-    <XamlSDKOptions Condition="'$(TargetOsVersion)'=='WindowsLatest' and '$(BuildClientCore)'=='1'">$(XamlSDKOptions) -D_APISET_CLIENTCORE_VERSION=0x010A</XamlSDKOptions>
-
-    <!-- Not, not sure if the last two items belong here or not. For now it seems that they are related -->
-    <XamlSDKOptions Condition="'$(TargetOsVersion)'=='WindowsThreshold'">-D_APISET_MINCORE_VERSION=0x0103 -D_APISET_MINWIN_VERSION=0x0104 /DNTDDI_VERSION=0x0A000000 /D_DISABLE_DEPRECATE_STATIC_CPPLIB /D_STATIC_CPPLIB</XamlSDKOptions>
-
-    <WinVer Condition="'$(TargetOsVersion)'=='Windows7'">0x0601</WinVer>
-    <XamlSDKOptions Condition="'$(TargetOsVersion)'=='Windows7'">-D_APISET_WINDOWS_VERSION=0x601 -D_APISET_MINWIN_VERSION=0x0100 -D_APISET_MINCORE_VERSION=0x0100 /DNTDDI_VERSION=0x06010000 /DWINVER=$(WinVer)</XamlSDKOptions>
-  </PropertyGroup>
-
   <!-- Handle our special version of precompiled headers -->
   <!-- For experimental Clang compilation, work to get precompiled headers is not done. -->
   <Import Condition="'$(ExperimentalClang)' != 'true'" Project="msbuild\BuildSettings\PrecompHeader.targets" />
@@ -40,6 +26,17 @@
   <PropertyGroup>
     <DllEntry Condition="'$(DllEntry)' == ''">_DllMainCRTStartup</DllEntry>
     <DllEntry Condition="'$(Platform)' == 'Win32'">$(DllEntry)@12</DllEntry>
+  </PropertyGroup>
+
+  <!-- Windows App SDK supports downlevel to Windows 10 1809 "Redstone 5" NTDDI_WIN10_RS5 (0x0A000006), UAP v7.0 -->
+  <PropertyGroup>
+    <TargetPlatformDefinitions>
+      WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION=0x70000;
+      NTDDI_VERSION=NTDDI_WIN10_RS5;
+      WINVER=_WIN32_WINNT_WIN10;
+      _WIN32_WINNT=_WIN32_WINNT_WIN10;
+      _WIN32_IE=_WIN32_IE_IE100;
+    </TargetPlatformDefinitions>
   </PropertyGroup>
 
   <!-- Since we aren't using the standard include mechanism for the sdks (INCLUDE environment variable) -->
@@ -66,7 +63,6 @@
 
       <TreatWChar_tAsBuiltInType Condition="'$(XamlConsumesWinRT)'!='true'">false</TreatWChar_tAsBuiltInType>
       <AdditionalOptions Condition="'$(ExperimentalClang)' != 'true'">%(AdditionalOptions) /Wv:19.28.30000.0</AdditionalOptions>
-      <AdditionalOptions>%(AdditionalOptions) $(XAMLSDKOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(XamlConsumesWinRT)'=='true'">%(AdditionalOptions) $(XamlCppOptionsForWinRt)</AdditionalOptions>
       <AdditionalOptions Condition="'$(XamlConsumesWinRT)'!='true'">%(AdditionalOptions) $(XamlCppOptionsForNonWinRt)</AdditionalOptions>
       <!-- C++/CX and C++20 are incompatible.  If we are building as CX then force the language standard back to C++17. -->
@@ -82,6 +78,7 @@
       <PreprocessorDefinitions Condition="'$(_MSDeployUserAgent)'!=''">%(PreprocessorDefinitions) IS_LAB_BUILD;</PreprocessorDefinitions>
       <PreprocessorDefinitions>
         %(PreprocessorDefinitions)
+        $(TargetPlatformDefinitions)
         _ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE;
         _CONST_RETURN=;
         _ENFORCE_MATCHING_ALLOCATORS=0;
@@ -128,14 +125,20 @@
         $(WindowsSdxWinrtIncludePath);
         %(AdditionalIncludeDirectories);
       </AdditionalIncludeDirectories>
-      <AdditionalOptions>%(AdditionalOptions) $(XAMLSDKOptions) $(XamlMidlOptions) $(MidlFlags)</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions) $(XamlMidlOptions) $(MidlFlags)</AdditionalOptions>
       <AdditionalOptions Condition="'$(DisableMidlVersionChecks)'!='1'">%(AdditionalOptions) /enforce_version</AdditionalOptions>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions); $(XamlCommonPreprocessorDefinitions); $(XamlMidlPreprocessorDefinitions) $(ProjectPreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(TestCode)'=='true'">%(PreprocessorDefinitions) TEST_CODE;</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(UsePublicSdk)'=='' or '$(UsePublicSdk)'=='0'">%(PreprocessorDefinitions) BUILD_WINDOWS;__WRL_CONFIGURATION_LEGACY__;</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(XamlConsumesWinRT)'!='true'">%(PreprocessorDefinitions);_USE_DEV11_CRT;</PreprocessorDefinitions>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions) _ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE;</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(_MSDeployUserAgent)'!=''">%(PreprocessorDefinitions) IS_LAB_BUILD;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>
+        %(PreprocessorDefinitions) 
+        $(TargetPlatformDefinitions)
+        $(XamlCommonPreprocessorDefinitions)
+        $(XamlMidlPreprocessorDefinitions) 
+        $(ProjectPreprocessorDefinitions) 
+        _ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE;
+      </PreprocessorDefinitions>
     </Midl>
     <ResourceCompile>
       <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
@@ -159,13 +162,12 @@
         .;
         $(IntDir.TrimEnd('\\'));
       </AdditionalIncludeDirectories>
-      <AdditionalOptions>%(AdditionalOptions) $(XAMLSDKOptions) -z "MS Sans Serif,Helv/MS Shell Dlg"</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions) -z "MS Sans Serif,Helv/MS Shell Dlg"</AdditionalOptions>
       <PreprocessorDefinitions Condition="'$(TestCode)'=='true'">%(PreprocessorDefinitions) TEST_CODE;</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(UsePublicSdk)'=='' or '$(UsePublicSdk)'=='0'">%(PreprocessorDefinitions) BUILD_WINDOWS;__WRL_CONFIGURATION_LEGACY__;</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(XamlConsumesWinRT)'!='true'">%(PreprocessorDefinitions);_USE_DEV11_CRT;</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)'!='Debug'">%(PreprocessorDefinitions);NDEBUG;</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">%(PreprocessorDefinitions);DBG=1;</PreprocessorDefinitions>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions) _ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE;</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(_MSDeployUserAgent)'!=''">%(PreprocessorDefinitions) IS_LAB_BUILD;</PreprocessorDefinitions>
 
       <!--
@@ -174,11 +176,11 @@
             -->
       <PreprocessorDefinitions>
         %(PreprocessorDefinitions)
+        $(TargetPlatformDefinitions)
+        _ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE; 
         __BUILDMACHINE__=DCPP($(COMPUTERNAME))($(USERNAME));
         _NT1X_=100;
         _USE_DECLSPECS_FOR_SAL=1;
-        _WIN32_IE=0x0A00;
-        _WIN32_WINNT=0x0A00;
         BUILD_UMS_ENABLED=0;
         BUILD_WOW64_ENABLED=0;
         CONDITION_HANDLING=1;
@@ -194,7 +196,6 @@
         SYSTEM_COMPATIBLE_ASSEMBLY_NAME="""Microsoft.Windows.SystemCompatible""";
         WIN32=100;
         WINNT=1;
-        WINVER=$(WinVer);
         ___TARGETNAME="""$(ProjectName)""";
         WIN32_LEAN_AND_MEAN=1;
         WINRT_LEAN_AND_MEAN;

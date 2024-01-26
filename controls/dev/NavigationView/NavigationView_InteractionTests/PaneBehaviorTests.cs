@@ -1231,5 +1231,123 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 }
             }
         }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void VerifyExpandedItemsSaveStateWhenClosingAndOpeningPane()
+        {
+            var testScenarios = RegressionTestScenario.BuildHierarchicalNavRegressionTestScenarios();
+            foreach (var testScenario in testScenarios)
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
+                {
+                    var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                    Button toggleButton = new Button(FindElement.ById("TogglePaneButton"));
+
+                    Log.Comment("Test PaneDisplayMode=Auto");
+                    panelDisplayModeComboBox.SelectItemByName("Auto");
+                    Wait.ForIdle();
+
+                    // Select Menu Item 1 in the tree
+                    Log.Comment("Select Menu Item 1 in the tree");
+                    UIObject menuItem1 = FindElement.ByName("Menu Item 1");
+                    menuItem1.Click();
+                    Wait.ForIdle();
+
+                    // Verify that the item is expanded
+                    Log.Comment("Verify that the item is expanded by looking for Menu Item 2.");
+                    UIObject menuItem2 = FindElement.ByName("Menu Item 2");
+                    Verify.IsNotNull(menuItem2);
+
+                    // Close the pane
+                    Log.Comment("Close the pane by clicking on the ToggleButton");
+                    toggleButton.Invoke();
+                    Wait.ForIdle();
+
+                    WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+
+                    // Open the pane
+                    Log.Comment("Open the pane by clicking on the ToggleButton");
+                    toggleButton.Invoke();
+                    Wait.ForIdle();
+
+                    WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
+
+                    ElementCache.Clear();
+
+                    // Verify that the item is still expanded
+                    Log.Comment("Verify that the item is still expanded by looking for Menu Item 2.");
+                    menuItem2 = FindElement.ByName("Menu Item 2");
+                    Verify.IsNotNull(menuItem2);
+
+                    // Change the pane display mode to LeftCompact
+                    Log.Comment("Change the pane display mode to LeftCompact");
+                    panelDisplayModeComboBox.SelectItemByName("LeftCompact");
+                    Wait.ForIdle();
+
+                    WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+
+                    // Open the pane
+                    Log.Comment("Open the pane by clicking on the ToggleButton");
+                    toggleButton.Invoke();
+                    Wait.ForIdle();
+
+                    WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
+
+                    ElementCache.Clear();
+
+                    // Verify that the item is still expanded
+                    Log.Comment("Verify that the item is still expanded by looking for Menu Item 2.");
+                    menuItem2 = FindElement.ByName("Menu Item 2");
+                    Verify.IsNotNull(menuItem2);
+
+                    // Change the pane display mode to LeftMinimal
+                    Log.Comment("Change the pane display mode to LeftMinimal");
+                    panelDisplayModeComboBox.SelectItemByName("LeftMinimal");
+                    Wait.ForIdle();
+
+                    WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+
+                    // Open the pane
+                    Log.Comment("Open the pane by clicking on the ToggleButton");
+                    toggleButton.Invoke();
+                    Wait.ForIdle();
+
+                    WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
+
+                    ElementCache.Clear();
+
+                    // Verify that the item is still expanded
+                    Log.Comment("Verify that the item is still expanded by looking for Menu Item 2.");
+                    menuItem2 = FindElement.ByName("Menu Item 2");
+                    Verify.IsNotNull(menuItem2);
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void VerifyChangingFooterMenuItemVisibilityAdjustsPaneLayout()
+        {
+            var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
+            foreach (var testScenario in testScenarios)
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
+                {
+                    Log.Comment("Verify that FooterItem is hidden.");
+                    UIObject footerItem = FindElement.ByName("FooterItem");
+                    Verify.IsNull(footerItem);
+
+                    Log.Comment("Change FooterItem Visibility to Visible");
+                    var showFooterItemButton = new Button(FindElement.ByName("ShowFooterItemButton"));
+                    showFooterItemButton.Invoke();
+                    Wait.ForIdle();
+
+                    Log.Comment("Verify that FooterItem is visible.");
+                    footerItem = FindElement.ByName("FooterItem");
+                    Verify.IsNotNull(footerItem);
+                }
+            }
+        }
     }
 }

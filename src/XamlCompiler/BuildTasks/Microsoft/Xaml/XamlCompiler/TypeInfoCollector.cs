@@ -481,7 +481,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                         {
                             if (HasInterface(type, KnownTypes.IXamlMetadataProvider))
                             {
-                                otherProviders.Add(type);
+                                // If there is an App type in a referenced assembly, we don't want to include that in the OtherProviders because
+                                // only one MUX.Application object can be created in a process so we don't want to try to instantiate it.
+                                var isAppType = DerivesFromBaseType(type, KnownTypes.Application);
+                                if (!isAppType)
+                                {
+                                    otherProviders.Add(type);
+                                }
                             }
                         }
                     }
@@ -523,6 +529,20 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             }
 
             return iface != null;
+        }
+
+        private bool DerivesFromBaseType(Type type, String baseTypeName)
+        {
+            Type basetype = type;
+            while (basetype != null)
+            {
+                if (basetype.FullName == baseTypeName)
+                {
+                    return true;
+                }
+                basetype = basetype.BaseType;
+            }
+            return false;
         }
 
         /// <summary>

@@ -230,6 +230,54 @@
                     <AppBarButton Label="Text" />
                 </muxc:CommandBarFlyout.SecondaryCommands>
             </muxc:CommandBarFlyout>
+            <muxc:CommandBarFlyout Placement="Right" x:Name="Flyout12" AutomationProperties.AutomationId="Flyout12" Opened="OnFlyoutOpened" Closed="OnFlyoutClosed">
+                <AppBarButton x:Name="CutButton12" AutomationProperties.AutomationId="CutButton12" Label="Cut" Icon="Cut" Click="OnElementClicked"/>
+                <AppBarSeparator />
+                <AppBarButton x:Name="CopyButton12" AutomationProperties.AutomationId="CopyButton12" Label="Copy" Icon="Copy" Click="OnElementClicked" />
+                <AppBarButton x:Name="PasteButton12" AutomationProperties.AutomationId="PasteButton12" Label="Paste" Icon="Paste" Click="OnElementClicked" />
+                <AppBarButton x:Name="BoldButton12" AutomationProperties.AutomationId="BoldButton12" Label="Bold" Icon="Bold" Click="OnElementClicked" />
+                <AppBarButton x:Name="ItalicButton12" AutomationProperties.AutomationId="ItalicButton12" Label="Italic" Icon="Italic" Click="OnElementClicked" />
+                <AppBarToggleButton x:Name="UnderlineButton12" AutomationProperties.AutomationId="UnderlineButton12" Label="Underline" Icon="Underline" Click="OnElementClicked" />
+                <muxc:CommandBarFlyout.SecondaryCommands>
+                    <AppBarButton x:Name="UndoButton12" AutomationProperties.AutomationId="UndoButton12" Label="Undo" Icon="Undo" Click="OnElementClicked" />
+                    <AppBarSeparator IsTabStop="False" />
+                    <AppBarButton x:Name="RedoButton12" AutomationProperties.AutomationId="RedoButton12" Label="Redo" Icon="Redo" Click="OnElementClicked" />
+                    <AppBarButton x:Name="SelectAllButton12" AutomationProperties.AutomationId="SelectAllButton12" Label="Select all" Click="OnElementClicked" />
+                    <AppBarToggleButton x:Name="FavoriteToggleButton12" AutomationProperties.AutomationId="FavoriteToggleButton12" Label="Favorite" Icon="Favorite" Checked="OnElementChecked" Unchecked="OnElementUnchecked" />
+                </muxc:CommandBarFlyout.SecondaryCommands>
+            </muxc:CommandBarFlyout>
+            <muxc:CommandBarFlyout Placement="Right" x:Name="Flyout13" AutomationProperties.AutomationId="Flyout13" Opened="OnFlyoutOpened" Closed="OnFlyoutClosed">
+                <AppBarButton x:Name="CutButton13" AutomationProperties.AutomationId="CutButton13" Label="Cut" Icon="Cut" Click="OnElementClicked" />
+                <AppBarButton x:Name="CopyButton13" AutomationProperties.AutomationId="CopyButton13" Label="Copy" Icon="Copy" Click="OnElementClicked" />
+                <AppBarButton x:Name="PasteButton13" AutomationProperties.AutomationId="PasteButton13" Label="Paste" Icon="Paste" Click="OnElementClicked" />
+                <AppBarButton x:Name="LongButton13" AutomationProperties.AutomationId="LongButton13"  Label="Item with a really really really long label that will stretch this AppBarButton a lot" Icon="Favorite" Click="OnElementClicked" />
+                <muxc:CommandBarFlyout.SecondaryCommands>
+                    <AppBarButton x:Name="UndoButton13" AutomationProperties.AutomationId="UndoButton13" Label="Undo" Icon="Undo" Click="OnElementClicked" />
+                    <AppBarButton x:Name="RedoButton13" AutomationProperties.AutomationId="RedoButton13" Label="Redo" Icon="Redo" Click="OnElementClicked" />
+                    <AppBarButton x:Name="SelectAllButton13" AutomationProperties.AutomationId="SelectAllButton13" Label="Select all" Click="OnElementClicked" />
+                    <AppBarButton Label="Item with a really really really long label that will not fit in the space provided" />
+                </muxc:CommandBarFlyout.SecondaryCommands>
+            </muxc:CommandBarFlyout>
+            <muxc:CommandBarFlyout Placement="Right" x:Name="Flyout14" AutomationProperties.AutomationId="Flyout14" Opened="OnFlyoutOpened" Closed="OnFlyoutClosed">
+                <AppBarButton x:Name="CutButton14" AutomationProperties.AutomationId="CutButton14" Label="Cut" Icon="Cut" Click="OnElementClicked" />
+                <AppBarButton x:Name="CopyButton14" AutomationProperties.AutomationId="CopyButton14" Label="Copy" Icon="Copy" Click="OnElementClicked" />
+                <AppBarButton x:Name="PasteButton14" AutomationProperties.AutomationId="PasteButton14" Icon="Paste" Click="OnElementClicked" />
+                <muxc:CommandBarFlyout.SecondaryCommands>
+                    <AppBarButton x:Name="UndoButton14" AutomationProperties.AutomationId="UndoButton14" Label="Undo" Icon="Undo" Click="OnElementClicked" />
+                    <AppBarButton x:Name="RedoButton14" AutomationProperties.AutomationId="RedoButton14" Label="Redo" Icon="Redo" Click="OnElementClicked" />
+                    <AppBarButton x:Name="SelectAllButton14" AutomationProperties.AutomationId="SelectAllButton14" Label="Select all" Click="OnElementClicked" />
+                </muxc:CommandBarFlyout.SecondaryCommands>
+            </muxc:CommandBarFlyout>
+            <muxc:CommandBarFlyout Placement="Right" x:Name="Flyout15" AutomationProperties.AutomationId="Flyout15" Opened="OnFlyoutOpened" Closed="OnFlyoutClosed">
+                <AppBarButton x:Name="CutButton15" AutomationProperties.AutomationId="CutButton15" Icon="Cut" Click="OnElementClicked" />
+                <AppBarButton x:Name="CopyButton15" AutomationProperties.AutomationId="CopyButton15" Icon="Copy" Click="OnElementClicked" />
+                <AppBarButton x:Name="PasteButton15" AutomationProperties.AutomationId="PasteButton15" Icon="Paste" Click="OnElementClicked" />
+                <muxc:CommandBarFlyout.SecondaryCommands>
+                    <AppBarButton x:Name="UndoButton15" AutomationProperties.AutomationId="UndoButton15" Label="Undo" Icon="Undo" Click="OnElementClicked" />
+                    <AppBarButton x:Name="RedoButton15" AutomationProperties.AutomationId="RedoButton15" Label="Redo" Icon="Redo" Click="OnElementClicked" />
+                    <AppBarButton x:Name="SelectAllButton15" AutomationProperties.AutomationId="SelectAllButton15" Label="Select all" Click="OnElementClicked" />
+                </muxc:CommandBarFlyout.SecondaryCommands>
+            </muxc:CommandBarFlyout>
         </Grid.Resources>
         <ScrollViewer>
             <StackPanel>
@@ -247,6 +295,10 @@
                 <Button x:Name="FlyoutTarget9" Content="Show CommandBarFlyout with AlwaysExpanded" Margin="10" Click="OnFlyoutTarget9Click" />
                 <Button x:Name="FlyoutTarget10" Content="Show Windows.UI.Xaml.Controls.CommandBarFlyout" Margin="10" Click="OnFlyoutTarget10Click" />
                 <Button x:Name="FlyoutTarget11" Content="Show CommandBarFlyout with potential layout cycle at 125% scale" Margin="10" Click="OnFlyoutTarget11Click" />
+                <Button x:Name="FlyoutTarget12" Content="Show CommandBarFlyout after a five-second delay" Margin="10" Click="OnFlyoutTarget12Click" />
+                <Button x:Name="FlyoutTarget13" Content="Show CommandBarFlyout with a very long primary command label" Margin="10" Click="OnFlyoutTarget13Click" />
+                <Button x:Name="FlyoutTarget14" Content="Show CommandBarFlyout with some primary commands with no label" Margin="10" Click="OnFlyoutTarget14Click" />
+                <Button x:Name="FlyoutTarget15" Content="Show CommandBarFlyout with all primary commands with no label" Margin="10" Click="OnFlyoutTarget15Click" />
                 <CheckBox x:Name="IsRTLCheckBox" Content="Is Page in RightToLeft FlowDirection?" AutomationProperties.AutomationId="IsRTLCheckBox" Margin="10,10,10,2" Checked="IsRTLCheckBox_Checked" Unchecked="IsRTLCheckBox_Unchecked" />
                 <StackPanel Orientation="Horizontal" Margin="10,0,10,2">
                     <CheckBox x:Name="AddPrimaryCommandDynamicallyCheckBox" Content="Add Primary Commands Dynamically?" AutomationProperties.AutomationId="AddPrimaryCommandDynamicallyCheckBox" />

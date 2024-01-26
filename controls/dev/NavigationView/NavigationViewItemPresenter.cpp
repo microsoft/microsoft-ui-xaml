@@ -19,12 +19,25 @@ NavigationViewItemPresenter::NavigationViewItemPresenter()
     SetDefaultStyleKey(this);
 }
 
+void NavigationViewItemPresenter::UnhookEventsAndClearFields()
+{
+    m_expandCollapseChevronTappedRevoker.revoke();
+
+    m_contentGrid.set(nullptr);
+    m_infoBadgePresenter.set(nullptr);
+    m_expandCollapseChevron.set(nullptr);
+    m_chevronExpandedStoryboard.set(nullptr);
+    m_chevronCollapsedStoryboard.set(nullptr);
+}
+
 void NavigationViewItemPresenter::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected = *this;
 
     // Retrieve pointers to stable controls 
     m_helper.Init(*this);
+
+    UnhookEventsAndClearFields();
 
     if (auto contentGrid = GetTemplateChildT<winrt::Grid>(c_contentGrid, *this))
     {
@@ -66,7 +79,7 @@ void NavigationViewItemPresenter::LoadChevron()
             if (auto const expandCollapseChevron = GetTemplateChildT<winrt::Grid>(c_expandCollapseChevron, *this))
             {
                 m_expandCollapseChevron.set(expandCollapseChevron);
-                m_expandCollapseChevronTappedToken = expandCollapseChevron.Tapped({ navigationViewItem, &NavigationViewItem::OnExpandCollapseChevronTapped });
+                m_expandCollapseChevronTappedRevoker = expandCollapseChevron.Tapped(winrt::auto_revoke, { navigationViewItem, &NavigationViewItem::OnExpandCollapseChevronTapped });
             }
         }
     }

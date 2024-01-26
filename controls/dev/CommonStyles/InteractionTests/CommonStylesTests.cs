@@ -214,7 +214,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void TopBottomAppBarTest()
         {
-            using (var setup = new TestSetupHelper("CommandBar Tests"))
+            using (var setup = new TestSetupHelper(new[] { "CommandBar Tests", "navigateToCommandBar" }))
             {
                 var topAppBar = FindElement.ByName("TopCmdBar");
                 Verify.IsNotNull(topAppBar);

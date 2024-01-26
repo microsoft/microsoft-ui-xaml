@@ -117,6 +117,8 @@ namespace DirectUI
         _Check_return_ HRESULT RestoreSavedFocusImpl(_In_opt_ DependencyObject* savedFocusedElement, xaml::FocusState savedFocusState) override;
         _Check_return_ HRESULT UpdateTemplateSettings() override;
         _Check_return_ HRESULT GetShouldOpenUp(_Out_ bool* shouldOpenUp) override;
+        _Check_return_ HRESULT HasRightLabelDynamicPrimaryCommand(_Out_ bool* hasRightLabelDynamicPrimaryCommand) override;
+        _Check_return_ HRESULT HasNonLabeledDynamicPrimaryCommand(_Out_ bool* hasNonLabeledDynamicPrimaryCommand) override;
 
         _Check_return_ HRESULT NotifyDeferredElementStateChanged(
             _In_ KnownPropertyIndex propertyIndex,
@@ -185,7 +187,7 @@ namespace DirectUI
         _Check_return_ HRESULT PropagateDefaultLabelPosition();
         _Check_return_ HRESULT PropagateDefaultLabelPositionToElement(xaml_controls::ICommandBarElement *element);
 
-        _Check_return_ HRESULT HasBottomLabel(BOOLEAN *hasBottomLabel);
+        _Check_return_ HRESULT HasLabelAtPosition(_In_ xaml_controls::CommandBarDefaultLabelPosition labelPosition, _Out_ bool* hasLabelAtPosition);
 
         _Check_return_ HRESULT UpdateInputDeviceTypeUsedToOpen();
         _Check_return_ HRESULT SetInputModeOnSecondaryCommand(UINT32 index, DirectUI::InputDeviceType inputType);

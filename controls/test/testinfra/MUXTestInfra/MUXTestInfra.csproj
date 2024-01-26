@@ -2,8 +2,8 @@
   <PropertyGroup>
     <TargetName>MUXTestInfra</TargetName>
     <Platforms>x86;x64;ARM64</Platforms>
-    <TargetFramework>$(DotNetCoreTargetFrameworkMoniker)</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <TargetFramework>$(WindowsAppSdkTargetFrameworkMoniker)</TargetFramework>
+    <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>$(TargetPlatformMinVersion)</SupportedOSPlatformVersion>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <DefineConstants Condition="$(SolutionName) == 'MUXControlsInnerLoop'">$(DefineConstants);INNERLOOP_BUILD</DefineConstants>
@@ -11,20 +11,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" GeneratePathProperty="true" />
-    <!-- 
-      Hardcoding this value because we really don't need this PackageReference, we should just let the .NET SDK do it's thing and use that instead. 
-      https://microsoft.visualstudio.com/OS/_workitems/edit/29974729
-    -->
-    <PackageReference Include="Microsoft.Windows.SDK.NET.Ref" Version="10.0.18362.10" GeneratePathProperty="true">
-      <NoWarn>
-        NU1701; <!-- Package 'x' was restored using 'y' instead of the project target framework 'z'. This package may not be fully compatible with your project. -->
-      </NoWarn>
-      <ExcludeAssets>all</ExcludeAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.Taef" Version="$(TaefNugetPackageVersion)" />
     <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181205002" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Windows.SDK.cpp" Version="$(MicrosoftWindowsSDKCppNugetPackageVersion)" />
+
+    <!-- ##[warning]controls\test\testinfra\MUXTestInfra\MUXTestInfra.csproj(0,0): Warning NU1603: MUXTestInfra depends on Microsoft.Windows.SDK.CPP (>= 10.0.17763) but Microsoft.Windows.SDK.CPP 10.0.17763 was not found. An approximate best match of Microsoft.Windows.SDK.CPP 10.0.17763.2 was resolved. -->
+    <PackageReference Include="Microsoft.Windows.SDK.cpp" Version="10.0.17763.4" />
   </ItemGroup>
   
   <ItemGroup>

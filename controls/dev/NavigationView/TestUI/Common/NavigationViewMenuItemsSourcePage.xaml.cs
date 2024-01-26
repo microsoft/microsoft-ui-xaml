@@ -17,6 +17,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace MUXControlsTestApp
 {
@@ -24,6 +25,7 @@ namespace MUXControlsTestApp
     {
         public ObservableCollection<NavViewPageData> Pages = new ObservableCollection<NavViewPageData>();
 
+        private ObservableCollection<NavViewPageData> _reverse_order_items = new ObservableCollection<NavViewPageData>();
 
         public NavigationViewMenuItemsSourcePage()
         {
@@ -36,6 +38,9 @@ namespace MUXControlsTestApp
             Pages.Add(new NavViewPageData("Fifth Item"));
             Pages.Add(new NavViewPageData("Sixth Item"));
             Pages.Add(new NavViewPageData("Seventh Item"));
+
+            _reverse_order_items.Add(new NavViewPageData("Item 0"));
+            _reverse_order_items.Add(new NavViewPageData("Item 1"));
         }
 
         private void NavigationView_ItemInvoked(NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs args)
@@ -43,5 +48,14 @@ namespace MUXControlsTestApp
             Pages.Add(new NavViewPageData("Menu Item NEW"));
             Pages.RemoveAt(0);
         }
+
+        private void BtnInsertItemsFromBeginning_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var item in _reverse_order_items.Reverse())
+            {
+                Pages.Insert(0, item);
+            }
+        }
+
     }
 }

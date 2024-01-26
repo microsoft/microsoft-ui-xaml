@@ -723,36 +723,43 @@ void SendXcpMonMemoryMessage(
 
 void XcpDebugTrace(XUINT32 uClass, DebugAllocationClass allocationClass, void *pNewMemory, size_t cSize)
 {
-    if (GetPALDebuggingServices()->GetTraceFlags() & TraceAlloc)
+    if (auto debuggingServices = GetPALDebuggingServices())
     {
-        XcpDebugTrace(
-            uClass,
-            __WFILE__,
-            __LINE__,
-            (XUINT32)(XUINT64)cSize,
-            NULL,
-            L".", // Signals presence of optional arguments
-            L"address: 0x%x, cSize: %d, allocation class %s",
-            (XINT32)(XUINT64)pNewMemory,
-            cSize,
-            AllocationClassName(allocationClass)
-        );
-    }
+        if (debuggingServices->GetTraceFlags() & TraceAlloc)
+        {
+            XcpDebugTrace(
+                uClass,
+                __WFILE__,
+                __LINE__,
+                (XUINT32)(XUINT64)cSize,
+                NULL,
+                L".", // Signals presence of optional arguments
+                L"address: 0x%x, cSize: %d, allocation class %s",
+                (XINT32)(XUINT64)pNewMemory,
+                cSize,
+                AllocationClassName(allocationClass)
+            );
+        }
 
-    if (GetPALDebuggingServices()->GetTraceFlags() & TraceMemoryPerf)
-    {
-        XUINT32 perfClass = (uClass == MonitorAllocation) ? MonitorAllocationPerf : MonitorDeallocationPerf;
-        SendXcpMonMemoryMessage(
-            perfClass,
-            (XUINT64)pNewMemory,
-            (XUINT64)cSize
-        );
+        if (debuggingServices->GetTraceFlags() & TraceMemoryPerf)
+        {
+            XUINT32 perfClass = (uClass == MonitorAllocation) ? MonitorAllocationPerf : MonitorDeallocationPerf;
+            SendXcpMonMemoryMessage(
+                perfClass,
+                (XUINT64)pNewMemory,
+                (XUINT64)cSize
+            );
+        }
     }
 }
 
 IThreadMonitor* XcpDebugGetThreadMonitor()
 {
-    return GetPALDebuggingServices()->GetThreadMonitor(); // Suspend counting clocks
+    if (auto debuggingServices = GetPALDebuggingServices())
+    {
+        return debuggingServices->GetThreadMonitor(); // Suspend counting clocks
+    }
+    return nullptr;
 }
 
 bool XcpDebugCaptureStack(_Out_ XUINT32 *pcCallers, _Outptr_result_buffer_(cMaxCallers) XUINT64  **ppCallers)

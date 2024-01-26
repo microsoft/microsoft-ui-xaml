@@ -11,12 +11,7 @@
 
 #pragma once
 
-#include <FeatureFlags.h>
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi) 
-#define FEATURE_EXPERIMENTALAPI_OVERRIDE override
-#else
-#define FEATURE_EXPERIMENTALAPI_OVERRIDE
-#endif
+
 #define __DebugSettings_GUID "818dd7e4-0203-478d-a556-6b89215287e0"
 
 #pragma region forwarders
@@ -33,14 +28,14 @@ namespace ctl
         IFACEMETHOD(remove_XamlResourceReferenceFailed)(_In_ EventRegistrationToken token) override { return This()->remove_XamlResourceReferenceFailed(token); }
     };
     template<typename impl_type>
-    class interface_forwarder< ABI::Microsoft::UI::Xaml::IDebugSettingsFeature_ExperimentalApi, impl_type> final
-        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IDebugSettingsFeature_ExperimentalApi, impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::IDebugSettings3, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IDebugSettings3, impl_type>
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
-        IFACEMETHOD(get_LayoutCycleDebugBreaks)(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel* pValue) override { return This()->get_LayoutCycleDebugBreaks(pValue); }
-        IFACEMETHOD(put_LayoutCycleDebugBreaks)(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel value) override { return This()->put_LayoutCycleDebugBreaks(value); }
-        IFACEMETHOD(get_LayoutCycleTracing)(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel* pValue) override { return This()->get_LayoutCycleTracing(pValue); }
-        IFACEMETHOD(put_LayoutCycleTracing)(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel value) override { return This()->put_LayoutCycleTracing(value); }
+        IFACEMETHOD(get_LayoutCycleDebugBreakLevel)(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel* pValue) override { return This()->get_LayoutCycleDebugBreakLevel(pValue); }
+        IFACEMETHOD(put_LayoutCycleDebugBreakLevel)(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel value) override { return This()->put_LayoutCycleDebugBreakLevel(value); }
+        IFACEMETHOD(get_LayoutCycleTracingLevel)(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel* pValue) override { return This()->get_LayoutCycleTracingLevel(pValue); }
+        IFACEMETHOD(put_LayoutCycleTracingLevel)(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel value) override { return This()->put_LayoutCycleTracingLevel(value); }
     };
 }
 #pragma endregion
@@ -53,9 +48,7 @@ namespace DirectUI
         public DirectUI::DependencyObject
         , public ABI::Microsoft::UI::Xaml::IDebugSettings
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IDebugSettings2, DebugSettingsGenerated >
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IDebugSettingsFeature_ExperimentalApi, DebugSettingsGenerated >
-#endif
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IDebugSettings3, DebugSettingsGenerated >
     {
         friend class DirectUI::DebugSettings;
 
@@ -64,9 +57,7 @@ namespace DirectUI
         BEGIN_INTERFACE_MAP(DebugSettingsGenerated, DirectUI::DependencyObject)
             INTERFACE_ENTRY(DebugSettingsGenerated, ABI::Microsoft::UI::Xaml::IDebugSettings)
             INTERFACE_ENTRY(DebugSettingsGenerated, ABI::Microsoft::UI::Xaml::IDebugSettings2)
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-            INTERFACE_ENTRY(DebugSettingsGenerated, ABI::Microsoft::UI::Xaml::IDebugSettingsFeature_ExperimentalApi)
-#endif
+            INTERFACE_ENTRY(DebugSettingsGenerated, ABI::Microsoft::UI::Xaml::IDebugSettings3)
         END_INTERFACE_MAP(DebugSettingsGenerated, DirectUI::DependencyObject)
 
     public:
@@ -98,10 +89,10 @@ namespace DirectUI
         IFACEMETHOD(put_IsTextPerformanceVisualizationEnabled)(_In_ BOOLEAN value) override;
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsXamlResourceReferenceTracingEnabled(_Out_ BOOLEAN* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_IsXamlResourceReferenceTracingEnabled(_In_ BOOLEAN value);
-        _Check_return_ HRESULT STDMETHODCALLTYPE get_LayoutCycleDebugBreaks(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_LayoutCycleDebugBreaks(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel value);
-        _Check_return_ HRESULT STDMETHODCALLTYPE get_LayoutCycleTracing(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_LayoutCycleTracing(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_LayoutCycleDebugBreakLevel(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_LayoutCycleDebugBreakLevel(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_LayoutCycleTracingLevel(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_LayoutCycleTracingLevel(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel value);
 
         // Events.
         _Check_return_ HRESULT GetBindingFailedEventSourceNoRef(_Outptr_ BindingFailedEventSourceType** ppEventSource);

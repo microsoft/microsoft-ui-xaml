@@ -422,20 +422,22 @@ void CContentRoot::RaiseXamlRootInputActivationChanged()
     }
 }
 
-HWND CContentRoot::GetOwnerWindow() const
+HWND CContentRoot::GetHostingHWND() const
 {
     if (m_type == Type::CoreWindow)
     {
-        const auto ownerWindow = static_cast<HWND>(m_coreServices.GetHostSite()->GetXcpControlWindow());
-        return ownerWindow;
+        const auto hostingCoreWindowHWND = static_cast<HWND>(m_coreServices.GetHostSite()->GetXcpControlWindow());
+        return hostingCoreWindowHWND;
     }
     else if (m_type == Type::XamlIslandRoot)
     {
         if (m_xamlIslandRoot)
         {
-            const auto hWndInputSite = m_xamlIslandRoot->GetInputHWND();
-            ASSERT(hWndInputSite != nullptr);
-            return hWndInputSite;
+            // Callers of this method via XamlRoot.get_HostWindow are looking for the window with a size and position.
+            // BUG: WebView2 setup code might be conflating the positioning and input HWNDs.
+            // Right now these HWNDs are the same, but this will change shortly and we might need a new
+            // API on XamlRoot to provide the IslandInputSite from where the input HWND can be retrieved.
+            return m_xamlIslandRoot->GetPositioningHWND();
         }
     }
     else
@@ -443,18 +445,6 @@ HWND CContentRoot::GetOwnerWindow() const
         XAML_FAIL_FAST();
     }
     return nullptr;
-}
-
-// Return true if and only if the contentRoot's top-level window is currently in the
-// activated state.
-bool CContentRoot::IsWindowActivated() const
-{
-    const HWND topLevelWindow = ::GetAncestor(GetOwnerWindow(), GA_ROOT);
-    if (topLevelWindow != NULL)
-    {
-        return (topLevelWindow == ::GetForegroundWindow());
-    }
-    return false;
 }
 
 void CContentRoot::SetIsInputActive(bool isInputActive)

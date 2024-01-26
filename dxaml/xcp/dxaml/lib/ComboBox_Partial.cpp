@@ -2826,7 +2826,7 @@ _Check_return_ HRESULT ComboBox::PopupKeyDown(
                     }
                     else
                     {
-                        IFC_RETURN(put_SelectedIndex(m_iFocusedIndex));
+                        IFC_RETURN(put_SelectedIndex(GetFocusedIndex()));
                         IFC_RETURN(put_IsDropDownOpen(FALSE));
                     }
                     handled = TRUE;
@@ -2896,7 +2896,7 @@ _Check_return_ HRESULT ComboBox::PopupKeyDown(
     case wsy::VirtualKey_GamepadLeftTrigger:
     case wsy::VirtualKey_GamepadRightTrigger:
         {
-            newFocusedIndex = m_iFocusedIndex;
+            newFocusedIndex = GetFocusedIndex();
             IFC_RETURN(HandleNavigationKey(key, /*scrollViewport*/ TRUE, newFocusedIndex));
             // When the user presses a navigation key, we want to mark the key as handled. This prevents
             // the key presses from bubbling up to the parent ScrollViewer and inadvertently scrolling.

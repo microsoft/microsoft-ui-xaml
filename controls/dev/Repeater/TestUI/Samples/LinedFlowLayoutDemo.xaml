@@ -560,6 +560,7 @@
                 <ComboBox x:Name="cmbScrollViewHorizontalScrollMode" Width="115" Margin="1" Grid.Row="16" Grid.Column="1" VerticalAlignment="Center">
                     <ComboBoxItem>Enabled</ComboBoxItem>
                     <ComboBoxItem>Disabled</ComboBoxItem>
+                    <ComboBoxItem>Auto</ComboBoxItem>
                 </ComboBox>
                 <Button x:Name="btnGetScrollViewHorizontalScrollMode" Content="G" Margin="1" Grid.Row="16" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewHorizontalScrollMode_Click"/>
                 <Button x:Name="btnSetScrollViewHorizontalScrollMode" Content="S" Margin="1" Grid.Row="16" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewHorizontalScrollMode_Click"/>
@@ -568,6 +569,7 @@
                 <ComboBox x:Name="cmbScrollViewVerticalScrollMode" Width="115" Margin="1" Grid.Row="17" Grid.Column="1" VerticalAlignment="Center">
                     <ComboBoxItem>Enabled</ComboBoxItem>
                     <ComboBoxItem>Disabled</ComboBoxItem>
+                    <ComboBoxItem>Auto</ComboBoxItem>
                 </ComboBox>
                 <Button x:Name="btnGetScrollViewVerticalScrollMode" Content="G" Margin="1" Grid.Row="17" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewVerticalScrollMode_Click"/>
                 <Button x:Name="btnSetScrollViewVerticalScrollMode" Content="S" Margin="1" Grid.Row="17" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewVerticalScrollMode_Click"/>
@@ -639,8 +641,8 @@
 
             <StackPanel Grid.Row="1">
                 <StackPanel Orientation="Horizontal">
-                    <Button x:Name="btnClearItemsViewEvents" Content="Clear" Click="BtnClearItemsViewEvents_Click" Margin="1"/>
-                    <Button x:Name="btnCopyItemsViewEvents" Content="Copy into Clipboard" Click="BtnCopyItemsViewEvents_Click" Margin="1"/>
+                    <Button x:Name="btnClearEvents" Content="Clear" Click="BtnClearEvents_Click" Margin="1"/>
+                    <Button x:Name="btnCopyEvents" Content="Copy into Clipboard" Click="BtnCopyEvents_Click" Margin="1"/>
                     <CheckBox x:Name="chkOutputDebugString" Content="OutputDebugString?" IsChecked="False" Margin="1"/>
                 </StackPanel>
                 <Grid>

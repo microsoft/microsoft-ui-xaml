@@ -65,6 +65,10 @@ namespace MUXControlsTestApp
             UndoButton6.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Z, Modifiers = VirtualKeyModifiers.Control });
             UndoButton7.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Z, Modifiers = VirtualKeyModifiers.Control });
             UndoButton11.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Z, Modifiers = VirtualKeyModifiers.Control });
+            UndoButton12.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Z, Modifiers = VirtualKeyModifiers.Control });
+            UndoButton13.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Z, Modifiers = VirtualKeyModifiers.Control });
+            UndoButton14.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Z, Modifiers = VirtualKeyModifiers.Control });
+            UndoButton15.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Z, Modifiers = VirtualKeyModifiers.Control });
 
             RedoButton1.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Y, Modifiers = VirtualKeyModifiers.Control });
             RedoButton2.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Y, Modifiers = VirtualKeyModifiers.Control });
@@ -74,6 +78,10 @@ namespace MUXControlsTestApp
             RedoButton6.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Y, Modifiers = VirtualKeyModifiers.Control });
             RedoButton7.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Y, Modifiers = VirtualKeyModifiers.Control });
             RedoButton11.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Y, Modifiers = VirtualKeyModifiers.Control });
+            RedoButton12.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Y, Modifiers = VirtualKeyModifiers.Control });
+            RedoButton13.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Y, Modifiers = VirtualKeyModifiers.Control });
+            RedoButton14.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Y, Modifiers = VirtualKeyModifiers.Control });
+            RedoButton15.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.Y, Modifiers = VirtualKeyModifiers.Control });
 
             SelectAllButton1.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.A, Modifiers = VirtualKeyModifiers.Control });
             SelectAllButton2.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.A, Modifiers = VirtualKeyModifiers.Control });
@@ -83,6 +91,10 @@ namespace MUXControlsTestApp
             SelectAllButton6.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.A, Modifiers = VirtualKeyModifiers.Control });
             SelectAllButton7.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.A, Modifiers = VirtualKeyModifiers.Control });
             SelectAllButton11.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.A, Modifiers = VirtualKeyModifiers.Control });
+            SelectAllButton12.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.A, Modifiers = VirtualKeyModifiers.Control });
+            SelectAllButton13.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.A, Modifiers = VirtualKeyModifiers.Control });
+            SelectAllButton14.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.A, Modifiers = VirtualKeyModifiers.Control });
+            SelectAllButton15.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = VirtualKey.A, Modifiers = VirtualKeyModifiers.Control });
 
             FlyoutTarget1.ContextFlyout = Flyout1;
             FlyoutTarget2.ContextFlyout = Flyout2;
@@ -92,6 +104,10 @@ namespace MUXControlsTestApp
             FlyoutTarget6.ContextFlyout = Flyout6;
             FlyoutTarget7.ContextFlyout = Flyout7;
             FlyoutTarget11.ContextFlyout = Flyout11;
+            FlyoutTarget12.ContextFlyout = Flyout12;
+            FlyoutTarget13.ContextFlyout = Flyout13;
+            FlyoutTarget14.ContextFlyout = Flyout14;
+            FlyoutTarget15.ContextFlyout = Flyout15;
 
             Flyout1.Placement = FlyoutPlacementMode.TopEdgeAlignedLeft;
             Flyout2.Placement = FlyoutPlacementMode.TopEdgeAlignedLeft;
@@ -101,6 +117,10 @@ namespace MUXControlsTestApp
             Flyout6.Placement = FlyoutPlacementMode.TopEdgeAlignedLeft;
             Flyout7.Placement = FlyoutPlacementMode.TopEdgeAlignedLeft;
             Flyout11.Placement = FlyoutPlacementMode.TopEdgeAlignedLeft;
+            Flyout12.Placement = FlyoutPlacementMode.TopEdgeAlignedLeft;
+            Flyout13.Placement = FlyoutPlacementMode.TopEdgeAlignedLeft;
+            Flyout14.Placement = FlyoutPlacementMode.TopEdgeAlignedLeft;
+            Flyout15.Placement = FlyoutPlacementMode.TopEdgeAlignedLeft;
         }
 
         public void OnElementClicked(object sender, object args)
@@ -256,6 +276,33 @@ namespace MUXControlsTestApp
         private void OnFlyoutTarget11Click(object sender, RoutedEventArgs e)
         {
             ShowFlyoutAt(Flyout11, FlyoutTarget11, FlyoutShowMode.Standard);
+        }
+
+        private void OnFlyoutTarget12Click(object sender, RoutedEventArgs e)
+        {
+            DispatcherTimer showFlyoutTimer = new();
+            showFlyoutTimer.Interval = TimeSpan.FromSeconds(5);
+            showFlyoutTimer.Tick += (object sender, object args) =>
+            {
+                ShowFlyoutAt(Flyout12, FlyoutTarget12, FlyoutShowMode.Standard);
+                showFlyoutTimer.Stop();
+            };
+            showFlyoutTimer.Start();
+        }
+
+        private void OnFlyoutTarget13Click(object sender, RoutedEventArgs e)
+        {
+            ShowFlyoutAt(Flyout13, FlyoutTarget13);
+        }
+
+        private void OnFlyoutTarget14Click(object sender, RoutedEventArgs e)
+        {
+            ShowFlyoutAt(Flyout14, FlyoutTarget14);
+        }
+
+        private void OnFlyoutTarget15Click(object sender, RoutedEventArgs e)
+        {
+            ShowFlyoutAt(Flyout15, FlyoutTarget15);
         }
 
         private void ShowFlyoutAt(FlyoutBase flyout, FrameworkElement targetElement, FlyoutShowMode showMode = FlyoutShowMode.Transient)

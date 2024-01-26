@@ -5,16 +5,24 @@
 #include "common.h"
 #include "ResourceAccessor.h"
 
-PCWSTR ResourceAccessor::c_resourceLocWinUI{ L"Microsoft.UI.Xaml/Resources" };
-
 #ifdef MUX_EXPERIMENTAL
-PCWSTR ResourceAccessor::c_resourceLoc{ L"Microsoft.Experimental.UI.Xaml/Resources" };
+#define LOC_PREFIX L"Microsoft.Experimental.UI.Xaml"
 #else
-PCWSTR ResourceAccessor::c_resourceLoc{ L"Microsoft.UI.Xaml/Resources" };
+#define LOC_PREFIX L"Microsoft.UI.Xaml"
 #endif
+
+#define LOC_PREFIX_WINUI L"Microsoft.UI.Xaml"
+
+PCWSTR ResourceAccessor::c_resourceLoc{ LOC_PREFIX L"/Resources" };
+PCWSTR ResourceAccessor::c_assetLoc{ L"Files/" LOC_PREFIX L"/Assets"};
+PCWSTR ResourceAccessor::c_resourceLocWinUI{ LOC_PREFIX_WINUI L"/Resources" };
 
 winrt::Microsoft::Windows::ApplicationModel::Resources::ResourceManager  ResourceAccessor::m_resourceManagerWinRT{ nullptr };
 
+winrt::Microsoft::Windows::ApplicationModel::Resources::ResourceMap ResourceAccessor::GetAssetMap()
+{
+    return ResourceAccessor::GetResourceManager().MainResourceMap().GetSubtree(ResourceAccessor::c_assetLoc);
+}
 
 winrt::Microsoft::Windows::ApplicationModel::Resources::ResourceMap ResourceAccessor::GetResourceMap()
 {
@@ -89,6 +97,17 @@ winrt::LoadedImageSurface ResourceAccessor::GetImageSurface(const wstring_view& 
 {
     auto imageUri = winrt::Uri{ std::wstring(L"ms-resource:///Files/Microsoft.UI.Xaml/Assets/") + std::wstring(assetName.data()) + std::wstring(L".png") };
     return winrt::LoadedImageSurface::StartLoadFromUri(imageUri, imageSize);
+}
+
+winrt::IAsyncOperation<winrt::hstring> ResourceAccessor::GetFileContents(const wstring_view& assetFileName)
+{
+    static auto mrt_lifted_assetMap = GetAssetMap();
+    static auto mrt_lifted_resourceContext = GetResourceContext();
+    auto filePath = mrt_lifted_assetMap.GetValue(assetFileName, mrt_lifted_resourceContext).ValueAsString();
+    auto file = co_await winrt::StorageFile::GetFileFromPathAsync(filePath);
+    auto fileBuffer = co_await winrt::FileIO::ReadBufferAsync(file);
+    auto fileReader = winrt::DataReader::FromBuffer(fileBuffer);
+    co_return fileReader.ReadString(fileReader.UnconsumedBufferLength());
 }
 
 winrt::IInspectable ResourceAccessor::ResourceLookup(const winrt::Control& control, const winrt::IInspectable& key)

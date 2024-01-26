@@ -30,6 +30,7 @@
 #include <windows.graphics.display.h>
 #include <robuffer.h>
 #include <windows.foundation.h>
+#include <windows.foundation.declarations.h>
 
 // STL
 #include <list>

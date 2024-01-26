@@ -120,8 +120,12 @@ CTimedTextSource::AddTrackCallback()
             IFC_RETURN(spThis->m_wrOwner.As(&spOwner));
             if (spOwner.Get())
             {
-                IFC_RETURN(spOwner->GetXamlDispatcherNoRef()->RunAsync(MakeCallback(
-                    spThis, &CTimedTextSource::OnTimedMetadataTracksChanged, ctl::ComPtr<wfc::IVectorChangedEventArgs>(pArgs))));
+                ctl::ComPtr<IDispatcher> spDispatcher;
+                if(SUCCEEDED(spOwner->GetXamlDispatcher(&spDispatcher)) && spDispatcher)
+                {
+                    IFC_RETURN(spDispatcher->RunAsync(MakeCallback(
+                        spThis, &CTimedTextSource::OnTimedMetadataTracksChanged, ctl::ComPtr<wfc::IVectorChangedEventArgs>(pArgs))));
+                }
             }
         }
         return S_OK;
@@ -366,8 +370,12 @@ CTimedTextSource::AddCueCallbacks(wmc::ITimedMetadataTrack * pTrack, _In_ unsign
             IFC_RETURN(spThis->m_wrOwner.As(&spOwner));
             if (spOwner.Get())
             {
-                IFC_RETURN(spOwner->GetXamlDispatcherNoRef()->RunAsync(MakeCallback(
-                    spThis, &CTimedTextSource::OnCueEntered, ctl::ComPtr<wmc::ITimedMetadataTrack>(pTrack), ctl::ComPtr<wmc::IMediaCueEventArgs>(pArgs))));
+                ctl::ComPtr<IDispatcher> spDispatcher;
+                if(SUCCEEDED(spOwner->GetXamlDispatcher(&spDispatcher)) && spDispatcher)
+                {
+                    IFC_RETURN(spDispatcher->RunAsync(MakeCallback(
+                        spThis, &CTimedTextSource::OnCueEntered, ctl::ComPtr<wmc::ITimedMetadataTrack>(pTrack), ctl::ComPtr<wmc::IMediaCueEventArgs>(pArgs))));
+                }
             }
         }
         return S_OK;
@@ -383,8 +391,12 @@ CTimedTextSource::AddCueCallbacks(wmc::ITimedMetadataTrack * pTrack, _In_ unsign
             IFC_RETURN(spThis->m_wrOwner.As(&spOwner));
             if (spOwner.Get())
             {
-                IFC_RETURN(spOwner->GetXamlDispatcherNoRef()->RunAsync(MakeCallback(
-                    spThis, &CTimedTextSource::OnCueExited, ctl::ComPtr<wmc::ITimedMetadataTrack>(pTrack), ctl::ComPtr<wmc::IMediaCueEventArgs>(pArgs))));
+                ctl::ComPtr<IDispatcher> spDispatcher;
+                if(SUCCEEDED(spOwner->GetXamlDispatcher(&spDispatcher)) && spDispatcher)
+                {
+                    IFC_RETURN(spDispatcher->RunAsync(MakeCallback(
+                        spThis, &CTimedTextSource::OnCueExited, ctl::ComPtr<wmc::ITimedMetadataTrack>(pTrack), ctl::ComPtr<wmc::IMediaCueEventArgs>(pArgs))));
+                }
             }
         }
         return S_OK;
@@ -683,9 +695,12 @@ CTimedTextSource::AddMediaPlayerEventRegistrations()
                         IFC_RETURN(spThis->m_wrOwner.As(&spOwner));
                         if (spOwner.Get())
                         {
-                            // Protect pointers with ctl::ComPtr
-                            IFC_RETURN(spOwner->GetXamlDispatcherNoRef()->RunAsync(MakeCallback(
-                                spThis, &CTimedTextSource::OnMediaPlayerSourceChanged)));
+                            ctl::ComPtr<IDispatcher> spDispatcher;
+                            if(SUCCEEDED(spOwner->GetXamlDispatcher(&spDispatcher)) && spDispatcher)
+                            {
+                                IFC_RETURN(spDispatcher->RunAsync(MakeCallback(
+                                    spThis, &CTimedTextSource::OnMediaPlayerSourceChanged)));
+                            }
                         }
                     }
                     return S_OK;
@@ -739,9 +754,12 @@ CTimedTextSource::AddTrackEventListeners()
                                     IFC_RETURN(spThis->m_wrOwner.As(&spOwner));
                                     if (spOwner.Get())
                                     {
-                                        // Protect pointers with ctl::ComPtr
-                                        IFC_RETURN(spOwner->GetXamlDispatcherNoRef()->RunAsync(MakeCallback(
-                                            spThis, &CTimedTextSource::OnMediaCurrentItemChanged)));
+                                        ctl::ComPtr<IDispatcher> spDispatcher;
+                                        if(SUCCEEDED(spOwner->GetXamlDispatcher(&spDispatcher)) && spDispatcher)
+                                        {
+                                            IFC_RETURN(spDispatcher->RunAsync(MakeCallback(
+                                                spThis, &CTimedTextSource::OnMediaCurrentItemChanged)));
+                                        }
                                     }
                                 }
                                 return S_OK;
@@ -822,8 +840,12 @@ CTimedTextSource::AddCuePresentationModeChangedCallback()
             if (spOwner.Get())
             {
                 ctl::ComPtr<wmp::ITimedMetadataPresentationModeChangedEventArgs> spArgs(pArgs);
-                IFC_RETURN(spOwner->GetXamlDispatcherNoRef()->RunAsync(MakeCallback(
-                    spThis, &CTimedTextSource::OnCuePresentationModeChanged, spArgs)));
+                ctl::ComPtr<IDispatcher> spDispatcher;
+                if(SUCCEEDED(spOwner->GetXamlDispatcher(&spDispatcher)) && spDispatcher)
+                {
+                    IFC_RETURN(spDispatcher->RunAsync(MakeCallback(
+                        spThis, &CTimedTextSource::OnCuePresentationModeChanged, spArgs)));
+                }
             }
         }
         return S_OK;

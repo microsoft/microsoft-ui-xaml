@@ -595,7 +595,7 @@ CUIElement::SetValue(_In_ const SetValueParams& args)
                 warningInfo.push_back(std::move(setValueInfo));
                 StoreLayoutCycleWarningContext(warningInfo, layoutManager);
 
-                if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Level1))
+                if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Low))
                 {
                     __debugbreak();
                 }
@@ -1496,6 +1496,7 @@ _Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeO
         // Let this DirectManipulation container know that it is now live in the tree.
         if (m_fIsDirectManipulationContainer)
         {
+            FAIL_FAST_IF(nullptr == GetElementIslandInputSite());
             ctl::ComPtr<CUIDMContainer> dmContainer;
             IFC_RETURN(GetDirectManipulationContainer(&dmContainer));
             if (dmContainer != nullptr)
@@ -1503,7 +1504,7 @@ _Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeO
                 CInputServices* inputServicesNoRef = GetContext()->GetInputServices();
                 if (inputServicesNoRef)
                 {
-                    inputServicesNoRef->EnsureHwndForDManipService(this, GetElementInputWindow());
+                    inputServicesNoRef->EnsureElementIslandInputSiteForDManipService(this);
                 }
 
                 IFC_RETURN(dmContainer->NotifyManipulatabilityAffectingPropertyChanged(TRUE /*fIsInLiveTree*/));
@@ -3567,7 +3568,7 @@ CUIElement::InvalidateMeasure()
             {
                 StoreLayoutCycleWarningContext(layoutManager);
 
-                if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Level1))
+                if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Low))
                 {
                     __debugbreak();
                 }
@@ -3585,11 +3586,12 @@ CUIElement::InvalidateMeasureInternal(_In_opt_ CLayoutManager* layoutManager)
     if (layoutManager && layoutManager->StoreLayoutCycleWarningContexts())
     {
         StoreLayoutCycleWarningContext(layoutManager);
-        if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Level1))
+        if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Low))
         {
             __debugbreak();
         }
     }
+
 
     SetIsMeasureDirty(TRUE);
     PropagateOnMeasureDirtyPath();
@@ -3627,7 +3629,7 @@ CUIElement::InvalidateArrange()
             {
                 StoreLayoutCycleWarningContext(layoutManager);
 
-                if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Level1))
+                if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Low))
                 {
                     __debugbreak();
                 }
@@ -3645,11 +3647,12 @@ CUIElement::InvalidateArrangeInternal(_In_opt_ CLayoutManager* layoutManager)
     if (layoutManager && layoutManager->StoreLayoutCycleWarningContexts())
     {
         StoreLayoutCycleWarningContext(layoutManager);
-        if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Level1))
+        if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Low))
         {
             __debugbreak();
         }
     }
+
 
     SetIsArrangeDirty(TRUE);
     PropagateOnArrangeDirtyPath();
@@ -4095,7 +4098,7 @@ CUIElement::MeasureInternal(XSIZEF availableSize)
 
         if (pLayoutManager->StoreLayoutCycleWarningContexts())
         {
-            if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Level2))
+            if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::High))
             {
                 std::wstring measureInfo(L"Measure(");
                 measureInfo.append(std::to_wstring(availableSize.width));
@@ -4107,7 +4110,7 @@ CUIElement::MeasureInternal(XSIZEF availableSize)
                 warningInfo.push_back(std::move(measureInfo));
                 StoreLayoutCycleWarningContext(warningInfo, pLayoutManager);
             }
-            if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Level2))
+            if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::High))
             {
                 __debugbreak();
             }
@@ -4169,7 +4172,7 @@ Cleanup:
                     warningInfo.push_back(std::move(desiredSizeInfo));
                     StoreLayoutCycleWarningContext(warningInfo, pLayoutManager);
 
-                    if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Level1))
+                    if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Low))
                     {
                         __debugbreak();
                     }
@@ -4413,7 +4416,7 @@ CUIElement::ArrangeInternal(XRECTF finalRect)
 
         if (pLayoutManager->StoreLayoutCycleWarningContexts())
         {
-            if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Level2))
+            if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::High))
             {
                 std::wstring arrangeInfo(L"Arrange(");
                 arrangeInfo.append(std::to_wstring(finalRect.X));
@@ -4429,7 +4432,7 @@ CUIElement::ArrangeInternal(XRECTF finalRect)
                 warningInfo.push_back(std::move(arrangeInfo));
                 StoreLayoutCycleWarningContext(warningInfo, pLayoutManager);
             }
-            if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Level2))
+            if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::High))
             {
                 __debugbreak();
             }

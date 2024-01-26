@@ -230,6 +230,11 @@ CBringIntoViewHandler::BringFocusedElementIntoView(
     // transform and DM zoom factor etc. In HIDPI, this will include  the DPI RenderTransform set
     // on the root visual.
     IFC(GetScrollerGlobalBounds(innerScroller, &rectInnerScrollerGlobal));
+
+    // rectInnerScrollerGlobal is used to compute innerScrollerWidth & innerScrollerHeight, and is handed off 
+    // to GetFocusedElementBoundingRectForPadding. In all cases, it needs to be expressed in physical pixels instead of DIPs.
+    DipsToPhysicalPixels(innerScroller, rectInnerScrollerGlobal, &rectInnerScrollerGlobal);
+
     IFC(focusedElement->GetGlobalBounds(&rectFocusedElementGlobal, true /* ignoreClipping */));
     if (XamlOneCoreTransforms::IsEnabled())
     {

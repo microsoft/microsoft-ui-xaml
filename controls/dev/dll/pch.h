@@ -224,6 +224,14 @@ void constexpr specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::RefreshVisualizer, struct winrt::Microsoft::UI::Xaml::Controls::RefreshRequestedEventArgs>>();
 #endif
 
+#ifdef SELECTORBAR_INCLUDED
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::SelectorBarItem>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterator<struct winrt::Microsoft::UI::Xaml::Controls::SelectorBarItem>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IObservableVector<struct winrt::Microsoft::UI::Xaml::Controls::SelectorBarItem>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::IVector<struct winrt::Microsoft::UI::Xaml::Controls::SelectorBarItem>>();
+    winrt::guid_of<struct winrt::Windows::Foundation::Collections::VectorChangedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::SelectorBarItem>>();
+#endif
+
 #ifdef SCROLLVIEW_INCLUDED
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::ScrollingScrollBarVisibility>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::ScrollingChainMode>>();

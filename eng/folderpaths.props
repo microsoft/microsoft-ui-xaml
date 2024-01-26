@@ -97,6 +97,23 @@
     <PrivateInfrastructureWin32HostingObjPath>$(InfraTestObjPath)\Win32Hosting</PrivateInfrastructureWin32HostingObjPath>
   </PropertyGroup>
 
+  <!-- Platform winmd paths -->
+  <PropertyGroup>
+    <ContractMetadataPath>$([MSBuild]::NormalizePath('$(NugetPackageDirectory)\Microsoft.Windows.SDK.Contracts.$(MicrosoftWindowsSDKContractsVersion)\ref\netstandard2.0'))</ContractMetadataPath>
+    <ProjectSDKMetadataPath>$(WindowsSdkDir)\UnionMetadata\$(WindowsTargetPlatformVersion)</ProjectSDKMetadataPath>
+    <FacadeWinmdDir Condition="'$(XamlLightup)'=='true'">$(ProjectSDKMetadataPath)\Facade</FacadeWinmdDir>
+    <SDKReferencesPath Condition="'$(XamlLightup)'=='true'">$(WindowsSdkDir)\References\$(WindowsTargetPlatformVersion)</SDKReferencesPath>
+    <FacadeWinmdDir Condition="'$(XamlLightup)'!='true'">$(ContractMetadataPath)</FacadeWinmdDir>
+    <SDKReferencesPath Condition="'$(XamlLightup)'!='true'">$(ContractMetadataPath)</SDKReferencesPath>
+    <FacadeWinmdPath>$(FacadeWinmdDir)\Windows.winmd</FacadeWinmdPath>
+    <WindowsSDK_MetadataFoundationPath Condition="'$(XamlLightup)'!='true'">$(ContractMetadataPath)</WindowsSDK_MetadataFoundationPath>
+    <WindowsSDK_MetadataPathVersioned Condition="'$(XamlLightup)'!='true'">$(ContractMetadataPath)</WindowsSDK_MetadataPathVersioned>
+    <!-- Microsoft.Cpp.WindowsSDK.props makes assumptions about the SDK layout, causing warnings about missing lib paths -->
+    <WindowsSDK_LibraryPath_x86 Condition="'$(TargetPlatformSdkRootOverride)'!=''">;</WindowsSDK_LibraryPath_x86>
+    <WindowsSDK_LibraryPath_x64 Condition="'$(TargetPlatformSdkRootOverride)'!=''">;</WindowsSDK_LibraryPath_x64>
+    <!-- Note: no contract metadata package equivalents for TargetPlatformWinMDLocation, WindowsSDK_MetadataPath -->
+  </PropertyGroup>
+
   <!-- Header/Winmd specific paths -->
   <PropertyGroup>
     <XamlPublicHeadersPath>$(XamlBinaryPath)\publicHeaders</XamlPublicHeadersPath>
@@ -104,8 +121,6 @@
     <PrivateMUXDir>$(XamlBinaryPath)\xcp\dxaml\idl\winrt\merged\private\$(MergedWinMDOutputDir)</PrivateMUXDir>
     <PublicMergedWinMDDir>$(XamlBuildOutputRoot)MergedWinMD\$(MergedWinMDOutputDir)</PublicMergedWinMDDir>
     <PrivateMergedWinMDDir>$(XamlBuildOutputRoot)MergedWinMD\private\$(MergedWinMDOutputDir)</PrivateMergedWinMDDir>
-    <SDKReferencesPath>$(WindowsSdkDir)\References\$(WindowsTargetPlatformVersion)</SDKReferencesPath>
-
     <PrivateInfrastructureMergedWinMdPath>$(InfraTestObjPath)\client\idl\$(MergedWinMDOutputDir)</PrivateInfrastructureMergedWinMdPath>
     <MockDCompMergedWinMdPath>$(MockDCompTestObjPath)\idl\$(MergedWinMDOutputDir)</MockDCompMergedWinMdPath>
     <PrivateInfrastructureWin32HostingMergedWinMdPath>$(PrivateInfrastructureWin32HostingObjPath)\idl\$(MergedWinMDOutputDir)</PrivateInfrastructureWin32HostingMergedWinMdPath>
@@ -121,6 +136,7 @@
     <TestSymbolsBinplacePath>$(BinplaceRootPath)\Symbols\Test</TestSymbolsBinplacePath>
     <TestBinplaceResourcesDestinationPath>$(TestBinplaceDestinationPath)\resources</TestBinplaceResourcesDestinationPath>
     <TestDependenciesResourcesDestinationPath>$(BinplaceRootPath)\TestDependencies</TestDependenciesResourcesDestinationPath>
+    <MarkupCompilerDestinationPath>$(ProductBinplaceDestinationPath)\Microsoft.UI.Xaml.Markup.Compiler</MarkupCompilerDestinationPath>
   </PropertyGroup>
 
   <!-- External SDK/nuget related paths -->
@@ -199,7 +215,6 @@
 
     <WindowsUmLibPath>$(WindowsSDKCppArchRoot)um\$(WindowsSDKArch)</WindowsUmLibPath>
     <UCRTPath>$(WindowsSDKCppArchRoot)ucrt\$(WindowsSDKArch)</UCRTPath>
-    <ProjectSDKMetadataPath>$(WindowsSdkDir)\UnionMetadata\$(WindowsTargetPlatformVersion)</ProjectSDKMetadataPath>
 
     <AppAnalysisPath>$(XamlSourcePath)\xcp\dxaml\tools\AppAnalysis</AppAnalysisPath>
 

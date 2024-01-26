@@ -95,7 +95,6 @@ _Check_return_ HRESULT
     AutoSuggestBox::PrepareState()
 {
     wrl::ComPtr<wuv::IInputPaneStatics> spInputPaneStatics;
-    wrl::ComPtr<wuv::IInputPaneStatics2> spInputPaneStatics2;
     wrl::ComPtr<wuv::IInputPane> spInputPane;
     wrl::ComPtr<xaml::IDispatcherTimer> spTextChangedEventTimer;
     wf::TimeSpan interval;
@@ -667,6 +666,16 @@ AutoSuggestBox::OnPopupOpened(
     // Telemetry marker for suggestion list opening popup.
     TraceLoggingWriteStart(traceLoggingActivity,
         "ASBSuggestionListOpened");
+
+    // Bail out early if the popup has been unloaded already.
+    // It's possible for this async Popup.Opened event to fire after the island that contains the Popup is already
+    // closed.  If we continue on in this state, VisualTree::GetForElementNoRef() may return null, leading to failures.
+    BOOLEAN isLoaded {};
+    IFC_RETURN(m_tpPopupPart.AsOrNull<IFrameworkElement>()->get_IsLoaded(&isLoaded));
+    if (!isLoaded)
+    {
+        return S_OK;
+    }
 
     // Apply a shadow effect to the popup's immediate child
     IFC_RETURN(ApplyElevationEffect(m_tpPopupPart.AsOrNull<IUIElement>().Get()));

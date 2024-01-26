@@ -365,7 +365,7 @@ void CUIElement::InvalidateViewportInternal()
     if (layoutManager && layoutManager->StoreLayoutCycleWarningContexts())
     {
         StoreLayoutCycleWarningContext(layoutManager);
-        if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Level1))
+        if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Low))
         {
             __debugbreak();
         }

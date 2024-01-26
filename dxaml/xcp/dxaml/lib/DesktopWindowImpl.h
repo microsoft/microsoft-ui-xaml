@@ -112,7 +112,7 @@ namespace DirectUI
             WPARAM const wparam,
             LPARAM const lparam) noexcept override final;
         void OnCreate() noexcept override final;
-        HWND GetBridgeWindowHandle() const {return m_bridgeWindowHandle;}
+        HWND GetPositioningBridgeWindowHandle() const {return m_positioningBridgeWindowHandle;}
         void MakeWindowRTL();
 
     private:
@@ -137,7 +137,7 @@ namespace DirectUI
         _Check_return_ HRESULT CheckIsWindowClosed();
         _Check_return_ HRESULT OnDesktopWindowXamlSourceTakeFocusRequested(_In_ xaml::Hosting::IDesktopWindowXamlSource* desktopWindowXamlSource, _In_ xaml::Hosting::IDesktopWindowXamlSourceTakeFocusRequestedEventArgs* args);
         _Check_return_ HRESULT RestoreFocus(_Outptr_ xaml_hosting::IXamlSourceFocusNavigationResult** ppEventSource);
-        void SetFocusToBridgeWindow();
+        void SetFocusToContentIsland();
 
         // ------------------------------------
         //     Desktop-specific State
@@ -151,7 +151,8 @@ namespace DirectUI
         EventRegistrationToken m_takeFocusRequestedEventToken;
         GUID m_lastTakeFocusRequestCorrelationId;
         HWND m_lastFocusedWindowHandle = NULL;
-        HWND m_bridgeWindowHandle = NULL;
+        HWND m_positioningBridgeWindowHandle = NULL;
+        wrl::ComPtr<ixp::IIslandInputSitePartner> m_islandInputSite = nullptr;
         ctl::ComPtr<ixp::IAppWindowStatics> m_appWindowStatics;
 
         // We use ::GetClientRect to report the window bounds, but that returns 0x0 if the window is minimized. In

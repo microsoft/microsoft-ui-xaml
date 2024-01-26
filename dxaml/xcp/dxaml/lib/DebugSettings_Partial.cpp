@@ -73,25 +73,25 @@ _Check_return_ HRESULT DebugSettings::put_FailFastOnErrorsImpl(_In_ BOOLEAN valu
     return S_OK;
 }
 
-_Check_return_ HRESULT DebugSettings::get_LayoutCycleDebugBreaksImpl(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel* pValue)
+_Check_return_ HRESULT DebugSettings::get_LayoutCycleDebugBreakLevelImpl(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel* pValue)
 {
     *pValue = (ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel)LayoutCycleDebugSettings::GetDebugBreakLevel();
     return S_OK;
 }
 
-_Check_return_ HRESULT DebugSettings::put_LayoutCycleDebugBreaksImpl(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel value)
+_Check_return_ HRESULT DebugSettings::put_LayoutCycleDebugBreakLevelImpl(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel value)
 {
     LayoutCycleDebugSettings::SetDebugBreakLevel((DirectUI::LayoutCycleDebugBreakLevel)value);
     return S_OK;
 }
 
-_Check_return_ HRESULT DebugSettings::get_LayoutCycleTracingImpl(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel* pValue)
+_Check_return_ HRESULT DebugSettings::get_LayoutCycleTracingLevelImpl(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel* pValue)
 {
     *pValue = (ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel)LayoutCycleDebugSettings::GetTracingLevel();
     return S_OK;
 }
 
-_Check_return_ HRESULT DebugSettings::put_LayoutCycleTracingImpl(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel value)
+_Check_return_ HRESULT DebugSettings::put_LayoutCycleTracingLevelImpl(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel value)
 {
     LayoutCycleDebugSettings::SetTracingLevel((DirectUI::LayoutCycleTracingLevel)value);
     return S_OK;

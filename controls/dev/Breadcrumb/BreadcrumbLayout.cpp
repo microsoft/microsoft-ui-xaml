@@ -13,7 +13,7 @@ BreadcrumbLayout::BreadcrumbLayout()
 
 BreadcrumbLayout::BreadcrumbLayout(const winrt::BreadcrumbBar& breadcrumb)
 {
-    m_breadcrumb = breadcrumb;
+    m_breadcrumb = winrt::make_weak(breadcrumb);
 }
 
 BreadcrumbLayout::~BreadcrumbLayout()
@@ -61,7 +61,7 @@ winrt::Size BreadcrumbLayout::MeasureOverride(winrt::NonVirtualizingLayoutContex
 
     if (accumulatedCrumbsSize.Width > availableSize.Width)
     {
-        m_ellipsisIsRendered = true;   
+        m_ellipsisIsRendered = true;
     }
     else
     {
@@ -185,9 +185,10 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::NonVirtualizingLayoutContex
         }
     }
 
-    if (const auto& breadcrumb = m_breadcrumb.try_as<BreadcrumbBar>())
+    if (const auto& breadcrumb = m_breadcrumb.get())
     {
-        breadcrumb->ReIndexVisibleElementsForAccessibility();
+        auto breadcrumbImpl = winrt::get_self<BreadcrumbBar>(breadcrumb);
+        breadcrumbImpl->ReIndexVisibleElementsForAccessibility();
     }
 
     return finalSize;

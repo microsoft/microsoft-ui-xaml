@@ -52,6 +52,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment("Comparing against " + dictionaryName.ToString());
                     var themeDictionary = resourceDictionaries.ThemeDictionaries[dictionaryName] as ResourceDictionary;
 
+                    Log.Comment("Keys count in Default: " + defaultThemeDictionary.Keys.Count);
+                    Log.Comment("Keys count in " + dictionaryName + ": " + themeDictionary.Keys.Count);
+
                     bool allKeysInDefaultExistInDictionary = AreKeysFromExpectedInActualDictionary(defaultThemeDictionary, "Default", themeDictionary, dictionaryName.ToString());
                     bool allKeysInDictionaryExistInDefault = AreKeysFromExpectedInActualDictionary(themeDictionary, dictionaryName.ToString(), defaultThemeDictionary, "Default");
 

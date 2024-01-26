@@ -43,8 +43,8 @@
     <Import Project="Xaml.NTLegacy.props" />
     
     <PropertyGroup>
-        <TargetPlatformVersion>10.0.18362.0</TargetPlatformVersion>
-        <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
+        <TargetPlatformVersion>$(WindowsSdkTargetPlatformVersion)</TargetPlatformVersion>
+        <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
         <NonCoreWin>true</NonCoreWin>
     </PropertyGroup>
 

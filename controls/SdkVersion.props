@@ -8,11 +8,12 @@
     <SDKVersionRS5>10.0.17763.0</SDKVersionRS5>
     <SDKVersion19H1>10.0.18362.0</SDKVersion19H1>
     <SDKVersion21H1>10.0.22000.0</SDKVersion21H1>
-    <SDKVersionInsider>10.0.22000.0</SDKVersionInsider> <!-- Matches SDKVersion21H1 -->
+    <SDKVersion22H2>10.0.22621.0</SDKVersion22H2>
+    <SDKVersionInsider>10.0.22621.0</SDKVersionInsider> <!-- Matches SDKVersion22H2 -->
   </PropertyGroup>
   <PropertyGroup>
-    <!-- By default we use the publicly shipped SDK version which is 21H1 now -->
-    <MuxSdkVersion Condition="$(UseInsiderSDK) != 'true'">$(SDKVersion21H1)</MuxSdkVersion>
+    <!-- By default we use the latest publicly shipped SDK version -->
+    <MuxSdkVersion Condition="$(UseInsiderSDK) != 'true'">$(SDKVersion22H2)</MuxSdkVersion>
 
     <!-- Setting UseInsiderSDK will allow the code to build to the newest insider SDK
          In order to get this from a cmd prompt run

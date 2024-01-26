@@ -38,8 +38,6 @@
 #include <microsoft.ui.composition.experimental.h>
 #include <microsoft.ui.composition.interop.h>
 #include "VisualDebugTags.h"
-
-#include <DCompExtras.h>
 #include <dcompinternal.h>
 #include <dcompprivate.h>
 #include <microsoft.ui.input.experimental.h>

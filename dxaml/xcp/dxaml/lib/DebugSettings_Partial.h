@@ -24,10 +24,10 @@ namespace DirectUI
             _Check_return_ HRESULT put_IsTextPerformanceVisualizationEnabledImpl(_In_ BOOLEAN value);
             _Check_return_ HRESULT get_FailFastOnErrorsImpl(_Out_ BOOLEAN* pValue);
             _Check_return_ HRESULT put_FailFastOnErrorsImpl(_In_ BOOLEAN value);
-            _Check_return_ HRESULT get_LayoutCycleDebugBreaksImpl(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel* pValue);
-            _Check_return_ HRESULT put_LayoutCycleDebugBreaksImpl(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel value);
-            _Check_return_ HRESULT get_LayoutCycleTracingImpl(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel* pValue);
-            _Check_return_ HRESULT put_LayoutCycleTracingImpl(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel value);
+            _Check_return_ HRESULT get_LayoutCycleDebugBreakLevelImpl(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel* pValue);
+            _Check_return_ HRESULT put_LayoutCycleDebugBreakLevelImpl(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel value);
+            _Check_return_ HRESULT get_LayoutCycleTracingLevelImpl(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel* pValue);
+            _Check_return_ HRESULT put_LayoutCycleTracingLevelImpl(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel value);
 
             void OnThreadInitialized();
             void OnThreadDeinitialized();

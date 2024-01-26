@@ -223,7 +223,7 @@ void CWindowChrome::UpdateContainerSize(WPARAM wParam, LPARAM lParam)
 
 void CWindowChrome::UpdateBridgeWindowSizePosition()
 {
-    HWND bridgeWindow = GetPeer()->GetBridgeWindowHandle();
+    HWND bridgeWindow = GetPeer()->GetPositioningBridgeWindowHandle();
     ASSERT(bridgeWindow);
 
     RECT clientRect = {};

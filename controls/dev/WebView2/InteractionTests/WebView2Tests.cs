@@ -335,7 +335,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Verify.AreEqual(expectedValue, result.Value);
         }
 
-        private static void CompleteTestAndWaitForResult(string selectedTest)
+        private static void CompleteTestAndWaitForResult(string selectedTest, bool shouldDumpMessageLog = false)
         {
             var result = new Edit(FindElement.ById("TestResult"));
             Button CompleteTestButton = new Button(FindElement.ById("CompleteTest"));
@@ -346,6 +346,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 CompleteTestButton.Invoke();
                 waiter.TryWait();
+            }
+
+            if(shouldDumpMessageLog)
+            {
+                var logBox = new Edit(FindElement.ById("MessageLog"));
+                if (logBox != null)
+                {
+                    Log.Comment("Dumping MessageLog:");
+                    Log.Comment(logBox.GetText());
+                }
             }
 
             Verify.AreEqual(expectedValue, result.Value);
@@ -2128,6 +2138,45 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 xamlFocusWaiter.Wait();
                 Log.Comment("Focus is on " + UIObject.Focused);
                 Verify.IsTrue(x2.HasKeyboardFocus, "TabStopButton2 has keyboard focus");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void CustomConfiguration_BasicTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                // We have to load page in CompleteTest so that we can use a custom environment. Don't wait for the load here.
+                ChooseTest("CustomConfiguration_BasicTest", false /* waitForLoadCompleted */);
+
+                CompleteTestAndWaitForResult("CustomConfiguration_BasicTest");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void CustomConfiguration_EnsureAgainAfterDefaultTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                // We have to load page in CompleteTest so that we can use a custom environment. Don't wait for the load here.
+                ChooseTest("CustomConfiguration_EnsureAgainAfterDefaultTest");
+
+                CompleteTestAndWaitForResult("CustomConfiguration_EnsureAgainAfterDefaultTest", true /* shouldDumpMessageLog */ );
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void CustomConfiguration_EnsureAgainAfterCustomTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                // We have to load page in CompleteTest so that we can use a custom environment. Don't wait for the load here.
+                ChooseTest("CustomConfiguration_EnsureAgainAfterCustomTest", false /* waitForLoadCompleted */);
+
+                CompleteTestAndWaitForResult("CustomConfiguration_EnsureAgainAfterCustomTest", true /* shouldDumpMessageLog */ );
             }
         }
 

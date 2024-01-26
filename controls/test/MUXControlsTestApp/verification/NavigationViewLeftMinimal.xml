@@ -752,7 +752,7 @@
                         FocusVisualSecondaryThickness=1,1,1,1
                         Foreground=#E4000000
                         Margin=0,0,0,0
-                        MaxHeight=510
+                        MaxHeight=470
                         Name=MenuItemsScrollViewer
                         Padding=0,0,0,0
                         RenderSize=0,0
@@ -1433,7 +1433,7 @@
                         FocusVisualSecondaryThickness=1,1,1,1
                         Foreground=#E4000000
                         Margin=0,0,0,0
-                        MaxHeight=0
+                        MaxHeight=40
                         Name=FooterItemsScrollViewer
                         Padding=0,0,0,0
                         RenderSize=0,0

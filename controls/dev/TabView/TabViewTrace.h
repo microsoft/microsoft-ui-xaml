@@ -4,7 +4,7 @@
 #pragma once
 
 #include "common.h"
-#include "TraceLogging.h"
+#include "MuxcTraceLogging.h"
 #include "Utils.h"
 #include "MUXControlsTestHooks.h"
 
@@ -87,7 +87,7 @@ public:
             if (includeTraceLogging)
             {
                 // TraceViewers
-                // http://toolbox/pef 
+                // http://toolbox/pef
                 // http://fastetw/index.aspx
                 TraceLoggingWrite(
                     g_hLoggingProvider,
@@ -124,7 +124,7 @@ public:
             if (includeTraceLogging)
             {
                 // TraceViewers
-                // http://toolbox/pef 
+                // http://toolbox/pef
                 // http://fastetw/index.aspx
                 TraceLoggingWrite(
                     g_hLoggingProvider,
@@ -153,7 +153,7 @@ public:
     static void TracePerfInfo(PCWSTR info) noexcept
     {
         // TraceViewers
-        // http://toolbox/pef 
+        // http://toolbox/pef
         // http://fastetw/index.aspx
         TraceLoggingWrite(
             g_hPerfProvider,

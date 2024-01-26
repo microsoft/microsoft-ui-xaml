@@ -13,6 +13,7 @@
 #include <microsoft.ui.input.h>
 #include <microsoft.ui.input.inputkeyboardsource.interop.h>
 #include <microsoft.ui.input.inputpretranslatesource.interop.h>
+#include <Microsoft.UI.Input.Partner.h>
 #include <Microsoft.UI.Content.h>
 #include "microsoft.ui.input.dragdrop.h"
 
@@ -69,7 +70,7 @@ public:
 
     void NWPropagateDirtyFlag(DirtyFlags flags) override;
 
-    HWND GetInputHWND();
+    wrl::ComPtr<ixp::IIslandInputSitePartner> GetIslandInputSite() const { return m_islandInputSite; }
     HWND GetPositioningHWND() const { return m_contentBridgeWindow; }
 
     wrl::ComPtr<ixp::IPointerPoint> GetPreviousPointerPoint();
@@ -103,7 +104,7 @@ public:
 
     _Check_return_ HRESULT NotifyThemeChangedCore(_In_ Theming::Theme theme, _In_ bool fForceRefresh = false) final;
 
-    void SetInputWindow(HWND inputWindow);
+    void SetIslandInputSite(_In_ ixp::IIslandInputSitePartner* islandInputSite);
 
     _Check_return_ HRESULT get_DragDropManager(_COM_Outptr_result_maybenull_ mui::DragDrop::IDragDropManager** manager);
 
@@ -298,14 +299,9 @@ private:
 
     bool m_hasCapture = false;
 
-    //
-    //  TODO: The InputSite child hwnd should not be known to framework. It's currently
-    //        required to register a scrollpanel for DirectManipulation. Recommendation: a
-    //        DirectManipulation InputObject that communicates directly with DM.
-    //
-    HWND m_inputWindow = nullptr;
     HWND m_contentBridgeWindow = nullptr;
 
+    wrl::ComPtr<ixp::IIslandInputSitePartner> m_islandInputSite;
     wrl::ComPtr<ixp::IInputFocusController> m_inputFocusController;
     wrl::ComPtr<ixp::IInputKeyboardSource2> m_inputKeyboardSource2;
     wrl::ComPtr<ixp::IInputPointerSource> m_inputPointerSource;

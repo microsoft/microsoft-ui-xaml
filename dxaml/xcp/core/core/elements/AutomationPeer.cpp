@@ -1527,15 +1527,7 @@ bool CAutomationPeer::ListenerExists(_In_ UIAXcp::APAutomationEvents eventId)
 
 void CAutomationPeer::RaiseAutomationEvent(_In_ UIAXcp::APAutomationEvents eventId)
 {
-    bool reentrancyChecksEnabled = RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector()->IsFeatureEnabled(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableReentrancyChecks);
-    if (reentrancyChecksEnabled)
-    {
-        if (ListenerExists(eventId))
-        {
-            IGNOREHR(GetContext()->UIARaiseAutomationEvent(this, eventId));
-        }
-    }
-    else
+    if (ListenerExists(eventId))
     {
         IGNOREHR(GetContext()->UIARaiseAutomationEvent(this, eventId));
     }

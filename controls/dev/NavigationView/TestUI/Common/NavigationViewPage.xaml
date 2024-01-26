@@ -4,7 +4,6 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
-    xmlns:muxcontrols="using:Microsoft.UI.Xaml.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
@@ -21,7 +20,7 @@
         <Grid.RowDefinitions>
             <RowDefinition x:Name="MainGridRow" Height="*" />
         </Grid.RowDefinitions>
-        <muxcontrols:NavigationView x:Name="NavView" AutomationProperties.Name="NavView" AutomationProperties.AutomationId="NavView"
+        <NavigationView x:Name="NavView" AutomationProperties.Name="NavView" AutomationProperties.AutomationId="NavView"
                 PaneTitle="NavView Test"
                 DisplayModeChanged="NavView_DisplayModeChanged"
                 ItemInvoked="NavView_ItemInvoked"
@@ -37,34 +36,37 @@
                 PaneOpened="NavView_PaneOpened"
                 BackRequested="NavView_BackRequested"
                 AccessKey="H">
-            <muxcontrols:NavigationView.MenuItems>
-                <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home">
-                    <muxcontrols:NavigationViewItem.InfoBadge>
-                        <muxcontrols:InfoBadge Value="2"/>
-                    </muxcontrols:NavigationViewItem.InfoBadge>
-                </muxcontrols:NavigationViewItem>
-                <muxcontrols:NavigationViewItem x:Name="AppsItem" Content="Apps" Icon="Shop" />
-                <muxcontrols:NavigationViewItem x:Name="GamesItem" Content="Games" Icon="Emoji"/>
-                <muxcontrols:NavigationViewItemSeparator />
-                <muxcontrols:NavigationViewItemHeader x:Name="HeaderTextItem" Content="Header Text" />
-                <muxcontrols:NavigationViewItem x:Name="MusicItem" AutomationProperties.Name="Music" Content="Music" Icon="Audio"/>
-                <muxcontrols:NavigationViewItem x:Name="MoviesItem" Content="Movies" Icon="Video"/>
-                <muxcontrols:NavigationViewItemHeader x:Name="HeaderTextItem2" Content="Header Text 2" />
-                <muxcontrols:NavigationViewItem x:Name="TVItem" Content="TV" Icon="Slideshow"/>
-                <muxcontrols:NavigationViewItem x:Name="VolumeItem" AutomationProperties.Name="Volume" Icon="Volume">
-                    <muxcontrols:NavigationViewItem.Content>
+            <NavigationView.MenuItems>
+                <NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home">
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Value="2"/>
+                    </NavigationViewItem.InfoBadge>
+                </NavigationViewItem>
+                <NavigationViewItem x:Name="AppsItem" Content="Apps" Icon="Shop"/>
+                <NavigationViewItem x:Name="GamesItem" Content="Games" Icon="Emoji"/>
+                <NavigationViewItemSeparator />
+                <NavigationViewItemHeader x:Name="HeaderTextItem" Content="Header Text" />
+                <NavigationViewItem x:Name="MusicItem" AutomationProperties.Name="Music" Content="Music" Icon="Audio"/>
+                <NavigationViewItem x:Name="MoviesItem" Content="Movies" Icon="Video"/>
+                <NavigationViewItemHeader x:Name="HeaderTextItem2" Content="Header Text 2" />
+                <NavigationViewItem x:Name="TVItem" Content="TV" Icon="Slideshow"/>
+                <NavigationViewItem x:Name="VolumeItem" AutomationProperties.Name="Volume" Icon="Volume">
+                    <NavigationViewItem.Content>
                         <TextBlock Text="Volume (don't click me)" />
-                    </muxcontrols:NavigationViewItem.Content>
-                </muxcontrols:NavigationViewItem>
-                <muxcontrols:NavigationViewItem x:Name="IntegerItem" AutomationProperties.Name="Integer" Icon="Accept"/>
-                <muxcontrols:NavigationViewItemSeparator />
-                <muxcontrols:NavigationViewItem x:Name="AcceptItem" AutomationProperties.Name="AcceptItem" Icon="Accept" Content="Accept"/>
-                <muxcontrols:NavigationViewItem x:Name="HasChildItem" AutomationProperties.Name="HasChildItem" Content="Item with child">
-                    <muxcontrols:NavigationViewItem.MenuItems>
-                        <muxcontrols:NavigationViewItem x:Name="ChildItem" AutomationProperties.Name="ChildItem" Content="Child Item Content" Icon="Document" />
-                    </muxcontrols:NavigationViewItem.MenuItems>
-                </muxcontrols:NavigationViewItem>
-            </muxcontrols:NavigationView.MenuItems>
+                    </NavigationViewItem.Content>
+                </NavigationViewItem>
+                <NavigationViewItem x:Name="IntegerItem" AutomationProperties.Name="Integer" Icon="Accept"/>
+                <NavigationViewItemSeparator />
+                <NavigationViewItem x:Name="AcceptItem" AutomationProperties.Name="AcceptItem" Icon="Accept" Content="Accept"/>
+                <NavigationViewItem x:Name="HasChildItem" AutomationProperties.Name="HasChildItem" Content="Item with child">
+                    <NavigationViewItem.MenuItems>
+                        <NavigationViewItem x:Name="ChildItem" AutomationProperties.Name="ChildItem" Content="Child Item Content" Icon="Document" />
+                    </NavigationViewItem.MenuItems>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+            <NavigationView.FooterMenuItems>
+                <NavigationViewItem x:Name="FooterItem" AutomationProperties.Name="FooterItem" Content="Footer Item" Icon="Accept" Visibility="Collapsed" Background="Red"/>
+            </NavigationView.FooterMenuItems>
 
             <ScrollViewer Margin="8,0,0,0">
                 <StackPanel>
@@ -102,6 +104,7 @@
 
                         <Button x:Name="AddItemButton" AutomationProperties.Name="AddItemButton" Content="Add Item" Click="AddItemButton_Click" Margin="0,0,2,0" />
                         <Button x:Name="RemoveItemButton" AutomationProperties.Name="RemoveItemButton" Content="Remove Item" Click="RemoveItemButton_Click" Margin="0,0,2,0" />
+                        <Button x:Name="ShowFooterItemButton" AutomationProperties.Name="ShowFooterItemButton" Content="Show Footer Item" Click="ShowFooterItemButton_Click" Margin="0,0,2,0" />
                         <Button x:Name="AddFooterItemButton" AutomationProperties.Name="AddFooterItemButton" Content="Add Footer Item" Click="AddFooterItemButton_Click" Margin="0,0,2,0" />
                         <Button x:Name="RemoveFooterItemButton" AutomationProperties.Name="RemoveFooterItemButton" Content="Remove Footer Item" Click="RemoveFooterItemButton_Click" Margin="0,0,2,0" />
                         <Button x:Name="ClearMenuButton" AutomationProperties.Name="ClearMenuButton" Content="Clear menu" Click="ClearMenuButton_Click" Margin="0,0,2,0" />
@@ -202,10 +205,11 @@
                     <StackPanel Orientation="Horizontal">
                         <CheckBox x:Name="SelectedItemIsEnabledCheckbox" AutomationProperties.Name="SelectedItemIsEnabledCheckbox" Content="SelectedItem IsEnabled" IsChecked="True" Checked="SelectedItemIsEnabledCheckbox_Checked" Unchecked="SelectedItemIsEnabledCheckbox_Unchecked" Margin="5"/>
                         <CheckBox x:Name="SettingsItemVisibilityCheckbox" AutomationProperties.Name="SettingsItemVisibilityCheckbox" Content="Show Settings" Checked="SettingsItemVisibilityCheckbox_Checked" Unchecked="SettingsItemVisibilityCheckbox_Unchecked" Margin="5"/>
+                        <CheckBox x:Name="IsPaneFooterVisibleCheckBox" AutomationProperties.Name="IsPaneFooterVisibleCheckBox" Content="Show PaneFooter" IsChecked="True" Checked="IsPaneFooterVisibleCheckBox_CheckedChanged" Unchecked="IsPaneFooterVisibleCheckBox_CheckedChanged" Margin="5"/>
                         <CheckBox x:Name="PaneToggleButtonVisiblityCheckbox" AutomationProperties.Name="PaneToggleButtonVisiblityCheckbox" Content="Show Hamburger Button" Checked="PaneToggleButtonVisiblityCheckbox_Checked" Unchecked="PaneToggleButtonVisiblityCheckbox_Unchecked" Margin="5"/>
                         <CheckBox x:Name="AutoSuggestCheckbox" AutomationProperties.Name="AutoSuggestCheckbox" Content="Set AutoSuggestBox" IsChecked="True" Checked="AutoSuggestCheckbox_Checked" Unchecked="AutoSuggestCheckbox_Unchecked" Margin="5"/>
                         <CheckBox x:Name="HeaderVisiblityCheckbox" AutomationProperties.Name="HeaderVisiblityCheckbox" Content="Always Show Header" Checked="HeaderVisiblityCheckbox_Checked" Unchecked="HeaderVisiblityCheckbox_Unchecked" Margin="5"/>
-                        <CheckBox x:Name="SuggestionChosenCheckbox" AutomationProperties.Name="SuggestionChosenCheckbox" Content="Qeury submitted" Margin="5"/>
+                        <CheckBox x:Name="SuggestionChosenCheckbox" AutomationProperties.Name="SuggestionChosenCheckbox" Content="Query submitted" Margin="5"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
@@ -321,22 +325,22 @@ Nullam egestas, orci sed molestie aliquet, diam ex euismod risus, ac dapibus qua
                 </StackPanel>
             </ScrollViewer>
 
-            <muxcontrols:NavigationView.AutoSuggestBox>
+            <NavigationView.AutoSuggestBox>
                 <AutoSuggestBox x:Name="PaneAutoSuggestBox" QueryIcon="Find"
                     SuggestionChosen="PaneAutoSuggestBox_SuggestionChosen"
                     AutomationProperties.Name="PaneAutoSuggestBox" TextChanged="AutoSuggestBox_TextChanged"/>
-            </muxcontrols:NavigationView.AutoSuggestBox>
+            </NavigationView.AutoSuggestBox>
 
-            <muxcontrols:NavigationView.PaneFooter>
-                <StackPanel Background="Plum">
+            <NavigationView.PaneFooter>
+                <StackPanel x:Name="PaneFooter" Background="Plum">
                     <Button x:Name="PaneFooterButton" AutomationProperties.Name="PaneFooterButton" Content="PaneFooter Button" Margin="8"/>
-                    <muxcontrols:NavigationViewItem x:Name="PaneFooterNavigationViewItem"
-                                                    AutomationProperties.Name="PaneFooterNavigationViewItem"
-                                                    Content="NVI"
-                                                    Icon="Accept"/> 
+                    <NavigationViewItem x:Name="PaneFooterNavigationViewItem"
+                        AutomationProperties.Name="PaneFooterNavigationViewItem"
+                        Content="NVI"
+                        Icon="Accept"/> 
                 </StackPanel>
-            </muxcontrols:NavigationView.PaneFooter>
-        </muxcontrols:NavigationView>
+            </NavigationView.PaneFooter>
+        </NavigationView>
     </Grid>
 
 </local:TestPage>

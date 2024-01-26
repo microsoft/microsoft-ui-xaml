@@ -41,7 +41,7 @@ private:
 
     winrt::Size m_availableSize{};
     winrt::BreadcrumbBarItem m_ellipsisButton{nullptr};
-    winrt::BreadcrumbBar m_breadcrumb{ nullptr };
+    winrt::weak_ref<winrt::BreadcrumbBar> m_breadcrumb{ nullptr };  // weak_ref because the BreadcrumbBar already points to us via m_itemsRepeaterLayout
 
     bool m_ellipsisIsRendered{};
     uint32_t m_firstRenderedItemIndexAfterEllipsis{};

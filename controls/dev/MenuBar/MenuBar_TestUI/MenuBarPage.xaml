@@ -64,7 +64,7 @@
             </muxc:MenuBar>
 
             <TextBlock Text="Custom sized menu bar" Margin="0,6,0,0"/>
-            <muxc:MenuBar x:Name="SizedMenuBar" AutomationProperties.Name="SizedMenuBar" Height="24">
+            <muxc:MenuBar x:Name="SizedMenuBar" AutomationProperties.Name="SizedMenuBar" MinHeight="24" Height="24">
                 <muxc:MenuBarItem x:Name="SizedMenuBarItem" AutomationProperties.Name="SizedMenuBarItem" Title="Size"/>
             </muxc:MenuBar>
 

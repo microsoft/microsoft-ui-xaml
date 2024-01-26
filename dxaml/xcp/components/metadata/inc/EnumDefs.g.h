@@ -723,6 +723,13 @@ namespace DirectUI
     };
     DEFINE_ENUM_FLAG_OPERATORS(DisabledFormattingAccelerators);
 
+    enum class DispatcherShutdownMode : uint8_t
+    {
+        OnLastWindowClose = 0,
+        OnExplicitShutdown = 1,
+    };
+    DEFINE_ENUM_FLAG_OPERATORS(DispatcherShutdownMode);
+
     enum class DockPosition : uint8_t
     {
         Top = 0,
@@ -1239,17 +1246,17 @@ namespace DirectUI
 
     enum class LayoutCycleDebugBreakLevel : uint8_t
     {
-        Off = 0,
-        Level1 = 1,
-        Level2 = 2,
+        None = 0,
+        Low = 1,
+        High = 2,
     };
     DEFINE_ENUM_FLAG_OPERATORS(LayoutCycleDebugBreakLevel);
 
     enum class LayoutCycleTracingLevel : uint8_t
     {
-        Off = 0,
-        Level1 = 1,
-        Level2 = 2,
+        None = 0,
+        Low = 1,
+        High = 2,
     };
     DEFINE_ENUM_FLAG_OPERATORS(LayoutCycleTracingLevel);
 

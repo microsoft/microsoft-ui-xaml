@@ -3,25 +3,8 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Target Name="TraceWPP" BeforeTargets="BeforeClCompile" Inputs="@(TraceWpp)" Outputs="@(TraceWpp -> '$(OutDir)\%(Filename).tmh')">
     <PropertyGroup>
-      <!-- Different variables are defined locally vs. in the lab.  Normally we'd want to use
-                 the SDK we got through the NuGet package, but that pack doesn't include tracewpp.exe,
-                 so we want to use the SDK installed on the machine here instead. -->
-      <TraceWPPBinPath Condition="'$(WindowsSdkToolLocation)' != ''">$(WindowsSdkToolLocation)</TraceWPPBinPath>
-      <TraceWPPBinPath Condition="'$(WPDKCONTENTROOT)' != ''">$(WPDKCONTENTROOT)\bin\</TraceWPPBinPath>
-      <!-- If neither of the above two defines exist, then we'll just use the hard-coded place where it's
-                 probably going to be. -->
-      <TraceWPPBinPath Condition="'$(TraceWPPBinPath)' == ''">$(ProgramFiles)\Windows Kits\10\bin\</TraceWPPBinPath>
-      <!-- The lab doesn't have the latest SDK installed, so in that case we'll fall back to 10.0.17763.0 as a
-                 version the lab is known to have installed. Local builds should pick up tracewpp.exe from the top path. -->
-      <ExecutableFromSdk>$(TraceWPPBinPath)$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\tracewpp.exe</ExecutableFromSdk>
-      <ExecutableFromInstall>$(TraceWPPBinPath)10.0.17763.0\$(PreferredToolArchitecture)\tracewpp.exe</ExecutableFromInstall>
-      <Executable Condition="Exists('$(ExecutableFromSdk)')">$(ExecutableFromSdk)</Executable>
-      <Executable Condition="!Exists('$(ExecutableFromSdk)')">$(ExecutableFromInstall)</Executable>
-
-      <!-- If all else fails fall back to a private copy of tracewpp -->
-      <Executable Condition="!Exists('$(Executable)')">$(ExternalDependenciesPath)\min\tracewpp.exe</Executable>
+      <TraceWppExeFullPath>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\c\bin\$(WindowsTargetPlatformVersion)\$(WindowsSDKBuildToolsArchFolder)\tracewpp.exe</TraceWppExeFullPath>
     </PropertyGroup>
-
-    <Exec Command="&quot;$(Executable)&quot; -cfgdir:$(TraceWPPIncludePath) -func:%(TraceWPP.Function) -odir:$(OutDir) -p:%(TraceWPP.ModuleName) -q %(TraceWPP.Identity)" />
+    <Exec Command="&quot;$(TraceWppExeFullPath)&quot; -cfgdir:$(TraceWPPIncludePath) -func:%(TraceWPP.Function) -odir:$(OutDir) -p:%(TraceWPP.ModuleName) -q %(TraceWPP.Identity)" />
   </Target>
 </Project>

@@ -3,17 +3,19 @@
 
 #pragma once
 
-class NavigationViewItemRevokers : public winrt::implements<NavigationViewItemRevokers, winrt::IInspectable>
+class NavigationViewItemBaseRevokers : public winrt::implements<NavigationViewItemBaseRevokers, winrt::IInspectable>
 {
 public:
     winrt::UIElement::KeyDown_revoker keyDownRevoker{};
     winrt::UIElement::GotFocus_revoker gotFocusRevoker{};
     PropertyChanged_revoker isSelectedRevoker{};
     PropertyChanged_revoker isExpandedRevoker{};
+    PropertyChanged_revoker visibilityRevoker{};
 
     void RevokeAll() {
         if (keyDownRevoker) keyDownRevoker.revoke();
         if (gotFocusRevoker) gotFocusRevoker.revoke();
+        if (visibilityRevoker) visibilityRevoker.revoke();
         if (isSelectedRevoker) isSelectedRevoker.revoke();
         if (isExpandedRevoker) isExpandedRevoker.revoke();
     }

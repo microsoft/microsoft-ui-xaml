@@ -4,7 +4,7 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
           created a backup copy.  Incorrect changes to this file will make it
           impossible to load or build your projects from the command-line or the IDE.
 
-Copyright (c) Microsoft Corporation. 
+Copyright (c) Microsoft Corporation.
 Licensed under the MIT License. See LICENSE in the project root for license information.
 ***********************************************************************************************
 -->
@@ -140,7 +140,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
 
         <!-- $(PrepareResourcesDependsOn) is used only for the Managed build.
             See Microsoft.Windows.UI.Xaml.Cpp.Targets for Native build rules -->
-        
+
         <!-- .NET SDK sets the implicit DEFINE constants at a different point during the build
              compared to the pre-SDK style project system. As such, we need to ensure that the
              constants have already been set; this can be done by depending on the .NET SDK's
@@ -185,9 +185,9 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <XamlCompilerExePath>$(_MuxPackageToolsFolder)..\net472\XamlCompiler.exe</XamlCompilerExePath>
     </PropertyGroup>
 
-    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.CompileXaml"                  AssemblyFile="$(XamlCompilerTaskPath)" />
-    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.AddDefaultXamlLinkMetadata"   AssemblyFile="$(XamlCompilerTaskPath)" />
-    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.GetXamlCppIncludeDirectories" AssemblyFile="$(XamlCompilerTaskPath)" />
+    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.CompileXaml"                  AssemblyFile="$(XamlCompilerTaskPath)" Override="true" />
+    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.AddDefaultXamlLinkMetadata"   AssemblyFile="$(XamlCompilerTaskPath)" Override="true" />
+    <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.Tasks.GetXamlCppIncludeDirectories" AssemblyFile="$(XamlCompilerTaskPath)" Override="true" />
 
     <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.IO.InputSerializer"       AssemblyFile="$(XamlCompilerJsonTaskPath)" />
     <UsingTask TaskName="Microsoft.UI.Xaml.Markup.Compiler.IO.OutputDeserializer"       AssemblyFile="$(XamlCompilerJsonTaskPath)" />

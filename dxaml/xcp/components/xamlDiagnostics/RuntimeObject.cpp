@@ -19,6 +19,7 @@
 #include "RuntimeObjectCache.h"
 #include "DOPointerCast.h"
 
+
 namespace Diagnostics
 {
     wrl::ComPtr<IInspectable> GetIdentity(_In_ IInspectable* backingObject, InstanceHandle& identityHandle)
@@ -302,6 +303,12 @@ namespace Diagnostics
         return !IsNull() && SUCCEEDED(GetBackingObject().As(&xamlSource));
     }
 
+    bool RuntimeObject::IsXamlIsland() const
+    {
+        wrl::ComPtr<xaml::IXamlIsland> xamlSource;
+        return !IsNull() && SUCCEEDED(GetBackingObject().As(&xamlSource));
+    }
+
     bool RuntimeObject::IsValueType() const
     {
         wrl::ComPtr<wf::IPropertyValue> propValue;
@@ -471,7 +478,7 @@ namespace Diagnostics
         else if (XamlDiagnosticsHelpers::is<xaml::IUIElement>(fixedBackingObject.Get()) ||
                  XamlDiagnosticsHelpers::is<xaml::IWindow>(fixedBackingObject.Get()) ||
                  XamlDiagnosticsHelpers::is<xaml_hosting::IDesktopWindowXamlSource>(fixedBackingObject.Get()) ||
-                 XamlDiagnosticsHelpers::is<wuwm::IAppWindow>(fixedBackingObject.Get()))
+                 XamlDiagnosticsHelpers::is<xaml::IXamlIsland>(fixedBackingObject.Get()))
         {
             result = std::shared_ptr<RuntimeElement>(new RuntimeElement());
         }

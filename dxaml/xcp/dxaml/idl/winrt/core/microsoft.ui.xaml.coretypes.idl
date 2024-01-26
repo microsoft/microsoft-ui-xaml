@@ -55,6 +55,15 @@ namespace Windows.UI.Text
 namespace Microsoft.UI.Xaml
 {
 
+    [contract(Microsoft.UI.Xaml.WinUIContract, 6)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    enum DispatcherShutdownMode
+    {
+        OnLastWindowClose,
+        OnExplicitShutdown,
+    };
+
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     enum DurationType
@@ -1293,6 +1302,7 @@ namespace Microsoft.UI.Xaml
 {
     declare
     {
+        interface Windows.Foundation.IReference<Microsoft.UI.Xaml.DispatcherShutdownMode>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.DurationType>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.ElementHighContrastAdjustment>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.ElementSoundKind>;
@@ -1905,6 +1915,7 @@ namespace Microsoft.UI.Xaml
         [method_name("CreateInstance")] XamlIsland();
         Microsoft.UI.Xaml.UIElement Content;
         Microsoft.UI.Content.ContentIsland ContentIsland{ get; };
+        Microsoft.UI.Xaml.Media.SystemBackdrop SystemBackdrop;
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
@@ -5235,6 +5246,17 @@ namespace Microsoft.UI.Xaml.Media.Media3D
         : Microsoft.UI.Xaml.DependencyObject
     {
         [method_name("CreateInstance")] protected Transform3D();
+    };
+
+}
+namespace Microsoft.UI.Xaml.Hosting
+{
+    [contract(Microsoft.UI.Xaml.WinUIContract, 6)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    runtimeclass XamlShutdownCompletedOnThreadEventArgs
+    {
+        Windows.Foundation.Deferral GetDispatcherQueueDeferral();
     };
 
 }

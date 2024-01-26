@@ -730,13 +730,6 @@ _Check_return_ HRESULT
 Page::CalculateUpdatedBounds(
     _Inout_ wf::Rect* pArrangedBounds)
 {
-    Window* currentWindow = nullptr;
-
-    if (FAILED(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, &currentWindow)) || !currentWindow)
-    {
-        return S_FALSE;
-    }
-
     auto dxamlCore = DXamlCore::GetCurrent();
 
     wf::Rect currentWindowBounds;

@@ -19,7 +19,8 @@ namespace DirectUI
 
         // ICommandBarLabeledElement implementation
         _Check_return_ HRESULT SetDefaultLabelPositionImpl(_In_ xaml_controls::CommandBarDefaultLabelPosition defaultLabelPosition);
-        _Check_return_ HRESULT GetHasBottomLabelImpl(_Out_ BOOLEAN *hasBottomLabel);
+        _Check_return_ HRESULT GetHasBottomLabelImpl(_Out_ BOOLEAN* hasBottomLabel);
+        _Check_return_ HRESULT GetHasRightLabelImpl(_Out_ BOOLEAN * hasRightLabel);
 
         // ICommanBarElement2 implementation
         _Check_return_ HRESULT get_IsInOverflowImpl(_Out_ BOOLEAN* pValue);
@@ -53,7 +54,8 @@ namespace DirectUI
         _Check_return_ HRESULT OnCommandChanged(_In_  IInspectable* pOldValue, _In_ IInspectable* pNewValue) override;
         
     private:
-        _Check_return_ HRESULT GetEffectiveLabelPosition(_Out_ xaml_controls::CommandBarDefaultLabelPosition *effectiveLabelPosition);
+        _Check_return_ HRESULT GetHasLabelAtPosition(_In_ xaml_controls::CommandBarDefaultLabelPosition labelPosition, _Out_ BOOLEAN* hasLabelAtPosition);
+        _Check_return_ HRESULT GetEffectiveLabelPosition(_Out_ xaml_controls::CommandBarDefaultLabelPosition* effectiveLabelPosition);
         _Check_return_ HRESULT UpdateInternalStyles();
 
         _Check_return_ HRESULT CreateStoryboardForWidthAdjustmentsForLabelOnRightStyle(

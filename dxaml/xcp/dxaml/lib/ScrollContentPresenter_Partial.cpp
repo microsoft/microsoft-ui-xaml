@@ -6144,7 +6144,7 @@ void ScrollContentPresenter::StoreLayoutCycleWarningContext(
 
     scrollContentPresenterAsCUIElement->StoreLayoutCycleWarningContext(warningInfo, nullptr /*layoutManager*/, DEFAULT_WARNING_FRAMES_TO_SKIP + 1);
 
-    if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Level1))
+    if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Low))
     {
         __debugbreak();
     }

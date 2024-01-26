@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup>
@@ -62,5 +62,7 @@
     <Import Project="$(MSBuildThisFileDirectory)dev\WebView2\WebView2.vcxitems" Label="Shared" Condition="($(FeatureWebView2Enabled) == 'true' Or $(FeatureWebView2Enabled) == 'productOnly')" />
     <Import Project="$(MSBuildThisFileDirectory)dev\ItemContainer\ItemContainer.vcxitems" Label="Shared" Condition="$(FeatureItemContainerEnabled) == 'true' Or $(FeatureItemContainerEnabled) == 'productOnly'" />
     <Import Project="$(MSBuildThisFileDirectory)dev\AnnotatedScrollBar\AnnotatedScrollBar.vcxitems" Label="Shared" Condition="$(FeatureAnnotatedScrollBarEnabled) == 'true' Or $(FeatureAnnotatedScrollBarEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\MapControl\MapControl.vcxitems" Label="Shared" Condition="$(FeatureMapControlEnabled) == 'true' Or $(FeatureMapControlEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\SelectorBar\SelectorBar.vcxitems" Label="Shared" Condition="$(FeatureSelectorBarEnabled) == 'true' Or $(FeatureSelectorBarEnabled) == 'productOnly'" />
   </ImportGroup>
 </Project>

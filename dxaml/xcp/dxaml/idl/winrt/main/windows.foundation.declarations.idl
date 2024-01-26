@@ -1,0 +1,32 @@
+// Starting with Windows SDK 19041, Windows.Foundation.h is no longer generated  
+// with midl.exe but with abi.exe, which omits generic specializations from idl
+// declarations, such as for IReference<BYTE>. As a workaround, this file provides
+// the needed declarations, in the form of dummy interface method params. 
+// We can't just re-declare the interfaces in namespace Windows.Foundation, 
+// since this causes duplicate declaration errors with Windows.Foundation.idl.
+
+import "inspectable.idl";
+import "AsyncInfo.idl";
+import "windows.foundation.idl";
+import "windows.foundation.numerics.idl";
+
+namespace XamlPrivateDeclarations
+{
+    interface IFoundationDeclarationsUnused
+    {
+        void _Unused(
+            Windows.Foundation.IAsyncOperation<INT32> _AsyncOpInt32,
+            Windows.Foundation.IAsyncOperation<Windows.Foundation.IReference<Windows.Foundation.DateTime>*> _AsyncOpRefDateTime,
+            Windows.Foundation.IAsyncOperation<Windows.Foundation.IReference<Windows.Foundation.TimeSpan>*> _AsyncOpRefTimeSpan,
+            Windows.Foundation.IReference<BYTE> _RefByte,
+            Windows.Foundation.IReference<GUID> _RefGuid,
+            Windows.Foundation.IReference<INT64> _RefInt64,
+            Windows.Foundation.IReference<UINT64> _RefUInt64,
+            Windows.Foundation.IReference<Windows.Foundation.Numerics.Matrix4x4> _Ref4x4,
+            Windows.Foundation.IReference<Windows.Foundation.Numerics.Quaternion> _RefQuat,
+            Windows.Foundation.IReference<Windows.Foundation.Size> _RefSize,
+            Windows.Foundation.Collections.IVectorView<INT32> _VecViewInt32,
+            Windows.Foundation.Collections.IVectorView<UINT32> _VecViewUInt32
+        );
+    };
+}

@@ -12,12 +12,12 @@
   <PropertyGroup>
     <TargetFramework>$(DotNetCoreTargetFrameworkMoniker)</TargetFramework>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
-	<RuntimeIdentifier Condition="'$(Platform)' == 'x86' or '$(Platform)' == 'Win32'">win-x86</RuntimeIdentifier>
-	<RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
-	<RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
-	<SelfContained>true</SelfContained>
-	<PublishSingleFile>False</PublishSingleFile>
-	<PublishReadyToRun>True</PublishReadyToRun>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x86' or '$(Platform)' == 'Win32'">win-x86</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>False</PublishSingleFile>
+    <PublishReadyToRun>True</PublishReadyToRun>
     <RunSettingsFilePath>$(OutDir)$(MSBuildProjectName).runsettings</RunSettingsFilePath>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -35,11 +35,10 @@
     -->
     <PackageReference Include="Microsoft.Windows.SDK.NET.Ref" Version="10.0.18362.17" GeneratePathProperty="true">
       <NoWarn>
-        NU1701; <!-- Package 'x' was restored using 'y' instead of the project target framework 'z'. This package may not be fully compatible with your project. -->
-      </NoWarn>
+        NU1701; <!-- Package 'x' was restored using 'y' instead of the project target framework 'z'. This package may not be fully compatible with your project. --></NoWarn>
       <ExcludeAssets>all</ExcludeAssets>
     </PackageReference>
-	<PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestNetSdkVersion)" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestNetSdkVersion)" />
     <PackageReference Include="Axe.Windows" Version="1.1.7" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181205002" />
@@ -116,6 +115,8 @@
   <Import Project="..\..\dev\WebView2\InteractionTests\WebView2_InteractionTests.projitems" Label="Shared" Condition="$(FeatureWebView2Enabled) == 'true'" />
   <Import Project="..\..\dev\ItemContainer\InteractionTests\ItemContainer_InteractionTests.projitems" Label="Shared" Condition="$(FeatureItemContainerEnabled) == 'true'" />
   <Import Project="..\..\dev\AnnotatedScrollBar\InteractionTests\AnnotatedScrollBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureAnnotatedScrollBarEnabled) == 'true'" />
+  <Import Project="..\..\dev\MapControl\InteractionTests\MapControl_InteractionTests.projitems" Label="Shared" Condition="$(FeatureMapControlEnabled) == 'true'" />
+  <Import Project="..\..\dev\SelectorBar\InteractionTests\SelectorBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureSelectorBarEnabled) == 'true'" />
   <PropertyGroup>
     <TargetDestination>$(TestBinplaceDestinationPath)</TargetDestination>
   </PropertyGroup>
@@ -146,7 +147,7 @@
     <Copy
         SourceFiles="@(RuntimePackAsset)"
         DestinationFiles="@(RuntimePackAsset->'$(OutDir)localDotNet\%(Filename)%(Extension)')"
-        SkipUnchangedFiles="true" />
+        SkipUnchangedFiles="true" />  
   </Target>
 
   <Target Name="GenerateRunSettings" BeforeTargets="Build" Outputs="$(RunSettingsFilePath)">
@@ -160,6 +161,6 @@
     <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="%3C/RunSettings%3E" />
     <ItemGroup>
       <FileWrites Include="$(RunSettingsFilePath)" />
-	</ItemGroup>
+    </ItemGroup>
   </Target>
 </Project>

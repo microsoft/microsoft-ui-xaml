@@ -60,6 +60,7 @@ AppBar::AppBar()
     , m_isChangingOpenedState(false)
     , m_hasUpdatedTemplateSettings(false)
     , m_hasExpandButtonCustomAutomationName(false)
+    , m_minCompactHeight(0.0)
     , m_compactHeight(0.0)
     , m_minimalHeight(0.0)
     , m_openedWithExpandButton(false)
@@ -399,7 +400,11 @@ AppBar::OnApplyTemplate()
             IFCPTR_RETURN(boxedResource);
 
             auto doubleReference = ctl::query_interface_cast<wf::IReference<double>>(boxedResource.Get());
-            IFC_RETURN(doubleReference->get_Value(&m_compactHeight));
+            double compactHeight{};
+
+            IFC_RETURN(doubleReference->get_Value(&compactHeight));
+            SetCompactHeight(compactHeight);
+            SetMinCompactHeight(compactHeight);
         }
 
         IFC_RETURN(PropertyValue::CreateFromString(wrl_wrappers::HStringReference(L"AppBarThemeMinimalHeight").Get(), &boxedResourceKey));
@@ -411,7 +416,10 @@ AppBar::OnApplyTemplate()
             IFCPTR_RETURN(boxedResource);
 
             auto doubleReference = ctl::query_interface_cast<wf::IReference<double>>(boxedResource.Get());
-            IFC_RETURN(doubleReference->get_Value(&m_minimalHeight));
+            double minimalHeight{};
+
+            IFC_RETURN(doubleReference->get_Value(&minimalHeight));
+            SetMinimalHeight(minimalHeight);
         }
     }
 
@@ -477,17 +485,51 @@ AppBar::MeasureOverride(_In_ wf::Size availableSize, _Out_ wf::Size* returnValue
     switch (closedDisplayMode)
     {
         case xaml_controls::AppBarClosedDisplayMode_Compact:
-            returnValue->Height = static_cast<float>(m_compactHeight);
-            break;
+        {
+            const double oldCompactHeight = GetCompactHeight();
 
+            bool hasRightLabelDynamicPrimaryCommand{};
+            bool hasNonLabeledDynamicPrimaryCommand{};
+
+            IFC_RETURN(HasRightLabelDynamicPrimaryCommand(&hasRightLabelDynamicPrimaryCommand));
+            IFC_RETURN(HasNonLabeledDynamicPrimaryCommand(&hasNonLabeledDynamicPrimaryCommand));
+
+            if (hasRightLabelDynamicPrimaryCommand || hasNonLabeledDynamicPrimaryCommand)
+            {
+                BOOLEAN isOpen{};
+
+                IFC_RETURN(get_IsOpen(&isOpen));
+                if (!isOpen)
+                {
+                    SetCompactHeight(std::max(GetMinCompactHeight(), static_cast<double>(returnValue->Height)));
+                }
+            }
+            else
+            {
+                SetCompactHeight(GetMinCompactHeight());
+            }
+
+            const double newCompactHeight = GetCompactHeight();
+
+            if (oldCompactHeight != newCompactHeight)
+            {
+                IFC_RETURN(UpdateTemplateSettings());
+            }
+
+            returnValue->Height = static_cast<float>(newCompactHeight);
+            break;
+        }
         case xaml_controls::AppBarClosedDisplayMode_Minimal:
-            returnValue->Height = static_cast<float>(m_minimalHeight);
+        {
+            returnValue->Height = static_cast<float>(GetMinimalHeight());
             break;
-
+        }
         default:
         case xaml_controls::AppBarClosedDisplayMode_Hidden:
+        {
             returnValue->Height = 0.f;
             break;
+        }
     }
 
     return S_OK;
@@ -1288,15 +1330,15 @@ AppBar::UpdateTemplateSettings()
     double actualWidth = 0.0;
     IFC_RETURN(get_ActualWidth(&actualWidth));
 
-    double contentHeight = GetContentHeight();
+    const double contentHeight = GetContentHeight();
 
     IFC_RETURN(templateSettings.Cast<AppBarTemplateSettings>()->put_ClipRect({ 0, 0, static_cast<float>(actualWidth), static_cast<float>(contentHeight) }));
 
-    double compactVerticalDelta = m_compactHeight - contentHeight;
+    const double compactVerticalDelta = GetCompactHeight() - contentHeight;
     IFC_RETURN(templateSettings.Cast<AppBarTemplateSettings>()->put_CompactVerticalDelta(compactVerticalDelta));
     IFC_RETURN(templateSettings.Cast<AppBarTemplateSettings>()->put_NegativeCompactVerticalDelta(-compactVerticalDelta));
 
-    double minimalVerticalDelta = m_minimalHeight - contentHeight;
+    const double minimalVerticalDelta = GetMinimalHeight() - contentHeight;
     IFC_RETURN(templateSettings.Cast<AppBarTemplateSettings>()->put_MinimalVerticalDelta(minimalVerticalDelta));
     IFC_RETURN(templateSettings.Cast<AppBarTemplateSettings>()->put_NegativeMinimalVerticalDelta(-minimalVerticalDelta));
 
@@ -1332,7 +1374,7 @@ AppBar::UpdateTemplateSettings()
 }
 
 _Check_return_ HRESULT
-AppBar::GetShouldOpenUp(bool* shouldOpenUp)
+AppBar::GetShouldOpenUp(_Out_ bool* shouldOpenUp)
 {
     // Bottom appbars always open up.  All other appbars by default open down
     *shouldOpenUp = (m_Mode == AppBarMode_Bottom);
@@ -1347,6 +1389,24 @@ AppBar::GetShouldOpenUp(bool* shouldOpenUp)
         // Since we open down by default, we'll open up only if we *don't* have space in the down direction.
         *shouldOpenUp = !hasSpaceToOpenDown;
     }
+
+    return S_OK;
+}
+
+// Virtual method is overwritten by CommandBar sub-class.
+_Check_return_ HRESULT 
+AppBar::HasRightLabelDynamicPrimaryCommand(_Out_ bool* hasRightLabelDynamicPrimaryCommand)
+{
+    *hasRightLabelDynamicPrimaryCommand = false;
+
+    return S_OK;
+}
+
+// Virtual method is overwritten by CommandBar sub-class.
+_Check_return_ HRESULT
+AppBar::HasNonLabeledDynamicPrimaryCommand(_Out_ bool* hasNonLabeledDynamicPrimaryCommand)
+{
+    *hasNonLabeledDynamicPrimaryCommand = false;
 
     return S_OK;
 }
@@ -1489,16 +1549,20 @@ AppBar::RestoreSavedFocusImpl(_In_opt_ DependencyObject* savedFocusedElement, xa
 _Check_return_ HRESULT
 AppBar::RefreshContentHeight(_Out_opt_ bool *didChange)
 {
-    double oldHeight = m_contentHeight;
+    double oldHeight = GetContentHeight();
 
     if (m_tpContentRoot)
     {
-        IFC_RETURN(m_tpContentRoot.Cast<FrameworkElement>()->get_ActualHeight(&m_contentHeight));
+        double newHeight{};
+
+        IFC_RETURN(m_tpContentRoot.Cast<FrameworkElement>()->get_ActualHeight(&newHeight));
+
+        SetContentHeight(newHeight);
     }
 
     if (didChange != nullptr)
     {
-        *didChange = (oldHeight != m_contentHeight);
+        *didChange = (oldHeight != GetContentHeight());
     }
 
     return S_OK;

@@ -27,6 +27,7 @@
 #include "AutomationEventsHelper.h"
 #include <fwd/windows.foundation.h>
 #include "xcpmath.h"
+#include <Microsoft.UI.Input.Partner.h>
 
 #undef GetFirstChild
 
@@ -2053,12 +2054,12 @@ public:
         return m_fIsDirectManipulationContainer;
     }
 
-    // The DirectManipulationManager for a DMContainer can only occur after GetElementInputWindow returns a valid
-    // HWND since it is being used for DManip's initialization.
+    // The DirectManipulationManager for a DMContainer can only occur after GetElementIslandInputSite returns a valid
+    // IslandInputSite since it is being used for DManip's initialization.
     bool CanDMContainerInitialize()
     {
-        HWND hWnd = GetElementInputWindow();
-        return hWnd != nullptr && hWnd != INVALID_HANDLE_VALUE;
+        wrl::ComPtr<ixp::IIslandInputSitePartner> islandInputSite = GetElementIslandInputSite();
+        return (nullptr != islandInputSite);
     }
 
 public:

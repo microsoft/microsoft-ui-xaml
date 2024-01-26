@@ -14,6 +14,7 @@
     <DefineConstants>$(DefineConstants);USE_CLR_V4;NET40PLUS;Debug;SYSTEM_XAML</DefineConstants>
     <ProjectGuid>{CF0F4BDA-9030-4749-9102-7739049412F5}</ProjectGuid>
     <SystemXamlPathRoot>BuildTasks\System.Xaml</SystemXamlPathRoot>
+    <TargetDestination>$(MarkupCompilerDestinationPath)\$(TargetFramework)</TargetDestination>
     <EnableDefaultItems>false</EnableDefaultItems>
     <SymbolsBinDir>$(ProductSymbolsBinplacePath)\$(TargetFramework)</SymbolsBinDir>
     <!-- Avoid duplication of attributes already handled by .\BuildTasks\Properties\AssemblyInfo.cs -->

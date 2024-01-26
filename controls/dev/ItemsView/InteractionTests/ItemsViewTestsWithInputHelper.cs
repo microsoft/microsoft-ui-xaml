@@ -27,6 +27,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        [TestProperty("IsolationLevel", "Method")]
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext);
@@ -761,8 +762,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     Button btnClearLogs = new Button(FindElement.ById("btnClearLogs"));
                     Verify.IsNotNull(btnClearLogs, "Verifying that btnClearLogs was found");
 
-                    Log.Comment("Clicking center of btnClearLogs.");
-                    btnClearLogs.Click();
+                    Log.Comment("Invoke btnClearLogs.");
+                    btnClearLogs.Invoke();
                     Wait.ForIdle();
 
                     LogAndClearTraces();
@@ -1516,8 +1517,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     Button btnClearLogs = new Button(FindElement.ById("btnClearLogs"));
                     Verify.IsNotNull(btnClearLogs, "Verifying that btnClearLogs was found");
 
-                    Log.Comment("Clicking center of btnClearLogs.");
-                    btnClearLogs.Click();
+                    Log.Comment("Invoking btnClearLogs.");
+                    btnClearLogs.Invoke();
                     Wait.ForIdle();
 
                     LogAndClearTraces();
@@ -2647,18 +2648,35 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             if (getScrollViewView == true)
             {
-                double horizontalOffset;
-                double verticalOffset;
-                float zoomFactor;
+                int attempts = 0;
+                double verticalOffsetDelta = 0.0;
+                bool verticalOffsetDeltaTooLarge = false;
 
-                GetScrollViewView(out horizontalOffset, out verticalOffset, out zoomFactor);
-                Log.Comment("horizontalOffset={0}", horizontalOffset);
-                Log.Comment("verticalOffset={0}", verticalOffset);
-                Log.Comment("zoomFactor={0}", zoomFactor);
+                do
+                {
+                    Wait.ForIdle();
+
+                    double horizontalOffset;
+                    double verticalOffset;
+                    float zoomFactor;
+
+                    GetScrollViewView(out horizontalOffset, out verticalOffset, out zoomFactor);
+                    Log.Comment("horizontalOffset={0}", horizontalOffset);
+                    Log.Comment("verticalOffset={0}", verticalOffset);
+                    Log.Comment("zoomFactor={0}", zoomFactor);
+
+                    if (expectedVerticalOffset != null)
+                    {
+                        attempts++;
+                        verticalOffsetDelta = Math.Abs((double)expectedVerticalOffset - verticalOffset);
+                        verticalOffsetDeltaTooLarge = verticalOffsetDelta > 0.5;
+                    }
+                }
+                while (verticalOffsetDeltaTooLarge && attempts <= 3);
 
                 if (expectedVerticalOffset != null)
                 {
-                    Verify.IsLessThanOrEqual(Math.Abs((double)expectedVerticalOffset - verticalOffset), 0.5, "Verifying verticalOffset is close to " + expectedVerticalOffset);
+                    Verify.IsLessThanOrEqual(verticalOffsetDelta, 0.5, "Verifying verticalOffset is close to " + expectedVerticalOffset);
                 }
             }
         }

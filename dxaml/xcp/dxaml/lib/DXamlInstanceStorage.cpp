@@ -54,18 +54,20 @@ namespace DXamlInstanceStorage
 
     _Check_return_ HRESULT GetValue(_Outptr_result_maybenull_ Handle* phValue)
     {
-        HRESULT hr = S_OK;
-
-        IFCEXPECT(TLS_UNINITIALIZED != g_dwTlsIndex);
+        if (TLS_UNINITIALIZED == g_dwTlsIndex)
+        {
+            // It's not an error if the TLS slot isn't set up, it just means there's no DXamlCore on the thread.
+            *phValue = nullptr;
+            return S_OK;
+        }
 
         *phValue = TlsGetValue(g_dwTlsIndex);
-        if (NULL == *phValue && ERROR_SUCCESS != GetLastError())
+        if (nullptr == *phValue && ERROR_SUCCESS != GetLastError())
         {
-            IFC(E_FAIL);
+            IFC_RETURN(E_FAIL);
         }
     
-    Cleanup:
-        RRETURN(hr);
+        return S_OK;
     }
 
     _Check_return_ HRESULT SetValue(_In_opt_ Handle hValue)

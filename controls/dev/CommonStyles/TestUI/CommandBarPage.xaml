@@ -8,32 +8,29 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-
-    <Page.Resources />
-
     <Page.TopAppBar>
         <CommandBar x:Name="TopCmdBar" AutomationProperties.Name="TopCmdBar">
             <AppBarButton Label="AppBar" Style="{StaticResource AppBarButtonRevealStyle}" Icon="Like" FontSize="20"/>
-            <AppBarToggleButton Label="Toggle" Style="{StaticResource AppBarToggleButtonRevealStyle}">
+            <AppBarToggleButton Label="ToggleA" Style="{StaticResource AppBarToggleButtonRevealStyle}">
                 <AppBarToggleButton.Icon>
                     <FontIcon FontSize="16" Glyph="&#x03A3;" FontFamily="Candara" />
                 </AppBarToggleButton.Icon>
             </AppBarToggleButton>
             <AppBarButton Label="AppBar" Style="{StaticResource AppBarButtonRevealStyle}" Icon="Like" FontSize="20" VerticalAlignment="Top" />
-            <AppBarToggleButton Label="Toggle" Style="{StaticResource AppBarToggleButtonRevealStyle}" VerticalAlignment="Top" Margin="0,0,50,0">
+            <AppBarToggleButton Label="ToggleB" Style="{StaticResource AppBarToggleButtonRevealStyle}" VerticalAlignment="Top" Margin="0,0,50,0">
                 <AppBarToggleButton.Icon>
                     <FontIcon FontSize="16" Glyph="&#x03A3;" FontFamily="Candara" />
                 </AppBarToggleButton.Icon>
             </AppBarToggleButton>
 
             <AppBarButton Content="AppBar" Icon="Like" FontSize="20" />
-            <AppBarToggleButton Content="Toggle" IsThreeState="True">
+            <AppBarToggleButton Content="ToggleC" IsThreeState="True">
                 <AppBarToggleButton.Icon>
                     <FontIcon FontSize="16" Glyph="&#x03A3;" FontFamily="Candara" />
                 </AppBarToggleButton.Icon>
             </AppBarToggleButton>
             <AppBarButton Content="AppBar" Icon="Like" FontSize="20" VerticalAlignment="Top" />
-            <AppBarToggleButton Content="Toggle" IsThreeState="True" VerticalAlignment="Top" >
+            <AppBarToggleButton Content="ToggleD" IsThreeState="True" VerticalAlignment="Top" >
                 <AppBarToggleButton.Icon>
                     <FontIcon FontSize="16" Glyph="&#x03A3;" FontFamily="Candara" />
                 </AppBarToggleButton.Icon>
@@ -44,26 +41,26 @@
     <Page.BottomAppBar>
         <CommandBar x:Name="BottomCmdBar" AutomationProperties.Name="BottomCmdBar">
             <AppBarButton Label="AppBar" Style="{StaticResource AppBarButtonRevealStyle}" Icon="Like" FontSize="20"/>
-            <AppBarToggleButton Label="Toggle" Style="{StaticResource AppBarToggleButtonRevealStyle}">
+            <AppBarToggleButton Label="ToggleE" Style="{StaticResource AppBarToggleButtonRevealStyle}">
                 <AppBarToggleButton.Icon>
                     <FontIcon FontSize="16" Glyph="&#x03A3;" FontFamily="Candara" />
                 </AppBarToggleButton.Icon>
             </AppBarToggleButton>
             <AppBarButton Label="AppBar" Style="{StaticResource AppBarButtonRevealStyle}" Icon="Like" FontSize="20" VerticalAlignment="Top" />
-            <AppBarToggleButton Label="Toggle" Style="{StaticResource AppBarToggleButtonRevealStyle}" VerticalAlignment="Top" Margin="0,0,50,0">
+            <AppBarToggleButton Label="ToggleF" Style="{StaticResource AppBarToggleButtonRevealStyle}" VerticalAlignment="Top" Margin="0,0,50,0">
                 <AppBarToggleButton.Icon>
                     <FontIcon FontSize="16" Glyph="&#x03A3;" FontFamily="Candara" />
                 </AppBarToggleButton.Icon>
             </AppBarToggleButton>
 
             <AppBarButton Content="AppBar" Icon="Like" FontSize="20" />
-            <AppBarToggleButton Content="Toggle" IsThreeState="True">
+            <AppBarToggleButton Content="ToggleG" IsThreeState="True">
                 <AppBarToggleButton.Icon>
                     <FontIcon FontSize="16" Glyph="&#x03A3;" FontFamily="Candara" />
                 </AppBarToggleButton.Icon>
             </AppBarToggleButton>
             <AppBarButton Content="AppBar" Icon="Like" FontSize="20" VerticalAlignment="Top" />
-            <AppBarToggleButton Content="Toggle" IsThreeState="True" VerticalAlignment="Top" >
+            <AppBarToggleButton Content="ToggleH" IsThreeState="True" VerticalAlignment="Top" >
                 <AppBarToggleButton.Icon>
                     <FontIcon FontSize="16" Glyph="&#x03A3;" FontFamily="Candara" />
                 </AppBarToggleButton.Icon>
@@ -80,24 +77,25 @@
                 <GradientStop Offset="0.332" Color="DarkOrange" />
                 <GradientStop Offset="0.333" Color="Goldenrod" />
                 <GradientStop Offset="0.499" Color="Goldenrod" />
-                <GradientStop Offset="0.500" Color="SeaGreen" />
-                <GradientStop Offset="0.666" Color="SeaGreen" />
-                <GradientStop Offset="0.667" Color="MediumBlue" />
-                <GradientStop Offset="0.832" Color="MediumBlue" />
-                <GradientStop Offset="0.833" Color="Indigo" />
-                <GradientStop Offset="1.000" Color="Indigo" />
+                <GradientStop Offset="0.500" Color="LightGreen" />
+                <GradientStop Offset="0.666" Color="LightGreen" />
+                <GradientStop Offset="0.667" Color="Cyan" />
+                <GradientStop Offset="0.832" Color="Cyan" />
+                <GradientStop Offset="0.833" Color="Violet" />
+                <GradientStop Offset="1.000" Color="Violet" />
             </LinearGradientBrush>
         </Grid.Background>
+        
         <StackPanel Orientation="Vertical">
 
             <CommandBar>
-                <AppBarButton Icon="Add" Label="Add" />
-                <AppBarButton Icon="Remove" Label="Remove" />
+                <AppBarButton Icon="Add" Label="AddA" />
+                <AppBarButton Icon="Remove" Label="RemoveA" />
                 <AppBarSeparator />
-                <AppBarButton Icon="Save" Label="Save" />
-                <AppBarToggleButton Icon="Add" Label="Toggle" />
+                <AppBarButton Icon="Save" Label="SaveA" />
+                <AppBarToggleButton Icon="Add" Label="ToggleI" />
                 <AppBarElementContainer IsTabStop="False">
-                    <controls:SplitButton Content="Split">
+                    <controls:SplitButton Content="SplitA">
                         <controls:SplitButton.Flyout>
                             <MenuFlyout Placement="Bottom">
                                 <MenuFlyoutItem Text="Do Something" />
@@ -108,34 +106,34 @@
                     </controls:SplitButton>
                 </AppBarElementContainer>
                 <AppBarElementContainer IsTabStop="False">
-                    <controls:ToggleSplitButton Content="Toggle" />
+                    <controls:ToggleSplitButton Content="ToggleJ" />
                 </AppBarElementContainer>
             </CommandBar>
 
             <CommandBar>
-                <AppBarButton Icon="Add" Label="Add" />
+                <AppBarButton Icon="Add" Label="AddB" />
                 <AppBarButton
                     Icon="Remove"
-                    Label="Remove"
+                    Label="RemoveB"
                     LabelPosition="Collapsed" />
                 <AppBarSeparator />
-                <AppBarButton Icon="Save" Label="Save And Quit" />
-                <AppBarToggleButton Icon="Add" Label="Toggle" />
+                <AppBarButton Icon="Save" Label="SaveB And Quit" />
+                <AppBarToggleButton Icon="Add" Label="ToggleK" />
                 <CommandBar.SecondaryCommands>
-                    <AppBarButton Icon="Add" Label="Add" />
-                    <AppBarButton Icon="Remove" Label="Remove" />
+                    <AppBarButton Icon="Add" Label="AddC" />
+                    <AppBarButton Icon="Remove" Label="RemoveC" />
                     <AppBarSeparator />
-                    <AppBarToggleButton Icon="Add" Label="Toggle" />
+                    <AppBarToggleButton Icon="Add" Label="ToggleL" />
                 </CommandBar.SecondaryCommands>
             </CommandBar>
 
             <CommandBar DefaultLabelPosition="Right" OverflowButtonVisibility="Collapsed">
-                <AppBarButton Icon="Add" Label="Add"/>
-                <AppBarButton Icon="Remove" Label="Remove"/>
+                <AppBarButton Icon="Add" Label="AddD"/>
+                <AppBarButton Icon="Remove" Label="RemoveD"/>
                 <AppBarSeparator/>
-                <AppBarButton Icon="Save" Label="Save"/>
-                <AppBarToggleButton Icon="Keyboard" Label="Toggle"/>
-                <AppBarElementContainer>
+                <AppBarButton Icon="Save" Label="SaveC"/>
+                <AppBarToggleButton Icon="Keyboard" Label="ToggleM"/>
+                <AppBarElementContainer IsTabStop="False">
                     <controls:SplitButton>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -145,7 +143,7 @@
                             <Viewbox Height="16" Margin="0,0,8,0">
                                 <SymbolIcon Symbol="Keyboard"/>
                             </Viewbox>
-                            <TextBlock Grid.Column="1" Text="Split"/>
+                            <TextBlock Grid.Column="1" Text="SplitB"/>
                         </Grid>
 
                         <controls:SplitButton.Flyout>
@@ -163,7 +161,7 @@
 
                     </controls:SplitButton>
                 </AppBarElementContainer>
-                <AppBarElementContainer>
+                <AppBarElementContainer IsTabStop="False">
                     <controls:ToggleSplitButton>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -173,48 +171,48 @@
                             <Viewbox Height="16" Margin="0,0,8,0">
                                 <SymbolIcon Symbol="Shuffle"/>
                             </Viewbox>
-                            <TextBlock Grid.Column="1" Text="Toggle"/>
+                            <TextBlock Grid.Column="1" Text="ToggleN"/>
                         </Grid>
                     </controls:ToggleSplitButton>
                 </AppBarElementContainer>
             </CommandBar>
 
             <CommandBar DefaultLabelPosition="Collapsed">
-                <AppBarButton Icon="Add" Label="Add" />
-                <AppBarButton Icon="Remove" Label="Remove" />
+                <AppBarButton Icon="Add" Label="AddE" />
+                <AppBarButton Icon="Remove" Label="RemoveE" />
                 <AppBarSeparator />
-                <AppBarButton Icon="Save" Label="Save" />
-                <AppBarToggleButton Icon="Add" Label="Toggle" />
+                <AppBarButton Icon="Save" Label="SaveD" />
+                <AppBarToggleButton Icon="Add" Label="ToggleO" />
                 <CommandBar.SecondaryCommands>
-                    <AppBarButton Icon="Add" Label="Add" />
-                    <AppBarButton Icon="Remove" Label="Remove" />
+                    <AppBarButton Icon="Add" Label="AddF" />
+                    <AppBarButton Icon="Remove" Label="RemoveF" />
                     <AppBarSeparator />
-                    <AppBarToggleButton Icon="Add" Label="Toggle" />
+                    <AppBarToggleButton Icon="Add" Label="ToggleP" />
                 </CommandBar.SecondaryCommands>
             </CommandBar>
 
             <CommandBar HorizontalAlignment="Left">
-                <AppBarButton Icon="Add" Label="Add" />
-                <AppBarButton Icon="Remove" Label="Remove" />
+                <AppBarButton Icon="Add" Label="AddG" />
+                <AppBarButton Icon="Remove" Label="RemoveG" />
                 <AppBarSeparator />
-                <AppBarButton Icon="Save" Label="Save" />
-                <AppBarToggleButton Icon="Add" Label="Toggle" />
+                <AppBarButton Icon="Save" Label="SaveE" />
+                <AppBarToggleButton Icon="Add" Label="ToggleQ" />
             </CommandBar>
 
             <CommandBar HorizontalAlignment="Left">
-                <AppBarButton Icon="Add" Label="Add" />
+                <AppBarButton Icon="Add" Label="AddH" />
                 <AppBarButton
                     Icon="Remove"
-                    Label="Remove"
+                    Label="RemoveH"
                     LabelPosition="Collapsed" />
                 <AppBarSeparator />
-                <AppBarButton Icon="Save" Label="Save" />
-                <AppBarToggleButton Icon="Add" Label="Toggle" />
+                <AppBarButton Icon="Save" Label="SaveF" />
+                <AppBarToggleButton Icon="Add" Label="ToggleR" />
                 <CommandBar.SecondaryCommands>
-                    <AppBarButton Icon="Add" Label="Add" />
-                    <AppBarButton Icon="Remove" Label="Remove" />
+                    <AppBarButton Icon="Add" Label="AddI" />
+                    <AppBarButton Icon="Remove" Label="RemoveI" />
                     <AppBarSeparator />
-                    <AppBarToggleButton Icon="Add" Label="Toggle" />
+                    <AppBarToggleButton Icon="Add" Label="ToggleS" />
                 </CommandBar.SecondaryCommands>
             </CommandBar>
 
@@ -224,7 +222,7 @@
                     <!--  Does not work  -->
                     <Visibility x:Key="CommandBarAppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
                 </CommandBar.Resources>
-                <AppBarButton Icon="Add" Label="Add">
+                <AppBarButton Icon="Add" Label="AddJ">
                     <AppBarButton.Flyout>
                         <CommandBarFlyout Placement="Right">
                             <AppBarButton Icon="Play" />
@@ -234,22 +232,22 @@
                 </AppBarButton>
                 <AppBarButton
                     Icon="Remove"
-                    Label="Remove"
+                    Label="RemoveJ"
                     LabelPosition="Collapsed" />
                 <AppBarSeparator />
-                <AppBarButton Icon="Save" Label="Save" />
-                <AppBarToggleButton Icon="Add" Label="Toggle" />
+                <AppBarButton Icon="Save" Label="SaveG" />
+                <AppBarToggleButton Icon="Add" Label="ToggleT" />
                 <CommandBar.SecondaryCommands>
-                    <AppBarButton Icon="Add" Label="Add" />
-                    <AppBarButton Icon="Remove" Label="Remove" />
+                    <AppBarButton Icon="Add" Label="AddK" />
+                    <AppBarButton Icon="Remove" Label="RemoveK" />
                     <AppBarSeparator />
-                    <AppBarToggleButton Icon="Add" Label="Toggle" />
+                    <AppBarToggleButton Icon="Add" Label="ToggleU" />
                 </CommandBar.SecondaryCommands>
             </CommandBar>
 
             <TextBlock Text="AppBarButton with flyout with visibility override" />
             <CommandBar HorizontalAlignment="Left">
-                <AppBarButton Icon="Add" Label="Add">
+                <AppBarButton Icon="Add" Label="AddL">
                     <AppBarButton.Resources>
                         <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
                     </AppBarButton.Resources>
@@ -262,13 +260,13 @@
                 </AppBarButton>
                 <AppBarButton
                     Icon="Remove"
-                    Label="Remove"
+                    Label="RemoveL"
                     LabelPosition="Collapsed" />
                 <AppBarSeparator />
-                <AppBarButton Icon="Save" Label="Save" />
-                <AppBarToggleButton Icon="Add" Label="Toggle" />
+                <AppBarButton Icon="Save" Label="SaveH" />
+                <AppBarToggleButton Icon="Add" Label="ToggleV" />
                 <CommandBar.SecondaryCommands>
-                    <AppBarButton Icon="Add" Label="Add">
+                    <AppBarButton Icon="Add" Label="AddM">
                         <AppBarButton.Resources>
                             <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
                         </AppBarButton.Resources>
@@ -279,9 +277,9 @@
                             </controls:CommandBarFlyout>
                         </AppBarButton.Flyout>
                     </AppBarButton>
-                    <AppBarButton Icon="Remove" Label="Remove" />
+                    <AppBarButton Icon="Remove" Label="RemoveM" />
                     <AppBarSeparator />
-                    <AppBarToggleButton Icon="Add" Label="Toggle" />
+                    <AppBarToggleButton Icon="Add" Label="ToggleW" />
                 </CommandBar.SecondaryCommands>
             </CommandBar>
 
@@ -290,7 +288,7 @@
                 <CommandBar.Resources>
                     <x:String x:Key="AppBarButtonFlyoutGlyph">&#xE972;</x:String>
                 </CommandBar.Resources>
-                <AppBarButton Icon="Add" Label="Add">
+                <AppBarButton Icon="Add" Label="AddN">
                     <AppBarButton.Resources>
                         <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
                     </AppBarButton.Resources>
@@ -302,12 +300,12 @@
                         </MenuFlyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
-                <AppBarButton Icon="Remove" Label="Remove" LabelPosition="Collapsed"/>
+                <AppBarButton Icon="Remove" Label="RemoveN" LabelPosition="Collapsed"/>
                 <AppBarSeparator/>
-                <AppBarButton Icon="Save" Label="Save"/>
-                <AppBarToggleButton Icon="Add" Label="Toggle"/>
+                <AppBarButton Icon="Save" Label="SaveI"/>
+                <AppBarToggleButton Icon="Add" Label="ToggleX"/>
                 <CommandBar.SecondaryCommands>
-                    <AppBarButton Icon="Add" Label="Add">
+                    <AppBarButton Icon="Add" Label="AddO">
                         <AppBarButton.Resources>
                             <Visibility x:Key="AppBarButtonHasFlyoutChevronVisibility">Visible</Visibility>
                         </AppBarButton.Resources>
@@ -322,16 +320,32 @@
                 </CommandBar.SecondaryCommands>
             </CommandBar>
 
+            <TextBlock Text="AppBarButton with long label"/>
             <StackPanel Orientation="Horizontal">
-                <Button x:Name="TopAppBarButton" Content="Remove TopAppBar" Click="TopAppBarButton_Click"></Button>
-                <Button x:Name="BottomAppBarButton" Content="Toggle BottomAppBar" Click="BottomAppBarButton_Click"></Button>
+                <CommandBar HorizontalAlignment="Left">
+                    <AppBarToggleButton Icon="Setting" Label="Long wrapping labelA"/>
+                    <CommandBar.SecondaryCommands>
+                        <AppBarButton Icon="People" Label="Longer non-wrapping labelA"/>
+                    </CommandBar.SecondaryCommands>
+                </CommandBar>
+                <CommandBar HorizontalAlignment="Left" DefaultLabelPosition="Right" Margin="12,0,0,0">
+                    <AppBarToggleButton Icon="Setting" Label="Long non-wrapping labelB"/>
+                    <CommandBar.SecondaryCommands>
+                        <AppBarButton Icon="People" Label="Longer non-wrapping labelB"/>
+                    </CommandBar.SecondaryCommands>
+                </CommandBar>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="10">
+                <Button x:Name="TopAppBarButton" Content="RemoveO TopAppBar" Click="TopAppBarButton_Click"></Button>
+                <Button x:Name="BottomAppBarButton" Content="ToggleY BottomAppBar" Click="BottomAppBarButton_Click"></Button>
                 <Button x:Name="OpenCloseAppBarsButton" Content="Open App Bars" Click="OpenCloseAppBarsButton_Click"></Button>
                 <Button x:Name="StickyUnstickyAppBarsButton" Content="Make App Bars Sticky" Click="StickyUnstickyAppBarsButton_Click"></Button>
             </StackPanel>
         </StackPanel>
 
         <CommandBar Background="Transparent" IsOpen="False" DefaultLabelPosition="Right" VerticalAlignment="Bottom" ClosedDisplayMode="Minimal">
-            <AppBarButton Icon="Add" Label="Add"/>
+            <AppBarButton Icon="Add" Label="AddO"/>
             <AppBarButton Icon="Edit" Label="Edit"/>
             <AppBarButton Icon="Share" Label="Share"/>
             <CommandBar.SecondaryCommands>

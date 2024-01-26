@@ -11,8 +11,6 @@
 #include "Duration.h"
 #include "RepeatBehavior.h"
 #include "DCompAnimationConversionContext.h"
-
-#include <DCompExtras.h>
 #include <dcompinternal.h>
 #include <dcompprivate.h>
 

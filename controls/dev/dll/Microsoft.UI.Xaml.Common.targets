@@ -34,7 +34,6 @@
     <Midl>
       <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..;$(MSBuildProjectDirectory)\..\..\idl;$(MiniWindowsSDKIncludePath)</AdditionalIncludeDirectories>
       <Enumclass>false</Enumclass>
-      <AdditionalOptions>%(AdditionalOptions) /noattributename</AdditionalOptions>
     </Midl>
     <Link>
       <AdditionalDependencies>user32.lib;mincore.lib;dxguid.lib;dcomp.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -200,7 +199,7 @@
     <Reference Include="@(ExternalWinMDs)" Exclude="@(IxpWinMDs)" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="$(WindowsSdkPath)\References\$(MuxSdkVersion)\*.winmd" />
+    <Reference Condition="'$(XamlLightup)'=='true'" Include="$(WindowsSdkPath)\References\$(MuxSdkVersion)\*.winmd" />
   </ItemGroup>
   <PropertyGroup>
     <UnstrippedMetadataWinmdPath>$(IntDir)\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd</UnstrippedMetadataWinmdPath>
@@ -621,6 +620,9 @@
       </BinplaceItem>
       <BinplaceItem Include="@(XbfItem)" Condition="'$(DisableEmbeddedXbf)' != 'false'">
         <Destination>$(ProductBinplaceDestinationPath)\Microsoft.UI.Xaml\%(RecursiveDir)</Destination>
+      </BinplaceItem>
+      <BinplaceItem Include="..\MapControl\Map.html">
+        <Destination>$(ProductBinplaceDestinationPath)\Microsoft.UI.Xaml\Assets</Destination>
       </BinplaceItem>
     </ItemGroup>
   </Target>

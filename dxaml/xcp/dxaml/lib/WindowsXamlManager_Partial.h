@@ -21,7 +21,28 @@ namespace DirectUI
         IFACEMETHOD(Close)() override;
         HRESULT CloseImpl(bool synchronous);
 
+        _Check_return_ HRESULT GetXamlShutdownCompletedOnThreadEventSourceNoRef(
+            _Outptr_ XamlShutdownCompletedOnThreadEventSourceType** ppEventSource) override
+        {
+            if (!m_xamlShutdownCompletedOnThreadEventSource)
+            {
+                IFC_RETURN(ctl::make(&m_xamlShutdownCompletedOnThreadEventSource));
+                m_xamlShutdownCompletedOnThreadEventSource->Initialize(
+                    KnownEventIndex::WindowsXamlManager_XamlShutdownCompletedOnThread,
+                    this,
+                    FALSE);
+            }
+            *ppEventSource = m_xamlShutdownCompletedOnThreadEventSource.Get();
+            return S_OK;
+        }
+
     private:
+
+        void RaiseXamlShutdownCompletedOnThreadEvent(
+            _In_ msy::IDispatcherQueueShutdownStartingEventArgs* shutdownStartingArgs);
+
+        ctl::ComPtr<XamlShutdownCompletedOnThreadEventSourceType> m_xamlShutdownCompletedOnThreadEventSource;
+
         // XamlCore is a per-thread object that represents the the running Xaml Core on the thread.
         // It tracks the WindowsXamlManager objects on the thread, and shuts down the XAML
         // state on the thread when all WXM instances on the thread are closed.  It may outlive
@@ -44,7 +65,9 @@ namespace DirectUI
             void AddManager(_In_ WindowsXamlManager* wxm);
             void RemoveManager(_In_ WindowsXamlManager* wxm);
             int ManagerCount() const { return m_managers.size(); }
-            void SyncCloseAllManagers();
+
+            _Check_return_ HRESULT OnFrameworkShutdownStarting(
+                _In_ msy::IDispatcherQueueShutdownStartingEventArgs* args);
 
         private:
             wrl::ComPtr<msy::IDispatcherQueue> m_dispatcherQueue;

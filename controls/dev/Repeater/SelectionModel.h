@@ -25,7 +25,7 @@ public:
     void Source(winrt::IInspectable const& value);
 
     bool SingleSelect();
-    void SingleSelect(bool value); 
+    void SingleSelect(bool value);
 
     winrt::IndexPath AnchorIndex();
     void AnchorIndex(winrt::IndexPath const& value);
@@ -85,6 +85,11 @@ public:
     void OnPropertyChanged(winrt::hstring const& propertyName);
 #pragma endregion
 
+    bool SelectionInvalidatedDueToCollectionChange() const
+    {
+        return m_selectionInvalidatedDueToCollectionChange;
+    }
+
     winrt::IInspectable ResolvePath(const winrt::IInspectable& data, const winrt::IndexPath& dataIndexPath);
     void OnSelectionInvalidatedDueToCollectionChange();
     std::shared_ptr<SelectionNode> SharedLeafNode() { return m_leafNode; }
@@ -103,6 +108,8 @@ private:
 
     std::shared_ptr<SelectionNode> m_rootNode{ nullptr };
     bool m_singleSelect{ false };
+
+    bool m_selectionInvalidatedDueToCollectionChange{ false };
 
     winrt::IVectorView<winrt::IndexPath> m_selectedIndicesCached{ nullptr };
     winrt::IVectorView<winrt::IInspectable> m_selectedItemsCached{ nullptr };

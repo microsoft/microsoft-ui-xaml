@@ -3,17 +3,18 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetDestination>$(MarkupCompilerDestinationPath).Executable</TargetDestination>
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.Build" Version="15.8.166" />
-        <PackageReference Include="Microsoft.Build.Framework" Version="15.8.166" />
-        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.8.166" />
-        <PackageReference Include="System.Text.Json" Version="6.0.1" />
-    </ItemGroup>
+  <ItemGroup>
+      <PackageReference Include="Microsoft.Build" Version="15.8.166" />
+      <PackageReference Include="Microsoft.Build.Framework" Version="15.8.166" />
+      <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.8.166" />
+      <PackageReference Include="System.Text.Json" Version="6.0.1" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop\Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop\Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.csproj" />
+  </ItemGroup>
 </Project>

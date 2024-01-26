@@ -75,6 +75,7 @@ namespace Diagnostics
         bool IsWindow() const;
         bool IsNull() const;
         bool IsDesktopWindowXamlSource() const;
+        bool IsXamlIsland() const;
         bool IsValueType() const;
 
         template <typename T>

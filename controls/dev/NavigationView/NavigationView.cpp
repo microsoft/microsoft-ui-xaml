@@ -17,8 +17,8 @@
 #include "NavigationViewItemInvokedEventArgs.h"
 #include "RuntimeProfiler.h"
 #include "Utils.h"
-#include "TraceLogging.h"
-#include "NavigationViewItemRevokers.h"
+#include "MuxcTraceLogging.h"
+#include "NavigationViewItemBaseRevokers.h"
 #include "IndexPath.h"
 #include "InspectingDataSource.h"
 #include "NavigationViewAutomationPeer.h"
@@ -180,7 +180,7 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     {
         m_selectionChangedRevoker.revoke();
         m_autoSuggestBoxQuerySubmittedRevoker.revoke();
-        ClearAllNavigationViewItemRevokers();
+        ClearAllNavigationViewItemBaseRevokers();
     }
 }
 
@@ -222,13 +222,13 @@ NavigationView::NavigationView()
 
     m_navigationViewItemsFactory = winrt::make_self<NavigationViewItemsFactory>();
 
-    static const auto s_NavigationViewItemRevokersPropertyInit = []()
+    static const auto s_NavigationViewItemBaseRevokersPropertyInit = []()
     {
-        s_NavigationViewItemRevokersProperty =
+        s_NavigationViewItemBaseRevokersProperty =
             InitializeDependencyProperty(
-                L"NavigationViewItemRevokers",
+                L"NavigationViewItemBaseRevokers",
                 winrt::name_of<winrt::IInspectable>(),
-                winrt::name_of<winrt::NavigationViewItem>(),
+                winrt::name_of<winrt::NavigationViewItemBase>(),
                 true /* isAttached */,
                 nullptr /* defaultValue */);
         return false;
@@ -320,7 +320,7 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
             {
                 m_moveTopNavOverflowItemOnFlyoutClose = true;
             }
-        } 
+        }
     }
 
     if (setSelectedItem)
@@ -919,6 +919,11 @@ void NavigationView::OnFlyoutClosing(const winrt::IInspectable& sender, const wi
     }
 }
 
+void NavigationView::OnNavigationViewItemBaseVisibilityPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+{
+    UpdatePaneLayout();
+}
+
 void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
     if (auto const nvi = sender.try_as<winrt::NavigationViewItem>())
@@ -1222,6 +1227,8 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
         // Apply any custom container styling
         ApplyCustomMenuItemContainerStyling(nvib, ir, args.Index());
 
+        SetNavigationViewItemBaseRevokers(nvib);
+
         if (auto nvi = args.Element().try_as<winrt::NavigationViewItem>())
         {
             // Propagate depth to children items if they exist
@@ -1281,10 +1288,7 @@ void NavigationView::OnRepeaterElementClearing(const winrt::ItemsRepeater& ir, c
         auto const nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
         nvibImpl->Depth(0);
         nvibImpl->IsTopLevelItem(false);
-        if (auto nvi = nvib.try_as<winrt::NavigationViewItem>())
-        {
-            ClearNavigationViewItemRevokers(nvi);
-        }
+        ClearNavigationViewItemBaseRevokers(nvib);
     }
 }
 
@@ -1503,25 +1507,26 @@ void NavigationView::UpdatePaneLayout()
         // Only continue if we have a positive amount of space to manage.
         if (totalAvailableHeight > 0)
         {
-            // We need this value more than twice, so cache it.
-            const auto totalAvailableHeightHalf = totalAvailableHeight / 2;
-
-            const auto heightForMenuItems = [this, totalAvailableHeight, totalAvailableHeightHalf]() {
+            const auto heightForMenuItems = [this, totalAvailableHeight]() {
+                
+                // We need this value more than twice, so cache it.
+                const auto totalAvailableHeightHalf = totalAvailableHeight / 2;
+                
                 if (const auto& footerItemsScrollViewer = m_footerItemsScrollViewer.get())
                 {
                     if (const auto& footerItemsRepeater = m_leftNavFooterMenuRepeater.get())
                     {
-                        // We know the actual height of footer items, so use that to determine how to split pane.
                         if (const auto& menuItems = m_leftNavRepeater.get())
                         {
-                            const auto footersActualHeight = [this, footerItemsRepeater]() {
+                            const auto footersDesiredHeight = [this, footerItemsRepeater]() {
                                 double footerItemsRepeaterTopBottomMargin = 0.0;
                                 if (footerItemsRepeater.Visibility() == winrt::Visibility::Visible)
                                 {
                                     const auto footerItemsRepeaterMargin = footerItemsRepeater.Margin();
                                     footerItemsRepeaterTopBottomMargin = footerItemsRepeaterMargin.Top + footerItemsRepeaterMargin.Bottom;
                                 }
-                                return footerItemsRepeater.ActualHeight() + footerItemsRepeaterTopBottomMargin;
+                                auto footerItemsDesiredHeight = LayoutUtils::MeasureAndGetDesiredHeightFor(footerItemsRepeater, c_infSize);
+                                return footerItemsDesiredHeight + footerItemsRepeaterTopBottomMargin;
                             }();
 
                             const auto paneFooterActualHeight = [this]() {
@@ -1555,7 +1560,7 @@ void NavigationView::UpdatePaneLayout()
                             }();
 
                             // Footer and PaneFooter are included in the footerGroup to calculate available height for menu items.
-                            const auto footerGroupActualHeight = footersActualHeight + paneFooterActualHeight;
+                            const auto footerGroupDesiredHeight = footersDesiredHeight + paneFooterActualHeight;
 
                             if (m_footerItemsSource.Count() == 0 && !IsSettingsVisible())
                             {
@@ -1568,12 +1573,12 @@ void NavigationView::UpdatePaneLayout()
                                 winrt::VisualStateManager::GoToState(*this, c_separatorCollapsedStateName, false);
                                 return 0.0;
                             }
-                            else if (totalAvailableHeight >= menuItemsDesiredHeight + footerGroupActualHeight)
+                            else if (totalAvailableHeight >= menuItemsDesiredHeight + footerGroupDesiredHeight)
                             {
                                 // We have enough space for two so let everyone get as much as they need.
-                                footerItemsScrollViewer.MaxHeight(footersActualHeight);
+                                footerItemsScrollViewer.MaxHeight(footersDesiredHeight);
                                 winrt::VisualStateManager::GoToState(*this, c_separatorCollapsedStateName, false);
-                                return totalAvailableHeight - footerGroupActualHeight;
+                                return totalAvailableHeight - footerGroupDesiredHeight;
                             }
                             else if (menuItemsDesiredHeight <= totalAvailableHeightHalf)
                             {
@@ -1582,12 +1587,12 @@ void NavigationView::UpdatePaneLayout()
                                 winrt::VisualStateManager::GoToState(*this, c_separatorVisibleStateName,false);
                                 return menuItemsActualHeight;
                             }
-                            else if (footerGroupActualHeight <= totalAvailableHeightHalf)
+                            else if (footerGroupDesiredHeight <= totalAvailableHeightHalf)
                             {
                                 // Menu items exceed over the half, so let's limit them.
-                                footerItemsScrollViewer.MaxHeight(footersActualHeight);
+                                footerItemsScrollViewer.MaxHeight(footersDesiredHeight);
                                 winrt::VisualStateManager::GoToState(*this, c_separatorVisibleStateName, false);
-                                return totalAvailableHeight - footerGroupActualHeight;
+                                return totalAvailableHeight - footerGroupDesiredHeight;
                             }
                             else
                             {
@@ -1613,7 +1618,7 @@ void NavigationView::UpdatePaneLayout()
             }();
             // Footer items should have precedence as that usually contains very
             // important items such as settings or the profile.
-            
+
             if (const auto& menuItemsScrollViewer = m_menuItemsScrollViewer.get())
             {
                 // Update max height for menu items.
@@ -1666,7 +1671,6 @@ void NavigationView::OpenPane()
 // Call this when you want an uncancellable close
 void NavigationView::ClosePane()
 {
-    CollapseMenuItemsInRepeater(m_leftNavRepeater.get());
     auto scopeGuard = gsl::finally([this]()
         {
             m_isOpenPaneForInteraction = false;
@@ -1789,7 +1793,7 @@ void NavigationView::UpdatePaneButtonsWidths()
     {
         return CompactPaneLength();
     }();
- 
+
     templateSettings->PaneToggleButtonWidth(newButtonWidths);
     templateSettings->SmallerPaneToggleButtonWidth(std::max(0.0, newButtonWidths - 8));
 }
@@ -1978,8 +1982,9 @@ void NavigationView::AnimateSelectionChangedToItem(const winrt::IInspectable& se
 // when the layout is invalidated as it's called in OnLayoutUpdated.
 void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem)
 {
-    // If we are delaying animation due to item movement in top nav overflow, dont do anything
-    if (m_lastSelectedItemPendingAnimationInTopNav)
+    // If we are delaying animation due to item movement in top nav overflow or
+    // the template is not applied, dont do anything
+    if (m_lastSelectedItemPendingAnimationInTopNav || !m_appliedTemplate)
     {
         return;
     }
@@ -2055,7 +2060,6 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
                 nextIndicator.RenderSize().Height > nextIndicator.RenderSize().Width ?
                     PlayIndicatorNonSameLevelAnimations(nextIndicator, false, isNextBelow ? true : false) :
                     PlayIndicatorNonSameLevelTopPrimaryAnimation(nextIndicator, false);
-
             }
             else
             {
@@ -2123,7 +2127,6 @@ void NavigationView::PlayIndicatorNonSameLevelAnimations(const winrt::UIElement&
 
     visual.StartAnimation(L"Scale.Y", scaleAnim);
 }
-
 
 void NavigationView::PlayIndicatorNonSameLevelTopPrimaryAnimation(const winrt::UIElement& indicator, bool isOutgoing)
 {
@@ -2354,29 +2357,7 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         }
         UnselectPrevItem(prevItem, nextItem);
         ChangeSelectStatusForItem(nextItem, true /*selected*/);
-
-        winrt::IndexPath indexPath{ nullptr };
-
-        if (auto container = NavigationViewItemBaseOrSettingsContentFromData(nextItem))
-        {
-            indexPath = GetIndexPathForContainer(container);
-        }
-        else
-        {
-            indexPath = GetIndexPathOfItem(nextItem);
-        }
-
-        if (indexPath && indexPath.GetSize() > 0)
-        {
-            // The SelectedItem property has already been updated. So we want to block any logic from executing
-            // in the SelectionModel selection changed callback.
-            auto scopeGuard = gsl::finally([this]()
-                {
-                    m_shouldIgnoreNextSelectionChange = false;
-                });
-            m_shouldIgnoreNextSelectionChange = true;
-            UpdateSelectionModelSelection(indexPath);
-        }
+        UpdateSelectionModelSelectionForSelectedItem(nextItem);
 
         {
             auto scopeGuard = gsl::finally([this]()
@@ -2454,6 +2435,32 @@ void NavigationView::CompletePendingSelectionChange()
     }
 }
 
+void NavigationView::UpdateSelectionModelSelectionForSelectedItem(const winrt::IInspectable& selectedItem)
+{
+    winrt::IndexPath indexPath{ nullptr };
+
+    if (auto container = NavigationViewItemBaseOrSettingsContentFromData(selectedItem))
+    {
+        indexPath = GetIndexPathForContainer(container);
+    }
+    else
+    {
+        indexPath = GetIndexPathOfItem(selectedItem);
+    }
+
+    if (indexPath && indexPath.GetSize() > 0)
+    {
+        // The SelectedItem property has already been updated. So we want to block any logic from executing
+        // in the SelectionModel selection changed callback.
+        auto scopeGuard = gsl::finally([this]()
+            {
+                m_shouldIgnoreNextSelectionChange = false;
+            });
+        m_shouldIgnoreNextSelectionChange = true;
+        UpdateSelectionModelSelection(indexPath);
+    }
+}
+
 void NavigationView::UpdateSelectionModelSelection(const winrt::IndexPath& ip)
 {
     auto const prevIndexPath = m_selectionModel.SelectedIndex();
@@ -2462,12 +2469,12 @@ void NavigationView::UpdateSelectionModelSelection(const winrt::IndexPath& ip)
 }
 
 void NavigationView::UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP)
-{ 
+{
     if (prevIP && prevIP.GetSize() > 0)
     {
         UpdateIsChildSelectedForIndexPath(prevIP, false /*isChildSelected*/);
     }
-     
+
     if (nextIP && nextIP.GetSize() > 0)
     {
         UpdateIsChildSelectedForIndexPath(nextIP, true /*isChildSelected*/);
@@ -2480,7 +2487,7 @@ void NavigationView::UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& i
     auto container = GetContainerForIndex(ip.GetAt(1), ip.GetAt(0) == c_footerMenuBlockIndex /*inFooter*/);
     // first index is fo mainmenu or footer
     // second is index of item in mainmenu or footer
-    // next in menuitem children 
+    // next in menuitem children
     auto index = 2;
     while (container)
     {
@@ -2567,7 +2574,7 @@ void NavigationView::SetDisplayMode(const winrt::NavigationViewDisplayMode& disp
 //    TopNav -> Minimal
 //    PaneDisplayMode::Left || (PaneDisplayMode::Auto && DisplayMode::Expanded) -> Expanded
 //    PaneDisplayMode::LeftCompact || (PaneDisplayMode::Auto && DisplayMode::Compact) -> Compact
-//    Map others to Minimal or MinimalWithBackButton 
+//    Map others to Minimal or MinimalWithBackButton
 NavigationViewVisualStateDisplayMode NavigationView::GetVisualStateDisplayMode(const winrt::NavigationViewDisplayMode& displayMode)
 {
     const auto paneDisplayMode = PaneDisplayMode();
@@ -2590,7 +2597,7 @@ NavigationViewVisualStateDisplayMode NavigationView::GetVisualStateDisplayMode(c
     }
 
     // In minimal mode, when the NavView is closed, the HeaderContent doesn't have
-    // its own dedicated space, and must 'share' the top of the NavView with the 
+    // its own dedicated space, and must 'share' the top of the NavView with the
     // pane toggle button ('hamburger' button) and the back button.
     // When the NavView is open, the close button is taking space instead of the back button.
     if (ShouldShowBackButton() || ShouldShowCloseButton())
@@ -2884,21 +2891,21 @@ void NavigationView::OnRepeaterGettingFocus(const winrt::IInspectable& sender, c
                 else if (!isFocusOutsideCurrentRootRepeater)
                 {
                     // Tab or Shift-Tab from within the same root repeater should move focus outside it
-                    auto navigationViewItemBase = args.NewFocusedElement().try_as<winrt::NavigationViewItemBase>(); 
+                    auto navigationViewItemBase = args.NewFocusedElement().try_as<winrt::NavigationViewItemBase>();
                     if (navigationViewItemBase &&
                        (args.Direction() == winrt::FocusNavigationDirection::Previous ||
                         args.Direction() == winrt::FocusNavigationDirection::Next))
                     {
                         // We need to find the next tab stop outside the root repeater.
                         // winrt::FocusManager::FindNextElement will at first give us NavigationViewItems
-                        // within the root repeater. This is why we need to set IsTabStop = false for 
+                        // within the root repeater. This is why we need to set IsTabStop = false for
                         // the found the elements within the root repeater so that FindNextElement eventually
                         // finds an element outside the root repeater.
                         std::vector<winrt::NavigationViewItemBase> containersWithTabFocusOff{};
 
                         const winrt::FindNextElementOptions options;
                         options.SearchRoot(this->XamlRoot().Content());
-                        
+
                         auto nextElement = winrt::FocusManager::FindNextElement(args.Direction(), options);
                         while (auto nvib = nextElement.try_as<winrt::NavigationViewItemBase>())
                         {
@@ -2915,7 +2922,7 @@ void NavigationView::OnRepeaterGettingFocus(const winrt::IInspectable& sender, c
                                 break;
                             }
                         }
-                        
+
                         for (auto nvib : containersWithTabFocusOff)
                         {
                             nvib.IsTabStop(true);
@@ -3310,10 +3317,6 @@ void NavigationView::OnMenuItemsSourceCollectionChanged(const winrt::IInspectabl
 {
     if (!IsTopNavigationView())
     {
-        if (const auto& repeater = m_leftNavRepeater.get())
-        {
-            repeater.UpdateLayout();
-        }
         UpdatePaneLayout();
     }
 }
@@ -3345,7 +3348,7 @@ void NavigationView::ChangeSelectStatusForItem(winrt::IInspectable const& item, 
 {
     if (auto container = NavigationViewItemOrSettingsContentFromData(item))
     {
-        // If we unselect an item, ListView doesn't tolerate setting the SelectedItem to nullptr. 
+        // If we unselect an item, ListView doesn't tolerate setting the SelectedItem to nullptr.
         // Instead we remove IsSelected from the item itself, and it make ListView to unselect it.
         // If we select an item, we follow the unselect to simplify the code.
         container.IsSelected(selected);
@@ -3470,40 +3473,49 @@ void NavigationView::UpdateLeftNavigationOnlyVisualState(bool useTransitions)
     winrt::VisualStateManager::GoToState(*this, isToggleButtonVisible || !m_isLeftPaneTitleEmpty ? L"TogglePaneButtonVisible" : L"TogglePaneButtonCollapsed", false /*useTransitions*/);
 }
 
+void NavigationView::SetNavigationViewItemBaseRevokers(const winrt::NavigationViewItemBase& nvib)
+{
+    auto nvibRevokers = winrt::make_self<NavigationViewItemBaseRevokers>();
+    nvibRevokers->visibilityRevoker = RegisterPropertyChanged(nvib, winrt::UIElement::VisibilityProperty(), { this, &NavigationView::OnNavigationViewItemBaseVisibilityPropertyChanged });
+    nvib.SetValue(s_NavigationViewItemBaseRevokersProperty, nvibRevokers.as<winrt::IInspectable>());
+    m_itemsWithRevokerObjects.insert(nvib);
+}
+
 void NavigationView::SetNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi)
 {
-    auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
-    nviRevokers->keyDownRevoker = nvi.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
-    nviRevokers->gotFocusRevoker = nvi.GotFocus(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemOnGotFocus });
-    nviRevokers->isSelectedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItemBase::IsSelectedProperty(), { this, &NavigationView::OnNavigationViewItemIsSelectedPropertyChanged });
-    nviRevokers->isExpandedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItem::IsExpandedProperty(), { this, &NavigationView::OnNavigationViewItemExpandedPropertyChanged });
-
-    nvi.SetValue(s_NavigationViewItemRevokersProperty, nviRevokers.as<winrt::IInspectable>());
-
-    m_itemsWithRevokerObjects.insert(nvi);
-}
-
-void NavigationView::ClearNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi)
-{
-    RevokeNavigationViewItemRevokers(nvi);
-    nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
-    m_itemsWithRevokerObjects.erase(nvi);
-}
-
-void NavigationView::ClearAllNavigationViewItemRevokers() noexcept
-{
-    for (const auto& nvi : m_itemsWithRevokerObjects)
+    if (auto const revokers = nvi.GetValue(s_NavigationViewItemBaseRevokersProperty))
     {
-        // ClearAllNavigationViewItemRevokers is only called in the destructor, where exceptions cannot be thrown.
+        if (auto const revokersAsNVIBR = revokers.try_as<NavigationViewItemBaseRevokers>()) 
+        {
+            revokersAsNVIBR->keyDownRevoker = nvi.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
+            revokersAsNVIBR->gotFocusRevoker = nvi.GotFocus(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemOnGotFocus });
+            revokersAsNVIBR->isSelectedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItemBase::IsSelectedProperty(), { this, &NavigationView::OnNavigationViewItemIsSelectedPropertyChanged });
+            revokersAsNVIBR->isExpandedRevoker = RegisterPropertyChanged(nvi, winrt::NavigationViewItem::IsExpandedProperty(), { this, &NavigationView::OnNavigationViewItemExpandedPropertyChanged });
+        }
+    }
+}
+
+void NavigationView::ClearNavigationViewItemBaseRevokers(const winrt::NavigationViewItemBase& nvib)
+{
+    RevokeNavigationViewItemBaseRevokers(nvib);
+    nvib.SetValue(s_NavigationViewItemBaseRevokersProperty, nullptr);
+    m_itemsWithRevokerObjects.erase(nvib);
+}
+
+void NavigationView::ClearAllNavigationViewItemBaseRevokers() noexcept
+{
+    for (const auto& nvib : m_itemsWithRevokerObjects)
+    {
+        // ClearAllNavigationViewItemBaseRevokers is only called in the destructor, where exceptions cannot be thrown.
         // If the associated NV has not yet been cleaned up, we must detach these revokers or risk a call into freed
         // memory being made.  However if they have been cleaned up these calls will throw. In this case we can ignore
         // those exceptions.
-        if (nvi)
+        if (nvib)
         {
             try
             {
-                RevokeNavigationViewItemRevokers(nvi);
-                nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
+                RevokeNavigationViewItemBaseRevokers(nvib);
+                nvib.SetValue(s_NavigationViewItemBaseRevokersProperty, nullptr);
             }
             catch (...) {}
         }
@@ -3511,12 +3523,12 @@ void NavigationView::ClearAllNavigationViewItemRevokers() noexcept
     m_itemsWithRevokerObjects.clear();
 }
 
-void NavigationView::RevokeNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi)
+void NavigationView::RevokeNavigationViewItemBaseRevokers(const winrt::NavigationViewItemBase& nvib)
 {
-    if (auto const revokers = nvi.GetValue(s_NavigationViewItemRevokersProperty))
+    if (auto const revokers = nvib.GetValue(s_NavigationViewItemBaseRevokersProperty))
     {
-        if (auto const revokersAsNVIR = revokers.try_as<NavigationViewItemRevokers>()) {
-            revokersAsNVIR->RevokeAll();
+        if (auto const revokersAsNVIBR = revokers.try_as<NavigationViewItemBaseRevokers>()) {
+            revokersAsNVIBR->RevokeAll();
         }
     }
 }
@@ -3661,7 +3673,7 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::
         // This assert triggers on the InfoBadge page, however it seems to recover fine, disabling the assert for now.
         // Github issue: https://github.com/microsoft/microsoft-ui-xaml/issues/5771
         // MUX_ASSERT(desiredWidth <= actualWidth);
-        
+
         // Calculate selected item size
         auto selectedItemIndex = s_itemNotFound;
         auto selectedItemWidth = 0.f;
@@ -3676,7 +3688,7 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::
 
         const auto widthAtLeastToBeRemoved = desiredWidth + selectedOverflowItemWidth - actualWidth;
 
-        // calculate items to be removed from primary because a overflow item is selected. 
+        // calculate items to be removed from primary because a overflow item is selected.
         // SelectedItem is assumed to be removed from primary first, then added it back if it should not be removed
         auto itemsToBeRemoved = FindMovableItemsToBeRemovedFromPrimaryList(widthAtLeastToBeRemoved, { } /*excludeItems*/);
 
@@ -3738,7 +3750,7 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::
         // not all items have known width, need to redo the layout
         m_topDataProvider.MoveAllItemsToPrimaryList();
         SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(item);
-        InvalidateTopNavPrimaryLayout();  
+        InvalidateTopNavPrimaryLayout();
     }
 }
 
@@ -3859,7 +3871,7 @@ std::vector<int> NavigationView::FindMovableItemsRecoverToPrimaryList(float avai
         }
         i++;
     }
-    // Keep at one item is not in primary list. Two possible reason: 
+    // Keep at one item is not in primary list. Two possible reason:
     //  1, Most likely it's caused by m_topNavigationRecoveryGracePeriod
     //  2, virtualization and it doesn't have cached width
     if (i == size && !toBeMoved.empty())
@@ -3920,7 +3932,7 @@ std::vector<int> NavigationView::FindMovableItemsBeyondAvailableWidth(float avai
                     }
                     else
                     {
-                        // item is virtualized but not realized.                    
+                        // item is virtualized but not realized.
                     }
                 }
 
@@ -4078,7 +4090,6 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         // When PaneDisplayMode is changed, reset the force flag to make the Pane can be opened automatically again.
         m_wasForceClosed = false;
 
-        CollapseTopLevelMenuItems(auto_unbox(args.OldValue()));
         UpdatePaneToggleButtonVisibility();
         UpdatePaneDisplayMode(auto_unbox(args.OldValue()), auto_unbox(args.NewValue()));
         UpdatePaneTitleFrameworkElementParents();
@@ -4189,6 +4200,10 @@ void NavigationView::OnRepeaterLoaded(winrt::IInspectable const& sender, winrt::
             {
                 navViewItem.IsSelected(true);
             }
+
+            // Make sure the SelectionModel m_selectionModel and actual selection are in sync. An item may have been selected
+            // while the ItemsRepeater was still unloaded. Thus m_selectionModel still does not know about that selection.
+            UpdateSelectionModelSelectionForSelectedItem(item);
         }
         AnimateSelectionChanged(item);
     }
@@ -4336,7 +4351,7 @@ void NavigationView::UpdatePaneDisplayMode(winrt::NavigationViewPaneDisplayMode 
         // In rare cases it is possible to end up in a state where two calls to OnPropertyChanged for PaneDisplayMode can end up on the stack
         // Calls above to UpdatePaneDisplayMode() can result in further property updates.
         // As a result of this reentrancy, we can end up with an incorrect result for IsPaneOpen as the later OnPropertyChanged for PaneDisplayMode
-        // will complete during the OnPropertyChanged of the earlier one. 
+        // will complete during the OnPropertyChanged of the earlier one.
         // To avoid this, we only call OpenPane()/ClosePane() if PaneDisplayMode has not changed.
         if (newDisplayMode == PaneDisplayMode())
         {
@@ -4356,7 +4371,7 @@ void NavigationView::UpdatePaneDisplayMode(winrt::NavigationViewPaneDisplayMode 
                 }
             }
         }
-        
+
     }
 }
 
@@ -4851,7 +4866,7 @@ void NavigationView::RaiseDisplayModeChanged(const winrt::NavigationViewDisplayM
     m_displayModeChangedEventSource(*this, *eventArgs);
 }
 
-// This method attaches the series of animations which are fired off dependent upon the amount 
+// This method attaches the series of animations which are fired off dependent upon the amount
 // of space give and the length of the strings involved. It occurs upon re-rendering.
 void NavigationView::CreateAndAttachHeaderAnimation(const winrt::Visual& visual)
 {
@@ -4911,7 +4926,7 @@ void NavigationView::SetDropShadow()
             const double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_paneOverlayShadowDepthName, box_value(c_paneOverlayShadowDepth)));
 
             shadowCaster.Translation({ translation.x, translation.y, static_cast<float>(shadowDepth) });
-        }              
+        }
     }
 }
 
@@ -5121,7 +5136,7 @@ winrt::IndexPath NavigationView::SearchEntireTreeForIndexPath(const winrt::Navig
                             // Process x:bind
                             if (auto extension = CachedVisualTreeHelpers::GetDataTemplateComponent(nvi))
                             {
-                                // Clear out old data. 
+                                // Clear out old data.
                                 extension.Recycle();
                                 int nextPhase = VirtualizationInfo::PhaseReachedEnd;
                                 // Run Phase 0
@@ -5150,7 +5165,7 @@ winrt::NavigationViewItemBase NavigationView::ResolveContainerForItem(const winr
 {
     auto const args = winrt::ElementFactoryGetArgs();
     args.Data(item);
-    
+
     if (auto container = m_navigationViewItemsFactory.get()->GetElement(args))
     {
         if (auto nvib = container.try_as<winrt::NavigationViewItemBase>())
@@ -5563,7 +5578,7 @@ winrt::IInspectable NavigationView::GetChildrenForItemInIndexPath(const winrt::U
                                     // Process x:bind
                                     if (auto extension = CachedVisualTreeHelpers::GetDataTemplateComponent(nextContainer))
                                     {
-                                        // Clear out old data. 
+                                        // Clear out old data.
                                         extension.Recycle();
                                         int nextPhase = VirtualizationInfo::PhaseReachedEnd;
                                         // Run Phase 0
@@ -5601,34 +5616,6 @@ winrt::IInspectable NavigationView::GetChildrenForItemInIndexPath(const winrt::U
     }
 
     return nullptr;
-}
-
-void NavigationView::CollapseTopLevelMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode)
-{
-    // We want to make sure only top level items are visible when switching pane modes
-    if (oldDisplayMode == winrt::NavigationViewPaneDisplayMode::Top)
-    {
-        CollapseMenuItemsInRepeater(m_topNavRepeater.get());
-        CollapseMenuItemsInRepeater(m_topNavRepeaterOverflowView.get());
-    }
-    else
-    {
-        CollapseMenuItemsInRepeater(m_leftNavRepeater.get());
-    }
-}
-
-void NavigationView::CollapseMenuItemsInRepeater(const winrt::ItemsRepeater& ir)
-{
-    for (int index = 0; index < GetContainerCountInRepeater(ir); index++)
-    {
-        if (auto const element = ir.TryGetElement(index))
-        {
-            if (auto const nvi = element.try_as<winrt::NavigationViewItem>())
-            {
-                ChangeIsExpandedNavigationViewItem(nvi, false /*isExpanded*/);
-            }
-        }
-    }
 }
 
 void NavigationView::RaiseExpandingEvent(const winrt::NavigationViewItemBase& container)
@@ -5678,7 +5665,7 @@ bool NavigationView::IsVisible(const winrt::DependencyObject& obj)
 void NavigationView::OnSelectedItemLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable&)
 {
     if (m_isSelectionChangedPending)
-    { 
+    {
         m_isSelectionChangedPending = false;
 
         auto item = m_pendingSelectionChangedItem;

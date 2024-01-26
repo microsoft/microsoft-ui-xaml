@@ -99,6 +99,8 @@ public:
 
 private:
 
+    void OnNavigationViewItemBaseVisibilityPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+
     // Selection handling functions
     void OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e);
@@ -106,6 +108,7 @@ private:
     void OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem);
     void CompletePendingSelectionChange();
+    void UpdateSelectionModelSelectionForSelectedItem(const winrt::IInspectable& selectedItem);
     void UpdateSelectionModelSelection(const winrt::IndexPath& ip);
 
     // Item/container info functions
@@ -139,8 +142,6 @@ private:
     winrt::NavigationViewItem FindLowestLevelContainerToDisplaySelectionIndicator();
     void UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected);
     void UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP);
-    void CollapseTopLevelMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode);
-    void CollapseMenuItemsInRepeater(const winrt::ItemsRepeater& ir);
     void RaiseExpandingEvent(const winrt::NavigationViewItemBase& container);
     void RaiseCollapsedEvent(const winrt::NavigationViewItemBase& container);
     void CloseFlyoutIfRequired(const winrt::NavigationViewItem& selectedItem);
@@ -170,7 +171,6 @@ private:
     void UpdateVisualState(bool useTransitions = false);
     void UpdateVisualStateForOverflowButton();
     void UpdateLeftNavigationOnlyVisualState(bool useTransitions);
-    void UpdatePaneShadow();
     void UpdatePaneOverlayGroup();
     void UpdateNavigationViewItemsFactory();
     void SyncItemTemplates();
@@ -187,12 +187,13 @@ private:
     // displayed by the repeaters in this control. It is used to keep track of the
     // revokers for NavigationViewItem events and allows them to get revoked when
     // the item gets cleaned up
-    inline static GlobalDependencyProperty s_NavigationViewItemRevokersProperty{ nullptr };
+    inline static GlobalDependencyProperty s_NavigationViewItemBaseRevokersProperty{ nullptr };
+    void SetNavigationViewItemBaseRevokers(const winrt::NavigationViewItemBase& nvib);
     void SetNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
-    void ClearNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
-    void ClearAllNavigationViewItemRevokers() noexcept;
-    void RevokeNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi);
-    std::set<winrt::NavigationViewItem> m_itemsWithRevokerObjects;
+    void ClearNavigationViewItemBaseRevokers(const winrt::NavigationViewItemBase& nvib);
+    void ClearAllNavigationViewItemBaseRevokers() noexcept;
+    void RevokeNavigationViewItemBaseRevokers(const winrt::NavigationViewItemBase& nvib);
+    std::set<winrt::NavigationViewItemBase> m_itemsWithRevokerObjects;
 
     void InvalidateTopNavPrimaryLayout();
     // Measure functions for top navigation   
@@ -331,9 +332,6 @@ private:
 
     void UnhookEventsAndClearFields(bool isFromDestructor = false);
     
-    bool ShouldPreserveNavigationViewRS4Behavior();
-    bool ShouldPreserveNavigationViewRS3Behavior();
-
     bool NeedRearrangeOfTopElementsAfterOverflowSelectionChanged(int selectedOriginalIndex);
     void KeyboardFocusFirstItemFromItem(const winrt::NavigationViewItemBase& nvib);
     void KeyboardFocusLastItemFromItem(const winrt::NavigationViewItemBase& nvib);

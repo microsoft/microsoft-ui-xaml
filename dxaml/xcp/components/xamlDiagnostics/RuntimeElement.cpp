@@ -55,7 +55,7 @@ namespace Diagnostics
 
     bool RuntimeElement::IsRoot() const
     {
-        return !HasParent() && (IsWindow() || IsDesktopWindowXamlSource());
+        return !HasParent() && (IsWindow() || IsDesktopWindowXamlSource() || IsXamlIsland());
     }
 
     void RuntimeElement::RemoveChild(std::shared_ptr<RuntimeElement> child)

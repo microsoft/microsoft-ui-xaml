@@ -7,50 +7,49 @@
     xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <muxc:NavigationView x:Name="NavView" ItemInvoked="NavView_ItemInvoked">
+        <NavigationView x:Name="NavView" ItemInvoked="NavView_ItemInvoked">
 
-            <muxc:NavigationView.MenuItems>
-                <muxc:NavigationViewItem x:Name="HomeItem" AutomationProperties.Name="NavViewInvokeItem" Content="Home" Icon="Home"/>
-                <muxc:NavigationViewItem x:Name="AppsItem" Content="Apps" Icon="Shop" />
-                <muxc:NavigationViewItem x:Name="GamesItem" Content="Games" Icon="Emoji"/>
-                <muxc:NavigationViewItemSeparator />
-                <muxc:NavigationViewItemHeader x:Name="HeaderTextItem" Content="Header Text" />
-                <muxc:NavigationViewItem x:Name="MusicItem" Content="Music" Icon="Audio"/>
-                <muxc:NavigationViewItem Content="Should be green" Foreground="Green" Icon="Emoji"/>
-                <muxc:NavigationViewItem x:Name="MoviesItem" Content="Movies" Icon="Video"/>
-                <muxc:NavigationViewItemHeader x:Name="HeaderTextItem2" Content="Header Text 2" />
-                <muxc:NavigationViewItem x:Name="TVItem" Content="TV" Icon="Slideshow"/>
-                <muxc:NavigationViewItem x:Name="VolumeItem" AutomationProperties.Name="Volume" Icon="Volume">
-                    <muxc:NavigationViewItem.Content>
+            <NavigationView.MenuItems>
+                <NavigationViewItem x:Name="HomeItem" AutomationProperties.Name="NavViewInvokeItem" Content="Home" Icon="Home"/>
+                <NavigationViewItem x:Name="AppsItem" Content="Apps" Icon="Shop" />
+                <NavigationViewItem x:Name="GamesItem" Content="Games" Icon="Emoji"/>
+                <NavigationViewItemSeparator />
+                <NavigationViewItemHeader x:Name="HeaderTextItem" Content="Header Text" />
+                <NavigationViewItem x:Name="MusicItem" Content="Music" Icon="Audio"/>
+                <NavigationViewItem Content="Should be green" Foreground="Green" Icon="Emoji"/>
+                <NavigationViewItem x:Name="MoviesItem" Content="Movies" Icon="Video"/>
+                <NavigationViewItemHeader x:Name="HeaderTextItem2" Content="Header Text 2" />
+                <NavigationViewItem x:Name="TVItem" Content="TV" Icon="Slideshow"/>
+                <NavigationViewItem x:Name="VolumeItem" AutomationProperties.Name="Volume" Icon="Volume">
+                    <NavigationViewItem.Content>
                         <TextBlock Text="Volume (don't click me)" />
-                    </muxc:NavigationViewItem.Content>
-                </muxc:NavigationViewItem>
-                <muxc:NavigationViewItem x:Name="IntegerItem" AutomationProperties.Name="Integer" Icon="Accept"/>
-            </muxc:NavigationView.MenuItems>
+                    </NavigationViewItem.Content>
+                </NavigationViewItem>
+                <NavigationViewItem x:Name="IntegerItem" AutomationProperties.Name="Integer" Icon="Accept"/>
+            </NavigationView.MenuItems>
 
-            <muxc:NavigationView.AutoSuggestBox>
+            <NavigationView.AutoSuggestBox>
                 <AutoSuggestBox AutomationProperties.Name="PaneAutoSuggestBox">
                     <AutoSuggestBox.QueryIcon>
-                        <muxc:AnimatedIcon>
+                        <AnimatedIcon>
                             <animatedvisuals:AnimatedFindVisualSource/>
-                            <muxc:AnimatedIcon.FallbackIconSource>
-                                <muxc:FontIconSource Glyph="&#xE721;" FontSize="12" FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
-                            </muxc:AnimatedIcon.FallbackIconSource>
-                        </muxc:AnimatedIcon>
+                            <AnimatedIcon.FallbackIconSource>
+                                <FontIconSource Glyph="&#xE721;" FontSize="12" FontFamily="{ThemeResource SymbolThemeFontFamily}"/>
+                            </AnimatedIcon.FallbackIconSource>
+                        </AnimatedIcon>
                     </AutoSuggestBox.QueryIcon>
                 </AutoSuggestBox>
-            </muxc:NavigationView.AutoSuggestBox>
+            </NavigationView.AutoSuggestBox>
 
-            <muxc:NavigationView.PaneFooter>
-                <muxc:NavigationViewItem Content="Footer item" Icon="Accept"/>
-            </muxc:NavigationView.PaneFooter>
+            <NavigationView.PaneFooter>
+                <NavigationViewItem x:Name="PaneFooter" Content="Footer item" Icon="Accept"/>
+            </NavigationView.PaneFooter>
             
-            <muxc:NavigationView.Content>
+            <NavigationView.Content>
                 <StackPanel Padding="50" Orientation="Horizontal">
                     <StackPanel Style="{ThemeResource StandardGroupingStackPanel}" Margin="0,0,16,0">
                         <TextBlock Text="Options" Style="{ThemeResource StandardGroupHeader}"/>
@@ -67,6 +66,23 @@
                             AutomationProperties.Name="IsPaneVisibleCheckBox"
                             Content="IsPaneVisible"
                             IsChecked="{Binding IsPaneVisible, ElementName=NavView, Mode=TwoWay}"
+                            Margin="5"/>
+
+                        <CheckBox x:Name="IsPaneFooterVisibleCheckBox"
+                            AutomationProperties.Name="IsPaneFooterVisibleCheckBox"
+                            Content="IsPaneFooterVisible"
+                            IsChecked="True"
+                            Checked="IsPaneFooterVisibleCheckBox_CheckedChanged"
+                            Unchecked="IsPaneFooterVisibleCheckBox_CheckedChanged"
+                            Margin="5"/>
+
+                        <CheckBox
+                            x:Name="IsSettingsVisibleCheckbox"
+                            AutomationProperties.Name="IsSettingsVisibleCheckbox"
+                            Content="IsSettingsVisible"
+                            IsChecked="True"
+                            Checked="IsSettingsVisibleCheckbox_CheckedChanged"
+                            Unchecked="IsSettingsVisibleCheckbox_CheckedChanged"
                             Margin="5"/>
 
                         <ComboBox x:Name="CompactPaneLength" Header="Compact Pane Length" AutomationProperties.Name="CompactPaneLengthComboBox"
@@ -125,7 +141,7 @@
                     </StackPanel>
                 </StackPanel>
                 
-            </muxc:NavigationView.Content>
-        </muxc:NavigationView>
+            </NavigationView.Content>
+        </NavigationView>
     </Grid>
 </local:TestPage>

@@ -11,6 +11,10 @@
  
   <Import Project="$(XamlSourcePath)\xcp\project-lift.props" />
 
+  <PropertyGroup>
+    <MidlFlags>$(MidlFlags) /noattributename</MidlFlags>
+  </PropertyGroup>
+
   <ItemGroup>
     <Midl Include="microsoft.ui.xaml.coretypes.idl" CopyToPublicHeadersPath="true" />
     <Midl Include="microsoft.ui.xaml.coretypes2.idl" CopyToPublicHeadersPath="true" />

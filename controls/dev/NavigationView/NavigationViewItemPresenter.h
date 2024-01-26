@@ -38,6 +38,7 @@ public:
 private:
     NavigationViewItem * GetNavigationViewItem();
     void UpdateMargin();
+    void UnhookEventsAndClearFields();
 
     double m_compactPaneLengthValue { 40 };
 
@@ -46,7 +47,7 @@ private:
     tracker_ref<winrt::ContentPresenter> m_infoBadgePresenter{ this };
     tracker_ref<winrt::Grid> m_expandCollapseChevron{ this };
 
-    winrt::event_token m_expandCollapseChevronTappedToken{};
+    winrt::UIElement::Tapped_revoker m_expandCollapseChevronTappedRevoker{};
 
     double m_leftIndentation{ 0 };
 

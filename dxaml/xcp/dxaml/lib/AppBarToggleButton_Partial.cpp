@@ -103,17 +103,17 @@ HRESULT AppBarToggleButton::SetDefaultLabelPositionImpl(_In_ xaml_controls::Comm
 }
 
 _Check_return_
-HRESULT AppBarToggleButton::GetHasBottomLabelImpl(_Out_ BOOLEAN *hasBottomLabel)
+HRESULT AppBarToggleButton::GetHasBottomLabelImpl(_Out_ BOOLEAN* hasBottomLabel)
 {
-    xaml_controls::CommandBarDefaultLabelPosition effectiveLabelPosition;
-    HSTRING label;
+    IFC_RETURN(GetHasLabelAtPosition(xaml_controls::CommandBarDefaultLabelPosition_Bottom, hasBottomLabel));
 
-    IFC_RETURN(GetEffectiveLabelPosition(&effectiveLabelPosition));
-    IFC_RETURN(get_Label(&label));
+    return S_OK;
+}
 
-    *hasBottomLabel =
-        effectiveLabelPosition == xaml_controls::CommandBarDefaultLabelPosition_Bottom &&
-        label != nullptr;
+_Check_return_
+HRESULT AppBarToggleButton::GetHasRightLabelImpl(_Out_ BOOLEAN* hasRightLabel)
+{
+    IFC_RETURN(GetHasLabelAtPosition(xaml_controls::CommandBarDefaultLabelPosition_Right, hasRightLabel));
 
     return S_OK;
 }
@@ -269,7 +269,29 @@ AppBarToggleButton::OnCommandChanged(_In_  IInspectable* pOldValue, _In_ IInspec
     return S_OK;
 }
 
-_Check_return_ HRESULT AppBarToggleButton::GetEffectiveLabelPosition(_Out_ xaml_controls::CommandBarDefaultLabelPosition *effectiveLabelPosition)
+_Check_return_ HRESULT AppBarToggleButton::GetHasLabelAtPosition(_In_ xaml_controls::CommandBarDefaultLabelPosition labelPosition, _Out_ BOOLEAN* hasLabelAtPosition)
+{
+    *hasLabelAtPosition = FALSE;
+
+    xaml_controls::CommandBarDefaultLabelPosition effectiveLabelPosition;
+
+    IFC_RETURN(GetEffectiveLabelPosition(&effectiveLabelPosition));
+
+    if (effectiveLabelPosition != labelPosition)
+    {
+        return S_OK;
+    }
+
+    HSTRING label;
+
+    IFC_RETURN(get_Label(&label));
+
+    *hasLabelAtPosition = label != nullptr;
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT AppBarToggleButton::GetEffectiveLabelPosition(_Out_ xaml_controls::CommandBarDefaultLabelPosition* effectiveLabelPosition)
 {
     xaml_controls::CommandBarLabelPosition labelPosition;
     IFC_RETURN(get_LabelPosition(&labelPosition));

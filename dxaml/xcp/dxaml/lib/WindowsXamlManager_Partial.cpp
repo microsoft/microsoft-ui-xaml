@@ -7,6 +7,7 @@
 #include "DesktopWindowXamlSource_Partial.h"
 #include "XamlIsland_Partial.h"
 #include "XamlIslandRoot_Partial.h"
+#include "XamlShutdownCompletedOnThreadEventArgs.g.h"
 
 #include <XamlOneCoreTransforms.h>
 #include <DependencyLocator.h>
@@ -20,6 +21,7 @@
 #include "host.h"
 #include <FeatureFlags.h>
 #include <xcpwindow.h>
+#include "XamlTelemetry.h"
 
 using namespace ctl;
 using namespace DirectUI;
@@ -67,10 +69,18 @@ _Check_return_ HRESULT WindowsXamlManager::CheckWindowingModelPolicy()
 
 _Check_return_ HRESULT WindowsXamlManagerFactory::InitializeForCurrentThreadImpl(_Outptr_ xaml_hosting::IWindowsXamlManager** ppReturnValue)
 {
+    PerfXamlEvent_RAII perfXamlEvent(reinterpret_cast<uint64_t>(this), "WXM::InitializeForCurrentThread", true);
+
     ComPtr<WindowsXamlManager> spCore;
     IFC_RETURN(make<WindowsXamlManager>(&spCore));
     IFC_RETURN(spCore.CopyTo(ppReturnValue));
 
+    return S_OK;
+}
+
+_Check_return_ HRESULT WindowsXamlManagerFactory::get_IsXamlRunningOnCurrentThreadImpl(_Out_ BOOLEAN* pValue)
+{
+    *pValue = (DXamlCore::GetCurrent() != nullptr);
     return S_OK;
 }
 
@@ -135,17 +145,9 @@ _Check_return_ HRESULT WindowsXamlManager::XamlCore::Initialize(msy::IDispatcher
 
     auto shutdownStartingCallback = WRLHelper::MakeAgileCallback<
         wf::ITypedEventHandler<msy::DispatcherQueue*, msy::DispatcherQueueShutdownStartingEventArgs*>>
-        ([](msy::IDispatcherQueue*, msy::IDispatcherQueueShutdownStartingEventArgs*)
+        ([](msy::IDispatcherQueue*, msy::IDispatcherQueueShutdownStartingEventArgs* shutdownStartingArgs)
     {
-        tls_xamlCore->SyncCloseAllManagers();
-
-        const auto shutdownModel{FrameworkApplication::GetCurrentShutdownModel()};
-        if (shutdownModel == xaml::ShutdownModel_Version2)
-        {
-            // For v2, we always wait until FrameworkShutdownStarting to do thread shutdown.
-            // Careful, tls_xamlCore is null after this call.
-            tls_xamlCore->Close();
-        }
+        IGNOREHR(tls_xamlCore->OnFrameworkShutdownStarting(shutdownStartingArgs));
         return S_OK;
     });
 
@@ -225,6 +227,28 @@ _Check_return_ HRESULT WindowsXamlManager::EnqueueClose()
     return S_OK;
 }
 
+void WindowsXamlManager::RaiseXamlShutdownCompletedOnThreadEvent(_In_ msy::IDispatcherQueueShutdownStartingEventArgs* shutdownStartingArgs)
+{
+    if (m_xamlShutdownCompletedOnThreadEventSource && !m_bIsClosed)
+    {
+        ctl::ComPtr<xaml_hosting::IWindowsXamlManager> sender;
+
+        IFCFAILFAST(this->QueryInterfaceImpl(IID_PPV_ARGS(&sender)));
+
+        ctl::ComPtr<XamlShutdownCompletedOnThreadEventArgs> args;
+        ctl::make<XamlShutdownCompletedOnThreadEventArgs>(&args);
+
+        args->SetDispatcherQueueShutdownStartingEventArgs(shutdownStartingArgs);
+        
+        ctl::ComPtr<xaml_hosting::IXamlShutdownCompletedOnThreadEventArgs> argsInterface;
+        IFCFAILFAST(args.As(&argsInterface));
+
+        IGNOREHR(m_xamlShutdownCompletedOnThreadEventSource->Raise(
+            sender.Get(),
+            argsInterface.Get()));
+    }
+}
+
 WindowsXamlManager::XamlCore::~XamlCore()
 {
     ASSERT(m_state == State::Closed);
@@ -256,7 +280,7 @@ _Check_return_ HRESULT WindowsXamlManager::XamlCore::Close()
         CCoreServices* pCoreHandle = pCore->GetHandle();
         ASSERT(pCoreHandle); // Unexpected that we'd not have a valid CCoreServices at this point.
 
-        // Close all the outstanding DesktopWindowXamlSource and XamlIsland instances.  This releases 
+        // Close all the outstanding DesktopWindowXamlSource and XamlIsland instances.  This releases
         // ContentIsland and related IXP objects before we shut everything down.
         if (CXamlIslandRootCollection* xamlIslandRootCollection = pCoreHandle->GetXamlIslandRootCollection())
         {
@@ -369,17 +393,23 @@ _Check_return_ HRESULT WindowsXamlManager::CloseImpl(bool synchronous)
 
     m_bIsClosed = true;
 
-    if (!tls_xamlCore)
+    if (m_xamlCore)
     {
-        // There might not be a XamlCore on the thread if the WindowsXamlManager didn't get successfully initialized.
-        return S_OK;
+        m_xamlCore->RemoveManager(this);
     }
 
-    tls_xamlCore->RemoveManager(this);
+    if (!tls_xamlCore)
+    {
+        // There might not be a XamlCore on the thread if:
+        // * the WindowsXamlManager didn't get successfully initialized.
+        // * or if FrameworkShutdownStarting has been raised and handled already.
+        return S_OK;
+    }
 
     const auto shutdownModel{FrameworkApplication::GetCurrentShutdownModel()};
     if (shutdownModel == xaml::ShutdownModel_Version1)
     {
+        // ShutdownModel_Version1 is deprecated, the app must use a private API to enable it.
         if (tls_xamlCore->ManagerCount() == 0)
         {
             if (synchronous)
@@ -390,6 +420,7 @@ _Check_return_ HRESULT WindowsXamlManager::CloseImpl(bool synchronous)
                 // before doing anything.
                 tls_xamlCore->SetState(XamlCore::State::Closing);
                 IFC_RETURN(tls_xamlCore->Close());
+                tls_xamlCore = nullptr; // Close() already does this, but adding here for clarity.
             }
             else
             {
@@ -399,7 +430,7 @@ _Check_return_ HRESULT WindowsXamlManager::CloseImpl(bool synchronous)
     }
     else if (shutdownModel == xaml::ShutdownModel_Version2)
     {
-        // For V2 we keep the XamlCore open until DispatcherQueue shutdown.
+        // For V2 (the default path) we keep the XamlCore open until DispatcherQueue shutdown.
     }
     else
     {
@@ -434,13 +465,51 @@ void WindowsXamlManager::XamlCore::RemoveManager(_In_ WindowsXamlManager* wxm)
     }
 }
 
-void WindowsXamlManager::XamlCore::SyncCloseAllManagers()
+_Check_return_ HRESULT WindowsXamlManager::XamlCore::OnFrameworkShutdownStarting(
+    _In_ msy::IDispatcherQueueShutdownStartingEventArgs* shutdownStartingArgs)
 {
-    // Make a local copy since closing these instances synchronously will change m_instances
-    std::vector<WindowsXamlManager*> managersCopy {m_managers};
-    for (WindowsXamlManager* manager : managersCopy)
+    const auto shutdownModel{FrameworkApplication::GetCurrentShutdownModel()};
+    if (shutdownModel == xaml::ShutdownModel_Version1)
     {
-        // When the last manager closes, it will trigger a close on this XamlCore object
-        manager->CloseImpl(true /*synchronous*/);
+        // ShutdownModel_Version1 is deprecated, the app must use a private API to enable it.
+        // Make a local copy since closing these instances synchronously will change m_instances
+        std::vector<WindowsXamlManager*> managersCopy {m_managers};
+        for (WindowsXamlManager* manager : managersCopy)
+        {
+            // When the last manager closes, it will trigger a close on this XamlCore object
+            IFC_RETURN(manager->CloseImpl(true /*synchronous*/));
+        }
     }
+    else if (shutdownModel == xaml::ShutdownModel_Version2)
+    {
+        // The default path: we wait until this event (FrameworkShutdownStarting) and then do our thread shutdown.
+
+        // Create strong refs to the remaining WindowsXamlManager objects in case some are released when we call out
+        // to app code.  Note the m_managers vector contains only managers that haven't been closed.
+        std::vector<ctl::ComPtr<WindowsXamlManager>> strongRefManagers;
+        strongRefManagers.reserve(tls_xamlCore->m_managers.size());
+
+        for (WindowsXamlManager* manager : tls_xamlCore->m_managers)
+        {
+            strongRefManagers.push_back(manager);
+        }
+        
+        // This will do the Xaml thread shutdown and remove the TLS entry.
+        tls_xamlCore->Close();
+        tls_xamlCore = nullptr; // Close() already does this, but adding here for clarity.
+
+        for (ctl::ComPtr<WindowsXamlManager> manager : strongRefManagers)
+        {
+            manager->RaiseXamlShutdownCompletedOnThreadEvent(shutdownStartingArgs);
+            IFC_RETURN(manager->Close());
+        }
+    }
+    else
+    {
+        XAML_FAIL_FAST();
+    }
+
+    // The XamlCore on the thread must be gone at this point.
+    ASSERT(tls_xamlCore == nullptr);
+    return S_OK;
 }

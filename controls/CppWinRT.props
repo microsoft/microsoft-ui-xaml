@@ -6,25 +6,25 @@
     <CppWinRTAddXamlMetaDataProviderIdl>false</CppWinRTAddXamlMetaDataProviderIdl>
     <CppWinRTPackage>true</CppWinRTPackage>
     <CppWinRTEnableComponentProjection>true</CppWinRTEnableComponentProjection>
-    <!-- In release builds our "experimental" features are under feature velocity as AlwaysDisabled. C++/WinRT assumes that
-         AlwaysDisabled features should be excluded by default, but we need them included for our component implementation.
-         Use -ignore_velocity to have the feature attributes be ignored by the tool.
-         -->
-    <CppWinRTParameters>-ignore_velocity</CppWinRTParameters>
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTHeapEnforcement>true</CppWinRTHeapEnforcement>
     <BuildPassReferences>true</BuildPassReferences>
     <!-- Reference the private MUX metadata -->
     <IncludePrivateMetadata>true</IncludePrivateMetadata>
-  </PropertyGroup>
+    <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
+    <CppWinRTAddXamlMetaDataProviderIdl>false</CppWinRTAddXamlMetaDataProviderIdl>
 
-  <!-- C++/WinRT uses these files as inputs to their targets, but doesn't actually modify them if their content hasn't changed.
-       As a result, incremental builds fail, since we always detect that the unmerged WinMD file from IDL is more recent than
-       these files.  We'll touch these files to update their timestamps in order to ensure incremental building works properly. -->
-  <Target Name="UpdateCppWinRTResponseFileTimestamps" AfterTargets="CppWinRTMakeProjections;CppWinRTMergeProjectWinMDInputs">
-    <Touch Files="$(IntDir)cppwinrt_plat.rsp" Condition="Exists('$(IntDir)cppwinrt_plat.rsp')" />
-    <Touch Files="$(IntDir)cppwinrt_ref.rsp" Condition="Exists('$(IntDir)cppwinrt_ref.rsp')" />
-    <Touch Files="$(IntDir)cppwinrt_comp.rsp" Condition="Exists('$(IntDir)cppwinrt_comp.rsp')" />
-    <Touch Files="$(IntDir)mdmerge.rsp" Condition="Exists('$(IntDir)mdmerge.rsp')" />
-  </Target>
+    <!-- There's a C++/WinRT generation bug that includes all types that start with ScrollView*
+         despite the fact that only "ScrollView" exactly is the type we want from MUXC:
+
+             https://github.com/microsoft/cppwinrt/issues/835
+
+         This -exclude directive is needed until that issue is fixed. -->
+    <CppWinRTParameters>$(CppWinRTParameters) -exclude Microsoft.UI.Xaml.Controls.ScrollViewer</CppWinRTParameters>
+    <!-- In release builds our "experimental" features are under feature velocity as AlwaysDisabled. C++/WinRT assumes that
+         AlwaysDisabled features should be excluded by default, but we need them included for our component implementation.
+         Use -ignore_velocity to have the feature attributes be ignored by the tool.
+         -->
+    <CppWinRTParameters>$(CppWinRTParameters) -ignore_velocity</CppWinRTParameters>
+  </PropertyGroup>
 </Project>

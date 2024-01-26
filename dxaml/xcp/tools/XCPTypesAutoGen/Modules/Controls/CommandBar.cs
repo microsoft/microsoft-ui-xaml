@@ -127,6 +127,7 @@ namespace Microsoft.UI.Xaml.Controls
     {
         void SetDefaultLabelPosition(Microsoft.UI.Xaml.Controls.CommandBarDefaultLabelPosition defaultLabelPosition);
         Windows.Foundation.Boolean GetHasBottomLabel();
+        Windows.Foundation.Boolean GetHasRightLabel();
     }
 
     [CodeGen(partial: true)]

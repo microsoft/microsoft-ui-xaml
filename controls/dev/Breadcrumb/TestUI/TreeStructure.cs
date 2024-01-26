@@ -55,5 +55,13 @@ namespace Breadcrumb_TestUI
         {
             return Name;
         }
+
+        public string CustomAutomationName
+        {
+            get
+            { 
+                return "Custom automation name " + Name;
+            }
+        }
     }
 }

@@ -23,6 +23,7 @@
     <LocalizedMUIFilesPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Internal.WinUILocalizationResources.*?version="(.*?)"').Groups[1].Value)</LocalizedMUIFilesPackageVersion>
     <MicrosoftWindowsSDKUWPManagedVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.SDK.UWP.Managed.*?version="(.*?)"').Groups[1].Value)</MicrosoftWindowsSDKUWPManagedVersion>
     <MicrosoftWindowsSDKContractsVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.SDK.Contracts.*?version="(.*?)"').Groups[1].Value)</MicrosoftWindowsSDKContractsVersion>
+    <MicrosoftWindowsSDKCppVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.SDK.cpp.*?version="(.*?)"').Groups[1].Value)</MicrosoftWindowsSDKCppVersion>
     <TaefNugetPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Taef.*?version="(.*?)"').Groups[1].Value)</TaefNugetPackageVersion>
     <MicrosoftNETCoreUniversalWindowsPlatformVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.NETCore.UniversalWindowsPlatform.*?version="(.*?)"').Groups[1].Value)</MicrosoftNETCoreUniversalWindowsPlatformVersion>
     <CurrentWilPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.ImplementationLibrary.*?version="(.*?)"').Groups[1].Value)</CurrentWilPackageVersion>
@@ -43,22 +44,26 @@
     <!-- It is at this point that we might want our non-product code to be able to use a package version different than the primary configuration -->
     <!-- If so, this would probably be the point at which we would override the above version with what is configured for the app                 -->
     <!-- The package version identifies the targeted package version based on the configured packages. -->
-    <PackageTargetPlatformVersion>$(MicrosoftWindowsSDKCppNugetPackageVersion.Substring(0,$(MicrosoftWindowsSDKCppNugetPackageVersion.LastIndexOf('.')))).0</PackageTargetPlatformVersion>
+    <PackageTargetPlatformVersion>$(MicrosoftWindowsSDKCppVersion.Substring(0,$(MicrosoftWindowsSDKCppVersion.LastIndexOf('.')))).0</PackageTargetPlatformVersion>
+    <WindowsSdkTargetPlatformVersion>$(PackageTargetPlatformVersion)</WindowsSdkTargetPlatformVersion>
     <!-- Force our build version to match the package version -->
-    <WindowsTargetPlatformVersion>$(PackageTargetPlatformVersion)</WindowsTargetPlatformVersion>
-    <SamplesTargetFrameworkMoniker>net6.0-windows10.0.19041.0</SamplesTargetFrameworkMoniker>
     <WinUIVersion Condition="'$(WinUIVersion)'==''">3.0.0-dev</WinUIVersion>
     <WindowsAppSdkPackageConfig Condition="'$(WindowsAppSdkPackageConfig)'==''">$(Configuration)</WindowsAppSdkPackageConfig>
     <WindowsAppSdkPackageVersion Condition="'$(WindowsAppSdkPackageVersion)'==''">999.0.0-mock-$(WinUIVersion)-$(BuildPlatform)-$(WindowsAppSdkPackageConfig)</WindowsAppSdkPackageVersion>
-    <CurrentLiftedIXPTargetPlatformVersion>10.0.18362.0</CurrentLiftedIXPTargetPlatformVersion>
     <CurrentLiftedIXPPackageVersion>0.9.0-CI-22495.1000.211103-1000.2</CurrentLiftedIXPPackageVersion>
     <MicrosoftVisualStudioProjectSystemVersion>15.0.737</MicrosoftVisualStudioProjectSystemVersion>
-    <WindowsTargetPlatformMinVersion>10.0.17763.0</WindowsTargetPlatformMinVersion>
-    <DotNetCoreTargetFrameworkMoniker>$(_DotNetMoniker)-windows$(WindowsTargetPlatformVersion)</DotNetCoreTargetFrameworkMoniker>
-    <!-- For compat reasons, this should always be .NET 6, as it controls the .NET version the Microsoft.WinUI.dll CSWinRT projection assembly targets. -->
-    <DotNetCoreTargetFrameworkMonikerForPackaging>net6.0-windows$(WindowsTargetPlatformMinVersion)</DotNetCoreTargetFrameworkMonikerForPackaging>
+    <WindowsAppSdkTargetPlatformVersion>10.0.17763.0</WindowsAppSdkTargetPlatformVersion>
+    <CurrentLiftedIXPTargetPlatformVersion>$(WindowsAppSdkTargetPlatformVersion)</CurrentLiftedIXPTargetPlatformVersion>
+    <Ixp-UAPTargetVersion>uap10.0.17763</Ixp-UAPTargetVersion>
+    <!-- Set project default target platform version properties globally -->
+    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)'==''">$(WindowsSdkTargetPlatformVersion)</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformMinVersion Condition="'$(WindowsTargetPlatformMinVersion)'==''">$(WindowsAppSdkTargetPlatformVersion)</WindowsTargetPlatformMinVersion>
     <!-- XeWin10TargetVersion is needed by the Microsoft.Windows.SDK.cpp.targets -->
     <XeWin10TargetVersion>$(WindowsTargetPlatformVersion)</XeWin10TargetVersion>
+    <DotNetCoreTargetFrameworkMoniker>$(_DotNetMoniker)-windows$(WindowsTargetPlatformVersion)</DotNetCoreTargetFrameworkMoniker>
+    <!-- For compat reasons, this should always be .NET 6, as it controls the .NET version the Microsoft.WinUI.dll CSWinRT projection assembly targets. -->
+    <WindowsAppSdkTargetFrameworkMoniker>net6.0-windows$(WindowsAppSdkTargetPlatformVersion)</WindowsAppSdkTargetFrameworkMoniker>
+    <SamplesTargetFrameworkMoniker>$(WindowsAppSdkTargetFrameworkMoniker)</SamplesTargetFrameworkMoniker>
     <!--
          Keep this CsWinRT version in sync with both \Samples\WinUIGallery\WinUIGallery\standalone.props as well
          as what is included in the .NET version specified below
@@ -91,7 +96,7 @@
     <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     MUXCustomBuildTasks=$(MuxCustomBuildTasksPackageVersion)" />
     <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.SourceLink.AzureRepos.Git=$(MicrosoftSourceLinkAzureReposVersion)" />
     <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.Windows.SDK.BuildTools=$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)" />
-    <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.Windows.SDK.cpp=$(MicrosoftWindowsSDKCppNugetPackageVersion)" />
+    <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.Windows.SDK.cpp=$(WindowsSdkTargetPlatformVersion)" />
     <!-- Verify that we were able to retrieve all the versions from the configuration files. -->
     <Error Condition="'$(FoundationTransportPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.WindowsAppSDK.Foundation.TransportPackage" />
     <Error Condition="'$(IxpTransportPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" />
@@ -107,6 +112,11 @@
     <Error Condition="'$(MuxCustomBuildTasksPackageVersion)' == ''" Text="Unable to determine version for package MUXCustomBuildTasks" />
     <Error Condition="'$(MicrosoftSourceLinkAzureReposVersion)' == ''" Text="Unable to determine version for package Microsoft.SourceLink.AzureRepos.Git" />
     <Error Condition="'$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.Windows.SDK.BuildTools" />
-    <Error Condition="'$(MicrosoftWindowsSDKCppNugetPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.Windows.SDK.cpp" />
+    <Error Condition="'$(MicrosoftWindowsSDKCppVersion)' == ''" Text="Unable to determine version for package Microsoft.Windows.SDK.cpp" />
+    <!-- Verify consistency across all SDK package versions. -->
+    <Error Condition="'$(MicrosoftWindowsSDKCppVersion)' != '$(MicrosoftWindowsSDKCppNugetPackageVersion)'" Text="Version mismatch between arch-specific and arch-neutral Microsoft.Windows.SDK.cpp" />
+    <Error Condition="'$(MicrosoftWindowsSDKCppVersion)' != '$(MicrosoftWindowsSDKUWPManagedVersion)'" Text="Version mismatch between Microsoft.Windows.SDK and Microsoft.Windows.SDK.UWP.Managed" />
+    <!-- Temporarily requiring BuildTools 22621.756 for transitive reference support -->
+    <!-- <Error Condition="'$(MicrosoftWindowsSDKCppVersion)' != '$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)'" Text="Version mismatch between Microsoft.Windows.SDK and Microsoft.Windows.SDK.BuildTools" /> -->
   </Target>
 </Project>

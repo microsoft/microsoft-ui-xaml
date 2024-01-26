@@ -28,9 +28,6 @@
 // Forward declare a version of TrackerHandle that's compatible with our stubs
 typedef void* TrackerHandle;
 
-typedef DWORD POINTER_INPUT_TYPE;
-typedef void* POINTER_INFO;
-
 #include <xcpwindows.h>
 #include <DWrite_3.h>
 #include <xmllite.h>

@@ -35,12 +35,10 @@ HRESULT DirectUI::DebugSettingsGenerated::QueryInterfaceImpl(_In_ REFIID iid, _O
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IDebugSettings2>(this);
     }
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IDebugSettingsFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IDebugSettings3)))
     {
-        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IDebugSettingsFeature_ExperimentalApi>(this);
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IDebugSettings3>(this);
     }
-#endif
     else
     {
         RRETURN(DirectUI::DependencyObject::QueryInterfaceImpl(iid, ppObject));
@@ -141,39 +139,39 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::put_I
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::get_LayoutCycleDebugBreaks(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel* pValue)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::get_LayoutCycleDebugBreakLevel(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel* pValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
     
-    IFC(static_cast<DebugSettings*>(this)->get_LayoutCycleDebugBreaksImpl(pValue));
+    IFC(static_cast<DebugSettings*>(this)->get_LayoutCycleDebugBreakLevelImpl(pValue));
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::put_LayoutCycleDebugBreaks(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::put_LayoutCycleDebugBreakLevel(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel value)
 {
     HRESULT hr = S_OK;
     
     IFC(DefaultStrictApiCheck(this));
-    IFC(static_cast<DebugSettings*>(this)->put_LayoutCycleDebugBreaksImpl(value));
+    IFC(static_cast<DebugSettings*>(this)->put_LayoutCycleDebugBreakLevelImpl(value));
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::get_LayoutCycleTracing(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel* pValue)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::get_LayoutCycleTracingLevel(_Out_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel* pValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
     
-    IFC(static_cast<DebugSettings*>(this)->get_LayoutCycleTracingImpl(pValue));
+    IFC(static_cast<DebugSettings*>(this)->get_LayoutCycleTracingLevelImpl(pValue));
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::put_LayoutCycleTracing(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::put_LayoutCycleTracingLevel(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel value)
 {
     HRESULT hr = S_OK;
     
     IFC(DefaultStrictApiCheck(this));
-    IFC(static_cast<DebugSettings*>(this)->put_LayoutCycleTracingImpl(value));
+    IFC(static_cast<DebugSettings*>(this)->put_LayoutCycleTracingLevelImpl(value));
 Cleanup:
     RRETURN(hr);
 }

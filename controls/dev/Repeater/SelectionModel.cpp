@@ -504,6 +504,12 @@ void SelectionModel::RaisePropertyChanged(std::wstring_view const& name)
 
 void SelectionModel::OnSelectionInvalidatedDueToCollectionChange()
 {
+    auto scopeGuard = gsl::finally([this]()
+    {
+        m_selectionInvalidatedDueToCollectionChange = false;
+    });
+
+    m_selectionInvalidatedDueToCollectionChange = true;
     OnSelectionChanged();
 }
 

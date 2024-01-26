@@ -2084,6 +2084,128 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.MapControl",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.MapControl",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Control",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IMapControlFactory>(L"Microsoft.UI.Xaml.Controls.MapControl"); },
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::IMapControlStatics statics = GetFactory<winrt::IMapControlStatics>(L"Microsoft.UI.Xaml.Controls.MapControl");
+                    {
+                        xamlType.AddDPMember(L"Center", L"Windows.Devices.Geolocation.Geopoint", statics.CenterProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"InteractiveControlsVisible", L"Boolean", statics.InteractiveControlsVisibleProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"Layers", L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.MapLayer>", statics.LayersProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"MapServiceToken", L"String", statics.MapServiceTokenProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"ZoomLevel", L"Double", statics.ZoomLevelProperty(), false /* isContent */);
+                    }
+
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.MapElement",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.MapElement",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.DependencyObject",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.MapLayer",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.MapLayer",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.DependencyObject",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.MapElementsLayer",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.MapElementsLayer",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.MapLayer",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IMapElementsLayerFactory>(L"Microsoft.UI.Xaml.Controls.MapElementsLayer"); },
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::IMapElementsLayerStatics statics = GetFactory<winrt::IMapElementsLayerStatics>(L"Microsoft.UI.Xaml.Controls.MapElementsLayer");
+                    {
+                        xamlType.AddDPMember(L"MapElements", L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.MapElement>", statics.MapElementsProperty(), false /* isContent */);
+                    }
+
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.MapIcon",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.MapIcon",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.MapElement",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IMapIconFactory>(L"Microsoft.UI.Xaml.Controls.MapIcon"); },
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::IMapIconStatics statics = GetFactory<winrt::IMapIconStatics>(L"Microsoft.UI.Xaml.Controls.MapIcon");
+                    {
+                        xamlType.AddDPMember(L"Location", L"Windows.Devices.Geolocation.Geopoint", statics.LocationProperty(), false /* isContent */);
+                    }
+
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.MenuBar",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -5246,6 +5368,60 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.SelectorBar",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.SelectorBar",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Control",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::ISelectorBarFactory>(L"Microsoft.UI.Xaml.Controls.SelectorBar"); },
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::ISelectorBarStatics statics = GetFactory<winrt::ISelectorBarStatics>(L"Microsoft.UI.Xaml.Controls.SelectorBar");
+                    {
+                        xamlType.AddDPMember(L"Items", L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.SelectorBarItem>", statics.ItemsProperty(), true /* isContent */);
+                        xamlType.AddDPMember(L"SelectedItem", L"Microsoft.UI.Xaml.Controls.SelectorBarItem", statics.SelectedItemProperty(), false /* isContent */);
+                    }
+
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.SelectorBarItem",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.SelectorBarItem",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.ItemContainer",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::ISelectorBarItemFactory>(L"Microsoft.UI.Xaml.Controls.SelectorBarItem"); },
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::ISelectorBarItemStatics statics = GetFactory<winrt::ISelectorBarItemStatics>(L"Microsoft.UI.Xaml.Controls.SelectorBarItem");
+                    {
+                        xamlType.AddDPMember(L"Icon", L"Microsoft.UI.Xaml.Controls.IconElement", statics.IconProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"Text", L"String", statics.TextProperty(), false /* isContent */);
+                    }
+
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.SplitButton",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -7248,6 +7424,16 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Windows.Devices.Geolocation.Geopoint",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>((PCWSTR)L"Windows.Devices.Geolocation.Geopoint", (PCWSTR)L"Object" /* BaseTypeName */ , nullptr /* Activator Func */, nullptr /* PopulatePropertiesFunc */ );
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Windows.Foundation.Collections.IMap`2<String,Microsoft.UI.Xaml.DataTemplate>",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -7363,6 +7549,36 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.MapElement>",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>((PCWSTR)L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.MapElement>", (PCWSTR)L"Object" /* BaseTypeName */ , nullptr /* Activator Func */, nullptr /* PopulatePropertiesFunc */ );
+            xamlType->SetCollectionAddFunc((std::function<void(winrt::IInspectable const&, winrt::IInspectable const&)>)[](winrt::IInspectable const& collection, winrt::IInspectable const& value)
+            {
+                collection.as<winrt::Windows::Foundation::Collections::IVector<winrt::Microsoft::UI::Xaml::Controls::MapElement>>().Append(unbox_value<winrt::Microsoft::UI::Xaml::Controls::MapElement>(value));
+            });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.MapLayer>",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>((PCWSTR)L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.MapLayer>", (PCWSTR)L"Object" /* BaseTypeName */ , nullptr /* Activator Func */, nullptr /* PopulatePropertiesFunc */ );
+            xamlType->SetCollectionAddFunc((std::function<void(winrt::IInspectable const&, winrt::IInspectable const&)>)[](winrt::IInspectable const& collection, winrt::IInspectable const& value)
+            {
+                collection.as<winrt::Windows::Foundation::Collections::IVector<winrt::Microsoft::UI::Xaml::Controls::MapLayer>>().Append(unbox_value<winrt::Microsoft::UI::Xaml::Controls::MapLayer>(value));
+            });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.MenuBarItem>",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -7416,6 +7632,21 @@ Entry c_typeEntries[] =
             xamlType->SetCollectionAddFunc((std::function<void(winrt::IInspectable const&, winrt::IInspectable const&)>)[](winrt::IInspectable const& collection, winrt::IInspectable const& value)
             {
                 collection.as<winrt::Windows::Foundation::Collections::IVector<winrt::Microsoft::UI::Xaml::Controls::Primitives::ZoomSnapPointBase>>().Append(unbox_value<winrt::Microsoft::UI::Xaml::Controls::Primitives::ZoomSnapPointBase>(value));
+            });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.SelectorBarItem>",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>((PCWSTR)L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.SelectorBarItem>", (PCWSTR)L"Object" /* BaseTypeName */ , nullptr /* Activator Func */, nullptr /* PopulatePropertiesFunc */ );
+            xamlType->SetCollectionAddFunc((std::function<void(winrt::IInspectable const&, winrt::IInspectable const&)>)[](winrt::IInspectable const& collection, winrt::IInspectable const& value)
+            {
+                collection.as<winrt::Windows::Foundation::Collections::IVector<winrt::Microsoft::UI::Xaml::Controls::SelectorBarItem>>().Append(unbox_value<winrt::Microsoft::UI::Xaml::Controls::SelectorBarItem>(value));
             });
 
             return static_cast<winrt::IXamlType>(*xamlType);
@@ -7509,6 +7740,7 @@ hstring c_knownNamespacePrefixes[] =
     L"Microsoft.UI.Xaml.",
     L"Microsoft.Web.WebView2.",
     L"Windows.ApplicationModel.Contacts.",
+    L"Windows.Devices.Geolocation.",
     L"Windows.Foundation.",
     L"Windows.Foundation.Collections.",
     L"Windows.Foundation.Numerics.",
@@ -7548,6 +7780,9 @@ hstring c_knownNamespacePrefixes[] =
 #include "ItemsView.properties.h"
 #include "LayoutPanel.properties.h"
 #include "LinedFlowLayout.properties.h"
+#include "MapControl.properties.h"
+#include "MapElementsLayer.properties.h"
+#include "MapIcon.properties.h"
 #include "MenuBar.properties.h"
 #include "MenuBarItem.properties.h"
 #include "MicaBackdrop.properties.h"
@@ -7578,6 +7813,8 @@ hstring c_knownNamespacePrefixes[] =
 #include "RevealBrush.properties.h"
 #include "ScrollPresenter.properties.h"
 #include "ScrollView.properties.h"
+#include "SelectorBar.properties.h"
+#include "SelectorBarItem.properties.h"
 #include "SplitButton.properties.h"
 #include "StackLayout.properties.h"
 #include "SwipeControl.properties.h"
@@ -7637,6 +7874,9 @@ void ClearTypeProperties()
     ItemsViewProperties::ClearProperties();
     LayoutPanelProperties::ClearProperties();
     LinedFlowLayoutProperties::ClearProperties();
+    MapControlProperties::ClearProperties();
+    MapElementsLayerProperties::ClearProperties();
+    MapIconProperties::ClearProperties();
     MenuBarProperties::ClearProperties();
     MenuBarItemProperties::ClearProperties();
     MicaBackdropProperties::ClearProperties();
@@ -7667,6 +7907,8 @@ void ClearTypeProperties()
     RevealBrushProperties::ClearProperties();
     ScrollPresenterProperties::ClearProperties();
     ScrollViewProperties::ClearProperties();
+    SelectorBarProperties::ClearProperties();
+    SelectorBarItemProperties::ClearProperties();
     SplitButtonProperties::ClearProperties();
     StackLayoutProperties::ClearProperties();
     SwipeControlProperties::ClearProperties();

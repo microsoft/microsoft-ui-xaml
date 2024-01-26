@@ -13,8 +13,8 @@
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <GenericXamlPath>..\</GenericXamlPath>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion>10.0.18362.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
+    <TargetPlatformVersion>$(WindowsSdkTargetPlatformVersion)</TargetPlatformVersion>
+    <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <!-- We want to ignore the output files from this build. This project will manually binplace it's output  -->
     <BinplaceOutputAssemblies>false</BinplaceOutputAssemblies>

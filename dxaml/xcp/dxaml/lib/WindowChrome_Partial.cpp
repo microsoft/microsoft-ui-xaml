@@ -17,7 +17,7 @@
 using namespace DirectUI;
 namespace RectHelpers = WindowHelpers::RectHelpers;
 
-HWND WindowChrome::GetBridgeWindowHandle() const {return GetDesktopWindowNoRef()->GetBridgeWindowHandle();}
+HWND WindowChrome::GetPositioningBridgeWindowHandle() const {return GetDesktopWindowNoRef()->GetPositioningBridgeWindowHandle();}
 
 _Check_return_ HRESULT WindowChromeFactory::CreateInstanceImpl(
     _In_ xaml::IWindow* parent,

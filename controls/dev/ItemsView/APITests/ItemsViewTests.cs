@@ -119,7 +119,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(c_defaultUIItemsViewWidth, itemsView.ActualWidth);
                     Verify.AreEqual(c_defaultUIItemsViewHeight, itemsView.ActualHeight);
 
-                    Log.Comment("Verifying ItemsView property values after Loaded event");
+                    Log.Comment("Verifying ScrollView property values after Loaded event");
                     ScrollView scrollView = ItemsViewTestHooks.GetScrollViewPart(itemsView);
 
                     Verify.IsNotNull(scrollView);
@@ -284,6 +284,61 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
                 Log.Comment("Done");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Loads and populates an ItemsView with an ItemsSource made of ItemContainers.")]
+        public void CanUseItemsSourceWithItemContainers()
+        {
+            using (PrivateLoggingHelper privateIVLoggingHelper = new PrivateLoggingHelper("ItemsView"))
+            {
+                ItemsView itemsView = null;
+                List<ItemContainer> itemsSource = new List<ItemContainer>();
+                AutoResetEvent itemsViewLoadedEvent = new AutoResetEvent(false);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        ItemContainer itemContainer = new ItemContainer()
+                        {
+                            Name = "itemContainer" + i.ToString(),
+                            Child = new TextBlock()
+                            {
+                                Text = i.ToString()
+                            }
+                        };
+                        itemsSource.Add(itemContainer);
+                    }
+
+                    itemsView = new ItemsView() { ItemsSource = itemsSource };
+                    SetupDefaultUI(itemsView, itemsViewLoadedEvent);
+                });
+
+                WaitForEvent("Waiting for Loaded event", itemsViewLoadedEvent);
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Logging ItemsView property values after Loaded event");
+                    LogItemsViewProperties(itemsView);
+
+                    Log.Comment("Accessing inner ItemsRepeater");
+                    ItemsRepeater itemsRepeater = ItemsViewTestHooks.GetItemsRepeaterPart(itemsView);
+                    Verify.IsNotNull(itemsRepeater);
+
+                    Log.Comment("Verifying ItemsRepeater children count");
+                    int childrenCount = VisualTreeHelper.GetChildrenCount(itemsRepeater);
+                    Verify.AreEqual(3, childrenCount);
+
+                    Log.Comment($"Extracting first ItemContainer, children count: {childrenCount}");
+                    ItemContainer itemContainer = itemsRepeater.FindVisualChildByType<ItemContainer>();
+                    Verify.IsNotNull(itemContainer);
+
+                    Log.Comment("Verifying ItemsContainer name");
+                    Verify.AreEqual("itemContainer0", itemContainer.Name);
+                });
             }
         }
 

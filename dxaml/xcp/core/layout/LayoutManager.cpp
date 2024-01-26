@@ -299,7 +299,7 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
             {
                 extraInfoEntries[extraInfoIndex].append(L" Launching Measure Pass.");
 
-                if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Level1))
+                if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Low))
                 {
                     std::wstring trace;
                     trace.assign(L"[LayoutCycleTracing] ");
@@ -331,7 +331,7 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
             {
                 extraInfoEntries[extraInfoIndex].append(L" Launching Arrange Pass.");
 
-                if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Level1))
+                if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Low))
                 {
                     std::wstring trace;
                     trace.assign(L"[LayoutCycleTracing] ");
@@ -356,7 +356,7 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
             {
                 extraInfoEntries[extraInfoIndex].append(L" Launching EffectiveViewport Pass.");
 
-                if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Level1))
+                if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Low))
                 {
                     std::wstring trace;
                     trace.assign(L"[LayoutCycleTracing] ");
@@ -401,7 +401,7 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
                 {
                     extraInfoEntries[extraInfoIndex].append(L" Raising SizeChanged Events.");
 
-                    if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Level1))
+                    if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Low))
                     {
                         std::wstring trace;
                         trace.assign(L"[LayoutCycleTracing] ");
@@ -430,7 +430,7 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
                 {
                     extraInfoEntries[extraInfoIndex].append(L" Raising LayoutUpdated Events.");
 
-                    if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Level1))
+                    if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Low))
                     {
                         std::wstring trace;
                         trace.assign(L"[LayoutCycleTracing] ");
@@ -537,7 +537,7 @@ void CLayoutManager::EnqueueForSizeChanged(_In_ CUIElement* pElement, _In_ const
 
             pElement->StoreLayoutCycleWarningContext(warningInfo, this);
 
-            if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Level1))
+            if (LayoutCycleDebugSettings::ShouldDebugBreak(DirectUI::LayoutCycleDebugBreakLevel::Low))
             {
                 __debugbreak();
             }

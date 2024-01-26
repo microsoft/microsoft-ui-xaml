@@ -3,7 +3,7 @@
 
 #include <pch.h>
 #include "RuntimeProfiler.h"
-#include "TraceLogging.h"
+#include "MuxcTraceLogging.h"
 
 // Version of binary, defined in dllmain.cpp from WinUIrc.ver
 extern const char *gFileVersion;
@@ -32,7 +32,7 @@ namespace RuntimeProfiler {
     {
     public:
         static const int TableSize = size;
-        
+
         CMethodProfileGroup(ProfileGroup group)
         :   m_cMethods(0)
         ,   m_group(group)
@@ -41,31 +41,31 @@ namespace RuntimeProfiler {
             //      basically means that anything we call here in the
             //      constructor needs to be safe to call during DllMain.
         }
-        
+
         ~CMethodProfileGroup()
         {
             //  Ditto from above.
             UninitializeRuntimeProfiler();
         }
-        
+
         void RegisterMethod(UINT16 uTypeIndex, UINT16 uMethodIndex, volatile LONG *pCount) noexcept override
         {
             static_assert(sizeof(LONG) == sizeof(UINT32), "Since we're using InterlockedIncrement, make sure that this is the same size independent of build flavors.");
-            
+
             //  Zero-based index
             const LONG WriteIndex = ::InterlockedIncrement(&m_cMethods) - 1;
-            
+
             if (WriteIndex < (LONG)(m_Counts.max_size()))
             {
                 m_Counts[WriteIndex].uTypeIndex          = uTypeIndex;
                 m_Counts[WriteIndex].uMethodIndex        = uMethodIndex;
-                
+
                 //  Note:  This pointer is the last thing to be set, this is
                 //    intentional, FireEvent will check the this pointer and
                 //    if set will assume that the rest of this structure is
                 //    valid, do not change the order.
                 m_Counts[WriteIndex].pInstanceCount      = pCount;
-                
+
                 //  FireEvent() will reset counts to zero and we don't want
                 //  RegisterMethod() to be called again, thus we set the
                 //  initial static value to -1, to be incremented to 0 on first
@@ -73,7 +73,7 @@ namespace RuntimeProfiler {
                 ::InterlockedIncrement(pCount);
             }
         }
-        
+
         void FireEvent(bool bSuspend) noexcept override
         {
             if (!g_IsTelemetryProviderEnabled)
@@ -88,19 +88,19 @@ namespace RuntimeProfiler {
             bool        bStringOverflow = false;
             UINT16      cMethodsLogged = 0;
             bool        bSeparator = false;
-            
+
             //  Each entry will look like this:
             //  [XX|YYYY]:ZZZ
             //  Conservatively accounting for 20 characters per entry depending
             //  on the length of the numbers.
             WCHAR       OutputBuffer[20 * TableSize];
             size_t      cchDest = ARRAYSIZE(OutputBuffer);
-   
+
             // min
             cMethods = std::min(cMethods, ArraySize);
-   
+
             PWSTR       pszDest = &(OutputBuffer[0]);
-            
+
             for (UINT32 ii = 0; ii < cMethods; ii++)
             {
                 LONG        cHits;
@@ -112,10 +112,10 @@ namespace RuntimeProfiler {
                     //  up on the next FireEvent().
                     continue;
                 }
-            
+
                 //  Zeroing out AND getting value.
                 cHits = InterlockedExchange(m_Counts[ii].pInstanceCount, 0);
-            
+
                 if (0 != cHits)
                 {
                     //  We're using id's instead.  The entry in the list will
@@ -142,22 +142,22 @@ namespace RuntimeProfiler {
                     {
                         //  The only legit ways to get invalid parameter
                         //    here is ccDest == 0, so it's effectively an
-                        //    overflow condition.  
+                        //    overflow condition.
                         bStringOverflow = true;
                         break;
                     }
                 }
             }
-        
+
             if (0 == cMethodsLogged)
             {
                 return;
             }
-            
-            TraceLoggingWrite(  
-                g_hTelemetryProvider,  
+
+            TraceLoggingWrite(
+                g_hTelemetryProvider,
                 "RuntimeProfiler",
-                TraceLoggingDescription("XAML methods that have been called."),  
+                TraceLoggingDescription("XAML methods that have been called."),
                 TraceLoggingString(gFileVersion, "BinaryVersion"),
                 TraceLoggingWideString(OutputBuffer, "ApiCounts"),
                 TraceLoggingUInt32(((UINT32)m_group), "ProfileGroupId"),
@@ -169,7 +169,7 @@ namespace RuntimeProfiler {
                 TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
                 TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
         }
-        
+
     private:
         std::array<FunctionTelemetryCount, TableSize>   m_Counts = {0};
         LONG                                            m_cMethods;
@@ -185,7 +185,7 @@ namespace RuntimeProfiler {
     {
         CMethodProfileGroupBase    *pGroup;
         const char                 *pszGroupName;
-    } gProfileGroups[] = 
+    } gProfileGroups[] =
     {
         { static_cast<CMethodProfileGroupBase*>(&gGroupClasses), "Classes" },
     };
@@ -236,7 +236,7 @@ namespace RuntimeProfiler {
     void InitializeRuntimeProfiler()
     {
         g_pTimer = ::CreateThreadpoolTimer(TPTimerCallback, nullptr, nullptr);
-    
+
         if (nullptr != g_pTimer)
         {
             LARGE_INTEGER   lidueTime;
@@ -245,15 +245,15 @@ namespace RuntimeProfiler {
             //  Setting periodic timer.  Using negative time in 100 nanosecond
             //  intervals to indicate relative time.
             lidueTime.QuadPart = -10000 * (LONGLONG)(std::chrono::milliseconds(EventFrequency).count());
-        
+
             ftdueTime.dwHighDateTime = (DWORD)(lidueTime.HighPart);
             ftdueTime.dwLowDateTime  = lidueTime.LowPart;
-            
+
             //  Setting the callback window length to 60 seconds since the
             //  timing of the event is not critical
             SetThreadpoolTimer(g_pTimer, &ftdueTime, (DWORD)(std::chrono::milliseconds(EventFrequency).count()), 60 * 1000);
         }
-        
+
         //  Since MUX doesn't piggyback the WUX Extension suspend handler,
         //  we sign up for suspension notifications.
         try

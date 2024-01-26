@@ -1110,7 +1110,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 Log.Comment("Invoke FlyoutTarget 6 to Show CommandBarFlyout with no primary commands");
-                showCommandBarFlyoutButton.Click();
+                showCommandBarFlyoutButton.InvokeAndWait();
 
                 Log.Comment("Waiting for SecondaryCommandDynamicLabelChangedCheckBox becoming checked indicating the asynchronous Label property change occurred");
                 primaryCommandDynamicallyAddedCheckBox.GetToggledWaiter().Wait();

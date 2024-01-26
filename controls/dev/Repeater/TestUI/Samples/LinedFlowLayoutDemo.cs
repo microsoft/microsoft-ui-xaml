@@ -163,12 +163,12 @@ namespace MUXControlsTestApp.Samples
             txtExceptionReport.Text = string.Empty;
         }
 
-        private void BtnClearItemsViewEvents_Click(object sender, RoutedEventArgs e)
+        private void BtnClearEvents_Click(object sender, RoutedEventArgs e)
         {
             lstEvents.Items.Clear();
         }
 
-        private void BtnCopyItemsViewEvents_Click(object sender, RoutedEventArgs e)
+        private void BtnCopyEvents_Click(object sender, RoutedEventArgs e)
         {
             string logs = string.Empty;
 

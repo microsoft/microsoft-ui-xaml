@@ -1789,7 +1789,7 @@ _Check_return_ HRESULT PointerInputProcessor::SetPointerCapture(
                 // to set focus rather than the top-level HWND.
                 //
                 // ISLANDTODO: Do we want to make this ancestor walk more efficient, or create a
-                // method like CUIElement::GetElementInputWindow() that encapsulates the correct policy?
+                // method like CUIElement::GetElementIslandInputSite() that encapsulates the correct policy?
                 // - Are there any other places we need to stop the ancestor walk, such as at
                 //   KnownTypeIndex::PopupRoot or something?
                 xref_ptr<CPopup> popup;

@@ -11,7 +11,12 @@
 
 #pragma once
 
-
+#include <FeatureFlags.h>
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi) 
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE override
+#else
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE
+#endif
 #define __WindowsXamlManager_GUID "3b953d5c-2c9f-4e49-88a7-c030616de1f0"
 
 #pragma region forwarders
@@ -22,6 +27,14 @@ namespace ctl
         : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager, impl_type>
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
+    };
+    template<typename impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerFeature_ExperimentalApi, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerFeature_ExperimentalApi, impl_type>
+    {
+        impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(add_XamlShutdownCompletedOnThread)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Hosting::WindowsXamlManager*, ABI::Microsoft::UI::Xaml::Hosting::XamlShutdownCompletedOnThreadEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_XamlShutdownCompletedOnThread(pValue, pToken); }
+        IFACEMETHOD(remove_XamlShutdownCompletedOnThread)(_In_ EventRegistrationToken token) override { return This()->remove_XamlShutdownCompletedOnThread(token); }
     };
 }
 #pragma endregion
@@ -34,6 +47,9 @@ namespace DirectUI
         public ctl::WeakReferenceSource
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager, WindowsXamlManagerGenerated >
         , public ABI::Windows::Foundation::IClosable
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerFeature_ExperimentalApi, WindowsXamlManagerGenerated >
+#endif
     {
         friend class DirectUI::WindowsXamlManager;
 
@@ -42,6 +58,9 @@ namespace DirectUI
         BEGIN_INTERFACE_MAP(WindowsXamlManagerGenerated, ctl::WeakReferenceSource)
             INTERFACE_ENTRY(WindowsXamlManagerGenerated, ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager)
             INTERFACE_ENTRY(WindowsXamlManagerGenerated, ABI::Windows::Foundation::IClosable)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+            INTERFACE_ENTRY(WindowsXamlManagerGenerated, ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerFeature_ExperimentalApi)
+#endif
         END_INTERFACE_MAP(WindowsXamlManagerGenerated, ctl::WeakReferenceSource)
 
     public:
@@ -49,11 +68,19 @@ namespace DirectUI
         ~WindowsXamlManagerGenerated() override;
 
         // Event source typedefs.
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        typedef CEventSource<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Hosting::WindowsXamlManager*, ABI::Microsoft::UI::Xaml::Hosting::XamlShutdownCompletedOnThreadEventArgs*>, ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager, ABI::Microsoft::UI::Xaml::Hosting::IXamlShutdownCompletedOnThreadEventArgs> XamlShutdownCompletedOnThreadEventSourceType;
+#endif
 
 
         // Properties.
 
         // Events.
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        virtual _Check_return_ HRESULT GetXamlShutdownCompletedOnThreadEventSourceNoRef(_Outptr_ XamlShutdownCompletedOnThreadEventSourceType** ppEventSource) = 0;
+        _Check_return_ HRESULT STDMETHODCALLTYPE add_XamlShutdownCompletedOnThread(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Hosting::WindowsXamlManager*, ABI::Microsoft::UI::Xaml::Hosting::XamlShutdownCompletedOnThreadEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken);
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_XamlShutdownCompletedOnThread(_In_ EventRegistrationToken token);
+#endif
 
         // Methods.
 
@@ -62,6 +89,7 @@ namespace DirectUI
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
 
     private:
+       _Check_return_ HRESULT EventAddPreValidation(_In_ void* const pValue, EventRegistrationToken* const ptToken) const;
 
         // Fields.
     };
@@ -80,15 +108,22 @@ namespace DirectUI
     class __declspec(novtable) WindowsXamlManagerFactory:
        public ctl::AbstractActivationFactory
         , public ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerStatics
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        , public ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerStaticsFeature_ExperimentalApi
+#endif
     {
         BEGIN_INTERFACE_MAP(WindowsXamlManagerFactory, ctl::AbstractActivationFactory)
             INTERFACE_ENTRY(WindowsXamlManagerFactory, ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerStatics)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+            INTERFACE_ENTRY(WindowsXamlManagerFactory, ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerStaticsFeature_ExperimentalApi)
+#endif
         END_INTERFACE_MAP(WindowsXamlManagerFactory, ctl::AbstractActivationFactory)
 
     public:
         // Factory methods.
 
         // Static properties.
+        IFACEMETHOD(get_IsXamlRunningOnCurrentThread)(_Out_ BOOLEAN* pValue) FEATURE_EXPERIMENTALAPI_OVERRIDE;
 
         // Dependency properties.
 
@@ -108,6 +143,7 @@ namespace DirectUI
     private:
 
         // Customized static properties.
+         _Check_return_ HRESULT get_IsXamlRunningOnCurrentThreadImpl(_Out_ BOOLEAN* pValue); 
 
         // Customized static  methods.
          _Check_return_ HRESULT InitializeForCurrentThreadImpl(_Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager** ppResult); 

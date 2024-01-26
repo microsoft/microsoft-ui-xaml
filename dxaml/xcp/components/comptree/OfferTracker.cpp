@@ -3,8 +3,6 @@
 
 #include "precomp.h"
 #include "OfferTracker.h"
-
-#include <DCompExtras.h>
 #include <dcompinternal.h>
 #include <dcompprivate.h>
 

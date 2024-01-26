@@ -39,7 +39,8 @@
       Windows.UI.Text;
     </WinUI_CSWinRTIncludes>
 
-    <!-- These types are defined in 19041 assembly, not sure why we need to define these now -->
+    <!-- Windows App SDK targets 17763, but [attributename] is defined in Windows SDK 19041,
+        so add definitions here.  Alternatively, use the midl /noattributename switch. -->
     <WinUI_CSWinRTIncludes>
       $(WinUI_CSWinRTIncludes);
       Windows.Foundation.Metadata.AttributeNameAttribute;

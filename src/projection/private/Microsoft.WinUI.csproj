@@ -3,7 +3,7 @@
   <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
 
   <PropertyGroup>
-    <TargetFramework>$(DotNetCoreTargetFrameworkMonikerForPackaging)</TargetFramework>
+    <TargetFramework>$(WindowsAppSdkTargetFrameworkMoniker)</TargetFramework>
     <TargetPlatformMinVersion>$(WindowsTargetPlatformMinVersion)</TargetPlatformMinVersion>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <IsTrimmable>true</IsTrimmable>
@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Windows.ApplicationModel.Resources.Projection.dll">
-      <HintPath>$(LiftedMRTLibPath)\net6.0-windows10.0.17763.0\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
+      <HintPath>$(LiftedMRTLibPath)\$(WindowsAppSdkTargetFrameworkMoniker)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
       <Private>true</Private>
     </Reference>
   </ItemGroup>

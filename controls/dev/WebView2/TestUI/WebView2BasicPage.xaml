@@ -37,6 +37,9 @@
                             <ComboBoxItem AutomationProperties.Name="CoreWebView2Initialized_FailedTest">CoreWebView2Initialized_FailedTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="CursorUpdateTest">CursorUpdateTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="CursorClickUpdateTest">CursorClickUpdateTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="CustomConfiguration_BasicTest">CustomConfiguration_BasicTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="CustomConfiguration_EnsureAgainAfterDefaultTest">CustomConfiguration_EnsureAgainAfterDefaultTest</ComboBoxItem>
+                            <ComboBoxItem AutomationProperties.Name="CustomConfiguration_EnsureAgainAfterCustomTest">CustomConfiguration_EnsureAgainAfterCustomTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="DragDropIntoWebView2Test">DragDropIntoWebView2Test</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="ExecuteScriptTest">ExecuteScriptTest</ComboBoxItem>
                             <ComboBoxItem AutomationProperties.Name="Focus_BackAndForthTabTest">Focus_BackAndForthTabTest</ComboBoxItem>

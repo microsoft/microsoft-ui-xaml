@@ -627,6 +627,7 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_FlyoutPresenterAutomationPeer();
     _Check_return_ IActivationFactory* CreateActivationFactory_HyperlinkButtonAutomationPeer();
     _Check_return_ IActivationFactory* CreateActivationFactory_ListBoxItemDataAutomationPeer();
+    _Check_return_ IActivationFactory* CreateActivationFactory_XamlShutdownCompletedOnThreadEventArgs();
     _Check_return_ IActivationFactory* CreateActivationFactory_ConnectedAnimationConfiguration();
     _Check_return_ IActivationFactory* CreateActivationFactory_CalendarDatePickerDateChangedEventArgs();
     _Check_return_ IActivationFactory* CreateActivationFactory_TextControlCopyingToClipboardEventArgs();
@@ -1281,6 +1282,7 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Automation.Peers.FlyoutPresenterAutomationPeer"), &DirectUI::CreateActivationFactory_FlyoutPresenterAutomationPeer)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Automation.Peers.HyperlinkButtonAutomationPeer"), &DirectUI::CreateActivationFactory_HyperlinkButtonAutomationPeer)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Automation.Peers.ListBoxItemDataAutomationPeer"), &DirectUI::CreateActivationFactory_ListBoxItemDataAutomationPeer)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Hosting.XamlShutdownCompletedOnThreadEventArgs"), &DirectUI::CreateActivationFactory_XamlShutdownCompletedOnThreadEventArgs)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.Animation.ConnectedAnimationConfiguration"), &DirectUI::CreateActivationFactory_ConnectedAnimationConfiguration)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.CalendarDatePickerDateChangedEventArgs"), &DirectUI::CreateActivationFactory_CalendarDatePickerDateChangedEventArgs)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.TextControlCopyingToClipboardEventArgs"), &DirectUI::CreateActivationFactory_TextControlCopyingToClipboardEventArgs)

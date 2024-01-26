@@ -9,16 +9,15 @@
 class ItemContainerAutomationPeer :
     public ReferenceTracker<ItemContainerAutomationPeer, winrt::implementation::ItemContainerAutomationPeerT>
 {
-
 public:
     ItemContainerAutomationPeer(winrt::FrameworkElement const& owner);
 
     // IAutomationPeerOverrides 
-    winrt::hstring GetNameCore();
+    virtual winrt::hstring GetNameCore();
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
     winrt::AutomationControlType GetAutomationControlTypeCore();
-    winrt::hstring GetLocalizedControlTypeCore();
-    winrt::hstring GetClassNameCore();
+    virtual winrt::hstring GetLocalizedControlTypeCore();
+    virtual winrt::hstring GetClassNameCore();
 
     // IInvokeProvider
     void Invoke();

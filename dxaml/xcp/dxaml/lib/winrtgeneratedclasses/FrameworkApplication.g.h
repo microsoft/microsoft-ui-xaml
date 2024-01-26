@@ -17,6 +17,11 @@
 #else
 #define FEATURE_UWPSUPPORTAPI_OVERRIDE
 #endif
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi) 
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE override
+#else
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE
+#endif
 #define __FrameworkApplication_GUID "9e00ad29-1d7e-48dd-a33a-e22f902499ca"
 
 #pragma region forwarders
@@ -29,6 +34,14 @@ namespace ctl
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(add_ResourceManagerRequested)(_In_ ABI::Windows::Foundation::ITypedEventHandler<IInspectable*, ABI::Microsoft::UI::Xaml::ResourceManagerRequestedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_ResourceManagerRequested(pValue, pToken); }
         IFACEMETHOD(remove_ResourceManagerRequested)(_In_ EventRegistrationToken token) override { return This()->remove_ResourceManagerRequested(token); }
+    };
+    template<typename impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::IApplicationFeature_ExperimentalApi, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IApplicationFeature_ExperimentalApi, impl_type>
+    {
+        impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(get_DispatcherShutdownMode)(_Out_ ABI::Microsoft::UI::Xaml::DispatcherShutdownMode* pValue) override { return This()->get_DispatcherShutdownMode(pValue); }
+        IFACEMETHOD(put_DispatcherShutdownMode)(_In_ ABI::Microsoft::UI::Xaml::DispatcherShutdownMode value) override { return This()->put_DispatcherShutdownMode(value); }
     };
 }
 #pragma endregion
@@ -52,6 +65,9 @@ namespace DirectUI
         , public ABI::Microsoft::UI::Xaml::IApplicationFeature_UwpSupportApi
         , public ABI::Microsoft::UI::Xaml::IApplicationOverridesFeature_UwpSupportApi
 #endif
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IApplicationFeature_ExperimentalApi, FrameworkApplicationGenerated >
+#endif
     {
         friend class DirectUI::FrameworkApplication;
 
@@ -66,6 +82,9 @@ namespace DirectUI
             INTERFACE_ENTRY(FrameworkApplicationGenerated, ABI::Microsoft::UI::Xaml::IApplicationFeature_UwpSupportApi)
             INTERFACE_ENTRY(FrameworkApplicationGenerated, ABI::Microsoft::UI::Xaml::IApplicationOverridesFeature_UwpSupportApi)
 #endif
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+            INTERFACE_ENTRY(FrameworkApplicationGenerated, ABI::Microsoft::UI::Xaml::IApplicationFeature_ExperimentalApi)
+#endif
         END_INTERFACE_MAP(FrameworkApplicationGenerated, ctl::WeakReferenceSource)
 
     public:
@@ -77,6 +96,8 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_DebugSettings)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDebugSettings** ppValue) override;
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_DispatcherShutdownMode(_Out_ ABI::Microsoft::UI::Xaml::DispatcherShutdownMode* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_DispatcherShutdownMode(_In_ ABI::Microsoft::UI::Xaml::DispatcherShutdownMode value);
         IFACEMETHOD(get_FocusVisualKind)(_Out_ ABI::Microsoft::UI::Xaml::FocusVisualKind* pValue) override;
         IFACEMETHOD(put_FocusVisualKind)(_In_ ABI::Microsoft::UI::Xaml::FocusVisualKind value) override;
         IFACEMETHOD(get_HighContrastAdjustment)(_Out_ ABI::Microsoft::UI::Xaml::ApplicationHighContrastAdjustment* pValue) override;

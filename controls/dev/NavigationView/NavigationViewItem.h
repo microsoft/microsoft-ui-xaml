@@ -127,6 +127,11 @@ private:
     void LoadElementsForDisplayingChildren();
     void LoadMenuItemsHost();
 
+    // Needed for scenarios where NavigationView needs to force collapse top level items when the pane closes.
+    void ForceCollapse();
+    void RestoreExpandedState();
+    void HandleExpansionStateMemory();
+
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
     PropertyChanged_revoker m_splitViewCompactPaneLengthChangedRevoker{};
@@ -169,4 +174,8 @@ private:
     bool m_isRepeaterParentedToFlyout{ false };
     // used to bypass all Chevron visual state logic in order to keep it unloaded 
     bool m_hasHadChildren{ false };
+
+    // NavigationView needs to force collapse top level items when the pane closes.
+    // This bool is used to remember which items need to be restored to expanded state when the pane is opened again.
+    bool m_restoreToExpandedState{ false };
 };

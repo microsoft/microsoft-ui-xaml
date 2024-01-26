@@ -671,9 +671,10 @@ Slider::OnPointerCaptureLost(
 
     m_isPressed = FALSE;
 
-    // when pointer move out of the control but OnPointerExit() would not be invoked so the control might remain in PointerOver visual state.
+    // when pointer moves out of the control but OnPointerExit() would not be invoked so the control might remain in PointerOver visual state.
     // change it to false here
     m_IsPointerOver = FALSE;
+    IFC_RETURN(UpdateThumbToolTipVisibility(FALSE));
 
     if (hasStateChanged)
     {

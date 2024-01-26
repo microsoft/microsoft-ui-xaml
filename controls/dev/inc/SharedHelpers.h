@@ -38,6 +38,9 @@ public:
     // DependencyObject helpers
     static bool IsAncestor(const winrt::DependencyObject& child, const winrt::DependencyObject& parent, bool checkVisibility = false);
 
+    // UIElement helpers
+    static bool IsFocusableElement(winrt::UIElement const& element);
+
     static void SyncWait(const winrt::IAsyncAction& asyncAction)
     {
         MUXControls::Common::Handle synchronizationHandle(::CreateEvent(nullptr, FALSE, FALSE, nullptr));
