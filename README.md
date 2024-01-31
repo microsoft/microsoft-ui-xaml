@@ -1,5 +1,4 @@
-
-# Windows UI Library
+Windows UI Library
 
 [![Follow WinUI on Twitter](https://img.shields.io/twitter/follow/windowsui.svg?label=Follow%20WinUI%20on%20Twitter&style=social)](https://twitter.com/intent/follow?screen_name=windowsui)
 
@@ -9,7 +8,7 @@ WinUI 2 is a library of controls that provides official native Microsoft UI cont
 
 WinUI 3 is the next generation of the WinUI framework. It dramatically expands WinUI into a full UX framework, making WinUI available for all Desktop Windows apps for use as the UI layer.
  
-## WinUI Community Calls
+WinUI Community Calls
 
 The WinUI community call is your monthly opportunity to learn about native UX development for Windows with WinUI.
 
@@ -17,8 +16,7 @@ In these calls we’ll discuss the WinUI [roadmap](docs/roadmap.md), our status 
 
 You can watch them online here on YouTube at the [Windows Developer channel](https://www.youtube.com/channel/UCzLbHrU7U3cUDNQWWAqjceA).
 
-
-## Using WinUI 3
+Using WinUI 3
 
 You can build new Windows apps using WinUI 3, which ships as a part of the Windows App SDK. The latest available stable release is the Windows App SDK 1.4 (previously called Project Reunion). With this release, you can ship production Desktop apps to the Microsoft Store.
 
