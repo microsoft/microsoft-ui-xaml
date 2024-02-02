@@ -10,7 +10,7 @@ jobs:
     outputs:
       message: ${{ steps.getbody.outputs.message }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - id: getbody
         uses: craigloewen-msft/GitGudSimilarIssues@main
         with:
