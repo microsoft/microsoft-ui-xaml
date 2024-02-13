@@ -71,6 +71,7 @@ void InfoBar::OnApplyTemplate()
     UpdateIconVisibility();
     UpdateCloseButton();
     UpdateForeground();
+    UpdateContentPosition();
 }
 
 void InfoBar::OnCloseButtonClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
@@ -120,6 +121,21 @@ void InfoBar::OnIsOpenPropertyChanged(const winrt::DependencyPropertyChangedEven
     {
         RaiseClosingEvent();
     }
+}
+
+void InfoBar::OnTitlePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateContentPosition();
+}
+
+void InfoBar::OnMessagePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateContentPosition();
+}
+
+void InfoBar::OnActionButtonPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateContentPosition();
 }
 
 void InfoBar::OnSeverityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -250,6 +266,11 @@ void InfoBar::UpdateForeground()
     winrt::VisualStateManager::GoToState(*this, ReadLocalValue(winrt::Control::ForegroundProperty()) == winrt::DependencyProperty::UnsetValue() ? L"ForegroundNotSet" : L"ForegroundSet", false);
 }
 
+void InfoBar::UpdateContentPosition()
+{
+    // If we don't have either a title or a message, then the content should move up
+    winrt::VisualStateManager::GoToState(*this, Title().empty() && Message().empty() && !ActionButton() ? L"NoBannerContent" : L"BannerContent", false);
+}
 const winrt::hstring InfoBar::GetSeverityLevelResourceName(winrt::InfoBarSeverity severity)
 {
     switch (severity)

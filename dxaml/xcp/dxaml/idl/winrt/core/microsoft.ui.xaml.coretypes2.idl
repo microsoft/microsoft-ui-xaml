@@ -2654,6 +2654,11 @@ namespace Microsoft.UI.Xaml
             event Windows.Foundation.TypedEventHandler<Object,Microsoft.UI.Xaml.ResourceManagerRequestedEventArgs> ResourceManagerRequested;
         }
     
+        [contract(Microsoft.UI.Xaml.WinUIContract, 6)]
+        {
+            Microsoft.UI.Xaml.DispatcherShutdownMode DispatcherShutdownMode;
+        }
+    
         [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
         [feature(Feature_UwpSupportApi)]
         [overridable_name("Microsoft.UI.Xaml.IApplicationOverridesFeature_UwpSupportApi")]
@@ -2673,13 +2678,6 @@ namespace Microsoft.UI.Xaml
             overridable void OnCachedFileUpdaterActivated(Windows.ApplicationModel.Activation.CachedFileUpdaterActivatedEventArgs args);
             overridable void OnBackgroundActivated(Windows.ApplicationModel.Activation.BackgroundActivatedEventArgs args);
             overridable void OnWindowCreated(Microsoft.UI.Xaml.WindowCreatedEventArgs args);
-        }
-    
-        [contract(Microsoft.UI.Xaml.WinUIContract, 6)]
-        [feature(Feature_ExperimentalApi)]
-        [interface_name("Microsoft.UI.Xaml.IApplicationFeature_ExperimentalApi")]
-        {
-            Microsoft.UI.Xaml.DispatcherShutdownMode DispatcherShutdownMode;
         }
     };
 
@@ -4209,12 +4207,9 @@ namespace Microsoft.UI.Xaml.Hosting
         static Microsoft.UI.Xaml.Hosting.WindowsXamlManager InitializeForCurrentThread();
     
         [contract(Microsoft.UI.Xaml.WinUIContract, 6)]
-        [feature(Feature_ExperimentalApi)]
-        [static_name("Microsoft.UI.Xaml.Hosting.IWindowsXamlManagerStaticsFeature_ExperimentalApi")]
-        [interface_name("Microsoft.UI.Xaml.Hosting.IWindowsXamlManagerFeature_ExperimentalApi")]
         {
             event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Hosting.WindowsXamlManager,Microsoft.UI.Xaml.Hosting.XamlShutdownCompletedOnThreadEventArgs> XamlShutdownCompletedOnThread;
-            static Boolean IsXamlRunningOnCurrentThread{ get; };
+            static Microsoft.UI.Xaml.Hosting.WindowsXamlManager GetForCurrentThread();
         }
     };
 

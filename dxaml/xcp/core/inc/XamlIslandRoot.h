@@ -71,7 +71,7 @@ public:
     void NWPropagateDirtyFlag(DirtyFlags flags) override;
 
     wrl::ComPtr<ixp::IIslandInputSitePartner> GetIslandInputSite() const { return m_islandInputSite; }
-    HWND GetPositioningHWND() const { return m_contentBridgeWindow; }
+    HWND GetBridgeHostingHWND() const { return m_contentBridgeWindow; }
 
     wrl::ComPtr<ixp::IPointerPoint> GetPreviousPointerPoint();
 
@@ -104,7 +104,7 @@ public:
 
     _Check_return_ HRESULT NotifyThemeChangedCore(_In_ Theming::Theme theme, _In_ bool fForceRefresh = false) final;
 
-    void SetIslandInputSite(_In_ ixp::IIslandInputSitePartner* islandInputSite);
+    void SetIslandInputSite(_In_opt_ ixp::IIslandInputSitePartner *islandInputSite);
 
     _Check_return_ HRESULT get_DragDropManager(_COM_Outptr_result_maybenull_ mui::DragDrop::IDragDropManager** manager);
 
@@ -265,6 +265,7 @@ private:
 
     // Drag Drop
     _Check_return_ HRESULT RegisterIslandDropTarget();
+    _Check_return_ HRESULT UnregisterIslandDropTarget();
     Microsoft::WRL::ComPtr<mui::DragDrop::IDragDropManager> m_dragDropManager;
     EventRegistrationToken m_dropTargetRequestedToken = {};
 
@@ -310,7 +311,6 @@ private:
     wrl::ComPtr<ixp::IInputActivationListener> m_inputActivationListener;
     wrl::ComPtr<ixp::IDesktopChildSiteBridge> m_contentBridgeDW;
     wrl::ComPtr<ixp::IContentIslandEnvironment> m_topLevelHost;
-    wrl::ComPtr<ixp::IContentCoordinateConverter> m_coordinateConverter;
     wrl::ComPtr<ixp::IInputPreTranslateKeyboardSourceHandler> m_preTranslateHandler;
 
     EventRegistrationToken m_characterReceivedToken = {};

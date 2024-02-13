@@ -126,7 +126,6 @@
                 Opacity="0" />
             <Rectangle
                 x:Name="PART_CommonVisual"
-                Fill="{ThemeResource ItemContainerBackground}"
                 Stroke="{ThemeResource ItemContainerBorderBrush}"
                 StrokeThickness="{ThemeResource ItemContainerSelectedInnerThickness}"
                 HorizontalAlignment="Stretch"

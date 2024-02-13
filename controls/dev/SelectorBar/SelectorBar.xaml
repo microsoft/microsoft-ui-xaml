@@ -11,6 +11,7 @@
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="TabNavigation" Value="Once"/>
+        <Setter Property="Padding" Value="{ThemeResource SelectorBarPadding}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:SelectorBar">
@@ -29,7 +30,8 @@
                             ItemsSource="{TemplateBinding Items}"
                             TabNavigation="{TemplateBinding TabNavigation}"
                             MaxWidth="{TemplateBinding MaxWidth}"
-                            MaxHeight="{TemplateBinding MaxHeight}">
+                            MaxHeight="{TemplateBinding MaxHeight}"
+                            Padding="{TemplateBinding Padding}">
                             <controls:ItemsView.Layout>
                                 <controls:StackLayout Orientation="Horizontal"/>
                             </controls:ItemsView.Layout>
@@ -47,10 +49,11 @@
         <Setter Property="Foreground" Value="{ThemeResource SelectorBarItemForeground}"/>
         <Setter Property="BorderBrush" Value="{ThemeResource SelectorBarItemBorderBrush}"/>
         <Setter Property="BorderThickness" Value="{ThemeResource SelectorBarItemBorderThickness}"/>
-        <Setter Property="Padding" Value="{StaticResource ButtonPadding}"/>
+        <Setter Property="Padding" Value="{StaticResource SelectorBarItemPadding}"/>
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="FocusVisualMargin" Value="{ThemeResource SelectorBarItemFocusVisualMargin}"/>
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}"/>
         <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}"/>
@@ -72,6 +75,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_TextVisual" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SelectorBarItemForegroundPointerOver}"/>
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_IconVisual" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SelectorBarItemForegroundPointerOver}"/>
+                                        </ObjectAnimationUsingKeyFrames>
                                         <PointerUpThemeAnimation Storyboard.TargetName="PART_ContainerRoot"/>
                                     </Storyboard>
                                 </VisualState>
@@ -83,6 +89,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_TextVisual" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SelectorBarItemForegroundPressed}"/>
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_IconVisual" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SelectorBarItemForegroundPressed}"/>
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="SelectedNormal">
@@ -91,6 +100,9 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SelectorBarItemBackgroundSelected}"/>
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_TextVisual" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SelectorBarItemForegroundSelected}"/>
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_IconVisual" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SelectorBarItemForegroundSelected}"/>
                                         </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PillTransform" Storyboard.TargetProperty="ScaleX">
@@ -106,6 +118,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_TextVisual" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SelectorBarItemForegroundPointerOver}"/>
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_IconVisual" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SelectorBarItemForegroundPointerOver}"/>
+                                        </ObjectAnimationUsingKeyFrames>
                                         <PointerUpThemeAnimation Storyboard.TargetName="PART_ContainerRoot"/>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PillTransform" Storyboard.TargetProperty="ScaleX">
                                             <SplineDoubleKeyFrame KeyTime="{StaticResource ComboBoxItemScaleAnimationDuration}" Value="4" KeySpline="0,0,0,1"/>
@@ -118,6 +133,9 @@
                                 <VisualState x:Name="SelectedPressed">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_TextVisual" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SelectorBarItemForegroundPointerOver}"/>
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_IconVisual" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SelectorBarItemForegroundPointerOver}"/>
                                         </ObjectAnimationUsingKeyFrames>
                                         <PointerUpThemeAnimation Storyboard.TargetName="PART_ContainerRoot"/>
@@ -157,12 +175,18 @@
                             Grid.Column="1"
                             Orientation="Horizontal"
                             Margin="{TemplateBinding Padding}"
+                            Spacing="{ThemeResource SelectorBarItemSpacing}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
                             <ContentPresenter x:Name="PART_IconVisual"
                                 Content="{TemplateBinding Icon}"
                                 Margin="{ThemeResource SelectorBarItemIconVisualMargin}"
-                                Foreground="{TemplateBinding Foreground}"/>
+                                Foreground="{TemplateBinding Foreground}"
+                                RenderTransformOrigin="0.5,0.5">
+                                <ContentPresenter.RenderTransform>
+                                    <ScaleTransform x:Name="IconTransform" ScaleX="{ThemeResource SelectorBarItemIconScale}" ScaleY="{ThemeResource SelectorBarItemIconScale}"/>
+                                </ContentPresenter.RenderTransform>
+                            </ContentPresenter>
                             <TextBlock x:Name="PART_TextVisual"
                                 Text="{TemplateBinding Text}"
                                 FontFamily="{TemplateBinding FontFamily}"

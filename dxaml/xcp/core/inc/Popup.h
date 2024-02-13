@@ -537,7 +537,7 @@ public:
     // Remember the last island that opened this popup. A popup can move between islands between closing and reopening.
     // Xaml uses a single shared context menu for all its TextBoxes, for example. If this popup is associated with a
     // different island then the content bridge and input site adapter needs to be re-created.
-    HWND m_previousXamlIslandHwnd {};
+    UINT64 m_previousXamlIslandId = 0;
 
     // The Popup.SystemBackdrop set on this popup. We will call its OnTargetDisconnected when the SystemBackdrop
     // property changes. Note that by the time we get to the CPopup::SetValue override, the new value has already

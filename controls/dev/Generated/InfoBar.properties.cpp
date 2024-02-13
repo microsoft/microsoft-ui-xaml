@@ -47,7 +47,7 @@ void InfoBarProperties::EnsureProperties()
                 winrt::name_of<winrt::InfoBar>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ButtonBase>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnActionButtonPropertyChanged));
     }
     if (!s_CloseButtonCommandProperty)
     {
@@ -157,7 +157,7 @@ void InfoBarProperties::EnsureProperties()
                 winrt::name_of<winrt::InfoBar>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnMessagePropertyChanged));
     }
     if (!s_SeverityProperty)
     {
@@ -190,7 +190,7 @@ void InfoBarProperties::EnsureProperties()
                 winrt::name_of<winrt::InfoBar>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnTitlePropertyChanged));
     }
 }
 
@@ -210,6 +210,14 @@ void InfoBarProperties::ClearProperties()
     s_SeverityProperty = nullptr;
     s_TemplateSettingsProperty = nullptr;
     s_TitleProperty = nullptr;
+}
+
+void InfoBarProperties::OnActionButtonPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InfoBar>();
+    winrt::get_self<InfoBar>(owner)->OnActionButtonPropertyChanged(args);
 }
 
 void InfoBarProperties::OnIconSourcePropertyChanged(
@@ -244,12 +252,28 @@ void InfoBarProperties::OnIsOpenPropertyChanged(
     winrt::get_self<InfoBar>(owner)->OnIsOpenPropertyChanged(args);
 }
 
+void InfoBarProperties::OnMessagePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InfoBar>();
+    winrt::get_self<InfoBar>(owner)->OnMessagePropertyChanged(args);
+}
+
 void InfoBarProperties::OnSeverityPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::InfoBar>();
     winrt::get_self<InfoBar>(owner)->OnSeverityPropertyChanged(args);
+}
+
+void InfoBarProperties::OnTitlePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InfoBar>();
+    winrt::get_self<InfoBar>(owner)->OnTitlePropertyChanged(args);
 }
 
 void InfoBarProperties::ActionButton(winrt::ButtonBase const& value)

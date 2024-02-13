@@ -4046,6 +4046,7 @@ enum class KnownMethodIndex: UINT16
     ElementCompositionPreview_SetIsTranslationEnabled,
     ElementCompositionPreview_GetPointerPositionPropertySet,
     WindowsXamlManager_InitializeForCurrentThread,
+    WindowsXamlManager_GetForCurrentThread,
     XamlIslandRoot_SetScreenOffsetOverride,
     XamlIslandRoot_TrySetFocus,
     XamlIslandRoot_GetIslandFromElement,

@@ -37,6 +37,7 @@ namespace DirectUI
         _Check_return_ HRESULT put_SystemBackdropImpl(_In_opt_ xaml::Media::ISystemBackdrop * iSystemBackdrop);
 
         _Check_return_ xaml_hosting::IXamlIslandRoot *GetXamlIslandRootNoRef();
+        _Check_return_ HRESULT SetInputSite();
 
     protected:
         _Check_return_ HRESULT Initialize() override;
@@ -51,6 +52,8 @@ namespace DirectUI
         CXamlIslandRoot * m_pXamlIslandCore;
         ctl::ComPtr<ABI::Microsoft::UI::Input::IInputFocusController2> m_inputFocusController2;
         EventRegistrationToken m_focusNavigationRequestedToken = {};
+        EventRegistrationToken m_islandConnectedToken = {};
+        EventRegistrationToken m_islandDisconnectedToken = {};
 
         ctl::ComPtr<xaml::Media::ISystemBackdrop> m_systemBackdrop;
     };

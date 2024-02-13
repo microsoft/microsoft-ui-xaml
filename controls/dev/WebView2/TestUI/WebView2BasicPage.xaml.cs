@@ -2033,13 +2033,19 @@ namespace MUXControlsTestApp
                             // Save the UDF path so we can delete it later
                             _customUserDataFolder = MyWebView2.CoreWebView2.Environment.UserDataFolder;
 
-                            // Check that the WebView2 has the language set by custom CoreWebView2EnvironmentOptions
+                             // Check that the WebView2 has the language set by custom CoreWebView2EnvironmentOptions
+                            //
+                            // "zh-Hans" and "zh-CN" both represent simplified Chinese, but one may be preferred in some contexts. 
+                            // When "zh-Hans" is set via CWV2EnvironmentOptions, calling JS getLanugage() on WV2Runtime
+                            // maps it to "zh-CN" on Win10, and keeps "zh-Hans" on Win11, so check for both possibilities.
                             string expectedLanguage = "\"zh-Hans\"";
+                            string expectedLanguageAlternate = "\"zh-CN\"";
+                            string expectedLanguageList = expectedLanguage + " OR " + expectedLanguageAlternate;
                             string actualLanguage = await MyWebView2.ExecuteScriptAsync("getLanguage();");
 
-                            logger.Verify((actualLanguage == expectedLanguage),
-                                          string.Format("Test {0}: Custom Environment's Language {1} did not match expected value {2}",
-                                                         selectedTest.ToString(), actualLanguage, expectedLanguage));
+                            logger.Verify((actualLanguage == expectedLanguage || actualLanguage == expectedLanguageAlternate),
+                                          string.Format("Test {0}: Custom Environment's Language {1} did not match expected value in {2}",
+                                                         selectedTest.ToString(), actualLanguage, expectedLanguageList));
                         }
                         break;
 
@@ -2062,37 +2068,33 @@ namespace MUXControlsTestApp
                                 LogFailure_Exception(logger, "TEST 1", e);
                             }
 
-                            // TODO: Investigate if null RuntimeClass parameter can be passed in WinRT/MIDL3 
-                            //       Bug 48553811: [WebView2] Calling EnsureCoreWebView2Async(null, [null])
-                            //                     throws in projection layer (both cpp/winrt and C#)
-                            //
-                            //// TEST 2: EnsureCoreWebView2Async(null) <--- should succeed for any configuration
-                            //try
-                            //{
-                            //    LogHeader("TEST 2", "Ensure again with (null), expecting: SUCCESS");
-                            //    await MyWebView2.EnsureCoreWebView2Async(null);
-                            //    WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[selectedTest]]);
-                            //    await navCompletedTask;
-                            //    LogSuccess("TEST 2");
-                            //}
-                            //catch (Exception e)
-                            //{
-                            //    LogFailure_Exception(logger, "TEST 2", e);
-                            //}
-                            //
-                            //// TEST 3: EnsureCoreWebView2Async(null, null) <--- should succeed for any configuration
-                            //try
-                            //{
-                            //    LogHeader("TEST 3", "Ensure again with (null, null), expecting: SUCCESS");
-                            //    await MyWebView2.EnsureCoreWebView2Async(null, null);
-                            //    WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[selectedTest]]);
-                            //    await navCompletedTask;
-                            //    LogSuccess("TEST 3");
-                            //}
-                            //catch (Exception e)
-                            //{
-                            //    LogFailure_Exception(logger, "TEST 3", e);
-                            //}
+                            // TEST 2: EnsureCoreWebView2Async(null) <--- should succeed for any configuration
+                            try
+                            {
+                               LogHeader("TEST 2", "Ensure again with (null), expecting: SUCCESS");
+                               await MyWebView2.EnsureCoreWebView2Async(null);
+                               WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[selectedTest]]);
+                               await navCompletedTask;
+                               LogSuccess("TEST 2");
+                            }
+                            catch (Exception e)
+                            {
+                               LogFailure_Exception(logger, "TEST 2", e);
+                            }
+                            
+                            // TEST 3: EnsureCoreWebView2Async(null, null) <--- should succeed for any configuration
+                            try
+                            {
+                               LogHeader("TEST 3", "Ensure again with (null, null), expecting: SUCCESS");
+                               await MyWebView2.EnsureCoreWebView2Async(null, null);
+                               WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[selectedTest]]);
+                               await navCompletedTask;
+                               LogSuccess("TEST 3");
+                            }
+                            catch (Exception e)
+                            {
+                               LogFailure_Exception(logger, "TEST 3", e);
+                            }
 
                             CoreWebView2Environment DefaultEnvironment = MyWebView2.CoreWebView2.Environment;
 
@@ -2197,37 +2199,33 @@ namespace MUXControlsTestApp
                                 LogFailure_Exception(logger, "TEST 1", e);
                             }
 
-                            // TODO: Investigate if null RuntimeClass parameter can be passed in WinRT/MIDL3 
-                            //       Bug 48553811: [WebView2] Calling EnsureCoreWebView2Async(null, [null])
-                            //                     throws in projection layer (both cpp/winrt and C#)
-                            //
-                            //// TEST 2: EnsureCoreWebView2Async(null) <--- should succeed for any configuration
-                            //try
-                            //{
-                            //    LogHeader("TEST 2", "Ensure again with (null), expecting: SUCCESS");
-                            //    await MyWebView2.EnsureCoreWebView2Async(null);
-                            //    WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[selectedTest]]);
-                            //    await navCompletedTask;
-                            //    LogSuccess("TEST 2");
-                            //}
-                            //catch (Exception e)
-                            //{
-                            //    LogFailure_Exception(logger, "TEST 2", e);
-                            //}
-                            //
-                            //// TEST 3: EnsureCoreWebView2Async(null, null) <--- should succeed for any configuration
-                            //try
-                            //{
-                            //    LogHeader("TEST 3", "Ensure again with (null, null), expecting: SUCCESS");
-                            //    await MyWebView2.EnsureCoreWebView2Async(null, null);
-                            //    WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[selectedTest]]);
-                            //    await navCompletedTask;
-                            //    LogSuccess("TEST 3");
-                            //}
-                            //catch (Exception e)
-                            //{
-                            //    LogFailure_Exception(logger, "TEST 3", e);
-                            //}
+                            // TEST 2: EnsureCoreWebView2Async(null) <--- should succeed for any configuration
+                            try
+                            {
+                               LogHeader("TEST 2", "Ensure again with (null), expecting: SUCCESS");
+                               await MyWebView2.EnsureCoreWebView2Async(null);
+                               WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[selectedTest]]);
+                               await navCompletedTask;
+                               LogSuccess("TEST 2");
+                            }
+                            catch (Exception e)
+                            {
+                               LogFailure_Exception(logger, "TEST 2", e);
+                            }
+                            
+                            // TEST 3: EnsureCoreWebView2Async(null, null) <--- should succeed for any configuration
+                            try
+                            {
+                               LogHeader("TEST 3", "Ensure again with (null, null), expecting: SUCCESS");
+                               await MyWebView2.EnsureCoreWebView2Async(null, null);
+                               WebView2Common.LoadWebPage(MyWebView2, TestPageNames[TestInfoDictionary[selectedTest]]);
+                               await navCompletedTask;
+                               LogSuccess("TEST 3");
+                            }
+                            catch (Exception e)
+                            {
+                               LogFailure_Exception(logger, "TEST 3", e);
+                            }
 
                             // TEST 4: EnsureCoreWebView2Async(CustomEnvironment) <--- should fail (different ControllerOptions)
                             try

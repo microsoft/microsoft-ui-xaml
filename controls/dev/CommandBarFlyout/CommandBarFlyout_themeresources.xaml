@@ -310,7 +310,7 @@
     </Setter>
   </Style>
   <Style x:Key="CommandBarFlyoutAppBarButtonStyle" TargetType="AppBarButton" BasedOn="{StaticResource CommandBarFlyoutAppBarButtonStyleBase}">
-    <Setter Property="KeyboardAcceleratorPlacementMode" Value="Hidden" />
+      <Setter Property="KeyboardAcceleratorPlacementMode" Value="Hidden" />
   </Style>
   <Style x:Key="CommandBarFlyoutAppBarToggleButtonStyleBase" TargetType="AppBarToggleButton">
     <Setter Property="Background" Value="{ThemeResource CommandBarFlyoutAppBarButtonBackground}" />
@@ -1048,13 +1048,13 @@
                       </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                   </ItemsControl>
-                  <Button x:Name="MoreButton" Foreground="{TemplateBinding Foreground}" Style="{StaticResource CommandBarFlyoutEllipsisButtonStyle}" Grid.Column="1" Control.IsTemplateKeyTipTarget="True" IsAccessKeyScope="True" IsTabStop="False" CornerRadius="{TemplateBinding CornerRadius}" Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.EffectiveOverflowButtonVisibility}">
-                    <Button.RenderTransform>
-                      <TranslateTransform x:Name="MoreButtonTransform" />
-                    </Button.RenderTransform>
+                  <Button x:Name="MoreButton" Foreground="{TemplateBinding Foreground}" Style="{StaticResource CommandBarFlyoutEllipsisButtonStyle}" Grid.Column="1" Control.IsTemplateKeyTipTarget="True" IsAccessKeyScope="True" IsTabStop="False" CornerRadius="{TemplateBinding CornerRadius}" Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.EffectiveOverflowButtonVisibility}" AllowFocusOnInteraction="False">
+                            <Button.RenderTransform>
+                                <TranslateTransform x:Name="MoreButtonTransform" />
+                            </Button.RenderTransform>
                     <FontIcon x:Name="EllipsisIcon" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="16" Glyph="&#xE712;" />
-                  </Button>
-                </Grid>
+                        </Button>
+                    </Grid>
                 <Popup x:Name="OverflowPopup" ShouldConstrainToRootBounds="False">
                   <!-- The name OuterOverflowContentRoot is treated specially by the system and causes a shadow placed on this
                                          an element with this name to fade in. We don't want this for this style, so we need a different template part name -->

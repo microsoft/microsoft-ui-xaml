@@ -35,12 +35,10 @@ HRESULT DirectUI::WindowsXamlManagerGenerated::QueryInterfaceImpl(_In_ REFIID ii
     {
         *ppObject = static_cast<ABI::Windows::Foundation::IClosable*>(this);
     }
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager2)))
     {
-        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerFeature_ExperimentalApi>(this);
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager2>(this);
     }
-#endif
     else
     {
         RRETURN(ctl::WeakReferenceSource::QueryInterfaceImpl(iid, ppObject));
@@ -64,8 +62,6 @@ Cleanup:
     return S_OK;
 }
 // Events.
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowsXamlManagerGenerated::add_XamlShutdownCompletedOnThread(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Hosting::WindowsXamlManager*, ABI::Microsoft::UI::Xaml::Hosting::XamlShutdownCompletedOnThreadEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken)
 {
     HRESULT hr = S_OK;
@@ -96,7 +92,6 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowsXamlManagerGenerated::
 Cleanup:
     RRETURN(hr);
 }
-#endif
 
 // Methods.
 
@@ -106,12 +101,10 @@ HRESULT DirectUI::WindowsXamlManagerFactory::QueryInterfaceImpl(_In_ REFIID iid,
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerStatics*>(this);
     }
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerStaticsFeature_ExperimentalApi)))
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerStatics2)))
     {
-        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerStaticsFeature_ExperimentalApi*>(this);
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerStatics2*>(this);
     }
-#endif
     else
     {
         RRETURN(ctl::AbstractActivationFactory::QueryInterfaceImpl(iid, ppObject));
@@ -133,15 +126,6 @@ _Check_return_ HRESULT DirectUI::WindowsXamlManagerFactory::CheckActivationAllow
 // Attached properties.
 
 // Static properties.
-IFACEMETHODIMP DirectUI::WindowsXamlManagerFactory::get_IsXamlRunningOnCurrentThread(_Out_ BOOLEAN* pValue)
-{
-    HRESULT hr = S_OK;
-    ARG_VALIDRETURNPOINTER(pValue);
-    
-    IFC(get_IsXamlRunningOnCurrentThreadImpl(pValue));
-Cleanup:
-    RRETURN(hr);
-}
 
 // Static methods.
 IFACEMETHODIMP DirectUI::WindowsXamlManagerFactory::InitializeForCurrentThread(_Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager** ppResult)
@@ -158,6 +142,23 @@ Cleanup:
     if (EventEnabledApiFunctionCallStop())
     {
         XamlTelemetry::PublicApiCall(false, 0, "WindowsXamlManager_InitializeForCurrentThread", hr);
+    }
+    RRETURN(hr);
+}
+IFACEMETHODIMP DirectUI::WindowsXamlManagerFactory::GetForCurrentThread(_Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager** ppResult)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, 0, "WindowsXamlManager_GetForCurrentThread", 0);
+    }
+    ARG_VALIDRETURNPOINTER(ppResult);
+    
+    IFC(GetForCurrentThreadImpl(ppResult));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, 0, "WindowsXamlManager_GetForCurrentThread", hr);
     }
     RRETURN(hr);
 }

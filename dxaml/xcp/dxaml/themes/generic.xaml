@@ -16966,6 +16966,7 @@
                                 Grid.Column="1"
                                 Control.IsTemplateKeyTipTarget="True"
                                 IsAccessKeyScope="True"
+                                AllowFocusOnInteraction="False"
                                 Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.EffectiveOverflowButtonVisibility}">
                                 <FontIcon x:Name="EllipsisIcon"
                     VerticalAlignment="Center"
@@ -23623,6 +23624,7 @@
                             VerticalAlignment="Top"
                             Grid.Column="1"
                             Control.IsTemplateKeyTipTarget="True"
+                            AllowFocusOnInteraction="False"
                             IsAccessKeyScope="True"
                             Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.EffectiveOverflowButtonVisibility}">
                                 <FontIcon x:Name="EllipsisIcon"

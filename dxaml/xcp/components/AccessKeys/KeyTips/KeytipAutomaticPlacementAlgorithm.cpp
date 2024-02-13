@@ -605,6 +605,17 @@ XRECTF_RB ScreenBoundsHelper::GetScreenBounds(const XRECTF_RB& elementBounds)
         &displayAreaStatics));
     ctl::ComPtr<ixp::IDisplayArea> displayArea;
     FAIL_FAST_IF_FAILED(displayAreaStatics->GetFromRect(elementRect, ixp::DisplayAreaFallback::DisplayAreaFallback_None, &displayArea));
+    if (displayArea == nullptr)
+    {
+        // The DisplayAreaFallback.None option tells GetFromRect to set displayArea to nullptr when there's no display
+        // that intersects with the rect, so let's handle that gracefully.  For example, this can happen when the Xaml
+        // window is completely off-screen. (http://task.ms/47632057)
+
+        // screenBounds is our fallback, and for supported WinAppSDK scenarios, this will always be infinite bounds.
+        // This means the KeyTips won't be constrained to any particular rect.
+        return m_screenBounds;
+    }
+
     wgr::RectInt32 workArea;
     FAIL_FAST_IF_FAILED(displayArea->get_WorkArea(&workArea));
 

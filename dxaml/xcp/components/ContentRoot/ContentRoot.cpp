@@ -426,19 +426,22 @@ HWND CContentRoot::GetHostingHWND() const
 {
     if (m_type == Type::CoreWindow)
     {
+        // Scenario 1: The control is hosted inside of a CoreWindow. We can retrieve its HWND.
         const auto hostingCoreWindowHWND = static_cast<HWND>(m_coreServices.GetHostSite()->GetXcpControlWindow());
         return hostingCoreWindowHWND;
     }
     else if (m_type == Type::XamlIslandRoot)
     {
-        if (m_xamlIslandRoot)
+        // Scenario 2: The caller is hosted in a DesktopWindowXamlSource. We can retrieve the hosting
+        // bridge's HWND directly.
+
+        HWND dwxsHwnd = m_xamlIslandRoot->GetBridgeHostingHWND(); 
+        if (dwxsHwnd)
         {
-            // Callers of this method via XamlRoot.get_HostWindow are looking for the window with a size and position.
-            // BUG: WebView2 setup code might be conflating the positioning and input HWNDs.
-            // Right now these HWNDs are the same, but this will change shortly and we might need a new
-            // API on XamlRoot to provide the IslandInputSite from where the input HWND can be retrieved.
-            return m_xamlIslandRoot->GetPositioningHWND();
+            return dwxsHwnd;
         }
+
+        // Scenario 3: The caller is hosted in a XamlIsland. We should return null (see XamlRoot_Partial).
     }
     else
     {

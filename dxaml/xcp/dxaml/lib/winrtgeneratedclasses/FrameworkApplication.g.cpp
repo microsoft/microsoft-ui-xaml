@@ -48,6 +48,10 @@ HRESULT DirectUI::FrameworkApplicationGenerated::QueryInterfaceImpl(_In_ REFIID 
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IApplication2>(this);
     }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IApplication3)))
+    {
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IApplication3>(this);
+    }
 #if WI_IS_FEATURE_PRESENT(Feature_UwpSupportApi)
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IApplicationFeature_UwpSupportApi)) && Feature_UwpSupportApi::IsEnabled())
     {
@@ -56,12 +60,6 @@ HRESULT DirectUI::FrameworkApplicationGenerated::QueryInterfaceImpl(_In_ REFIID 
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IApplicationOverridesFeature_UwpSupportApi)) && Feature_UwpSupportApi::IsEnabled())
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IApplicationOverridesFeature_UwpSupportApi*>(this);
-    }
-#endif
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IApplicationFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
-    {
-        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IApplicationFeature_ExperimentalApi>(this);
     }
 #endif
     else

@@ -383,7 +383,7 @@
               <ContentPresenter x:Name="IconContent" Content="{TemplateBinding Icon}" />
             </Viewbox>
             <TextBlock x:Name="TextBlock" Text="{TemplateBinding Text}" TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-            <TextBlock x:Name="KeyboardAcceleratorTextBlock" Grid.Column="1" Style="{ThemeResource CaptionTextBlockStyle}" Text="{TemplateBinding KeyboardAcceleratorTextOverride}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}" Margin="24,4,0,0" Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}" HorizontalAlignment="Right" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Visibility="Collapsed" AutomationProperties.AccessibilityView="Raw" />
+            <TextBlock x:Name="KeyboardAcceleratorTextBlock" Grid.Column="1" Style="{ThemeResource CaptionTextBlockStyle}" Text="{TemplateBinding KeyboardAcceleratorTextOverride}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}" Margin="24,4,0,0" Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}" TextAlignment="Right" HorizontalAlignment="Right" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Visibility="Collapsed" AutomationProperties.AccessibilityView="Raw" />
           </Grid>
         </ControlTemplate>
       </Setter.Value>

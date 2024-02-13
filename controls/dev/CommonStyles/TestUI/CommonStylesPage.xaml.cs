@@ -47,6 +47,11 @@ namespace MUXControlsTestApp
     {
         ObservableCollection<FontFamily> fonts = new ObservableCollection<FontFamily>();
 
+        private string[] miscellaneousGridViewSource =
+        {
+            "GridView Item #1",
+        };
+
         public CommonStylesPage()
         {
             this.InitializeComponent();
@@ -54,6 +59,12 @@ namespace MUXControlsTestApp
             fonts.Add(new FontFamily("Courier New"));
             fonts.Add(new FontFamily("Times New Roman"));
         }
+
+        private void NavigateToNewPageButton_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.NavigateWithoutAnimation(typeof(GridViewPage), 0);
+        }
+
         private void SliderDensityTest_Click(object sender, RoutedEventArgs e)
         {
             string expectSliderPreContentMargin = "14";

@@ -81,6 +81,14 @@
                   </VisualState.Setters>
                 </VisualState>
               </VisualStateGroup>
+              <VisualStateGroup>
+                <VisualState x:Name="BannerContent"/>
+                <VisualState x:Name="NoBannerContent">
+                  <VisualState.Setters>
+                    <Setter Target="ContentArea.(Grid.Row)" Value="0"/>
+                  </VisualState.Setters>
+                </VisualState>
+              </VisualStateGroup>
             </VisualStateManager.VisualStateGroups>
             <!-- Background is used here so that it overrides the severity status color if set. -->
             <Grid HorizontalAlignment="Stretch" MinHeight="{ThemeResource InfoBarMinHeight}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Padding="{StaticResource InfoBarContentRootPadding}">
@@ -115,7 +123,7 @@
                   </ContentPresenter.Resources>
                 </ContentPresenter>
               </primitives:InfoBarPanel>
-              <ContentPresenter Grid.Column="1" Grid.Row="1" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
+              <ContentPresenter x:Name="ContentArea" Grid.Column="1" Grid.Row="1" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" VerticalAlignment="Center"/>
               <Button Name="CloseButton" Grid.Column="2" Command="{TemplateBinding CloseButtonCommand}" CommandParameter="{TemplateBinding CloseButtonCommandParameter}" Style="{TemplateBinding CloseButtonStyle}">
                 <Button.Resources>
                   <ResourceDictionary>

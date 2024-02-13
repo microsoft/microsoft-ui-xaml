@@ -11,16 +11,10 @@
 
 #pragma once
 
-#include <FeatureFlags.h>
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi) 
-#define FEATURE_EXPERIMENTALAPI_OVERRIDE override
-#else
-#define FEATURE_EXPERIMENTALAPI_OVERRIDE
-#endif
+
 #define __XamlShutdownCompletedOnThreadEventArgs_GUID "c21339b3-e8f2-42b1-b5fc-335b78e66879"
 
 #pragma region forwarders
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
 namespace ctl
 {
     template<typename impl_type>
@@ -31,7 +25,6 @@ namespace ctl
         IFACEMETHOD(GetDispatcherQueueDeferral)(_Outptr_ ABI::Windows::Foundation::IDeferral** ppResult) override { return This()->GetDispatcherQueueDeferral(ppResult); }
     };
 }
-#endif
 #pragma endregion
 
 namespace DirectUI
@@ -40,20 +33,14 @@ namespace DirectUI
 
     class __declspec(novtable) XamlShutdownCompletedOnThreadEventArgsGenerated:
         public ctl::WeakReferenceSource
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Hosting::IXamlShutdownCompletedOnThreadEventArgs, XamlShutdownCompletedOnThreadEventArgsGenerated >
-#endif
     {
         friend class DirectUI::XamlShutdownCompletedOnThreadEventArgs;
 
         INSPECTABLE_CLASS(L"Microsoft.UI.Xaml.Hosting.XamlShutdownCompletedOnThreadEventArgs");
 
         BEGIN_INTERFACE_MAP(XamlShutdownCompletedOnThreadEventArgsGenerated, ctl::WeakReferenceSource)
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
             INTERFACE_ENTRY(XamlShutdownCompletedOnThreadEventArgsGenerated, ABI::Microsoft::UI::Xaml::Hosting::IXamlShutdownCompletedOnThreadEventArgs)
-#else
-            INTERFACE_ENTRY(DUMMYINTERFACE, IUnknown)
-#endif
         END_INTERFACE_MAP(XamlShutdownCompletedOnThreadEventArgsGenerated, ctl::WeakReferenceSource)
 
     public:

@@ -23,7 +23,6 @@
             BorderThickness="{TemplateBinding BorderThickness}"
             CornerRadius="{TemplateBinding CornerRadius}"
             HorizontalAnchorRatio="NaN"
-            Padding="{TemplateBinding Padding}"
             TabNavigation="{TemplateBinding TabNavigation}"
             XYFocusKeyboardNavigation="{TemplateBinding XYFocusKeyboardNavigation}">
             <controls:ItemsRepeater
@@ -33,6 +32,7 @@
               ItemsSource="{TemplateBinding ItemsSource}"
               ItemTemplate="{TemplateBinding ItemTemplate}"
               Layout="{TemplateBinding Layout}"
+              Margin="{TemplateBinding Padding}"
               VerticalAlignment="Top"
               XYFocusKeyboardNavigation="{TemplateBinding XYFocusKeyboardNavigation}"/>
           </controls:ScrollView>

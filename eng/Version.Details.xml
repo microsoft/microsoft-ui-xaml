@@ -2,17 +2,17 @@
 <!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.WindowsAppSDK.Foundation.TransportPackage" Version="1.5.0-20240123.2">
+    <Dependency Name="Microsoft.WindowsAppSDK.Foundation.TransportPackage" Version="1.5.0-20240203.2">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
-      <Sha>59270ef4a911b2eda7a727e94d849eceb93cc2cc</Sha>
+      <Sha>e5cca86cae13e2d76d660b92c2887207ea0d7ae3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="1.5.3-CI-26033.1001.240119-0813.1">
+    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="1.5.3-CI-26050.1000.240201-1035.1">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
-      <Sha>9589050fb3de9f8f978f57c8e782daef859cfa04</Sha>
+      <Sha>2d8e71d8e93b54cebdbab98cf6c48d0393a303eb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.InteractiveExperiences" Version="1.5.3-CI-26033.1001.240119-0813.1">
+    <Dependency Name="Microsoft.Internal.InteractiveExperiences" Version="1.5.3-CI-26050.1000.240201-1035.1">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
-      <Sha>9589050fb3de9f8f978f57c8e782daef859cfa04</Sha>
+      <Sha>2d8e71d8e93b54cebdbab98cf6c48d0393a303eb</Sha>
     </Dependency>
     <!-- Microsoft-WinUI-SDK repo (MSBuild and Visual Studio extensions for building, deploying, and debugging packaged applications.)  -->
     <Dependency Name="Microsoft.Build.Msix" Version="1.5.0-zmain.231129.0">
@@ -20,9 +20,9 @@
       <Sha>7febe557e6f0e1c3d30254648d58e7b73589a572</Sha>
     </Dependency>
     <!-- Closed source binary (ex PTLS and WinUIEdit) -->
-    <Dependency Name="Microsoft.Internal.WinUIDetails" Version="1.17.0">
+    <Dependency Name="Microsoft.Internal.WinUIDetails" Version="1.500.0">
       <Uri>https://dev.azure.com/microsoft/WinUI/_git/WinUIDetails</Uri>
-      <Sha>04b1c445cffea9f55f4d99839adce7ffafe4354a</Sha>
+      <Sha>5b3913ef8513e7bebd8fb07a98de88155e1df66d</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>

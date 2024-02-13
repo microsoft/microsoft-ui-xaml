@@ -36,6 +36,10 @@ namespace DirectUI
             return S_OK;
         }
 
+        // Get the WindowsXamlManager for the current thread.
+        // (always returns null in legacy shutdown mode)
+        static ctl::ComPtr<WindowsXamlManager> GetForCurrentThread();
+
     private:
 
         void RaiseXamlShutdownCompletedOnThreadEvent(
@@ -43,14 +47,13 @@ namespace DirectUI
 
         ctl::ComPtr<XamlShutdownCompletedOnThreadEventSourceType> m_xamlShutdownCompletedOnThreadEventSource;
 
-        // XamlCore is a per-thread object that represents the the running Xaml Core on the thread.
-        // It tracks the WindowsXamlManager objects on the thread, and shuts down the XAML
-        // state on the thread when all WXM instances on the thread are closed.  It may outlive
-        // all the instances of WindowsXamlManager.
+        // XamlCore is a base class for the XamlCoreLegacyShutdown and XamlCoreNewShutdown classes.
+        // There is at most one of these objects per-thread, stored in tls_xamlCore.  This object manages
+        // the lifetime of the Xaml runtime on the thread.
         class XamlCore
         {
         public:
-            ~XamlCore();
+            virtual ~XamlCore();
             _Check_return_ HRESULT Initialize(msy::IDispatcherQueue* dq);
             _Check_return_ HRESULT Close();
 
@@ -61,13 +64,14 @@ namespace DirectUI
             };
             State GetState() const { return m_state; }
             void SetState(State state) { m_state = state; }
+           
+            virtual void OnManagerCreated(_In_ WindowsXamlManager* manager) = 0;
+            virtual void OnManagerClosed(_In_ WindowsXamlManager* manager) = 0;
+            virtual ctl::ComPtr<DirectUI::WindowsXamlManager> GetForCurrentThread() = 0;
+            virtual bool ReadyForEarlyShutdown() const = 0;
 
-            void AddManager(_In_ WindowsXamlManager* wxm);
-            void RemoveManager(_In_ WindowsXamlManager* wxm);
-            int ManagerCount() const { return m_managers.size(); }
-
-            _Check_return_ HRESULT OnFrameworkShutdownStarting(
-                _In_ msy::IDispatcherQueueShutdownStartingEventArgs* args);
+            virtual _Check_return_ HRESULT OnFrameworkShutdownStarting(
+                _In_ msy::IDispatcherQueueShutdownStartingEventArgs* args) = 0;
 
         private:
             wrl::ComPtr<msy::IDispatcherQueue> m_dispatcherQueue;
@@ -75,11 +79,11 @@ namespace DirectUI
             EventRegistrationToken m_frameworkShutdownStartingToken {};
             State m_state {State::Normal};
 
-            // These are raw non-ref-counted pointers, the WindowsXamlManager objects add and remove themselves.
-            std::vector<DirectUI::WindowsXamlManager*> m_managers;
-
             inline static std::atomic<int> s_instancesInProcess{};
         };
+
+        friend class XamlCoreLegacyShutdown;
+        friend class XamlCoreNewShutdown;
 
         _Check_return_ HRESULT EnqueueClose();
         _Check_return_ HRESULT CheckWindowingModelPolicy();

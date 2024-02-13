@@ -1631,9 +1631,9 @@ bool CJupiterWindow::ShouldSetUseCoreDragDrop(bool useCoreDragDrop)
     }
 }
 
-_Check_return_ HRESULT CJupiterWindow::EnableIslandDragDropMode()
+_Check_return_ HRESULT CJupiterWindow::SetIslandDragDropMode(bool value)
 {
-    SetUseCoreDragDrop(true);
+    SetUseCoreDragDrop(value);
     return S_OK;
 }
 

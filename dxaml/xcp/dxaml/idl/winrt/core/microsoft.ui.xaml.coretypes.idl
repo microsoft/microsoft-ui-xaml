@@ -56,7 +56,6 @@ namespace Microsoft.UI.Xaml
 {
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 6)]
-    [feature(Feature_ExperimentalApi)]
     [webhosthidden]
     enum DispatcherShutdownMode
     {
@@ -5252,7 +5251,6 @@ namespace Microsoft.UI.Xaml.Media.Media3D
 namespace Microsoft.UI.Xaml.Hosting
 {
     [contract(Microsoft.UI.Xaml.WinUIContract, 6)]
-    [feature(Feature_ExperimentalApi)]
     [webhosthidden]
     runtimeclass XamlShutdownCompletedOnThreadEventArgs
     {

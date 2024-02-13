@@ -315,8 +315,7 @@ namespace Microsoft.UI.Xaml.Hosting
         }
     }
 
-    [VelocityFeature("Feature_ExperimentalApi")]
-    [Contract(typeof(WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [Contract(typeof(WinUIContract), 6)]
     [FrameworkTypePattern]
     [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
     [CodeGen(partial: true)]
@@ -329,6 +328,7 @@ namespace Microsoft.UI.Xaml.Hosting
     }
 
     [Contract(typeof(WinUIContract), 5, ForcePrimaryInterfaceGeneration = true)]
+    [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 6)]
     [DXamlIdlGroup("coretypes2")]
     [CodeGen(partial: true)]
     [FrameworkTypePattern]
@@ -336,7 +336,6 @@ namespace Microsoft.UI.Xaml.Hosting
     [Guids(ClassGuid = "3b953d5c-2c9f-4e49-88a7-c030616de1f0")]
     [ThreadingModel(ThreadingModel.Both)]
     [Implements(typeof(Windows.Foundation.IClosable))]
-    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
     public sealed class WindowsXamlManager
     {
         internal WindowsXamlManager() {}
@@ -346,13 +345,16 @@ namespace Microsoft.UI.Xaml.Hosting
             return default(WindowsXamlManager);
         }
 
-        [VelocityFeature("Feature_ExperimentalApi")]
+        [Version(2)]
         [EventHandlerType(EventHandlerKind.TypedSenderAndArgs)]
         public event Windows.Foundation.TypedEventHandler<WindowsXamlManager, XamlShutdownCompletedOnThreadEventArgs> XamlShutdownCompletedOnThread;
 
-        [VelocityFeature("Feature_ExperimentalApi")]
+        [Version(2)]
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [TypeTable(IsExcludedFromDXaml = true)]
-	    static public bool IsXamlRunningOnCurrentThread { get; }
+	    public static WindowsXamlManager GetForCurrentThread()
+        { 
+            return default(WindowsXamlManager);
+        }
     }
 }

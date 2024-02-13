@@ -56,7 +56,10 @@ unsealed runtimeclass InfoBar : Microsoft.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean IsOpen{ get; set; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String Title{ get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String Message{ get; set; };
 
     [MUX_DEFAULT_VALUE("winrt::InfoBarSeverity::Informational")]
@@ -78,6 +81,7 @@ unsealed runtimeclass InfoBar : Microsoft.UI.Xaml.Controls.Control
     Microsoft.UI.Xaml.Input.ICommand CloseButtonCommand{ get; set; };
     Object CloseButtonCommandParameter{ get; set; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.Controls.Primitives.ButtonBase ActionButton{ get; set; };
 
     Object Content{ get; set; };

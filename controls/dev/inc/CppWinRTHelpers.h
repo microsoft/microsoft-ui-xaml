@@ -366,9 +366,13 @@ inline bool SetFocus(winrt::DependencyObject const& object, winrt::FocusState fo
 
 // This type exists for types that in metadata derive from FrameworkElement but internally want to derive from Panel
 // to get "protected" Children.
-// Using it is just like any other winrt::implementation::FooT type *except* that you must pass an additional parameter
-// which is the winrt::Foo type. Most times you will be using ReferenceTracker too so that pattern would look like:
-// class YourType : ReferenceTracker<YourType, DeriveFromPanelHelper_base, winrt::YourType>  <--- note the extra winrt::YourType here that's normally not needed.
+//
+// Using it is just like any other winrt::implementation::FooT type *except* that you must pass some additional parameters: 
+// (1) The winrt::Foo type AND
+// (2) Any versioned interfaces winrt::IFoo2, winrt::IFoo3, etc that the type implements
+//
+// Most times you will be using ReferenceTracker too so that pattern would look like:
+// class YourType : ReferenceTracker<YourType, DeriveFromPanelHelper_base, winrt::YourType, winrt::IYourType2>  <--- note the extra winrt::YourType here that's normally not needed.
 template <typename D, typename T, typename ... I>
 struct __declspec(empty_bases) DeriveFromPanelHelper_base : winrt::Microsoft::UI::Xaml::Controls::PanelT<D, winrt::default_interface<T>, winrt::composable, I...>
 {

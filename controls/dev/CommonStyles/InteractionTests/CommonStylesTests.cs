@@ -344,6 +344,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void ListViewBaseItemPageNavigationTest()
+        {
+            using (var setup = new TestSetupHelper("CommonStyles Tests"))
+            {
+                Log.Comment("Click on NavigateToNewPageButton");
+                var button = new Button(FindElement.ByName("NavigateToNewPageButton"));
+
+                InputHelper.ScrollToElement(button);
+                Wait.ForIdle();
+
+                // LeftClick is required in order for PointerCapture to happen
+                InputHelper.LeftClick(button);
+                Wait.ForIdle();
+
+                Log.Comment("Verify successful page navigation");
+                var buttonNavigateToGridView = FindElement.ById("navigateToGridView");
+                Verify.IsNotNull(buttonNavigateToGridView, "GridViewPage is expected to be loaded.");
+            }
+        }
+
+
         private bool TryWaitForEditValues(string editName, string editValue)
         {
             UIObject editUIObject = FindElement.ById(editName);

@@ -29,6 +29,7 @@ CStackPanel::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
 
     auto children = GetUnsortedChildren();
     UINT32 childrenCount = children.GetCount();
+    UINT32 visibleChildrenCount = 0;
 
     for (XUINT32 childIndex = 0; childIndex < childrenCount; childIndex++)
     {
@@ -48,14 +49,19 @@ CStackPanel::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
             stackDesiredSize.width += currentChild->GetLayoutStorage()->m_desiredSize.width;
             stackDesiredSize.height = std::max(stackDesiredSize.height, currentChild->GetLayoutStorage()->m_desiredSize.height);
         }
+
+        if (currentChild->IsVisible())
+        {
+            visibleChildrenCount++;
+        }
     }
 
     stackDesiredSize.width += combinedThickness.width;
     stackDesiredSize.height += combinedThickness.height;
 
-    if (childrenCount > 1)
+    if (visibleChildrenCount > 1)
     {
-        const float combinedSpacing = GetSpacing() * (childrenCount - 1);
+        const float combinedSpacing = GetSpacing() * (visibleChildrenCount - 1);
         if (m_orientation == DirectUI::Orientation::Vertical)
         {
             stackDesiredSize.height += combinedSpacing;
@@ -104,13 +110,16 @@ CStackPanel::ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize)
         IFC_RETURN(currentChild->Arrange(arrangeRect));
 
         // Offset the rect for the next child.
-        if (m_orientation == DirectUI::Orientation::Vertical)
+        if (currentChild->IsVisible())
         {
-            arrangeRect.Y += arrangeRect.Height + spacing;
-        }
-        else
-        {
-            arrangeRect.X += arrangeRect.Width + spacing;
+            if (m_orientation == DirectUI::Orientation::Vertical)
+            {
+                arrangeRect.Y += arrangeRect.Height + spacing;
+            }
+            else
+            {
+                arrangeRect.X += arrangeRect.Width + spacing;
+            }
         }
     }
 

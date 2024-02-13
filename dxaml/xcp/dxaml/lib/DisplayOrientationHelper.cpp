@@ -20,6 +20,9 @@ _Check_return_ HRESULT
     CCoreServices* coreServices = DXamlServices::GetHandle();
     if (coreServices->GetInitializationType() != InitializationType::IslandsOnly)
     {
+        // Note: This branch is meant to address UWP scenarios, and can be removed once test
+        // dependency on the CoreWindow is resolved.
+        
         ctl::ComPtr<wgrd::IDisplayInformation> displayInformation;
         wgrd::DisplayOrientations currentDisplayOrientation = wgrd::DisplayOrientations_None;
         GetUWPDisplayInformation(displayInformation);
@@ -47,23 +50,22 @@ _Check_return_ HRESULT
     }
     else
     {
-        UINT rotationValue;
-        if(SUCCEEDED(GetWin32DisplayOrientation(dependencyObject, rotationValue)))
+        auto rotationValue = ixp::ContentDisplayOrientations_None;
+        if (SUCCEEDED(GetIslandDisplayOrientation(dependencyObject, rotationValue)))
         {
             // Map to XamlDisplayOrientation type
             switch(rotationValue)
             {
-                case DMDO_DEFAULT:
-                    // Currently assuming that DMDO_DEFAULT (natural orientation of the device) is always landscape.
+                case ixp::ContentDisplayOrientations_Landscape:
                     currentOrientation = Orientation::Landscape;
                     break;
-                case DMDO_180:
+                case ixp::ContentDisplayOrientations_LandscapeFlipped:
                     currentOrientation = Orientation::LandscapeFlipped;
                     break;
-                case DMDO_90:
+                case ixp::ContentDisplayOrientations_Portrait:
                     currentOrientation = Orientation::Portrait;
                     break;
-                case DMDO_270:
+                case ixp::ContentDisplayOrientations_PortraitFlipped:
                     currentOrientation = Orientation::PortraitFlipped;
                     break;
                 default:
@@ -77,31 +79,20 @@ _Check_return_ HRESULT
 }
 
 _Check_return_ HRESULT 
-    GetWin32DisplayOrientation(_In_ CDependencyObject* dependencyObject, _Out_ UINT& rotationValue)
+    GetIslandDisplayOrientation(_In_ CDependencyObject* dependencyObject, _Out_ ixp::ContentDisplayOrientations rotationValue)
     {
         IFCPTR_RETURN(dependencyObject);
         CXamlIslandRoot* xamlIslandRoot = VisualTree::GetXamlIslandRootForElement(dependencyObject);
-        if(xamlIslandRoot)
+        if (xamlIslandRoot)
         {
-            HWND backingHwnd = xamlIslandRoot->GetPositioningHWND();
-            HMONITOR myMonitor = MonitorFromWindow(backingHwnd, MONITOR_DEFAULTTONEAREST);
-            if(myMonitor != NULL)
+            wrl::ComPtr<ixp::IContentIslandEnvironment> islandEnvironment = xamlIslandRoot->GetContentIslandEnvironment();
+            
+            if (islandEnvironment)
             {
-                MONITORINFOEX monitorInfo = {};
-                monitorInfo.cbSize = sizeof(monitorInfo);
-                GetMonitorInfo(myMonitor, &monitorInfo);
+                wrl::ComPtr<ixp::IContentIslandEnvironment2> islandEnvironment2;
+                IFCFAILFAST(islandEnvironment.As(&islandEnvironment2));
 
-                DEVMODEW devMode = {};
-                devMode.dmSize = sizeof(devMode);
-                devMode.dmSpecVersion = DM_SPECVERSION;
-
-                EnumDisplaySettings(monitorInfo.szDevice, ENUM_CURRENT_SETTINGS, &devMode);
-
-                if (devMode.dmFields & DM_DISPLAYORIENTATION)
-                {
-                    rotationValue = devMode.dmDisplayOrientation;
-                    return S_OK;
-                }
+                IFC_RETURN(islandEnvironment2->get_CurrentOrientation(&rotationValue));
             }
         }
 

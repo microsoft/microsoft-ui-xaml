@@ -356,17 +356,6 @@ HWND CDependencyObject::GetElementPositioningWindow()
         {
             return spPopup->GetPopupPositioningWindow();
         }
-
-        if (GetContext()->HasXamlIslandRoots())
-        {
-            // If this element is in a XamlIslandRoot tree, return the HWND for that island
-            auto root = GetContext()->GetRootForElement(this);
-            auto xamlIslandRoot = do_pointer_cast<CXamlIslandRoot>(root);
-            if (xamlIslandRoot)
-            {
-                return xamlIslandRoot->GetPositioningHWND();
-            }
-        }
     }
 
     // Default return value is the Jupiter window

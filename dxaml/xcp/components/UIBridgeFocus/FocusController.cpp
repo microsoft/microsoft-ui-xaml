@@ -183,21 +183,48 @@ HRESULT FocusController::DepartFocus(
 
     switch(xamlReason)
     {
+        case xaml_hosting::XamlSourceFocusNavigationReason::XamlSourceFocusNavigationReason_Programmatic:
+            ixpReason = ixp::FocusNavigationReason::FocusNavigationReason_Programmatic;
+            break;
+        case xaml_hosting::XamlSourceFocusNavigationReason::XamlSourceFocusNavigationReason_Restore:
+            ixpReason = ixp::FocusNavigationReason::FocusNavigationReason_Restore;
+            break;
         case xaml_hosting::XamlSourceFocusNavigationReason::XamlSourceFocusNavigationReason_First:
             ixpReason = ixp::FocusNavigationReason::FocusNavigationReason_First;
             break;
         case xaml_hosting::XamlSourceFocusNavigationReason::XamlSourceFocusNavigationReason_Last:
             ixpReason = ixp::FocusNavigationReason::FocusNavigationReason_Last;
             break;
+        case xaml_hosting::XamlSourceFocusNavigationReason::XamlSourceFocusNavigationReason_Up:
+            ixpReason = ixp::FocusNavigationReason::FocusNavigationReason_Up;
+            break;
+        case xaml_hosting::XamlSourceFocusNavigationReason::XamlSourceFocusNavigationReason_Down:
+            ixpReason = ixp::FocusNavigationReason::FocusNavigationReason_Down;
+            break;
+        case xaml_hosting::XamlSourceFocusNavigationReason::XamlSourceFocusNavigationReason_Left:
+            ixpReason = ixp::FocusNavigationReason::FocusNavigationReason_Left;
+            break;
+        case xaml_hosting::XamlSourceFocusNavigationReason::XamlSourceFocusNavigationReason_Right:
+            ixpReason = ixp::FocusNavigationReason::FocusNavigationReason_Right;
+            break;
     }
+
+    ABI::Windows::Foundation::Rect hintRect;
+    IFC_RETURN(request->get_HintRect(&hintRect));
+    GUID correlationId;
+    IFC_RETURN(request->get_CorrelationId(&correlationId));
+    wrl::ComPtr<ixp::IFocusNavigationRequest> ixpRequest;
+
+    wrl::ComPtr<ixp::IFocusNavigationRequestStatics> focusNavigationRequestStatics;
+    wf::GetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_FocusNavigationRequest).Get(), &focusNavigationRequestStatics);
+    IFCFAILFAST(focusNavigationRequestStatics->CreateWithHintRectAndId(ixpReason, hintRect, correlationId, &ixpRequest));
 
     wrl::ComPtr<ixp::IInputFocusController2> inputFocusController2;
     IFC_RETURN(m_inputObjectFocusable.As(&inputFocusController2));
     ixp::FocusNavigationResult result;
-    IFC_RETURN(inputFocusController2->DepartFocus(ixpReason, &result));
+    IFC_RETURN(inputFocusController2->DepartFocus(ixpRequest.Get(), &result));
 
-    // IXP focus APIs under construction, so result is meaningless right now,
-    // but Xaml may want to do something with this
+    // WinUI may wish to respond to the result (Moved/NotMoved/NoFocusableElements) here in some way
 
     return S_OK;
 }

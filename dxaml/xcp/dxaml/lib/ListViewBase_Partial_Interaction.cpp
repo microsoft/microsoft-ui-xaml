@@ -881,7 +881,7 @@ IFACEMETHODIMP ListViewBase::OnKeyDown(
                 mode != xaml_controls::ListViewSelectionMode_None)
             {
                 IFC_RETURN(GetKeyboardModifiers(&modifiers));
-                if (IsFlagSet(modifiers, wsy::VirtualKeyModifiers_Control))
+                if (modifiers ==  wsy::VirtualKeyModifiers_Control)
                 {
                     UINT itemCount = 0;
                     ctl::ComPtr<wfc::IObservableVector<IInspectable*>> spItems;

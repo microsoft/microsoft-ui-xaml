@@ -293,6 +293,20 @@
                         </Button.Resources>
                         <FontIcon Glyph="&#xE781;" />
                     </Button>
+                    <GridView x:Name="MiscellaneousGridView" ItemsSource="{x:Bind miscellaneousGridViewSource}" Margin="10">
+                        <GridView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="30" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+                                    <Button Grid.Row="1" x:Name="NavigateToNewPageButton" AutomationProperties.Name="NavigateToNewPageButton" Content="Navigate To New Page" Click="NavigateToNewPageButton_Click"/>
+                                </Grid>
+                            </DataTemplate>
+                        </GridView.ItemTemplate>
+                    </GridView>
                 </StackPanel>
                 <StackPanel Style="{ThemeResource CompactPanelStyle}">
                     <TextBlock  Text="ListViewItem/GridViewItem testing area" Style="{ThemeResource StandardGroupHeader}"/>

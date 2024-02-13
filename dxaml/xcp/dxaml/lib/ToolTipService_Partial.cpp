@@ -1379,34 +1379,6 @@ ToolTipService::OnOwnerPointerEntered(
 
         IFC(spPointerPoint->get_Position(&s_lastPointerEnteredPoint));
 
-        //
-        // Account for offsets on windowed popups
-        // The incoming spPointerPoint is relative to an InputSite. The main Xaml tree has an InputSite, but so do all
-        // windowed popups. If the ToolTip owner element is in a windowed popup, then the point we get will be relative
-        // to that windowed popup rather than relative to the main Xaml tree. We need to account for the difference.
-        //
-        ctl::ComPtr<DirectUI::DependencyObject> senderAsDO;
-        IFC(ctl::do_query_interface(senderAsDO, pSender));
-        CDependencyObject* dependencyObject = senderAsDO->GetHandle();
-        // Optimization - if there are no open popups, then the sender can't be in an open windowed popup, then there's
-        // no windowed popup offset to account for.
-        VisualTree* visualTree = VisualTree::GetForElementNoRef(dependencyObject);
-        if (visualTree->GetPopupRoot()->HasOpenOrUnloadingPopups())
-        {
-            // Getting the first ancestor popup is enough. Even for nested popups, Xaml will create the PopupSiteBridge
-            // from the DesktopChildSiteBridge for the main tree.
-            CPopup* ancestorPopup = dependencyObject->GetFirstAncestorPopup(true /* windowedPopupOnly */);
-
-            if (ancestorPopup)
-            {
-                XPOINTF_COORDS popupOffset = {};
-                IFC(ancestorPopup->GetScreenOffsetFromOwner(&popupOffset));
-                XPOINTF popupOffsetLogical = popupOffset.ToXPointF_Logical(ancestorPopup->GetWindowedPopupRasterizationScale());
-                s_lastPointerEnteredPoint.X += popupOffsetLogical.x;
-                s_lastPointerEnteredPoint.Y += popupOffsetLogical.y;
-            }
-        }
-
         // Add to list of nested owners
         IFC(ToolTipService::AddToNestedOwners(spSenderAsDO.Get()));
         IFC(static_cast<PointerRoutedEventArgs*>(pArgs)->get_OriginalSource(&spOriginalSource));

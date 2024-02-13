@@ -324,9 +324,18 @@ DXamlCore::GetAssociatedWindowNoRef(
         return S_FALSE;
     }
 
+    // Retrieve the hosting HWND from the XamlRoot. 
+    // As above, it is possible that the element is hosted inside of a XamlIsland, which means that
+    // it will have a XamlRoot but not a hosting HWND. This is essentially equivalent to a UIElement
+    // being created in code behind, as a XamlIsland is used to host Xaml content inside of an app
+    // without using a Xaml window. In this case, this function cannot proceed but should not throw
+    // an exception as the UIElement will not have an associated Xaml window.
     HWND xamlHwnd;
     IFC_RETURN(xamlRoot->get_HostWindow(&xamlHwnd));
-    IFCHNDL_RETURN(xamlHwnd);
+    if (!xamlHwnd)
+    {
+        return S_FALSE;
+    }
 
     // In a desktop context, the HostWindow actually refers to the DesktopWindowXamlSource window where the xaml lives.
     HWND parentHwnd = ::GetParent(xamlHwnd);

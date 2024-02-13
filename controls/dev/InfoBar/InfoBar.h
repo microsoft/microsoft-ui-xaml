@@ -30,6 +30,9 @@ public:
     void OnIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIsIconVisiblePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIsClosablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnTitlePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnActionButtonPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnMessagePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
     void OnCloseButtonClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
@@ -43,6 +46,7 @@ private:
     void UpdateIconVisibility();
     void UpdateCloseButton();
     void UpdateForeground();
+    void UpdateContentPosition();
 
     const winrt::hstring GetCloseButtonResourceName(winrt::InfoBarSeverity severity);
     const winrt::hstring GetSeverityLevelResourceName(winrt::InfoBarSeverity severity);

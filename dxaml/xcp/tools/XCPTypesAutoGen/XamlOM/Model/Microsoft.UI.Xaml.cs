@@ -2929,8 +2929,7 @@ namespace Microsoft.UI.Xaml
 
     [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
     [EnumFlags(HasTypeConverter = true)]
-    [VelocityFeature("Feature_ExperimentalApi")]
-    [Contract(typeof(WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [Contract(typeof(WinUIContract), 6)]
     public enum DispatcherShutdownMode
     {
         OnLastWindowClose = 0,
@@ -2944,8 +2943,8 @@ namespace Microsoft.UI.Xaml
     [ClassFlags(IsFreeThreaded = true)]
     [ThreadingModel(ThreadingModel.Both)]
     [Platform("Feature_UwpSupportApi", typeof(Microsoft.UI.Xaml.WinUIContract), 1)]
-    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 5)]
+    [Platform(3, typeof(Microsoft.UI.Xaml.WinUIContract), 6)]
     [Implements(typeof(Microsoft.UI.Xaml.IFrameworkApplicationStaticsPrivate), IsStaticInterface = true)]
     [Implements(typeof(Microsoft.UI.Xaml.IFrameworkApplicationPrivate))]
     [DXamlIdlGroup("coretypes2")]
@@ -3133,7 +3132,7 @@ namespace Microsoft.UI.Xaml
         }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        [VelocityFeature("Feature_ExperimentalApi")]
+        [Version(3)]
         public DispatcherShutdownMode DispatcherShutdownMode {get; set;}
     }
 

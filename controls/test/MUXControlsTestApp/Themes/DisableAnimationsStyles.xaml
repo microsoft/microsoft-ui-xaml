@@ -245,7 +245,7 @@
                                             </ItemsPanelTemplate>
                                         </ItemsControl.ItemsPanel>
                                     </ItemsControl>
-                                    <Button x:Name="MoreButton" Foreground="{TemplateBinding Foreground}" Style="{StaticResource CommandBarFlyoutEllipsisButtonStyle}" Grid.Column="1" Control.IsTemplateKeyTipTarget="True" IsAccessKeyScope="True" IsTabStop="False" CornerRadius="{TemplateBinding CornerRadius}" Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.EffectiveOverflowButtonVisibility}">
+                                    <Button x:Name="MoreButton" Foreground="{TemplateBinding Foreground}" Style="{StaticResource CommandBarFlyoutEllipsisButtonStyle}" Grid.Column="1" Control.IsTemplateKeyTipTarget="True" IsAccessKeyScope="True" IsTabStop="False" CornerRadius="{TemplateBinding CornerRadius}" Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.EffectiveOverflowButtonVisibility}" AllowFocusOnInteraction="False">
                                         <Button.RenderTransform>
                                             <TranslateTransform x:Name="MoreButtonTransform" />
                                         </Button.RenderTransform>

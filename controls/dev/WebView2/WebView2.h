@@ -54,7 +54,7 @@ private:
 // Derive from DeriveFromPanelHelper_base so that we get access to Children collection in Panel.
 // (In case we have to show the "Missing Anaheim Warning").
 class WebView2 :
-    public ReferenceTracker<WebView2, DeriveFromPanelHelper_base, winrt::WebView2, IHwndComponentHost>,
+    public ReferenceTracker<WebView2, DeriveFromPanelHelper_base, winrt::WebView2, winrt::IWebView22, IHwndComponentHost>,
     public WebView2Properties
 {
 

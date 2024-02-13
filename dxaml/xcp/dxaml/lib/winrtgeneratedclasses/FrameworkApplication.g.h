@@ -17,11 +17,6 @@
 #else
 #define FEATURE_UWPSUPPORTAPI_OVERRIDE
 #endif
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi) 
-#define FEATURE_EXPERIMENTALAPI_OVERRIDE override
-#else
-#define FEATURE_EXPERIMENTALAPI_OVERRIDE
-#endif
 #define __FrameworkApplication_GUID "9e00ad29-1d7e-48dd-a33a-e22f902499ca"
 
 #pragma region forwarders
@@ -36,8 +31,8 @@ namespace ctl
         IFACEMETHOD(remove_ResourceManagerRequested)(_In_ EventRegistrationToken token) override { return This()->remove_ResourceManagerRequested(token); }
     };
     template<typename impl_type>
-    class interface_forwarder< ABI::Microsoft::UI::Xaml::IApplicationFeature_ExperimentalApi, impl_type> final
-        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IApplicationFeature_ExperimentalApi, impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::IApplication3, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IApplication3, impl_type>
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(get_DispatcherShutdownMode)(_Out_ ABI::Microsoft::UI::Xaml::DispatcherShutdownMode* pValue) override { return This()->get_DispatcherShutdownMode(pValue); }
@@ -61,12 +56,10 @@ namespace DirectUI
         , public ABI::Microsoft::UI::Xaml::IApplicationOverrides
         , public ABI::Microsoft::UI::Xaml::IFrameworkApplicationPrivate
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IApplication2, FrameworkApplicationGenerated >
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IApplication3, FrameworkApplicationGenerated >
 #if WI_IS_FEATURE_PRESENT(Feature_UwpSupportApi)
         , public ABI::Microsoft::UI::Xaml::IApplicationFeature_UwpSupportApi
         , public ABI::Microsoft::UI::Xaml::IApplicationOverridesFeature_UwpSupportApi
-#endif
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IApplicationFeature_ExperimentalApi, FrameworkApplicationGenerated >
 #endif
     {
         friend class DirectUI::FrameworkApplication;
@@ -78,12 +71,10 @@ namespace DirectUI
             INTERFACE_ENTRY(FrameworkApplicationGenerated, ABI::Microsoft::UI::Xaml::IApplicationOverrides)
             INTERFACE_ENTRY(FrameworkApplicationGenerated, ABI::Microsoft::UI::Xaml::IFrameworkApplicationPrivate)
             INTERFACE_ENTRY(FrameworkApplicationGenerated, ABI::Microsoft::UI::Xaml::IApplication2)
+            INTERFACE_ENTRY(FrameworkApplicationGenerated, ABI::Microsoft::UI::Xaml::IApplication3)
 #if WI_IS_FEATURE_PRESENT(Feature_UwpSupportApi)
             INTERFACE_ENTRY(FrameworkApplicationGenerated, ABI::Microsoft::UI::Xaml::IApplicationFeature_UwpSupportApi)
             INTERFACE_ENTRY(FrameworkApplicationGenerated, ABI::Microsoft::UI::Xaml::IApplicationOverridesFeature_UwpSupportApi)
-#endif
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-            INTERFACE_ENTRY(FrameworkApplicationGenerated, ABI::Microsoft::UI::Xaml::IApplicationFeature_ExperimentalApi)
 #endif
         END_INTERFACE_MAP(FrameworkApplicationGenerated, ctl::WeakReferenceSource)
 

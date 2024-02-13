@@ -1044,7 +1044,11 @@ _Check_return_ HRESULT CPopup::EnsureWindowForWindowedPopup()
         // island. If not, release all the window-related resources and re-create them.
         //
         CXamlIslandRoot* island = GetAssociatedXamlIslandNoRef();
-        if (m_previousXamlIslandHwnd != island->GetPositioningHWND())
+
+        UINT64 currentXamlIslandId;
+        IFC_RETURN(island->GetContentIsland()->get_Id(&currentXamlIslandId));
+
+        if (m_previousXamlIslandId != currentXamlIslandId)
         {
             // The PopupWindowSiteBridge needs to be explicitly IClosable::Close()ed, otherwise it will leak. This is because
             // the bridge's underlying hwnd has a ref count on it, and until we destroy that hwnd (via IClosable::Close)) the
@@ -1058,7 +1062,7 @@ _Check_return_ HRESULT CPopup::EnsureWindowForWindowedPopup()
             m_desktopBridge.Reset();
             m_windowedPopupWindow = NULL;
 
-            m_previousXamlIslandHwnd = island->GetPositioningHWND();
+            m_previousXamlIslandId = currentXamlIslandId;
         }
 
         if (!m_popupWindowBridge)

@@ -228,6 +228,30 @@ _Check_return_ HRESULT XamlRoot::get_HostWindow(_Out_ HWND* pValue)
     {
         auto cr = m_visualTree->GetContentRootNoRef();
         HWND hwnd = cr->GetHostingHWND();
+
+        if (!hwnd)
+        {
+            // The caller is hosted in a XamlIsland. Ideally, we would return null here, as
+            // we can't guarantee that the XamlIsland is hosted in an HWND bridge and can't access that
+            // HWND if it is. Any calls to method should instead include an equivalent call to the
+            // ContentIsland if we return null.
+
+            // Bug https://task.ms/48685229: For now, there are still calls to this method that cannot be
+            // easily replaced with a ContentIsland API, specifically in WebView2.cpp. This means that we
+            // have to return a hosting HWND even in the XamlIsland scenario. The InputSite gives us a
+            // way to retrieve this HWND as long as InputSite velocity key 45720437 is disabled. Once
+            // this key is enabled for this repo, this will no longer be the case, as the InputSite will
+            // return an HWND that works for input but not for hosting or positioning. At this point,
+            // we will return null and callers will need to make an equivalent call to the ContentIsland.
+            wrl::ComPtr<ixp::IIslandInputSitePartner> inputSite = 
+            GetVisualTreeNoRef()->GetContentRootNoRef()->GetXamlIslandRootNoRef()->GetIslandInputSite();
+
+            if (inputSite)
+            {
+                hwnd = CInputServices::GetUnderlyingInputHwndFromIslandInputSite(inputSite.Get());
+            }
+        }
+
         *pValue = hwnd;
     }
 

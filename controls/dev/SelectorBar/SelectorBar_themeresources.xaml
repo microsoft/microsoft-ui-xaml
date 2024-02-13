@@ -23,12 +23,15 @@
             <StaticResource x:Key="SelectorBarItemBackgroundSelected" ResourceKey="SystemControlTransparentBrush"/>
             <StaticResource x:Key="SelectorBarItemBackgroundPressed" ResourceKey="SystemControlTransparentBrush"/>
             <StaticResource x:Key="SelectorBarItemBackgroundDisabled" ResourceKey="SystemControlTransparentBrush"/>
+            <Thickness x:Key="SelectorBarPadding">0,4</Thickness>
             <Thickness x:Key="SelectorBarBorderThickness">1</Thickness>
             <Thickness x:Key="SelectorBarItemBorderThickness">1</Thickness>
             <Thickness x:Key="SelectorBarSelectedInnerThickness">1</Thickness>
-            <Thickness x:Key="SelectorBarItemIconVisualMargin">2,0</Thickness>
-            <Thickness x:Key="SelectorBarItemTextVisualMargin">2,0</Thickness>
-            <Thickness x:Key="SelectorBarItemSelectionVisualMargin">0,1,0,3</Thickness>
+            <Thickness x:Key="SelectorBarItemIconVisualMargin">-2,0</Thickness>
+            <Thickness x:Key="SelectorBarItemTextVisualMargin">0</Thickness>
+            <Thickness x:Key="SelectorBarItemPadding">12,10,12,7</Thickness>
+            <Thickness x:Key="SelectorBarItemSelectionVisualMargin">0</Thickness>
+            <Thickness x:Key="SelectorBarItemFocusVisualMargin">-2</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="SelectorBarBackground" ResourceKey="SystemControlTransparentBrush"/>
@@ -49,12 +52,15 @@
             <StaticResource x:Key="SelectorBarItemBackgroundSelected" ResourceKey="SystemControlTransparentBrush"/>
             <StaticResource x:Key="SelectorBarItemBackgroundPressed" ResourceKey="SystemControlTransparentBrush"/>
             <StaticResource x:Key="SelectorBarItemBackgroundDisabled" ResourceKey="SystemControlTransparentBrush"/>
+            <Thickness x:Key="SelectorBarPadding">0,4</Thickness>
             <Thickness x:Key="SelectorBarBorderThickness">1</Thickness>
             <Thickness x:Key="SelectorBarItemBorderThickness">1</Thickness>
             <Thickness x:Key="SelectorBarSelectedInnerThickness">1</Thickness>
-            <Thickness x:Key="SelectorBarItemIconVisualMargin">2,0</Thickness>
-            <Thickness x:Key="SelectorBarItemTextVisualMargin">2,0</Thickness>
-            <Thickness x:Key="SelectorBarItemSelectionVisualMargin">0,1,0,3</Thickness>
+            <Thickness x:Key="SelectorBarItemIconVisualMargin">-2,0</Thickness>
+            <Thickness x:Key="SelectorBarItemTextVisualMargin">0</Thickness>
+            <Thickness x:Key="SelectorBarItemPadding">12,10,12,7</Thickness>
+            <Thickness x:Key="SelectorBarItemSelectionVisualMargin">0</Thickness>
+            <Thickness x:Key="SelectorBarItemFocusVisualMargin">-2</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="SelectorBarBackground" ResourceKey="SystemControlTransparentBrush"/>
@@ -75,17 +81,22 @@
             <StaticResource x:Key="SelectorBarItemBackgroundSelected" ResourceKey="SystemControlTransparentBrush"/>
             <StaticResource x:Key="SelectorBarItemBackgroundPressed" ResourceKey="SystemControlTransparentBrush"/>
             <StaticResource x:Key="SelectorBarItemBackgroundDisabled" ResourceKey="SystemControlTransparentBrush"/>
+            <Thickness x:Key="SelectorBarPadding">0,4</Thickness>
             <Thickness x:Key="SelectorBarBorderThickness">1</Thickness>
             <Thickness x:Key="SelectorBarItemBorderThickness">1</Thickness>
             <Thickness x:Key="SelectorBarSelectedInnerThickness">1</Thickness>
-            <Thickness x:Key="SelectorBarItemIconVisualMargin">2,0</Thickness>
-            <Thickness x:Key="SelectorBarItemTextVisualMargin">2,0</Thickness>
-            <Thickness x:Key="SelectorBarItemSelectionVisualMargin">0,1,0,3</Thickness>
+            <Thickness x:Key="SelectorBarItemIconVisualMargin">-2,0</Thickness>
+            <Thickness x:Key="SelectorBarItemTextVisualMargin">0</Thickness>
+            <Thickness x:Key="SelectorBarItemPadding">12,10,12,7</Thickness>
+            <Thickness x:Key="SelectorBarItemSelectionVisualMargin">0</Thickness>
+            <Thickness x:Key="SelectorBarItemFocusVisualMargin">-2</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
     <x:Double x:Key="SelectorBarItemPillHeight">3</x:Double>
     <x:Double x:Key="SelectorBarItemPillWidth">4</x:Double>
+    <x:Double x:Key="SelectorBarItemIconScale">0.8</x:Double>
+    <x:Double x:Key="SelectorBarItemSpacing">8</x:Double>
 
     <Style x:Key="SelectorBarItemPill" TargetType="Rectangle" BasedOn="{StaticResource ComboBoxItemPill}">
         <Setter Property="Fill" Value="{ThemeResource SelectorBarItemPillFill}"/>

@@ -299,11 +299,14 @@ void AnnotatedScrollBar::QueueLayoutLabels(unsigned int millisecondWait)
     
     if (!m_labelsDebounce.test_and_set())
     {
-        auto strongThis = get_strong(); // ensure object lifetime during coroutines
-        auto runLayoutLabelsAction = [&, strongThis]()
+        auto weakThis = get_weak();
+        auto runLayoutLabelsAction = [weakThis]()
         {
-            strongThis->m_labelsDebounce.clear();
-            strongThis->LayoutLabels();
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->m_labelsDebounce.clear();
+                strongThis->LayoutLabels();
+            }
         };
 
         SharedHelpers::ScheduleActionAfterWait(runLayoutLabelsAction, millisecondWait);

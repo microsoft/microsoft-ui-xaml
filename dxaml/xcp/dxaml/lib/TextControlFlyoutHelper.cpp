@@ -15,11 +15,34 @@ using namespace DirectUI;
 using namespace DirectUISynonyms;
 using namespace std::placeholders;
 
-bool TextControlFlyoutHelper::IsGettingFocus(_In_opt_ CFlyoutBase* flyout, _In_ CFrameworkElement* owner)
+bool TextControlFlyoutHelper::IsGettingFocus(_In_opt_ CFlyoutBase * flyout, _In_ CFrameworkElement * owner)
 {
-    auto activeFlyout = DXamlCore::GetCurrent()->GetTextControlFlyout(flyout);
-    return activeFlyout && activeFlyout->IsGettingFocus() && (activeFlyout->GetActiveOwnerNoRef() == owner);
+	// This method is a bit under named.  In addition to determining whether the specified flyout is in the
+	// process of getting focus, it also determines whether that flyout is associated with a specific 
+	// element (text block)
+
+	auto activeFlyout = DXamlCore::GetCurrent()->GetTextControlFlyout(flyout);
+
+    if (!activeFlyout || !activeFlyout->IsGettingFocus())
+    {
+	    // If we don't have an active flyout or it is not getting focus then we don't need to check the owner
+        return false;
+    }
+
+    auto activeOwner = activeFlyout->GetActiveOwnerNoRef();
+    if (activeOwner != owner)
+    {
+        if (auto richTextBlockOverflow = do_pointer_cast<CRichTextBlockOverflow>(activeOwner))
+        {
+            // RichTextBlockOverflow elements are special in that although the flyout is displaying over the
+            // RichTextBlockOverflow, the actual owner of the flyout is the primary RichText Block.
+            activeOwner = richTextBlockOverflow->m_pMaster;
+        }
+    }
+
+    return activeOwner == owner;
 }
+
 
 bool TextControlFlyoutHelper::IsOpen(_In_ CFlyoutBase* flyout)
 {

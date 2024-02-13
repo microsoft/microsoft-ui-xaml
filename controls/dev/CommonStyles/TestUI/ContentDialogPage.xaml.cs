@@ -32,8 +32,8 @@ namespace MUXControlsTestApp
                 BorderThickness = new Thickness(10, 20, 10, 20),
                 CloseButtonText = "CloseButton",
                 BorderBrush = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)),
-                XamlRoot = this.XamlRoot
             };
+            dialog.XamlRoot = this.XamlRoot;
             _ = CreateContentDialog().ShowAsync();
         }
 

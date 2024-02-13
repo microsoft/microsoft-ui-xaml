@@ -134,7 +134,7 @@ public:
         _In_ LPARAM lParam,
         _In_opt_ CContentRoot* contentRoot);
 
-    _Check_return_ HRESULT EnableIslandDragDropMode();
+    _Check_return_ HRESULT SetIslandDragDropMode(bool value);
 
     void SetPointerCapture();
     void ReleasePointerCapture();

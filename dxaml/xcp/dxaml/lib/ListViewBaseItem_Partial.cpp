@@ -1148,7 +1148,10 @@ IFACEMETHODIMP ListViewBaseItem::OnPointerCaptureLost(
         m_tpLastTouchPressedArgs.Clear();
     }
 
-    if (isVisualStateChangePending)
+    CDependencyObject* pHandle = GetHandle();
+    if (isVisualStateChangePending && 
+        pHandle &&
+        !pHandle->IsProcessingEnterLeave())
     {
         IFC(ChangeVisualState(true));
     }

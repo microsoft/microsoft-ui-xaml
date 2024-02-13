@@ -20,7 +20,7 @@ namespace XamlDisplay
         GetDisplayOrientation(_In_ CDependencyObject* dependencyObject, _Out_ Orientation& orientation);
 
     _Check_return_ HRESULT 
-        GetWin32DisplayOrientation(_In_ CDependencyObject* dependencyObject, _Out_ UINT& rotationValue);
+        GetIslandDisplayOrientation(_In_ CDependencyObject* dependencyObject, _Out_ ixp::ContentDisplayOrientations rotationValue);
 
     _Check_return_ HRESULT 
         GetUWPDisplayInformation(_Out_ ctl::ComPtr<wgrd::IDisplayInformation>& displayInformation);

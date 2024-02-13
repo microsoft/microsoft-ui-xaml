@@ -46,9 +46,9 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IApplication IApplication;
     typedef ABI::Microsoft::UI::Xaml::IApplicationOverrides IApplicationOverrides;
     typedef ABI::Microsoft::UI::Xaml::IApplication2 IApplication2;
+    typedef ABI::Microsoft::UI::Xaml::IApplication3 IApplication3;
     typedef ABI::Microsoft::UI::Xaml::IApplicationFeature_UwpSupportApi IApplicationFeature_UwpSupportApi;
     typedef ABI::Microsoft::UI::Xaml::IApplicationOverridesFeature_UwpSupportApi IApplicationOverridesFeature_UwpSupportApi;
-    typedef ABI::Microsoft::UI::Xaml::IApplicationFeature_ExperimentalApi IApplicationFeature_ExperimentalApi;
     typedef ABI::Microsoft::UI::Xaml::IFrameworkElement IFrameworkElement;
     typedef ABI::Microsoft::UI::Xaml::IFrameworkElementOverrides IFrameworkElementOverrides;
     typedef ABI::Microsoft::UI::Xaml::IFrameworkElementProtected IFrameworkElementProtected;
@@ -565,7 +565,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSourceTakeFocusRequestedEventArgs IDesktopWindowXamlSourceTakeFocusRequestedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IElementCompositionPreview IElementCompositionPreview;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager IWindowsXamlManager;
-    typedef ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManagerFeature_ExperimentalApi IWindowsXamlManagerFeature_ExperimentalApi;
+    typedef ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager2 IWindowsXamlManager2;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IXamlIslandRoot IXamlIslandRoot;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IXamlShutdownCompletedOnThreadEventArgs IXamlShutdownCompletedOnThreadEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest IXamlSourceFocusNavigationRequest;

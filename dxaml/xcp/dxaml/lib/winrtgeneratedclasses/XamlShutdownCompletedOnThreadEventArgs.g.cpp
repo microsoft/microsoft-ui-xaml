@@ -27,12 +27,10 @@ HRESULT DirectUI::XamlShutdownCompletedOnThreadEventArgsGenerated::QueryInterfac
     {
         *ppObject = static_cast<DirectUI::XamlShutdownCompletedOnThreadEventArgs*>(this);
     }
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Hosting::IXamlShutdownCompletedOnThreadEventArgs)) && Feature_ExperimentalApi::IsEnabled())
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Hosting::IXamlShutdownCompletedOnThreadEventArgs)))
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Hosting::IXamlShutdownCompletedOnThreadEventArgs>(this);
     }
-#endif
     else
     {
         RRETURN(ctl::WeakReferenceSource::QueryInterfaceImpl(iid, ppObject));

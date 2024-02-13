@@ -50,20 +50,12 @@
         </ScrollViewer>
 
         <Grid Grid.Column="1" Background="{ThemeResource LayerFillColorDefaultBrush}" Padding="24">
-            <Grid.Resources>
-                <Style TargetType="controls:ItemContainer" BasedOn="{StaticResource TestItemContainerStyle}" />
-                <Style x:Key="TestItemContainerStyle" TargetType="controls:ItemContainer">
-                    <Setter Property="Height" Value="120" />
-                    <Setter Property="Width" Value="180" />
-                    <Setter Property="Background" Value="LightGray" />
-                    <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
-                </Style>
-            </Grid.Resources>
             <ScrollViewer>
                 <StackPanel Spacing="8">
                     <TextBlock Text="ItemContainer with ItemInvoked Event" Style="{ThemeResource SubtitleTextBlockStyle}" />
                     <controls:ItemContainer 
                         x:Name="RoutedEventsItemContainer"
+                        Width="180"
                         HorizontalAlignment="Left">
                         <Image Source="Assets/LargeWisteria.jpg"/>
                     </controls:ItemContainer>
@@ -81,17 +73,40 @@
 
                     <controls:ItemContainer 
                         x:Name="ItemContainerWithButtons"
-                        Height="120"
                         Width="180"
                         HorizontalAlignment="Left">
+                        <ItemContainer.Resources>
+                            <ResourceDictionary>
+                                <ResourceDictionary.ThemeDictionaries>
+                                    <ResourceDictionary x:Key="Light">
+                                        <SolidColorBrush x:Key="ItemContainerBackground" Color="Red" />
+                                    </ResourceDictionary>
+                                    <ResourceDictionary x:Key="Default">
+                                        <SolidColorBrush x:Key="ItemContainerBackground" Color="Red" />
+                                    </ResourceDictionary>
+                                </ResourceDictionary.ThemeDictionaries>
+                            </ResourceDictionary>
+                        </ItemContainer.Resources>
                         <Grid>
-                            <Image x:Name="ItemContainerImage" Source="Assets/LargeWisteria.jpg" />
+                            <StackPanel>
+                                <Image x:Name="ItemContainerImage" Source="Assets/LargeWisteria.jpg" />
+                                <TextBlock Margin="4">Text in ItemContainer</TextBlock>
+                            </StackPanel>
+                            
                             <ToggleButton x:Name="HeartButton" Click="HeartButton_Click" ClickMode="Press" FontFamily="{ThemeResource SymbolThemeFontFamily}" Content="&#xEB51;" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                         </Grid>
                     </controls:ItemContainer>
 
                     <TextBlock Text="Default ItemContainer in StackPanel" Style="{ThemeResource SubtitleTextBlockStyle}" Margin="0,24,0,0" />
                     <StackPanel Spacing="8" Orientation="Horizontal">
+                        <StackPanel.Resources>
+                            <Style TargetType="controls:ItemContainer" BasedOn="{StaticResource TestItemContainerStyle}" />
+                            <Style x:Key="TestItemContainerStyle" TargetType="controls:ItemContainer">
+                                <Setter Property="Height" Value="120" />
+                                <Setter Property="Width" Value="180" />
+                                <Setter Property="Background" Value="LightGray" />
+                            </Style>
+                        </StackPanel.Resources>
                         <controls:ItemContainer />
                         <controls:ItemContainer />
                         <controls:ItemContainer />

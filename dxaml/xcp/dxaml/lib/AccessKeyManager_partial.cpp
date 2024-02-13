@@ -59,7 +59,7 @@ namespace AccessKeys {
         return S_OK;
     }
 
-    _Check_return_ HRESULT AKOnIsActiveChanged(_In_ CFocusManager* focusManager,_In_ IInspectable* sender, _Out_ IInspectable* args)
+    _Check_return_ HRESULT AKOnIsActiveChanged(_In_opt_ CFocusManager* focusManager,_In_ IInspectable* sender, _Out_ IInspectable* args)
     {
         DXamlCore* const dxamlCore = DXamlCore::GetCurrent();
         CCoreServices* const core = dxamlCore->GetHandle();
@@ -67,7 +67,13 @@ namespace AccessKeys {
         
         IFC_RETURN(UpdateIsDisplayModeEnabled(&didDisplayModeForThreadChange));
 
-        IFC_RETURN(focusManager->OnAccessKeyDisplayModeChanged());
+        // It is possible that that the Xaml Island is shutting down (for example, if the access
+        // key closes the parent window).  In this case we probably won't have a focus manager,
+        // so don't bother telling it the mode changes.
+        if (focusManager)
+        {
+            IFC_RETURN(focusManager->OnAccessKeyDisplayModeChanged());
+        }
 
         core->GetInputServices()->GetKeyTipManager().AccessKeyModeChanged();
 

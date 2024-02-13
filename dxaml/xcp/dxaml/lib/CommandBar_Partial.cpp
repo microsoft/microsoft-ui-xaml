@@ -1369,6 +1369,11 @@ CommandBar::OnOpeningImpl(_In_ IInspectable* pArgs)
 
         if (firstItemIterator)
         {
+            // Since the menu is being opened with the Expand Button, then we want to set focus using the
+            // same focus state as was used to interact with the expand button itself.
+            CContentRoot* contentRoot = VisualTree::GetContentRootForElement(GetHandle());
+            auto focusState = static_cast<xaml::FocusState>(CFocusManager::GetFocusStateFromInputDeviceType(contentRoot->GetInputManager().GetLastInputDeviceType()));
+
             BOOLEAN hasCurrent = FALSE;
             BOOLEAN succeeded = FALSE;
             IFC_RETURN(firstItemIterator->get_HasCurrent(&hasCurrent));
@@ -1380,7 +1385,7 @@ CommandBar::OnOpeningImpl(_In_ IInspectable* pArgs)
                 ctl::ComPtr<IControl> itemAsControl = firstItem.AsOrNull<IControl>();
                 if (itemAsControl)
                 {
-                    IFC_RETURN(itemAsControl.Cast<Control>()->Focus(xaml::FocusState_Programmatic, &succeeded));
+                    IFC_RETURN(itemAsControl.Cast<Control>()->Focus(focusState, &succeeded));
                 }
                 IFC_RETURN(firstItemIterator->MoveNext(&hasCurrent));
             }

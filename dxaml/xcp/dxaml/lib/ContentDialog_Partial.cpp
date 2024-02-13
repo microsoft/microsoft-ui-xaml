@@ -798,17 +798,20 @@ ContentDialog::HideAfterDeferralWorker(bool isCanceled, xaml_controls::ContentDi
     }
     else
     {
-        ctl::ComPtr<ContentDialogMetadata> metadata;
-        if (const auto xamlRoot = XamlRoot::GetImplementationForElementStatic(this))
+        // Since we are hiding the dialog, we know the root existed when we showed it.  So if it is not there
+        // now, we are shutting down.
+        if (const auto xamlRoot = XamlRoot::GetImplementationForElementStatic(this, false /* createIfNotExist */))
         {
+            ctl::ComPtr<ContentDialogMetadata> metadata;
             IFC_RETURN(xamlRoot->GetContentDialogMetadata(&metadata));
+#if DBG
+            bool isOpen = false;
+            IFC_RETURN(metadata->IsOpen(this, &isOpen));
+            ASSERT(isOpen);
+#endif
+            IFC_RETURN(metadata->RemoveOpenDialog(this));
         }
 
-#if DBG
-        bool isOpen = false;
-        IFC_RETURN(metadata->IsOpen(this, &isOpen));
-        ASSERT(isOpen);
-#endif
 
         auto asyncOperationNoRef = static_cast<ContentDialogShowAsyncOperation*>(m_tpCurrentAsyncOperation.Get());
         IFC_RETURN(asyncOperationNoRef->SetResults(result));
@@ -851,8 +854,6 @@ ContentDialog::HideAfterDeferralWorker(bool isCanceled, xaml_controls::ContentDi
 
             IFC_RETURN(m_tpPopup->put_IsOpen(FALSE));
         }
-
-        IFC_RETURN(metadata->RemoveOpenDialog(this));
 
         IFC_RETURN(BackButtonIntegration_UnregisterListener(this));
 
