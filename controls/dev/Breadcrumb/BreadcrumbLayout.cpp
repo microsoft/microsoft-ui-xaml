@@ -7,13 +7,26 @@
 #include "BreadcrumbBar.h"
 #include "BreadcrumbBarItem.h"
 
+#include "velocity.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 48360852: [1.4 servicing] BreadcrumbBar leaks in File Explorer
+#define WINAPPSDK_CHANGEID_48360852 48360852
+
 BreadcrumbLayout::BreadcrumbLayout()
 {
 }
 
 BreadcrumbLayout::BreadcrumbLayout(const winrt::BreadcrumbBar& breadcrumb)
 {
-    m_breadcrumb = breadcrumb;
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_48360852>())
+    {
+        m_breadcrumbWeakRef = winrt::make_weak(breadcrumb);
+    }
+    else
+    {
+        m_breadcrumb = breadcrumb;
+    }
 }
 
 BreadcrumbLayout::~BreadcrumbLayout()
@@ -61,7 +74,7 @@ winrt::Size BreadcrumbLayout::MeasureOverride(winrt::NonVirtualizingLayoutContex
 
     if (accumulatedCrumbsSize.Width > availableSize.Width)
     {
-        m_ellipsisIsRendered = true;   
+        m_ellipsisIsRendered = true;
     }
     else
     {
@@ -185,9 +198,20 @@ winrt::Size BreadcrumbLayout::ArrangeOverride(winrt::NonVirtualizingLayoutContex
         }
     }
 
-    if (const auto& breadcrumb = m_breadcrumb.try_as<BreadcrumbBar>())
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_48360852>())
     {
-        breadcrumb->ReIndexVisibleElementsForAccessibility();
+        if (const auto& breadcrumb = m_breadcrumbWeakRef.get())
+        {
+            auto breadcrumbImpl = winrt::get_self<BreadcrumbBar>(breadcrumb);
+            breadcrumbImpl->ReIndexVisibleElementsForAccessibility();
+        }
+    }
+    else
+    {
+        if (const auto& breadcrumb = m_breadcrumb.try_as<BreadcrumbBar>())
+        {
+            breadcrumb->ReIndexVisibleElementsForAccessibility();
+        }
     }
 
     return finalSize;

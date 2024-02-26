@@ -41,7 +41,11 @@ private:
 
     winrt::Size m_availableSize{};
     winrt::BreadcrumbBarItem m_ellipsisButton{nullptr};
+
+    // Bug 48360852: [1.4 servicing] BreadcrumbBar leaks in File Explorer
+    // A ref-counted pointer creates a reference cycle and a leak. Switch to the weak pointer when the fix is enabled under containment.
     winrt::BreadcrumbBar m_breadcrumb{ nullptr };
+    winrt::weak_ref<winrt::BreadcrumbBar> m_breadcrumbWeakRef{ nullptr };  // weak_ref because the BreadcrumbBar already points to us via m_itemsRepeaterLayout
 
     bool m_ellipsisIsRendered{};
     uint32_t m_firstRenderedItemIndexAfterEllipsis{};

@@ -95,8 +95,12 @@ private:
 
     // BreadcrumbBarItem visual representation
     tracker_ref<winrt::Button> m_button{ this };
+
     // Parent BreadcrumbBarItem to ask for hidden elements
+    // Bug 48360852: [1.4 servicing] BreadcrumbBar leaks in File Explorer
+    // A ref-counted pointer creates a reference cycle and a leak. Switch to the weak pointer when the fix is enabled under containment.
     tracker_ref<winrt::BreadcrumbBar> m_parentBreadcrumb{ this };
+    winrt::weak_ref<winrt::BreadcrumbBar> m_parentBreadcrumbWeakRef{ nullptr };
 
     // Flyout content for ellipsis item
     tracker_ref<winrt::Flyout> m_ellipsisFlyout{ this };

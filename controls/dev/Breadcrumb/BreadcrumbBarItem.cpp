@@ -9,6 +9,16 @@
 #include "BreadcrumbBar.h"
 #include "BreadcrumbBarItemAutomationPeer.h"
 
+#include "velocity.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 48360852: [1.4 servicing] BreadcrumbBar leaks in File Explorer
+#define WINAPPSDK_CHANGEID_48360852 48360852
+// Bug 48634621: [1.4 servicing] File explorer's popup window is hidden by body (z-order issue?)
+#define WINAPPSDK_CHANGEID_48634621 48634621
+// Bug 48634543: [1.4 servicing] [Watson Failure] caused by FAIL_FAST_FATAL_APP_EXIT_c0000409_Microsoft.UI.Xaml.Controls.dll!BreadcrumbBarItem::CloneEllipsisItemSource
+#define WINAPPSDK_CHANGEID_48634543 48634543
+
 namespace winrt::Microsoft::UI::Xaml::Controls
 {
     CppWinRTActivatableClassWithBasicFactory(BreadcrumbBarItem)
@@ -92,6 +102,10 @@ void BreadcrumbBarItem::OnApplyTemplate()
         if (m_isEllipsisItem)
         {
             m_ellipsisFlyout.set(GetTemplateChildT<winrt::Flyout>(s_itemEllipsisFlyoutPartName, controlProtected));
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_48634621>())
+            {
+                m_ellipsisFlyout.get().ShouldConstrainToRootBounds(false);
+            }
         }
 
         m_button.set(GetTemplateChildT<winrt::Button>(s_itemButtonPartName, controlProtected));
@@ -149,7 +163,14 @@ void BreadcrumbBarItem::SetParentBreadcrumb(const winrt::BreadcrumbBar& parent)
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
-    m_parentBreadcrumb.set(parent);
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_48360852>())
+    {
+        m_parentBreadcrumbWeakRef = winrt::make_weak(parent);
+    }
+    else
+    {
+        m_parentBreadcrumb.set(parent);
+    }
 }
 
 void BreadcrumbBarItem::SetEllipsisDropDownItemDataTemplate(const winrt::IInspectable& newDataTemplate)
@@ -180,7 +201,17 @@ void BreadcrumbBarItem::SetIsEllipsisDropDownItem(bool isEllipsisDropDownItem)
 
 void BreadcrumbBarItem::RaiseItemClickedEvent(const winrt::IInspectable& content, const uint32_t index)
 {
-    if (const auto& breadcrumb = m_parentBreadcrumb.get())
+    winrt::BreadcrumbBar breadcrumb;
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_48360852>())
+    {
+        breadcrumb = m_parentBreadcrumbWeakRef.get();
+    }
+    else
+    {
+        breadcrumb = m_parentBreadcrumb.get();
+    }
+
+    if (breadcrumb)
     {
         auto breadcrumbImpl = winrt::get_self<BreadcrumbBar>(breadcrumb);
         breadcrumbImpl->RaiseItemClickedEvent(content, index);
@@ -287,13 +318,27 @@ winrt::IInspectable BreadcrumbBarItem::CloneEllipsisItemSource(const winrt::Coll
     // The new list contains all the elements in reverse order
     const int itemsSourceSize = ellipsisItemsSource.Size();
 
-    // The itemsSourceSize should always be at least 1 as it must always contain the ellipsis item
-    assert(itemsSourceSize > 0);
-
-    for (int i = itemsSourceSize - 1; i >= 0; --i)
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_48634543>())
     {
-        const auto& item = ellipsisItemsSource.GetAt(i);
-        newItemsSource.Append(item);
+        if(itemsSourceSize > 0)
+        {
+            for (int i = itemsSourceSize - 1; i >= 0; --i)
+            {
+                const auto& item = ellipsisItemsSource.GetAt(i);
+                newItemsSource.Append(item);
+            }
+        }
+    }
+    else 
+    {
+        // The itemsSourceSize should always be at least 1 as it must always contain the ellipsis item
+        assert(itemsSourceSize > 0);
+
+        for (int i = itemsSourceSize - 1; i >= 0; --i)
+        {
+            const auto& item = ellipsisItemsSource.GetAt(i);
+            newItemsSource.Append(item);
+        }
     }
 
     return newItemsSource;
@@ -431,7 +476,17 @@ void BreadcrumbBarItem::OnEllipsisItemClick(const winrt::IInspectable&, const wi
 {
     MUX_ASSERT(!m_isEllipsisDropDownItem);
 
-    if (const auto& breadcrumb = m_parentBreadcrumb.get())
+    winrt::BreadcrumbBar breadcrumb;
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_48360852>())
+    {
+        breadcrumb = m_parentBreadcrumbWeakRef.get();
+    }
+    else
+    {
+        breadcrumb = m_parentBreadcrumb.get();
+    }
+
+    if (breadcrumb)
     {
         if (const auto& breadcrumbImpl = breadcrumb.try_as<BreadcrumbBar>())
         {
@@ -496,7 +551,7 @@ void BreadcrumbBarItem::InstantiateFlyout()
     {
         if (const auto& ellipsisFlyout = m_ellipsisFlyout.get())
         {
-            // Create ItemsRepeater and set the DataTemplate 
+            // Create ItemsRepeater and set the DataTemplate
             const auto& ellipsisItemsRepeater = winrt::ItemsRepeater();
             ellipsisItemsRepeater.Name(s_ellipsisItemsRepeaterPartName);
             winrt::AutomationProperties::SetName(ellipsisItemsRepeater, s_ellipsisItemsRepeaterAutomationName);
