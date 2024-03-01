@@ -1038,6 +1038,7 @@ void TeachingTip::OnIsLightDismissEnabledChanged()
         {
             lightDismissIndicatorPopup.IsLightDismissEnabled(true);
             m_lightDismissIndicatorPopupClosedRevoker = lightDismissIndicatorPopup.Closed(winrt::auto_revoke, { this, &TeachingTip::OnLightDismissIndicatorPopupClosed });
+            m_lightDismissIndicatorPopupPreviewKeyDownForF6Revoker = lightDismissIndicatorPopup.PreviewKeyDown(winrt::auto_revoke, { this, &TeachingTip::OnF6PreviewKeyDownClicked });
         }
     }
     else
@@ -1048,6 +1049,7 @@ void TeachingTip::OnIsLightDismissEnabledChanged()
             lightDismissIndicatorPopup.IsLightDismissEnabled(false);
         }
         m_lightDismissIndicatorPopupClosedRevoker.revoke();
+        m_lightDismissIndicatorPopupPreviewKeyDownForF6Revoker.revoke();
     }
     UpdateButtonsState();
 }
@@ -1183,6 +1185,16 @@ bool TeachingTip::HandleF6Clicked(bool fromPopup)
     }
     else if (!hasFocusInSubtree && !fromPopup)
     {
+        if (IsLightDismissEnabled())
+        {
+            auto focusable = winrt::FocusManager::FindFirstFocusableElement(m_rootElement.get());
+            if (focusable)
+            {
+                SetFocus(focusable, winrt::FocusState::Keyboard);
+                return true;
+            }
+        }
+
         const winrt::Button f6Button = [this]() -> winrt::Button
         {
             auto firstButton = m_closeButton.get();
@@ -1288,6 +1300,15 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
         }();
 
         winrt::get_self<TeachingTipAutomationPeer>(teachingTipPeer)->RaiseWindowOpenedEvent(notificationString);
+    }
+
+    if(IsLightDismissEnabled())
+    {
+        auto focusable = winrt::FocusManager::FindFirstFocusableElement(m_rootElement.get());
+        if (focusable)
+        {
+            SetFocus(focusable, winrt::FocusState::Programmatic);
+        }
     }
 }
 
@@ -2110,8 +2131,7 @@ winrt::Rect TeachingTip::GetWindowBounds()
     {
         return winrt::Rect{ 0, 0, xamlRoot.Size().Width, xamlRoot.Size().Height };
     }
-
-    return winrt::CoreWindow::GetForCurrentThread().Bounds();
+    return winrt::Rect{ 0, 0, 0, 0 };
 }
 
 std::array<winrt::TeachingTipPlacementMode, 13> TeachingTip::GetPlacementFallbackOrder(winrt::TeachingTipPlacementMode preferredPlacement)

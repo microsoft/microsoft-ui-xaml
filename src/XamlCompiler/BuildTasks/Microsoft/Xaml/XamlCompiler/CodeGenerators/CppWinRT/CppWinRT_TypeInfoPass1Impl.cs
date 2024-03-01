@@ -42,6 +42,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 #include <regex>
 #include <unknwn.h>
 #include <mutex>
+
+// Undefine GetCurrentTime macro to prevent
+// conflict with Storyboard::GetCurrentTime
+#undef GetCurrentTime
+
 #include ""winrt/windows.foundation.h""
 #include ""winrt/windows.ui.xaml.interop.h""
 #include ""winrt/microsoft.ui.xaml.markup.h""

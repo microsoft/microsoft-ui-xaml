@@ -14,7 +14,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         private Dictionary<String, int> _typeInfoIndexes;
         private UInt32[] _typeInfoLookup;
         private List<EnumGenInfo> _enumValues = new List<EnumGenInfo>();
-        private HashSet<string> _neededCppWinRTProjectionHeaderFiles;
+        private List<string> _neededCppWinRTProjectionHeaderFiles;
 
         public TypeInfoDefinition(XamlProjectInfo projectInfo, XamlSchemaCodeInfo schemaInfo)
             : base(projectInfo, schemaInfo)
@@ -294,7 +294,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             }
         }
 
-        private HashSet<string> LookupNeededCppWinRTProjectionHeaderFiles()
+        private List<string> LookupNeededCppWinRTProjectionHeaderFiles()
         {
             var headers = new HashSet<string>();
 
@@ -316,7 +316,19 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                 }
             }
 
-            return headers;
+            // Sort the projection headers by namespace
+            return headers.OrderBy(
+                value =>
+                {
+                    if (value.EndsWith(".h"))
+                    {
+                        return value.Substring(0, value.Length - 2);
+                    }
+                    else
+                    {
+                        return value;
+                    }
+                }).ToList();
         }
 
         public String GetterName(int i)

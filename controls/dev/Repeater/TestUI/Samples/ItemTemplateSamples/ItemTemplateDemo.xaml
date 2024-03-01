@@ -7,114 +7,111 @@
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     <Page.Resources>
-        <controls:RecyclePool x:Name="recyclePool" />
-        <controls:StackLayout x:Name="stackLayout" />
+        <RecyclePool x:Name="recyclePool"/>
+        <StackLayout x:Name="stackLayout"/>
     </Page.Resources>
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="auto" />
-            <ColumnDefinition Width="auto" />
-            <ColumnDefinition Width="auto" />
-            <ColumnDefinition Width="auto" />
-            <ColumnDefinition Width="auto" />
-        </Grid.ColumnDefinitions>
-        <StackPanel>
-            <TextBlock Text="DataTemplate Sample:"/>
-            <controls:ItemsRepeaterScrollHost Height="400" Width="150">
-                <ScrollViewer>
-                    <controls:ItemsRepeater x:Name="repeater0"
-                                            ItemsSource="{x:Bind Data}"
-                                            Layout="{StaticResource stackLayout}">
-                        <controls:ItemsRepeater.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding}" />
+    <Grid ColumnDefinitions="170, 170, 170, 170, 170, 170" RowDefinitions="Auto, Auto">
+        <TextBlock Text="DataTemplate Sample:" TextWrapping="WrapWholeWords" Margin="10"/>
+        <ItemsRepeaterScrollHost Height="400" Margin="10" Grid.Row="1">
+            <ScrollViewer>
+                <ItemsRepeater x:Name="itemsRepeater0"
+                    ItemsSource="{x:Bind Data}"
+                    Layout="{StaticResource stackLayout}">
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"/>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </ScrollViewer>
+        </ItemsRepeaterScrollHost>
+
+        <TextBlock Text="DataTemplateSelector Sample:" TextWrapping="WrapWholeWords" Margin="10" Grid.Column="1"/>
+        <ItemsRepeaterScrollHost Height="400" Margin="10" Grid.Column="1" Grid.Row="1">
+            <ScrollViewer>
+                <ItemsRepeater x:Name="itemsRepeater1" 
+                    ItemsSource="{x:Bind Data}"
+                    Layout="{StaticResource stackLayout}">
+                    <ItemsRepeater.ItemTemplate>
+                        <local:MySelector>
+                            <local:MySelector.TemplateOdd>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" Foreground="Red"/>
+                                </DataTemplate>
+                            </local:MySelector.TemplateOdd>
+                            <local:MySelector.TemplateEven>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" Foreground="Green"/>
+                                </DataTemplate>
+                            </local:MySelector.TemplateEven>
+                        </local:MySelector>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </ScrollViewer>
+        </ItemsRepeaterScrollHost>
+
+        <TextBlock Text="ElementFactory Single Template Sample:" TextWrapping="WrapWholeWords" Margin="10" Grid.Column="2"/>
+        <ItemsRepeaterScrollHost Height="400" Margin="10" Grid.Column="2" Grid.Row="1">
+            <ScrollViewer>
+                <ItemsRepeater x:Name="itemsRepeater2" 
+                    ItemsSource="{x:Bind Data}"
+                    Layout="{StaticResource stackLayout}">
+                    <ItemsRepeater.ItemTemplate>
+                        <RecyclingElementFactory RecyclePool="{StaticResource recyclePool}">
+                            <DataTemplate x:Key="item">
+                                <TextBlock Text="{Binding}"/>
                             </DataTemplate>
-                        </controls:ItemsRepeater.ItemTemplate>
-                    </controls:ItemsRepeater>
-                </ScrollViewer>
-            </controls:ItemsRepeaterScrollHost>
-        </StackPanel>
-        <StackPanel Grid.Column="1">
-            <TextBlock Text="DataTemplateSelector Sample:"/>
-            <controls:ItemsRepeaterScrollHost Height="400" Width="150">
-                <ScrollViewer>
-                    <controls:ItemsRepeater x:Name="repeater1" 
-                                            ItemsSource="{x:Bind Data}"
-                                            Layout="{StaticResource stackLayout}">
-                        <controls:ItemsRepeater.ItemTemplate>
-                            <local:MySelector>
-                                <local:MySelector.TemplateOdd>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding}" Foreground="Red"/>
-                                    </DataTemplate>
-                                </local:MySelector.TemplateOdd>
-                                <local:MySelector.TemplateEven>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding}" Foreground="Green"/>
-                                    </DataTemplate>
-                                </local:MySelector.TemplateEven>
-                            </local:MySelector>
-                        </controls:ItemsRepeater.ItemTemplate>
-                    </controls:ItemsRepeater>
-                </ScrollViewer>
-            </controls:ItemsRepeaterScrollHost>
-        </StackPanel>
-        <StackPanel Grid.Column="2">
-            <TextBlock Text="ElementFactory Single Template Sample:"/>
-            <controls:ItemsRepeaterScrollHost Height="400" Width="150">
-                <ScrollViewer>
-                    <controls:ItemsRepeater x:Name="repeater2" 
-                                            ItemsSource="{x:Bind Data}"
-                                            Layout="{StaticResource stackLayout}">
-                        <controls:ItemsRepeater.ItemTemplate>
-                            <controls:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}">
-                                <DataTemplate x:Key="item">
-                                    <TextBlock Text="{Binding}" />
-                                </DataTemplate>
-                            </controls:RecyclingElementFactory>
-                        </controls:ItemsRepeater.ItemTemplate>
-                    </controls:ItemsRepeater>
-                </ScrollViewer>
-            </controls:ItemsRepeaterScrollHost>
-        </StackPanel>
-        <StackPanel Grid.Column="3">
-            <TextBlock Text="ElementFactory Multiple Template Sample:"/>
-            <controls:ItemsRepeaterScrollHost Height="400" Width="150">
-                <ScrollViewer>
-                    <controls:ItemsRepeater x:Name="repeater4" 
-                                            ItemsSource="{x:Bind Data}"
-                                            Layout="{StaticResource stackLayout}">
-                        <controls:ItemsRepeater.ItemTemplate>
-                            <controls:RecyclingElementFactory 
-                                RecyclePool="{StaticResource recyclePool}"
-                                SelectTemplateKey="OnSelectTemplateKey">
-                                <DataTemplate x:Key="odd">
-                                    <TextBlock Text="{Binding}" Foreground="Red" />
-                                </DataTemplate>
-                                <DataTemplate x:Key="even">
-                                    <TextBlock Text="{Binding}" Foreground="Green" />
-                                </DataTemplate>
-                            </controls:RecyclingElementFactory>
-                        </controls:ItemsRepeater.ItemTemplate>
-                    </controls:ItemsRepeater>
-                </ScrollViewer>
-            </controls:ItemsRepeaterScrollHost>
-        </StackPanel>
-        <StackPanel Grid.Column="4">
-            <TextBlock Text="DataTemplate clear count checking:"/>
-            <controls:ItemsRepeaterScrollHost Height="400" Width="150">
-                <ScrollViewer>
-                    <controls:ItemsRepeater x:Name="repeater3" 
-                                            ItemsSource="{x:Bind Numbers}"
-                                            Layout="{StaticResource stackLayout}">
-                        <controls:ItemsRepeater.ItemTemplate>
-                            <DataTemplate x:DataType="local:MyData" >
-                                <local:DisposableUserControl Number="{x:Bind number}"/>
+                        </RecyclingElementFactory>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </ScrollViewer>
+        </ItemsRepeaterScrollHost>
+
+        <TextBlock Text="ElementFactory Multiple Template Sample:" TextWrapping="WrapWholeWords" Margin="10" Grid.Column="3"/>
+        <ItemsRepeaterScrollHost Height="400" Margin="10" Grid.Column="3" Grid.Row="1">
+            <ScrollViewer>
+                <ItemsRepeater x:Name="itemsRepeater3" 
+                    ItemsSource="{x:Bind Data}"
+                    Layout="{StaticResource stackLayout}">
+                    <ItemsRepeater.ItemTemplate>
+                        <RecyclingElementFactory 
+                            RecyclePool="{StaticResource recyclePool}"
+                            SelectTemplateKey="OnSelectTemplateKey">
+                            <DataTemplate x:Key="odd">
+                                <TextBlock Text="{Binding}" Foreground="Red"/>
                             </DataTemplate>
-                        </controls:ItemsRepeater.ItemTemplate>
-                    </controls:ItemsRepeater>
-                </ScrollViewer>
-            </controls:ItemsRepeaterScrollHost>
-        </StackPanel>
+                            <DataTemplate x:Key="even">
+                                <TextBlock Text="{Binding}" Foreground="Green"/>
+                            </DataTemplate>
+                        </RecyclingElementFactory>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </ScrollViewer>
+        </ItemsRepeaterScrollHost>
+        
+        <TextBlock Text="DataTemplate clear count checking:" TextWrapping="WrapWholeWords" Margin="10" Grid.Column="4"/>
+        <ItemsRepeaterScrollHost Height="400" Margin="10" Grid.Column="4" Grid.Row="1">
+            <ScrollViewer>
+                <ItemsRepeater x:Name="itemsRepeater4" 
+                    ItemsSource="{x:Bind Numbers}"
+                    Layout="{StaticResource stackLayout}">
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="local:MyData" >
+                            <local:DisposableUserControl Number="{x:Bind number}"/>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </ScrollViewer>
+        </ItemsRepeaterScrollHost>
+
+        <TextBlock x:Name="tbl5" Tag="Binding Source" Text="DataTemplate with ElementName Binding:" TextWrapping="WrapWholeWords" Margin="10" Grid.Column="5"/>
+        <ItemsRepeater x:Name="itemsRepeater5" Height="400" Margin="10" Grid.Column="5" Grid.Row="1"
+            ItemsSource="{x:Bind Numbers}">
+            <ItemsRepeater.ItemTemplate>
+                <DataTemplate>
+                    <Button x:Name="itemsRepeaterChildButton5" Content="{Binding ElementName=tbl5, Path=Tag}"/>
+                </DataTemplate>
+            </ItemsRepeater.ItemTemplate>
+        </ItemsRepeater>
     </Grid>
 </Page>

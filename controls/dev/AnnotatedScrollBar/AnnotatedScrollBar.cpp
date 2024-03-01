@@ -302,6 +302,12 @@ void AnnotatedScrollBar::QueueLayoutLabels(unsigned int millisecondWait)
         auto weakThis = get_weak();
         auto runLayoutLabelsAction = [weakThis]()
         {
+            if (winrt::WindowsXamlManager::GetForCurrentThread() == nullptr)
+            {
+                // Exit early if Xaml core has already shut down.
+                return;
+            }
+
             if (auto strongThis = weakThis.get())
             {
                 strongThis->m_labelsDebounce.clear();
@@ -315,7 +321,7 @@ void AnnotatedScrollBar::QueueLayoutLabels(unsigned int millisecondWait)
 
 void AnnotatedScrollBar::LayoutLabels()
 {
-    auto labelsGrid = m_labelsGrid.get();
+    auto labelsGrid = m_labelsGrid.safe_get();
     if (!labelsGrid)
     {
         return;

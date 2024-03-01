@@ -324,7 +324,7 @@ DXamlCore::GetAssociatedWindowNoRef(
         return S_FALSE;
     }
 
-    // Retrieve the hosting HWND from the XamlRoot. 
+    // Retrieve the hosting HWND from the XamlRoot.
     // As above, it is possible that the element is hosted inside of a XamlIsland, which means that
     // it will have a XamlRoot but not a hosting HWND. This is essentially equivalent to a UIElement
     // being created in code behind, as a XamlIsland is used to host Xaml content inside of an app
@@ -3786,12 +3786,25 @@ DXamlCore::CalculateAvailableMonitorRect(
                 *inputPaneOccludeRectScreenLogical = inputPaneOccludeRectScreenLogicalTemp;
             }
 
-            wf::Rect availableMonitorRectScreenLogical = {
-                monitorInfo.rcWork.left / scale,
-                monitorInfo.rcWork.top / scale,
-                (monitorInfo.rcWork.right - monitorInfo.rcWork.left) / scale,
-                (monitorInfo.rcWork.bottom - monitorInfo.rcWork.top) / scale
-            };
+            wf::Rect availableMonitorRectScreenLogical = {};
+            if (visualTree->ShouldConstrainPopupsToWorkArea())
+            {
+                availableMonitorRectScreenLogical = {
+                    monitorInfo.rcWork.left / scale,
+                    monitorInfo.rcWork.top / scale,
+                    (monitorInfo.rcWork.right - monitorInfo.rcWork.left) / scale,
+                    (monitorInfo.rcWork.bottom - monitorInfo.rcWork.top) / scale
+                    };
+            }
+            else
+            {
+                availableMonitorRectScreenLogical = {
+                    monitorInfo.rcMonitor.left / scale,
+                    monitorInfo.rcMonitor.top / scale,
+                    (monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left) / scale,
+                    (monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top) / scale
+                    };
+            }
 
             wf::Rect intersectionRectScreenLogical = availableMonitorRectScreenLogical;
 

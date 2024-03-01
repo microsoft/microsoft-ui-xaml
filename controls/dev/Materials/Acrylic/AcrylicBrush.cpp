@@ -81,7 +81,14 @@ winrt::CompositionAnimation AcrylicBrush::MakeColorAnimation(const winrt::Color&
 {
     auto animation = compositor.CreateColorKeyFrameAnimation();
     animation.InsertKeyFrame(1.0, color);
-    animation.Duration(duration.count() == 0 ? winrt::TimeSpan::duration(1 * 10000) : duration);     // Zero duration KeyFrameAnimations not supported, use 1ms duration in that case.
+    if (SharedHelpers::IsAnimationsEnabled())
+    {
+        animation.Duration(duration.count() == 0 ? winrt::TimeSpan::duration(1 * 10000) : duration);     // Zero duration KeyFrameAnimations not supported, use 1ms duration in that case.
+    }
+    else
+    {
+        animation.Duration(1ms); // shortest allowed to minimize CPU use
+    }
     return animation;
 }
 
@@ -95,7 +102,7 @@ winrt::CompositionAnimation AcrylicBrush::MakeFloatAnimation(
     auto animation = compositor.CreateScalarKeyFrameAnimation();
     animation.InsertKeyFrame(0.0, fromValue);
     animation.InsertKeyFrame(1.0, toValue, easing);
-    animation.Duration(duration);
+    animation.Duration(SharedHelpers::IsAnimationsEnabled() ? duration : 1ms); // 1m is shortest allowed, minimize CPU use
     return animation;
 }
 

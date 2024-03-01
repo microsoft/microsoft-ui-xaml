@@ -525,6 +525,7 @@ private:
     bool m_disableAtlas;
     bool m_useExplicitAtlasHint;
     bool m_isInitialized;
+    bool m_needsFrameRateVisual = false;
 
     XRECTF m_backgroundRect;
 

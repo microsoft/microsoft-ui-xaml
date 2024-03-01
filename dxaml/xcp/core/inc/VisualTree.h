@@ -134,6 +134,9 @@ public:
 
     xref::details::control_block* EnsureControlBlock();
 
+    void SetShouldConstrainPopupsToWorkArea(bool value) { m_shouldConstrainPopupsToWorkArea = value; }
+    bool ShouldConstrainPopupsToWorkArea() const { return m_shouldConstrainPopupsToWorkArea; }
+
 private:
     static VisualTree* GetVisualTreeViaTreeWalkNoRef(_In_ CDependencyObject* element, LookupOptions options = LookupOptions::WarningIfNotFound);
 
@@ -191,6 +194,15 @@ private:
 
     // True if the VisualTree is serving as the main visual tree for a XAML app.  Otherwise, it's for a XamlIslandRoot
     bool IsMainVisualTree() { return m_rootVisual != nullptr; }
+
+    //
+    // DesktopWindowXamlSource.ShouldConstrainPopupsToWorkArea property - normally Xaml places all popups inside the
+    // work area of the display, which is the portion of the screen not obscured by the system taskbar or by application
+    // desktop toolbars (see "SPI_GETWORKAREA" and DisplayArea.WorkArea). This is a problem for docked components that
+    // can and want to open popups outside the work area, so we have those components mark their DWXSes and have Xaml
+    // constrain their popups to the display bounds instead.
+    //
+    bool m_shouldConstrainPopupsToWorkArea { true };
 
     bool m_bIsRootScrollViewerAddedToRoot : 1;
     bool m_shutdownInProgress : 1;

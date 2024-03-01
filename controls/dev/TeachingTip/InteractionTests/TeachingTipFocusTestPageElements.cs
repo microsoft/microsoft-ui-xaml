@@ -47,6 +47,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private CheckBox isLightDismissEnabledCheckBox;
 
+        public UIObject GetTeachingTipCloseButton()
+        {
+            ElementCache.Clear();
+            var element = GetElement(ref teachingTipCloseButton, "Close TeachingTip");
+            teachingTipCloseButton = null;
+            return element;
+        }
+        private UIObject teachingTipCloseButton;
+
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {
             if (element == null)

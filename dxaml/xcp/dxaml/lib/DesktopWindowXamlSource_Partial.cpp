@@ -675,6 +675,32 @@ HRESULT DesktopWindowXamlSource::get_HasFocusImpl(_Out_ boolean* pValue)
     return S_OK;
 }
 
+_Check_return_ HRESULT DesktopWindowXamlSource::get_ShouldConstrainPopupsToWorkAreaImpl(_Outptr_ boolean* pValue)
+{
+    *pValue = true;
+
+    // Note: XamlIslandRoot won't have a ContentRoot (and VisualTree) if it's closing. No-op this case.
+    auto coreXamlIsland = static_cast<CXamlIslandRoot*>(m_spXamlIsland.Cast<XamlIslandRoot>()->GetHandle());
+    auto visualTreeNoRef = coreXamlIsland->GetVisualTreeNoRef();
+    if (visualTreeNoRef)
+    {
+        *pValue = visualTreeNoRef->ShouldConstrainPopupsToWorkArea();
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowXamlSource::put_ShouldConstrainPopupsToWorkAreaImpl(_In_opt_ boolean value)
+{
+    // Note: XamlIslandRoot won't have a ContentRoot (and VisualTree) if it's closing. No-op this case.
+    auto coreXamlIsland = static_cast<CXamlIslandRoot*>(m_spXamlIsland.Cast<XamlIslandRoot>()->GetHandle());
+    auto visualTreeNoRef = coreXamlIsland->GetVisualTreeNoRef();
+    if (visualTreeNoRef)
+    {
+        visualTreeNoRef->SetShouldConstrainPopupsToWorkArea(!!value);
+    }
+    return S_OK;
+}
+
 _Check_return_
 HRESULT DesktopWindowXamlSource::GetGotFocusEventSourceNoRef(_Outptr_ GotFocusEventSourceType** ppEventSource)
 {

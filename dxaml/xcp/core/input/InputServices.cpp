@@ -97,10 +97,8 @@ CInputServices::Init(_In_ CCoreServices *pCoreService)
     m_pSecondaryContentRelationshipsToBeApplied = NULL;
 
     m_pDMServices = NULL;
-    m_pDMCrossSlideService = NULL;
     m_DMServiceSharedState = std::make_shared<DirectManipulationServiceSharedState>();
     m_cCrossSlideContainers = 0;
-    m_islandInputSite = nullptr;
 
     if (!static_cast<CCoreServices*>(pCoreService)->IsTSF3Enabled())
     {
@@ -122,7 +120,8 @@ void CInputServices::Reset()
 {
     ReleaseInterface(m_pEventManager);
 
-    ReleaseInterface(m_pDMCrossSlideService);
+    ResetAllCrossSlideServices();
+    m_islandInputSiteRegistrations.clear();
     IGNOREHR(DeleteDMViewports());
     IGNOREHR(DeleteDMCrossSlideViewports());
     IGNOREHR(DeleteSecondaryContentRelationshipsToBeApplied());
@@ -135,37 +134,108 @@ void CInputServices::Reset()
     m_pCoreService = nullptr;
 }
 
-void CInputServices::ResetCrossSlideService()
+void CInputServices::ResetAllCrossSlideServices()
 {
-    if (m_pDMCrossSlideService)
+    for (auto& islandInputSiteRegistration : m_islandInputSiteRegistrations)
     {
-        m_pDMCrossSlideService->DeactivateDirectManipulationManager();
-        ReleaseInterface(m_pDMCrossSlideService);
+        auto cpDMCrossSlideService = islandInputSiteRegistration.DMCrossSlideService();
+        if (nullptr != cpDMCrossSlideService)
+        {
+            cpDMCrossSlideService->DeactivateDirectManipulationManager();
+            islandInputSiteRegistration.DMCrossSlideService(nullptr);
+        }
     }
 }
 
-void CInputServices::SetApplicationIslandInputSite(_In_ ixp::IIslandInputSitePartner* pIslandInputSite)
+void CInputServices::RegisterIslandInputSite(_In_ ixp::IIslandInputSitePartner* pIslandInputSite)
 {
-    wrl::ComPtr<IUnknown> previousIslandInputSiteAsIUnknown{ nullptr };
-    if (nullptr != m_islandInputSite)
+    auto iter = std::find_if(
+        m_islandInputSiteRegistrations.cbegin(),
+        m_islandInputSiteRegistrations.cend(),
+        [&pIslandInputSite](IslandInputSiteRegistration const& entry) { return entry.Match(pIslandInputSite); });
+
+    if (iter == m_islandInputSiteRegistrations.end())
     {
-        FAIL_FAST_IF_FAILED(m_islandInputSite.As(&previousIslandInputSiteAsIUnknown));
+        // Not yet registered.
+        m_islandInputSiteRegistrations.push_back(IslandInputSiteRegistration{ pIslandInputSite });
+        if (m_shouldRegisterPrimaryDMViewportCallback)
+        {
+            // This will only be true if we had no IslandInputSites registered when a CUIElement tried to register a CrossSlide DManip container.
+            // Transfer the pending callback to the registration entry we just added.
+            m_islandInputSiteRegistrations.at(0).ShouldRegisterDMViewportCallback(true);
+            m_shouldRegisterPrimaryDMViewportCallback = false;
+        }
+    }
+}
+
+void CInputServices::UnregisterIslandInputSite(_In_ ixp::IIslandInputSitePartner* pIslandInputSite)
+{
+    auto iter = std::find_if(
+        m_islandInputSiteRegistrations.begin(),
+        m_islandInputSiteRegistrations.end(),
+        [&pIslandInputSite](IslandInputSiteRegistration const& entry) { return entry.Match(pIslandInputSite); });
+
+    if (iter != m_islandInputSiteRegistrations.end())
+    {
+        // Found a match, clean up the DMCrossSlideService, if any.
+        auto cpDMCrossSlideService = iter->DMCrossSlideService();
+        if (nullptr != cpDMCrossSlideService)
+        {
+            cpDMCrossSlideService->DeactivateDirectManipulationManager();
+            iter->DMCrossSlideService(nullptr);
+        }
+
+        // Delete the registration entry.
+        m_islandInputSiteRegistrations.erase(iter);
+    }
+}
+
+wrl::ComPtr<ixp::IIslandInputSitePartner> CInputServices::GetPrimaryRegisteredIslandInputSite() const
+{
+    if (m_islandInputSiteRegistrations.empty())
+    {
+        return nullptr;
     }
 
-    m_islandInputSite = pIslandInputSite;
+    // Return the oldest registered IslandInputSite with input services that is still valid for this thread.
+    return m_islandInputSiteRegistrations.at(0).IslandInputSite();
+}
 
-    wrl::ComPtr<IUnknown> newIslandInputSiteAsIUnknown{ nullptr };
-    if (nullptr != m_islandInputSite)
+CInputServices::IslandInputSiteRegistration& CInputServices::GetIslandInputSiteRegistrationForUIElement(CUIElement* pUIElement)
+{
+    auto iter = std::find_if(
+        m_islandInputSiteRegistrations.begin(),
+        m_islandInputSiteRegistrations.end(),
+        [&pUIElement](IslandInputSiteRegistration const& entry) { return entry.Match(pUIElement); });
+
+    // If the CUIElement is not yet on a ContentIsland, CUIElement->GetElementIslandInputSite (used in the Match function) will return the
+    // "Primary" IslandInputSite as a fallback which corresponds to the "main", "first", or "oldest valid" IslandInputSite
+    // registered with InputServices (i.e. the first element in m_islandInputSiteRegistrations).
+    // It calls the CInputServices::GetPrimaryRegisteredIslandInputSite() just above. See depends.cpp for CDependencyObject::GetElementIslandInputSite.
+    // If m_islandInputSiteRegistrations is empty, we handle this as a special case, see CInputServices::RegisterDirectManipulationCrossSlideContainer.
+    //
+    // This is fragile, since it does mean the CUIElement could be placed on a different ContentIsland leading to potentially
+    // wonky DManip behavior. However, it does match existing behavior.
+    //
+    // We should *never* be in a situation where a CUIElement *has* an ElementIslandInputSite via a XamlIslandRoot that has somehow not already been registered.
+    FAIL_FAST_IF(iter == m_islandInputSiteRegistrations.end());
+
+    return *iter;
+}
+
+IPALDirectManipulationService* CInputServices::GetDMCrossSlideServiceNoRefForUIElement(_In_ CUIElement* pUIElement) const
+{
+    auto iter = std::find_if(
+        m_islandInputSiteRegistrations.cbegin(),
+        m_islandInputSiteRegistrations.cend(),
+        [&pUIElement](IslandInputSiteRegistration const& entry) { return entry.Match(pUIElement); });
+
+    if (iter != m_islandInputSiteRegistrations.cend())
     {
-        FAIL_FAST_IF_FAILED(m_islandInputSite.As(&newIslandInputSiteAsIUnknown));
+        return iter->DMCrossSlideService().Get();
     }
 
-    if (previousIslandInputSiteAsIUnknown.Get() != newIslandInputSiteAsIUnknown.Get())
-    {
-        // The cross slide service directly references the IslandInputSite we created it with
-        // so if the IslandInputSite changes, we need to recreate the service.
-        ResetCrossSlideService();
-    }
+    return nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -3016,10 +3086,13 @@ CInputServices::GetUnderlyingInputHwndFromIslandInputSite(_In_opt_ ixp::IIslandI
     if (nullptr != pIslandInputSite)
     {
         ABI::Microsoft::UI::WindowId inputWindowId;
-        IFCFAILFAST(pIslandInputSite->get_UnderlyingInputWindowId(&inputWindowId));
-        HWND inputHwnd;
-        IFCFAILFAST(Windowing_GetWindowFromWindowId(inputWindowId, &inputHwnd));
-        return inputHwnd;
+        if (S_OK == pIslandInputSite->get_UnderlyingInputWindowId(&inputWindowId))
+        {
+            // The IslandInputSite might already be closed, in which case we should just return nullptr since there is no valid HWND.
+            HWND inputHwnd;
+            IFCFAILFAST(Windowing_GetWindowFromWindowId(inputWindowId, &inputHwnd));
+            return inputHwnd;
+        }
     }
 
     return nullptr;
@@ -3138,20 +3211,32 @@ CInputServices::RegisterDirectManipulationCrossSlideContainer(
 
         IFC(pDMCrossSlideContainer->CanDrag(&fIsDraggable));
 
-        if (fIsDraggable && !m_shouldRegisterDMViewportCallback)
+        if (fIsDraggable && m_islandInputSiteRegistrations.empty())
         {
-            if (m_pDMCrossSlideService == nullptr)
+            // No IslandInputSites have been registered yet! That means this CUIElement isn't yet in a tree connected to any ContentIsland.
+            // Warning: potential fragility - continuing the existing assumption that the CUIElement will eventually be placed on the first
+            // ContentIsland that will register its IslandInputSite with InputServices. If it is placed on a different ContentIsland, DManip
+            // will likely not work.
+            m_shouldRegisterPrimaryDMViewportCallback = true;
+        }
+        else
+        {
+            auto& islandInputSiteRegistration = GetIslandInputSiteRegistrationForUIElement(pDMCrossSlideContainer);
+            if (fIsDraggable && !islandInputSiteRegistration.ShouldRegisterDMViewportCallback())
             {
-                // Register DMViewportCallback when DMCrossSlideService is set up.
-                m_shouldRegisterDMViewportCallback = true;
-            }
-            else
-            {
-                // if DMViewportCallback is not already registered on m_pDMCrossSlideService when DMCrossSlideService is already set up.
-                xref_ptr<IXcpDirectManipulationViewportEventHandler> spDirectManipulationViewportEventHandler;
+                if (islandInputSiteRegistration.DMCrossSlideService() == nullptr)
+                {
+                    // Register DMViewportCallback when DMCrossSlideService is set up.
+                    islandInputSiteRegistration.ShouldRegisterDMViewportCallback(true);
+                }
+                else
+                {
+                    // if DMViewportCallback is not already registered on DMCrossSlideService when DMCrossSlideService is already set up.
+                    xref_ptr<IXcpDirectManipulationViewportEventHandler> spDirectManipulationViewportEventHandler;
 
-                IFC(GetDirectManipulationViewportEventHandler(spDirectManipulationViewportEventHandler.ReleaseAndGetAddressOf()));
-                IFC(m_pDMCrossSlideService->RegisterViewportEventHandler(spDirectManipulationViewportEventHandler.get()));
+                    IFC(GetDirectManipulationViewportEventHandler(spDirectManipulationViewportEventHandler.ReleaseAndGetAddressOf()));
+                    IFC(islandInputSiteRegistration.DMCrossSlideService()->RegisterViewportEventHandler(spDirectManipulationViewportEventHandler.get()));
+                }
             }
         }
 
@@ -3230,12 +3315,13 @@ CInputServices::DirectManipulationCrossSlideContainerCompleted(
     ASSERT(pCrossSlideViewport);
     if (pCrossSlideViewport)
     {
-        ASSERT(m_pDMCrossSlideService);
+        auto* pDMCrossSlideService = GetDMCrossSlideServiceNoRefForUIElement(pDMCrossSlideContainer);
+        ASSERT(pDMCrossSlideService);
 
         IFC(pCrossSlideViewport->GetContactIdCount(&cContactIds));
         if (cContactIds > 0)
         {
-            IFC(m_pDMCrossSlideService->ReleaseAllContacts(pCrossSlideViewport));
+            IFC(pDMCrossSlideService->ReleaseAllContacts(pCrossSlideViewport));
         }
 
         IFC(UnregisterCrossSlideViewport(pCrossSlideViewport));
@@ -3363,14 +3449,15 @@ CInputServices::UpdateCrossSlideViewportConfigurations(
                     configuration = static_cast<XDMConfigurations>(configuration & (XcpDMConfigurationPanX | XcpDMConfigurationPanY));
                     if (configuration == XcpDMConfigurationPanX || configuration == XcpDMConfigurationPanY)
                     {
-                        ASSERT(m_pDMCrossSlideService);
-                        IFC_RETURN(m_pDMCrossSlideService->AddViewportConfiguration(
+                        auto* pDMCrossSlideService = GetDMCrossSlideServiceNoRefForUIElement(pViewport->GetDMContainerNoRef());
+                        ASSERT(pDMCrossSlideService);
+                        IFC_RETURN(pDMCrossSlideService->AddViewportConfiguration(
                             pCrossSlideViewport,
                             TRUE /*fIsCrossSlideViewport*/,
                             FALSE /*fIsDragDrop*/,
                             configuration));
                         // fCausedRunningStatus is ignored because we don't track cross-slide viewport statuses.
-                        IFC_RETURN(m_pDMCrossSlideService->EnableViewport(pCrossSlideViewport, fCausedRunningStatus));
+                        IFC_RETURN(pDMCrossSlideService->EnableViewport(pCrossSlideViewport, fCausedRunningStatus));
                         IFC_RETURN(AddCrossSlideViewportContactId(pointerId, pCrossSlideViewport, pfContactFailure));
                         if (*pfContactFailure)
                         {
@@ -3553,32 +3640,36 @@ CInputServices::InitializeDirectManipulationContainers()
 
         // Only pre-create the DM manager dedicated to cross-slide viewports when a DManip container
         // and real viewport is instantiated.
-        if (!m_pDMCrossSlideService)
+        for (auto& islandInputSiteRegistration : m_islandInputSiteRegistrations)
         {
-            // Pre-create a DM manager for potential cross-slide handling, using cross-slide viewports
-            IFC_RETURN(gps->GetDirectManipulationService(m_DMServiceSharedState, &m_pDMCrossSlideService));
-            ASSERT(m_pDMCrossSlideService);
+            if (!islandInputSiteRegistration.DMCrossSlideService())
+            {
+                // Pre-create a DM manager for potential cross-slide handling, using cross-slide viewports
+                wrl::ComPtr<IPALDirectManipulationService> cpDMCrossSlideService{ nullptr };
+                IFC_RETURN(gps->GetDirectManipulationService(m_DMServiceSharedState, &cpDMCrossSlideService));
+                ASSERT(cpDMCrossSlideService);
 
 #ifdef DM_DEBUG
-            if (m_fIsDMInfoTracingEnabled)
-            {
-                IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER | DMIM_DBG) /*traceType*/, L"DMIM[0x%p]:  InitializeDirectManipulationContainers. Created m_pDMCrossSlideService=0x%p. m_cCrossSlideContainers=%d.",
-                    this, m_pDMCrossSlideService, m_cCrossSlideContainers));
-            }
+                if (m_fIsDMInfoTracingEnabled)
+                {
+                    IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER | DMIM_DBG) /*traceType*/, L"DMIM[0x%p]:  InitializeDirectManipulationContainers. Created cpDMCrossSlideService=0x%p. m_cCrossSlideContainers=%d.",
+                        this, cpDMCrossSlideService.Get(), m_cCrossSlideContainers));
+                }
 #endif // DM_DEBUG
-            // CInputServices is storing an IslandInputSite which is a per-tree (XamlIslandRoot) object, but CInputServices is a per-thread type.
-            // This is matching the previous behavior where CInputServices was storing an application hwnd directly set via XamlIslandRoot.
-            // Does this need to be refined to hold some sort of map structure to map XamlIslandRoots<->IslandInputSites?
-            // Right now the last XamlIslandRoot created on a thread will end up setting the "application" IslandInputSite on CInputServices.
-            IFC_RETURN(m_pDMCrossSlideService->EnsureDirectManipulationManager(m_islandInputSite.Get(), TRUE /*fIsForCrossSlideViewports*/));
-            IFC_RETURN(m_pDMCrossSlideService->ActivateDirectManipulationManager());
 
-            if (m_shouldRegisterDMViewportCallback)
-            {
-                xref_ptr<IXcpDirectManipulationViewportEventHandler> spDirectManipulationViewportEventHandler;
+                IFC_RETURN(cpDMCrossSlideService->EnsureDirectManipulationManager(islandInputSiteRegistration.IslandInputSite().Get(), TRUE /*fIsForCrossSlideViewports*/));
+                IFC_RETURN(cpDMCrossSlideService->ActivateDirectManipulationManager());
 
-                IFC_RETURN(GetDirectManipulationViewportEventHandler(spDirectManipulationViewportEventHandler.ReleaseAndGetAddressOf()));
-                IFC_RETURN(m_pDMCrossSlideService->RegisterViewportEventHandler(spDirectManipulationViewportEventHandler.get()));
+                if (islandInputSiteRegistration.ShouldRegisterDMViewportCallback())
+                {
+                    xref_ptr<IXcpDirectManipulationViewportEventHandler> spDirectManipulationViewportEventHandler;
+
+                    IFC_RETURN(GetDirectManipulationViewportEventHandler(spDirectManipulationViewportEventHandler.ReleaseAndGetAddressOf()));
+                    IFC_RETURN(cpDMCrossSlideService->RegisterViewportEventHandler(spDirectManipulationViewportEventHandler.get()));
+                }
+
+                // Success! Store our IslandInputSite specific DMCrossSlideService.
+                islandInputSiteRegistration.DMCrossSlideService(cpDMCrossSlideService.Get());
             }
         }
 
@@ -3587,7 +3678,7 @@ CInputServices::InitializeDirectManipulationContainers()
         auto position = std::partition(m_pDMContainersNeedingInitialization->begin(), m_pDMContainersNeedingInitialization->end(),
             [](const xref::weakref_ptr<CUIElement>& elem)
         {
-            // Only keep containers that are inactive or do not have a valid window handle
+            // Only keep containers that are inactive or do not have a valid IslandInputSite.
             auto pDMContainer = elem.lock();
             return pDMContainer && (!pDMContainer->IsActive() || !pDMContainer->CanDMContainerInitialize());
         });
@@ -5279,8 +5370,9 @@ CInputServices::SetDirectManipulationCrossSlideContainer(
 
     IFC_RETURN(pElement->CanDrag(&fIsDraggable));
 
+    auto* pDMCrossSlideService = GetDMCrossSlideServiceNoRefForUIElement(pElement);
     if (pElement->GetIsDirectManipulationCrossSlideContainer()
-        && !(fIsDraggable && ((m_pDMCrossSlideService && m_pDMCrossSlideService->GetHasDragDropViewport()) || !pElement->IsEnabled())))
+        && !(fIsDraggable && ((pDMCrossSlideService && pDMCrossSlideService->GetHasDragDropViewport()) || !pElement->IsEnabled())))
     {
         // This element needs a cross-slide viewport - it needs a first shot at recognizing gestures or manipulations.
         // Once the first DragDrop CrossSlideContainer is set up, we will treat the rest as regular containers.
@@ -5351,7 +5443,8 @@ CInputServices::SetDirectManipulationCrossSlideContainer(
     IFCPTR(pfContactFailure);
     *pfContactFailure = FALSE;
 
-    if (m_pDMCrossSlideService)
+    auto* pDMCrossSlideService = GetDMCrossSlideServiceNoRefForUIElement(pDMCrossSlideContainer);
+    if (pDMCrossSlideService)
     {
         // Check if a DM cross-slide viewport was already created for this element
         IFC(GetCrossSlideViewport(pDMCrossSlideContainer, &pCrossSlideViewport));
@@ -5389,13 +5482,13 @@ CInputServices::SetDirectManipulationCrossSlideContainer(
                 }
 #endif // DM_DEBUG
 
-                IFC(m_pDMCrossSlideService->AddViewportConfiguration(
+                IFC(pDMCrossSlideService->AddViewportConfiguration(
                     pCrossSlideViewport,
                     TRUE /*fIsCrossSlideViewport*/,
                     fIsDraggable /*fIsDragDrop*/,
                     configuration));
                 // fCausedRunningStatus is ignored because we don't track cross-slide viewport statuses.
-                IFC(m_pDMCrossSlideService->EnableViewport(pCrossSlideViewport, fCausedRunningStatus));
+                IFC(pDMCrossSlideService->EnableViewport(pCrossSlideViewport, fCausedRunningStatus));
 #ifdef DM_DEBUG
                 if (m_fIsDMInfoTracingEnabled)
                 {
@@ -5487,9 +5580,10 @@ CInputServices::AddCrossSlideViewportContactId(
     IFCPTR(pfContactFailure);
     *pfContactFailure = FALSE;
 
-    ASSERT(m_pDMCrossSlideService);
+    auto* pDMCrossSlideService = GetDMCrossSlideServiceNoRefForUIElement(pCrossSlideViewport->GetDMContainerNoRef());
+    ASSERT(pDMCrossSlideService);
 
-    IFC(m_pDMCrossSlideService->SetContact(pCrossSlideViewport, pointerId, pfContactFailure));
+    IFC(pDMCrossSlideService->SetContact(pCrossSlideViewport, pointerId, pfContactFailure));
     ExitOnSetContactFailure(*pfContactFailure);
 
     IFC(pCrossSlideViewport->AddContactId(pointerId));
@@ -5972,7 +6066,8 @@ CInputServices::UnregisterCrossSlideViewport(
 
     if (m_pCrossSlideViewports)
     {
-        ASSERT(m_pDMCrossSlideService);
+        auto* pDMCrossSlideService = GetDMCrossSlideServiceNoRefForUIElement(pCrossSlideViewport->GetDMContainerNoRef());
+        ASSERT(pDMCrossSlideService);
 
         for (XUINT32 iCrossSlideViewport = 0; iCrossSlideViewport < m_pCrossSlideViewports->size(); iCrossSlideViewport++)
         {
@@ -5981,7 +6076,7 @@ CInputServices::UnregisterCrossSlideViewport(
 
             if (pCrossSlideViewportTmp == pCrossSlideViewport)
             {
-                IFC_RETURN(m_pDMCrossSlideService->UnregisterViewport(pCrossSlideViewport));
+                IFC_RETURN(pDMCrossSlideService->UnregisterViewport(pCrossSlideViewport));
 
                 IFC_RETURN(m_pCrossSlideViewports->erase(iCrossSlideViewport));
                 ReleaseInterface(pCrossSlideViewport);
@@ -7326,9 +7421,10 @@ CInputServices::ProcessDirectManipulationViewportStatusUpdate(
     }
 #endif // DM_DEBUG
 
-    if (m_pDMCrossSlideService)
+    auto* pDMCrossSlideService = GetDMCrossSlideServiceNoRefForUIElement(pViewport->GetDMContainerNoRef());
+    if (pDMCrossSlideService)
     {
-        IFC(m_pDMCrossSlideService->GetDragDropViewport(&pDragDropViewportHandle));
+        IFC(pDMCrossSlideService->GetDragDropViewport(&pDragDropViewportHandle));
         if (pViewport == pDragDropViewportHandle)
         {
             // Drag drop viewport doesn't handle Viewport status update

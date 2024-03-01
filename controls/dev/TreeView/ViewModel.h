@@ -8,7 +8,7 @@
 using TreeNodeSelectionState = TreeViewNode::TreeNodeSelectionState;
 using ViewModelVectorOptions = VectorOptionsFromFlag<winrt::IInspectable, MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>()>;
 
-class ViewModel : 
+class ViewModel :
     public ReferenceTracker<
         ViewModel,
         reference_tracker_implements_t<typename ViewModelVectorOptions::VectorType>::type,
@@ -113,3 +113,85 @@ private:
     void BeginSelectionChanges();
     void EndSelectionChanges();
 };
+
+
+// Need to update node selection states on UI before vector changes.
+// Listen on vector change events don't solve the problem because the event already happened when the event handler gets called.
+// i.e. the node is already gone when we get to ItemRemoved callback.
+#pragma region SelectedTreeNodeVector
+
+typedef typename VectorOptionsFromFlag<winrt::TreeViewNode, MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>()> SelectedTreeNodeVectorOptions;
+
+class SelectedTreeNodeVector :
+    public ReferenceTracker<
+        SelectedTreeNodeVector,
+        reference_tracker_implements_t<typename SelectedTreeNodeVectorOptions::VectorType>::type,
+        typename TreeViewNodeVectorOptions::IterableType,
+        typename TreeViewNodeVectorOptions::ObservableVectorType>,
+    public TreeViewNodeVectorOptions::IVectorOwner
+{
+    Implement_Vector_Read(SelectedTreeNodeVectorOptions)
+
+private:
+    winrt::weak_ref<ViewModel> m_viewModel{ nullptr };
+
+    void UpdateSelection(winrt::TreeViewNode const& node, TreeNodeSelectionState state);
+
+public:
+    void SetViewModel(ViewModel& viewModel);
+    void Append(winrt::TreeViewNode const& node);
+    void InsertAt(unsigned int index, winrt::TreeViewNode const& node);
+    void SetAt(unsigned int index, winrt::TreeViewNode const& node);
+    void RemoveAt(unsigned int index);
+    void RemoveAtEnd();
+    void ReplaceAll(winrt::array_view<winrt::TreeViewNode const> nodes);
+    void Clear();
+    bool Contains(winrt::TreeViewNode const& node);
+
+    std::function<bool(winrt::TreeViewNode const& value, uint32_t& index)> GetCustomIndexOfFunction() override { return [this](winrt::TreeViewNode const& value, uint32_t& index) { return IndexOf_OptimizedForRemove(value, index); }; }
+    bool IndexOf_OptimizedForRemove(winrt::TreeViewNode const& node, uint32_t& index);
+
+    // Default write methods will trigger TreeView visual updates.
+    // If you want to update vector content without notifying TreeViewNodes, use "core" version of the methods.
+    void InsertAtCore_NoContainsCheck(unsigned int index, winrt::TreeViewNode const& node);
+    void RemoveAtCore(unsigned int index);
+};
+
+#pragma endregion
+
+// Similar to SelectedNodesVector above, we need to make decisions before the item is inserted or removed.
+// we can't use vector change events because the event already happened when event hander gets called.
+#pragma region SelectedItemsVector
+
+typedef typename VectorOptionsFromFlag<winrt::IInspectable, MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>()> SelectedItemsVectorOptions;
+
+class SelectedItemsVector :
+    public ReferenceTracker<
+    SelectedItemsVector,
+    reference_tracker_implements_t<typename SelectedItemsVectorOptions::VectorType>::type,
+    typename SelectedItemsVectorOptions::IterableType,
+    typename SelectedItemsVectorOptions::ObservableVectorType>,
+    public SelectedItemsVectorOptions::IVectorOwner
+{
+    Implement_Vector_Read(SelectedItemsVectorOptions)
+
+private:
+    winrt::weak_ref<ViewModel> m_viewModel{ nullptr };
+
+public:
+    void SetViewModel(ViewModel& viewModel);
+    void Append(winrt::IInspectable const& item);
+    void InsertAt(unsigned int index, winrt::IInspectable const& item);
+    void InsertAt_NoContainsCheck(unsigned int index, winrt::IInspectable const& item);
+    void SetAt(unsigned int index, winrt::IInspectable const& item);
+    void RemoveAt(unsigned int index);
+    void RemoveAtEnd();
+    void ReplaceAll(winrt::array_view<winrt::IInspectable const> items);
+    void Clear();
+    bool Contains(winrt::IInspectable const& item);
+
+    std::function<bool(winrt::IInspectable const& value, uint32_t& index)> GetCustomIndexOfFunction() override { return [this](winrt::IInspectable const& value, uint32_t& index) { return IndexOf_OptimizedForRemove(value, index); }; }
+    bool IndexOf_OptimizedForRemove(winrt::IInspectable const& node, uint32_t& index);
+};
+
+#pragma endregion

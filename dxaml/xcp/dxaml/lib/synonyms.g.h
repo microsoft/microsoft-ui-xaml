@@ -561,6 +561,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Documents::ITypography ITypography;
     typedef ABI::Microsoft::UI::Xaml::Documents::IUnderline IUnderline;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource IDesktopWindowXamlSource;
+    typedef ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource2 IDesktopWindowXamlSource2;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSourceGotFocusEventArgs IDesktopWindowXamlSourceGotFocusEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSourceTakeFocusRequestedEventArgs IDesktopWindowXamlSourceTakeFocusRequestedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Hosting::IElementCompositionPreview IElementCompositionPreview;

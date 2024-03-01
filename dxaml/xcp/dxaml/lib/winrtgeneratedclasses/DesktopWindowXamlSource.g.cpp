@@ -42,6 +42,10 @@ HRESULT DirectUI::DesktopWindowXamlSourceGenerated::QueryInterfaceImpl(_In_ REFI
     {
         *ppObject = static_cast<ABI::Windows::Foundation::IClosable*>(this);
     }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource2)))
+    {
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource2>(this);
+    }
     else
     {
         RRETURN(ctl::WeakReferenceSource::QueryInterfaceImpl(iid, ppObject));
@@ -76,6 +80,24 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DesktopWindowXamlSourceGenera
     ARG_VALIDRETURNPOINTER(pValue);
     
     IFC(static_cast<DesktopWindowXamlSource*>(this)->get_HasFocusImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DesktopWindowXamlSourceGenerated::get_ShouldConstrainPopupsToWorkArea(_Out_ BOOLEAN* pValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(pValue);
+    
+    IFC(static_cast<DesktopWindowXamlSource*>(this)->get_ShouldConstrainPopupsToWorkAreaImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DesktopWindowXamlSourceGenerated::put_ShouldConstrainPopupsToWorkArea(_In_ BOOLEAN value)
+{
+    HRESULT hr = S_OK;
+    
+    
+    IFC(static_cast<DesktopWindowXamlSource*>(this)->put_ShouldConstrainPopupsToWorkAreaImpl(value));
 Cleanup:
     RRETURN(hr);
 }

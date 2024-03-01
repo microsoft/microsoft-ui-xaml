@@ -1099,6 +1099,14 @@ _Check_return_ HRESULT DCompTreeHost::ConnectXamlIslandTargetRoots()
 
                 renderData.contentConnected = true;
 
+                // If this is our first island and we need a Frame visual then add it here.  Note that at this point the
+                // commit has already been done so we need to recommit.
+                if (m_needsFrameRateVisual)
+                {
+                    ShowUIThreadCounters();
+                    IFC_RETURN(CommitMainDevice());
+                }
+
                 continue;
             }
         }
@@ -1667,6 +1675,8 @@ void DCompTreeHost::UpdateUIThreadCounters(
 
 void DCompTreeHost::ShowUIThreadCounters()
 {
+    m_needsFrameRateVisual = false;  // We are setting up the frame visual here.
+
     if (m_frameRateVisual) return; // Already have one and don't need another;
 
     wrl::ComPtr<WUComp::IContainerVisual> hostVisual = m_hwndVisual;
@@ -1681,6 +1691,15 @@ void DCompTreeHost::ShowUIThreadCounters()
         {
             wrl::ComPtr<WUComp::IVisual> rootVisual = iter->first->GetRootVisual();
             LPCWSTR ROOT_HOST_TAG = L"_XAML_Root_Frame_Host";
+
+            // If we don't have a root visual then this frame is being rendered before have completely set up our environment This can happen on the first
+            // frame or a frame where all existing islands are torn down and a new one is added.  If so, we have to wait until the visual is setup as
+            // our root visual.
+            if (!rootVisual)
+            {
+                m_needsFrameRateVisual = true;
+                return;
+            }
 
             // We want to add the frame rate visual as a sibling to the root visual, but in our initial configuration, we have added the Xaml root visual as
             // the root of the content island.  So we start by attempting to get the parent of the root visual and if null is returned, we know that our
@@ -2697,14 +2716,25 @@ void DCompTreeHost::RemoveXamlIslandTarget(_In_ CXamlIslandRoot* xamlIslandRoot)
 {
     // Remove render data for XamlIslandRoot, if it exists
     auto islandData = m_islandRenderData.find(xamlIslandRoot);
-    if (islandData != m_islandRenderData.end())
-    {
-        m_islandRenderData.erase(islandData);
-    }
-    else
+
+    if (islandData == m_islandRenderData.end())
     {
         // Islands should already have render data
         IFCFAILFAST(E_FAIL);
+    }
+
+    // If this is the first island and we are showing frame data, then remove it and reshow it on the next island
+    bool refreshFrameRateVisual = m_frameRateVisual && islandData == m_islandRenderData.begin();
+    if (refreshFrameRateVisual)
+    {
+        HideUIThreadCounters();
+    }
+    
+    m_islandRenderData.erase(islandData);
+
+    if (refreshFrameRateVisual)
+    {
+        ShowUIThreadCounters();
     }
 }
 

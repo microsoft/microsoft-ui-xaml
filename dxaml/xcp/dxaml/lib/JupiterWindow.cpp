@@ -1433,16 +1433,10 @@ void CJupiterWindow::EnsureInputSiteAdapterForCoreWindow(_In_ ixp::IContentIslan
 
     m_inputSiteAdapter = std::make_unique<InputSiteAdapter>();
     m_inputSiteAdapter->Initialize(coreWindowContentIsland, GetCoreWindowContentRootNoRef(), this);
-    m_inputSiteAdapter->RegisterApplicationIslandInputSiteWithInputServicesForDManip();
 }
 
 void CJupiterWindow::UninitializeInputSiteAdapterForCoreWindow()
 {
-    if (nullptr != m_inputSiteAdapter)
-    {
-        m_inputSiteAdapter->UnregisterApplicationIslandInputSiteWithInputServicesForDManip();
-    }
-
     m_inputSiteAdapter = nullptr;
 }
 

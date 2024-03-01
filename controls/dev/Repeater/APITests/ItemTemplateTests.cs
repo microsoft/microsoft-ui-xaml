@@ -251,6 +251,67 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        public void ValidateDataTemplateWithElementNameBinding()
+        {
+            const int numItems = 5;
+            ItemsRepeater itemsRepeater = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var dataTemplate = XamlReader.Load(
+                    @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                        <TextBlock Text='{Binding}' Tag='{Binding ElementName=siblingTextBlock, Path=Text}'/>
+                    </DataTemplate>") as DataTemplate;
+
+                var stackPanel = new StackPanel()
+                {
+                    Name = "stackPanel",
+                    Width = 200
+                };
+
+                var siblingTextBlock = new TextBlock()
+                {
+                    Name = "siblingTextBlock",
+                    Text = "DataSource"
+                };
+
+                itemsRepeater = new ItemsRepeater()
+                {
+                    Name = "itemsRepeater",
+                    ItemsSource = Enumerable.Range(0, numItems).Select(i => i.ToString()),
+                    Layout = new StackLayout(),
+                    ItemTemplate = dataTemplate
+                };
+
+                stackPanel.Children.Add(siblingTextBlock);
+                stackPanel.Children.Add(itemsRepeater);
+
+                Content = stackPanel;
+
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(numItems, VisualTreeHelper.GetChildrenCount(itemsRepeater));
+
+                for (int i = 0; i < numItems; i++)
+                {
+                    var itemTextBlock = itemsRepeater.TryGetElement(i) as TextBlock;
+
+                    Verify.IsNotNull(itemTextBlock);
+                    Verify.AreEqual(i.ToString(), itemTextBlock.Text);
+                    Verify.AreEqual("DataSource", itemTextBlock.Tag);
+                }
+
+                itemsRepeater.ItemsSource = null;
+                Content.UpdateLayout();
+            });
+        }
+
+        [TestMethod]
         [TestProperty("IsolationLevel", "Method")] // Task 28232821: DCPP Test: ItemsRepeater tests are running in isolation mode due to test instability.
         public void ValidateDataTemplateAsItemTemplate()
         {
@@ -635,6 +696,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Content = null;
             });
         }
+
         private ItemsRepeaterScrollHost CreateAndInitializeRepeater(
             object itemsSource,
             Layout layout,

@@ -1286,7 +1286,12 @@ _Check_return_ HRESULT DesktopWindowImpl::SetTitleBarImpl(_In_ xaml::IUIElement*
 
 IFACEMETHODIMP DesktopWindowImpl::get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Windows::UI::Composition::ICompositionBrush** systemBackdropBrush)
 {
-    IFC_RETURN(m_desktopWindowXamlSource->get_SystemBackdrop(systemBackdropBrush));
+    *systemBackdropBrush = nullptr;
+
+    if (m_desktopWindowXamlSource)
+    {
+        IFC_RETURN(m_desktopWindowXamlSource->get_SystemBackdrop(systemBackdropBrush));
+    }
 
     return S_OK;
 }

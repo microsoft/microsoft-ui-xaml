@@ -35,6 +35,14 @@ namespace ctl
         IFACEMETHOD(add_TakeFocusRequested)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSource*, ABI::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSourceTakeFocusRequestedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_TakeFocusRequested(pValue, pToken); }
         IFACEMETHOD(remove_TakeFocusRequested)(_In_ EventRegistrationToken token) override { return This()->remove_TakeFocusRequested(token); }
     };
+    template<typename impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource2, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource2, impl_type>
+    {
+        impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(get_ShouldConstrainPopupsToWorkArea)(_Out_ BOOLEAN* pValue) override { return This()->get_ShouldConstrainPopupsToWorkArea(pValue); }
+        IFACEMETHOD(put_ShouldConstrainPopupsToWorkArea)(_In_ BOOLEAN value) override { return This()->put_ShouldConstrainPopupsToWorkArea(value); }
+    };
 }
 #pragma endregion
 
@@ -50,6 +58,7 @@ namespace DirectUI
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource, DesktopWindowXamlSourceGenerated >
         , public ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop
         , public ABI::Windows::Foundation::IClosable
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource2, DesktopWindowXamlSourceGenerated >
     {
         friend class DirectUI::DesktopWindowXamlSource;
 
@@ -59,6 +68,7 @@ namespace DirectUI
             INTERFACE_ENTRY(DesktopWindowXamlSourceGenerated, ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource)
             INTERFACE_ENTRY(DesktopWindowXamlSourceGenerated, ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop)
             INTERFACE_ENTRY(DesktopWindowXamlSourceGenerated, ABI::Windows::Foundation::IClosable)
+            INTERFACE_ENTRY(DesktopWindowXamlSourceGenerated, ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource2)
         END_INTERFACE_MAP(DesktopWindowXamlSourceGenerated, ctl::WeakReferenceSource)
 
     public:
@@ -74,6 +84,8 @@ namespace DirectUI
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Content(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_Content(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_HasFocus(_Out_ BOOLEAN* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_ShouldConstrainPopupsToWorkArea(_Out_ BOOLEAN* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_ShouldConstrainPopupsToWorkArea(_In_ BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_SiteBridge(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IDesktopChildSiteBridge** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_SystemBackdrop(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop* pValue);

@@ -1126,6 +1126,74 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void VerifyTeachingTipGetsFocus()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTipFocus Test" }))
+            {
+                var elements = new TeachingTipFocusTestPageElements();
+                var openTeachingTipButton = elements.GetOpenButton();
+
+                FocusHelper.SetFocus(openTeachingTipButton);
+                OpenTeachingTip();
+
+                Log.Comment("Verify that an opened teaching tip get focus on F6");
+                Verify.IsTrue(openTeachingTipButton.HasKeyboardFocus);
+                KeyboardHelper.PressKey(Key.F6);
+                Wait.ForIdle();
+                var closeButton = elements.GetTeachingTipCloseButton();
+                Verify.IsTrue(closeButton.HasKeyboardFocus);
+                KeyboardHelper.PressKey(Key.F6);
+                Wait.ForIdle();
+                Verify.IsTrue(openTeachingTipButton.HasKeyboardFocus);
+
+                Log.Comment("Switch to light-dismissable teaching tip.");
+                CloseTeachingTipProgrammatically();
+                EnableLightDismiss();
+
+                Log.Comment("Verify that a light-dismissable teaching tip gets focus on opening");
+                Verify.IsTrue(openTeachingTipButton.HasKeyboardFocus);
+                OpenTeachingTip();
+                Wait.ForIdle();
+                closeButton = elements.GetTeachingTipCloseButton();
+                Verify.IsTrue(closeButton.HasKeyboardFocus);
+                KeyboardHelper.PressKey(Key.Escape);
+                Wait.ForIdle();
+                Verify.IsTrue(openTeachingTipButton.HasKeyboardFocus);
+
+                void OpenTeachingTip()
+                {
+                    if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.On)
+                    {
+                        openTeachingTipButton.InvokeAndWait();
+                        WaitForChecked(elements.GetIsOpenCheckBox());
+                        WaitForChecked(elements.GetIsIdleCheckBox());
+                    }
+                }
+
+                void CloseTeachingTipProgrammatically()
+                {
+                    if (elements.GetIsOpenCheckBox().ToggleState != ToggleState.Off)
+                    {
+                        elements.GetCloseButton().InvokeAndWait();
+                        WaitForUnchecked(elements.GetIsOpenCheckBox());
+                        WaitForChecked(elements.GetIsIdleCheckBox());
+                    }
+                }
+
+                void EnableLightDismiss()
+                {
+                    var isLightDismissEnabledCheckBox = elements.GetIsLightDismissEnabledCheckBox();
+                    if (isLightDismissEnabledCheckBox.ToggleState != ToggleState.On)
+                    {
+                        isLightDismissEnabledCheckBox.Check();
+                        WaitForChecked(isLightDismissEnabledCheckBox);
+                    }
+                }
+            }
+        }
+
         private void CloseOpenAndCloseWithJustKeyboardViaF6()
         {
             KeyboardHelper.PressKey(Key.F6);

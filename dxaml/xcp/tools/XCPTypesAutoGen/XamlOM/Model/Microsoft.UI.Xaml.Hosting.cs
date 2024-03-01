@@ -246,6 +246,7 @@ namespace Microsoft.UI.Xaml.Hosting
     };
 
     [Contract(typeof(WinUIContract), 5)]
+    [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 6)]
     [DXamlIdlGroup("coretypes2")]
     [CodeGen(partial: true)]
     [FrameworkTypePattern]
@@ -290,6 +291,16 @@ namespace Microsoft.UI.Xaml.Hosting
             set;
         }
 
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [TypeTable(IsExcludedFromDXaml = true)]
+        [Version(2)]
+        public bool ShouldConstrainPopupsToWorkArea
+        {
+            get;
+            set;
+        }
+
         public XamlSourceFocusNavigationResult NavigateFocus(XamlSourceFocusNavigationRequest request)
         {
             return default(XamlSourceFocusNavigationResult);
@@ -309,8 +320,8 @@ namespace Microsoft.UI.Xaml.Hosting
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [PropertyKind(PropertyKind.PropertyOnly)]
         [TypeTable(IsExcludedFromDXaml = true)]
-        public Microsoft.UI.Content.DesktopChildSiteBridge SiteBridge 
-        { 
+        public Microsoft.UI.Content.DesktopChildSiteBridge SiteBridge
+        {
             get;
         }
     }
@@ -353,7 +364,7 @@ namespace Microsoft.UI.Xaml.Hosting
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [TypeTable(IsExcludedFromDXaml = true)]
 	    public static WindowsXamlManager GetForCurrentThread()
-        { 
+        {
             return default(WindowsXamlManager);
         }
     }

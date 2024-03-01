@@ -1147,13 +1147,15 @@ _Check_return_ HRESULT FrameworkElement::FindNameInPage(
         }
         else
         {
-
             // ListBoxItem(s) inside of an ItemsControl do not have a
-            // templated parent, so the TemplatedParent chain is broken
-            // to work around this we get their parent and if it is a panel
+            // templated parent, so the TemplatedParent chain is broken.
+            // To work around this, we get their parent and if it is a panel
             // serving as an ItemsHost in an ItemsControl then we use that panel
             // as the next step in the chain. The Panel will have the TemplatedParent
             // set since it is created from a Template by the ItemsPresenter.
+            // A MUXC ItemsRepeater may not have a TemplatedParent either, so that
+            // panel is used as the next step in the chain as well. This allows its
+            // ItemTemplate to use ElementName-based bindings to elements outside its scope.
             IFC_RETURN(current->GetInheritanceParent(&templatedParentAsDO));
             if (!templatedParentAsDO)
             {
@@ -1166,8 +1168,13 @@ _Check_return_ HRESULT FrameworkElement::FindNameInPage(
 
             if (panel)
             {
+                // Two kinds of panels get special treatment:
+                // - items host for an ItemsControl,
+                // - MUXC ItemsRepeater
+                // In both cases, ElementName-based bindings need to be able to successfully find elements outside the ItemsControl or ItemsRepeater respectively.
                 IFC_RETURN(panel->get_IsItemsHost(&fIsItemsHost));
-                if (fIsItemsHost)
+                if (fIsItemsHost ||
+                    static_cast<CFrameworkElement*>(templatedParentAsDO->GetHandle())->GetClassName().Equals(XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml.Controls.ItemsRepeater")))
                 {
                     current = templatedParentAsDO.Cast<FrameworkElement>();
                 }
@@ -1180,10 +1187,8 @@ _Check_return_ HRESULT FrameworkElement::FindNameInPage(
         }
     }
 
-
     foundElementValue.CopyTo<IInspectable>(ppObj);
     return S_OK;
-
 }
 
 _Check_return_

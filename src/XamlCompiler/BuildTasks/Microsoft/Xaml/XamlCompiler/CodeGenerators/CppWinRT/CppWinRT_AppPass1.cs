@@ -30,6 +30,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 
+#include <unknwn.h>
+
+// Undefine GetCurrentTime macro to prevent
+// conflict with Storyboard::GetCurrentTime
+#undef GetCurrentTime
+
 #include ""winrt/");
             this.Write(this.ToStringHelper.ToStringWithCulture(KnownNamespaces.Xaml));
             this.Write(".h\"\r\n#include \"winrt/");

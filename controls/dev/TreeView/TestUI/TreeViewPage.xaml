@@ -19,6 +19,7 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="1*"/>
                 <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
             <ScrollViewer>
                 <StackPanel>
@@ -113,7 +114,7 @@
             <ScrollViewer Grid.Column="2">
                 <StackPanel x:Name="ContentModeTestStackPanel">
 
-                    <muxcontrols:TreeView 
+                    <muxcontrols:TreeView
                         x:Name="ContentModeTestTreeView"
                         AutomationProperties.Name="ContentModeTestTreeView"
                         HorizontalAlignment="Left"
@@ -122,7 +123,7 @@
                         ItemsSource="{x:Bind TestTreeViewItemsSource}">
                         <muxcontrols:TreeView.ItemTemplate>
                             <DataTemplate x:DataType="local:TreeViewItemSource">
-                                <muxcontrols:TreeViewItem 
+                                <muxcontrols:TreeViewItem
                                     ItemsSource="{x:Bind Children}"
                                     Content="{x:Bind Content}"
                                     IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
@@ -131,7 +132,7 @@
                         </muxcontrols:TreeView.ItemTemplate>
                     </muxcontrols:TreeView>
 
-                    <muxcontrols:TreeView 
+                    <muxcontrols:TreeView
                         x:Name="ContentModeTestTreeView2"
                         AutomationProperties.Name="ContentModeTestTreeView2"
                         HorizontalAlignment="Left"
@@ -139,7 +140,7 @@
                         ItemsSource="{Binding TestTreeView2ItemsSource}">
                         <muxcontrols:TreeView.ItemTemplate>
                             <DataTemplate>
-                                <muxcontrols:TreeViewItem 
+                                <muxcontrols:TreeViewItem
                                     ItemsSource="{Binding Children}"
                                     Content="{Binding Content}"
                                     IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
@@ -156,6 +157,22 @@
                     </Border>
                 </StackPanel>
             </ScrollViewer>
+
+            <ScrollViewer Grid.Column="3">
+                <StackPanel x:Name="PerfScenarioStackPanel">
+
+                    <Button Content="Load big tree view (SLOW on chk)" Click="LoadPerfTreeView_Click" />
+
+                    <muxcontrols:TreeView
+                        x:Name="PerfScenarioTreeView"
+                        SelectionMode="Multiple"
+                        HorizontalAlignment="Left"
+                        Width="400" Height="800">
+                    </muxcontrols:TreeView>
+
+                </StackPanel>
+            </ScrollViewer>
+
         </Grid>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>

@@ -8,6 +8,12 @@
 //     the code is regenerated.
 //------------------------------------------------------------------------------
 
+#include <unknwn.h>
+
+// Undefine GetCurrentTime macro to prevent
+// conflict with Storyboard::GetCurrentTime
+#undef GetCurrentTime
+
 #include "winrt/<#=KnownNamespaces.Xaml#>.h"
 #include "winrt/<#=KnownNamespaces.XamlMarkup#>.h"
 #include "winrt/<#=KnownNamespaces.XamlInterop#>.h"

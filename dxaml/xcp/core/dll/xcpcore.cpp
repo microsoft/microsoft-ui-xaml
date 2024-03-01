@@ -8376,7 +8376,7 @@ _Check_return_ HRESULT CCoreServices::RecoverFromDeviceLost()
             // explicitly cleaned up.
             if (cleanupDComp && m_inputServices)
             {
-                m_inputServices->ResetCrossSlideService();
+                m_inputServices->ResetAllCrossSlideServices();
             }
         }
 

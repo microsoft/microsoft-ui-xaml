@@ -400,8 +400,9 @@ public:
     void SetCoreWindow(_In_ wuc::ICoreWindow* pCoreWindow);
     wuc::ICoreWindow* GetCoreWindow() const;
 
-    void SetApplicationIslandInputSite(_In_ ixp::IIslandInputSitePartner* pIslandInputSite);
-    wrl::ComPtr<ixp::IIslandInputSitePartner> GetApplicationIslandInputSite() const { return m_islandInputSite; }
+    void RegisterIslandInputSite(_In_ ixp::IIslandInputSitePartner* pIslandInputSite);
+    void UnregisterIslandInputSite(_In_ ixp::IIslandInputSitePartner* pIslandInputSite);
+    wrl::ComPtr<ixp::IIslandInputSitePartner> GetPrimaryRegisteredIslandInputSite() const;
 
     void SetLastInputDeviceType(XPointerInputType deviceType)
     {
@@ -833,7 +834,7 @@ public:
     _Check_return_ HRESULT UpdateCursor(_In_ CDependencyObject* pVisualInTargetIsland, _In_ XINT32 bUnset = FALSE);
 
     void Reset();
-    void ResetCrossSlideService();
+    void ResetAllCrossSlideServices();
     void DestroyPointerObjects();
 
     _Check_return_ HRESULT ObjectLeavingTree(_In_ CDependencyObject *pObject);
@@ -1078,7 +1079,7 @@ private:
 
     bool CanDMContainerInitialize() const
     {
-        return (nullptr != m_islandInputSite);
+        return !m_islandInputSiteRegistrations.empty();
     }
 
     bool CanDMContainerInitialize(_In_ CUIElement* const dmContainer) const
@@ -1560,22 +1561,70 @@ private:
     xvector<CSecondaryContentRelationship*>* m_pSecondaryContentRelationshipsToBeApplied;
 
     xchainedmap<CUIElement*, IPALDirectManipulationService*>* m_pDMServices;
-    IPALDirectManipulationService* m_pDMCrossSlideService; // Common DM manager used to handle all cross-slide viewports for cross-slide support
-    std::shared_ptr<DirectManipulationServiceSharedState> m_DMServiceSharedState;
+    std::shared_ptr<DirectManipulationServiceSharedState> m_DMServiceSharedState; // This is per-thread shared state, not per-ContentIsland.
 
     XUINT32 m_cCrossSlideContainers; // Number of registered cross-slide containers.
     std::unique_ptr<std::vector < xref::weakref_ptr<CUIElement>>> m_pDMContainersNeedingInitialization;
-    
-    wrl::ComPtr<ixp::IIslandInputSitePartner> m_islandInputSite;
+
+    // The DMCrossSlideService can only be shared across CUIElements on the *same* ContentIsland.
+    // Each ContentIsland has its own IslandInputSite and therefore its own underlying Input HWND.
+    // InputServices is per-thread, but each thread can have multiple ContentIslands.
+    // We cannot use just one IslandInputRegistration across different ContentIslands.
+    struct IslandInputSiteRegistration
+    {
+        explicit IslandInputSiteRegistration(ixp::IIslandInputSitePartner* islandInputSite) : m_islandInputSite{ islandInputSite } {}
+
+        [[nodiscard]] bool Match(ixp::IIslandInputSitePartner* islandInputSite) const
+        {
+            if (nullptr == islandInputSite)
+            {
+                return false;
+            }
+
+            wrl::ComPtr<ixp::IIslandInputSitePartner> querySite{ islandInputSite };
+            wrl::ComPtr<IUnknown> querySiteAsIUnknown{ nullptr };
+            FAIL_FAST_IF_FAILED(querySite.As(&querySiteAsIUnknown));
+
+            wrl::ComPtr<IUnknown> mySiteAsIUnknown{ nullptr };
+            FAIL_FAST_IF_FAILED(m_islandInputSite.As(&mySiteAsIUnknown));
+            return (mySiteAsIUnknown.Get() == querySiteAsIUnknown.Get());
+        }
+
+        [[nodiscard]] bool Match(CUIElement* uiElement) const
+        {
+            if (nullptr == uiElement)
+            {
+                return false;
+            }
+            return Match(uiElement->GetElementIslandInputSite().Get());
+        }
+
+        [[nodiscard]] wrl::ComPtr<ixp::IIslandInputSitePartner> IslandInputSite() const { return m_islandInputSite; }
+
+        [[nodiscard]] wrl::ComPtr<IPALDirectManipulationService> DMCrossSlideService() const { return m_DMCrossSlideService; }
+        void DMCrossSlideService(_In_ IPALDirectManipulationService* pDMCrossSlideService) { m_DMCrossSlideService = pDMCrossSlideService; }
+
+        [[nodiscard]] bool ShouldRegisterDMViewportCallback() const { return m_shouldRegisterDMViewportCallback; }
+        void ShouldRegisterDMViewportCallback(bool shouldRegisterDMViewportCallback) { m_shouldRegisterDMViewportCallback = shouldRegisterDMViewportCallback; }
+
+    private:
+        wrl::ComPtr<ixp::IIslandInputSitePartner> m_islandInputSite { nullptr };
+        wrl::ComPtr<IPALDirectManipulationService> m_DMCrossSlideService{ nullptr }; // Common DM manager used to handle all cross-slide viewports for cross-slide support per ContentIsland.
+
+        // For deciding whether or not DMViewportHandler needs to be registered on a CrossSlide viewport. True if at least one UIElement is draggable.
+        bool m_shouldRegisterDMViewportCallback = false;
+    };
+    std::vector<IslandInputSiteRegistration> m_islandInputSiteRegistrations;
+    IslandInputSiteRegistration& GetIslandInputSiteRegistrationForUIElement(CUIElement* pUIElement);
+    IPALDirectManipulationService* GetDMCrossSlideServiceNoRefForUIElement(_In_ CUIElement* pUIElement) const;
+
+    // For deciding whether or not DMViewportHandler needs to be registered on a CrossSlide viewport. True if at least one UIElement is draggable and no IslandInputSite has yet been registered.
+    bool m_shouldRegisterPrimaryDMViewportCallback = false;
 
 #ifdef DM_DEBUG
     bool m_fIsDMInfoTracingEnabled : 1;
     bool m_fIsDMVerboseInfoTracingEnabled : 1;
 #endif // DM_DEBUG
-
-    // for deciding whether or not DMViewportHandler needs to be registered
-    // on a CrossSlide viewport. True if at least one UIElement is draggable.
-    bool m_shouldRegisterDMViewportCallback = false;
 
     // Holds on to DM content/shared transform for sticky headers as we synchronize changing their curves
     std::vector<DMDeferredRelease> m_vecDeferredRelease;

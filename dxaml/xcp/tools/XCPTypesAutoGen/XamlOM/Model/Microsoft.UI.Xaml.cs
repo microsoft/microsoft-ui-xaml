@@ -2706,18 +2706,6 @@ namespace Microsoft.UI.Xaml
             set;
         }
 
-        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        [AllowCrossThreadAccess]
-        [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
-        [PropertyKind(PropertyKind.PropertyOnly)]
-        [VelocityFeature("Feature_ExperimentalApi")]
-        public LayoutCycleTracingLevel LayoutCycleTracing
-        {
-            get;
-            set;
-        }
-
-        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [Version(3)]
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [AllowCrossThreadAccess]
@@ -2735,16 +2723,6 @@ namespace Microsoft.UI.Xaml
         [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
         [PropertyKind(PropertyKind.PropertyOnly)]
         public LayoutCycleDebugBreakLevel LayoutCycleDebugBreakLevel
-        {
-            get;
-            set;
-        }
-
-        [AllowCrossThreadAccess]
-        [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
-        [PropertyKind(PropertyKind.PropertyOnly)]
-        [VelocityFeature("Feature_ExperimentalApi")]
-        public LayoutCycleDebugBreakLevel LayoutCycleDebugBreaks
         {
             get;
             set;

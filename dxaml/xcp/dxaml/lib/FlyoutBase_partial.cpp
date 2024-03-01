@@ -1061,14 +1061,7 @@ _Check_return_ HRESULT FlyoutBase::ShowAtWithOptionsImpl(
         m_exclusionRect = RectUtil::CreateEmptyRect();
     }
 
-    if (showMode != xaml_primitives::FlyoutShowMode_Auto)
-    {
-        IFC_RETURN(UpdateStateToShowMode(showMode));
-    }
-    else
-    {
-        IFC_RETURN(UpdateStateToShowMode(xaml_primitives::FlyoutShowMode_Standard));
-    }
+    IFC_RETURN(UpdateStateToShowMode(showMode));
 
     if (placement != xaml_primitives::FlyoutPlacementMode_Auto)
     {
@@ -1856,11 +1849,14 @@ _Check_return_ HRESULT FlyoutBase::PerformPlacement(
     }
 
 
-
-    if (presenterSize.Width != presenterRect.Width ||
-        presenterSize.Height != presenterRect.Height)
+    if (presenterSize.Width != presenterRect.Width)
     {
         IFC(pPresenterAsControl->put_Width(presenterRect.Width));
+        m_presenterResized = true;
+    }
+
+    if (presenterSize.Height != presenterRect.Height)
+    {
         IFC(pPresenterAsControl->put_Height(presenterRect.Height));
         m_presenterResized = true;
     }
@@ -3878,6 +3874,11 @@ _Check_return_ HRESULT FlyoutBase::GetPresenterSize(_Out_ wf::Size* value)
 
 _Check_return_ HRESULT FlyoutBase::UpdateStateToShowMode(xaml_primitives::FlyoutShowMode showMode)
 {
+    if (showMode == xaml_primitives::FlyoutShowMode_Auto)
+    {
+        showMode = xaml_primitives::FlyoutShowMode_Standard;
+    }
+
     IFC_RETURN(put_ShowMode(showMode));
 
     bool oldShouldHideIfPointerMovesAway = m_shouldHideIfPointerMovesAway;

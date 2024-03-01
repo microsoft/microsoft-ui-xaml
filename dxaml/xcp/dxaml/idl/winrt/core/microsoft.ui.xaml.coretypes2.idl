@@ -4181,6 +4181,11 @@ namespace Microsoft.UI.Xaml.Hosting
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Hosting.DesktopWindowXamlSource,Microsoft.UI.Xaml.Hosting.DesktopWindowXamlSourceGotFocusEventArgs> GotFocus;
         Microsoft.UI.Xaml.Hosting.XamlSourceFocusNavigationResult NavigateFocus(Microsoft.UI.Xaml.Hosting.XamlSourceFocusNavigationRequest request);
         void Initialize(Microsoft.UI.WindowId parentWindowId);
+    
+        [contract(Microsoft.UI.Xaml.WinUIContract, 6)]
+        {
+            Boolean ShouldConstrainPopupsToWorkArea;
+        }
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 5)]

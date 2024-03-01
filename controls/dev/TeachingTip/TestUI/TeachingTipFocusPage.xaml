@@ -12,7 +12,7 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid Margin="10">
-        <muxc:TeachingTip x:Name="TestTeachingTip" Title="Title" IsLightDismissEnabled="{x:Bind (x:Boolean)IsLightDismissEnabledCheckBox.IsChecked, Mode=OneWay}" />
+        <muxc:TeachingTip x:Name="TestTeachingTip" Title="Title" IsLightDismissEnabled="{x:Bind (x:Boolean)IsLightDismissEnabledCheckBox.IsChecked, Mode=OneWay}" CloseButtonContent="Close TeachingTip"/>
 
         <StackPanel>
             <TextBlock Text="TeachingTip special focus test page" Style="{StaticResource SubtitleTextBlockStyle}" Margin="0,0,0,15"/>

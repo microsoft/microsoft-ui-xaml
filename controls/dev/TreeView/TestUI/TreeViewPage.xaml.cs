@@ -262,7 +262,7 @@ namespace MUXControlsTestApp
                 {
                     pendingNodes.Push(currentNode.Children[size - 1 - i]);
                 }
-                
+
                 result.Add(GetNodeContent(currentNode));
             }
 
@@ -517,7 +517,7 @@ namespace MUXControlsTestApp
         private async void TreeView_Drop(object sender, DragEventArgs e)
         {
             try
-            { 
+            {
                 var text = await e.DataView.GetTextAsync();
                 Results.Text = "Dropped: " + text;
             }
@@ -582,7 +582,7 @@ namespace MUXControlsTestApp
                     items.Append(node.Content.ToString());
                 }
             }
-            
+
             e.Data.SetText(items.ToString());
             e.Data.RequestedOperation = DataPackageOperation.Copy;
         }
@@ -646,7 +646,7 @@ namespace MUXControlsTestApp
                 var y0 = new TreeViewNode { Content = "THIS IS NEW" };
                 var root0 = _visualRoot.Children[0];
                 root0.Children[0] = y0;
-            }            
+            }
         }
 
         private void SetRoot1HasUnrealizedChildren_Click(object sender, RoutedEventArgs e)
@@ -762,7 +762,7 @@ namespace MUXControlsTestApp
                     names.Append(node.Content.ToString());
                 }
             }
-            
+
             return names.ToString();
         }
 
@@ -918,7 +918,7 @@ namespace MUXControlsTestApp
         private void AddRootNode_Click(object sender, RoutedEventArgs e)
         {
             try
-            { 
+            {
                 if (IsInContentMode())
                 {
                     var newNode = new TreeViewItemSource() { Content = "Root" + TestTreeViewItemsSource.Count };
@@ -1023,8 +1023,32 @@ namespace MUXControlsTestApp
         }
         private void ReadBindingResult_Click(object sender, RoutedEventArgs e)
         {
-            Results.Text = ((TwoWayBoundButton.Content as TreeViewNode).Content as string) 
+            Results.Text = ((TwoWayBoundButton.Content as TreeViewNode).Content as string)
                 + ";" + (TestTreeView.SelectedItem as TreeViewNode).Content as string;
+        }
+
+        private void LoadPerfTreeView_Click(object sender, RoutedEventArgs e)
+        {
+            TreeViewNode rootNode = new TreeViewNode() { Content = "Root" };
+            for (int level1Index = 0; level1Index < 10; level1Index++)
+            {
+                TreeViewNode level1 = new TreeViewNode()
+                {
+                    Content = level1Index,
+                };
+                rootNode.Children.Add(level1);
+
+                for (int level2Index = 0; level2Index < 5000; level2Index++)
+                {
+                    TreeViewNode level2 = new TreeViewNode()
+                    {
+                        Content = level1Index + "_" + level2Index,
+                    };
+                    level1.Children.Add(level2);
+                }
+            }
+            PerfScenarioTreeView.RootNodes.Clear();
+            PerfScenarioTreeView.RootNodes.Add(rootNode);
         }
     }
 }

@@ -6,15 +6,15 @@
 #include "VectorChangedEventArgs.h"
 #include <algorithm>
 
-// Nearly all Vector need to set DependencyObjectBase flag 
+// Nearly all Vector need to set DependencyObjectBase flag
 // to make DependencyObject as ComposableBase
 // Otherwise we may hit memory leak when interact with .net.
 // One exception is AcrylicBrush::CreateAcrylicBrushWorker
 // because we know we don't have memory leak.
 enum class VectorFlag {
     None = 0, // not Observable, not Bindable and not DependencyObjectBase
-    Observable = 1, 
-    DependencyObjectBase = 2, 
+    Observable = 1,
+    DependencyObjectBase = 2,
     Bindable = 4,
     NoTrackerRef = 8
 };
@@ -121,7 +121,7 @@ struct ObservableTraits<T, true, isBindable>
         winrt::BindableVectorChangedEventHandler,
         winrt::VectorChangedEventHandler<T>
     >::type;
-    
+
     using EventToken = typename winrt::event_token;
 
     static void RaiseEvent(EventSource* e, SenderType sender, winrt::CollectionChange collectionChange, uint32_t index)
@@ -223,6 +223,53 @@ public:
         return false;
     }
 
+    bool IndexOf_OptimizedForRemove(typename T_type const& value, uint32_t& index)
+    {
+        index = 0;
+
+        if (m_optimizedIndexOf_StartNextSearchAt >= m_vector.size())
+        {
+            if (m_vector.size() == 0)
+            {
+                m_optimizedIndexOf_StartNextSearchAt = 0;
+            }
+            else
+            {
+                m_optimizedIndexOf_StartNextSearchAt = static_cast<unsigned int>(m_vector.size() - 1);
+            }
+        }
+
+        const auto& searchFor = wrap(value);
+
+        auto it = std::find(m_vector.begin() + m_optimizedIndexOf_StartNextSearchAt, m_vector.end(), searchFor);
+        bool found = (it != m_vector.end());
+        if (!found && m_optimizedIndexOf_StartNextSearchAt > 0)
+        {
+            // Note: if std::find fails, it returns the second iterator and not always the end of the vector.
+            it = std::find(m_vector.begin(), m_vector.begin() + m_optimizedIndexOf_StartNextSearchAt, searchFor);
+            found = (it != m_vector.begin() + m_optimizedIndexOf_StartNextSearchAt);
+        }
+
+        if (found)
+        {
+            index = (uint32_t)(it - m_vector.begin());
+            if (index > 0)
+            {
+                // Next time we search start near this index. We assume that the remove is being processed from the end
+                // of the vector towards index 0, so the next item being removed is probably at "index - 1". Start the
+                // next search there.
+                m_optimizedIndexOf_StartNextSearchAt = index - 1;
+            }
+            else
+            {
+                m_optimizedIndexOf_StartNextSearchAt = index;
+            }
+            return true;
+        }
+
+        return false;
+    }
+
     uint32_t GetMany(uint32_t const startIndex, winrt::array_view<T_type> values)
     {
         if (startIndex >= m_vector.size())
@@ -255,7 +302,7 @@ public:
         {
             throw winrt::hresult_out_of_bounds();
         }
-        
+
     }
 
     void RemoveAt(uint32_t const index)
@@ -313,6 +360,35 @@ protected:
 
     std::vector<T_Storage> m_vector;
     ITrackerHandleManager* m_trackerHandleManager{ nullptr };
+
+    //
+    // IndexOf optimization for scenarios where lots of items are removed from a large vector, such as unchecking a
+    // selected subtree in a large TreeView
+    //
+    // e.g. A TreeView has a single root with 10 children, each with 10,000 children inside them. The entire TreeView
+    // is selected, and the user unchecks one of the 10 first-level children. The SelectedItems vector of the TreeView
+    // has all 100,000 (roughly - it includes the parent nodes too) items, and we're going to remove 10,000. TreeView's
+    // deselection logic makes sure an item is selected before removing it from the SelectedItems vector, and it does
+    // this with an IndexOf. So naively, unchecking one top-level child is going to run 10,000 IndexOf operations into
+    // a vector of 100,000. If the child being unchecked is near the end of the TreeView, then its entries are near the
+    // end of the vector of 100,000, and each IndexOf will have to search linearly to the end of the vector, making the
+    // operation extremely slow.
+    //
+    // Instead, we optimize by starting the search not at index 0 but partway through the list, specifically near where
+    // we found a previous hit. The assumption is that all 10,000 items being unchecked were checked when the top-level
+    // child was checked, so they're all next to each other in the SelectedItems vector, and we can find them quickly
+    // if we start near where we found the previous hit.
+    //
+    // Note that it's _near_ the previous hit and not _at_ the previous hit because of another optimization. Removing
+    // 10,000 items means shuffling the vector 10,000 times, which is also a slow operation. The last item being removed
+    // is going to be shuffled up 9,999 times only to be deleted in the end. To avoid wasted shuffling, we iterate the
+    // child collection backwards when deselecting. But this also means IndexOf can't start the next search at the same
+    // index but rather at that index - 1. In this example, item 89,999 was just removed, and next we're going to remove
+    // item 89,998. Starting the next search at index 89,999 actualy has the worst performance, because it guarantees that
+    // we're going to search linearly from 89,999 to the end of the vector, then wrap around at the beginning and search
+    // through every item in the vector before finding our hit at the last possible index 89,998.
+    //
+    unsigned int m_optimizedIndexOf_StartNextSearchAt = 0;
 };
 
 // Vector Inner implementation with Observable function
@@ -341,7 +417,7 @@ public:
             Traits::RaiseEvent(m_pIVectorExternal->GetVectorEventSource(), sender, collectionChange, index);
         }
     }
-    
+
     winrt::event_token AddEventHandler(EventHandler const& handler)
     {
         return Traits::AddEventHandler(m_pIVectorExternal->GetVectorEventSource(), handler);
@@ -389,7 +465,7 @@ struct ComposableBasePointersImplTType
     using WinRTBaseFactoryInterface = typename winrt::IDependencyObjectFactory;
 };
 
-template <> 
+template <>
 struct ComposableBasePointersImplTType<false>
 {
     using WinRTBase = typename winrt::IInspectable;
@@ -417,7 +493,7 @@ struct VectorOptionsBase: VectorInterfaceHelper<T, isBindable>, ComposableBasePo
 
 template <typename T, bool isObservable, bool isBindable, bool isDependencyObjectBase, bool isNoTrackerRef>
 struct VectorOptions: VectorOptionsBase<T, isObservable, isBindable, isDependencyObjectBase, isNoTrackerRef>
-{ 
+{
 };
 
 template <typename T, bool isObservable, bool isDependencyObjectBase, bool isNoTrackerRef>
@@ -532,7 +608,7 @@ struct VectorOptionsFromFlag :
         } \
     private:
 
-// Implement IVectorOwner, also define the Inner Vector and Event Source 
+// Implement IVectorOwner, also define the Inner Vector and Event Source
 #define Implement_Vector_External(Options) \
     private: \
         using VectorInnerType = ObservableVectorInnerImpl<##Options##>; \
@@ -552,7 +628,7 @@ struct VectorOptionsFromFlag :
     Implement_IVector_Modify_Functions(##Options##) \
     Implement_IIterator(##Options##) \
     Implement_IObservable(##Options##) \
-    Implement_Vector_External(##Options##) 
+    Implement_Vector_External(##Options##)
 
 // Implement all interfaces for IXXVector/IXXIterator/IXXObservable except those which will modify the vector
 // Like TreeViewNode, we need do additional work before Add/Remove/Modify the vector
@@ -560,14 +636,14 @@ struct VectorOptionsFromFlag :
     Implement_IVector_Read_Functions(##Options##) \
     Implement_IIterator(##Options##) \
     Implement_IObservable(##Options##) \
-    Implement_Vector_External(##Options##) 
+    Implement_Vector_External(##Options##)
 
 // Implement all interfaces for IXXVector/IXXIterator/IXXObservable except those which will modify the vector
 // Like TreeViewNode, we need do additional work before Add/Remove/Modify the vector
 #define Implement_Vector_Read_NoObservable(Options) \
     Implement_IVector_Read_Functions(##Options##) \
     Implement_IIterator(##Options##) \
-    Implement_Vector_External(##Options##) 
+    Implement_Vector_External(##Options##)
 
 
 template <typename T, bool isObservable, bool isBindable, bool isDependencyObjectBase, bool isNoTrackerRef, typename Options = VectorOptions<T, isObservable, isBindable, isDependencyObjectBase, isNoTrackerRef>>
@@ -602,8 +678,8 @@ private:
 };
 
 
-template<typename T, 
-    int flags = MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>(), 
+template<typename T,
+    int flags = MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>(),
     typename Helper = VectorFlagHelper<flags>>
 class Vector :
     public VectorBase<T, Helper::isObservable, Helper::isBindable, Helper::isDependencyObjectBase, Helper::isNoTrackerRef>
@@ -613,18 +689,18 @@ public:
     Vector(uint32_t capacity) : VectorBase<T, Helper::isObservable, Helper::isBindable, Helper::isDependencyObjectBase, Helper::isNoTrackerRef>(capacity) {}
 
     // The same copy of data for NavigationView split into two parts in top navigationview. So two or more vectors are created to provide multiple datasource for controls.
-    // InspectingDataSource is converting C# collections to Vector<winrt::IInspectable>. When GetAt(index) for things like string, a new IInspectable is always returned by C# projection. 
+    // InspectingDataSource is converting C# collections to Vector<winrt::IInspectable>. When GetAt(index) for things like string, a new IInspectable is always returned by C# projection.
     // ListView use indexOf for selection, so a copied/filtered view of C# collection doesn't work for SelectedItem(s) anymore because IInspectable comparsion always return false.
-    // As a workaround, the copied/filtered vector requires others help to IndexOf the orignial C# collection. 
+    // As a workaround, the copied/filtered vector requires others help to IndexOf the orignial C# collection.
     // So the comparison is done by C# vector other than Inspectable directly comparision. Here is an example:
-    // Raw data A is: Home-Apps-Music-Sports 
+    // Raw data A is: Home-Apps-Music-Sports
     // data is splitted two vectors: B and C. B includes Homes, and C includes Apps-Music-Sports
     // Music is the selected item. SplitDataSource is the class help to manage the raw data and provides splitted vectors to ListViews
     // ListView call C.indexOf("Music")
     //                  C ask SplitDataSource.IndexOf
     //                      SplitDataSource calls A.IndexOf (C# provided it)
     //                      SpiltDataSource help to convert the indexInRawData to indexInC
-    //                  return index in C    
+    //                  return index in C
     Vector(std::function<int(typename T const& value)> indexOfFunction) : m_indexOfFunction(indexOfFunction)
     {
         if (m_indexOfFunction)

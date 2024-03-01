@@ -23,8 +23,6 @@ public:
 
     void Initialize(_In_ ixp::IContentIsland* contentIsland, _In_ CContentRoot* contentRoot, _In_ CJupiterWindow* jupiterWindow);
 
-    void RegisterApplicationIslandInputSiteWithInputServicesForDManip();
-    void UnregisterApplicationIslandInputSiteWithInputServicesForDManip();
     wrl::ComPtr<ixp::IIslandInputSitePartner> GetIslandInputSite() const { return m_islandInputSite; }
 
     _Check_return_ HRESULT SetFocus();
@@ -73,6 +71,8 @@ private:
     void SubscribeToInputKeyboardSourceEvents();
     void SubscribeToInputPointerSourceEvents();
     void UnsubscribeToInputEvents();
+    void RegisterIslandInputSiteWithInputServicesForDManip();
+    void UnregisterIslandInputSiteWithInputServicesForDManip();
 
     _Check_return_ HRESULT OnCharacterReceived(_Inout_ ixp::ICharacterReceivedEventArgs *args);
     _Check_return_ HRESULT OnKeyDown(_In_ ixp::IKeyEventArgs *pArgs);

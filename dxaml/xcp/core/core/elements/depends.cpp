@@ -335,8 +335,8 @@ wrl::ComPtr<ixp::IIslandInputSitePartner> CDependencyObject::GetElementIslandInp
         }
     }
 
-    // By default, return the application-wide IslandInputSite that was registered with InputServices on startup.
-    return coreServices->GetInputServices()->GetApplicationIslandInputSite();
+    // By default, return the primary IslandInputSite that was registered with InputServices on startup.
+    return coreServices->GetInputServices()->GetPrimaryRegisteredIslandInputSite();
 }
 
 HWND CDependencyObject::GetElementPositioningWindow()

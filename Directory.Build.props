@@ -21,6 +21,19 @@
     <ShouldUnsetParentConfigurationAndPlatform>false</ShouldUnsetParentConfigurationAndPlatform>
   </PropertyGroup>
 
+  <!-- Import LKG VC Toolset, if enabled (LkgVcTools* env vars set)-->
+  <Import Project="$(NugetPackageDirectory)\$(LkgVcToolsName)\$(LkgVcToolsVersion)\build\native\$(LkgVcToolsName).props" 
+    Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and '$(LkgVcToolsName)$(LkgVcToolsVersion)' != '' and
+      Exists('$(NugetPackageDirectory)\$(LkgVcToolsName)\$(LkgVcToolsVersion)\build\native\$(LkgVcToolsName).props')" />
+  <Target Name="LkgEnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild" 
+    Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and '$(LkgVcToolsName)$(LkgVcToolsVersion)' != ''">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(NugetPackageDirectory)\$(LkgVcToolsName)\$(LkgVcToolsVersion)\build\native\$(LkgVcToolsName).props')" 
+      Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\$(LkgVcToolsName)\$(LkgVcToolsVersion)\build\native\$(LkgVcToolsName).props'))" />
+  </Target>
+
   <!--
     Every project in this repository should include the root Directory.Build.props file. This allows us to create a 
     single place where we can share common build infrastructure, without creating MSBuild duplicate import errors.

@@ -35,6 +35,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 #include <functional>
 #include <map>
 #include <vector>
+#include <unknwn.h>
+
+// Undefine GetCurrentTime macro to prevent
+// conflict with Storyboard::GetCurrentTime
+#undef GetCurrentTime
 
 #include ""XamlTypeInfo.xaml.g.h""
 #include ""XamlMetaDataProvider.g.h""

@@ -385,13 +385,19 @@ _Check_return_ HRESULT CascadingMenuHelper::OnKeyDown(_In_ xaml_input::IKeyRoute
         auto key = wsy::VirtualKey_None;
         IFC_RETURN(args->get_Key(&key));
 
-        // Show the sub menu with the enter, space, or right arrow keys
-        if (key == wsy::VirtualKey_Enter ||
-            key == wsy::VirtualKey_Right ||
-            key == wsy::VirtualKey_Space)
+        wuc::CorePhysicalKeyStatus keyStatus;
+        IFC_RETURN(args->get_KeyStatus(&keyStatus));
+
+        if (!keyStatus.IsMenuKeyDown)
         {
-            IFC_RETURN(OpenSubMenu());
-            IFC_RETURN(args->put_Handled(TRUE));
+            // Show the sub menu with the enter, space, or right arrow keys
+            if (key == wsy::VirtualKey_Enter ||
+                key == wsy::VirtualKey_Right ||
+                key == wsy::VirtualKey_Space)
+            {
+                IFC_RETURN(OpenSubMenu());
+                IFC_RETURN(args->put_Handled(TRUE));
+            }            
         }
     }
 

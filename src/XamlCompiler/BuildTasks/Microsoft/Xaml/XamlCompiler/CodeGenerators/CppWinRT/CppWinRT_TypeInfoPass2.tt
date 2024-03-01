@@ -16,6 +16,11 @@
 #include "<#=ProjectInfo.PrecompiledHeaderFile#>"
 <#  }#>
 #include <memory>
+#include <unknwn.h>
+
+// Undefine GetCurrentTime macro to prevent
+// conflict with Storyboard::GetCurrentTime
+#undef GetCurrentTime
 
 <#  foreach (var includeFile in Model.NeededCppWinRTProjectionHeaderFiles) { #>
 #if __has_include(<<#=includeFile#>>)
