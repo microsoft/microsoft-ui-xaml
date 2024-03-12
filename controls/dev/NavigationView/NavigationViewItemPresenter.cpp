@@ -21,7 +21,8 @@ NavigationViewItemPresenter::NavigationViewItemPresenter()
 
 void NavigationViewItemPresenter::UnhookEventsAndClearFields()
 {
-    m_expandCollapseChevronTappedRevoker.revoke();
+    m_expandCollapseChevronPointerPressedRevoker.revoke();
+    m_expandCollapseChevronPointerReleasedRevoker.revoke();
 
     m_contentGrid.set(nullptr);
     m_infoBadgePresenter.set(nullptr);
@@ -79,9 +80,39 @@ void NavigationViewItemPresenter::LoadChevron()
             if (auto const expandCollapseChevron = GetTemplateChildT<winrt::Grid>(c_expandCollapseChevron, *this))
             {
                 m_expandCollapseChevron.set(expandCollapseChevron);
-                m_expandCollapseChevronTappedRevoker = expandCollapseChevron.Tapped(winrt::auto_revoke, { navigationViewItem, &NavigationViewItem::OnExpandCollapseChevronTapped });
+
+                m_expandCollapseChevronPointerPressedRevoker = expandCollapseChevron.PointerPressed(winrt::auto_revoke, { this, &NavigationViewItemPresenter::OnExpandCollapseChevronPointerPressed });
+                m_expandCollapseChevronPointerReleasedRevoker = expandCollapseChevron.PointerReleased(winrt::auto_revoke, { this, &NavigationViewItemPresenter::OnExpandCollapseChevronPointerReleased });
             }
         }
+    }
+}
+
+void NavigationViewItemPresenter::OnExpandCollapseChevronPointerPressed(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+{
+    const auto pointerProperties = args.GetCurrentPoint(*this).Properties();
+    if (!pointerProperties.IsLeftButtonPressed() ||
+        args.Handled())
+    {
+        // We are only interested in the primary action of the pointer device 
+        // (e.g. left click of a mouse)
+		// Despite the name, IsLeftButtonPressed covers the primary action regardless of device.
+        return;
+    }
+
+    args.Handled(true);
+}
+
+void NavigationViewItemPresenter::OnExpandCollapseChevronPointerReleased(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+{
+    const auto navigationViewItem = GetNavigationViewItem();
+    const auto pointerProperties = args.GetCurrentPoint(*this).Properties();
+    if (!args.Handled() &&
+        pointerProperties.PointerUpdateKind() == winrt::PointerUpdateKind::LeftButtonReleased &&
+        navigationViewItem)
+    {
+        navigationViewItem->OnExpandCollapseChevronPointerReleased();
+        args.Handled(true);
     }
 }
 

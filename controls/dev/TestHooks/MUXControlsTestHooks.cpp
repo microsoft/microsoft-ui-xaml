@@ -21,6 +21,10 @@
 #include "ItemsViewTrace.h"
 #endif
 
+#ifdef NAVIGATIONVIEW_INCLUDED
+#include "NavigationViewTrace.h"
+#endif
+
 #ifdef SCROLLPRESENTER_INCLUDED
 #include "ScrollPresenterTrace.h"
 #endif
@@ -115,6 +119,13 @@ if (type == L"AnnotatedScrollBar" || type.empty())
     {
         ItemsViewTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
         ItemsViewTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
+    }
+#endif
+#ifdef NAVIGATIONVIEW_INCLUDED
+    if (type == L"NavigationView" || type.empty())
+    {
+        NavigationViewTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
+        NavigationViewTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
     }
 #endif
 #ifdef SCROLLPRESENTER_INCLUDED

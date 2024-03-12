@@ -29,7 +29,8 @@
 #define KEYWORD_ITEMCONTAINER      0x0000000000000200
 #define KEYWORD_LINEDFLOWLAYOUT    0x0000000000000400
 #define KEYWORD_ANNOTATEDSCROLLBAR 0x0000000000000800
-#define KEYWORD_SELECTORBAR            0x0000000000001000
+#define KEYWORD_SELECTORBAR        0x0000000000001000
+#define KEYWORD_NAVIGATIONVIEW     0x0000000000002000
 
 // Common output formats
 #define TRACE_MSG_METH L"%s[0x%p]()\n"
@@ -162,6 +163,35 @@ public:
         PCSTR, EventName,
         bool, IsInteresting,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    DEFINE_TRACELOGGING_EVENT_PARAM2(WebView2_FireNavigationCompleted,
+        uint64_t, ObjectPointer,
+        bool, hasEventHandlers,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    DEFINE_TRACELOGGING_EVENT_PARAM2(WebView2_CreateCoreObjects,
+        bool, IsStart,
+        uint64_t, ObjectPointer,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    DEFINE_TRACELOGGING_EVENT_PARAM2(WebView2_TryCompleteInitialization,
+        bool, IsStart,
+        uint64_t, ObjectPointer,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    DEFINE_TRACELOGGING_EVENT_PARAM2(MapControl_InitializeWebMap,
+        bool, IsStart,
+        uint64_t, ObjectPointer,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    DEFINE_TRACELOGGING_EVENT_PARAM1(MapControl_WebViewNavigationCompleted,
+        uint64_t, ObjectPointer,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    DEFINE_TRACELOGGING_EVENT_PARAM2(MapControl_WebMessageReceived_Error,
+        uint64_t, ObjectPointer,
+        PCWSTR, Message,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 };
 #pragma warning(pop)
 
@@ -191,4 +221,22 @@ private:
     uint64_t m_objectPointer;
     PCSTR m_eventName;
     bool m_isInteresting;
+};
+
+struct SimpleXamlStartStopEvent_RAII
+{
+public:
+    // Disallow copying/moving
+    SimpleXamlStartStopEvent_RAII(const SimpleXamlStartStopEvent_RAII&) = delete;
+    SimpleXamlStartStopEvent_RAII(SimpleXamlStartStopEvent_RAII&&) = delete;
+    SimpleXamlStartStopEvent_RAII& operator=(const SimpleXamlStartStopEvent_RAII&) = delete;
+    SimpleXamlStartStopEvent_RAII& operator=(SimpleXamlStartStopEvent_RAII&&) = delete;
+
+protected:
+    SimpleXamlStartStopEvent_RAII(uint64_t objectPointer)
+        : m_objectPointer(objectPointer)
+    {
+    }
+
+    uint64_t m_objectPointer;
 };

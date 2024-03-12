@@ -18,6 +18,7 @@
 #include "WebView2Utility.h"
 #include "Windows.Globalization.h"
 #include <wrl\event.h>
+#include "MuxcTraceLogging.h"
 
 using namespace Microsoft::WRL;
 
@@ -740,6 +741,8 @@ winrt::IAsyncAction WebView2::CreateCoreObjects(winrt::CoreWebView2Environment e
     }
     else
     {
+        XamlTelemetry::WebView2_CreateCoreObjects(true, reinterpret_cast<uint64_t>(this));
+
         m_creationInProgressAsync = std::make_unique<AsyncWebViewOperations>();
         RegisterXamlEventHandlers();
 
@@ -765,6 +768,8 @@ winrt::IAsyncAction WebView2::CreateCoreObjects(winrt::CoreWebView2Environment e
         {
             CreateMissingAnaheimWarning();
         }
+
+        XamlTelemetry::WebView2_CreateCoreObjects(false, reinterpret_cast<uint64_t>(this));
     }
 
     co_return;
@@ -777,7 +782,7 @@ winrt::IAsyncOperation<winrt::CoreWebView2Environment> WebView2::CreateDefaultCo
     winrt::CoreWebView2Environment returnedValue = nullptr;
 
     auto strongThis = get_strong(); // ensure object lifetime during coroutines
-        
+
     // NOTE: To enable Anaheim logging, add: environmentOptions.AdditionalBrowserArguments(L"--enable-logging=stderr --v=1");
     winrt::CoreWebView2EnvironmentOptions environmentOptions =  winrt::CoreWebView2EnvironmentOptions();
 
@@ -1374,7 +1379,7 @@ winrt::IAsyncAction WebView2::EnsureCoreWebView2Async(winrt::CoreWebView2Environ
     }
 
     // If CWV2 exists already, return immediately provided that current call to EnsureCWV2Async is compatible with original creation
-    // Specifically, if current call has: 
+    // Specifically, if current call has:
     //    a. Null args       : Always compatible  [i.e. E() == E(nullptr) == E(nullptr, nullptr))]
     //    b. Non-null arg(s) : Compatible iff called with same args as call that created current core objecs.
     //                         Note comparison is via reference equality for both args.
@@ -1382,7 +1387,7 @@ winrt::IAsyncAction WebView2::EnsureCoreWebView2Async(winrt::CoreWebView2Environ
     {
         if (environment != nullptr || controllerOptions != nullptr)
         {
-             if (m_coreWebViewEnvironment != environment) 
+             if (m_coreWebViewEnvironment != environment)
              {
                 throw winrt::hresult_invalid_argument(
                     L"WebView2 was already initialized with a different CoreWebView2Environment. "
@@ -1450,6 +1455,15 @@ winrt::AccessibilitySettings WebView2::GetAccessibilitySettings()
     return m_accessibilitySettings;
 }
 
+struct WebView2_TryCompleteInitialization_RAII : public SimpleXamlStartStopEvent_RAII
+{
+public:
+    WebView2_TryCompleteInitialization_RAII(uint64_t objectPointer) : SimpleXamlStartStopEvent_RAII(objectPointer)
+        { XamlTelemetry::WebView2_TryCompleteInitialization(true, m_objectPointer); }
+    ~WebView2_TryCompleteInitialization_RAII()
+        { XamlTelemetry::WebView2_TryCompleteInitialization(false, m_objectPointer); }
+};
+
 void WebView2::TryCompleteInitialization()
 {
     // If proper Anaheim not present, no further initialization is necessary
@@ -1476,6 +1490,8 @@ void WebView2::TryCompleteInitialization()
     {
         return;
     }
+
+    WebView2_TryCompleteInitialization_RAII etwEvents(reinterpret_cast<uint64_t>(this));
 
     // In a desktop scenario, we may have created the CoreWebView2 with a dummy hwnd as its parent
     // (see EnsureTemporaryHostHwnd()), in which case we need to update to use the real parent here.
@@ -1578,7 +1594,7 @@ void WebView2::ConvertXamlArgsToOle32Args(const winrt::DragEventArgs& args, DWOR
     // Get the drag drop modifiers and convert to key state
     winrt::DragDropModifiers dragDropModifiers = args.Modifiers();
     if ((dragDropModifiers & winrt::DragDropModifiers::LeftButton) ==
-        winrt::DragDropModifiers::LeftButton) 
+        winrt::DragDropModifiers::LeftButton)
     {
         keyState |= MK_LBUTTON;
     }
@@ -1608,7 +1624,7 @@ void WebView2::ConvertXamlArgsToOle32Args(const winrt::DragEventArgs& args, DWOR
         keyState |= MK_ALT;
     }
 
-    // point parameter must be modified to include the WebView's offset and be 
+    // point parameter must be modified to include the WebView's offset and be
     // in the WebView's client coordinates (Similar to how SendMouseInput works).
     winrt::Point cursorPosition_winrt{args.GetPosition(*this /* relativeTo */)};
     cursorPosition = {static_cast<LONG>(cursorPosition_winrt.X), static_cast<LONG>(cursorPosition_winrt.Y)};

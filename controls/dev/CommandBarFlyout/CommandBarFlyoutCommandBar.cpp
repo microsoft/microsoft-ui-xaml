@@ -128,6 +128,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
             PopulateAccessibleControls();
             UpdateFlowsFromAndFlowsTo();
             UpdateUI(!m_commandBarFlyoutIsOpening);
+            AttachItemEventHandlers();
         }
     });
 
@@ -141,6 +142,7 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
             PopulateAccessibleControls();
             UpdateFlowsFromAndFlowsTo();
             UpdateUI(!m_commandBarFlyoutIsOpening);
+            AttachItemEventHandlers();
         }
     });
 }
@@ -260,7 +262,8 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
     // primary commands's corner radius.
     BindOwningFlyoutPresenterToCornerRadius();
 
-    AttachEventHandlers();
+    AttachControlEventHandlers();
+    AttachItemEventHandlers();
     PopulateAccessibleControls();
     UpdateFlowsFromAndFlowsTo();
     UpdateUI(false /* useTransitions */);
@@ -273,7 +276,7 @@ void CommandBarFlyoutCommandBar::SetOwningFlyout(
     m_owningFlyout = owningFlyout;
 }
 
-void CommandBarFlyoutCommandBar::AttachEventHandlers()
+void CommandBarFlyoutCommandBar::AttachControlEventHandlers()
 {
     COMMANDBARFLYOUT_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
@@ -349,6 +352,37 @@ void CommandBarFlyoutCommandBar::AttachEventHandlers()
     }
 }
 
+void CommandBarFlyoutCommandBar::AttachItemEventHandlers()
+{
+    m_itemLoadedRevokerVector.clear();
+
+    for (auto const& command : PrimaryCommands())
+    {
+        if (auto commandAsFE = command.try_as<winrt::FrameworkElement>())
+        {
+            m_itemLoadedRevokerVector.push_back(commandAsFE.Loaded(winrt::auto_revoke, {
+                [this](winrt::IInspectable const& sender, auto const&)
+                {
+                    UpdateItemVisualState(sender.as<winrt::Control>(), true /* isPrimaryControl */);
+                }
+            }));
+        }
+    }
+
+    for (auto const& command : SecondaryCommands())
+    {
+        if (auto commandAsFE = command.try_as<winrt::FrameworkElement>())
+        {
+            m_itemLoadedRevokerVector.push_back(commandAsFE.Loaded(winrt::auto_revoke, {
+                [this](winrt::IInspectable const& sender, auto const&)
+                {
+                    UpdateItemVisualState(sender.as<winrt::Control>(), false /* isPrimaryControl */);
+                }
+            }));
+        }
+    }
+}
+
 void CommandBarFlyoutCommandBar::DetachEventHandlers()
 {
     COMMANDBARFLYOUT_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
@@ -357,6 +391,7 @@ void CommandBarFlyoutCommandBar::DetachEventHandlers()
     m_secondaryItemsRootPreviewKeyDownRevoker.revoke();
     m_secondaryItemsRootSizeChangedRevoker.revoke();
     m_firstItemLoadedRevoker.revoke();
+    m_itemLoadedRevokerVector.clear();
     m_openingStoryboardCompletedRevoker.revoke();
     m_closingStoryboardCompletedCallbackRevoker.revoke();
     m_expandedUpToCollapsedStoryboardRevoker.revoke();
@@ -677,20 +712,12 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
         placementVisual.Clip(rectangleClip);
     }
 
-    auto hasVisibleLabel = []<class TCommand>(TCommand const& command)
-    {
-        return command &&
-            command.Label().size() > 0 &&
-            command.Visibility() == winrt::Visibility::Visible &&
-            command.LabelPosition() == winrt::CommandBarLabelPosition::Default;
-    };
-
     // If no primary command has labels, then we'll shrink down the size of primary commands since the extra space to accommodate labels is unnecessary.
     bool hasPrimaryCommandLabels = false;
     for (auto const& primaryCommand : PrimaryCommands())
     {
-        if (hasVisibleLabel(primaryCommand.try_as<winrt::AppBarButton>()) ||
-            hasVisibleLabel(primaryCommand.try_as<winrt::AppBarToggleButton>()))
+        if (HasVisibleLabel(primaryCommand.try_as<winrt::AppBarButton>()) ||
+            HasVisibleLabel(primaryCommand.try_as<winrt::AppBarToggleButton>()))
         {
             hasPrimaryCommandLabels = true;
             break;
@@ -715,6 +742,29 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
     }
 
     winrt::VisualStateManager::GoToState(*this, hasPrimaryCommandLabels ? L"HasPrimaryLabels" : L"NoPrimaryLabels", useTransitions);
+}
+
+void CommandBarFlyoutCommandBar::UpdateItemVisualState(winrt::Control const& item, bool isPrimaryItem)
+{
+    if (isPrimaryItem)
+    {
+        bool hasPrimaryCommandLabels = false;
+        for (auto const& primaryCommand : PrimaryCommands())
+        {
+            if (HasVisibleLabel(primaryCommand.try_as<winrt::AppBarButton>()) ||
+                HasVisibleLabel(primaryCommand.try_as<winrt::AppBarToggleButton>()))
+            {
+                hasPrimaryCommandLabels = true;
+                break;
+            }
+        }
+
+        winrt::VisualStateManager::GoToState(item, hasPrimaryCommandLabels ? L"HasPrimaryLabels" : L"NoPrimaryLabels", false /* useTransitions */);
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(item, L"NoPrimaryLabels", false /* useTransitions */);
+    }
 }
 
 void CommandBarFlyoutCommandBar::UpdateTemplateSettings()

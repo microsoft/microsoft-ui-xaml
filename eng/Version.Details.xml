@@ -2,17 +2,17 @@
 <!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.WindowsAppSDK.Foundation.TransportPackage" Version="1.5.0-20240223.0">
+    <Dependency Name="Microsoft.WindowsAppSDK.Foundation.TransportPackage" Version="1.5.0-20240308.0">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
-      <Sha>f729ae6e9a9d1db8022c4a2be28b93c399f95b8f</Sha>
+      <Sha>6717f9fc2c0da67b14f74e7854ade9d22933ee63</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="1.5.4-CI-26061.1000.240215-0823.2">
+    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="1.5.4-CI-26078.1000.240307-1421.0">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
-      <Sha>ae2b1fa0e5de26d1f5cc3cdbc7ad03a96c110781</Sha>
+      <Sha>c2021b41a2c423f3ab83d1de51218b9df521fb8f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.InteractiveExperiences" Version="1.5.4-CI-26061.1000.240215-0823.2">
+    <Dependency Name="Microsoft.Internal.InteractiveExperiences" Version="1.5.4-CI-26078.1000.240307-1421.0">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
-      <Sha>ae2b1fa0e5de26d1f5cc3cdbc7ad03a96c110781</Sha>
+      <Sha>c2021b41a2c423f3ab83d1de51218b9df521fb8f</Sha>
     </Dependency>
     <!-- Microsoft-WinUI-SDK repo (MSBuild and Visual Studio extensions for building, deploying, and debugging packaged applications.)  -->
     <Dependency Name="Microsoft.Build.Msix" Version="1.5.0-zmain.231129.0">

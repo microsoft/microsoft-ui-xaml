@@ -51,12 +51,14 @@ public:
     void ClearLocalizedStringResourceCache();
 
 private:
-    void AttachEventHandlers();
+    void AttachControlEventHandlers();
+    void AttachItemEventHandlers();
     void DetachEventHandlers();
 
     void UpdateFlowsFromAndFlowsTo();
     void UpdateUI(bool useTransitions = true, bool isForSizeChange = false);
     void UpdateVisualState(bool useTransitions, bool isForSizeChange = false);
+    void UpdateItemVisualState(winrt::Control const& item, bool isPrimaryItem);
     void UpdateTemplateSettings();
     void EnsureAutomationSetCountAndPosition();
     void EnsureLocalizedControlTypes();
@@ -64,6 +66,15 @@ private:
     void PopulateAccessibleControls();
 
     void SetPresenterName(winrt::FlyoutPresenter const& presenter);
+
+    template<class TCommand>
+    bool HasVisibleLabel(TCommand const& command)
+    {
+        return command &&
+            command.Label().size() > 0 &&
+            command.Visibility() == winrt::Visibility::Visible &&
+            command.LabelPosition() == winrt::CommandBarLabelPosition::Default;
+    };
 
     static bool IsControlFocusable(
         winrt::Control const& control,
@@ -95,6 +106,7 @@ private:
     winrt::UIElement::PreviewKeyDown_revoker m_secondaryItemsRootPreviewKeyDownRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_secondaryItemsRootSizeChangedRevoker{};
     winrt::FrameworkElement::Loaded_revoker m_firstItemLoadedRevoker{};
+    std::vector<winrt::FrameworkElement::Loaded_revoker> m_itemLoadedRevokerVector{};
 
     // We need to manually connect the end element of the primary items to the start element of the secondary items
     // for the purposes of UIA items navigation. To ensure that we only have the current start and end elements registered

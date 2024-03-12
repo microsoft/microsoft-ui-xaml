@@ -42,6 +42,7 @@
 #include <FrameworkUdk/Theming.h>
 #include "WinRTExpressionConversionContext.h"
 #include "VisualDebugTags.h"
+#include "xcpwindow.h"
 
 using namespace DirectUI;
 using namespace Focus;
@@ -1445,7 +1446,22 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
         m_windowedPopupMoveAndResizeRect.Width = popupWindowWidth;
         m_windowedPopupMoveAndResizeRect.Height = popupWindowHeight;
 
-        IFC_RETURN(m_desktopBridge->MoveAndResize(m_windowedPopupMoveAndResizeRect));
+        {
+            // This MoveAndResize call results in a WM_WINDOWPOSCHANGED message, and we're seeing cases where a
+            // third-party library is hooking into the wndproc, responding to WM_WINDOWPOSCHANGED, and is calling
+            // SendMessage in response. That causes messages to be pumped, which causes reentrancy in to Xaml and a
+            // crash. For now, disable lifted CoreMessaging's dispatching for the duration of the MoveAndResize call.
+            // In the future, we'll want a mechanism that can protect against reentrancy without messing with the lifted
+            // CoreMessaging dispatcher. See https://task.ms/49218302.
+            CXcpDispatcher* dispatcher = nullptr;
+            auto hostSite = GetContext()->GetHostSite();
+            if (hostSite)
+            {
+                dispatcher = static_cast<CXcpDispatcher*>(hostSite->GetXcpDispatcher());
+            }
+            PauseNewDispatch deferReentrancy(dispatcher ? dispatcher->GetMessageLoopExtensionsNoRef() : nullptr);
+            IFC_RETURN(m_desktopBridge->MoveAndResize(m_windowedPopupMoveAndResizeRect));
+        }
     }
 
     //
@@ -1899,7 +1915,22 @@ _Check_return_ HRESULT CPopup::AdjustWindowedPopupBoundsForDropShadow(_In_ const
         m_windowedPopupMoveAndResizeRect.Width = XcpCeiling(expandedBounds.Width);
         m_windowedPopupMoveAndResizeRect.Height = XcpCeiling(expandedBounds.Height);
 
-        IFC_RETURN(m_desktopBridge->MoveAndResize(m_windowedPopupMoveAndResizeRect));
+        {
+            // This MoveAndResize call results in a WM_WINDOWPOSCHANGED message, and we're seeing cases where a
+            // third-party library is hooking into the wndproc, responding to WM_WINDOWPOSCHANGED, and is calling
+            // SendMessage in response. That causes messages to be pumped, which causes reentrancy in to Xaml and a
+            // crash. For now, disable lifted CoreMessaging's dispatching for the duration of the MoveAndResize call.
+            // In the future, we'll want a mechanism that can protect against reentrancy without messing with the lifted
+            // CoreMessaging dispatcher. See https://task.ms/49218302.
+            CXcpDispatcher* dispatcher = nullptr;
+            auto hostSite = GetContext()->GetHostSite();
+            if (hostSite)
+            {
+                dispatcher = static_cast<CXcpDispatcher*>(hostSite->GetXcpDispatcher());
+            }
+            PauseNewDispatch deferReentrancy(dispatcher ? dispatcher->GetMessageLoopExtensionsNoRef() : nullptr);
+            IFC_RETURN(m_desktopBridge->MoveAndResize(m_windowedPopupMoveAndResizeRect));
+        }
     }
 
     return S_OK;

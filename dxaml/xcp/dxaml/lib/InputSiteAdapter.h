@@ -21,7 +21,7 @@ public:
     InputSiteAdapter();
     virtual ~InputSiteAdapter();
 
-    void Initialize(_In_ ixp::IContentIsland* contentIsland, _In_ CContentRoot* contentRoot, _In_ CJupiterWindow* jupiterWindow);
+    void Initialize(_In_ ixp::IContentIsland* contentIsland, _In_ CContentRoot* contentRoot, _In_ CJupiterWindow* jupiterWindow, bool connectActivationListener = true);
 
     wrl::ComPtr<ixp::IIslandInputSitePartner> GetIslandInputSite() const { return m_islandInputSite; }
 

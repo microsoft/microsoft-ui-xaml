@@ -40,6 +40,9 @@ private:
     void UpdateMargin();
     void UnhookEventsAndClearFields();
 
+    void OnExpandCollapseChevronPointerPressed(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnExpandCollapseChevronPointerReleased(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+
     double m_compactPaneLengthValue { 40 };
 
     NavigationViewItemHelper<NavigationViewItemPresenter> m_helper{ this };
@@ -47,7 +50,8 @@ private:
     tracker_ref<winrt::ContentPresenter> m_infoBadgePresenter{ this };
     tracker_ref<winrt::Grid> m_expandCollapseChevron{ this };
 
-    winrt::UIElement::Tapped_revoker m_expandCollapseChevronTappedRevoker{};
+    winrt::UIElement::PointerPressed_revoker m_expandCollapseChevronPointerPressedRevoker{};
+    winrt::UIElement::PointerReleased_revoker m_expandCollapseChevronPointerReleasedRevoker{};
 
     double m_leftIndentation{ 0 };
 

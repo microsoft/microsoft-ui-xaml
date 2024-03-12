@@ -105,6 +105,10 @@ constexpr int s_itemNotFound{ -1 };
 
 static winrt::Size c_infSize{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
 
+// Change to 'true' to turn on debugging outputs in Output window
+bool NavigationViewTrace::s_IsDebugOutputEnabled{ false };
+bool NavigationViewTrace::s_IsVerboseDebugOutputEnabled{ false };
+
 NavigationView::~NavigationView()
 {
     UnhookEventsAndClearFields(true);
@@ -1189,6 +1193,7 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
         auto nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
         nvibImpl->SetNavigationViewParent(*this);
         nvibImpl->IsTopLevelItem(IsTopLevelItem(nvib));
+        nvibImpl->IsInNavigationViewOwnedRepeater(true);
 
         // Visual state info propagation
         auto position = [this, ir]()
@@ -1288,6 +1293,7 @@ void NavigationView::OnRepeaterElementClearing(const winrt::ItemsRepeater& ir, c
         auto const nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
         nvibImpl->Depth(0);
         nvibImpl->IsTopLevelItem(false);
+        nvibImpl->IsInNavigationViewOwnedRepeater(false);
         ClearNavigationViewItemBaseRevokers(nvib);
     }
 }
@@ -3478,7 +3484,7 @@ void NavigationView::SetNavigationViewItemBaseRevokers(const winrt::NavigationVi
     auto nvibRevokers = winrt::make_self<NavigationViewItemBaseRevokers>();
     nvibRevokers->visibilityRevoker = RegisterPropertyChanged(nvib, winrt::UIElement::VisibilityProperty(), { this, &NavigationView::OnNavigationViewItemBaseVisibilityPropertyChanged });
     nvib.SetValue(s_NavigationViewItemBaseRevokersProperty, nvibRevokers.as<winrt::IInspectable>());
-    m_itemsWithRevokerObjects.insert(nvib);
+    m_itemsWithRevokerObjects.insert(tracker_ref<winrt::NavigationViewItemBase>{ this, nvib });
 }
 
 void NavigationView::SetNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi)
@@ -3497,15 +3503,22 @@ void NavigationView::SetNavigationViewItemRevokers(const winrt::NavigationViewIt
 
 void NavigationView::ClearNavigationViewItemBaseRevokers(const winrt::NavigationViewItemBase& nvib)
 {
-    RevokeNavigationViewItemBaseRevokers(nvib);
-    nvib.SetValue(s_NavigationViewItemBaseRevokersProperty, nullptr);
-    m_itemsWithRevokerObjects.erase(nvib);
+    const auto& nvibRef = tracker_ref<winrt::NavigationViewItemBase>{ this, nvib };
+    const auto& nvibSafe = nvibRef.safe_get();
+    if (nvibSafe)
+    {
+        RevokeNavigationViewItemBaseRevokers(nvibSafe);
+        nvibSafe.SetValue(s_NavigationViewItemBaseRevokersProperty, nullptr);
+    }
+    const bool removed = static_cast<bool>(m_itemsWithRevokerObjects.erase(nvibRef));
+    MUX_ASSERT(removed);
 }
 
 void NavigationView::ClearAllNavigationViewItemBaseRevokers() noexcept
 {
-    for (const auto& nvib : m_itemsWithRevokerObjects)
+    for (const auto& nvibTracker : m_itemsWithRevokerObjects)
     {
+        const auto& nvib = nvibTracker.safe_get();
         // ClearAllNavigationViewItemBaseRevokers is only called in the destructor, where exceptions cannot be thrown.
         // If the associated NV has not yet been cleaned up, we must detach these revokers or risk a call into freed
         // memory being made.  However if they have been cleaned up these calls will throw. In this case we can ignore

@@ -9,6 +9,7 @@ struct bringintoview_event_revoker;
 #include "NavigationViewItem.g.h"
 #include "NavigationViewItemPresenter.h"
 #include "NavigationViewItem.properties.h"
+#include "NavigationViewTrace.h"
 
 class NavigationViewItem :
     public winrt::implementation::NavigationViewItemT<NavigationViewItem, NavigationViewItemBase>,
@@ -58,7 +59,7 @@ public:
 
     winrt::ItemsRepeater GetRepeater() const { return m_repeater.get(); };
 
-    void OnExpandCollapseChevronTapped(const winrt::IInspectable& sender, const winrt::TappedRoutedEventArgs& args);
+    void OnExpandCollapseChevronPointerReleased();
     void RotateExpandCollapseChevron(bool isExpanded);
     bool IsRepeaterVisible() const;
     void PropagateDepthToChildren(int depth);

@@ -16,7 +16,6 @@
         margin: 0;
         overflow: hidden;
         font-family: segoeui;
-        background-color: blue;
     }
 
     #mapContainer {
@@ -35,7 +34,7 @@
         var layersData = {};
         var pointsData = [];
         var dataSource;
-    
+
         function initializeMap(longitude, latitude, mapServiceToken) {
             try {
                 //Initialize a map instance.
@@ -43,14 +42,15 @@
                     center: [longitude, latitude],
                     zoom: 3,
                     view: 'Auto',
-    
+
                     //Add authentication details for connecting to Azure Maps.
+                    // Note: an invalid token doesn't seem to throw any errors.
                     authOptions: {
                         authType: 'subscriptionKey',
                         subscriptionKey: mapServiceToken
                     }
                 });
-    
+
                 map.events.add('ready', function () {
                     dataSource = new atlas.source.DataSource();
                     map.sources.add(dataSource);
@@ -75,14 +75,14 @@
                     map.layers.add(newLayer);
                     map.events.add('click', newLayer, sendPushpinClickInfo);
                 });
-                
+
             }
             catch (error) {
                 sendErrorInfo(error);
             }
             return newLayer.getId();
         }
-    
+
         function addPoint(longitude, latitude, layerId) {
             var point = new atlas.Shape(new atlas.data.Point([longitude, latitude]));
             try {
@@ -102,7 +102,7 @@
             try {
                 map.events.add('ready', function () {
                     pointsData[layerId][pointId].setCoordinates([longitude, latitude]);
-    
+
                     logSymbolLayers();
                 });
             }
@@ -162,7 +162,7 @@
                 map.controls.clear();
             }
         }
-    
+
         function updateCenter(latitude, longitude) {
             try {
                 map.setCamera({
@@ -184,7 +184,7 @@
                 sendErrorInfo(error);
             }
         }
-    
+
         function updateMapServiceToken(mapServiceToken) {
             try {
                 clearMap();
@@ -197,7 +197,7 @@
                 sendErrorInfo(error);
             }
         }
-        
+
         function sendPushpinClickInfo(e) {
             var latitude = e.position[1];
             var longitude = e.position[0];
@@ -221,7 +221,7 @@
             catch (error) {
                 sendErrorInfo(error);
             }
-    
+
             const coordinate = {
                 "latitude": latitude,
                 "longitude": longitude,
@@ -233,10 +233,10 @@
                 "point": pointClicked,
                 "text": "Pushpin clicked!"
             };
-            
+
             window.chrome.webview.postMessage(message);
         }
-    
+
         function getMapLayers() {
             try {
                 layers = map.layers.getLayers();
@@ -253,7 +253,7 @@
                 sendErrorInfo(error);
             }
         }
-    
+
         function logSymbolLayers() {
             try {
                 // print out each symbolLayer in symbolLayers by id
@@ -266,24 +266,24 @@
                 sendErrorInfo(error);
             }
         }
-    
+
         function getSymbolLayers() {
             return symbolLayers;
         }
-    
+
         function sendErrorInfo(e) {
             console.log(e);
             const coordinate = {
                 "latitude": 0,
                 "longitude": 0,
             }
-    
+
             const message = {
                 "type": "javascriptError",
                 "coordinate": coordinate,
                 "text": e.stack
             };
-    
+
             window.chrome.webview.postMessage(message);
         }
 

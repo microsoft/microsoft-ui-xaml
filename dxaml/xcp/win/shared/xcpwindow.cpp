@@ -14,35 +14,6 @@
 #include "GraphicsTelemetry.h"
 #include "DXamlCoreTipTests.h"
 
-// RAII wrapper around IMessageLoopExtensions::PauseNewDispatch and
-// ResumeDispatch.
-// Used to prevent Xaml reentrancy by making CoreMessaging stop dispatching,
-// including its private window messages. Those messages will be rescheduled
-// once the deferral stops (i.e. this object falls out of scope).
-class PauseNewDispatch
-{
-public:
-    PauseNewDispatch(_In_ IMessageLoopExtensions* messageLoopExtensions)
-        : m_messageLoopExtensions(messageLoopExtensions)
-    {
-        IFCFAILFAST(m_messageLoopExtensions->PauseNewDispatch());
-    }
-
-    ~PauseNewDispatch()
-    {
-        IFCFAILFAST(m_messageLoopExtensions->ResumeDispatch());
-    }
-
-    // Disallow copying/moving
-    PauseNewDispatch(const PauseNewDispatch&) = delete;
-    PauseNewDispatch(PauseNewDispatch&&) = delete;
-    PauseNewDispatch& operator=(const PauseNewDispatch&) = delete;
-
-    PauseNewDispatch& operator=(PauseNewDispatch&&) = delete;
-private:
-    xref_ptr<IMessageLoopExtensions> m_messageLoopExtensions;
-};
-
 //------------------------------------------------------------------------
 //
 //  Synopsis:
@@ -613,7 +584,7 @@ void CXcpDispatcher::SendMessage(
 void CXcpDispatcher::ProcessMessage(UINT msg, WPARAM wParam, LPARAM lParam)
 {
     ASSERT((msg >= WM_FIRST) && (msg <= WM_LAST));
-    
+
     if (!m_bStarted)
     {
         return;

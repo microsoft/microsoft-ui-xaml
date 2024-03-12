@@ -1,7 +1,13 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Common;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Private.Controls;
+
+using WEX.TestExecution;
+using WEX.TestExecution.Markup;
+using WEX.Logging.Interop;
 
 namespace MUXControlsTestApp
 {
@@ -10,6 +16,7 @@ namespace MUXControlsTestApp
     {
         public NavigationViewCaseBundle()
         {
+            LogController.InitializeLogging();
             this.InitializeComponent();
             NavigationViewPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewPage), 0); };
             NavigationViewInfoBadgePage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewInfoBadgeTestPage), 0); };
@@ -37,6 +44,14 @@ namespace MUXControlsTestApp
             NavigateToHierarchicalNavigationViewDataBindingPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(HierarchicalNavigationViewDataBinding), 0); };
             PaneLayoutTestPageButton.Click += delegate { Frame.NavigateWithoutAnimation(typeof(PaneLayoutTestPage), 0); };
             PaneFooterTestPageButton.Click += delegate { Frame.NavigateWithoutAnimation(typeof(PaneFooterTestPage), 0); };
+        }
+
+        private void CmbNavigationViewOutputDebugStringLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+           MUXControlsTestHooks.SetOutputDebugStringLevelForType(
+               "NavigationView",
+               cmbNavigationViewOutputDebugStringLevel.SelectedIndex == 1 || cmbNavigationViewOutputDebugStringLevel.SelectedIndex == 2,
+               cmbNavigationViewOutputDebugStringLevel.SelectedIndex == 2);
         }
     }
 }

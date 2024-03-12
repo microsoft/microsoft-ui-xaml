@@ -11,7 +11,18 @@
 void WindowedPopupInputSiteAdapter::Initialize(_In_ CPopup* popup, _In_ ixp::IContentIsland* contentIsland, _In_ CContentRoot* contentRoot, _In_ CJupiterWindow* jupiterWindow)
 {
     m_windowedPopupNoRef = popup;
-    __super::Initialize(contentIsland, contentRoot, jupiterWindow);
+
+    //
+    // Do not hook a handler to InputActivationChanged. The windowed popup does not ever take activation for itself. The
+    // contentRoot we're passing in here is the main Xaml island, which has its own InputSiteAdapter already that has
+    // its own InputActivationChanged handler hooked.
+    //
+    // This matters for desktop acrylic backdrops inside this windowed popup, which depend on activation state of the
+    // main Xaml island, which just looks at the top-level hwnd. The windowed popup is a separate top-level hwnd with
+    // its own activation state (as far as Windows is concerned), but that activation state shouldn't affect anything.
+    //
+    __super::Initialize(contentIsland, contentRoot, jupiterWindow, false /* connectActivationListener */);
+
     IFCFAILFAST(ctl::make<DirectUI::PointerPointTransform>(&m_pointerPointTransformFromContentRoot));
 
     // Windowed popups do not ever take activation.

@@ -918,10 +918,9 @@ void NavigationViewItem::PropagateDepthToChildren(int depth)
     }
 }
 
-void NavigationViewItem::OnExpandCollapseChevronTapped(const winrt::IInspectable& sender, const winrt::TappedRoutedEventArgs& args)
+void NavigationViewItem::OnExpandCollapseChevronPointerReleased()
 {
     IsExpanded(!IsExpanded());
-    args.Handled(true);
 }
 
 void NavigationViewItem::OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args)
@@ -982,6 +981,8 @@ void NavigationViewItem::OnLostFocus(winrt::RoutedEventArgs const& e)
 
 void NavigationViewItem::ResetTrackedPointerId()
 {
+    NAVIGATIONVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
     m_trackedPointerId = 0;
 }
 
@@ -1005,9 +1006,36 @@ bool NavigationViewItem::IgnorePointerId(const winrt::PointerRoutedEventArgs& ar
 
 void NavigationViewItem::OnPresenterPointerPressed(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
 {
-    if (IgnorePointerId(args))
+    const bool ignorePointerId = IgnorePointerId(args);
+    NAVIGATIONVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, ignorePointerId);
+    if (ignorePointerId)
     {
-        return;
+        // FUTURE: Remove this workaround, which always switches to a new Touch or Pen input
+        //         in case a previous touch/input got lost due to a missing PointerCaptureLost event.
+        auto const& pointerDeviceType = args.Pointer().PointerDeviceType();
+        if (
+            pointerDeviceType == winrt::PointerDeviceType::Touch ||
+            pointerDeviceType == winrt::PointerDeviceType::Pen)
+        {
+            m_isPressed = false;
+            m_isPointerOver = false;
+
+            if (m_capturedPointer)
+            {
+                auto presenter = GetPresenterOrItem();
+
+                MUX_ASSERT(presenter);
+
+                presenter.ReleasePointerCapture(m_capturedPointer);
+                m_capturedPointer = nullptr;
+            }
+
+            ResetTrackedPointerId();
+        }
+        else
+        {
+            return;
+        }
     }
 
     auto pointerProperties = args.GetCurrentPoint(*this).Properties();
@@ -1039,7 +1067,9 @@ void NavigationViewItem::OnPresenterPointerPressed(const winrt::IInspectable&, c
 
 void NavigationViewItem::OnPresenterPointerReleased(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
 {
-    if (IgnorePointerId(args))
+    const bool ignorePointerId = IgnorePointerId(args);
+    NAVIGATIONVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, ignorePointerId, m_isPressed);
+    if (ignorePointerId)
     {
         return;
     }
@@ -1048,7 +1078,8 @@ void NavigationViewItem::OnPresenterPointerReleased(const winrt::IInspectable&, 
     {
         m_isPressed = false;
 
-        if (!IsOutOfControlBounds(args.GetCurrentPoint(*this).Position()))
+        if (!IsOutOfControlBounds(args.GetCurrentPoint(*this).Position()) &&
+            IsInNavigationViewOwnedRepeater())
         {
             if (auto nvImpl = winrt::get_self<NavigationView>(GetNavigationView()))
             {
@@ -1064,6 +1095,7 @@ void NavigationViewItem::OnPresenterPointerReleased(const winrt::IInspectable&, 
             MUX_ASSERT(presenter);
 
             presenter.ReleasePointerCapture(m_capturedPointer);
+            m_capturedPointer = nullptr;
         }
 
         UpdateVisualState(true);
@@ -1072,17 +1104,23 @@ void NavigationViewItem::OnPresenterPointerReleased(const winrt::IInspectable&, 
 
 void NavigationViewItem::OnPresenterPointerEntered(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
 {
+    NAVIGATIONVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
     ProcessPointerOver(args);
 }
 
 void NavigationViewItem::OnPresenterPointerMoved(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
 {
+    NAVIGATIONVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
     ProcessPointerOver(args);
 }
 
 void NavigationViewItem::OnPresenterPointerExited(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
 {
-    if (IgnorePointerId(args))
+    const bool ignorePointerId = IgnorePointerId(args);
+    NAVIGATIONVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, ignorePointerId, !!m_capturedPointer);
+    if (ignorePointerId)
     {
         return;
     }
@@ -1099,16 +1137,22 @@ void NavigationViewItem::OnPresenterPointerExited(const winrt::IInspectable&, co
 
 void NavigationViewItem::OnPresenterPointerCanceled(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
 {
+    NAVIGATIONVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
     ProcessPointerCanceled(args);
 }
 
 void NavigationViewItem::OnPresenterPointerCaptureLost(const winrt::IInspectable&, const winrt::PointerRoutedEventArgs& args)
 {
+    NAVIGATIONVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
     ProcessPointerCanceled(args);
 }
 
 void NavigationViewItem::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&)
 {
+    NAVIGATIONVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
     if (!IsEnabled())
     {
         m_isPressed = false;
@@ -1140,7 +1184,9 @@ void NavigationViewItem::RotateExpandCollapseChevron(bool isExpanded)
 
 void NavigationViewItem::ProcessPointerCanceled(const winrt::PointerRoutedEventArgs& args)
 {
-    if (IgnorePointerId(args))
+    const bool ignorePointerId = IgnorePointerId(args);
+    NAVIGATIONVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, ignorePointerId);
+    if (ignorePointerId)
     {
         return;
     }
@@ -1176,7 +1222,9 @@ bool NavigationViewItem::IsOutOfControlBounds(const winrt::Point& point) {
 
 void NavigationViewItem::ProcessPointerOver(const winrt::PointerRoutedEventArgs& args)
 {
-    if (IgnorePointerId(args))
+    const bool ignorePointerId = IgnorePointerId(args);
+    NAVIGATIONVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, ignorePointerId);
+    if (ignorePointerId)
     {
         return;
     }

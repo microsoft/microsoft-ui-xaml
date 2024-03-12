@@ -6,8 +6,7 @@
 //  Abstract:
 //      Implement top level control model
 
-__interface IMessageSession;
-__interface IMessageLoopExtensions;
+#include <coremessaging.h>
 
 class CompositorScheduler;
 
@@ -130,6 +129,8 @@ public:
 
     void ProcessMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 
+    IMessageLoopExtensions* GetMessageLoopExtensionsNoRef() const { return m_messageLoopExtensions.get(); }
+
 private:
     _Check_return_ HRESULT ReloadSource();
 
@@ -194,5 +195,39 @@ private:
                     // We skip some kinds of messages in this state.
     };
     State m_state { State::Running };
+};
 
+// RAII wrapper around IMessageLoopExtensions::PauseNewDispatch and
+// ResumeDispatch.
+// Used to prevent Xaml reentrancy by making CoreMessaging stop dispatching,
+// including its private window messages. Those messages will be rescheduled
+// once the deferral stops (i.e. this object falls out of scope).
+class PauseNewDispatch
+{
+public:
+    PauseNewDispatch(_In_opt_ IMessageLoopExtensions* messageLoopExtensions)
+        : m_messageLoopExtensions(messageLoopExtensions)
+    {
+        if (m_messageLoopExtensions)
+        {
+            IFCFAILFAST(m_messageLoopExtensions->PauseNewDispatch());
+        }
+    }
+
+    ~PauseNewDispatch()
+    {
+        if (m_messageLoopExtensions)
+        {
+            IFCFAILFAST(m_messageLoopExtensions->ResumeDispatch());
+        }
+    }
+
+    // Disallow copying
+    PauseNewDispatch(const PauseNewDispatch&) = delete;
+    PauseNewDispatch(PauseNewDispatch&&) = delete;
+    PauseNewDispatch& operator=(const PauseNewDispatch&) = delete;
+    PauseNewDispatch& operator=(PauseNewDispatch&&) = delete;
+
+private:
+    xref_ptr<IMessageLoopExtensions> m_messageLoopExtensions;
 };

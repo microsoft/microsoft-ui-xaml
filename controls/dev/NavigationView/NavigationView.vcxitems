@@ -66,6 +66,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewSelectionChangedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SplitDataSourceBase.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TopNavigationViewDataProvider.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewTrace.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)NavigationView.idl" />

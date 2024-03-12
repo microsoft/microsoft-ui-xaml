@@ -1552,7 +1552,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
 
         [TestMethod]
         [TestProperty("TestSuite", "D")]
-        public void VerifyExpandCollpaseFunctionality()
+        public void VerifyExpandCollapseFunctionality()
         {
             var testScenarios = RegressionTestScenario.BuildHierarchicalNavRegressionTestScenarios();
             foreach (var testScenario in testScenarios)
@@ -1627,6 +1627,67 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                     Verify.AreEqual(textBlockExpandingItem.DocumentText, "Menu Item 2");
                     Verify.AreEqual(textBlockCollapsedItem.DocumentText, "Menu Item 1");
                 }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void VerifyExpandCollapseFunctionalityUsingChevron()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
+            {
+                
+                TextBlock textblockExpandingItemAndContainerMatch = new TextBlock(FindElement.ByName("TextblockExpandingItemAndContainerMatch"));
+                TextBlock textblockCollapsedItemAndContainerMatch = new TextBlock(FindElement.ByName("TextblockCollapsedItemAndContainerMatch"));
+                TextBlock textBlockExpandingItem = new TextBlock(FindElement.ByName("TextBlockExpandingItem"));
+                TextBlock textBlockCollapsedItem = new TextBlock(FindElement.ByName("TextBlockCollapsedItem"));
+
+                Log.Comment("Verify that Menu Item 6 is not expanded.");
+                // Verify through test page elements
+                Verify.AreEqual(textblockExpandingItemAndContainerMatch.DocumentText, "N/A");
+                Verify.AreEqual(textblockCollapsedItemAndContainerMatch.DocumentText, "N/A");
+                Verify.AreEqual(textBlockExpandingItem.DocumentText, "N/A");
+                Verify.AreEqual(textBlockCollapsedItem.DocumentText, "N/A");
+                // Verify that child menu item is not in tree
+                UIObject parentItem = FindElement.ByName("Menu Item 6 (Selectable)");
+                UIObject childItem = FindElement.ByName("Menu Item 7 (Selectable)");
+                Verify.IsNull(childItem);
+
+                Log.Comment("Expand Menu Item 6.");
+                InputHelper.LeftClick(parentItem, parentItem.BoundingRectangle.Width - 20 , parentItem.BoundingRectangle.Height / 2 + 10);
+                Wait.ForIdle();
+
+                Log.Comment("Verify that Menu Item 6 was expanded correctly.");
+                // Verify through test page elements
+                Verify.AreEqual(textblockExpandingItemAndContainerMatch.DocumentText, "true");
+                Verify.AreEqual(textblockCollapsedItemAndContainerMatch.DocumentText, "N/A");
+                Verify.AreEqual(textBlockExpandingItem.DocumentText, "Menu Item 6 (Selectable)");
+                Verify.AreEqual(textBlockCollapsedItem.DocumentText, "N/A");
+                // Verify that child menu item is in tree
+                childItem = FindElement.ByName("Menu Item 7 (Selectable)");
+                Verify.IsNotNull(childItem, "Child item should be visible after expanding parent item.");
+
+                Log.Comment("Try collapse Menu Item 6 using an invalid right click.");
+                InputHelper.RightClick(parentItem, parentItem.BoundingRectangle.Width - 25, 25);
+                Wait.ForIdle();
+
+                Log.Comment("Verify that Menu Item 6 was not collapsed.");
+                // Verify through test page elements
+                Verify.AreEqual(textblockExpandingItemAndContainerMatch.DocumentText, "true");
+                Verify.AreEqual(textblockCollapsedItemAndContainerMatch.DocumentText, "N/A");
+                Verify.AreEqual(textBlockExpandingItem.DocumentText, "Menu Item 6 (Selectable)");
+                Verify.AreEqual(textBlockCollapsedItem.DocumentText, "N/A");
+
+                Log.Comment("Collapse Menu Item 6 using left click.");
+                InputHelper.LeftClick(parentItem, parentItem.BoundingRectangle.Width - 25, 25);
+                Wait.ForIdle();
+
+                Log.Comment("Verify that Menu Item 6 was collapsed correctly.");
+                // Verify through test page elements
+                Verify.AreEqual(textblockExpandingItemAndContainerMatch.DocumentText, "true");
+                Verify.AreEqual(textblockCollapsedItemAndContainerMatch.DocumentText, "true");
+                Verify.AreEqual(textBlockExpandingItem.DocumentText, "Menu Item 6 (Selectable)");
+                Verify.AreEqual(textBlockCollapsedItem.DocumentText, "Menu Item 6 (Selectable)");
             }
         }
 
@@ -1828,6 +1889,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 Wait.ForIdle();
 
                 Verify.AreEqual("88", paneFooterNavViewItemWidthTextBlock.DocumentText);
+            }
+        }
+        
+        [TestMethod]
+        public void VerifyClickingNavigationViewItemInPaneFooterDoesNotCrash()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                Log.Comment("Click on PaneFooterNavigationViewItem.");
+                var paneFooterNavigationViewItem = FindElement.ByName("PaneFooterNavigationViewItem");
+                InputHelper.LeftClick(paneFooterNavigationViewItem);
+                Wait.ForIdle();
             }
         }
 
