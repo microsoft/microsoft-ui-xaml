@@ -14,7 +14,8 @@ jobs:
       - id: getbody
         uses: craigloewen-msft/GitGudSimilarIssues@main
         with:
-          issuetitle: ${{ github.event.issue.title }}
+          issueTitle: ${{ github.event.issue.title }}
+          issueBody: ${{ github.event.issue.body }}
           repo: ${{ github.repository }}
           similaritytolerance: "0.70"
           commentBody: | 
