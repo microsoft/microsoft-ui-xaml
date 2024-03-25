@@ -39,4 +39,9 @@ WI_DEFINE_FEATURE(
     WilStagingChangeTime(OnReboot),
     WilStagingGroup("", R"()"));
 
+WI_DEFINE_FEATURE(
+    Feature_AVPFixes, 42941381, DisabledByDefault,
+    WilStagingChangeTime(OnReboot),
+    WilStagingGroup("", R"()"));
+
 #pragma warning(pop)

@@ -9,6 +9,7 @@
 #include <synchapi.h>
 #include <winerror.h>
 #include <math.h>
+#include "velocity.h"
 
 AnimatedVisualPlayer::AnimationPlay::AnimationPlay(
     AnimatedVisualPlayer& owner,
@@ -831,28 +832,69 @@ void AnimatedVisualPlayer::DestroyAnimations() {
         return;
     }
 
-    // Call RequestCommit to make sure that previous compositor calls complete before destroying animations.
-    // RequestCommitAsync is available only for RS4+
-    m_rootVisual.Compositor().RequestCommitAsync().Completed(
-        [&, createAnimationsCounter = m_createAnimationsCounter](auto, auto) {
-            // Check if there was any CreateAnimations call after DestroyAnimations.
-            // We should not destroy animations in this case,
-            // they will be destroyed by the following DestroyAnimations call.
-            if (createAnimationsCounter != m_createAnimationsCounter) {
-                return;
-            }
+    // Fix for https://task.ms/42485473
+    // Contained via velocity.
+    if(!Feature_AVPFixes::IsEnabled())
+    {
+        // OLD code: 
 
-            // Check if current animated visual supports destroyig animations.
-            if (const auto& animatedVisual = m_animatedVisual.get())
-            {
-                if (const auto& animatedVisual2 = animatedVisual.try_as<winrt::IAnimatedVisual2>())
+        // Call RequestCommit to make sure that previous compositor calls complete before destroying animations.
+        // RequestCommitAsync is available only for RS4+
+        m_rootVisual.Compositor().RequestCommitAsync().Completed(
+            [&, createAnimationsCounter = m_createAnimationsCounter](auto, auto) {
+                // Check if there was any CreateAnimations call after DestroyAnimations.
+                // We should not destroy animations in this case,
+                // they will be destroyed by the following DestroyAnimations call.
+                if (createAnimationsCounter != m_createAnimationsCounter) {
+                    return;
+                }
+
+                // Check if current animated visual supports destroyig animations.
+                if (const auto& animatedVisual = m_animatedVisual.get())
                 {
-                    animatedVisual2.DestroyAnimations();
-                    m_isAnimationsCreated = false;
+                    if (const auto& animatedVisual2 = animatedVisual.try_as<winrt::IAnimatedVisual2>())
+                    {
+                        animatedVisual2.DestroyAnimations();
+                        m_isAnimationsCreated = false;
+                    }
                 }
             }
-        }
-    );
+        );
+    }
+    else
+    {
+        // NEW code: 
+
+        // Call RequestCommit to make sure that previous compositor calls complete before destroying animations.
+        // RequestCommitAsync is available only for RS4+
+        m_rootVisual.Compositor().RequestCommitAsync().Completed(
+            [me_weak = get_weak(), createAnimationsCounter = m_createAnimationsCounter](auto, auto) {
+                auto me = me_weak.get();
+                
+                if (!me)
+                {
+                    return;
+                }
+                
+                // Check if there was any CreateAnimations call after DestroyAnimations.
+                // We should not destroy animations in this case,
+                // they will be destroyed by the following DestroyAnimations call.
+                if (createAnimationsCounter != me->m_createAnimationsCounter) {
+                    return;
+                }
+
+                // Check if current animated visual supports destroyig animations.
+                if (const auto& animatedVisual = me->m_animatedVisual.get())
+                {
+                    if (const auto& animatedVisual2 = animatedVisual.try_as<winrt::IAnimatedVisual2>())
+                    {
+                        animatedVisual2.DestroyAnimations();
+                        me->m_isAnimationsCreated = false;
+                    }
+                }
+            }
+        );
+    }
 }
 
 void AnimatedVisualPlayer::OnFallbackContentPropertyChanged(
