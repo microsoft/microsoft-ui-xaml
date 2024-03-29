@@ -48,7 +48,7 @@ For WinUI, your app's users must be on Windows 10 1809 - Build 17763 or newer (i
 The full documentation of WinUI can be found on [Microsoft Learn][docs].
 
 - [Setup the required developer tools][setup]
-- [Creating your first Hello World][hello-world]
+- [Creating your first Hello World app][hello-world]
 
 [setup]: https://microsoft.com
 [hello-world]: https://microsoft.com
