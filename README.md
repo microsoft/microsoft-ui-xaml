@@ -77,7 +77,7 @@ For info on the WinUI release schedule and high level plans please see the [WinU
 
 </br>
 
-## 🔧 Using WinUI in for UWP
+## 🔧 WinUI 2 (for UWP)
 WinUI 2 is a library of controls that provides official native Microsoft UI controls and features for [UWP apps](https://docs.microsoft.com/windows/uwp/index). Learn more about WinUI 2 here.
 
 </br>
