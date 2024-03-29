@@ -1,3 +1,5 @@
+![WinUI hero image](docs/images/banner.png)
+
 <h1 align="center">
     WinUI
 </h1>
@@ -5,7 +7,7 @@
   The modern native UI framework for Windows
 </p>
 
-![WinUI hero image](docs/images/banner.png)
+
 
 <p align="center">
   <a href="https://www.nuget.org/packages/Microsoft.UI.Xaml/absoluteLatest">
