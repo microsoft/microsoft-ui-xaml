@@ -56,7 +56,8 @@ The full documentation of WinUI can be found on [Microsoft Learn][docs].
 
 ### WinUI Gallery
 Make sure to also check out the [WinUI Gallery][winui-gallery], our interactive sample experience showing everything you can do with WinUI.
-<--- INSERT IMAGE -->
+
+![WinUI hero image](docs/images/winui-gallery.png)
 
 [winui-gallery]: https://microsoft.com
 
