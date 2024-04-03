@@ -6,6 +6,11 @@
 #define WIL_STAGING_DLL
 #endif
 
+#ifndef WIL_STAGING_UNDOCKED_ENVIRONMENT
+#define WIL_STAGING_UNDOCKED_ENVIRONMENT
+#endif
+
+
 // wil does not work well with code analysis enabled so we disable some warnings:
 #pragma warning(push) 
 #pragma warning(disable : 6001)
@@ -39,9 +44,7 @@ WI_DEFINE_FEATURE(
     WilStagingChangeTime(OnReboot),
     WilStagingGroup("", R"()"));
 
-WI_DEFINE_FEATURE(
-    Feature_AVPFixes, 42941381, DisabledByDefault,
-    WilStagingChangeTime(OnReboot),
-    WilStagingGroup("", R"()"));
+WI_DEFINE_EXTERNAL_FEATURE(Feature_AVPFixes, 42941381);
+
 
 #pragma warning(pop)
