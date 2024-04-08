@@ -23,10 +23,10 @@
   <span> · </span>
   <a href="https://aka.ms/winui-releasenotes">Release notes</a>
   <span> · </span>
-  <a href="https://microsoft.com">Contribute</a>
+  <a href="#📢-contributing-to-winui">Contribute</a>
 </h3>
 
-WinUI is a user interface layer that contains modern controls and styles for building Windows apps. It ships as part of the [Windows App SDK](https://aka.ms/winappsdk).
+WinUI is a user interface layer that contains modern controls and styles for building Windows apps. The current generation is WinUI 3, [Windows App SDK](https://aka.ms/winappsdk).
 
 - **Modern UI:** WinUI embodies Fluent Design to enable intuitive, accessible, and powerful experiences and the latest user interface patterns..
 - **Unmatched native performance:** powered by a highly optimized C++ core that delivers blistering performance, long battery life, and responsive interactivity. Its lower system utilization allows it to run on a wider range of hardware, ensuring your sophisticated workloads run with ease.
@@ -81,7 +81,7 @@ For info on the WinUI release schedule and high level plans please see the [WinU
 </br>
 
 ## 🔧 WinUI 2 (for UWP)
-WinUI 2 is a library of controls that provides Microsoft UI controls and features for [UWP apps](https://docs.microsoft.com/windows/uwp/index). Learn more about WinUI 2 [here](https://aka.ms/winui2).
+WinUI 2 is a library of controls that provides Microsoft UI controls and features for [UWP apps](https://docs.microsoft.com/windows/uwp/index). Learn more about WinUI 2 [here](https://aka.ms/winui2) or download the source code [here](https://github.com/microsoft/microsoft-ui-xaml/tree/winui2/main).
 
 </br>
 
