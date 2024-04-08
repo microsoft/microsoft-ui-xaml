@@ -53,7 +53,7 @@ The full documentation of WinUI can be found on [Microsoft Learn][docs]:
 </br>
 
 ## 🖼️ WinUI Gallery
-Make sure to also check out the [WinUI Gallery][winui-gallery], our interactive sample experience showing everything you can do with WinUI.
+Make sure to also check out the [WinUI 3 Gallery][winui-gallery], our interactive sample experience showing everything you can do with WinUI.
 
 <img src="docs/images/winui-gallery.png" alt="WinUI Gallery" width="400"/>
 
