@@ -1,4 +1,4 @@
-![WinUI hero image](docs/images/banner.png)
+![WinUI hero image](docs/images/header.png)
 
 <h1 align="center">
     WinUI
