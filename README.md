@@ -17,16 +17,16 @@
 </p>
 
 <h3 align="center">
- <a href="https://developer.windows.com">About WinUI</a>
+  <a href="https://developer.windows.com">About WinUI</a>
+  <span> · </span>
+  <a href="https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/release/1.5-stable">Source code</a>
   <span> · </span>
   <a href="https://aka.ms/winui-docs">Documentation</a>
   <span> · </span>
   <a href="https://aka.ms/winui-releasenotes">Release notes</a>
-  <span> · </span>
-  <a href="#📢-contributing-to-winui">Contribute</a>
 </h3>
 
-WinUI is a user interface layer that contains modern controls and styles for building Windows apps. The current generation is WinUI 3, [Windows App SDK](https://aka.ms/winappsdk).
+WinUI is a user interface layer that contains modern controls and styles for building Windows apps. The current generation is WinUI 3, which ships as part of the [Windows App SDK](https://aka.ms/winappsdk).
 
 - **Modern UI:** WinUI embodies Fluent Design to enable intuitive, accessible, and powerful experiences and the latest user interface patterns..
 - **Unmatched native performance:** powered by a highly optimized C++ core that delivers blistering performance, long battery life, and responsive interactivity. Its lower system utilization allows it to run on a wider range of hardware, ensuring your sophisticated workloads run with ease.
@@ -44,18 +44,20 @@ The full documentation of WinUI can be found on [Microsoft Learn][docs]:
 - [Setup the required developer tools][setup]
 - [Creating your first Hello World app][hello-world]
 - [Check out the WinUI samples][samples]
+- [WinUI 3 source code][source]
 
 [setup]: https://aka.ms/winui-setup
 [hello-world]: https://aka.ms/winui-helloworld
 [docs]: https://aka.ms/winui-docs
 [samples]: https://aka.ms/winui-docs
+[source]: https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/release/1.5-stable"
 
 </br>
 
-## 🖼️ WinUI Gallery
+## 🖼️ WinUI 3 Gallery
 Make sure to also check out the [WinUI 3 Gallery][winui-gallery], our interactive sample experience showing everything you can do with WinUI.
 
-<img src="docs/images/winui-gallery.png" alt="WinUI Gallery" width="400"/>
+<img src="docs/images/winui-gallery.png" alt="WinUI 3 Gallery" width="400"/>
 
 [winui-gallery]: https://aka.ms/winui-gallery
 
