@@ -43,6 +43,11 @@
 #include "WinRTExpressionConversionContext.h"
 #include "VisualDebugTags.h"
 #include "xcpwindow.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 49613456: [1.5 servicing] [GitHub] AutoSuggestBox, ComboBox, (probably others) no longer transform their popups correctly in WindowsAppSDK 1.4
+#define WINAPPSDK_CHANGEID_49613456 49613456
+
 
 using namespace DirectUI;
 using namespace Focus;
@@ -1396,9 +1401,11 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
     IFC_RETURN(EnsureOuterBounds(nullptr));
 
     // Get popup's bounds relative to the CoreWindow or Win32 app bounds
-    // Note: The returned popupBounds will have the plateau zoom scale applied
+    // Note: The returned popupBoundsPhysical will have the plateau zoom scale applied
     XRECTF popupBoundsPhysical = {};
-    IFC_RETURN(GetPhysicalBounds(this, &popupBoundsPhysical));
+    float scaleX = 1.0f;
+    float scaleY = 1.0f;
+    IFC_RETURN(GetPhysicalBounds(this, &popupBoundsPhysical, &scaleX, &scaleY));
 
     // Find the offset to the root in physical pixels.  This is either XAML's main CoreWindow,
     // or the associated XamlIslandRoot.
@@ -1480,12 +1487,12 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
     //      </a>
     //  </root>
     //
-    // Popup p's content c should render with the transform a-b-p-c. This is also the offset that should be applied to the
+    // Popup p's child c should render with the transform a-b-p-c. This is also the offset that should be applied to the
     // popup's hwnd. Xaml rendering code will automatically produce a comp node (and a Composition Visual) for the popup
     // element, with its transform p already set, and a visual for the popup content with its transform c set on it.
     // If we just put these visuals inside the hwnd, we'll end up with the transform (a-b-p-c)-p-c. This double counts
     // two transforms and produces the wrong result. So we apply an undo transform under the hwnd to make sure the net
-    // transform is what we want. We'll have
+    // offset is what we want. We'll have
     //
     //  (a-b-p-c)-(c'-p')-(p)-(c) = a-b-p-c
     //   ^         ^       ^   ^
@@ -1497,7 +1504,14 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
     //   |
     //   +- applied by the hwnd
     //
-    // where c' and p' are inverse transforms of c and p
+    //      where c' and p' are inverse transforms of c and p
+    //
+    // Note that this is just the offset. In addition we can potentially inherit a scale from the popup's ancestors as
+    // well. This scale can't be baked into the hwnd, so we have to apply it in the subtree under the hwnd. It should be
+    // applied at the m_contentIslandRootVisual, where it covers any potential shadows, backdrops, and animations (see
+    // the banner comment on EnsureWindowedPopupRootVisualTree for the full visual tree). In terms of the transform
+    // chain, it should take the place of (a-b-p-c). Under it should be the undo transform, and under that should be the
+    // transforms in the comp node.
     //
 
     bool isParentedPopup = IsActive();
@@ -1569,9 +1583,23 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
 
     if (m_contentIslandRootVisual)
     {
-        // Set premultiplied "undo" transform on the window's root visual
+        // Set any scale inherited from the ancestor chain
         CMILMatrix rootTransform(true);
-        rootTransform.AppendTranslation(undoX, undoY);
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_49613456>())
+        {
+            rootTransform.SetM11(scaleX);
+            rootTransform.SetM22(scaleY);
+
+            // Set premultiplied "undo" transform on the window's root visual
+            CMILMatrix undo(true);
+            undo.SetDx(undoX);
+            undo.SetDy(undoY);
+            rootTransform.Prepend(undo);
+        }
+        else
+        {
+            rootTransform.AppendTranslation(undoX, undoY);
+        }
 
         if (isParentedPopup && IsRightToLeft())
         {
@@ -1799,13 +1827,14 @@ void CPopup::ApplyRootRoundedCornerClipToSystemBackdrop()
     }
 }
 
-_Check_return_ HRESULT CPopup::GetPhysicalBounds(_In_ CUIElement* element, _Out_ XRECTF* physicalBounds)
+_Check_return_ HRESULT CPopup::GetPhysicalBounds(_In_ CUIElement* element, _Out_ XRECTF* physicalBounds, _Out_ float* scaleX, _Out_ float* scaleY)
 {
     *physicalBounds = {};
     CUIElement* elementForBounds = element;
     CUIElement* elementForPosition = element;
     float left = 0;
     float top = 0;
+    XRECTF oneByOneTransformed = {0, 0, 1, 1};
     bool useActualBounds = RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector()->IsFeatureEnabled(RuntimeFeatureBehavior::RuntimeEnabledFeature::WindowedPopupActualBoundsMode);
 
     if (auto popup = do_pointer_cast<CPopup>(element))
@@ -1837,6 +1866,11 @@ _Check_return_ HRESULT CPopup::GetPhysicalBounds(_In_ CUIElement* element, _Out_
         IFC_RETURN(elementForPosition->TransformToVisual(nullptr, &transform));
         IFC_RETURN(transform->TransformRect({ left, top, elementForBounds->GetActualWidth(), elementForBounds->GetActualHeight() }, physicalBounds));
         DipsToPhysicalPixelsRect(physicalBounds);
+
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_49613456>())
+        {
+            IFC_RETURN(transform->TransformRect(oneByOneTransformed, &oneByOneTransformed));
+        }
     }
     else
     {
@@ -1853,6 +1887,11 @@ _Check_return_ HRESULT CPopup::GetPhysicalBounds(_In_ CUIElement* element, _Out_
             IFC_RETURN(elementForPosition->TransformToVisual(nullptr, &transform));
             IFC_RETURN(transform->TransformRect({ 0, 0, elementForBounds->UnclippedDesiredSize.width, elementForBounds->UnclippedDesiredSize.height }, physicalBounds));
             DipsToPhysicalPixelsRect(physicalBounds);
+
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_49613456>())
+            {
+                IFC_RETURN(transform->TransformRect(oneByOneTransformed, &oneByOneTransformed));
+            }
         }
         else
         {
@@ -1861,6 +1900,13 @@ _Check_return_ HRESULT CPopup::GetPhysicalBounds(_In_ CUIElement* element, _Out_
             *physicalBounds = ToXRectF(physicalBoundsRb);
             IFC_RETURN(elementForBounds->AdjustBoundingRectToRoot(physicalBounds));
         }
+    }
+
+    // Note: These assume that the transform was axis-aligned. We don't support windowed popups with rotations above them.
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_49613456>())
+    {
+        *scaleX = oneByOneTransformed.Width;
+        *scaleY = oneByOneTransformed.Height;
     }
 
     // In addition to the contents in the windowed popup, also union in all the non-windowed popups that are nested

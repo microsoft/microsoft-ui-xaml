@@ -2083,42 +2083,32 @@ void ItemsView::SetItemsViewItemContainerRevokers(
 
     itemContainer.SetValue(s_ItemsViewItemContainerRevokersProperty, itemContainerRevokers.as<winrt::IInspectable>());
 
-    m_itemContainersWithRevokers.insert(tracker_ref<winrt::ItemContainer>{ this, itemContainer });
+    m_itemContainersWithRevokers.insert(itemContainer);
 }
 
 void ItemsView::ClearItemsViewItemContainerRevokers(
     const winrt::ItemContainer& itemContainer)
 {
-    const auto& itemContainerRef = tracker_ref<winrt::ItemContainer>{ this, itemContainer };
-    const auto& itemContainerSafe = itemContainerRef.safe_get();
-    if (itemContainerSafe)
-    {
-        RevokeItemsViewItemContainerRevokers(itemContainerSafe);
-        itemContainerSafe.SetValue(s_ItemsViewItemContainerRevokersProperty, nullptr);
-    }
-    const bool removed = static_cast<bool>(m_itemContainersWithRevokers.erase(itemContainerRef));
-    MUX_ASSERT(removed);
+    RevokeItemsViewItemContainerRevokers(itemContainer);
+    itemContainer.SetValue(s_ItemsViewItemContainerRevokersProperty, nullptr);
+    m_itemContainersWithRevokers.erase(itemContainer);
 }
 
 void ItemsView::ClearAllItemsViewItemContainerRevokers() noexcept
 {
-    for (const auto& itemContainerTracker : m_itemContainersWithRevokers)
+    for (const auto& itemContainer : m_itemContainersWithRevokers)
     {
-        const auto& itemContainer = itemContainerTracker.safe_get();
         // ClearAllItemsViewItemContainerRevokers is only called in the destructor, where exceptions cannot be thrown.
         // If the associated ItemsView items have not yet been cleaned up, we must detach these revokers or risk a call into freed
         // memory being made.  However if they have been cleaned up these calls will throw. In this case we can ignore
         // those exceptions.
-        if (itemContainer)
+        try
         {
-            try
-            {
-                RevokeItemsViewItemContainerRevokers(itemContainer);
-                itemContainer.SetValue(s_ItemsViewItemContainerRevokersProperty, nullptr);
-            }
-            catch (...)
-            {
-            }
+            RevokeItemsViewItemContainerRevokers(itemContainer);
+            itemContainer.SetValue(s_ItemsViewItemContainerRevokersProperty, nullptr);
+        }
+        catch (...)
+        {
         }
     }
     m_itemContainersWithRevokers.clear();

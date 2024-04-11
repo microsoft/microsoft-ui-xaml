@@ -3484,7 +3484,7 @@ void NavigationView::SetNavigationViewItemBaseRevokers(const winrt::NavigationVi
     auto nvibRevokers = winrt::make_self<NavigationViewItemBaseRevokers>();
     nvibRevokers->visibilityRevoker = RegisterPropertyChanged(nvib, winrt::UIElement::VisibilityProperty(), { this, &NavigationView::OnNavigationViewItemBaseVisibilityPropertyChanged });
     nvib.SetValue(s_NavigationViewItemBaseRevokersProperty, nvibRevokers.as<winrt::IInspectable>());
-    m_itemsWithRevokerObjects.insert(tracker_ref<winrt::NavigationViewItemBase>{ this, nvib });
+    m_itemsWithRevokerObjects.insert(nvib);
 }
 
 void NavigationView::SetNavigationViewItemRevokers(const winrt::NavigationViewItem& nvi)
@@ -3503,22 +3503,15 @@ void NavigationView::SetNavigationViewItemRevokers(const winrt::NavigationViewIt
 
 void NavigationView::ClearNavigationViewItemBaseRevokers(const winrt::NavigationViewItemBase& nvib)
 {
-    const auto& nvibRef = tracker_ref<winrt::NavigationViewItemBase>{ this, nvib };
-    const auto& nvibSafe = nvibRef.safe_get();
-    if (nvibSafe)
-    {
-        RevokeNavigationViewItemBaseRevokers(nvibSafe);
-        nvibSafe.SetValue(s_NavigationViewItemBaseRevokersProperty, nullptr);
-    }
-    const bool removed = static_cast<bool>(m_itemsWithRevokerObjects.erase(nvibRef));
-    MUX_ASSERT(removed);
+    RevokeNavigationViewItemBaseRevokers(nvib);
+    nvib.SetValue(s_NavigationViewItemBaseRevokersProperty, nullptr);
+    m_itemsWithRevokerObjects.erase(nvib);
 }
 
 void NavigationView::ClearAllNavigationViewItemBaseRevokers() noexcept
 {
-    for (const auto& nvibTracker : m_itemsWithRevokerObjects)
+    for (const auto& nvib : m_itemsWithRevokerObjects)
     {
-        const auto& nvib = nvibTracker.safe_get();
         // ClearAllNavigationViewItemBaseRevokers is only called in the destructor, where exceptions cannot be thrown.
         // If the associated NV has not yet been cleaned up, we must detach these revokers or risk a call into freed
         // memory being made.  However if they have been cleaned up these calls will throw. In this case we can ignore

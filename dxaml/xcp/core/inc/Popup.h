@@ -66,7 +66,7 @@ private:
 //      which needs to be transformed from the pointer's target window to the
 //      root window (see DxamlCore::GetTranslationFromTargetWindowToRootWindow),
 //      and initialization of DirectManipulationContainer, which needs to
-//      use the popup's island input site's window (see 
+//      use the popup's island input site's window (see
 //      CInputServices::InitializeDirectManipulationContainer's usage of
 //      CDependencyObject::GetElementIslandInputSite.)
 //    - Windowed popups must be closed when the Jupiter window is moved, because
@@ -443,7 +443,7 @@ private:
     _Check_return_ HRESULT HideWindowForWindowedPopup();
     _Check_return_ HRESULT PositionAndSizeWindowForWindowedPopup();
     bool MeetsRenderingRequirementsForWindowedPopup();
-    _Check_return_ HRESULT GetPhysicalBounds(_In_ CUIElement* element, _Out_ XRECTF* physicalBounds);
+    _Check_return_ HRESULT GetPhysicalBounds(_In_ CUIElement* element, _Out_ XRECTF* physicalBounds, _Out_ float* scaleX, _Out_ float* scaleY);
     _Check_return_ HRESULT AdjustWindowedPopupBoundsForDropShadow(_In_ const XRECTF* popupWindowBounds);
     bool ShouldPopupRendersDropShadow() const;
     XTHICKNESS GetInsetsForDropShadow();

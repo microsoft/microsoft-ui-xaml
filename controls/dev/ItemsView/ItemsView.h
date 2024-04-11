@@ -399,5 +399,6 @@ private:
     tracker_ref<winrt::UIElement> m_bringIntoViewElement{ this };
 
     std::list<winrt::VirtualKey> m_navigationKeysToProcess;
-    std::set<tracker_ref<winrt::ItemContainer>> m_itemContainersWithRevokers;
+    std::set<winrt::ItemContainer> m_itemContainersWithRevokers;
+    std::map<winrt::ItemContainer, std::shared_ptr<PointerInfo<ItemsView>>> m_itemContainersPointerInfos;
 };

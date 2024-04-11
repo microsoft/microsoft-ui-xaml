@@ -6,6 +6,11 @@
 #include "Timemgr.h"
 #include "TimeSpan.h"
 #include <UIThreadScheduler.h>
+#include "XamlTelemetry.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 49537618: [1.5 servicing] DispatcherTimer callbacks are taking much longer on Cadmus
+#define WINAPPSDK_CHANGEID_49537618 49537618
 
 _Check_return_ HRESULT CDispatcherTimer::Create(
     _Outptr_ CDependencyObject **ppObject,
@@ -85,6 +90,17 @@ _Check_return_ HRESULT CDispatcherTimer::ComputeStateImpl(
         // If we've reached the point where the timer should fire, raise the event and start time over.
         if (timeRemainingInMilliseconds <= 0)
         {
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_49537618>())
+            {
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "DispatcherTimer_Tick",
+                    TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+                    TraceLoggingWideString(m_strName.GetBuffer(), "TimerName"),
+                    TraceLoggingUInt64(static_cast<uint64_t>(m_pInterval->m_rTimeSpan * 1000.0), "IntervalInMilliseconds"),
+                    TraceLoggingBoolean(!!m_pEventList, "HasListeners"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+            }
+
             FireTickEvent();
 
             // Snap the time the DispatcherTimer ticked - the next interval is relative to this point.
@@ -167,6 +183,17 @@ _Check_return_ HRESULT CDispatcherTimer::Start()
 
     m_rLastTickTime  =  pTimeManager->GetEstimatedNextTickTime();
 
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_49537618>())
+    {
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "DispatcherTimer_Start",
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+            TraceLoggingWideString(m_strName.GetBuffer(), "TimerName"),
+            TraceLoggingUInt64(static_cast<uint64_t>(m_pInterval->m_rTimeSpan * 1000.0), "IntervalInMilliseconds"),
+            TraceLoggingUInt64(static_cast<uint64_t>(m_rLastTickTime * 1000.0), "StartTickTimeInMilliseconds"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    }
+
     // Request a tick to update the timeline.
     // The browser host and/or frame scheduler can be NULL during shutdown.
     IXcpBrowserHost *pBH = core->GetBrowserHost();
@@ -198,6 +225,16 @@ _Check_return_ HRESULT CDispatcherTimer::Stop()
         m_fAddedToManager = FALSE;
     }
 
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_49537618>())
+    {
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "DispatcherTimer_Stop",
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+            TraceLoggingWideString(m_strName.GetBuffer(), "TimerName"),
+            TraceLoggingUInt64(static_cast<uint64_t>(m_pInterval->m_rTimeSpan * 1000.0), "IntervalInMilliseconds"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    }
+
     return S_OK;
 }
 
@@ -215,6 +252,17 @@ _Check_return_ HRESULT CDispatcherTimer::WorkComplete()
     // ComputeState.
     m_fWorkPending = FALSE;
     m_rLastTickTime  =  pTimeManager->GetEstimatedNextTickTime();
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_49537618>())
+    {
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "DispatcherTimer_TickComplete",
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+            TraceLoggingWideString(m_strName.GetBuffer(), "TimerName"),
+            TraceLoggingUInt64(static_cast<uint64_t>(m_pInterval->m_rTimeSpan * 1000.0), "IntervalInMilliseconds"),
+            TraceLoggingUInt64(static_cast<uint64_t>(m_rLastTickTime * 1000.0), "StartTickTimeInMilliseconds"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    }
 
     // Request a tick to update the timeline.
     // The browser host and/or frame scheduler can be NULL during shutdown.

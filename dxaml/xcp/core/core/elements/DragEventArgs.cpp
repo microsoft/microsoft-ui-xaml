@@ -6,6 +6,11 @@
 #include "Activators.g.h"
 
 #include <WRLHelper.h>
+#include <FrameworkUdk/Containment.h>
+
+// Bug 49668748: [1.5 Servicing] After dragging an FE Home item, all item drops on breadcrumbs don't support Move after first drag
+#define LOCAL_WINAPPSDK_CHANGEID_49668748 49668748
+
 
 // Initialize the DragEventArgs with any framework specific context.
 _Check_return_ HRESULT CDragEventArgs::Create(_In_ CCoreServices* pCore, _Outptr_ CDragEventArgs** ppArgs, _In_opt_ IInspectable* pWinRtDragInfo, _In_opt_ IInspectable* pDragDropAsyncOperation)
@@ -19,6 +24,16 @@ _Check_return_ HRESULT CDragEventArgs::Create(_In_ CCoreServices* pCore, _Outptr
     if(pWinRtDragInfo)
     {
         IFC_RETURN(spArgs->m_spWinRtDragInfo.reset(pWinRtDragInfo));
+        if (WinAppSdk::Containment::IsChangeEnabled<LOCAL_WINAPPSDK_CHANGEID_49668748>())
+        {
+            wrl::ComPtr<mui::DragDrop::IDragInfo> dragInfo;
+            if (SUCCEEDED(pWinRtDragInfo->QueryInterface(IID_PPV_ARGS(&dragInfo))))
+            {
+                wadt::DataPackageOperation allowedOperations;
+                IFC_RETURN(dragInfo->get_AllowedOperations(&allowedOperations));
+                IFC_RETURN(spArgs->put_AllowedOperations(static_cast<DirectUI::DataPackageOperation>(allowedOperations)));
+            }
+        }
     }
 
     if(pDragDropAsyncOperation)

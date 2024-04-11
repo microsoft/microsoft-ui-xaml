@@ -7,6 +7,10 @@
 #include "ScrollViewer.g.h"
 #include "VisualTreeHelper.h"
 #include "DataTemplate.g.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 49618076: [1.5 servicing] File Explorer crashes when Home directory is selected in address bar and hitting Enter
+#define WINAPPSDK_CHANGEID_49618076 49618076
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -786,6 +790,16 @@ _Check_return_ HRESULT ModernCollectionBasePanel::RecycleLinkedContainer(_In_ xa
     // want a recycled container to get focused. This usually ends up causing
     // focus to jump when the container gets reused.
     IFC_RETURN(spContainer.Cast<UIElement>()->put_IsGamepadFocusCandidate(FALSE));
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_49618076>())
+    {
+        // Declare the container not focusable in general so that it cannot be selected as
+        // a focus candidate. This is to handle the rare case where a focus selection is 
+        // imminently made before the next measure pass (i.e. before the next execution of
+        // ModernCollectionBasePanel::MeasureElementsInGarbageSection() where recycled items are
+        // marked unfocusable in the common cases via a SetElementSizeInGarbageSection call).
+        SetElementEmptySizeInGarbageSection(spContainer);
+    }
 
     TraceVirtualizedItemRemovedInfo((UINT64)spContainer.Cast<UIElement>()->GetHandle());
 
