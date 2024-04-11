@@ -35,27 +35,18 @@ WinUI is a user interface layer that contains modern controls and styles for bui
 
 For WinUI, your app's users must be on Windows 10 1809 - Build 17763 or newer (including Windows Insider Previews).
 
-The full documentation of WinUI can be found on [Microsoft Learn][docs]:
-- [Setup the required developer tools][setup]
-- [Creating your first Hello World app][hello-world]
-- [Check out the WinUI samples][samples]
-- [WinUI 3 source code][source]
-
-[setup]: https://aka.ms/winui-setup
-[hello-world]: https://aka.ms/winui-helloworld
-[docs]: https://learn.microsoft.com/en-us/windows/apps/winui/winui3/
-[samples]: https://aka.ms/winui-docs
-[source]: https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/release/1.5-stable"
+The full documentation of WinUI can be found on [Microsoft Learn](https://learn.microsoft.com/en-us/windows/apps/winui/winui3/):
+- [Install the required tools](https://aka.ms/winui-setup)
+- [Create your first Hello World app](https://aka.ms/winui-helloworld)
+- [Check out the WinUI samples](https://github.com/microsoft/WindowsAppSDK-Samples)
+- [WinUI 3 source code](https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/release/1.5-stable)
 
 </br>
 
 ## 🖼️ WinUI 3 Gallery
-Make sure to also check out the [WinUI 3 Gallery][winui-gallery], our interactive sample experience showing everything you can do with WinUI.
+Make sure to also check out the [WinUI 3 Gallery](https://aka.ms/winui-gallery), our interactive sample experience showing everything you can do with WinUI.
 
 <img src="docs/images/winui-gallery.png" alt="WinUI 3 Gallery" width="400"/>
-
-[winui-gallery]: https://aka.ms/winui-gallery
-
 
 <a href="https://apps.microsoft.com/detail/WinUI%203%20Gallery/9P3JFPWWDZRC?launch=true
 	&mode=mini">
