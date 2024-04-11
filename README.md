@@ -16,7 +16,7 @@
 <h3 align="center">
   <a href="https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/release/1.5-stable">Source code</a>
   <span> · </span>
-  <a href="https://aka.ms/winui-docs">Documentation</a>
+  <a href="https://learn.microsoft.com/en-us/windows/apps/winui/winui3/">Documentation</a>
   <span> · </span>
   <a href="https://aka.ms/winui-releasenotes">Release notes</a>
 </h3>
@@ -43,7 +43,7 @@ The full documentation of WinUI can be found on [Microsoft Learn][docs]:
 
 [setup]: https://aka.ms/winui-setup
 [hello-world]: https://aka.ms/winui-helloworld
-[docs]: https://aka.ms/winui-docs
+[docs]: https://learn.microsoft.com/en-us/windows/apps/winui/winui3/
 [samples]: https://aka.ms/winui-docs
 [source]: https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/release/1.5-stable"
 
@@ -85,7 +85,7 @@ For info on the WinUI release schedule and high level plans please see the [WinU
 ## 🔧 WinUI 2 (for UWP)
 WinUI 2 is a library of controls that provides Microsoft UI controls and features for [UWP apps](https://docs.microsoft.com/windows/uwp/index). Learn more about WinUI 2 [here](https://aka.ms/winui2) or download the source code [here](https://github.com/microsoft/microsoft-ui-xaml/tree/winui2/main).
 
-You can get the WinUI 2 Gallery [on the Microsoft Store](https://www.microsoft.com/store/productId/9MSVH128X2ZT?ocid=pdpshare) and see the source code [here](https://github.com/microsoft/WinUI-Gallery/tree/winui2)
+You can get the WinUI 2 Gallery [on the Microsoft Store](https://www.microsoft.com/store/productId/9MSVH128X2ZT?ocid=pdpshare) and see the source code [here](https://github.com/microsoft/WinUI-Gallery/tree/winui2).
 </br>
 
 ### Data/Telemetry
