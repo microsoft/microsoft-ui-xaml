@@ -11,14 +11,9 @@
   <a href="https://twitter.com/intent/follow?screen_name=windowsui">
     <img src="https://img.shields.io/twitter/follow/windowsui.svg?label=Follow WinUI on X" alt="Follow @windowsui" />
   </a>
-  <a href="https://aka.ms/wct/discord">
-    <img src="docs/images/DiscordBadge.svg" alt="Join the (unofficial) Windows Developer Community on Discord" />
-  </a>
 </p>
 
 <h3 align="center">
-  <a href="https://developer.windows.com">About WinUI</a>
-  <span> · </span>
   <a href="https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/release/1.5-stable">Source code</a>
   <span> · </span>
   <a href="https://aka.ms/winui-docs">Documentation</a>
@@ -29,8 +24,8 @@
 WinUI is a user interface layer that contains modern controls and styles for building Windows apps. The current generation is WinUI 3, which ships as part of the [Windows App SDK](https://aka.ms/winappsdk).
 
 - **Modern UI:** WinUI embodies Fluent Design to enable intuitive, accessible, and powerful experiences and the latest user interface patterns..
-- **Unmatched native performance:** powered by a highly optimized C++ core that delivers blistering performance, long battery life, and responsive interactivity. Its lower system utilization allows it to run on a wider range of hardware, ensuring your sophisticated workloads run with ease.
-- **Developers in control:** WinUI will never force you to update - you choose when to adopt a new version, while being ensured that your app will work great on all supported Windows version. Use C# or C++ to build great apps!
+- **Unmatched native performance:** powered by a highly optimized C++ core that delivers performance, long battery life, and responsive interactivity. Its lower system utilization allows it to run on a wider range of hardware, ensuring your sophisticated workloads run with ease.
+- **Developers in control:** With WinUI, you choose when to adopt a new version. Use C# or C++ to build great apps!
 - **Built for modern Windows:** Future-proof your app with WinUI. With 1.5 billion devices running Windows 10 and Windows 11, WinUI continually expands to meet the needs of every modern device. Many of Microsoft's own most-used industry applications already use WinUI today.
 - **Part of the Windows App SDK family:** The [Windows App SDK](https://aka.ms/winappsdk) is a set of libraries, frameworks, components, and tools that you can use in your apps to access powerful Windows platform functionality from all kinds of apps on many versions of Windows. The Windows App SDK combines the powers of Win32 native applications alongside modern API usage techniques, so your apps light up everywhere your users are. 
 
@@ -61,10 +56,15 @@ Make sure to also check out the [WinUI 3 Gallery][winui-gallery], our interactiv
 
 [winui-gallery]: https://aka.ms/winui-gallery
 
+
+<a href="https://apps.microsoft.com/detail/WinUI%203%20Gallery/9P3JFPWWDZRC?launch=true
+	&mode=mini">
+	<img src="/docs/images/storeBadge.png" width="200"/>
+</a>
 </br>
 
 ## 📺 WinUI Community Call
-The WinUI Community Call is your monthly opportunity to learn about WinUI and to engage with the WinUI team and community. You can watch them online here on YouTube at the [Windows Developer channel](https://www.youtube.com/channel/UCzLbHrU7U3cUDNQWWAqjceA).
+The WinUI Community Call is your opportunity to learn about WinUI and to engage with the WinUI team and community. You can watch them online here on YouTube at the [Windows Developer channel](https://www.youtube.com/playlist?list=PLI_J2v67C23ZqsolUDaHoFkF1GKvGrttB).
 
 </br>
 
@@ -78,13 +78,14 @@ For information on how to contribute, please see [Contributing to WinUI](CONTRIB
 
 ## 🛣️ Roadmap
 
-For info on the WinUI release schedule and high level plans please see the [WinUI Roadmap](docs/roadmap.md).
+For info on the WinUI release schedule and high level plans please see the [WinUI Roadmap](​​https://aka.ms/winappsdk/plans).
 
 </br>
 
 ## 🔧 WinUI 2 (for UWP)
 WinUI 2 is a library of controls that provides Microsoft UI controls and features for [UWP apps](https://docs.microsoft.com/windows/uwp/index). Learn more about WinUI 2 [here](https://aka.ms/winui2) or download the source code [here](https://github.com/microsoft/microsoft-ui-xaml/tree/winui2/main).
 
+You can get the WinUI 2 Gallery [on the Microsoft Store](https://www.microsoft.com/store/productId/9MSVH128X2ZT?ocid=pdpshare) and see the source code [here](https://github.com/microsoft/WinUI-Gallery/tree/winui2)
 </br>
 
 ### Data/Telemetry
