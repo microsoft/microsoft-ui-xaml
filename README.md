@@ -69,7 +69,7 @@ For information on how to contribute, please see [Contributing to WinUI](CONTRIB
 
 ## 🛣️ Roadmap
 
-For info on the WinUI release schedule and high level plans please see the [WinUI Roadmap](​​https://aka.ms/winappsdk/plans).
+For info on the WinUI release schedule and high level plans please see the [WinUI Roadmap](https://aka.ms/winappsdk/plans).
 
 </br>
 
