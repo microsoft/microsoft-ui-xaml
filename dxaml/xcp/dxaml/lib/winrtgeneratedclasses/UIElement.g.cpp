@@ -72,6 +72,10 @@ HRESULT DirectUI::UIElementGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outpt
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Composition::IVisualElement2*>(this);
     }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IUIElementPrivate)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IUIElementPrivate*>(this);
+    }
 #if WI_IS_FEATURE_PRESENT(Feature_Xaml2018)
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IUIElementFeature_Xaml2018)) && Feature_Xaml2018::IsEnabled())
     {
@@ -4251,6 +4255,25 @@ Cleanup:
     if (EventEnabledApiFunctionCallStop())
     {
         XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "UIElement_Focus", hr);
+    }
+    RRETURN(hr);
+}
+IFACEMETHODIMP DirectUI::UIElementGenerated::FocusNoActivate(_In_ ABI::Microsoft::UI::Xaml::FocusState value, _Out_ BOOLEAN* pResult)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "UIElement_FocusNoActivate", 0);
+    }
+    ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<UIElement*>(this)->FocusNoActivateImpl(value, pResult));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "UIElement_FocusNoActivate", hr);
     }
     RRETURN(hr);
 }

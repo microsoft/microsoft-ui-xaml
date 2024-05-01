@@ -3193,6 +3193,7 @@ enum class KnownMethodIndex: UINT16
     UIElement_PopulatePropertyInfoOverride,
     UIElement_InternalGetIsEnabled,
     UIElement_InternalPutIsEnabled,
+    UIElement_FocusNoActivate,
     VisualStateManager_GoToState,
     VisualStateManager_GoToStateCore,
     VisualStateManager_RaiseCurrentStateChanging,

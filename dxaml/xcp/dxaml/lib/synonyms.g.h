@@ -68,6 +68,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IInteractionBaseOverrides IInteractionBaseOverrides;
     typedef ABI::Microsoft::UI::Xaml::IRectHelperStaticsPrivate IRectHelperStaticsPrivate;
     typedef ABI::Microsoft::UI::Xaml::ISourceInfoPrivate ISourceInfoPrivate;
+    typedef ABI::Microsoft::UI::Xaml::IUIElementPrivate IUIElementPrivate;
     typedef ABI::Microsoft::UI::Xaml::IUIElementStaticsPrivate IUIElementStaticsPrivate;
     typedef ABI::Microsoft::UI::Xaml::IWindowPrivate IWindowPrivate;
     typedef ABI::Microsoft::UI::Xaml::IXamlServiceProvider IXamlServiceProvider;

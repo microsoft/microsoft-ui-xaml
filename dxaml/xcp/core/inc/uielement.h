@@ -1670,6 +1670,13 @@ protected:
         _In_ std::vector<UnidimensionalViewportInformation>& verticalViewports,
         _Out_ bool& addedViewports);
 
+    virtual _Check_return_ HRESULT EffectiveViewportWalkToChild(
+        _In_ CUIElement* child,
+        const bool dirtyFound,
+        _In_ std::vector<TransformToPreviousViewport>& transformsToViewports,
+        _In_ std::vector<UnidimensionalViewportInformation>& horizontalViewports,
+        _In_ std::vector<UnidimensionalViewportInformation>& verticalViewports);
+
 private:
     typedef XINT32 (&RoundCeilOrFloorFn)(_In_ XDOUBLE x);
     float LayoutRoundHelper(const float value, _In_ RoundCeilOrFloorFn operationFn);
@@ -2419,7 +2426,7 @@ public:
 
     _Check_return_ HRESULT GetContentInnerBounds(
         _Out_ XRECTF_RB* pBounds
-        );  
+        );
 
     _Check_return_ HRESULT GetOuterBounds(
         _In_opt_ HitTestParams *hitTestParams,

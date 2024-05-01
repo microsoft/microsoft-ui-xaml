@@ -2903,6 +2903,17 @@ _Check_return_ HRESULT UIElement::FocusImpl(
     return S_OK;
 }
 
+_Check_return_ HRESULT UIElement::FocusNoActivateImpl(
+    _In_ xaml::FocusState value,
+    _Out_ BOOLEAN* returnValue)
+{
+    // Use InputActivationBehavior::RequestActivation to match legacy default.
+    IFC_RETURN(FocusWithDirection(value, DirectUI::FocusNavigationDirection::None, InputActivationBehavior::NoActivate, returnValue));
+    return S_OK;
+}
+
+
+
 _Check_return_ HRESULT UIElement::FocusWithDirection(
     _In_ xaml::FocusState value,
     _In_ DirectUI::FocusNavigationDirection focusNavigationDirection,

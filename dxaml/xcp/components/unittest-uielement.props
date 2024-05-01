@@ -10,7 +10,10 @@
 
     <ItemDefinitionGroup>
         <Link>
-            <AdditionalDependencies>%(AdditionalDependencies) dwmapi.lib;</AdditionalDependencies>
+            <AdditionalDependencies>
+                %(AdditionalDependencies) dwmapi.lib;
+                $(FrameworkUdkLibPath)\Microsoft.Internal.FrameworkUdk.lib;
+            </AdditionalDependencies>
             <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_Desktop_CurrentPlatform_spectre);</AdditionalLibraryDirectories>
         </Link>
     </ItemDefinitionGroup>

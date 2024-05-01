@@ -719,6 +719,13 @@ protected:
         _In_ const D2DRenderParams& printParams
         ) override;
 
+    _Check_return_ HRESULT EffectiveViewportWalkToChild(
+        _In_ CUIElement* child,
+        const bool dirtyFound,
+        _In_ std::vector<TransformToPreviousViewport>& transformsToViewports,
+        _In_ std::vector<UnidimensionalViewportInformation>& horizontalViewports,
+        _In_ std::vector<UnidimensionalViewportInformation>& verticalViewports) override;
+
 public:
 
     KnownTypeIndex GetTypeIndex() const override

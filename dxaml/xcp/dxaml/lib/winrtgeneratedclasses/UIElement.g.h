@@ -93,6 +93,7 @@ namespace DirectUI
         , public ABI::Microsoft::UI::Composition::IAnimationObject
         , public ABI::Microsoft::UI::Composition::IVisualElement
         , public ABI::Microsoft::UI::Composition::IVisualElement2
+        , public ABI::Microsoft::UI::Xaml::IUIElementPrivate
 #if WI_IS_FEATURE_PRESENT(Feature_Xaml2018)
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IUIElementFeature_Xaml2018, UIElementGenerated >
 #endif
@@ -111,6 +112,7 @@ namespace DirectUI
             INTERFACE_ENTRY(UIElementGenerated, ABI::Microsoft::UI::Composition::IAnimationObject)
             INTERFACE_ENTRY(UIElementGenerated, ABI::Microsoft::UI::Composition::IVisualElement)
             INTERFACE_ENTRY(UIElementGenerated, ABI::Microsoft::UI::Composition::IVisualElement2)
+            INTERFACE_ENTRY(UIElementGenerated, ABI::Microsoft::UI::Xaml::IUIElementPrivate)
 #if WI_IS_FEATURE_PRESENT(Feature_Xaml2018)
             INTERFACE_ENTRY(UIElementGenerated, ABI::Microsoft::UI::Xaml::IUIElementFeature_Xaml2018)
 #endif
@@ -566,6 +568,7 @@ namespace DirectUI
         IFACEMETHOD(FindSubElementsForTouchTargeting)(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue) override;
         _Check_return_ HRESULT FindSubElementsForTouchTargetingProtected(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
         IFACEMETHOD(Focus)(_In_ ABI::Microsoft::UI::Xaml::FocusState value, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(FocusNoActivate)(_In_ ABI::Microsoft::UI::Xaml::FocusState value, _Out_ BOOLEAN* pResult) override;
         IFACEMETHOD(GetChildrenInTabFocusOrder)(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue) override;
         _Check_return_ HRESULT GetChildrenInTabFocusOrderProtected(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         IFACEMETHOD(InvalidateArrange)() override;

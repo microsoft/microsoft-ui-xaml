@@ -11,6 +11,10 @@
 #include "RevealHoverLight.h"
 #include "ResourceAccessor.h"
 #include "LifetimeHandler.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 50308952: [1.5 servicing] Add workaround to WinUI for UISettings RPC_E_WRONG_THREAD issue that is being hit by Photos app
+#define WINAPPSDK_CHANGEID_50308952 50308952
 
 /* static */
 bool MaterialHelperBase::SimulateDisabledByPolicy()
@@ -422,7 +426,28 @@ void MaterialHelper::UpdatePolicyStatus(bool onUIThread)
     auto callback = [strongThis, this]() {
         const bool isEnergySaverMode = m_energySaverStatusChangedRevokerValid ? winrt::PowerManager::EnergySaverStatus() == winrt::EnergySaverStatus::On : true;
         const bool areEffectsFast = m_compositionCapabilities ? (m_compositionCapabilities.AreEffectsFast() || m_ignoreAreEffectsFast) : false;
-        const bool advancedEffectsEnabled = m_uiSettings ? m_uiSettings.AdvancedEffectsEnabled() : true;
+
+        bool advancedEffectsEnabled = false;
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_50308952>())
+        {
+            // We are hitting an issue in Photos where UISettings::AdvancedEffectsEnabled is returning RPC_E_WRONG_THREAD.
+            // We work around this issue by;
+            //   1. Use a fresh instance of UISettings instead of the cached m_uiSettings.
+            //   2. Ignore RPC_E_WRONG_THREAD and use a fallback value.
+            try
+            {
+                winrt::UISettings uiSettings;
+                advancedEffectsEnabled = uiSettings.AdvancedEffectsEnabled();
+            }
+            catch (winrt::hresult_error e)
+            {
+                if (e.to_abi() != RPC_E_WRONG_THREAD) { throw; }
+            }
+        }
+        else
+        {
+            advancedEffectsEnabled = m_uiSettings ? m_uiSettings.AdvancedEffectsEnabled() : true;
+        }
 
         bool isDisabledByPolicy = m_simulateDisabledByPolicy || (isEnergySaverMode || !areEffectsFast || !advancedEffectsEnabled);
 

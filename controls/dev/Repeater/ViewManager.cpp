@@ -7,6 +7,10 @@
 #include "ViewManager.h"
 #include "ItemsRepeater.h"
 #include "RepeaterTestHooks.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 50344748: [1.5 Servicing][WASDK] 1-up viewer opens behind Collections (looks like nothing's happened, but the viewer is actually hidden behind the Collections window)
+#define WINAPPSDK_CHANGEID_50344748 50344748
 
 ViewManager::ViewManager(ItemsRepeater* owner) :
     m_owner(owner),
@@ -221,7 +225,16 @@ void ViewManager::MoveFocusFromClearedIndex(int clearedIndex)
 
         // If the last focused element has focus, use its focus state, if not use programmatic.
         focusState = focusState == winrt::FocusState::Unfocused ? winrt::FocusState::Programmatic : focusState;
-        focusCandidate.Focus(focusState);
+
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_50344748>())
+        {
+            // Since this focus change is due to the focused element getting recycled, don't activate the window.
+            focusCandidate.as<winrt::IUIElementPrivate>().FocusNoActivate(focusState);
+        }
+        else
+        {
+            focusCandidate.Focus(focusState);
+        }
 
         m_lastFocusedElement.set(focusedChild);
         // Add pin to hold the focused element.

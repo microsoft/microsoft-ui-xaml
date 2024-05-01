@@ -275,6 +275,13 @@ namespace Microsoft.UI.Xaml
 
     [contract(Microsoft.UI.Xaml.PrivateApiContract, 1)]
     [webhosthidden]
+    interface IUIElementPrivate 
+    {
+        Boolean FocusNoActivate(Microsoft.UI.Xaml.FocusState value);
+    };
+
+    [contract(Microsoft.UI.Xaml.PrivateApiContract, 1)]
+    [webhosthidden]
     interface IUIElementStaticsPrivate 
     {
         Boolean InternalGetIsEnabled(Microsoft.UI.Xaml.UIElement element);

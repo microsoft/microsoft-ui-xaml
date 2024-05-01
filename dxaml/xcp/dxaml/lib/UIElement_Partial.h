@@ -443,6 +443,10 @@ namespace DirectUI
                 _In_ xaml::FocusState value,
                 _Out_ BOOLEAN* returnValue);
 
+            _Check_return_ HRESULT FocusNoActivateImpl(
+                _In_ xaml::FocusState value,
+                _Out_ BOOLEAN* returnValue);
+
             _Check_return_ HRESULT FocusWithDirection(
                 _In_ xaml::FocusState value,
                 _In_ DirectUI::FocusNavigationDirection focusNavigationDirection,

@@ -23,6 +23,13 @@ namespace Microsoft.UI.Xaml
             );
     }
 
+    [Platform(typeof(PrivateApiContract), 1)]
+    public interface IUIElementPrivate
+    {
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        Windows.Foundation.Boolean FocusNoActivate(Microsoft.UI.Xaml.FocusState value);
+    }
+
     [CodeGen(partial: true)]
     [Platform(typeof(PrivateApiContract), 1)]
     [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
@@ -41,6 +48,7 @@ namespace Microsoft.UI.Xaml
     [Platform("Feature_XamlMotionSystemHoldbacks", typeof(Microsoft.UI.Xaml.WinUIContract), 1)]
     [Velocity(Feature = "Feature_XamlMotionSystemHoldbacks")]
     [Implements(typeof(Microsoft.UI.Xaml.IUIElementStaticsPrivate), IsStaticInterface = true)]
+    [Implements(typeof(Microsoft.UI.Xaml.IUIElementPrivate))]
     partial class UIElement
     {
         public bool ExitDisplayModeOnAccessKeyInvoked

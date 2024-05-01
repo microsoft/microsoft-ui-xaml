@@ -36,7 +36,7 @@
       <Enumclass>false</Enumclass>
     </Midl>
     <Link>
-      <AdditionalDependencies>user32.lib;mincore.lib;dxguid.lib;dcomp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>user32.lib;mincore.lib;dxguid.lib;dcomp.lib;$(FrameworkUdkLibPath)\Microsoft.Internal.FrameworkUdk.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <!-- Microsoft.winmd will contain the definition of both public, preview and private types. -->
       <WindowsMetadataFile>$(OutDir)$(ProjectWinMDName)</WindowsMetadataFile>
       <GenerateMapFile>true</GenerateMapFile>

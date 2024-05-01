@@ -10,6 +10,10 @@
 #include <uielementcollection.h>
 #include <LayoutManager.h>
 #include "LayoutCycleDebugSettings.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 50119529: [1.5 servicing] BreadcrumbBar ellipsis flyout doesn't render all items if the window is small
+#define WINAPPSDK_CHANGEID_50119529 50119529
 
 void ComputeUnidimensionalEffectiveViewport(
     _In_ const std::vector<CUIElement::UnidimensionalViewportInformation>& viewports,
@@ -370,7 +374,7 @@ void CUIElement::InvalidateViewportInternal()
             __debugbreak();
         }
     }
-    
+
     SetIsViewportDirty(TRUE);
     PropagateOnViewportDirtyPath();
 }
@@ -438,11 +442,23 @@ _Check_return_ HRESULT CUIElement::EffectiveViewportWalk(
             if (currentChild->GetIsViewportDirtyOrOnViewportDirtyPath()
                 || (newDirtyFound && currentChild->GetWantsViewportOrContributesToViewport()))
             {
-                IFC_RETURN(currentChild->EffectiveViewportWalk(
-                    newDirtyFound,
-                    transformsToViewports,
-                    horizontalViewports,
-                    verticalViewports));
+                if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_50119529>())
+                {
+                    IFC_RETURN(EffectiveViewportWalkToChild(
+                        currentChild,
+                        newDirtyFound,
+                        transformsToViewports,
+                        horizontalViewports,
+                        verticalViewports));
+                }
+                else
+                {
+                    IFC_RETURN(currentChild->EffectiveViewportWalk(
+                        newDirtyFound,
+                        transformsToViewports,
+                        horizontalViewports,
+                        verticalViewports));
+                }
             }
 
             // If at least one of the children still has the viewport
@@ -457,11 +473,32 @@ _Check_return_ HRESULT CUIElement::EffectiveViewportWalk(
         // traversing the rest of the visual tree.
         if (addedViewports)
         {
+            // This one is a little tricky. CXamlIslandRoot::EffectiveViewportWalkCore will push two viewports without
+            // pushing a transform, so we technically can't blindly pop all three vectors. But given CXamlIslandRoot is
+            // always the first element to push anything, the transform vector will be empty anyway when we get back up
+            // to CXamlIslandRoot to pop things.
             transformsToViewports.pop_back();
+
             horizontalViewports.pop_back();
             verticalViewports.pop_back();
         }
     }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT CUIElement::EffectiveViewportWalkToChild(
+    _In_ CUIElement* child,
+    const bool dirtyFound,
+    _In_ std::vector<TransformToPreviousViewport>& transformsToViewports,
+    _In_ std::vector<UnidimensionalViewportInformation>& horizontalViewports,
+    _In_ std::vector<UnidimensionalViewportInformation>& verticalViewports)
+{
+    IFC_RETURN(child->EffectiveViewportWalk(
+        dirtyFound,
+        transformsToViewports,
+        horizontalViewports,
+        verticalViewports));
 
     return S_OK;
 }

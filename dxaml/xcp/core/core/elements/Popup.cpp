@@ -5282,8 +5282,7 @@ _Check_return_ HRESULT CPopupRoot::GetTopmostPopupInLightDismissChain(_Out_ CDep
 
 //static
 // If the element is an open popup, return that popup
-_Check_return_ HRESULT
-CPopupRoot::GetOpenPopupForElement(
+_Check_return_ HRESULT CPopupRoot::GetOpenPopupForElement(
     _In_ CUIElement *pElement,
     _Outptr_result_maybenull_ CPopup **ppPopup)
 {
@@ -5439,4 +5438,73 @@ bool CPopupRoot::ComputeDepthInOpenPopups()
     }
 
     return false;
+}
+
+_Check_return_ HRESULT CPopupRoot::EffectiveViewportWalkToChild(
+    _In_ CUIElement* child,
+    const bool dirtyFound,
+    _In_ std::vector<TransformToPreviousViewport>& transformsToViewports,
+    _In_ std::vector<UnidimensionalViewportInformation>& horizontalViewports,
+    _In_ std::vector<UnidimensionalViewportInformation>& verticalViewports)
+{
+    // We expect the popup root at the tree, so there should be at most one viewport (from the main Xaml island) that we've discovered so far.
+    ASSERT(horizontalViewports.size() == verticalViewports.size());
+    ASSERT(transformsToViewports.size() <= 1);
+    ASSERT(horizontalViewports.size() <= 1);
+
+    bool poppedViewport = false;
+    UnidimensionalViewportInformation poppedHorizontalViewport(0, 0);
+    UnidimensionalViewportInformation poppedVerticalViewport(0, 0);
+
+    bool poppedTransform = false;
+    TransformToPreviousViewport poppedTransformToViewport(nullptr, nullptr);
+
+    //
+    // Windowed popups aren't limited to the bounds of the main Xaml island. If we walk through a windowed popup during
+    // the viewport walk, make sure we clear out the implicit viewport from the main Xaml island bounds.
+    //
+    xref_ptr<CPopup> popup;
+    IFC_RETURN(GetOpenPopupForElement(child, popup.ReleaseAndGetAddressOf()));
+    if (popup & popup->IsWindowed())
+    {
+        if (horizontalViewports.size() == 1)
+        {
+            poppedHorizontalViewport = horizontalViewports[0];
+            horizontalViewports.pop_back();
+
+            poppedVerticalViewport = verticalViewports[0];
+            verticalViewports.pop_back();
+
+            poppedViewport = true;
+        }
+
+        if (transformsToViewports.size() == 1)
+        {
+            poppedTransformToViewport = transformsToViewports[0];
+            transformsToViewports.pop_back();
+
+            poppedTransform = true;
+        }
+    }
+
+    IFC_RETURN(child->EffectiveViewportWalk(
+        dirtyFound,
+        transformsToViewports,
+        horizontalViewports,
+        verticalViewports));
+
+    if (poppedViewport)
+    {
+        ASSERT(horizontalViewports.size() == 0);
+        horizontalViewports.push_back(poppedHorizontalViewport);
+        verticalViewports.push_back(poppedVerticalViewport);
+    }
+
+    if (poppedTransform)
+    {
+        ASSERT(transformsToViewports.size() == 0);
+        transformsToViewports.push_back(poppedTransformToViewport);
+    }
+
+    return S_OK;
 }
