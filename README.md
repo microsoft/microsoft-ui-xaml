@@ -1,7 +1,7 @@
 ![WinUI hero image](docs/images/header.png)
 
 <h1 align="center">
-    WinUI
+    WinUI 3
 </h1>
 <p align="center">
   The modern native UI framework for Windows
@@ -14,6 +14,8 @@
 </p>
 
 <h3 align="center">
+  <a href="https://aka.ms/winui">About WinUI</a>
+  <span> · </span>
   <a href="https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/release/1.5-stable">Source code</a>
   <span> · </span>
   <a href="https://learn.microsoft.com/en-us/windows/apps/winui/winui3/">Documentation</a>
@@ -36,10 +38,10 @@ WinUI is a user interface layer that contains modern controls and styles for bui
 For WinUI, your app's users must be on Windows 10 1809 - Build 17763 or newer (including Windows Insider Previews).
 
 The full documentation of WinUI can be found on [Microsoft Learn](https://learn.microsoft.com/en-us/windows/apps/winui/winui3/):
-- [Install the required tools](https://aka.ms/winui-setup)
-- [Create your first Hello World app](https://aka.ms/winui-helloworld)
-- [Check out the WinUI samples](https://github.com/microsoft/WindowsAppSDK-Samples)
-- [WinUI 3 source code](https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/release/1.5-stable)
+- [Install the Visual Studio](https://aka.ms/winui-setup)
+- [Create your first WinUI app](https://aka.ms/winui-helloworld)
+- [Check out the WinAppSDK samples](https://github.com/microsoft/WindowsAppSDK-Samples)
+- [WinUI source code](https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/release/1.5-stable)
 
 </br>
 
