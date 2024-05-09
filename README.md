@@ -4,10 +4,6 @@
     WinUI 3
 </h1>
 <p align="center">
-  The modern native UI framework for Windows
-</p>
-
-<p align="center">
   <a href="https://twitter.com/intent/follow?screen_name=windowsui">
     <img src="https://img.shields.io/twitter/follow/windowsui.svg?label=Follow WinUI on X" alt="Follow @windowsui" />
   </a>
