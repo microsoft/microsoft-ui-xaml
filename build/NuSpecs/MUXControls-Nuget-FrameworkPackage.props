@@ -37,7 +37,7 @@
     </AppxPackageRegistration>
   </ItemGroup>
   <!-- Add a dependency for the app against VCLibs since we need it but the consuming app might be .NET only. -->
-  <ItemGroup Condition="('$(OutputType)' == 'AppContainerExe')">
+  <ItemGroup Condition="('$(OutputType)' == 'AppContainerExe' OR ('$(OutputType)' == 'WinExe' AND '$(UseUwpTools)' == 'true'))">
     <SDKReference Include="Microsoft.VCLibs, Version=14.0" />
   </ItemGroup>
 </Project>
