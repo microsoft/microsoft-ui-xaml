@@ -7,8 +7,8 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <CsWinRTIncludes>Microsoft.UI.Xaml</CsWinRTIncludes>
-        <CsWinRTExcludes>Microsoft.UI.Xaml.Controls.WebView2;Microsoft.UI.Xaml.Controls.CoreWebView2InitializedEventArgs;Microsoft.UI.Xaml.Controls.IWebView2;Microsoft.UI.Xaml.Controls.IWebView2Factory;Microsoft.UI.Xaml.Controls.IWebView2Statics;Microsoft.UI.Xaml.Controls.ICoreWebView2InitializedEventArgs;Microsoft.UI.Xaml.Automation.Peers.WebView2AutomationPeer;Microsoft.UI.Xaml.Automation.Peers.IWebView2AutomationPeer;Microsoft.UI.Xaml.Automation.Peers.IWebView2AutomationPeerFactory</CsWinRTExcludes>
+        <CsWinRTIncludes>Microsoft.UI.Xaml;Microsoft.Web;Windows.UI.Xaml;Windows.UI.Text</CsWinRTIncludes>
+        <!-- <CsWinRTExcludes>Microsoft.UI.Xaml.Controls.WebView2;Microsoft.UI.Xaml.Controls.CoreWebView2InitializedEventArgs;Microsoft.UI.Xaml.Controls.IWebView2;Microsoft.UI.Xaml.Controls.IWebView2Factory;Microsoft.UI.Xaml.Controls.IWebView2Statics;Microsoft.UI.Xaml.Controls.ICoreWebView2InitializedEventArgs;Microsoft.UI.Xaml.Automation.Peers.WebView2AutomationPeer;Microsoft.UI.Xaml.Automation.Peers.IWebView2AutomationPeer;Microsoft.UI.Xaml.Automation.Peers.IWebView2AutomationPeerFactory</CsWinRTExcludes> -->
     </PropertyGroup>
 
     <ItemGroup>
