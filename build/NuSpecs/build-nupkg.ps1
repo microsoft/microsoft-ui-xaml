@@ -123,6 +123,7 @@ Copy-IntoNewDirectory -IfExists ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_25
 Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm64\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll "$runtimesDir\win10-arm64\native"
 Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm64\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri "$runtimesDir\win10-arm64\native"
 Copy-IntoNewDirectory -IfExists ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png "$runtimesDir\win10-arm64\native\Microsoft.UI.Xaml\Assets"
+Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\AnyCPU\Microsoft.UI.Xaml.Projection\Microsoft.UI.Xaml.Projection.dll "$BuildOutput\$BuildFlavor\$BuildArch\Microsoft.UI.Xaml.Projection"
 
 $CommonNugetArgs = "-properties `"BuildOutput=$BuildOutput``;ID=$nupkgtitle``;RUNTIMESDIR=$runtimesDir`;TOOLSDIR=$toolsDir`;BUILDFLAVOR=$($BuildFlavor)`;BUILDARCH=$($BuildArch)`""
 
