@@ -4,19 +4,22 @@
         <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <Platform>AnyCPU</Platform>
     </PropertyGroup>
 
     <PropertyGroup>
         <CsWinRTIncludes>Microsoft.UI.Xaml;Microsoft.Web;Windows.UI.Xaml;Windows.UI.Text</CsWinRTIncludes>
+         <CsWinRTExcludes>Windows.UI.Text.Core</CsWinRTExcludes> 
         <!-- <CsWinRTExcludes>Microsoft.UI.Xaml.Controls.WebView2;Microsoft.UI.Xaml.Controls.CoreWebView2InitializedEventArgs;Microsoft.UI.Xaml.Controls.IWebView2;Microsoft.UI.Xaml.Controls.IWebView2Factory;Microsoft.UI.Xaml.Controls.IWebView2Statics;Microsoft.UI.Xaml.Controls.ICoreWebView2InitializedEventArgs;Microsoft.UI.Xaml.Automation.Peers.WebView2AutomationPeer;Microsoft.UI.Xaml.Automation.Peers.IWebView2AutomationPeer;Microsoft.UI.Xaml.Automation.Peers.IWebView2AutomationPeerFactory</CsWinRTExcludes> -->
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.7" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1264.42" />
     </ItemGroup>
 
     <ItemGroup>
-        <CsWinRTInputs Include="$(BaseOutputPath)\$(Platform)\Microsoft.UI.Xaml\Microsoft.Web.WebView2.Core.winmd" />
+        <CsWinRTInputs Include="$(PkgMicrosoft_Web_WebView2)\lib\Microsoft.Web.WebView2.Core.winmd" /> 
         <ProjectReference Include="..\dll\Microsoft.UI.Xaml.vcxproj" />
     </ItemGroup>
 </Project>
