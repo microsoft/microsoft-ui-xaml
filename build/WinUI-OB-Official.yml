@@ -84,6 +84,12 @@ extends:
 
           - template: build\AzurePipelinesTemplates\MUX-InstallDotNetSDK-Steps.yml@self
 
+          - task: UseDotNet@2
+            displayName: 'Use .NET 6 SDK'
+            inputs:
+              packageType: sdk
+              version: '6.x'
+
           - powershell: |
               ls env:
             displayName: 'display env vars'
