@@ -30,6 +30,8 @@
 
     <file target="lib\uap10.0\Microsoft.UI.Xaml\Themes" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml\Generic.xaml"/>
 
+    <file target="lib\net6.0-windows10.0.19041.0\Microsoft.UI.Xaml.Projection.dll" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml.Projection\Microsoft.UI.Xaml.Projection.dll" />
+
     <file target="tools" src="$TOOLSDIR$\**\*.*"/>
 
     <file target="tools" src="VisualStudioToolsManifest.xml"/>
