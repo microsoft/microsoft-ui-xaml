@@ -10,22 +10,22 @@
 </p>
 
 <h3 align="center">
-  <a href="https://aka.ms/winui">About WinUI</a>
+  <a href="https://aka.ms/windev">About WinUI</a>
   <span> · </span>
   <a href="https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/release/1.5-stable">Source code</a>
   <span> · </span>
-  <a href="https://learn.microsoft.com/en-us/windows/apps/winui/winui3/">Documentation</a>
+  <a href="https://learn.microsoft.com/en-us/windows/apps/desktop/">Documentation</a>
   <span> · </span>
   <a href="https://aka.ms/winui-releasenotes">Release notes</a>
 </h3>
 
 WinUI is a user interface layer that contains modern controls and styles for building Windows apps. The current generation is WinUI 3, which ships as part of the [Windows App SDK](https://aka.ms/winappsdk).
 
-- **Modern UI:** WinUI embodies Fluent Design to enable intuitive, accessible, and powerful experiences and the latest user interface patterns..
+- **Modern UI:** WinUI embodies Fluent Design to enable intuitive, accessible, and powerful experiences and the latest user interface patterns.
 - **Unmatched native performance:** powered by a highly optimized C++ core that delivers performance, long battery life, and responsive interactivity. Its lower system utilization allows it to run on a wider range of hardware, ensuring your sophisticated workloads run with ease.
-- **Developers in control:** With WinUI, you choose when to adopt a new version. Use C# or C++ to build great apps!
-- **Built for modern Windows:** Future-proof your app with WinUI. With 1.5 billion devices running Windows 10 and Windows 11, WinUI continually expands to meet the needs of every modern device. Many of Microsoft's own most-used industry applications already use WinUI today.
-- **Part of the Windows App SDK family:** The [Windows App SDK](https://aka.ms/winappsdk) is a set of libraries, frameworks, components, and tools that you can use in your apps to access powerful Windows platform functionality from all kinds of apps on many versions of Windows. The Windows App SDK combines the powers of Win32 native applications alongside modern API usage techniques, so your apps light up everywhere your users are. 
+- **Developers in control:** Use .NET with C# or C++ to write apps that run great on x86, x64 and ARM.
+- **Optimized for modern experiences & hardware:** Create highly-demanding yet performant experiences with WinUI that are optimized for modern hardware.
+- **Part of Windows App SDK:** The [Windows App SDK](https://aka.ms/winappsdk) is a set of libraries, frameworks, components, and tools that you can use in your apps to access powerful Windows platform functionality from all kinds of apps on many versions of Windows. The Windows App SDK combines the powers of Win32 native applications alongside modern API usage techniques, so your apps light up everywhere your users are. 
 
 </br>
 
@@ -33,10 +33,10 @@ WinUI is a user interface layer that contains modern controls and styles for bui
 
 For WinUI, your app's users must be on Windows 10 1809 - Build 17763 or newer (including Windows Insider Previews).
 
-The full documentation of WinUI can be found on [Microsoft Learn](https://learn.microsoft.com/en-us/windows/apps/winui/winui3/):
-- [Install the Visual Studio](https://aka.ms/winui-setup)
-- [Create your first WinUI app](https://aka.ms/winui-helloworld)
-- [Check out the WinAppSDK samples](https://github.com/microsoft/WindowsAppSDK-Samples)
+The full documentation of WinUI can be found on [Microsoft Learn](https://learn.microsoft.com/en-us/windows/apps/desktop/):
+- [Get started with WinUI](https://learn.microsoft.com/en-us/windows/apps/get-started/start-here)
+- [Build your first WinUI app](https://learn.microsoft.com/en-us/windows/apps/how-tos/hello-world-winui3)
+- [Check out the WinUI & Windows App SDK samples](https://github.com/microsoft/WindowsAppSDK-Samples)
 - [WinUI source code](https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/release/1.5-stable)
 
 </br>
@@ -53,7 +53,7 @@ Make sure to also check out the [WinUI 3 Gallery](https://aka.ms/winui-gallery),
 </br>
 
 ## 📺 WinUI Community Call
-The WinUI Community Call is your opportunity to learn about WinUI and to engage with the WinUI team and community. You can watch them online here on YouTube at the [Windows Developer channel](https://www.youtube.com/playlist?list=PLI_J2v67C23ZqsolUDaHoFkF1GKvGrttB).
+The WinUI Community Call is your opportunity to learn about WinUI and to engage with the WinUI team and community. Join us online on YouTube at the [Windows Developer channel](https://www.youtube.com/playlist?list=PLI_J2v67C23ZqsolUDaHoFkF1GKvGrttB).
 
 </br>
 
