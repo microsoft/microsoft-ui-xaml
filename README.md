@@ -22,10 +22,9 @@
 WinUI is a user interface layer that contains modern controls and styles for building Windows apps. The current generation is WinUI 3, which ships as part of the [Windows App SDK](https://aka.ms/winappsdk).
 
 - **Modern UI:** WinUI embodies Fluent Design to enable intuitive, accessible, and powerful experiences and the latest user interface patterns.
-- **Unmatched native performance:** powered by a highly optimized C++ core that delivers performance, long battery life, and responsive interactivity. Its lower system utilization allows it to run on a wider range of hardware, ensuring your sophisticated workloads run with ease.
 - **Developers in control:** Use .NET with C# or C++ to write apps that run great on x86, x64 and ARM.
 - **Optimized for modern experiences & hardware:** Create highly-demanding yet performant experiences with WinUI that are optimized for modern hardware.
-- **Part of Windows App SDK:** The [Windows App SDK](https://aka.ms/winappsdk) is a set of libraries, frameworks, components, and tools that you can use in your apps to access powerful Windows platform functionality from all kinds of apps on many versions of Windows. The Windows App SDK combines the powers of Win32 native applications alongside modern API usage techniques, so your apps light up everywhere your users are. 
+- **Part of the Windows App SDK:** The [Windows App SDK](https://aka.ms/winappsdk) is a set of libraries, frameworks, components, and tools that you can use in your apps to access powerful Windows platform functionality from all kinds of apps on many versions of Windows. The Windows App SDK combines the powers of Win32 native applications alongside modern API usage techniques, so your apps light up everywhere your users are. 
 
 </br>
 
