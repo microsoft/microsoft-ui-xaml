@@ -49,7 +49,8 @@ Make sure to also check out the [WinUI 3 Gallery](https://aka.ms/winui-gallery),
 
 <p align="center">
 <img src="docs/images/winui-gallery.png" alt="WinUI 3 Gallery" width="400"/>
-
+</p>
+<p align="center">
 <a href="https://apps.microsoft.com/detail/WinUI%203%20Gallery/9P3JFPWWDZRC?launch=true
 	&mode=mini">
 	<img src="/docs/images/storeBadge.png" width="200"/>
