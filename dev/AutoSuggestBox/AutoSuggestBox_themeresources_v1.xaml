@@ -115,6 +115,7 @@
                                                     Text="&#xE894;"
                                                     FontSize="{ThemeResource AutoSuggestBoxIconFontSize}"
                                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                    IsTextScaleFactorEnabled="False"
                                                     AutomationProperties.AccessibilityView="Raw" />
                                             </Grid>
                                         </ControlTemplate>

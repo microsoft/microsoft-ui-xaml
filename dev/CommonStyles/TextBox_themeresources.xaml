@@ -292,6 +292,7 @@
                                                     FontSize="{ThemeResource TextBoxIconFontSize}"
                                                     Text="&#xE894;"
                                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                    IsTextScaleFactorEnabled="False"
                                                     AutomationProperties.AccessibilityView="Raw" />
                                             </Grid>
                                         </ControlTemplate>
