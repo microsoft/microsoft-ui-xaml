@@ -416,6 +416,7 @@
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="FocusVisualMargin" Value="-4,0" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter Property="IsTextScaleFactorEnabled" Value="False" />
     </Style>
 
     <Style x:Key="NavigationViewOverflowButtonStyleWhenPaneOnTop" TargetType="Button">
