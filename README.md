@@ -14,7 +14,7 @@
   <span> · </span>
   <a href="https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/release/1.5-stable">Source code</a>
   <span> · </span>
-  <a href="https://learn.microsoft.com/en-us/windows/apps/desktop/">Documentation</a>
+  <a href="https://learn.microsoft.com/windows/apps/desktop/">Documentation</a>
   <span> · </span>
   <a href="https://aka.ms/winui-releasenotes">Release notes</a>
 </h3>
