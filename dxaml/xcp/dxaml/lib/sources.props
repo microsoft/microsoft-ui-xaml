@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+    </PropertyGroup>
+
+    <!-- ******************************** File Header ******************************\ -->
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved.                   -->
+    <!--                                                                              -->
+    <!-- Project specific SOURCES file.                                               -->
+    <!--                                                                              -->
+    <!-- ***************************************************************************/ -->
+
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+
+    <Import Project="$(XcpPath)\common.props"/>
+
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) WIN32_LEAN_AND_MEAN=1;WINRT_LEAN_AND_MEAN;_OLE32_;</ProjectPreprocessorDefinitions>
+
+        <XamlDiagPath>$(XamlSourcePath)\xcp\components\xamldiagnostics</XamlDiagPath>
+        <XamlDiagObjPath>$(XamlBinaryPath)\xcp\components\xamldiagnostics</XamlDiagObjPath>
+
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpObjPath)\dxaml\idl\winrt;
+            $(XcpObjPath)\dxaml\idl\com;
+            $(XcpPath)\dxaml\lib;
+            $(XcpPath)\dxaml\lib\winrtgeneratedclasses;
+            $(XamlDiagPath)\inc;
+            $(XamlDiagPath)\idl;
+            $(XamlDiagObjPath)\idl;
+            $(XcpPath);
+            $(XcpPath)\inc;
+            $(XcpPath)\core\parser;
+            $(XcpPath)\components\ExtMetadataProvider\inc;
+            $(XcpPath)\pal\inc;
+            $(XcpPath)\core\inc;
+            $(XcpPath)\core\controls\generated;
+            $(XcpPath)\components\allocation\inc;
+            $(XcpPath)\components\base\inc;
+            $(XcpPath)\components\scaling\inc;
+            $(XcpPath)\components\comptree\inc;
+            $(XcpPath)\components\brushes\inc;
+            $(XcpPath)\components\controls\lightdismissoverlay\inc;
+            $(XcpPath)\components\eventArgs\inc;
+            $(XcpPath)\components\focus\inc;
+            $(XcpPath)\components\moco\inc;
+            $(XcpPath)\components\Telemetry\inc;
+            $(XcpPath)\components\experimental\inc;
+            $(XcpPath)\core\compositor;
+            $(XcpPath)\core\hw;
+            $(XcpPath)\core\native\text\Controls;
+            $(XcpPath)\core\native\inc;
+            $(XcpPath)\pal\win\inc;
+            $(XcpPath)\control\inc;
+            $(XcpPath)\win\inc;
+            $(XcpPath)\control\common\Shared;
+            $(XcpPath)\core\text\inc;
+            $(XcpPath)\core\text\richtextservices\inc;
+            $(XcpPath)\plat\win\desktop;
+            $(XcpPath)\components\controls\keydownup\inc;
+            $(XcpPath)\components\itemindexrangehelper\inc;
+            $(XcpPath)\components\criticalsection\inc;
+            $(XcpPath)\components\qualifiers\inc;
+            $(XcpPath)\components\visualstateshelper\inc;
+            $(XcpPath)\components\livereorderhelper\inc;
+            $(XcpPath)\components\themeanimationshelper\inc;
+            $(XcpPath)\components\xboxutility\inc;
+            $(XcpPath)\components\desktoputility\inc;
+            $(XcpPath)\core\native\text\Controls;
+            $(XcpPath)\components\valueboxer\inc;
+            $(XcpPath)\components\AccessKeys\inc;
+            $(XcpPath)\components\diagnosticsInterop\inc;
+            $(XcpPath)\core\imaging\imagingprovider;
+            $(XcpPath)\components\KeyboardAccelerator\inc;
+            $(XcpPath)\components\OneCoreTransforms\inc;
+            $(XamlSourcePath)\phone\inc;
+            $(XcpPath)\components\math\inc;
+        </ProjectIncludeDirectories>
+
+        <!-- macro redefinition in SAL annotations -->
+
+        <!-- 'argument' : conversion from 'size_t' to 'XUINT32', possible loss of data -->
+
+        <!-- joltclasses.h error C4311: 'reinterpret_cast' : pointer truncation from 'void *' to 'int' -->
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <!--                                                                      -->
+            <!-- The -Zm flag below addresses a compiler limitation in that it        -->
+            <!-- must know in advance the total max size of the precompiled header    -->
+            <!-- The code included in this precompiled header substantially exceeds   -->
+            <!-- the default limit. The compiler will, when this limit is reached,    -->
+            <!-- suggest a number that is large enough, but just large enough, to     -->
+            <!-- fix the compilation. Using the number provided will lead to frequent -->
+            <!-- churn on the sources.                                                -->
+            <!--                                                                      -->
+            <!-- !! to reduce churn, please increment the number in the -Zm flag by a -->
+            <!-- !! multiple of 50 when changing it.                                  -->
+            <!--                                                                      -->
+            <AdditionalOptions>%(AdditionalOptions) /Zm500 /bigobj</AdditionalOptions>
+
+            <!-- Normally, build.exe attempts to load-balanace and process directories -->
+            <!-- in parallel. However, the files are still processed serially, and we  -->
+            <!-- have a large number of files present in these directories, so it      -->
+            <!-- makes sense to instruct the compiler to process the individual files  -->
+            <!-- in parallel.                                                          -->
+            <AdditionalOptions>%(AdditionalOptions) /MP2</AdditionalOptions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{a1eb01c3-ac8b-45a8-97c8-c459b77ed690}'" Include="$(XcpPath)\dxaml\idl\com\microsoft.ui.xaml-com.vcxproj" Project="{a1eb01c3-ac8b-45a8-97c8-c459b77ed690}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{c6e1e90c-ee33-4352-a8de-067b013c7cc9}'" Include="$(XamlDiagPath)\idl\xamlom.vcxproj" Project="{c6e1e90c-ee33-4352-a8de-067b013c7cc9}"/>
+    </ItemGroup>
+</Project>

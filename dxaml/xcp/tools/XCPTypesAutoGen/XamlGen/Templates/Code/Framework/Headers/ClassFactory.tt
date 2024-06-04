@@ -1,0 +1,147 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<ClassDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+namespace <#= OMContext.DefaultImplementationNamespace #>
+{
+    // Note that the ordering of the base types here is important - the base factory comes first, followed by all the
+    // interfaces specific to this type.  By doing this, we allow every Factory's CreateInstance method to be more
+    // COMDAT-folding-friendly.  Because this ensures that the first vfptr contains GetTypeIndex, it means that all
+    // CreateInstance functions with the same base factory generate the same assembly instructions and thus will
+    // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
+    // care.
+    class __declspec(novtable) <#= Model.GeneratedFactoryName #>:
+       public <#= GetBaseFactoryFullName(Model) #>
+<# if (Model.VelocityVersion != 0) {#>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(Model.VelocityVersion) #>)
+<# } #>
+<# foreach (var version in Model.Versions.OrderBy(v => v.Version).Select(v => v.GetProjection())) {
+       if (VelocityFeatures.IsVelocityVersion(version.Version) &&
+           (version.IdlClassInfo.HasFactoryMethods || version.IdlClassInfo.HasStaticMembers || version.FactoryExplicitlyImplementedInterfaces.GetEnumerator().Current != null)) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(version.Version) #>)
+<#     }
+       if (version.IdlClassInfo.HasFactoryMethods) { #>
+        , public <#= AsCppType(version.IdlClassInfo.FullFactoryInterfaceName) #>
+<#     }
+       if (version.IdlClassInfo.HasStaticMembers) { #>
+        , public <#= AsCppType(version.IdlClassInfo.FullStaticMembersInterfaceName) #>
+<#     }
+       foreach (var implementedInterface in version.FactoryExplicitlyImplementedInterfaces) { #>
+        , public <#= AsCppType(implementedInterface.AbiFullName) #>
+<#     }
+       if (VelocityFeatures.IsVelocityVersion(version.Version) &&
+           (version.IdlClassInfo.HasFactoryMethods || version.IdlClassInfo.HasStaticMembers || version.FactoryExplicitlyImplementedInterfaces.GetEnumerator().Current != null)) { #>
+#endif
+<#         }
+   } #>
+<# if (Model.VelocityVersion != 0) {#>
+#endif
+<# } #>
+    {
+<# if (Model.IdlClassInfo.HasAnyFactoryInterfaces) { #>
+        BEGIN_INTERFACE_MAP(<#= Model.GeneratedFactoryName #>, <#= EncodeMacroParameter(GetBaseFactoryFullName(Model)) #>)
+<#      if (Model.VelocityVersion != 0) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(Model.VelocityVersion) #>)
+<#      }#>
+<# bool hasNonVelocityInterfaces = false; #>
+<# foreach (var version in Model.Versions.OrderBy(v => v.Version).Select(v => v.GetProjection())) { #>
+<# bool hasMembers = version.IdlClassInfo.HasFactoryMethods || version.IdlClassInfo.HasStaticMembers || version.FactoryExplicitlyImplementedInterfaces.GetEnumerator().Current != null; #>
+<#       if (VelocityFeatures.IsVelocityVersion(version.Version) && hasMembers) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(version.Version) #>)
+<#     } else if (hasMembers){ #>
+<#     hasNonVelocityInterfaces = true; #>
+<#     } #>
+<#     if (version.IdlClassInfo.HasFactoryMethods) { #>
+            INTERFACE_ENTRY(<#= Model.GeneratedFactoryName #>, <#= EncodeMacroParameter(AsCppType(version.IdlClassInfo.FullFactoryInterfaceName)) #>)
+<#     }
+       if (version.IdlClassInfo.HasStaticMembers) { #>
+            INTERFACE_ENTRY(<#= Model.GeneratedFactoryName #>, <#= EncodeMacroParameter(AsCppType(version.IdlClassInfo.FullStaticMembersInterfaceName)) #>)
+<#     }
+       foreach (var implementedInterface in version.FactoryExplicitlyImplementedInterfaces) { #>
+            INTERFACE_ENTRY(<#= Model.GeneratedFactoryName #>, <#= EncodeMacroParameter(AsCppType(implementedInterface.AbiFullName)) #>)
+<#     }
+       if (VelocityFeatures.IsVelocityVersion(version.Version) && hasMembers) { #>
+<#          if (!hasNonVelocityInterfaces) {#>
+#else
+            INTERFACE_ENTRY(DUMMYINTERFACE, IUnknown)
+<#          } #>
+#endif
+<#         }
+   } #>
+<#     if (Model.VelocityVersion != 0) { #>
+#else
+            INTERFACE_ENTRY(DUMMYINTERFACE, IUnknown)
+#endif
+<#     }#>
+        END_INTERFACE_MAP(<#= Model.GeneratedFactoryName #>, <#= EncodeMacroParameter(GetBaseFactoryFullName(Model)) #>)
+<# } #>
+
+    public:
+        // Factory methods.
+<# foreach (var ctor in Model.IdlClassInfo.CustomConstructors) { #>
+        <#= IncludeTemplate<Constructor>(ctor) #>
+<# } #>
+
+        // Static properties.
+<# foreach (var property in Model.StaticProperties.Where(m => m.GenerateStub)) { #>
+        <#= IncludeTemplate<Property>(property) #>
+<# } #>
+
+        // Dependency properties.
+<# foreach (var dp in Model.DependencyProperties) { #>
+        <#= IncludeTemplate<DependencyProperty>(dp) #>
+<# } #>
+
+        // Attached properties.
+<# foreach (var dp in Model.DeclaredAttachedProperties) { #>
+        <#= IncludeTemplate<AttachedProperty>(dp) #>
+<# } #>
+
+        // Static methods.
+<# foreach (var method in Model.StaticMethods.Where(m => m.GenerateStub)) { #>
+        <#= IncludeTemplate<Method>(method) #>
+<# } #>
+
+        // Static events.
+<# foreach (var e in Model.StaticEvents.Where(m => m.GenerateStub)) { #>
+        <#= IncludeTemplate<Event>(e) #>
+<# } #>
+
+    protected:
+<# if (Model.IdlClassInfo.HasAnyFactoryInterfaces) { #>
+        HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
+<# } #>
+
+<# if (!Model.IsExcludedFromTypeTable && !Model.IsAEventArgs) { #>
+        <#= IndexGenerator.KnownTypeIndexEnumName #> GetTypeIndex() const override
+        {
+            return <#= Model.IndexName #>;
+        }
+<# } #>
+
+<# if (Model.XamlClassFlags.IsFreeThreaded) { #>
+        _Check_return_ HRESULT CheckActivationAllowed() override;
+<# } #>
+
+    private:
+<# foreach (var ctor in Model.CustomConstructors) { #>
+        <#= IncludeTemplate<ConstructorImpl>(ctor) #>
+<# } #>
+
+        // Customized static properties.
+<# foreach (var property in Model.StaticProperties.Where(m => m.GenerateStub && !m.GenerateDefaultBody)) { #>
+        <#= IncludeTemplate<PropertyImpl>(property) #>
+<# } #>
+
+        // Customized static  methods.
+<# foreach (var method in Model.StaticMethods.Where(m => m.GenerateStub && !m.GenerateDefaultBody)) { #>
+        <#= IncludeTemplate<MethodImpl>(method) #>
+<# } #>
+    };
+}
+
+<# if (Model.GeneratePartialFactory) { #>
+#include "<#= Model.FactoryCppHeaderFileName #>"
+<# } #>

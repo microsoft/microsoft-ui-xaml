@@ -1,0 +1,11 @@
+﻿namespace MU_XAP_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass RepeaterAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    RepeaterAutomationPeer(MU_XC_NAMESPACE.ItemsRepeater owner);
+}
+
+}

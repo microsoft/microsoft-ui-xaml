@@ -1,0 +1,57 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PUBLIC_V6]
+[default_interface]
+[webhosthidden]
+runtimeclass SelectorBarSelectionChangedEventArgs
+{
+}
+
+[MUX_PUBLIC_V6]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass SelectorBarItem : ItemContainer
+{
+    SelectorBarItem();
+
+    String Text{ get; set; };
+    IconElement Icon{ get; set; };
+
+    static Microsoft.UI.Xaml.DependencyProperty TextProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty IconProperty{ get; };
+}
+
+[MUX_PUBLIC_V6]
+[webhosthidden]
+[contentproperty("Items")]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass SelectorBar : Microsoft.UI.Xaml.Controls.Control
+{
+    SelectorBar();
+
+    Windows.Foundation.Collections.IVector<SelectorBarItem> Items{ get; };
+    SelectorBarItem SelectedItem{ get; set; };
+
+    event Windows.Foundation.TypedEventHandler<SelectorBar, SelectorBarSelectionChangedEventArgs> SelectionChanged;
+
+    static Microsoft.UI.Xaml.DependencyProperty ItemsProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty SelectedItemProperty{ get; };
+}
+
+}
+
+namespace MU_XAP_NAMESPACE
+{
+
+[MUX_PUBLIC_V6]
+[webhosthidden]
+unsealed runtimeclass SelectorBarItemAutomationPeer : MU_XAP_NAMESPACE.ItemContainerAutomationPeer
+{
+    [method_name("CreateInstanceWithOwner")]
+    SelectorBarItemAutomationPeer(MU_XC_NAMESPACE.SelectorBarItem owner);
+}
+
+}

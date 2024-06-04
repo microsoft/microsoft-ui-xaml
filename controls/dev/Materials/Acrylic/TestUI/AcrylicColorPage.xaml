@@ -1,0 +1,66 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.AcrylicColorPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <Style TargetType="GridViewItem" x:Key="AcrylicExampleGridViewItem">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewItem">
+                        <ListViewItemPresenter ContentTransitions="{TemplateBinding ContentTransitions}"
+                            SelectionCheckMarkVisualEnabled="{ThemeResource GridViewItemSelectionCheckMarkVisualEnabled}"
+                            CheckBrush="Transparent"
+                            CheckBoxBrush="Transparent"
+                            DragBackground="{ThemeResource GridViewItemDragBackground}"
+                            DragForeground="{ThemeResource GridViewItemDragForeground}"
+                            FocusBorderBrush="{ThemeResource GridViewItemFocusBorderBrush}"
+                            FocusSecondaryBorderBrush="{ThemeResource GridViewItemFocusSecondaryBorderBrush}"
+                            PlaceholderBackground="Transparent"
+                            PointerOverBackground="Transparent"
+                            PointerOverForeground="{ThemeResource GridViewItemForegroundPointerOver}"
+                            SelectedBackground="Transparent"
+                            SelectedForeground="{ThemeResource GridViewItemForegroundSelected}"
+                            SelectedPointerOverBackground="Transparent"
+                            PressedBackground="Transparent"
+                            SelectedPressedBackground="Transparent"
+                            DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
+                            DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}"
+                            ReorderHintOffset="{ThemeResource GridViewItemReorderHintThemeOffset}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            ContentMargin="{TemplateBinding Padding}"
+                            CheckMode="{ThemeResource GridViewItemCheckMode}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock HorizontalAlignment="Center" Text="System Control Acrylic Brushes" Margin="0,5" FontSize="22" Grid.Column="1" />
+        </Grid>
+
+        <GridView Grid.Row="1" Name="BackgroundList" ItemContainerStyle="{StaticResource AcrylicExampleGridViewItem}" Margin="10" MaxWidth="1000"/>
+
+    </Grid>
+</local:TestPage>

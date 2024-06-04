@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{cd13a3ef-0fed-4512-8b12-f1b6c96f65ab}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\common.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\brushes\inc;
+            $(XcpPath)\components\common\inc;
+            $(XcpPath)\components\comptree\inc;
+            $(XcpPath)\components\criticalsection\inc;
+            $(XcpPath)\components\graphics\inc;
+            $(XcpPath)\components\imaging\inc;
+            $(XcpPath)\components\offerableheap\inc;
+            $(XcpPath)\components\threading\inc;
+            $(XcpPath)\components\transforms\inc;
+            $(XcpPath)\control\inc;
+            $(XcpPath)\plat\win\desktop;
+            $(XcpPath)\win\inc;
+            $(XcpPath)\pal\win\inc;
+            $(FrameworkUdkIncPath);
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\AsyncCopyToSurfaceTask.cpp"/>
+        <ClCompile Include="..\AsyncDecodeResponse.cpp"/>
+        <ClCompile Include="..\AsyncImageDecoder.cpp"/>
+        <ClCompile Include="..\AsyncImageFactory.cpp"/>
+        <ClCompile Include="..\DecodedImageCache.cpp"/>
+        <ClCompile Include="..\EncodedImageData.cpp"/>
+        <ClCompile Include="..\ImageCache.cpp"/>
+        <ClCompile Include="..\ImageCacheDecodeHandlerTask.cpp"/>
+        <ClCompile Include="..\ImageCacheDownloadCallbackMarshaller.cpp"/>
+        <ClCompile Include="..\ImageCacheDownloadProgressTask.cpp"/>
+        <ClCompile Include="..\ImageCacheDownloadResponseTask.cpp"/>
+        <ClCompile Include="..\ImageDecodeRequest.cpp"/>
+        <ClCompile Include="..\ImageDecoderFactory.cpp"/>
+        <ClCompile Include="..\ImageMetadataViewImpl.cpp"/>
+        <ClCompile Include="..\ImageProvider.cpp"/>
+        <ClCompile Include="..\ImageTaskDispatcher.cpp"/>
+        <ClCompile Include="..\ImageViewBase.cpp"/>
+        <ClCompile Include="..\ImagingUtility.cpp"/>
+        <ClCompile Include="..\OfferableSoftwareBitmap.cpp"/>
+        <ClCompile Include="..\PixelFormat.cpp"/>
+        <ClCompile Include="..\RenderTargetBitmapImplBase.cpp"/>
+        <ClCompile Include="..\RenderTargetBitmapImplUsingSpriteVisuals.cpp"/>
+        <ClCompile Include="..\SoftwareBitmapSource.cpp"/>
+        <ClCompile Include="..\SoftwareBitmapUtility.cpp"/>
+        <ClCompile Include="..\WicAnimatedGifDecoder.cpp"/>
+        <ClCompile Include="..\WicBitmapLock.cpp"/>
+        <ClCompile Include="..\WicService.cpp"/>
+        <ClCompile Include="..\WicSingleImageDecoder.cpp"/>
+        <ClCompile Include="..\SvgImageSource.cpp"/>
+        <ClCompile Include="..\SvgImageDecoder.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ClInclude Include="..\TinyRGB.h" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\prod\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{ccc61973-be99-4223-b935-353d03571e92}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

@@ -1,0 +1,42 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<MethodDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<# var type = Arguments[0] as ClassDefinition; #>
+<#    if (VelocityFeatures.IsVelocityVersion(Model.Version)) { #>
+#if WI_IS_FEATURE_PRESENT(<#= Model.VelocityFeatureName #>)
+<#    }#>
+IFACEMETHODIMP <#= type.GeneratedClassName #>::<#= Model.IdlMemberInfo.VirtualName #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
+{
+    HRESULT hr = S_OK;
+    
+<# if (Model.HasReturnType) { #>
+    ARG_VALIDRETURNPOINTER(<#= Model.ReturnType.AbiReturnParameterName #>);
+
+<# }
+   foreach (var p in Model.Parameters.Where(p => p.RequiresNullCheck)) { #>
+    ARG_NOTNULL(<#= p.ParameterType.AbiParameterName #>, "<#= p.ParameterType.AbiParameterName #>");
+    
+<# } #>
+    IFC(<#= Model.ImplName #>(<#= GetArgumentListAsString(Model.Parameters, Model.ReturnType) #>));
+
+Cleanup:
+    RRETURN(hr);
+}
+
+_Check_return_ HRESULT <#= type.GeneratedClassName #>::<#= Model.ImplName #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
+{
+    HRESULT hr = S_OK;
+
+    wrl::ComPtr<<#= AsCppType(Model.DeclaringTypeVirtualMembersFullInterfaceNameWithVersion) #>> spOverrides;
+    IFC(GetComposableBase().As(&spOverrides));
+    IFC(spOverrides-><#= Model.IdlMemberInfo.VirtualName #>(<#= GetArgumentListAsString(Model.Parameters, Model.ReturnType) #>));
+
+Cleanup:
+    RRETURN(hr);
+}
+<#        if (VelocityFeatures.IsVelocityVersion(Model.Version)) { #>
+#endif
+<#        }#>

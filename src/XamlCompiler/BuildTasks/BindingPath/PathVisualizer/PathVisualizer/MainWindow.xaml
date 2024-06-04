@@ -1,0 +1,65 @@
+﻿<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Window x:Class="PathVisualizer.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:PathVisualizer"
+    Title="Binding Path Visualizer"
+    >
+
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border
+            Grid.Row="0"
+            BorderThickness="2"
+            BorderBrush="Black"
+            >
+
+            <Grid Grid.Row="0" >
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock
+                    Grid.Row="0"
+                    Margin="5"
+                    Text="Binding Path"
+                    />
+
+                <Grid Grid.Row="1" >
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox x:Name="PathTextBox"
+                        Grid.Column="0"
+                        Margin="5"
+                        Text="{Binding SourcePath, Mode=TwoWay}"
+                        />
+
+                    <Button
+                        Grid.Column="1"
+                        Margin="5"
+                        Content="Build Tree"
+                        Command="{Binding BuildTree}"
+                        />
+
+                </Grid>
+
+            </Grid>
+
+        </Border>
+
+        <local:VisualTree x:Name="Visualizer" Grid.Row="1" Margin="5" />
+
+    </Grid>
+
+</Window>

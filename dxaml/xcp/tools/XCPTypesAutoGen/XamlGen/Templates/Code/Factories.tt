@@ -1,0 +1,30 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#include "precomp.h"
+
+ctl::module ctl::__module;
+
+#pragma region Factory constructor forward declarations.
+namespace <#= OMContext.DefaultImplementationNamespace #>
+{
+<# foreach (var type in Model.GetAllClasses()
+       .Where(c => c.HasFactory)
+       .OrderBy(c => c.IdlClassInfo.RuntimeClassFullName.Length)) { #>
+    _Check_return_ IActivationFactory* <#= type.FactoryConstructor #>();
+<# } #>
+}
+#pragma endregion
+
+ACTIVATION_FACTORY_MAP_BEGIN()
+<# foreach (var type in Model.GetAllClasses()
+       .Where(c => c.HasFactory)
+       .OrderBy(c => c.IdlClassInfo.RuntimeClassFullName.Length)) { #>
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"<#= type.IdlClassInfo.RuntimeClassFullName #>"), <#= type.FactoryConstructorCallback #>)
+<# } #>
+ACTIVATION_FACTORY_MAP_END()

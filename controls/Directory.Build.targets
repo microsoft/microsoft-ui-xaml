@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- This is a special MSBuild file that is parsed after everything else when MSBuild detects it in our directory structure. -->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Our version of TAEF is built against .NET Standard 2.0, which needs netstandard.dll. -->
+  <ItemGroup Condition="'$(IsPackagedTestApp)' == 'true'">
+    <ReferenceCopyLocalPaths Include="$(MSBuildFrameworkToolsPath)netstandard.dll" />
+  </ItemGroup>
+  <Target Name="CreateAppxDirectory" BeforeTargets="Binplace" Condition="'$(IsPackagedTestApp)' == 'true'">
+    <ItemGroup>
+      <DeploymentFiles Include="$(MSBuildThisFileDirectory)tools\CreateAppxDirectory.msbuildproj" />
+      <DeploymentFiles Include="$(MSBuildThisFileDirectory)tools\InstallAppFromLayout.ps1" />
+    </ItemGroup>
+    <Copy SourceFiles="@(DeploymentFiles)" DestinationFiles="$(OutDir)%(Filename)%(Extension)" SkipUnchangedFiles="True" />
+    <PropertyGroup>
+      <LayoutDir>$(ArtifactsObjDir)controls\test\MUXControls.Test\AppxDirectories\$(MSBuildProjectName)</LayoutDir>
+    </PropertyGroup>
+    <!-- CreateAppxDirectory.msbuildproj relies on the appxrecipe file, which is created at build time.
+         As a result, we need to invoke it using the MSBuild task rather than simply importing its contents. -->
+    <MSBuild Projects="$(OutDir)CreateAppxDirectory.msbuildproj" Properties="ReplacementLayoutDir=$(LayoutDir)" />
+    <ItemGroup>
+      <BinplaceItem Include="$(LayoutDir)\**\*" Exclude="$(GeneratedFilesDir)**\*;$(IntermediateOutputPath)**\*">
+        <Destination>$(TestBinplaceDestinationPath)\AppxDirectories\$(MSBuildProjectName)</Destination>
+      </BinplaceItem>
+    </ItemGroup>
+    <ItemGroup>
+      <FileWrites Include="$(LayoutDir)\**\*" />
+    </ItemGroup>
+  </Target>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+</Project>

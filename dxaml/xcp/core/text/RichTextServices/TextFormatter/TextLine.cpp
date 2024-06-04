@@ -1,0 +1,20 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#include "precomp.h"
+
+using namespace RichTextServices;
+
+//---------------------------------------------------------------------------
+//
+//  Member:
+//      TextLine::GetTextLineBreak
+//
+//  Returns:
+//      The state of the line when broken by line breaking process.
+//
+//---------------------------------------------------------------------------
+TextLineBreak* TextLine::GetTextLineBreak() const
+{
+    return m_pTextLineBreak;
+}

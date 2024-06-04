@@ -1,0 +1,127 @@
+﻿<#@ template language="C#" inherits="CppWinRT_CodeGenerator<TypeInfoDefinition>" visibility="internal" linePragmas="false"#>
+<#@ assembly name="System.Core" #>
+template <typename T>
+<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable ActivateType()
+{
+    return T();
+}
+
+template <typename T>
+<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable ActivateLocalType()
+{
+    return ::winrt::make<T>();
+}
+
+template<typename TInstance, typename TItem>
+void CollectionAdd(
+    <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance, 
+    <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& item)
+{
+    instance.as<TInstance>().Append(::winrt::unbox_value<TItem>(item));
+}
+
+template<typename TInstance, typename TKey, typename TItem>
+void DictionaryAdd(
+    <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance,
+    <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& key,
+    <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& item)
+{
+    instance.as<TInstance>().Insert(::winrt::unbox_value<TKey>(key), ::winrt::unbox_value<TItem>(item));
+}
+
+template<typename T>
+<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable FromStringConverter(
+    XamlUserType const& userType, 
+    ::winrt::hstring const& input)
+{
+    return ::winrt::box_value(static_cast<T>(userType.CreateEnumUIntFromString(input)));
+}
+<#  foreach(String name in Model.AttachableMemberGetterUniqueNames) #>
+<#  { #>
+
+template<typename TDeclaringType, typename TargetType>
+<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable GetAttachableMember_<#=name#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance)
+{
+    return ::winrt::box_value(TDeclaringType::Get<#=name#>(instance.as<TargetType>()));
+}
+<#  } #>
+<#  foreach(String name in Model.ValueTypeMemberGetterUniqueNames) #>
+<#  { #>
+
+template<typename TDeclaringType, typename TValue>
+<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable GetValueTypeMember_<#=name#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance)
+{
+    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().<#=name#>());
+}
+<#  } #>
+<#  foreach(String name in Model.StringGetterUniqueNames) #>
+<#  { #>
+
+template <typename T>
+<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable GetReferenceTypeStringMember_<#=name#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance)
+{
+   return ::winrt::box_value(<#=Projection(KnownNamespaces.WindowsFoundation)#>::PropertyValue::CreateString(instance.as<T>().<#=name#>()));
+}
+<#  } #>
+<#  foreach(String name in Model.ReferenceTypeMemberGetterUniqueNamesNoStrings) #>
+<#  { #>
+
+template <typename T>
+<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable GetReferenceTypeMember_<#=name#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance)
+{
+    return ::winrt::box_value(instance.as<T>().<#=name#>());
+}
+<#  } #>
+<#  foreach(String name in Model.AttachableMemberSetterUniqueNames) #>
+<#  { #>
+
+template<typename TDeclaringType, typename TTargetType, typename TValue>
+void SetAttachableMember_<#=name#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance, <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& value)
+{
+    TDeclaringType::Set<#=name#>(instance.as<TTargetType>(), ::winrt::unbox_value<TValue>(value));
+}
+<#  } #>
+<#  foreach(String name in Model.EnumTypeMemberSetterUniqueNames) #>
+<#  { #>
+
+template<typename TDeclaringType, typename TValue>
+void SetEnumMember_<#=name#>(
+    <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance, 
+    <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& value)
+{
+    instance.as<TDeclaringType>().<#=name#>(::winrt::unbox_value<TValue>(value));
+}
+<#  } #>
+<#  foreach(String name in Model.ValueTypeMemberSetterUniqueNames) #>
+<#  { #>
+
+template<typename TDeclaringType, typename TValue>
+void SetValueTypeMember_<#=name#>(
+    <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance, 
+    <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& value)
+{
+    instance.as<TDeclaringType>().<#=name#>(::winrt::unbox_value<TValue>(value));
+}
+<#  } #>
+<#  foreach(String name in Model.StringSetterUniqueNames) #>
+<#  { #>
+
+template<typename TDeclaringType, typename TValue>
+void SetReferenceTypeStringMember_<#=name#>(
+    <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance, 
+    <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& value)
+{
+    return instance.as<TDeclaringType>().<#=name#>(::winrt::unbox_value<::winrt::hstring>(value));
+}
+<#  } #>
+<#  foreach(String name in Model.ReferenceTypeMemberSetterUniqueNamesNoStrings) #>
+<#  { #>
+
+template<typename TDeclaringType, typename TValue>
+void SetReferenceTypeMember_<#=name#>(
+    <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance, 
+    <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& value)
+{
+    instance.as<TDeclaringType>().<#=name#>(value.as<TValue>());
+}
+<#  } #>

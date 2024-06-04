@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{0e6efb75-5844-4f7a-90aa-eaba4f6b76a9}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+
+    <PropertyGroup>
+        <XamlDiagPath>$(XamlSourcePath)\xcp\components\xamldiagnostics</XamlDiagPath>
+        <XamlDiagObjPath>$(XamlBinaryPath)\xcp\components\xamldiagnostics</XamlDiagObjPath>
+    </PropertyGroup>
+
+    <Import Project="$(XcpPath)\components\common.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(FrameworkUdkIncPath);
+            $(XamlDiagPath)\inc;
+            $(XamlDiagPath)\idl;
+            $(XamlDiagObjPath)\idl;
+            $(XamlSourcePath)\xcp\dxaml\lib;
+            $(XamlSourcePath)\xcp\components;
+            $(XamlSourcePath)\xcp\components\diagnosticsInterop\inc;
+            $(XamlSourcePath)\xcp\components\resources\inc;
+            $(XamlSourcePath)\xcp\components\UIBridgeFocus\inc;
+            $(XamlSourcePath)\xcp\components\comptree\inc;
+            $(XamlSourcePath)\xcp\components\graphics\inc;
+            $(XamlSourcePath)\xcp\components\transforms\inc;
+            $(XamlSourcePath)\xcp\components\collection\inc;
+            $(XamlSourcePath)\xcp\plat\win\desktop;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\BitmapData.cpp"/>
+        <ClCompile Include="..\HandleMap.cpp"/>
+        <ClCompile Include="..\HandleStore.cpp"/>
+        <ClCompile Include="..\helpers.cpp"/>
+        <ClCompile Include="..\XamlDiagnostics.cpp"/>
+        <ClCompile Include="..\XamlDiagnosticsTestHooks.cpp"/>
+        <ClCompile Include="..\Resources.cpp"/>
+        <ClCompile Include="..\LiveVisualTree.cpp"/>
+        <ClCompile Include="..\ElementStateChangedBuilder.cpp"/>
+        <ClCompile Include="..\RuntimeObject.cpp"/>
+        <ClCompile Include="..\RuntimeDictionary.cpp"/>
+        <ClCompile Include="..\RuntimeCollection.cpp"/>
+        <ClCompile Include="..\RuntimeProperty.cpp"/>
+        <ClCompile Include="..\RuntimeElement.cpp"/>
+        <ClCompile Include="..\RuntimeObjectCache.cpp"/>
+        <ClCompile Include="..\RuntimeShareableObject.cpp"/>
+        <ClCompile Include="..\RuntimeApplication.cpp"/>
+        <ClCompile Include="..\ResourceOperations.cpp"/>
+        <ClCompile Include="..\RuntimeDictionaryKey.cpp"/>
+        <ClCompile Include="..\RuntimeDictionaryValue.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XamlDiagPath)\idl\xamlom.vcxproj" Project="{c6e1e90c-ee33-4352-a8de-067b013c7cc9}"/>
+        <ProjectReference Include="$(XcpPath)\components\pch\prodexcept\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{d4b4d716-47d2-4b4b-8765-f879a171f1a2}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

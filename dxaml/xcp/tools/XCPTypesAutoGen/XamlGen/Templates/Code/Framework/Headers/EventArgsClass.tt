@@ -1,0 +1,140 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<ClassDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#pragma once
+
+<# foreach (var dependency in Model.Dependencies.OfType<ClassDefinition>().Where(d => d.GenerateFrameworkHFile)) { #>
+#include "<#= dependency.CppFrameworkGeneratedHeaderFileName #>"
+<# } #>
+
+<# if (Model.ClassGuidExplicitlySet) { #>
+#define <#= Model.GuidMacroName #> "<#= Model.RuntimeClassGuid #>"
+<# } #>
+<#= IncludeTemplate<VelocityFeatureMacros>(Model) #>
+namespace <#= OMContext.DefaultImplementationNamespace #>
+{
+    class <#= AsCppType(Model.Name) #>;
+
+    class __declspec(novtable) <# if (!Model.GeneratePartialClass) { #>__declspec(uuid(<#= Model.GuidMacroName #>)) <# } #><#= Model.GeneratedClassName #> :
+<#     if (Model.VelocityVersion != 0) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(Model.VelocityVersion) #>)
+<#     } #>
+<# foreach (var version in Model.Versions.OrderBy(v => v.Version).Select(v => v.GetProjection())) {
+       if (VelocityFeatures.IsVelocityVersion(version.Version)) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(version.Version) #>)
+<#     }
+       if (version.IdlClassInfo.HasPrimaryInterface) { #>
+        public <#= AsCppType(version.IdlClassInfo.FullInterfaceName) #>,
+<#     }
+       if (version.IdlClassInfo.HasProtectedMembers) { #>
+        public <#= AsCppType(version.IdlClassInfo.FullProtectedMembersInterfaceName) #>,
+<#     }
+       if (version.IdlClassInfo.HasVirtualMembers) { #>
+        public <#= AsCppType(version.IdlClassInfo.FullVirtualMembersInterfaceName) #>,
+<#     }
+       foreach (var implementedInterface in version.ExplicitlyImplementedInterfaces) { #>
+        public <#= AsCppType(implementedInterface.AbiFullName) #>,
+<#     }
+       if (VelocityFeatures.IsVelocityVersion(version.Version)) { #>
+#endif
+<#     }
+   }        if (Model.VelocityVersion != 0) { #>
+#endif
+<#     } #>
+        public <#= GetBaseClassName(Model) #>
+    {
+<# if (Model.GeneratePartialClass) { #>
+        friend class <#= AsCppType(Model.AbiImplementationFullName) #>;
+<# } #>
+
+<# if (Model.IdlClassInfo.HasRuntimeClass) { #>
+        INSPECTABLE_CLASS(L"<#= Model.IdlClassInfo.FullName #>");
+<# } #>
+
+<# if (Model.IdlClassInfo.HasAnyInstanceInterfaces) { #>
+        BEGIN_INTERFACE_MAP(<#= Model.GeneratedClassName #>, <#= EncodeMacroParameter(GetBaseClassName(Model)) #>)
+<#         if (Model.VelocityVersion != 0) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(Model.VelocityVersion) #>)
+<#         }#>
+<#     foreach (var version in Model.Versions.OrderBy(v => v.Version).Select(v => v.GetProjection())) {
+           if (VelocityFeatures.IsVelocityVersion(version.Version)) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(version.Version) #>)
+<#         }
+           if (version.IdlClassInfo.HasPrimaryInterface) { #>
+            INTERFACE_ENTRY(<#= Model.GeneratedClassName #>, <#= EncodeMacroParameter(AsCppType(version.IdlClassInfo.FullInterfaceName)) #>)
+<#         }
+           if (version.IdlClassInfo.HasProtectedMembers) { #>
+            INTERFACE_ENTRY(<#= Model.GeneratedClassName #>, <#= EncodeMacroParameter(AsCppType(version.IdlClassInfo.FullProtectedMembersInterfaceName)) #>)
+<#         }
+           if (version.IdlClassInfo.HasVirtualMembers) { #>
+            INTERFACE_ENTRY(<#= Model.GeneratedClassName #>, <#= EncodeMacroParameter(AsCppType(version.IdlClassInfo.FullVirtualMembersInterfaceName)) #>)
+<#         }
+           if (VelocityFeatures.IsVelocityVersion(version.Version)) { #>
+#endif
+<#         }
+           foreach (var implementedInterface in version.ImplementedInterfaces) { #>
+            INTERFACE_ENTRY(<#= Model.GeneratedClassName #>, <#= EncodeMacroParameter(AsCppType(implementedInterface.AbiFullName)) #>)
+<#         }
+       }
+           if (Model.VelocityVersion != 0) { #>
+#else
+            INTERFACE_ENTRY(DUMMYINTERFACE, IUnknown)
+#endif
+<#         }#>
+        END_INTERFACE_MAP(<#= Model.GeneratedClassName #>, <#= EncodeMacroParameter(GetBaseClassName(Model)) #>)
+<# } #>
+
+    public:
+        <#= Model.GeneratedClassName #>();
+        ~<#= Model.GeneratedClassName #>() override;
+
+        // Properties.
+<# foreach (var property in Model.InstanceProperties) { #>
+        <#= IncludeTemplate<Property>(property) #>
+<# } #>
+
+        // Methods.
+<#     foreach (var method in Model.InstanceMethods) { #>
+        <#= IncludeTemplate<Method>(method) #>
+<#     } #>
+
+    protected:
+        HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
+<# if (Model.IdlClassInfo.IsActivatable && Model.IsEventArgsWithCorePeer) { #>
+        CEventArgs* CreateCorePeer() override;
+<# } #>
+
+    private:
+<# // The type may have some customized properties or methods, but we only need to emit anything here if the class is not partial.
+   // For a partial type, simply define the FooImpl function in the Foo_Partial.h/.cpp files and it will build.
+   if (!Model.GeneratePartialClass) { #>
+        // Customized properties.
+<#     foreach (var property in Model.InstanceProperties.Where(m => m.HasImplMethod)) { #>
+        <#= IncludeTemplate<PropertyImpl>(property) #>
+<#     } #>
+
+        // Customized methods.
+<#     foreach (var method in Model.InstanceMethods.Where(m => m.HasImplMethod)) { #>
+        <#= IncludeTemplate<MethodImpl>(method) #>
+<#     }
+   } #>
+
+        // Fields.
+<# foreach (var field in Model.InstanceFields) { #>
+        <#= AsCppType(field.FrameworkFieldTypeName) #> <#= field.FrameworkFieldName #>;
+<# } #>
+    };
+}
+
+<# if (Model.GeneratePartialClass) { #>
+#include "<#= Model.CppFrameworkHeaderFileName #>"
+<# } #>
+
+<# if (Model.HasCustomFactory) { #>
+<#= IncludeTemplate<ClassFactory>(Model) #>
+<# } #>

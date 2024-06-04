@@ -1,0 +1,54 @@
+﻿midl_pragma warning( disable: 5135 ) // a type that is not marked [experimental] cannot reference a type that is marked [experimental]
+
+namespace MU_XC_NAMESPACE
+{
+
+[webhosthidden]
+[MUX_PUBLIC]
+runtimeclass CoreWebView2InitializedEventArgs
+{
+    HRESULT Exception{ get; };
+}
+
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+[MUX_PUBLIC]
+unsealed runtimeclass WebView2 : Microsoft.UI.Xaml.FrameworkElement
+{
+    WebView2();
+    Microsoft.Web.WebView2.Core.CoreWebView2 CoreWebView2{ get; };
+    
+    Windows.Foundation.IAsyncAction EnsureCoreWebView2Async();
+    [MUX_PUBLIC_V6]
+    [overload("EnsureCoreWebView2Async")] Windows.Foundation.IAsyncAction EnsureCoreWebView2WithEnvironmentAsync(Microsoft.Web.WebView2.Core.CoreWebView2Environment environment);
+    [MUX_PUBLIC_V6]
+    [overload("EnsureCoreWebView2Async")] Windows.Foundation.IAsyncAction EnsureCoreWebView2WithEnvironmentAndOptionsAsync(Microsoft.Web.WebView2.Core.CoreWebView2Environment environment, Microsoft.Web.WebView2.Core.CoreWebView2ControllerOptions controllerOptions);
+
+    Windows.Foundation.IAsyncOperation<String> ExecuteScriptAsync(String javascriptCode);
+    Windows.Foundation.Uri Source{ get; set; };
+    Boolean CanGoForward{ get; set; };
+    Boolean CanGoBack{ get; set; };
+
+    [MUX_DEFAULT_VALUE("WebView2::sc_controllerDefaultBackgroundColor")]
+    Windows.UI.Color DefaultBackgroundColor{ get; set; };
+
+    void Reload();
+    void GoForward();
+    void GoBack();
+    void NavigateToString(String htmlContent);
+    void Close();
+
+    static Microsoft.UI.Xaml.DependencyProperty SourceProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty CanGoForwardProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty CanGoBackProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty DefaultBackgroundColorProperty{ get; };
+
+    event Windows.Foundation.TypedEventHandler<WebView2, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs> NavigationCompleted;
+    event Windows.Foundation.TypedEventHandler<WebView2, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs> WebMessageReceived;
+    event Windows.Foundation.TypedEventHandler<WebView2, Microsoft.Web.WebView2.Core.CoreWebView2NavigationStartingEventArgs> NavigationStarting;
+    event Windows.Foundation.TypedEventHandler<WebView2, Microsoft.Web.WebView2.Core.CoreWebView2ProcessFailedEventArgs> CoreProcessFailed;
+    event Windows.Foundation.TypedEventHandler<WebView2, CoreWebView2InitializedEventArgs> CoreWebView2Initialized;
+}
+
+}

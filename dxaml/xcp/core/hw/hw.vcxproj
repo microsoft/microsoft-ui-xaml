@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{d78bea58-bf05-4bbd-a310-b4a99052c6f8}</ProjectGuid>
+    </PropertyGroup>
+
+    <!-- ******************************** File Header ******************************\ -->
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved.                   -->
+    <!--                                                                              -->
+    <!-- Project specific SOURCES file.                                               -->
+    <!--                                                                              -->
+    <!-- ***************************************************************************/ -->
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+
+    <Import Project="$(XcpPath)\core\common.props"/>
+
+    <PropertyGroup>
+        <XamlPrecompiledInclude>precomp.h</XamlPrecompiledInclude>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="BaseContentRenderer.h"/>
+        <ClInclude Include="CompositorTreeHost.h"/>
+        <ClInclude Include="ContentRenderer.h"/>
+        <ClInclude Include="DManipData.h"/>
+        <ClInclude Include="Effects.h"/>
+        <ClInclude Include="hw-all.h"/>
+        <ClInclude Include="hwcompnode.h"/>
+        <ClInclude Include="hwrealization.h"/>
+        <ClInclude Include="hwsurfacecache.h"/>
+        <ClInclude Include="hwtexturemgr.h"/>
+        <ClInclude Include="hwwalk.h"/>
+        <ClInclude Include="ManipulationTransform.h"/>
+        <ClInclude Include="precomp.h"/>
+        <ClInclude Include="VisualContentRenderer.h"/>
+
+        <ClCompile Include="CompositorTreeHost.cpp"/>
+        <ClCompile Include="hwwalk.cpp"/>
+        <ClCompile Include="hwcompnode.cpp"/>
+        <ClCompile Include="DManipData.cpp"/>
+        <ClCompile Include="hwtexturemgr.cpp"/>
+        <ClCompile Include="hwsurfacecache.cpp"/>
+        <ClCompile Include="hwrealization.cpp"/>
+        <ClCompile Include="ManipulationTransform.cpp"/>
+        <ClCompile Include="ContentRenderer.cpp"/>
+        <ClCompile Include="BaseContentRenderer.cpp"/>
+        <ClCompile Include="VisualContentRenderer.cpp"/>
+        <ClCompile Include="Effects.cpp"/>
+        <ClCompile Include="MaxTextureSizeProvider.cpp"/>
+        <ClCompile Include="AtlasRequestProvider.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\brushes\inc;
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\comptree\inc;
+            $(XcpPath)\components\focusrect\inc;
+            $(XcpPath)\components\transforms\inc;
+            $(XcpPath)\components\math\inc;
+            $(XcpPath)\components\OneCoreTransforms\inc;
+            $(XcpPath)\core\sw;
+            $(XcpPath)\core\hw;
+            $(XcpPath)\core\compositor;
+            $(XcpPath)\core\native\text\Common;
+            $(XcpPath)\core\native\text\Controls;
+            $(XcpPath)\core\text\inc;
+            $(XcpPath)\core\inc;
+            $(XcpPath)\core\text\richtextservices\inc;
+            $(XcpPath)\core\native\inc;
+            $(XcpPath)\plat\win\desktop;
+            $(XcpPath)\win\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

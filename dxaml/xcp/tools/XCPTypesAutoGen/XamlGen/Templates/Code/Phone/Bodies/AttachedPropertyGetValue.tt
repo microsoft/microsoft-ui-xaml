@@ -1,0 +1,23 @@
+<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<AttachedPropertyDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+case get_<#= Model.DeclaringType.TypeTableName #>_Attached<#= Model.Name #>:
+{
+    wrl::ComPtr<<#= AsCppType(Model.DeclaringType.DeclaringNamespace.Name) #>::I<#= Model.DeclaringType.TypeTableName #>Statics> statics;
+    IFC(instance->QueryInterface(
+        __uuidof(<#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyObject") #>),
+        &dependencyObj));
+    static Microsoft::WRL::Wrappers::HStringReference typeName(L"<#= Model.DeclaringType.FullName #>");
+    IFC(<#= PrefixAbi("Windows::Foundation::GetActivationFactory") #>(
+        typeName.Get(),
+        statics.GetAddressOf()));
+    IFC(statics->get_<#= Model.Name #>Property(
+        &dependencyProp));
+    IFC(dependencyObj->GetValue(
+        dependencyProp.Get(),
+        value));
+    break;
+}

@@ -1,0 +1,20 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="ModernIdlCodeGenerator<ClassDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+
+<# foreach (var version in Model.Versions.Select(v => v.GetProjection()).OrderBy(v => v.Version)) { #>
+<# WriteAttributes(version); #>
+interface <#= version.IdlClassInfo.InterfaceName #> <# WriteImplementedInterfaces(version); #>
+{
+<#   foreach (var member in version.IdlClassInfo.PublicInstancePMEs.Where(m => m.OrderHint == null)) { #>
+    <# IncludeMember(member, RequestedInterface.PublicMembers, version.Version); #>
+<#   } #>
+<#   foreach (var member in version.IdlClassInfo.PublicInstancePMEs.Where(m => m.OrderHint != null).OrderBy(m => m.OrderHint)) { #>
+    <# IncludeMember(member, RequestedInterface.PublicMembers, version.Version); #>
+<#   } #>
+};
+
+<# } #>

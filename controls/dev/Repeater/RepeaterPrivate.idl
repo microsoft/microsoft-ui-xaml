@@ -1,0 +1,33 @@
+﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+interface IRepeaterScrollingSurface;
+
+[MUX_INTERNAL]
+[webhosthidden]
+delegate void ConfigurationChangedEventHandler(IRepeaterScrollingSurface sender);
+
+[MUX_INTERNAL]
+[webhosthidden]
+delegate void PostArrangeEventHandler(IRepeaterScrollingSurface sender);
+
+[MUX_INTERNAL]
+[webhosthidden]
+delegate void ViewportChangedEventHandler(IRepeaterScrollingSurface sender, Boolean isFinal);
+
+[MUX_INTERNAL]
+[webhosthidden]
+interface IRepeaterScrollingSurface
+{
+    Boolean IsHorizontallyScrollable { get; };
+    Boolean IsVerticallyScrollable { get; };
+    Microsoft.UI.Xaml.UIElement AnchorElement { get; };
+    event ConfigurationChangedEventHandler ConfigurationChanged;
+    event PostArrangeEventHandler PostArrange;
+    event ViewportChangedEventHandler ViewportChanged;
+    void RegisterAnchorCandidate(Microsoft.UI.Xaml.UIElement element);
+    void UnregisterAnchorCandidate(Microsoft.UI.Xaml.UIElement element);
+    Windows.Foundation.Rect GetRelativeViewport(Microsoft.UI.Xaml.UIElement child);
+}
+
+}

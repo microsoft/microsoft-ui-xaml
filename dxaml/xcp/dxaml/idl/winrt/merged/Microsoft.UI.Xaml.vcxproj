@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectName>Microsoft.UI.Xaml-merged</ProjectName>
+    <ProjectGuid>{869EA267-A81A-49ED-8404-812C2A03E25A}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="Microsoft.UI.Xaml.props" />
+</Project>

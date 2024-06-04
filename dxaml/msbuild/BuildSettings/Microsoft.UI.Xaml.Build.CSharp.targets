@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup>
+        <OutputType Condition="'$(ManagedTargetType)'!='' and '$(OutputType)'==''">$(ManagedTargetType)</OutputType>
+        <OutputType Condition="'$(ManagedTargetType)'=='' and '$(OutputType)'==''">Library</OutputType>
+        <OutputPath Condition="'$(OutputPath)'==''">$(OutDir)</OutputPath>
+        <TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)'==''">v4.7.2</TargetFrameworkVersion>
+
+        <arch Condition="'$(ManagedPlatformSpecific)'=='true' and '$(Platform)' == 'Win32'">x86</arch>
+        <arch Condition="'$(ManagedPlatformSpecific)'=='true' and '$(Platform)' == 'x64'">x64</arch>
+        <arch Condition="'$(ManagedPlatformSpecific)'=='true' and '$(Platform)' == 'ARM64'">arm64</arch>
+        <arch Condition="'$(ManagedPlatformSpecific)'!='true'">anycpu</arch>
+    </PropertyGroup>
+
+    <PropertyGroup Label="Compile Options">
+        <Deterministic Condition="'$(Deterministic)'==''">true</Deterministic>
+        <NoLogo Condition="'$(NoLogo)'==''">true</NoLogo>
+        <Optimize Condition="'$(NoOptimization)'=='true'">false</Optimize>
+        <Optimize Condition="'$(NoOptimization)'=='false'">true</Optimize>
+        <TreatWarningAsErrors Condition="'$(TreatWarningAsErrors)'==''">true</TreatWarningAsErrors>
+        <AllowUnsafeBlocks Condition="'$(AllowUnsafeBlocks)'=='' and '$(UnsafeCode)'=='true'">true</AllowUnsafeBlocks>
+        <NoWarn>$(NoWarn);1699;</NoWarn>
+        <DefineConstants Condition="'$(Configuration)'=='Debug'">$(DefineConstants);DEBUG</DefineConstants>
+        <PlatformTarget Condition="'$(PlatformTarget)'==''">$(arch)</PlatformTarget>
+    </PropertyGroup>
+
+    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

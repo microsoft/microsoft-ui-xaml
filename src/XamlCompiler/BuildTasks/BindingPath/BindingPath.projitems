@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>06974793-a0b0-4339-af27-158e26f15a85</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>BindingPath</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)BindingPath.g4" />
+    <None Include="$(MSBuildThisFileDirectory)CSharpIdentifier.g4" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)BindingPathBaseListener.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BindingPathLexer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BindingPathListener.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BindingPathParser.cs" />
+  </ItemGroup>
+</Project>

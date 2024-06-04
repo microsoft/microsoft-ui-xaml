@@ -1,0 +1,25 @@
+<Project ToolsVersion="Current">
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\controls\idl\Microsoft.UI.Xaml.Controls.idl.vcxproj">
+      <Targets>BuildGenerateSources</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\phone\idl\phone.vcxproj">
+      <Targets>BuildGenerateSources;GetPackagingOutputs</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\dxaml\idl\com\microsoft.ui.xaml-com.vcxproj">
+      <Targets>BuildGenerateSources;GetPackagingOutputs</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\dxaml\idl\winrt\main\Microsoft.ui.xaml-main.vcxproj">
+      <Targets>BuildGenerateSources;GetPackagingOutputs</Targets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\dxaml\xcp\dxaml\manifest\manifest.vcxproj">
+      <Targets>GetPackagingOutputs</Targets>
+      <!-- Map to the vcxproj platform string if needed -->
+      <SetPlatform Condition="'$(Platform)' == 'x86'">Platform=Win32</SetPlatform>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\MergedWinMD\MergedWinMD.vcxproj">
+      <Targets>GetPackagingOutputs</Targets>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="..\GraphAugmentation.targets" />
+</Project>

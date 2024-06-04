@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="MergeXamlFiles" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\Directory.Build.props"/>
+  <Target Name="MergeXamlFiles" >
+    <Message Text="Creating output directory $(OutDir)..." />
+    <MakeDir Directories="$(OutDir)" />
+    <BatchMergeXaml Pages="$(XamlFiles)" MergedXamlFile="$(OutputDirectory)\$(OutputXamlFileName)" TlogReadFilesOutputPath="$(OutDir)GenerateGenericResourceFile.$(OutputXamlFileName).read.1u.tlog" TlogWriteFilesOutputPath="$(OutDir)GenerateGenericResourceFile.$(OutputXamlFileName).write.1u.tlog" />
+  </Target>
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(NugetPackageDirectory)\MUXCustomBuildTasks.$(MuxCustomBuildTasksPackageVersion)\build\MUXCustomBuildTasks.targets" Condition="Exists('$(NugetPackageDirectory)\MUXCustomBuildTasks.$(MuxCustomBuildTasksPackageVersion)\build\MUXCustomBuildTasks.targets')" />
+  </ImportGroup>
+</Project>

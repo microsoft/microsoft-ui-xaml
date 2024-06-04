@@ -1,0 +1,22 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.ToolTipPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel Margin="12">
+        <TextBlock Text="Sample controls with ToolTip set" Style="{ThemeResource StandardGroupHeader}"/>
+        <Button Content="Button with a simple ToolTip." ToolTipService.ToolTip="Simple ToolTip" Margin="0,0,0,16" />
+        <TextBlock Text="TextBlock with an offset ToolTip.">
+            <ToolTipService.ToolTip>
+                <ToolTip Content="Offset ToolTip." VerticalOffset="-80"/>
+            </ToolTipService.ToolTip>
+        </TextBlock>
+    </StackPanel>
+
+</local:TestPage>

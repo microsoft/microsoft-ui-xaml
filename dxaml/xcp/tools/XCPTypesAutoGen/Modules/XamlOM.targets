@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(BuildingInsideVisualStudio)'!='true'">
+    <Reference Include="XamlGen.OM">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(ObjectPath)\..\..\OM\$(ObjectDirectory)\XamlGen.OM.dll</HintPath>
+    </Reference>
+    <Reference Include="XamlOM">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(ObjectPath)\..\..\XamlOM\$(ObjectDirectory)\XamlOM.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(BuildingInsideVisualStudio)'=='true'">
+    <ProjectReference Include="..\..\XamlOM\XamlOM.csproj" />
+    <ProjectReference Include="..\..\OM\OM.csproj">
+      <Project>{25A09BD9-CFF5-4F6B-8BCE-BC3611C3D392}</Project>
+      <Name>XamlGen.OM</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

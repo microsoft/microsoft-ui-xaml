@@ -1,0 +1,14 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="ModernIdlCodeGenerator<EnumDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+
+<# this.WriteAttributes(Model); #>
+enum <#= Model.Name #>
+{
+<# foreach (var enumValue in Model.IdlEnumInfo.Values) { #>
+    <# WriteEnum(enumValue, Model.XamlEnumFlags.AreValuesFlags); #>
+<# } #>
+};

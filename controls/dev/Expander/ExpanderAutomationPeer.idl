@@ -1,0 +1,12 @@
+﻿namespace MU_XAP_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass ExpanderAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
+Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
+{
+    ExpanderAutomationPeer(MU_XC_NAMESPACE.Expander owner);
+}
+
+}

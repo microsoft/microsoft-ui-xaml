@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PathVisualizer", "PathVisualizer\PathVisualizer.csproj", "{D7D4B5A4-C2BF-499F-894B-B38F74353787}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "BindingPath", "..\BindingPath.shproj", "{06974793-A0B0-4339-AF27-158E26F15A85}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Antlr4.Runtime", "..\..\Antlr4.Runtime\Antlr4.Runtime.shproj", "{408F1391-EF36-41B6-934B-513CB820169D}"
+EndProject
+Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\BindingPath.projitems*{d7d4b5a4-c2bf-499f-894b-b38f74353787}*SharedItemsImports = 4
+		..\..\Antlr4.Runtime\Antlr4.Runtime.projitems*{d7d4b5a4-c2bf-499f-894b-b38f74353787}*SharedItemsImports = 4
+		..\BindingPath.projitems*{06974793-a0b0-4339-af27-158e26f15a85}*SharedItemsImports = 13
+		..\..\Antlr4.Runtime\Antlr4.Runtime.projitems*{408f1391-ef36-41b6-934b-513cb820169d}*SharedItemsImports = 13
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D7D4B5A4-C2BF-499F-894B-B38F74353787}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7D4B5A4-C2BF-499F-894B-B38F74353787}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7D4B5A4-C2BF-499F-894B-B38F74353787}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7D4B5A4-C2BF-499F-894B-B38F74353787}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

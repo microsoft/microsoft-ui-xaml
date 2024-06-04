@@ -1,0 +1,1078 @@
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+
+#define MUXCONTROLS_VERSION_PARAM 1.0
+#define MUXCONTROLS_VERSION_ATTRIBUTE version(MUXCONTROLS_VERSION_PARAM)
+#define MUXCONTROLS_VERSION_ATTRIBUTE_NOINTERNAL version(MUXCONTROLS_VERSION_PARAM)
+
+#define EFFECT_ENUM_ATTRIBUTES \
+    [MUXCONTROLS_VERSION_ATTRIBUTE] \
+
+#define EFFECT_INTERFACE_ATTRIBUTES \
+    [MUXCONTROLS_VERSION_ATTRIBUTE] \
+
+#define EFFECT_RUNTIMECLASS_ATTRIBUTES \
+    [MUXCONTROLS_VERSION_ATTRIBUTE] \
+
+#define EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL \
+    [MUXCONTROLS_VERSION_ATTRIBUTE_NOINTERNAL] \
+
+#define EFFECT_STRUCT_ATTRIBUTES \
+    [MUXCONTROLS_VERSION_ATTRIBUTE] \
+
+
+namespace Microsoft.UI.Private.Composition.Effects
+{
+    //----------------------------------------------------------------------------------------------
+    // Common enums
+
+    EFFECT_ENUM_ATTRIBUTES
+    typedef enum CanvasAlphaMode
+    {
+        Premultiplied = (int)0,
+        Straight = (int)1,
+        Ignore = (int)2
+    } CanvasAlphaMode;
+
+    EFFECT_ENUM_ATTRIBUTES
+    typedef enum CanvasEdgeBehavior
+    {
+        Clamp = (int)0,
+        Wrap = (int)1,
+        Mirror = (int)2
+    } CanvasEdgeBehavior;
+
+    EFFECT_ENUM_ATTRIBUTES
+    typedef enum CanvasComposite
+    {
+        SourceOver = (int)0,
+        DestinationOver = (int)1,
+        SourceIn = (int)2,
+        DestinationIn = (int)3,
+        SourceOut = (int)4,
+        DestinationOut = (int)5,
+        SourceAtop = (int)6,
+        DestinationAtop = (int)7,
+        Xor = (int)8,
+        Add = (int)9,
+        Copy = (int)10,
+        BoundedCopy = (int)11,
+        MaskInvert = (int)12
+    } CanvasComposite;
+
+    EFFECT_ENUM_ATTRIBUTES
+    typedef enum CanvasImageInterpolation
+    {
+        NearestNeighbor = (int)0,
+        Linear = (int)1,
+        Cubic = (int)2,
+        MultiSampleLinear = (int)3,
+        Anisotropic = (int)4,
+        HighQualityCubic = (int)5
+    } CanvasImageInterpolation;
+
+    EFFECT_ENUM_ATTRIBUTES
+    typedef enum CanvasBlend
+    {
+        SourceOver = (int)0,
+        Copy = (int)1,
+        Min = (int)2,
+        Add = (int)3
+    } CanvasBlend;
+    
+    EFFECT_ENUM_ATTRIBUTES
+    typedef enum EffectBorderMode
+    {
+        Soft = 0,
+        Hard = 1
+    } EffectBorderMode;
+
+    EFFECT_ENUM_ATTRIBUTES
+    typedef enum EffectOptimization
+    {
+        Speed = 0,
+        Balanced = 1,
+        Quality = 2
+    } EffectOptimization;
+
+    EFFECT_ENUM_ATTRIBUTES
+    typedef enum EffectChannelSelect
+    {
+        Red = 0,
+        Green = 1,
+        Blue = 2,
+        Alpha = 3
+    } EffectChannelSelect;
+
+    //----------------------------------------------------------------------------------------------
+    // Common structs
+    
+    EFFECT_STRUCT_ATTRIBUTES
+    typedef struct Matrix5x4
+    {
+        float M11, M12, M13, M14;
+        float M21, M22, M23, M24;
+        float M31, M32, M33, M34;
+        float M41, M42, M43, M44;
+        float M51, M52, M53, M54;
+    } Matrix5x4;
+    
+    //----------------------------------------------------------------------------------------------
+    // Effects
+
+    runtimeclass AlphaMaskEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(aefea128-5f3e-4abb-bde8-d53e55f730e4), exclusiveto(AlphaMaskEffect)]
+    interface IAlphaMaskEffect : IInspectable
+    {
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+        
+        [propget] HRESULT Mask([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Mask([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass AlphaMaskEffect
+        : [default] IAlphaMaskEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+    
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass ArithmeticCompositeEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(beeb682b-d64c-5c8b-a1fb-332162ed099b), exclusiveto(ArithmeticCompositeEffect)]
+    interface IArithmeticCompositeEffect : IInspectable
+    {
+        [propget] HRESULT ClampOutput([out, retval] boolean* value);
+        [propput] HRESULT ClampOutput([in] boolean value);
+
+        [propget] HRESULT MultiplyAmount([out, retval] float* value);
+        [propput] HRESULT MultiplyAmount([in] float value);
+
+        [propget] HRESULT Source1Amount([out, retval] float* value);
+        [propput] HRESULT Source1Amount([in] float value);
+
+        [propget] HRESULT Source2Amount([out, retval] float* value);
+        [propput] HRESULT Source2Amount([in] float value);
+
+        [propget] HRESULT Offset([out, retval] float* value);
+        [propput] HRESULT Offset([in] float value);
+
+        [propget] HRESULT Source1([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source1([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+
+        [propget] HRESULT Source2([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source2([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass ArithmeticCompositeEffect
+        : [default] IArithmeticCompositeEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+    
+    //----------------------------------------------------------------------------------------------
+
+    EFFECT_ENUM_ATTRIBUTES
+    typedef enum BlendEffectMode
+    {
+        Multiply = 0,
+        Screen = 1,
+        Darken = 2,
+        Lighten = 3,
+        Dissolve = 4,
+        ColorBurn = 5,
+        LinearBurn = 6,
+        DarkerColor = 7,
+        LighterColor = 8,
+        ColorDodge = 9,
+        LinearDodge = 10,
+        Overlay = 11,
+        SoftLight = 12,
+        HardLight = 13,
+        VividLight = 14,
+        LinearLight = 15,
+        PinLight = 16,
+        HardMix = 17,
+        Difference = 18,
+        Exclusion = 19,
+        Hue = 20,
+        Saturation = 21,
+        Color = 22,
+        Luminosity = 23,
+        Subtract = 24,
+        Division = 25
+    } BlendEffectMode;
+
+    runtimeclass BlendEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(5673248e-7266-5e49-b2ab-2589d5d875c2), exclusiveto(BlendEffect)]
+    interface IBlendEffect : IInspectable
+    {
+        [propget] HRESULT Mode([out, retval] BlendEffectMode* value);
+        [propput] HRESULT Mode([in] BlendEffectMode value);
+
+        [propget] HRESULT Background([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Background([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+
+        [propget] HRESULT Foreground([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Foreground([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass BlendEffect
+        : [default] IBlendEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    runtimeclass BorderEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(31602441-15db-5b4a-98dd-ba4247548b40), exclusiveto(BorderEffect)]
+    interface IBorderEffect : IInspectable
+    {
+        [propget] HRESULT ExtendX([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasEdgeBehavior* value);
+        [propput] HRESULT ExtendX([in] Microsoft.UI.Private.Composition.Effects.CanvasEdgeBehavior value);
+
+        [propget] HRESULT ExtendY([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasEdgeBehavior* value);
+        [propput] HRESULT ExtendY([in] Microsoft.UI.Private.Composition.Effects.CanvasEdgeBehavior value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass BorderEffect
+        : [default] IBorderEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    runtimeclass ColorMatrixEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(e6ae54c4-883d-588e-b451-e9ebe3830436), exclusiveto(ColorMatrixEffect)]
+    interface IColorMatrixEffect : IInspectable
+    {
+        [propget] HRESULT ColorMatrix([out, retval] Matrix5x4* value);
+        [propput] HRESULT ColorMatrix([in] Matrix5x4 value);
+
+        [propget] HRESULT AlphaMode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasAlphaMode* value);
+        [propput] HRESULT AlphaMode([in] Microsoft.UI.Private.Composition.Effects.CanvasAlphaMode value);
+
+        [propget] HRESULT ClampOutput([out, retval] boolean* value);
+        [propput] HRESULT ClampOutput([in] boolean value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass ColorMatrixEffect
+        : [default] IColorMatrixEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    runtimeclass ColorSourceEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(25f942c7-7fee-518a-ba7b-22a0060af7f5), exclusiveto(ColorSourceEffect)]
+    interface IColorSourceEffect : IInspectable
+    {
+        [propget] HRESULT Color([out, retval] Windows.UI.Color* value);
+        [propput] HRESULT Color([in] Windows.UI.Color value);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass ColorSourceEffect
+        : [default] IColorSourceEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+
+    runtimeclass CompositeStepEffect;
+
+    // A variation on the Win2D CompositeEffect that only accepts two sources
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(58360908-1b6b-4302-8ecd-cc24b26f27b0), exclusiveto(CompositeStepEffect)]
+    interface ICompositeStepEffect : IInspectable
+    {
+        [propget] HRESULT Mode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasComposite* value);
+        [propput] HRESULT Mode([in] Microsoft.UI.Private.Composition.Effects.CanvasComposite value);
+
+        [propget] HRESULT Destination([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Destination([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass CompositeStepEffect
+        : [default] ICompositeStepEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass ContrastEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(da8a2b9f-594e-560a-9eaa-1f912408fe78), exclusiveto(ContrastEffect)]
+    interface IContrastEffect : IInspectable
+    {
+        [propget] HRESULT Contrast([out, retval] float* value);
+        [propput] HRESULT Contrast([in] float value);
+        
+        [propget] HRESULT ClampSource([out, retval] boolean* value);
+        [propput] HRESULT ClampSource([in] boolean value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass ContrastEffect
+        : [default] IContrastEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass CrossFadeEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(2a451393-ccc3-4c7e-b9bc-5ad9f9538c08), exclusiveto(CrossFadeEffect)]
+    interface ICrossFadeEffect : IInspectable
+    {
+        [propget] HRESULT Weight([out, retval] float* value);
+        [propput] HRESULT Weight([in] float value);
+
+        [propget] HRESULT Source1([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source1([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+
+        [propget] HRESULT Source2([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source2([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass CrossFadeEffect
+        : [default] ICrossFadeEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass DistantDiffuseEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(d501b10b-b445-50f4-8b8f-cdecfcdd1320), exclusiveto(DistantDiffuseEffect)]
+    interface IDistantDiffuseEffect : IInspectable
+    {
+        [propget] HRESULT Azimuth([out, retval] float* value);
+        [propput] HRESULT Azimuth([in] float value);
+
+        [propget] HRESULT Elevation([out, retval] float* value);
+        [propput] HRESULT Elevation([in] float value);
+
+        [propget] HRESULT DiffuseAmount([out, retval] float* value);
+        [propput] HRESULT DiffuseAmount([in] float value);
+
+        [propget] HRESULT HeightMapScale([out, retval] float* value);
+        [propput] HRESULT HeightMapScale([in] float value);
+
+        [propget] HRESULT LightColor([out, retval] Windows.UI.Color* value);
+        [propput] HRESULT LightColor([in] Windows.UI.Color value);
+
+        [propget] HRESULT HeightMapKernelSize([out, retval] Windows.Foundation.Numerics.Vector2* value);
+        [propput] HRESULT HeightMapKernelSize([in] Windows.Foundation.Numerics.Vector2 value);
+
+        [propget] HRESULT HeightMapInterpolationMode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation* value);
+        [propput] HRESULT HeightMapInterpolationMode([in] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass DistantDiffuseEffect
+        : [default] IDistantDiffuseEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass DistantSpecularEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(a7a828df-3072-545f-8d75-86c100f03230), exclusiveto(DistantSpecularEffect)]
+    interface IDistantSpecularEffect : IInspectable
+    {
+        [propget] HRESULT Azimuth([out, retval] float* value);
+        [propput] HRESULT Azimuth([in] float value);
+
+        [propget] HRESULT Elevation([out, retval] float* value);
+        [propput] HRESULT Elevation([in] float value);
+
+        [propget] HRESULT SpecularExponent([out, retval] float* value);
+        [propput] HRESULT SpecularExponent([in] float value);
+
+        [propget] HRESULT SpecularAmount([out, retval] float* value);
+        [propput] HRESULT SpecularAmount([in] float value);
+
+        [propget] HRESULT HeightMapScale([out, retval] float* value);
+        [propput] HRESULT HeightMapScale([in] float value);
+
+        [propget] HRESULT LightColor([out, retval] Windows.UI.Color* value);
+        [propput] HRESULT LightColor([in] Windows.UI.Color value);
+
+        [propget] HRESULT HeightMapKernelSize([out, retval] Windows.Foundation.Numerics.Vector2* value);
+        [propput] HRESULT HeightMapKernelSize([in] Windows.Foundation.Numerics.Vector2 value);
+
+        [propget] HRESULT HeightMapInterpolationMode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation* value);
+        [propput] HRESULT HeightMapInterpolationMode([in] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass DistantSpecularEffect
+        : [default] IDistantSpecularEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass ExposureEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(b9e20a03-2232-5fd3-b408-15784b79dbbf), exclusiveto(ExposureEffect)]
+    interface IExposureEffect : IInspectable
+    {
+        [propget] HRESULT Exposure([out, retval] float* value);
+        [propput] HRESULT Exposure([in] float value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass ExposureEffect
+        : [default] IExposureEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass GammaTransferEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(b4576b6b-6c3e-534a-8576-d46df4fce93c), exclusiveto(GammaTransferEffect)]
+    interface IGammaTransferEffect : IInspectable
+    {
+        [propget] HRESULT RedAmplitude([out, retval] float* value);
+        [propput] HRESULT RedAmplitude([in] float value);
+
+        [propget] HRESULT RedExponent([out, retval] float* value);
+        [propput] HRESULT RedExponent([in] float value);
+
+        [propget] HRESULT RedOffset([out, retval] float* value);
+        [propput] HRESULT RedOffset([in] float value);
+
+        [propget] HRESULT RedDisable([out, retval] boolean* value);
+        [propput] HRESULT RedDisable([in] boolean value);
+
+        [propget] HRESULT GreenAmplitude([out, retval] float* value);
+        [propput] HRESULT GreenAmplitude([in] float value);
+
+        [propget] HRESULT GreenExponent([out, retval] float* value);
+        [propput] HRESULT GreenExponent([in] float value);
+
+        [propget] HRESULT GreenOffset([out, retval] float* value);
+        [propput] HRESULT GreenOffset([in] float value);
+
+        [propget] HRESULT GreenDisable([out, retval] boolean* value);
+        [propput] HRESULT GreenDisable([in] boolean value);
+
+        [propget] HRESULT BlueAmplitude([out, retval] float* value);
+        [propput] HRESULT BlueAmplitude([in] float value);
+
+        [propget] HRESULT BlueExponent([out, retval] float* value);
+        [propput] HRESULT BlueExponent([in] float value);
+
+        [propget] HRESULT BlueOffset([out, retval] float* value);
+        [propput] HRESULT BlueOffset([in] float value);
+
+        [propget] HRESULT BlueDisable([out, retval] boolean* value);
+        [propput] HRESULT BlueDisable([in] boolean value);
+
+        [propget] HRESULT AlphaAmplitude([out, retval] float* value);
+        [propput] HRESULT AlphaAmplitude([in] float value);
+
+        [propget] HRESULT AlphaExponent([out, retval] float* value);
+        [propput] HRESULT AlphaExponent([in] float value);
+
+        [propget] HRESULT AlphaOffset([out, retval] float* value);
+        [propput] HRESULT AlphaOffset([in] float value);
+
+        [propget] HRESULT AlphaDisable([out, retval] boolean* value);
+        [propput] HRESULT AlphaDisable([in] boolean value);
+
+        [propget] HRESULT ClampOutput([out, retval] boolean* value);
+        [propput] HRESULT ClampOutput([in] boolean value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass GammaTransferEffect
+        : [default] IGammaTransferEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass GaussianBlurEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(cc3ff255-a83d-5aed-8187-70f64bbd9e50), exclusiveto(GaussianBlurEffect)]
+    interface IGaussianBlurEffect : IInspectable
+    {
+        [propget] HRESULT BlurAmount([out, retval] float* value);
+        [propput] HRESULT BlurAmount([in] float value);
+
+        [propget] HRESULT Optimization([out, retval] EffectOptimization* value);
+        [propput] HRESULT Optimization([in] EffectOptimization value);
+
+        [propget] HRESULT BorderMode([out, retval] EffectBorderMode* value);
+        [propput] HRESULT BorderMode([in] EffectBorderMode value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass GaussianBlurEffect
+        : [default] IGaussianBlurEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass GrayscaleEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(78e13b83-0638-53f8-b0b3-5b0b320a9ad1), exclusiveto(GrayscaleEffect)]
+    interface IGrayscaleEffect : IInspectable
+    {
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass GrayscaleEffect
+        : [default] IGrayscaleEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass HueRotationEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(c172ebf2-e35f-58ae-ad2c-561eceaf2693), exclusiveto(HueRotationEffect)]
+    interface IHueRotationEffect : IInspectable
+    {
+        [propget] HRESULT Angle([out, retval] float* value);
+        [propput] HRESULT Angle([in] float value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass HueRotationEffect
+        : [default] IHueRotationEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass InvertEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(d4adcdfc-0f60-524d-936a-7f2736ad33d7), exclusiveto(InvertEffect)]
+    interface IInvertEffect : IInspectable
+    {
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass InvertEffect
+        : [default] IInvertEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass LinearTransferEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(0cdf2cd0-1ce5-5c97-a09c-f14361b96e46), exclusiveto(LinearTransferEffect)]
+    interface ILinearTransferEffect : IInspectable
+    {
+        [propget] HRESULT RedOffset([out, retval] float* value);
+        [propput] HRESULT RedOffset([in] float value);
+
+        [propget] HRESULT RedSlope([out, retval] float* value);
+        [propput] HRESULT RedSlope([in] float value);
+
+        [propget] HRESULT RedDisable([out, retval] boolean* value);
+        [propput] HRESULT RedDisable([in] boolean value);
+
+        [propget] HRESULT GreenOffset([out, retval] float* value);
+        [propput] HRESULT GreenOffset([in] float value);
+
+        [propget] HRESULT GreenSlope([out, retval] float* value);
+        [propput] HRESULT GreenSlope([in] float value);
+
+        [propget] HRESULT GreenDisable([out, retval] boolean* value);
+        [propput] HRESULT GreenDisable([in] boolean value);
+
+        [propget] HRESULT BlueOffset([out, retval] float* value);
+        [propput] HRESULT BlueOffset([in] float value);
+
+        [propget] HRESULT BlueSlope([out, retval] float* value);
+        [propput] HRESULT BlueSlope([in] float value);
+
+        [propget] HRESULT BlueDisable([out, retval] boolean* value);
+        [propput] HRESULT BlueDisable([in] boolean value);
+
+        [propget] HRESULT AlphaOffset([out, retval] float* value);
+        [propput] HRESULT AlphaOffset([in] float value);
+
+        [propget] HRESULT AlphaSlope([out, retval] float* value);
+        [propput] HRESULT AlphaSlope([in] float value);
+
+        [propget] HRESULT AlphaDisable([out, retval] boolean* value);
+        [propput] HRESULT AlphaDisable([in] boolean value);
+
+        [propget] HRESULT ClampOutput([out, retval] boolean* value);
+        [propput] HRESULT ClampOutput([in] boolean value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass LinearTransferEffect
+        : [default] ILinearTransferEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass LuminanceToAlphaEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(32983357-0fd9-52b7-b63b-001f6ff4618b), exclusiveto(LuminanceToAlphaEffect)]
+    interface ILuminanceToAlphaEffect : IInspectable
+    {
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass LuminanceToAlphaEffect
+        : [default] ILuminanceToAlphaEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass OpacityEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(c20ae33a-1844-4650-811c-63ca823b86b5), exclusiveto(OpacityEffect)]
+    interface IOpacityEffect : IInspectable
+    {
+        [propget] HRESULT Opacity([out, retval] float* value);
+        [propput] HRESULT Opacity([in] float value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass OpacityEffect
+        : [default] IOpacityEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass PointDiffuseEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(6cce09ec-f847-5661-af4b-531dd3dd7d6d), exclusiveto(PointDiffuseEffect)]
+    interface IPointDiffuseEffect : IInspectable
+    {
+        [propget] HRESULT LightPosition([out, retval] Windows.Foundation.Numerics.Vector3* value);
+        [propput] HRESULT LightPosition([in] Windows.Foundation.Numerics.Vector3 value);
+
+        [propget] HRESULT DiffuseAmount([out, retval] float* value);
+        [propput] HRESULT DiffuseAmount([in] float value);
+
+        [propget] HRESULT HeightMapScale([out, retval] float* value);
+        [propput] HRESULT HeightMapScale([in] float value);
+
+        [propget] HRESULT LightColor([out, retval] Windows.UI.Color* value);
+        [propput] HRESULT LightColor([in] Windows.UI.Color value);
+
+        [propget] HRESULT HeightMapKernelSize([out, retval] Windows.Foundation.Numerics.Vector2* value);
+        [propput] HRESULT HeightMapKernelSize([in] Windows.Foundation.Numerics.Vector2 value);
+
+        [propget] HRESULT HeightMapInterpolationMode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation* value);
+        [propput] HRESULT HeightMapInterpolationMode([in] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass PointDiffuseEffect
+        : [default] IPointDiffuseEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass PointSpecularEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(ec8afe9b-8501-5286-a43c-1afff7420ad5), exclusiveto(PointSpecularEffect)]
+    interface IPointSpecularEffect : IInspectable
+    {
+        [propget] HRESULT LightPosition([out, retval] Windows.Foundation.Numerics.Vector3* value);
+        [propput] HRESULT LightPosition([in] Windows.Foundation.Numerics.Vector3 value);
+
+        [propget] HRESULT SpecularExponent([out, retval] float* value);
+        [propput] HRESULT SpecularExponent([in] float value);
+
+        [propget] HRESULT SpecularAmount([out, retval] float* value);
+        [propput] HRESULT SpecularAmount([in] float value);
+
+        [propget] HRESULT HeightMapScale([out, retval] float* value);
+        [propput] HRESULT HeightMapScale([in] float value);
+
+        [propget] HRESULT LightColor([out, retval] Windows.UI.Color* value);
+        [propput] HRESULT LightColor([in] Windows.UI.Color value);
+
+        [propget] HRESULT HeightMapKernelSize([out, retval] Windows.Foundation.Numerics.Vector2* value);
+        [propput] HRESULT HeightMapKernelSize([in] Windows.Foundation.Numerics.Vector2 value);
+
+        [propget] HRESULT HeightMapInterpolationMode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation* value);
+        [propput] HRESULT HeightMapInterpolationMode([in] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass PointSpecularEffect
+        : [default] IPointSpecularEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass PosterizeEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(2f631a3b-c89a-507c-9756-299b61434fa3), exclusiveto(PosterizeEffect)]
+    interface IPosterizeEffect : IInspectable
+    {
+        [propget] HRESULT RedValueCount([out, retval] INT32* value);
+        [propput] HRESULT RedValueCount([in] INT32 value);
+
+        [propget] HRESULT GreenValueCount([out, retval] INT32* value);
+        [propput] HRESULT GreenValueCount([in] INT32 value);
+
+        [propget] HRESULT BlueValueCount([out, retval] INT32* value);
+        [propput] HRESULT BlueValueCount([in] INT32 value);
+        
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass PosterizeEffect
+        : [default] IPosterizeEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass PremultiplyEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(d2884c75-a4a1-556b-acef-28ed22cf067f), exclusiveto(PremultiplyEffect)]
+    interface IPremultiplyEffect : IInspectable
+    {
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass PremultiplyEffect
+        : [default] IPremultiplyEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass SaturationEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(f85a5ed7-7212-57a6-b357-61038961c58c), exclusiveto(SaturationEffect)]
+    interface ISaturationEffect : IInspectable
+    {
+        [propget] HRESULT Saturation([out, retval] float* value);
+        [propput] HRESULT Saturation([in] float value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass SaturationEffect
+        : [default] ISaturationEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass SepiaEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(f933471f-a7af-5521-be79-b0da22976cfe), exclusiveto(SepiaEffect)]
+    interface ISepiaEffect : IInspectable
+    {
+        [propget] HRESULT Intensity([out, retval] float* value);
+        [propput] HRESULT Intensity([in] float value);
+
+        [propget] HRESULT AlphaMode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasAlphaMode* value);
+        [propput] HRESULT AlphaMode([in] Microsoft.UI.Private.Composition.Effects.CanvasAlphaMode value);
+        
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass SepiaEffect
+        : [default] ISepiaEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass SpotDiffuseEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(b3dcbe44-1dd7-5cb3-95e5-a48974cd12e7), exclusiveto(SpotDiffuseEffect)]
+    interface ISpotDiffuseEffect : IInspectable
+    {
+        [propget] HRESULT LightPosition([out, retval] Windows.Foundation.Numerics.Vector3* value);
+        [propput] HRESULT LightPosition([in] Windows.Foundation.Numerics.Vector3 value);
+
+        [propget] HRESULT LightTarget([out, retval] Windows.Foundation.Numerics.Vector3* value);
+        [propput] HRESULT LightTarget([in] Windows.Foundation.Numerics.Vector3 value);
+
+        [propget] HRESULT Focus([out, retval] float* value);
+        [propput] HRESULT Focus([in] float value);
+
+        [propget] HRESULT LimitingConeAngle([out, retval] float* value);
+        [propput] HRESULT LimitingConeAngle([in] float value);
+
+        [propget] HRESULT DiffuseAmount([out, retval] float* value);
+        [propput] HRESULT DiffuseAmount([in] float value);
+
+        [propget] HRESULT HeightMapScale([out, retval] float* value);
+        [propput] HRESULT HeightMapScale([in] float value);
+
+        [propget] HRESULT LightColor([out, retval] Windows.UI.Color* value);
+        [propput] HRESULT LightColor([in] Windows.UI.Color value);
+
+        [propget] HRESULT HeightMapKernelSize([out, retval] Windows.Foundation.Numerics.Vector2* value);
+        [propput] HRESULT HeightMapKernelSize([in] Windows.Foundation.Numerics.Vector2 value);
+
+        [propget] HRESULT HeightMapInterpolationMode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation* value);
+        [propput] HRESULT HeightMapInterpolationMode([in] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass SpotDiffuseEffect
+        : [default] ISpotDiffuseEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass SpotSpecularEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(83ae4cd0-80aa-5783-8572-f15e5f85329d), exclusiveto(SpotSpecularEffect)]
+    interface ISpotSpecularEffect : IInspectable
+    {
+        [propget] HRESULT LightPosition([out, retval] Windows.Foundation.Numerics.Vector3* value);
+        [propput] HRESULT LightPosition([in] Windows.Foundation.Numerics.Vector3 value);
+
+        [propget] HRESULT LightTarget([out, retval] Windows.Foundation.Numerics.Vector3* value);
+        [propput] HRESULT LightTarget([in] Windows.Foundation.Numerics.Vector3 value);
+
+        [propget] HRESULT Focus([out, retval] float* value);
+        [propput] HRESULT Focus([in] float value);
+
+        [propget] HRESULT LimitingConeAngle([out, retval] float* value);
+        [propput] HRESULT LimitingConeAngle([in] float value);
+
+        [propget] HRESULT SpecularExponent([out, retval] float* value);
+        [propput] HRESULT SpecularExponent([in] float value);
+
+        [propget] HRESULT SpecularAmount([out, retval] float* value);
+        [propput] HRESULT SpecularAmount([in] float value);
+
+        [propget] HRESULT HeightMapScale([out, retval] float* value);
+        [propput] HRESULT HeightMapScale([in] float value);
+
+        [propget] HRESULT LightColor([out, retval] Windows.UI.Color* value);
+        [propput] HRESULT LightColor([in] Windows.UI.Color value);
+
+        [propget] HRESULT HeightMapKernelSize([out, retval] Windows.Foundation.Numerics.Vector2* value);
+        [propput] HRESULT HeightMapKernelSize([in] Windows.Foundation.Numerics.Vector2 value);
+
+        [propget] HRESULT HeightMapInterpolationMode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation* value);
+        [propput] HRESULT HeightMapInterpolationMode([in] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass SpotSpecularEffect
+        : [default] ISpotSpecularEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+    
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass TemperatureAndTintEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(8ae43e02-2619-5d78-8980-4ed569549bd7), exclusiveto(TemperatureAndTintEffect)]
+    interface ITemperatureAndTintEffect : IInspectable
+    {
+        [propget] HRESULT Temperature([out, retval] float* value);
+        [propput] HRESULT Temperature([in] float value);
+        
+        [propget] HRESULT Tint([out, retval] float* value);
+        [propput] HRESULT Tint([in] float value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass TemperatureAndTintEffect
+        : [default] ITemperatureAndTintEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass TintEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(44fe4b1a-d909-4848-b08f-b6e979402771), exclusiveto(TintEffect)]
+    interface ITintEffect : IInspectable
+    {
+        [propget] HRESULT Color([out, retval] Windows.UI.Color* value);
+        [propput] HRESULT Color([in] Windows.UI.Color value);
+
+        [propget] HRESULT ClampOutput([out, retval] boolean* value);
+        [propput] HRESULT ClampOutput([in] boolean value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass TintEffect
+        : [default] ITintEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass Transform2DEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(4467d118-33e7-5b1a-87c2-0f1f0497353c), exclusiveto(Transform2DEffect)]
+    interface ITransform2DEffect : IInspectable
+    {
+        [propget] HRESULT InterpolationMode([out, retval] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation* value);
+        [propput] HRESULT InterpolationMode([in] Microsoft.UI.Private.Composition.Effects.CanvasImageInterpolation value);
+
+        [propget] HRESULT BorderMode([out, retval] EffectBorderMode* value);
+        [propput] HRESULT BorderMode([in] EffectBorderMode value);
+
+        [propget] HRESULT TransformMatrix([out, retval] Windows.Foundation.Numerics.Matrix3x2* value);
+        [propput] HRESULT TransformMatrix([in] Windows.Foundation.Numerics.Matrix3x2 value);
+
+        [propget] HRESULT Sharpness([out, retval] float* value);
+        [propput] HRESULT Sharpness([in] float value);
+
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass Transform2DEffect
+        : [default] ITransform2DEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+
+    //----------------------------------------------------------------------------------------------
+    
+    runtimeclass UnPremultiplyEffect;
+
+    EFFECT_INTERFACE_ATTRIBUTES
+    [uuid(9c8b2b18-cbc1-547e-b6d5-64a1d8bbc802), exclusiveto(UnPremultiplyEffect)]
+    interface IUnPremultiplyEffect : IInspectable
+    {
+        [propget] HRESULT Source([out, retval] Windows.Graphics.Effects.IGraphicsEffectSource** source);
+        [propput] HRESULT Source([in] Windows.Graphics.Effects.IGraphicsEffectSource* source);
+    };
+
+    EFFECT_RUNTIMECLASS_ATTRIBUTES_NOINTERNAL
+    runtimeclass UnPremultiplyEffect
+        : [default] IUnPremultiplyEffect, Windows.Graphics.Effects.IGraphicsEffect
+    {
+    }
+}

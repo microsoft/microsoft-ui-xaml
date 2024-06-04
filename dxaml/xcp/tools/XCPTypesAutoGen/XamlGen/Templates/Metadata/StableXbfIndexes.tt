@@ -1,0 +1,37 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="XbfMetadataCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#pragma once
+
+namespace Parser
+{
+    enum class <#= StableXbfIndexGenerator.StableXbfTypeIndexEnumName #>: UINT16
+    {
+<# foreach (var type in StableIndexes.GetStableTypeIndexes()) { #>
+        <#= type.stableIndexName #> = <#= type.stableIndex #>,
+<# } #>
+    };
+
+    enum class <#= StableXbfIndexGenerator.StableXbfPropertyIndexEnumName #>: UINT16
+    {
+<# foreach (var prop in StableIndexes.GetStablePropertyIndexes()) { #>
+        <#= prop.stableIndexName #> = <#= prop.stableIndex #>,
+<# } #>
+    };
+
+    enum class <#= StableXbfIndexGenerator.StableEventIndexEnumName #>: UINT16
+    {
+<# foreach (var evt in StableIndexes.GetStableEventIndexes()) { #>
+        <#= evt.stableIndexName #> = <#= evt.stableIndex #>,
+<# } #>
+    };
+
+    static const UINT16 StableXbfTypeCount = static_cast<UINT16>(<#= StableXbfIndexGenerator.StableXbfTypeIndexEnumName #>::<#= StableIndexes.GetStableTypeIndexes().Last().stableIndexName #>) + 1;
+    static const UINT16 StableXbfPropertyCount = static_cast<UINT16>(<#= StableXbfIndexGenerator.StableXbfPropertyIndexEnumName #>::<#= StableIndexes.GetStablePropertyIndexes().Last().stableIndexName #>) + 1;
+    static const UINT16 StableEventCount = static_cast<UINT16>(<#= StableXbfIndexGenerator.StableEventIndexEnumName #>::<#= StableIndexes.GetStableEventIndexes().Last().stableIndexName #>) + 1;
+}

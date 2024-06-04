@@ -1,0 +1,168 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{1de4aad6-bc27-4945-a219-1df04667acc1}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\phone\common.props"/>
+
+    <PropertyGroup>
+        <XcpBaseInc>$(XamlSourcePath)\xcp\components\base\inc</XcpBaseInc>
+        <XcpPalInc>$(XamlSourcePath)\xcp\pal\inc</XcpPalInc>
+        <XcpSatbaseInc>$(XamlSourcePath)\xcp\components\satellitebase\inc</XcpSatbaseInc>
+        <ProjectIncludeDirectories>$(ProjectIncludeDirectories) ; $(ExternalDependencies) ;</ProjectIncludeDirectories>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) _HAS_EXCEPTIONS=0; </ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <AdditionalOptions>%(AdditionalOptions) /Zm400 </AdditionalOptions>
+            <DisableSpecificWarnings>%(DisableSpecificWarnings);4702</DisableSpecificWarnings>
+            <DisableSpecificWarnings>%(DisableSpecificWarnings);4458</DisableSpecificWarnings>
+            <DisableSpecificWarnings>%(DisableSpecificWarnings);4481</DisableSpecificWarnings>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <!-- System include paths -->
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(LiftedIXPIncludePaths);
+            $(FrameworkUdkIncPath);
+            $(XamlSourcePath)\xcp\components\base\inc;
+            $(XamlSourcePath)\xcp\components\lifetime\inc;
+            $(XamlSourcePath)\xcp\components\onecoretransforms\inc;
+            $(XamlSourcePath)\xcp\components\pivot\inc;
+            $(XamlSourcePath)\xcp\components\Telemetry\inc;
+            $(XamlSourcePath)\xcp\components\xboxutility\inc;
+            $(XamlSourcePath)\xcp\components;
+            $(XamlSourcePath)\xcp\inc;
+            $(XcpBaseInc);
+            $(XcpPalInc);
+            $(XcpPhoneObjPath)\idl;
+            $(XcpPhonePath)\inc;
+            $(XcpSatbaseInc);
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="ApplicationResourceHelpers.h"/>
+        <ClInclude Include="AutomationHelper.h"/>
+        <ClInclude Include="DatePickedEventArgs_Partial.h"/>
+        <ClInclude Include="DatePickerFlyoutItem_Partial.h"/>
+        <ClInclude Include="DatePickerFlyoutPresenterAutomationPeer_Partial.h"/>
+        <ClInclude Include="DatePickerFlyoutPresenter_Partial.h"/>
+        <ClInclude Include="DatePickerFlyout_Partial.h"/>
+        <ClInclude Include="DateTimePickerFlyoutHelper.h"/>
+        <ClInclude Include="ElevationHelper.h"/>
+        <ClInclude Include="FlyoutAsyncOperationManager.h"/>
+        <ClInclude Include="FlyoutPlacement.h"/>
+        <ClInclude Include="IPickerFlyoutAsyncOperation.h"/>
+        <ClInclude Include="ItemsPickedEventArgs_Partial.h"/>
+        <ClInclude Include="JumpListHelper.h"/>
+        <ClInclude Include="JumpListItemBackgroundConverter_Partial.h"/>
+        <ClInclude Include="JumpListItemForegroundConverter_Partial.h"/>
+        <ClInclude Include="ListPickerFlyoutPresenterAutomationPeer_Partial.h"/>
+        <ClInclude Include="ListPickerFlyoutPresenter_Partial.h"/>
+        <ClInclude Include="ListPickerFlyout_Partial.h"/>
+        <ClInclude Include="LoopingSelectorAutomationPeer_Partial.h"/>
+        <ClInclude Include="LoopingSelectorItemAutomationPeer_Partial.h"/>
+        <ClInclude Include="LoopingSelectorItemDataAutomationPeer_Partial.h"/>
+        <ClInclude Include="LoopingSelectorItem_Partial.h"/>
+        <ClInclude Include="LoopingSelectorPanel_Partial.h"/>
+        <ClInclude Include="LoopingSelector_Partial.h"/>
+        <ClInclude Include="NavigateTransitionHelper.h"/>
+        <ClInclude Include="PhoneResource.h"/>
+        <ClInclude Include="PhoneTypes.g.h"/>
+        <ClInclude Include="PickerConfirmedEventArgs_Partial.h"/>
+        <ClInclude Include="PickerFlyoutBase_Partial.h"/>
+        <ClInclude Include="PickerFlyoutPresenterAutomationPeer_Partial.h"/>
+        <ClInclude Include="PickerFlyoutPresenter_Partial.h"/>
+        <ClInclude Include="PickerFlyout_Partial.h"/>
+        <ClInclude Include="PivotAutomationPeer_Partial.h"/>
+        <ClInclude Include="PivotHeaderItem.h"/>
+        <ClInclude Include="PivotHeaderManager.h"/>
+        <ClInclude Include="PivotHeaderManagerCallbacks.h"/>
+        <ClInclude Include="PivotHeaderPanel_Partial.h"/>
+        <ClInclude Include="PivotItemAutomationPeer_Partial.h"/>
+        <ClInclude Include="PivotItemDataAutomationPeer_Partial.h"/>
+        <ClInclude Include="PivotItemEventArgs.h"/>
+        <ClInclude Include="PivotItem_Partial.h"/>
+        <ClInclude Include="PivotPanel_Partial.h"/>
+        <ClInclude Include="Pivot_Partial.h"/>
+        <ClInclude Include="PlatformHelpers.h"/>
+        <ClInclude Include="precomp.h"/>
+        <ClInclude Include="SelectionExports.h"/>
+        <ClInclude Include="ThemeTransitions.h"/>
+        <ClInclude Include="TimePickedEventArgs_Partial.h"/>
+        <ClInclude Include="TimePickerFlyoutPresenterAutomationPeer_Partial.h"/>
+        <ClInclude Include="TimePickerFlyoutPresenter_Partial.h"/>
+        <ClInclude Include="TimePickerFlyout_Partial.h"/>
+        <ClInclude Include="TypeUtils.h"/>
+        <ClInclude Include="UIAsyncBase.h"/>
+        <ClInclude Include="ValueHelpers.h"/>
+
+        <ClCompile Include="PhoneTypes.g.cpp"/>
+        <ClCompile Include="AutomationHelper.cpp"/>
+        <ClCompile Include="DatePickerFlyout_Partial.cpp"/>
+        <ClCompile Include="DatePickerFlyoutPresenter_Partial.cpp"/>
+        <ClCompile Include="DatePickerFlyoutPresenterAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="DatePickerFlyoutItem_Partial.cpp"/>
+        <ClCompile Include="DateTimePickerFlyoutHelper.cpp"/>
+        <ClCompile Include="ElevationHelper.cpp"/>
+        <ClCompile Include="NavigateTransitionHelper.cpp"/>
+        <ClCompile Include="LoopingSelector_Partial.cpp"/>
+        <ClCompile Include="LoopingSelectorAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="LoopingSelectorItem_Partial.cpp"/>
+        <ClCompile Include="LoopingSelectorItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="LoopingSelectorItemDataAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="LoopingSelectorPanel_Partial.cpp"/>
+        <ClCompile Include="Pivot_Partial.cpp"/>
+        <ClCompile Include="PivotHeaderManager.cpp"/>
+        <ClCompile Include="Pivot_Automation_Partial.cpp"/>
+        <ClCompile Include="Pivot_SlideInEffect_Partial.cpp"/>
+        <ClCompile Include="PivotPanel_Partial.cpp"/>
+        <ClCompile Include="PivotAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="PivotItem_Partial.cpp"/>
+        <ClCompile Include="PivotItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="PivotItemDataAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="PivotHeaderItem.cpp"/>
+        <ClCompile Include="PivotItemEventArgs.cpp"/>
+        <ClCompile Include="SelectionExports.cpp"/>
+        <ClCompile Include="ThemeTransitions.cpp"/>
+        <ClCompile Include="TimePickerFlyout_Partial.cpp"/>
+        <ClCompile Include="TimePickerFlyoutPresenter_Partial.cpp"/>
+        <ClCompile Include="TimePickerFlyoutPresenterAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="PickerFlyoutBase_Partial.cpp"/>
+        <ClCompile Include="PickerFlyout_Partial.cpp"/>
+        <ClCompile Include="PickerFlyoutPresenter_Partial.cpp"/>
+        <ClCompile Include="PickerFlyoutPresenterAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="ListPickerFlyout_Partial.cpp"/>
+        <ClCompile Include="ListPickerFlyoutPresenter_Partial.cpp"/>
+        <ClCompile Include="ListPickerFlyoutPresenterAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="JumpListHelper.cpp"/>
+        <ClCompile Include="JumpListItemForegroundConverter_Partial.cpp"/>
+        <ClCompile Include="JumpListItemBackgroundConverter_Partial.cpp"/>
+        <ClCompile Include="PlatformHelpers.cpp"/>
+        <ClCompile Include="ValueHelpers.cpp"/>
+        <ClCompile Include="PivotHeaderPanel_Partial.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <XamlPrecompiledInclude>precomp.h</XamlPrecompiledInclude>
+        <XamlPrecompiledSource>precomp.cpp</XamlPrecompiledSource>
+        <XamlPrecompiledPch>precomp.pch</XamlPrecompiledPch>
+        <XamlPrecompiledObj>precomp.obj</XamlPrecompiledObj>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPhonePath)\idl\phone.vcxproj" Project="{84d22d7d-5fd0-4ccf-b8d2-c34506c6ba66}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

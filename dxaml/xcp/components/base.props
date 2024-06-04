@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved. -->
+    <PropertyGroup>
+        <!-- USE_NATIVE_EH=1 # We explicitly disallow try/catch in Xaml to reduce binary size -->
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) UNICODE; _UNICODE; WIL_SUPPRESS_PRIVATE_API_USE; MIDL_NS_PREFIX;</ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <Import Project="$(XcpPath)\components\includes.props"/>
+
+    <!-- Lifted IXP's private/internal interfaces are marked with [experimental]. We need access to them. -->
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) ENABLE_WINRT_EXPERIMENTAL_TYPES=1;</ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <!-- To bootstrap this effort we're temporarily including some of the     -->
+    <!-- traditional XCP directories. In time as we move more of Jupiter into -->
+    <!-- this new model we'll be able to depricate these.                     -->
+    <PropertyGroup>
+        <XamlDiagPath>$(XamlSourcePath)\xcp\components\xamldiagnostics</XamlDiagPath>
+        <XamlDiagObjPath>$(XamlBinaryPath)\xcp\components\xamldiagnostics</XamlDiagObjPath>
+        <LegacyIncludes>
+            $(XcpPath)\inc;
+            $(XcpPath)\core\compositor;
+            $(XcpPath)\core\hw;
+            $(XcpPath)\core\inc;
+            $(XcpPath)\core\text\RichTextServices\inc;
+            $(XcpPath)\core\imaging\ImagingProvider;
+            $(XcpPath)\pal\inc;
+            $(XcpPath)\win\inc;
+        </LegacyIncludes>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(LiftedIXPIncludePaths);
+            $(RepoRoot)\external\inc;
+            $(ExternalDependencies);
+            $(FrameworkUdkIncPath);
+            $(XamlDiagPath)\idl;
+            $(XamlDiagObjPath)\idl;
+        </ProjectIncludeDirectories>
+
+        <!-- Do not add folders here. This is the base set of include directories        -->
+        <!-- available to every component. The only folders that should be listed        -->
+        <!-- here are folders containing include files that will become part of the      -->
+        <!-- precompiled header and are going to be used by the vast majority of all     -->
+        <!-- components.                                                                 -->
+        <!--                                                                             -->
+        <!-- To bootstrap this effort we're temporarily including the legacy directory   -->
+        <!-- for xvector and friends. In time we'll be able to remove this with a little -->
+        <!-- refactoring.                                                                -->
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components;
+            $(XcpPath)\components\pch;
+            $(XcpPath)\components\base\inc;
+            $(XcpPath)\components\brushes\inc;
+            $(XcpPath)\components\criticalsection\inc;
+            $(XcpPath)\components\focus\inc;
+            $(XcpPath)\components\FocusRect\inc;
+            $(XcpPath)\components\com\inc;
+            $(XcpPath)\components\common\inc;
+            $(XcpPath)\components\deferral\inc;
+            $(XcpPath)\components\metadata\inc;
+            $(XcpPath)\components\xstring\inc;
+            $(XcpPath)\components\legacy\inc;
+            $(XcpPath)\components\primitiveDependencyObjects\inc;
+            $(XcpPath)\components\dependencyLocator\inc;
+            $(XcpPath)\components\lifetime\inc;
+            $(XcpPath)\components\DependencyObject\inc;
+            $(XcpPath)\components\associative\inc;
+            $(XcpPath)\components\flyweight\inc;
+            $(XcpPath)\components\simple\inc;
+            $(XcpPath)\components\runtimeEnabledFeatures\inc;
+            $(XcpPath)\components\accesskeys\inc\;
+            $(XcpPath)\components\allocation\inc;
+            $(XcpPath)\components\moco\inc;
+            $(XcpPath)\components\mrt\inc;
+            $(XcpPath)\components\animation\inc;
+            $(XcpPath)\components\math\inc;
+            $(XcpPath)\components\ContentRoot\inc;
+            $(XcpPath)\components\gestures\inc;
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\scaling\inc;
+            $(XcpPath)\components\Switcher\inc;
+            $(XcpPath)\components\imaging\inc;
+            $(XcpPath)\components\resources\inc;
+            $(LegacyIncludes);
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\dxaml\idl\winrt\merged\microsoft.ui.xaml.vcxproj" Project="{869EA267-A81A-49ED-8404-812C2A03E25A}"/>
+        <ProjectReference Include="$(XamlDiagPath)\idl\xamlom.vcxproj" />
+    </ItemGroup>
+</Project>

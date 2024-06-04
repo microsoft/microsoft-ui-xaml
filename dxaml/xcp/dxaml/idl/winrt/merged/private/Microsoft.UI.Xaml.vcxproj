@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectName>Microsoft.UI.Xaml</ProjectName>
+    <ProjectGuid>{D638A8EF-3A48-45F2-913C-88B29FED03CB}</ProjectGuid>
+    <IncludePrivateMetadata>true</IncludePrivateMetadata>
+    <BinplaceOutputAssemblies>false</BinplaceOutputAssemblies>
+  </PropertyGroup>
+  <Import Project="..\Microsoft.UI.Xaml.props" />
+</Project>

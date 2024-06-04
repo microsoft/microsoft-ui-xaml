@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- We end up with a dependency cycle if we report that microsoft.ui.xaml.vcxproj can be restored,
+         since it includes this file.  Let's ensure we don't add that project. -->
+    <Target Name="_IsProjectRestoreSupported" Returns="@(_ValidProjectsForRestore)">
+        <ItemGroup>
+            <_ValidProjectsForRestore Include="$(MSBuildProjectFullPath)" Condition="'$(IgnorePrivateMUXMetadataDir)' != 'true' and '$(ProjectGuid)' != '{52b2ed64-1cfc-401b-8c5b-6d1e1deadf98}'" />
+        </ItemGroup>
+    </Target>
+
+    <ItemGroup Condition="'$(MergeWinMd)'!='false' and '$(IgnorePrivateMUXMetadataDir)' != 'true' and '$(ProjectGuid)' != '{52b2ed64-1cfc-401b-8c5b-6d1e1deadf98}'">
+      <ProjectReference Include="$(XamlSourcePath)\xcp\dxaml\idl\winrt\merged\private\Microsoft.UI.Xaml.vcxproj" Project="{52b2ed64-1cfc-401b-8c5b-6d1e1deadf98}" LinkLibraryDependencies="false" />
+    </ItemGroup>
+
+    <Target Name="Asm" Inputs="@(AssemblySources)" Outputs="$(OutDir)%(AssemblySources.Filename).obj" BeforeTargets="Lib">
+        <Exec Command="ml64.exe /c /Cx /nologo /Zi /ZH:SHA_256 /Fo$(OutDir)%(AssemblySources.Filename).obj %(AssemblySources.Identity)"/>
+        <ItemGroup>
+            <Lib Include="$(OutDir)%(AssemblySources.Filename).obj"/>
+        </ItemGroup>
+    </Target>
+
+    <Target Name="GenerateCppWinRT" Condition="'$(GenerateCppWinRT)'=='true'" DependsOnTargets="_ComposedMetadata" Inputs="$(WinMdOutputPath)\%(GenerateCppWinRTOnWinMD.Identity)" Outputs="$(WinMdOutputPath)\Generated\winrt\winrt.ixx">
+        <PropertyGroup>
+            <WinMdOutputPath>$(XamlBuildPath)\winmd</WinMdOutputPath>
+        </PropertyGroup>
+        <Exec Command="cppwinrt -in $(WinMdOutputPath)\%(GenerateCppWinRTOnWinMD.Identity) -out $(WinMdOutputPath)\Generated -ref $(ProjectSDKMetadataPath)\Windows.winmd"/>
+    </Target>
+
+</Project>

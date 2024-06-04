@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>474B92F7-CD58-FED9-8569-9640529D1871</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>ScrollPresenter_APITests</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollControllerTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollPresenterAnchoringTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollPresenterBringIntoViewTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollPresenterLayoutTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollPresenterSnapPointTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollPresenterViewChangeTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollPresenterTests.cs" />
+  </ItemGroup>
+</Project>

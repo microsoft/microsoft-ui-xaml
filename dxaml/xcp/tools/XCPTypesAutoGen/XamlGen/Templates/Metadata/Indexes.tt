@@ -1,0 +1,68 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="MetadataCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#pragma once
+
+using UINT8 = unsigned char;
+using UINT16 = unsigned short;
+
+enum class <#= IndexGenerator.KnownNamespaceIndexEnumName #>: UINT16
+{
+    <#= NamespaceDefinition.UnknownNamespace.IndexNameWithoutPrefix #>,
+<# foreach (var ns in Model.GetTypeTableNamespaces()) { #>
+    <#= ns.IndexNameWithoutPrefix #>,
+<# } #>
+};
+
+enum class <#= IndexGenerator.KnownTypeIndexEnumName #>: UINT16
+{
+    <#= ClassDefinition.UnknownType.IndexNameWithoutPrefix #>,
+<# foreach (var type in Model.GetAllTypeTableTypes()) { #>
+    <#= type.IndexNameWithoutPrefix #>,
+<# } #>
+};
+
+enum class <#= IndexGenerator.KnownPropertyIndexEnumName #>: UINT16
+{
+    <#= PropertyDefinition.UnknownProperty.IndexNameWithoutPrefix #>,
+<# foreach (var property in Model.GetAllTypeTableDependencyProperties()) { #>
+    <#= property.IndexNameWithoutPrefix #>,
+<# } #>
+<# foreach (var property in Model.GetAllTypeTableSimpleProperties()) { #>
+    <#= property.IndexNameWithoutPrefix #>,
+<# } #>
+};
+
+enum class <#= IndexGenerator.KnownMethodIndexEnumName #>: UINT16
+{
+    <#= MethodDefinition.UnknownMethod.IndexNameWithoutPrefix #>,
+<# var methodQuery = Model.GetAllMethodIndexNamesNoPrefix(); #>
+<# foreach (var methodNameWithoutPrefix in methodQuery) { #>
+    <#= methodNameWithoutPrefix #>,
+<# } #>
+};
+
+enum class <#= IndexGenerator.KnownEventIndexEnumName #>: UINT16
+{
+    <#= EventDefinition.UnknownEvent.IndexNameWithoutPrefix #>,
+<# foreach (var ev in Model.GetAllControlEvents()) { #>
+    <#= ev.IndexNameWithoutPrefix #>,
+<# }
+   foreach (var ev in Model.GetAllNonControlEvents()) { #>
+    <#= ev.IndexNameWithoutPrefix #>,
+<# } #>
+};
+
+constexpr UINT16 KnownNamespaceCount            = static_cast<UINT16>(<#= Model.GetTypeTableNamespaces().Last().IndexName #>) + 1;
+constexpr UINT16 KnownTypeCount                 = static_cast<UINT16>(<#= Model.GetAllTypeTableTypes().Last().IndexName #>) + 1;
+constexpr UINT16 KnownPropertyCount             = static_cast<UINT16>(<#= Model.GetAllTypeTableProperties().Last().IndexName #>) + 1;
+constexpr UINT16 KnownDependencyPropertyCount   = static_cast<UINT16>(<#= Model.GetAllTypeTableDependencyProperties().Last().IndexName #>) + 1;
+constexpr UINT16 KnownSimplePropertyCount       = <#= Model.GetAllTypeTableSimpleProperties().Count() #>; // <#= Model.GetAllTypeTableSimpleProperties().Last().IndexName #>
+constexpr UINT16 KnownMethodCount               = static_cast<UINT16>(<#= Model.GetAllMethods().Last().IndexName #>) + 1;
+constexpr UINT16 KnownEventCount                = static_cast<UINT16>(<#= Model.GetAllEvents().Last().IndexName #>) + 1;
+constexpr <#= IndexGenerator.KnownEventIndexEnumName #> LastControlEvent = <#= Model.GetAllControlEvents().Last().IndexName #>;

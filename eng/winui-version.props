@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProductMajorVersion Condition="$(ProductMajorVersion) == ''">3</ProductMajorVersion>
+    <ProductMinorVersion Condition="$(ProductMinorVersion) == ''">0</ProductMinorVersion>
+    <ProductPatchVersion Condition="$(ProductPatchVersion) == ''">0</ProductPatchVersion>
+    <ProductBuildVersion Condition="$(ProductBuildVersion) == ''">0</ProductBuildVersion>
+  
+    <!--
+      These properties control the assembly version of our .NET interop assembly. For more information on how assembly
+      versions work in .NET, see this doc: https://docs.microsoft.com/en-us/dotnet/standard/assembly/versioning
+    -->
+    <Version>$(ProductMajorVersion).$(ProductMinorVersion).$(ProductPatchVersion).0</Version>
+    <FileVersion>$(ProductMajorVersion).$(ProductMinorVersion).$(ProductPatchVersion).$(ProductBuildVersion)</FileVersion>
+  </PropertyGroup>
+
+  <!-- 
+    The ProductxxxxVersions properties are for WinUI, but the product that distributes WinUI is WinAppSDK, so we reclassify 
+    the product versions to WINUI versions for use in file versions within the product.  Also, in our WinAppSdk binaries, we
+    ignore the Minor and Build Version here in favor of the WinAppSdk.
+    
+    At some point we may want to rationalize all this.  The product versions are used all over Xaml in numerous yml files and
+    for some managed projects that we don't ship.  Since the current work item is to only update the versions on the
+    binaries that ship with WinAppSdk, we will leave the majority of all this in place and make just the changes necessary
+    for the shipping binaries.  
+    -->
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>
+        %(PreprocessorDefinitions);
+        WINUI_MAJOR_VERSION=$(ProductMajorVersion);
+        WINUI_MINOR_VERSION=$(ProductMinorVersion);
+        WINUI_BUILD_VERSION=$(ProductBuildVersion);
+        WINUI_PATCH_VERSION=$(ProductPatchVersion);
+      </PreprocessorDefinitions>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>
+        %(PreprocessorDefinitions);
+        WINUI_MAJOR_VERSION=$(ProductMajorVersion);
+        WINUI_MINOR_VERSION=$(ProductMinorVersion);
+        WINUI_BUILD_VERSION=$(ProductBuildVersion);
+        WINUI_PATCH_VERSION=$(ProductPatchVersion);
+      </PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ProductPrereleaseTag)' != ''">
+    <ClCompile>
+      <PreprocessorDefinitions>                                                           
+        %(PreprocessorDefinitions);
+        WINUI_PRERELEASE_TAG=$(ProductPrereleaseTag);
+      </PreprocessorDefinitions>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>
+        %(PreprocessorDefinitions);
+        WINUI_PRERELEASE_TAG=$(ProductPrereleaseTag);
+      </PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)' == 'Debug'">
+    <ResourceCompile>
+      <PreprocessorDefinitions>DEBUG;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+
+    <!-- This target will create a header file containing the current git commit value for the
+         repo and the current build machine.  We use a header file rather than passing macros so that
+         we don't adversly affect the incremental builds should the user simply commit a new revision.
+         -->
+  <PropertyGroup>
+    <BeforeBuildCompileTargets>$(BeforeBuildCompileTargets);BuildWinUISourceRevisionHeader</BeforeBuildCompileTargets>
+  </PropertyGroup>
+  <Target Name="BuildWinUISourceRevisionHeader" Condition="'$(BuildWinUISourceRevisionHeader)'!='false'" AfterTargets="Build">
+    <Exec Command="git rev-parse  HEAD" ConsoleToMsBuild="True">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
+    </Exec>
+    <WriteLinesToFile
+       File="$(TempDir)\WinUISourceRevision.h"
+       Lines="#define WINUI_SOURCE_REVISION_ID $(GitCommitHash)&#13;&#10;#define WINUI_BUILD_MACHINE $(COMPUTERNAME)($(USERNAME))&#13;&#10;"
+       Overwrite="true"
+       WriteOnlyWhenDifferent="true"
+       Encoding="Unicode"/>
+    <Message Text="Git Commit Hash: $(GitCommitHash)"/>
+    <Message Text="Build Machine: $(COMPUTERNAME)($(USERNAME)"/>
+  </Target>
+</Project>

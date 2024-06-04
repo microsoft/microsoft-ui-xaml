@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <ItemGroup Label="ProjectConfigurations">
+        <ProjectConfiguration Include="Debug|ARM64">
+            <Configuration>Debug</Configuration>
+            <Platform>ARM64</Platform>
+        </ProjectConfiguration>
+        <ProjectConfiguration Include="Debug|Win32">
+            <Configuration>Debug</Configuration>
+            <Platform>Win32</Platform>
+        </ProjectConfiguration>
+        <ProjectConfiguration Include="Debug|x64">
+            <Configuration>Debug</Configuration>
+            <Platform>x64</Platform>
+        </ProjectConfiguration>
+        <ProjectConfiguration Include="Release|ARM64">
+            <Configuration>Release</Configuration>
+            <Platform>ARM64</Platform>
+        </ProjectConfiguration>
+        <ProjectConfiguration Include="Release|Win32">
+            <Configuration>Release</Configuration>
+            <Platform>Win32</Platform>
+        </ProjectConfiguration>
+        <ProjectConfiguration Include="Release|x64">
+            <Configuration>Release</Configuration>
+            <Platform>x64</Platform>
+        </ProjectConfiguration>
+    </ItemGroup>
+    
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|Win32' " />
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' " />
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|ARM64' " />
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|Win32' " />
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' " />
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|ARM64' " />
+    
+    <!--
+        There are already some MSBuild projects in the build tree.  NT Build handles these by passing in a series of
+        property values when it executes them.  This legacy file will (when not being run under NT) set those 
+        appropriate values.
+    -->
+    <Import Project="Xaml.NTLegacy.props" />
+    
+    <PropertyGroup>
+        <TargetPlatformVersion>$(WindowsSdkTargetPlatformVersion)</TargetPlatformVersion>
+        <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
+        <NonCoreWin>true</NonCoreWin>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <!-- Note: These may not be right for all scenarios, but they are for the current time.  -->
+        <ClCompile>
+            <PreprocessorDefinitions>
+                _CONTROL_FLOW_GUARD=1;
+                _CONTROL_FLOW_GUARD_SVCTAB=1;
+            </PreprocessorDefinitions>
+            <AdditionalIncludeDirectories>
+                %(AdditionalIncludeDirectories)
+                $(MSBuildProjectDirectory);
+                $(OutDir);
+            </AdditionalIncludeDirectories>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+</Project>

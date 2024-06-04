@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+    </PropertyGroup>
+
+    <Import Project="$(XcpPath)\common.props"/>
+
+    <PropertyGroup>
+        <Dllentry>_DllMainCRTStartup</Dllentry>
+
+        <XamlPrecompiledInclude>..\precomp.h</XamlPrecompiledInclude>
+        <XamlPrecompiledPch>precomp.pch</XamlPrecompiledPch>
+        <XamlPrecompiledObj>precomp.obj</XamlPrecompiledObj>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="precomp.h"/>
+        <ClInclude Include="SafeArrayUtil.h"/>
+
+        <ClCompile Include="..\xcpwindow.cpp"/>
+        <ClCompile Include="..\pendingmessages.cpp"/>
+        <ClCompile Include="..\UIAPatternProviderWrapper.cpp"/>
+        <ClCompile Include="..\UIAWindow.cpp"/>
+        <ClCompile Include="..\UIAWrapper.cpp"/>
+        <ClCompile Include="..\UIAHostEnvironmentInfo.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\win\shared;
+            $(XcpPath)\pal\win\inc;
+            $(XcpPath)\win\inc;
+            $(XcpPath)\control\inc;
+            $(XcpPath)\control\common\shared;
+            $(XcpPath)\core\inc;
+            $(XcpObjPath)\win\shared\inc;
+            $(XcpPath)\win\shared\inc;
+            $(XcpPath)\core\controls\generated;
+            $(XcpPath)\components\desktoputility\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <Link>
+            <DelayLoadDLLs>ext-ms-win-xaml-pal-l1-*.dll;</DelayLoadDLLs>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) UNLOADABLE_DELAYLOAD_IMPLEMENTATION;</ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+</Project>

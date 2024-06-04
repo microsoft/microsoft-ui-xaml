@@ -1,0 +1,328 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project ToolsVersion="12.0" DefaultTargets="BuildGenerated" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Import Project="XamlGen.RunCodeGen.props" />
+  <PropertyGroup>
+    <XCPTypesAutogenPath>$([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))</XCPTypesAutogenPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ModelProjects Include="$(XCPTypesAutogenPath)\OM\OM.Instant.proj"/>
+    <ModelProjects Include="$(XCPTypesAutogenPath)\XamlGen\XamlGen.Instant.proj"/>
+    <ModelProjects Include="$(XCPTypesAutogenPath)\XamlOM\XamlOM.Instant.proj"/>
+    <ModelProjects Include="$(XCPTypesAutogenPath)\Modules\AutoSuggestBox\XamlOM.AutoSuggestBox.Instant.proj"/>
+    <ModelProjects Include="$(XCPTypesAutogenPath)\Modules\Controls\XamlOM.Controls.Instant.proj" />
+    <ModelProjects Include="$(XCPTypesAutogenPath)\Modules\ExtendedCore\XamlOM.ExCore.Instant.proj" />
+    <ModelProjects Include="$(XCPTypesAutogenPath)\Modules\Phone\XamlOM.Phone.Instant.proj" />
+  </ItemGroup>
+
+  <Target Name="BuildGenerated"/>
+  <Target Name="BuildCompiled"/>
+  <Target Name="BuildLinked"/>
+  <Target Name="GetTargetPath"/>
+  <Target Name="_CheckForGenerateAppxPackageOnBuild"/>
+
+  <Target Name="XamlGen_BuildModelProjects" BeforeTargets="XamlGen_GenerateCode">
+    <MSBuild Projects="@(ModelProjects)" ContinueOnError="false"/>
+  </Target>
+
+  <!-- We have to manually keep track of Inputs and Outputs here to make incremental builds work well, since msbuild doesn't know what the inputs/outputs will be for codegen.
+       Note the the Outputs is not an exhaustive list, but it's Good Enough. -->
+  <Target Name="XamlGen_GenerateCode" BeforeTargets="XamlGen_CheckFiles" AfterTargets="BuildDependencies"
+        Inputs="$(XamlGenOutputPath)XamlGen.OM.dll;$(XamlGenOutputPath)XamlOM.AutoSuggestBox.Instant.dll;$(XamlGenOutputPath)XamlOM.Controls.Instant.dll;$(XamlGenOutputPath)XamlOM.ExCore.Instant.dll;$(XamlGenOutputPath)XamlOM.Instant.dll;$(XamlGenOutputPath)XamlOM.Phone.Instant.dll;$(XamlGenOutputPath)XamlGen.exe"
+        Outputs="@(FileInfo)" >
+    <PropertyGroup>
+      <CommandLine>$(ClrHost) $(XamlGenOutputPath)XamlGen.exe -XbfGeneration $(XbfGenerationArg) -i $(XCPTypesAutogenPath)\XamlGen</CommandLine>
+    </PropertyGroup>
+    <MakeDir Directories="$(XamlGenOutputPath)" Condition="!Exists('$(XamlGenOutputPath)')"/>
+    <Exec WorkingDirectory="$(XamlGenOutputPath)" Command="$(CommandLine) -o Core -a XamlOM.Instant.dll -a XamlOM.ExCore.Instant.dll -a XamlOM.AutoSuggestBox.Instant.dll -a XamlOM.Controls.Instant.dll"/>
+    <Exec WorkingDirectory="$(XamlGenOutputPath)" Command="$(CommandLine) -o Phone -e Phone -a XamlOM.Instant.dll -a XamlOM.Phone.Instant.dll"/>
+  </Target>
+
+  <Target Name="CleanCodeGenOutput" BeforeTargets="Clean">
+    <RemoveDir Directories="$(XamlGenOutputPath)" ContinueOnError="WarnAndContinue"/>
+  </Target>
+
+  <ItemGroup>
+    <!-- xcp\inc -->
+    <FileInfo Include="$(XamlGenOutputPath)core\UIACoreEnums.g.h">
+      <Destination>xcp\inc</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\UIAEnums.g.h">
+      <Destination>xcp\inc</Destination>
+    </FileInfo>
+
+    <!-- xcp\components\elements -->
+    <FileInfo Include="$(XamlGenOutputPath)core\UIElementSimplePropertiesCallbacks.g.cpp">
+      <Destination>xcp\components\elements</Destination>
+    </FileInfo>
+
+    <!-- xcp\components\metadata -->
+    <FileInfo Include="$(XamlGenOutputPath)core\StaticMetadata.g.cpp">
+      <Destination>xcp\components\metadata</Destination>
+    </FileInfo>
+
+    <!-- xcp\components\metadata\inc -->
+    <FileInfo Include="$(XamlGenOutputPath)core\EnumDefs.g.h">
+      <Destination>xcp\components\metadata\inc</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\EnumValueTable.g.h">
+      <Destination>xcp\components\metadata\inc</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\DependencyObjectTraits.g.h">
+      <Destination>xcp\components\metadata\inc</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\Indexes.g.h">
+      <Destination>xcp\components\metadata\inc</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\TypeCheckData.g.h">
+      <Destination>xcp\components\metadata\inc</Destination>
+    </FileInfo>
+
+    <!-- xcp\core\controls\generated -->
+    <FileInfo Include="$(XamlGenOutputPath)core\coreclasses\GeneratedClasses.g.cpp">
+      <Destination>xcp\core\controls\generated</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\coreclasses\GeneratedClasses.g.h">
+      <Destination>xcp\core\controls\generated</Destination>
+    </FileInfo>
+
+    <!-- xcp\core\elements -->
+    <FileInfo Include="$(XamlGenOutputPath)core\UIElement.g.cpp">
+      <Destination>xcp\core\core\elements</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\Enums.g.cpp">
+      <Destination>xcp\core\core\elements</Destination>
+    </FileInfo>
+
+    <!-- xcp\core\inc -->
+    <FileInfo Include="$(XamlGenOutputPath)core\Activators.g.h">
+      <Destination>xcp\core\inc</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\TypeTable.g.h">
+      <Destination>xcp\core\inc</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\Enums.g.h">
+      <Destination>xcp\core\inc</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\DiagnosticsInterop_SimpleProperties.g.h">
+      <Destination>xcp\core\inc</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\SimplePropertiesCommon.g.h">
+      <Destination>xcp\core\inc</Destination>
+    </FileInfo>
+
+    <!-- xcp\core\metadata -->
+    <FileInfo Include="$(XamlGenOutputPath)core\Activators.g.cpp">
+      <Destination>xcp\core\metadata</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\DynamicMetadata.g.cpp">
+      <Destination>xcp\core\metadata</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\SimplePropertiesCommon.g.cpp">
+      <Destination>xcp\core\metadata</Destination>
+    </FileInfo>
+
+    <!-- xcp\core\Parser -->
+    <FileInfo Include="$(XamlGenOutputPath)core\StableXbfIndexes.g.h">
+      <Destination>xcp\core\Parser</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\StableXbfIndexMapping.g.cpp">
+      <Destination>xcp\core\Parser</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\XamlNativeRuntime_SimpleProperties.g.h">
+      <Destination>xcp\core\Parser</Destination>
+    </FileInfo>
+
+    <!-- xcp\dxaml\idl\winrt\main-->
+    <FileInfo Include="$(XamlGenOutputPath)core\microsoft.ui.xaml.private.idl">
+      <Destination>xcp\dxaml\idl\winrt\main</Destination>
+    </FileInfo>
+
+    <!-- xcp\dxaml\idl\winrt\core-->
+    <FileInfo Include="$(XamlGenOutputPath)core\microsoft.ui.xaml.coretypes.idl">
+      <Destination>xcp\dxaml\idl\winrt\core</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\microsoft.ui.xaml.coretypes2.idl">
+      <Destination>xcp\dxaml\idl\winrt\core</Destination>
+    </FileInfo>
+
+    <!-- xcp\dxaml\idl\winrt\controls-->
+    <FileInfo Include="$(XamlGenOutputPath)core\microsoft.ui.xaml.controls.controls.idl">
+      <Destination>xcp\dxaml\idl\winrt\controls</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\microsoft.ui.xaml.controls.controls2.idl">
+      <Destination>xcp\dxaml\idl\winrt\controls</Destination>
+    </FileInfo>
+
+    <!-- xcp\dxaml\idl\winrt\lib-->
+    <FileInfo Include="$(XamlGenOutputPath)core\Factories.g.cpp">
+      <Destination>xcp\dxaml\lib</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\synonyms.g.h">
+      <Destination>xcp\dxaml\lib</Destination>
+    </FileInfo>
+
+    <!-- xcp\plat\win\desktop> -->
+    <FileInfo Include="$(XamlGenOutputPath)core\Microsoft-Windows-XAML-ETW.man">
+      <Destination>xcp\plat\win\desktop</Destination>
+    </FileInfo>
+
+    <!-- Phone : phone -->
+    <FileInfo Include="$(XamlGenOutputPath)phone\Microsoft.UI.Xaml.Phone.idl">
+      <Destination>phone\idl</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)phone\Microsoft.UI.Xaml.Phone-private.idl">
+      <Destination>phone\idl</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)phone\PhoneTypes.g.h">
+      <Destination>phone\lib</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)phone\PhoneTypes.g.cpp">
+      <Destination>phone\lib</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)phone\XamlTypeInfo.g.cpp">
+      <Destination>xcp\dxaml\dllsrv\exts\phone</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)phone\XamlTypeInfo.g.h">
+      <Destination>xcp\dxaml\dllsrv\exts\phone</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)phone\XamlTypeInfo.g.rc">
+      <Destination>xcp\dxaml\dllsrv\exts\phone</Destination>
+    </FileInfo>
+
+    <!-- XBF -->
+    <FileInfo Include="$(XamlGenOutputPath)core\StableXbfTypeIndexes.g.csv" Condition="$(XbfGenerationArg) == 'full'">
+      <Destination>xcp\tools\XCPTypesAutoGen\XamlGen</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\StableXbfPropertyIndexes.g.csv" Condition="$(XbfGenerationArg) == 'full'">
+      <Destination>xcp\tools\XCPTypesAutoGen\XamlGen</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\StableEventIndexes.g.csv" Condition="$(XbfGenerationArg) == 'full'">
+      <Destination>xcp\tools\XCPTypesAutoGen\XamlGen</Destination>
+    </FileInfo>
+
+    <!-- WidgetSpinner XBF parsing library -->
+    <FileInfo Include="$(XamlGenOutputPath)core\StableXbfIndexMetadata.g.cs">
+      <Destination>xcp\tools\XbfParser\WidgetSpinner\Metadata</Destination>
+    </FileInfo>
+
+    <!-- xcp\components\simple -->
+    <FileInfo Include="$(XamlGenOutputPath)core\SimplePropertiesMetadata.g.h">
+      <Destination>xcp\components\simple\inc</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\SimplePropertiesAdapter.g.h">
+      <Destination>xcp\components\simple\lib</Destination>
+    </FileInfo>
+    <FileInfo Include="$(XamlGenOutputPath)core\SimplePropertiesHelpers.g.cpp">
+      <Destination>xcp\components\simple\lib</Destination>
+    </FileInfo>
+  </ItemGroup>
+
+  <!-- Bulk adding core and framework classes -->
+  <Target Name="NewItems" BeforeTargets="XamlGen_CheckFiles">
+    <CreateItem Include="$(XamlGenOutputPath)core\coreclasses\*.h" AdditionalMetadata="Destination=xcp\core\controls\generated">
+      <Output TaskParameter="Include" ItemName="FileInfo"/>
+    </CreateItem>
+    <CreateItem Include="$(XamlGenOutputPath)core\coreclasses\*.cpp" AdditionalMetadata="Destination=xcp\core\controls\generated">
+      <Output TaskParameter="Include" ItemName="FileInfo"/>
+    </CreateItem>
+    <CreateItem Include="$(XamlGenOutputPath)core\frameworkclasses\*.h" AdditionalMetadata="Destination=xcp\dxaml\lib\winrtgeneratedclasses">
+      <Output TaskParameter="Include" ItemName="FileInfo"/>
+    </CreateItem>
+    <CreateItem Include="$(XamlGenOutputPath)core\frameworkclasses\*.cpp" AdditionalMetadata="Destination=xcp\dxaml\lib\winrtgeneratedclasses">
+      <Output TaskParameter="Include" ItemName="FileInfo"/>
+    </CreateItem>
+  </Target>
+
+  <Target Name="XamlGen_PreCheckFiles" BeforeTargets="XamlGen_CheckFiles">
+    <Delete Files="$(XamlGenOutputPath)updatecheckedinfiles.cmd"/>
+    <WriteLinesToFile
+      Lines="pushd $(DXamlPath)"
+      File="$(XamlGenOutputPath)updatecheckedinfiles.cmd"
+      Overwrite="false"
+      Condition="'$(DEV_RUNNING_CODE_GEN)' == 'true'"
+      />
+  </Target>
+
+  <!-- This task is used for comparing files -->
+
+  <UsingTask TaskName="CompareFiles" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Left Required="true" />
+      <Right Required="true" />
+      <FilesDifferent ParameterType="System.Boolean" Output="true"/>
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO"/>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+FileInfo left = new FileInfo(Left);
+FileInfo right = new FileInfo(Right);
+if (!left.Exists || !right.Exists) {
+  FilesDifferent = true;
+}
+else {
+  FilesDifferent = true;
+  string[] leftLines = File.ReadAllLines(Left);
+  string[] rightLines = File.ReadAllLines(Right);
+  if (leftLines.Length == rightLines.Length) {
+    FilesDifferent = false;
+    for (int i=0; i<leftLines.Length; ++i) {
+        if (leftLines[i] != rightLines[i]) {
+          FilesDifferent = true;
+          break;
+        }
+    }
+  }
+}
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="XamlGen_CheckFiles" BeforeTargets="XamlGen_PostCheckFiles" Inputs="@(FileInfo)" Outputs="%(Identity).bogus">
+    <PropertyGroup>
+      <DXamlPath>$(XamlSourcePath)</DXamlPath>
+    </PropertyGroup>
+    <CompareFiles Left="$(DXamlPath)\%(FileInfo.Destination)\%(FileName)%(Extension)" Right="%(Identity)">
+      <Output TaskParameter="FilesDifferent" PropertyName="FilesDifferent" />
+    </CompareFiles>
+    <WriteLinesToFile
+      Lines="copy %(Identity) $(DXamlPath)\%(FileInfo.Destination)\%(FileName)%(Extension)"
+      File="$(XamlGenOutputPath)updatecheckedinfiles.cmd"
+      Overwrite="false"
+      Condition="$(FilesDifferent) == 'true'"
+      />
+  </Target>
+
+  <Target Name="XamlGen_PostCheckFiles" BeforeTargets="BuildGenerated">
+    <WriteLinesToFile
+      Lines="popd"
+      File="$(XamlGenOutputPath)updatecheckedinfiles.cmd"
+      Overwrite="false"
+      Condition="'$(DEV_RUNNING_CODE_GEN)' == 'true'"
+      />
+    <Error
+      Text="Checked in generated files are out of sync.%0aRun this script to update, and check them in with the rest of your changes:%0a%0a$(XamlGenOutputPath)updatecheckedinfiles.cmd%0a"
+      Condition="Exists('$(XamlGenOutputPath)updatecheckedinfiles.cmd') And '$(DEV_RUNNING_CODE_GEN)' != 'true'"
+       />
+  </Target>
+
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildProjectDirectory)\..\XamlOM\XamlOm.Instant.proj" />
+    <ProjectReference Include="$(MSBuildProjectDirectory)\..\Modules\ExtendedCore\XamlOM.ExCore.Instant.proj" />
+    <ProjectReference Include="$(MSBuildProjectDirectory)\..\Modules\AutoSuggestBox\XamlOM.AutoSuggestBox.Instant.proj" />
+    <ProjectReference Include="$(MSBuildProjectDirectory)\..\Modules\Controls\XamlOM.Controls.Instant.proj" />
+    <ProjectReference Include="$(MSBuildProjectDirectory)\..\Modules\Phone\XamlOM.Phone.Instant.proj" />
+    <ProjectReference Include="$(MSBuildProjectDirectory)\..\XamlGen\XamlGen.Instant.proj" />
+  </ItemGroup>
+
+  <Import Project="..\RunCodeGen\XamlGen.InstantCompiler.targets" />
+
+  <!-- Rebuild is re-defined here to override the one in XamlGen.InstantCompiler.targets -->
+  <Target Name="Rebuild" DependsOnTargets="Clean;BuildGenerated" />
+  <!-- Dummy target to enable F5 -->
+  <Target Name="GetTargetPath" />
+</Project>

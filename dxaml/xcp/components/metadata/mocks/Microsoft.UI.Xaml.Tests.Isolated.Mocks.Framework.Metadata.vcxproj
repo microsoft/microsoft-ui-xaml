@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{2b9a325f-17af-40f1-98c9-2aa7856b77e7}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\base.props"/>
+    <Import Project="$(XamlSourcePath)\test\external-dependencies-lift.props"/>
+
+    <PropertyGroup>
+        <TestCode>true</TestCode>
+
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(TestExternalDependencies);
+            $(XcpPath)\components\criticalsection\inc;
+            $(XcpPath)\components\unittests;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <ExceptionHandling>Sync</ExceptionHandling>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ClInclude Include="MockClassInfo.h"/>
+        <ClInclude Include="MockDependencyProperty.h"/>
+        <ClInclude Include="MockDynamicMetadataStorage.h"/>
+        <ClInclude Include="MockMetadata.h"/>
+        <ClInclude Include="MockXamlMetadataProvider.h"/>
+        <ClInclude Include="MockXamlType.h"/>
+
+        <ClCompile Include="MockClassInfo.cpp"/>
+        <ClCompile Include="MockDependencyProperty.cpp"/>
+        <ClCompile Include="MockDynamicMetadataStorage.cpp"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

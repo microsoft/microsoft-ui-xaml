@@ -1,0 +1,8 @@
+LIBRARY
+
+EXPORTS
+DllMain PRIVATE
+DllGetActivationFactory PRIVATE
+DllCanUnloadNow PRIVATE
+SendTelemetryOnSuspend PRIVATE
+DeinitializeMUXC PRIVATE

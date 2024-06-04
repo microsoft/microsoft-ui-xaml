@@ -1,0 +1,43 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.ButtonInteractionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal">
+            <ComboBox x:Name="invokeModeCB" AutomationProperties.AutomationId="InvokeModeComboBox" Header="Invoke Mode" SelectionChanged="OnInvokeModeChanged" SelectedIndex="0">
+                <ComboBoxItem Content="Release" AutomationProperties.AutomationId="ReleaseMode"/>
+                <ComboBoxItem Content="Press" AutomationProperties.AutomationId="PressMode"/>
+                <ComboBoxItem Content="Hover" AutomationProperties.AutomationId="HoverMode"/>
+            </ComboBox>
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Invoke Count: "/>
+                    <TextBlock x:Name="invokeCountTB" AutomationProperties.AutomationId="InvokeCountTextBlock" Text="0"/>
+                </StackPanel>
+                <Button Content="Reset Count" AutomationProperties.AutomationId="ResetInvokeCountButton" Click="OnResetInvokeCountClick"/>
+            </StackPanel>
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="IsHovering: "/>
+                    <TextBlock x:Name="isHoveringTB" AutomationProperties.AutomationId="IsHoveringTextBlock" Text="False"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="IsPressing: "/>
+                    <TextBlock x:Name="isPressingTB" AutomationProperties.AutomationId="IsPressingTextBlock" Text="False"/>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="1">
+            <local:TargetElement x:Name="targetElement" AutomationProperties.AutomationId="TargetElement">
+                <Rectangle x:Name="rect" Width="200" Height="200" Fill="Orange"/>
+            </local:TargetElement>
+        </StackPanel>
+    </Grid>
+</local:TestPage>

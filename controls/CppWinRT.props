@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
+    <CppWinRTAddXamlMetaDataProviderIdl>false</CppWinRTAddXamlMetaDataProviderIdl>
+    <CppWinRTPackage>true</CppWinRTPackage>
+    <CppWinRTEnableComponentProjection>true</CppWinRTEnableComponentProjection>
+    <CppWinRTOptimized>true</CppWinRTOptimized>
+    <CppWinRTHeapEnforcement>true</CppWinRTHeapEnforcement>
+    <BuildPassReferences>true</BuildPassReferences>
+    <!-- Reference the private MUX metadata -->
+    <IncludePrivateMetadata>true</IncludePrivateMetadata>
+    <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
+    <CppWinRTAddXamlMetaDataProviderIdl>false</CppWinRTAddXamlMetaDataProviderIdl>
+
+    <!-- There's a C++/WinRT generation bug that includes all types that start with ScrollView*
+         despite the fact that only "ScrollView" exactly is the type we want from MUXC:
+
+             https://github.com/microsoft/cppwinrt/issues/835
+
+         This -exclude directive is needed until that issue is fixed. -->
+    <CppWinRTParameters>$(CppWinRTParameters) -exclude Microsoft.UI.Xaml.Controls.ScrollViewer</CppWinRTParameters>
+    <!-- In release builds our "experimental" features are under feature velocity as AlwaysDisabled. C++/WinRT assumes that
+         AlwaysDisabled features should be excluded by default, but we need them included for our component implementation.
+         Use -ignore_velocity to have the feature attributes be ignored by the tool.
+         -->
+    <CppWinRTParameters>$(CppWinRTParameters) -ignore_velocity</CppWinRTParameters>
+  </PropertyGroup>
+</Project>

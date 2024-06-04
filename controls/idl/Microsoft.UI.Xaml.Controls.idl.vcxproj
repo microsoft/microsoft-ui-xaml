@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <IsWinmdProject>true</IsWinmdProject>
+    <MergeWinMd>false</MergeWinMd>
+    <DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(environment.props))" />
+  <Import Project="$(MUXCProjectRoot)FeatureAreas.props" />
+  <Import Project="$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="$(NuGetPackageRoot)\Microsoft.SourceLink.GitHub.1.1.1\build\Microsoft.SourceLink.GitHub.props" Condition="Exists('$(NuGetPackageRoot)\Microsoft.SourceLink.GitHub.1.1.1\build\Microsoft.SourceLink.GitHub.props')" />
+  <Import Project="$(NuGetPackageRoot)\Microsoft.SourceLink.Common.1.1.1\build\Microsoft.SourceLink.Common.props" Condition="Exists('$(NuGetPackageRoot)\Microsoft.SourceLink.Common.1.1.1\build\Microsoft.SourceLink.Common.props')" />
+  <Import Project="$(NuGetPackageRoot)\Microsoft.Build.Tasks.Git.1.1.1\build\Microsoft.Build.Tasks.Git.props" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Build.Tasks.Git.1.1.1\build\Microsoft.Build.Tasks.Git.props')" />
+  <Import Project="$(MUXCProjectRoot)mux.controls.props" />
+  <Import Project="$(MUXCProjectRoot)ProjectConfigurations.props" />
+  <Import Project="$(MUXCProjectRoot)version.props" />
+  <Import Project="$(MUXCProjectRoot)CppWinRT.props" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{DE10DFE2-5EA3-452A-B055-FC60E330AFBB}</ProjectGuid>
+    <Keyword>DynamicLibrary</Keyword>
+    <TargetName>$(MUXTargetName)</TargetName>
+    <RootNamespace>$(MUXNamespace)</RootNamespace>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <AppContainerApplication>true</AppContainerApplication>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+    <ScriptPath>..\tools\</ScriptPath>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(MUXCProjectRoot)MidlShared.props" />
+  <ItemGroup>
+    <ProjectReference Include="$(MUXProjectRoot)dxaml\xcp\dxaml\idl\winrt\controls\Microsoft.ui.xaml.controls.controls.vcxproj" />
+    <ProjectReference Include="$(MUXProjectRoot)dxaml\xcp\dxaml\idl\winrt\core\Microsoft.ui.xaml.coretypes.vcxproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Don't add winmds here, add them to ExternalWinMDs in eng\productmetadata.props -->
+    <Reference Include="@(ExternalWinMDs)" />
+  </ItemGroup>
+  <Import Project="$(MUXCProjectRoot)ProjectImports.targets" />
+  <!-- We only want to perform MIDL operations in this project, so we'll remove everything else. -->
+  <ItemGroup>
+    <ClCompile Remove="@(ClCompile)" />
+    <ClInclude Remove="@(ClInclude)" />
+    <Link Remove="@(Link)" />
+    <Page Remove="@(Page)" />
+    <PRIResource Remove="@(PRIResource)" />
+  </ItemGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ItemDefinitionGroup>
+    <Midl>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory);$(MUXCProjectRoot)dev;$(LiftedIXPIncludePaths)</AdditionalIncludeDirectories>
+      <NoWarn>$(NoWarn);5135</NoWarn>
+    </Midl>
+  </ItemDefinitionGroup>
+  <Import Project="$(CppTargetsFilePath)" />
+  <Import Project="$(MUXCProjectRoot)MidlShared.targets" />
+  <Import Project="$(MUXCProjectRoot)CustomInlineTasks.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(NuGetPackageRoot)\Microsoft.Build.Tasks.Git.1.1.1\build\Microsoft.Build.Tasks.Git.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Build.Tasks.Git.1.1.1\build\Microsoft.Build.Tasks.Git.targets')" />
+    <Import Project="$(NuGetPackageRoot)\Microsoft.SourceLink.Common.1.1.1\build\Microsoft.SourceLink.Common.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.SourceLink.Common.1.1.1\build\Microsoft.SourceLink.Common.targets')" />
+    <Import Project="$(NuGetPackageRoot)\Microsoft.SourceLink.GitHub.1.1.1\build\Microsoft.SourceLink.GitHub.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.SourceLink.GitHub.1.1.1\build\Microsoft.SourceLink.GitHub.targets')" />
+    <Import Project="$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.CodeAnalysis.BinSkim.1.3.9\tools\x86\BinSkim.exe')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.CodeAnalysis.BinSkim.1.3.9\tools\x86\BinSkim.exe'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Build.Tasks.Git.1.1.1\build\Microsoft.Build.Tasks.Git.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Build.Tasks.Git.1.1.1\build\Microsoft.Build.Tasks.Git.props'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Build.Tasks.Git.1.1.1\build\Microsoft.Build.Tasks.Git.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Build.Tasks.Git.1.1.1\build\Microsoft.Build.Tasks.Git.targets'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.SourceLink.Common.1.1.1\build\Microsoft.SourceLink.Common.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.SourceLink.Common.1.1.1\build\Microsoft.SourceLink.Common.props'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.SourceLink.Common.1.1.1\build\Microsoft.SourceLink.Common.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.SourceLink.Common.1.1.1\build\Microsoft.SourceLink.Common.targets'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.SourceLink.GitHub.1.1.1\build\Microsoft.SourceLink.GitHub.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.SourceLink.GitHub.1.1.1\build\Microsoft.SourceLink.GitHub.props'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.SourceLink.GitHub.1.1.1\build\Microsoft.SourceLink.GitHub.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.SourceLink.GitHub.1.1.1\build\Microsoft.SourceLink.GitHub.targets'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+  </Target>
+
+  <PropertyGroup>
+    <!-- We'll do these in the main project where we'll be using the merged WinMD. -->
+    <CppWinRTEnablePlatformProjection>false</CppWinRTEnablePlatformProjection>
+    <CppWinRTEnableReferenceProjection>false</CppWinRTEnableReferenceProjection>
+  </PropertyGroup>
+  
+  <!-- Don't generate merged WinMD - that will happen in the MergedWinMD project. -->
+  <Target Name="CppWinRTMergeProjectWinMDInputs" />
+
+  <!-- MSBuild by default reports that a project built a DLL and a WinMD with the name of the project,
+       which is not the case here.  To avoid that, we'll stub out these targets that report those things. -->
+  <Target Name="BuiltProjectOutputGroup" />
+  <Target Name="GetResolvedWinMD" />
+
+  <!-- Since we swap out our IDL files for a single one that includes the ones we started with,
+       we need to modify the TargetPath and WinMDFullPath values we output to make sure
+       we report only the WinMD file that we'll actually be producing. -->
+  <Target Name="_SetWinMDPath" BeforeTargets="GetTargetPathWithTargetPlatformMoniker">
+    <PropertyGroup>
+      <TargetPath>$(ProjectUnmergedWinmd)</TargetPath>
+    </PropertyGroup>
+  </Target>
+</Project>

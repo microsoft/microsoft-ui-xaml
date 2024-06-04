@@ -1,0 +1,181 @@
+<#@ template language="C#" linePragmas="false" inherits="PhoneCppCodeGenerator<OMContextView>" debug="true"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#include "precomp.h"
+#include "XamlTypeInfo.h"
+#include "XamlTypeInfo.g.h"
+
+#ifndef E_NOT_FOUND
+#define E_NOT_FOUND HRESULT_FROM_WIN32(ERROR_NOT_FOUND)
+#endif
+
+namespace Private {
+
+//--------------------------------------------------------------------------
+//
+//  User type activation
+//
+//--------------------------------------------------------------------------
+_Check_return_ HRESULT
+XamlRuntimeType::ActivateInstance(
+    _In_ UINT16 typeLabel,
+    _Outptr_ IInspectable** instance) const
+{
+    switch(typeLabel)
+    {
+<# foreach (var t in QueryHelper.GetPhoneXamlUserTypes(Model).Where(t => !t.IsValueType && (t as ClassDefinition)?.IsCreateableFromXAML == true)) { #>
+        case activate_<#= t.TypeTableName #>:
+            return wrl::MakeAndInitialize<
+                <#= AsCppType(t.DeclaringNamespace.Name) #>::<#= t.TypeTableName #>>(instance);
+<# } #>
+        default:
+            *instance = nullptr;
+            return E_NOT_FOUND;
+    }
+}
+
+//--------------------------------------------------------------------------
+//
+//  User type member getters and setters
+//
+//--------------------------------------------------------------------------
+_Check_return_ HRESULT
+XamlRuntimeType::SetValue(
+    _In_ UINT16 typeLabel,
+    _In_ IInspectable* instance,
+    _In_ IInspectable* value) const
+{
+    HRESULT hr = S_OK;
+
+    switch(typeLabel)
+    {
+<# foreach (var p in QueryHelper.GetPhoneXamlUserProperties(Model)) {
+        if (p is AttachedPropertyDefinition) { #>
+        <#= IncludeTemplate<AttachedPropertySetValue>(p as AttachedPropertyDefinition) #>
+<#      } else { #>
+<#          if (p.SetterModifier == Modifier.Public) { 
+                if (p.PropertyType.Type is EnumDefinition || p.IsCustomValueTypedProperty) { #>
+        <#= IncludeTemplate<EnumSetValue>(p) #>
+<#              } else if (p.PropertyType.Type.IsStringType) { #>
+        <#= IncludeTemplate<StringSetValue>(p) #>
+<#              } else if (p.PropertyType.Type.IsObjectType) { #>
+        <#= IncludeTemplate<ObjectSetValue>(p) #>
+<#              } else if (p.PropertyType.IdlInfo.Type.IsValueType) { #>
+        <#= IncludeTemplate<ValueTypeSetValue>(p) #>
+<#              } else { #>
+        <#= IncludeTemplate<ReferenceTypeSetValue>(p) #>
+<#              } #>
+<#          } #>
+<#      } #>
+<# } #>
+        default:
+            IFC(E_NOT_FOUND);
+    }
+Cleanup:
+    return hr;
+}
+
+_Check_return_ HRESULT
+XamlRuntimeType::GetValue(
+    _In_ UINT16 typeLabel,
+    _In_ IInspectable* instance,
+    _Outptr_result_maybenull_ IInspectable** value) const
+{
+    HRESULT hr = S_OK;
+    wrl::ComPtr<<#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyObject") #>> dependencyObj;
+    wrl::ComPtr<<#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyProperty") #>> dependencyProp;
+    switch(typeLabel)
+    {
+
+<# foreach (var p in QueryHelper.GetPhoneXamlUserProperties(Model)) { 
+        if (p is AttachedPropertyDefinition) { #>
+        <#= IncludeTemplate<AttachedPropertyGetValue>(p as AttachedPropertyDefinition) #>
+<#      } else { #>
+<#          if (p.PropertyType.Type is EnumDefinition || p.IsCustomValueTypedProperty) { #>
+        <#= IncludeTemplate<EnumGetValue>(p) #>
+<#          } else if (p.PropertyType.Type.IsStringType) { #>
+        <#= IncludeTemplate<StringGetValue>(p) #>
+<#          } else if (p.PropertyType.Type.IsObjectType) { #>
+        <#= IncludeTemplate<ObjectGetValue>(p) #>
+<#          } else if (p.PropertyType.IdlInfo.Type.IsValueType) { #>
+        <#= IncludeTemplate<ValueTypeGetValue>(p) #>
+<#          } else { #>
+        <#= IncludeTemplate<ReferenceTypeGetValue>(p) #>
+<#          } #>
+<#      } #>
+<# } #>
+        default:
+            IFC(E_NOT_FOUND);
+    }
+Cleanup:
+    return hr;
+}
+
+_Check_return_ HRESULT
+XamlRuntimeType::BoxEnum(
+    _In_ UINT16 typeLabel,
+    _In_ UINT32 enumValue,
+    _Outptr_ IInspectable **ppBoxedEnum) const
+{
+    switch(typeLabel)
+    {
+<# foreach (var e in Model.GetAllEnums()) { #>
+        case EnumBoxer_<#= AsCppDefine(e.MetadataFullName)  #>:
+            return ValueBoxer::EnumBoxer<<#= AsCppType(e.TypeTableFullName) #>>(enumValue, ppBoxedEnum);
+<# } #>
+        default:
+            return E_NOT_FOUND;
+    }
+}
+
+_Check_return_ HRESULT
+XamlRuntimeType::AddToVector(
+    _In_ UINT16 /*addToVectorId*/,
+    _In_ IInspectable* /*instance*/,
+    _In_ IInspectable* /*value*/) const
+{
+    return E_NOTIMPL;
+}
+
+_Check_return_ HRESULT
+XamlRuntimeType::AddToMap(
+    _In_ UINT16 /*addToMapId*/,
+    _In_ IInspectable* /*instance*/,
+    _In_ IInspectable* /*key*/,
+    _In_ IInspectable* /*value*/) const
+{
+    return E_NOTIMPL;
+}
+
+// Call into each property and null it out, we initialize all our properties on-demand if needed. This should only be
+// called during MetadataAPI::Reset.
+void
+XamlRuntimeType::ResetDependencyProperties() const
+{
+<# foreach (var t in Model.GetAllClassesAndEnums().OrderBy(t => t.Name).OfType<ClassDefinition>().Where(t => !t.IsValueType && (t.IdlClassInfo.HasAnyFactoryInterfaces || t.HasStaticMembers))) { #>
+    <#= AsCppType(t.DeclaringNamespace.Name) #>::<#= t.TypeTableName #>Factory::ClearProperties();
+<# } #>
+}
+
+// Called from XamlType::RunInitializer rather than relying on the factories RuntimeClassInitialize to do the registration
+HRESULT
+XamlRuntimeType::EnsureDependencyProperties(_In_ UINT16 typeLabel) const
+{
+  switch(typeLabel)
+    {
+<# foreach (var t in QueryHelper.GetPhoneXamlUserTypes(Model).OfType<ClassDefinition>().Where(t => !t.IsValueType && t.IdlClassInfo.HasAnyFactoryInterfaces )) { #>
+        case activate_<#= t.TypeTableName #>:
+            return <#= AsCppType(t.DeclaringNamespace.Name) #>::<#= t.TypeTableName #>Factory::EnsureProperties();
+<# } #>
+        default:
+            return S_OK;
+    }
+}
+
+} /* namespace Private */
+

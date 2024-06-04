@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- We need to ensure that we've built MIDL for our project references before we attempt to use them in this project.
+       So we'll do that manually to guarantee that ordering. -->
+  <Target Name="BuildMidlProjectReferences" DependsOnTargets="BuildGenerateSourcesTraverse" AfterTargets="Rebuild" BeforeTargets="Build;_Midl;GetCppWinRTDirectWinMDReferences;_ComposedMetadata;CoreCompile" />
+
+  <ItemGroup>
+    <BinplaceItem Include="$(OutputWinmds)"/>
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+
+  <!-- Building in Visual Studio causes it to call targets on dependent projects that may not exist.
+       Adding dummy targets to those projects makes Visual Studio happy. -->
+  <Target Name="ResolveNuGetPackageAssets" />
+</Project>

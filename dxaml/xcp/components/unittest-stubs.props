@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <NoBaseCompstubs>1</NoBaseCompstubs>    <!-- We will link against the real base libs for these tests -->
+    </PropertyGroup>
+
+    <Import Project="$(XcpPath)\components\unittest.props"/>
+
+    <ItemDefinitionGroup>
+        <!-- We link against stubs to allow creation and testing of CDependencyObjects in isolation. Once everything is -->
+        <!-- componentized, the stubs will no longer be needed.                                                         -->
+        <Link>
+            <!-- Included for xstring_ptr -->
+        </Link>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}'" Include="$(XcpPath)\components\pch\ut\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}"/>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(ConfigurationType)'=='DynamicLibrary' or '$(ConfigurationType)'=='Application'">
+        <ProjectReference Condition="'$(ProjectGuid)'!='{ec5bfab1-619b-45cb-b8ec-db81f3c7811b}'" Include="$(XamlSourcePath)\xcp\components\unittests\stubs\Microsoft.UI.Xaml.Stubs.vcxproj" Project="{ec5bfab1-619b-45cb-b8ec-db81f3c7811b}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{950d68b3-b34b-4453-96f9-5d1517f539ca}'" Include="$(XcpPath)\components\terminateProcessOnOOM\lib\Microsoft.UI.Xaml.TerminateProcessOnOOM.vcxproj" Project="{950d68b3-b34b-4453-96f9-5d1517f539ca}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{4d75f86e-1c8e-40b3-9767-d8a7cdca82eb}'" Include="$(XamlSourcePath)\xcp\common\common.vcxproj" Project="{4d75f86e-1c8e-40b3-9767-d8a7cdca82eb}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{379aa0e5-75bd-4ac3-9e9d-2168f400f1b0}'" Include="$(XcpPath)\hostpalplatmisc.vcxproj" Project="{379aa0e5-75bd-4ac3-9e9d-2168f400f1b0}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{aebb76ae-fbd9-4c2d-b0c0-3b7ff5963d7d}'" Include="$(XamlSourcePath)\xcp\pal\debug\PALDebug.vcxproj" Project="{aebb76ae-fbd9-4c2d-b0c0-3b7ff5963d7d}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{ee89d265-0c07-49a3-b39c-d2a40adf9d19}'" Include="$(XamlSourcePath)\xcp\components\criticalsection\lib\Microsoft.UI.Xaml.CriticalSection.vcxproj" Project="{ee89d265-0c07-49a3-b39c-d2a40adf9d19}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{c766b284-6b02-474b-9a87-58b2a997bc59}'" Include="$(XamlSourcePath)\xcp\components\staticpal\lib\Microsoft.UI.Xaml.StaticPal.vcxproj" Project="{c766b284-6b02-474b-9a87-58b2a997bc59}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{f9da8380-5504-4acc-bde0-72cd5981826d}'" Include="$(XamlSourcePath)\xcp\components\xstring\lib\Microsoft.UI.Xaml.XString.vcxproj" Project="{f9da8380-5504-4acc-bde0-72cd5981826d}"/>
+    </ItemGroup>
+</Project>

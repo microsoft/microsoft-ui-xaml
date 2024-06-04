@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="SetMidlOutputFiles" BeforeTargets="Midl">
+    <!-- We need to ensure lower case filenames (as does NT), however, we can't use string functions on -->
+    <!-- metadata in an item group.  So we will use this "pre" target to set up those values            -->
+    <ItemGroup>
+      <Midl>
+        <HeaderFileName>$(OutDir)$([System.String]::Copy('%(Filename)').ToLower()).h</HeaderFileName>
+        <TypeLibraryName>$(OutDir)$([System.String]::Copy('%(Filename)').ToLower()).tlb</TypeLibraryName>
+        <InterfaceIdentifierFileName>$(OutDir)$([System.String]::Copy('%(Filename)').ToLower())_i.c</InterfaceIdentifierFileName>
+        <ProxyFileName>$(OutDir)$([System.String]::Copy('%(Filename)').ToLower())_p.c</ProxyFileName>
+      </Midl>
+    </ItemGroup>
+  </Target>
+
+  <ItemDefinitionGroup>
+    <Midl>
+      <DefaultCharType>Unsigned</DefaultCharType>
+      <LocaleID>1033</LocaleID>
+      <MinimumTargetSystem>NT100</MinimumTargetSystem>
+      <DllDataFileName>$(OutDir)dlldata.c</DllDataFileName>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Midl>
+  </ItemDefinitionGroup>
+
+  <!-- Because this happens so early in the process some of the converted projects may not property append additional options/definitions -->
+  <!-- and such.  So we define these values as properties and then let xaml.Cpp.Targes apply them after all the individual processing     -->
+  <!-- has occurred.     -->
+  <PropertyGroup>
+    <XamlMidlOptions>$(XamlMidlOptions) /no_stamp /no_settings_comment /sal /savePP /Zp8 /ms_ext</XamlMidlOptions>
+    <XamlMidlPreprocessorDefinitions>MSC_NOOPT;BUILD_UMS_ENABLED=0;BUILD_WOW64_ENABLED=0;_USE_DECLSPECS_FOR_SAL=1;_WCHAR_T_DEFINED;</XamlMidlPreprocessorDefinitions>
+    <DisableMidlVersionChecks>1</DisableMidlVersionChecks>
+  </PropertyGroup>
+
+</Project>

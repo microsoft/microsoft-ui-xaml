@@ -1,0 +1,100 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<ClassDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<# if (Model.IdlClassInfo.HasAnyFactoryInterfaces) { #>
+HRESULT <#= AsCppType(Model.GeneratedFactoryFullName) #>::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
+{
+<#     bool hasObj = false;
+       bool hasVelocityObj = false;
+       using (var headerGenerator = new HeaderGenerator())
+       {
+           if (Model.VelocityVersion != 0) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(Model.VelocityVersion) #>)
+<#         }
+           foreach (var version in Model.Versions.OrderBy(v => v.Version).Select(v => v.GetProjection())) {
+              if (VelocityFeatures.IsVelocityVersion(version.Version) &&
+                 (version.IdlClassInfo.HasFactoryMethods || version.IdlClassInfo.HasStaticMembers || version.FactoryExplicitlyImplementedInterfaces.GetEnumerator().Current != null)) { 
+                 if (headerGenerator.IsFirst) { #>    if (false) {} // dummy clause to let velocity conditions work 
+<#                  } #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(version.Version) #>)
+<#     }
+               if (version.IdlClassInfo.HasFactoryMethods) { #>
+    <# if (!headerGenerator.IsFirst) { #>else <# } #>if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(version.IdlClassInfo.FullFactoryInterfaceName) #>)))
+    {
+        *ppObject = static_cast<<#= AsCppType(version.IdlClassInfo.FullFactoryInterfaceName) #>*>(this);
+<# if (Model.VelocityVersion != 0) { hasVelocityObj = true; } else { hasObj = true; } #>
+    }
+<#             }
+               if (version.IdlClassInfo.HasStaticMembers) { #>
+    <# if (!headerGenerator.IsFirst) { #>else <# } #>if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(version.IdlClassInfo.FullStaticMembersInterfaceName) #>)))
+    {
+        *ppObject = static_cast<<#= AsCppType(version.IdlClassInfo.FullStaticMembersInterfaceName) #>*>(this);
+<# if (Model.VelocityVersion != 0) { hasVelocityObj = true; } else { hasObj = true; } #>
+    }
+<#             }
+               foreach (var implementedInterface in version.FactoryExplicitlyImplementedInterfaces) { #>
+    <# if (!headerGenerator.IsFirst) { #>else <# } #>if (InlineIsEqualGUID(iid, __uuidof(<#= AsCppType(implementedInterface.AbiFullName) #>)))
+    {
+        *ppObject = static_cast<<#= AsCppType(implementedInterface.AbiFullName) #>*>(this);
+<# if (Model.VelocityVersion != 0) { hasVelocityObj = true; } else { hasObj = true; } #>
+    }
+<#             }
+       if (VelocityFeatures.IsVelocityVersion(version.Version) &&
+           (version.IdlClassInfo.HasFactoryMethods || version.IdlClassInfo.HasStaticMembers || version.FactoryExplicitlyImplementedInterfaces.GetEnumerator().Current != null)) { #>
+#endif
+<#            }
+           } #>
+    else
+<#         if (Model.VelocityVersion != 0) { #>
+#endif
+<#         }#>
+    {
+        RRETURN(<#= GetBaseFactoryFullName(Model) #>::QueryInterfaceImpl(iid, ppObject));
+    }
+
+<# if (hasObj) { #>
+    AddRefOuter();
+    RRETURN(S_OK);
+<# } else if (hasVelocityObj) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(Model.VelocityVersion) #>)
+    AddRefOuter();
+    RRETURN(S_OK);
+#endif
+<# } } #>
+}
+<# } #>
+
+<# if (Model.XamlClassFlags.IsFreeThreaded) { #>
+_Check_return_ HRESULT <#= AsCppType(Model.GeneratedFactoryFullName) #>::CheckActivationAllowed()
+{
+    RRETURN(S_OK);
+}
+<# } #>
+
+// Factory methods.
+<# foreach (var ctor in Model.IdlClassInfo.CustomConstructors.Where(c => c.GenerateStub)) { #>
+<#= IncludeTemplate<Constructor>(ctor) #>
+<# } #>
+
+// Dependency properties.
+<# foreach (var dp in Model.DependencyProperties) { #>
+<#= IncludeTemplate<DependencyProperty>(dp) #>
+<# } #>
+
+// Attached properties.
+<# foreach (var dp in Model.DeclaredAttachedProperties) { #>
+<#= IncludeTemplate<AttachedProperty>(dp) #>
+<# } #>
+
+// Static properties.
+<# foreach (var m in Model.StaticProperties) { #>
+<#= IncludeTemplate<Property>(m) #>
+<# } #>
+
+// Static methods.
+<# foreach (var m in Model.StaticMethods) { #>
+<#= IncludeTemplate<Method>(m) #>
+<# } #>

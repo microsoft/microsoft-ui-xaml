@@ -1,0 +1,33 @@
+<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <XamlMSBuildAutoGenerate>true</XamlMSBuildAutoGenerate>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="GeneratedClasses.g.h"/>
+        <ClInclude Include="precomp.h"/>
+<#  foreach (var type in Model.GetAllClasses().Where(c => !c.IsAEventArgs && c.GenerateInCore).OrderBy(c => c.CppCoreGeneratedHeaderFileName)) { 
+#>
+        <ClInclude Include="<#= type.CppCoreGeneratedHeaderFileName #>"/>
+<#
+    }
+#>
+
+<#
+    foreach (var type in Model.GetAllClasses().Where(c => !c.IsAEventArgs && c.GenerateInCore).OrderBy(c => c.CppCoreGeneratedBodyFileName)) { 
+#>
+        <ClCompile Include="<#= type.CppCoreGeneratedBodyFileName #>"/>
+<#
+    }
+#>
+    </ItemGroup>
+</Project>

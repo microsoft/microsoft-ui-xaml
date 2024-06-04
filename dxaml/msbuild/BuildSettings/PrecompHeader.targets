@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project InitialTargets="PreCompFileCreate" DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <!-- MSBuild has a bug/feature in it that prevents us from using its standard precompiled header  -->
+    <!-- mechanisms.  Basically, if you are using OldStyle DebugInformationFormats (which we are)     -->
+    <!-- MSBuild will purge the precompiled header file (pch) before starting the build of each       -->
+    <!-- directory it is used from.  Hence, when building in a lib directory, it will purge the pch   -->
+    <!-- file that was created by the pch directory and then complain about the file being missing.   -->
+    <!-- So we have, at least temporarily, implemented our own version of precompiled headers.        -->
+    <!-- However, this leads to a couple of points of ugliness that we should try to fix.             -->
+    <!--   1.  We need clone a portion of the standar ClCompile Task in order to generate a           -->
+    <!--       sepearate instantiation of the cl compiler to build the precompiled header before      -->
+    <!--       any other cpp files are compiled.                                                      -->
+    <!--   2.  We have to do some trickery to get the Yu parameter out of the additional options      -->
+    <!--       during the precompiled header build.  The alternative would be to use the standard     -->
+    <!--       attributes (e.g. PrecompiledHeaderOutputFile), but that puts us back into the state    -->
+    <!--       where MSBUILD delete the file.                                                         -->
+
+    <PropertyGroup Condition="'$(XamlPrecompiledShared)'!='' and '$(XamlPrecompiledInclude)'==''">
+        <XamlPrecompiledUseShared>true</XamlPrecompiledUseShared>
+        <XamlPrecompiledInclude>$([System.IO.Path]::GetFileName('$(XamlPrecompiledShared)'))</XamlPrecompiledInclude>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(XamlPrecompiledInclude)'!=''">
+        <!-- If we have specified the "Include" property, we will be creating a precompiled header    -->
+        <!-- otherwise, if a shared include is specified we will be using it.                         -->
+        <XamlPrecompiledCreate Condition="'$(XamlPrecompiledUseShared)'!='true'">true</XamlPrecompiledCreate>
+        <XamlPrecompiledCreateSource Condition="'$(XamlPrecompiledCreate)'=='true' and '$(XamlPrecompiledSource)'==''">true</XamlPrecompiledCreateSource>
+        <!-- If a source wasn't specified then use our default (which will have been created in the   -->
+        <!-- PreCompFileCreate Target if it didn't alread exist                                       -->
+        <XamlPrecompiledSource Condition="'$(XamlPrecompiledCreateSource)'=='true'">$(OutDir)pch_hdr.src</XamlPrecompiledSource>
+        <XamlPrecompiledPchDir>$(OutDir)</XamlPrecompiledPchDir>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(XamlPrecompiledInclude)'!=''">
+        <!-- Set up file for our output if they weren't already specified                             -->
+        <XamlPrecompiledPch Condition="'$(XamlPrecompiledPch)'==''">$([System.IO.Path]::GetFileNameWithoutExtension('$(XamlPrecompiledInclude)')).pch</XamlPrecompiledPch>
+        <XamlPrecompiledObj Condition="'$(XamlPrecompiledObj)'==''">$([System.IO.Path]::GetFileNameWithoutExtension('$(XamlPrecompiledPch)')).obj</XamlPrecompiledObj>
+        <XamlPrecompiledPch>$([System.IO.Path]::GetFileName('$(XamlPrecompiledPch)'))</XamlPrecompiledPch>
+        <XamlPrecompiledObj>$([System.IO.Path]::GetFileName('$(XamlPrecompiledObj)'))</XamlPrecompiledObj>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(XamlPrecompiledUseShared)'=='true'">
+        <!-- Our PCH path may be relative so we need to figure out where -->
+        <XamlPrecompiledPchDir>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)', '$(XamlPrecompiledShared)'))</XamlPrecompiledPchDir>
+        <XamlPrecompiledPchDir>$([MSBuild]::NormalizePath('$(OutDir)', '$(XamlPrecompiledPchDir)'))</XamlPrecompiledPchDir>
+        <XamlPrecompiledPchDir>$([System.IO.Path]::GetDirectoryName('$(XamlPrecompiledPchDir)'))\</XamlPrecompiledPchDir>
+    </PropertyGroup>
+
+    <!-- If we are building a precompiled header but did not specify a source, then generate one.     -->
+    <Target Name="PreCompFileCreate" BeforeTargets="ClCompile;PreCompClCompile" Condition="'$(XamlPrecompiledCreateSource)'=='true'">
+        <MakeDir Directories="$(OutDir)" />
+        <WriteLinesToFile
+            File="$(XamlPrecompiledSource)"
+            Lines="#include &quot;$([System.IO.Path]::GetFileName($(XamlPrecompiledInclude)))&quot;"
+            Overwrite="true"
+            WriteOnlyWhenDifferent="true"
+            Encoding="Unicode"/>
+    </Target>
+
+    <!-- If we are just building the precompiled header, then we must use the normal ClCompile task to build the                -->
+    <!-- header, because if we don't have at least one ClCompile item, then all the meta data used by our custom task           -->
+    <!-- isn't available to us.                                                                                                 -->
+    <ItemGroup Condition="'$(XamlPrecompiledCreate)'=='true'">
+        <ClCompile Condition="'@(ClCompile)'==''" Include="$(XamlPrecompiledSource)">
+            <AdditionalOptions>%(AdditionalOptions) /Yc$([System.IO.Path]::GetFileName($(XamlPrecompiledInclude))) /Yl$(ProjectName) /Fp$(XamlPrecompiledPchDir)$(XamlPrecompiledPch)</AdditionalOptions>
+            <ObjectFileName>$(OutDir)$(XamlPrecompiledObj)</ObjectFileName>
+            <!-- The FC flag (Use full paths) is added to the command line when creating a lib, but in NT we don't create   -->
+            <!-- a lib for precompiled headers, so we don't get this flag.  It probably isn't harmfull if we did, but we    -->
+            <!-- are trying to create matching builds at this point, so we will turn it on by default, but turn it off here -->
+            <UseFullPaths>false</UseFullPaths>
+        </ClCompile>
+    </ItemGroup>
+
+    <!-- However, if we have hybrid directory  along with the precompiled header, then we need to spilt out the precompiled header     -->
+    <!-- into its own task.  So we clone the appropriate portions of the ClCompile Task and customize those items we need to.          -->
+    <!-- Yes this is ugly, but what are you to do when MSBuild claims an obvious bug is a "feature"                                    -->
+    <!--  Condition="'$(XamlPrecompiledCreate)'=='true' and '@(ClCompile)'!='$(XamlPrecompiledSource)'" -->
+    <Target Name="PreCompClCompile" BeforeTargets="ClCompile;GetPrecompiledHeaderFile" Condition="'$(XamlPrecompiledCreate)'=='true' and '@(ClCompile)'!='$(XamlPrecompiledSource)'">
+        <PropertyGroup>
+            <CLToolArchitecture Condition="'$(CLToolArchitecture)' == ''">$(VCToolArchitecture)</CLToolArchitecture>
+            <CLDeleteOutputOnExecute Condition="'$(CLDeleteOutputOnExecute)' == ''">true</CLDeleteOutputOnExecute>
+        </PropertyGroup>
+        <ItemGroup>
+            <ClNoDependencies Condition="'@(ClNoDependencies)' == '' and '%(ClInclude.NoDependency)' == 'true'" Include="@(ClInclude)" />
+            <ClNoDependencies Condition="'$(NoDependencies)' != ''" Include="$(NoDependencies)" />
+        </ItemGroup>
+        <!-- This is identical to the standard CL with the exception of the first 8 items which are specific to the precomp run-->
+        <CL Condition="'%(ClCompile.ExcludedFromBuild)'!='true' and '%(ClCompile.CompilerIteration)' == ''" BuildingInIDE="$(BuildingInsideVisualStudio)"
+            Sources="$(XamlPrecompiledSource)"
+            AdditionalOptions="%(AdditionalOptions) /Yl$(ProjectName) /Fp$(XamlPrecompiledPchDir)$(XamlPrecompiledPch)"
+            UseFullPaths="false"
+            ObjectFileName="$(OutDir)$(XamlPrecompiledObj)"
+            PrecompiledHeader="Create"
+            PrecompiledHeaderFile="$([System.IO.Path]::GetFileName($(XamlPrecompiledInclude)))"
+            PrecompiledHeaderOutputFile=""
+            CompileAs="CompileAsCpp"
+            MultiProcessorCompilation="false"
+            AdditionalBMIDirectories="%(ClCompile.AdditionalBMIDirectories)" AdditionalHeaderUnitDependencies="%(ClCompile.AdditionalHeaderUnitDependencies)" AdditionalIncludeDirectories="%(ClCompile.AdditionalIncludeDirectories)" AdditionalModuleDependencies="%(ClCompile.AdditionalModuleDependencies)" AdditionalUsingDirectories="%(ClCompile.AdditionalUsingDirectories)" AssemblerListingLocation="%(ClCompile.AssemblerListingLocation)" AssemblerOutput="%(ClCompile.AssemblerOutput)" BasicRuntimeChecks="%(ClCompile.BasicRuntimeChecks)" BrowseInformation="%(ClCompile.BrowseInformation)" BrowseInformationFile="%(ClCompile.BrowseInformationFile)" BufferSecurityCheck="%(ClCompile.BufferSecurityCheck)" CallingConvention="%(ClCompile.CallingConvention)" ControlFlowGuard="%(ClCompile.ControlFlowGuard)" CompileAsManaged="%(ClCompile.CompileAsManaged)" CompileAsWinRT="%(ClCompile.CompileAsWinRT)" ConformanceMode="%(ClCompile.ConformanceMode)" DebugInformationFormat="%(ClCompile.DebugInformationFormat)" DiagnosticsFormat="%(ClCompile.DiagnosticsFormat)" DisableLanguageExtensions="%(ClCompile.DisableLanguageExtensions)" DisableSpecificWarnings="%(ClCompile.DisableSpecificWarnings)" EnableASAN="%(ClCompile.EnableASAN)" EnableEnhancedInstructionSet="%(ClCompile.EnableEnhancedInstructionSet)" EnableFiberSafeOptimizations="%(ClCompile.EnableFiberSafeOptimizations)" EnableParallelCodeGeneration="%(ClCompile.EnableParallelCodeGeneration)" EnablePREfast="%(ClCompile.EnablePREfast)" EnforceTypeConversionRules="%(ClCompile.EnforceTypeConversionRules)" ErrorReporting="%(ClCompile.ErrorReporting)" ExceptionHandling="%(ClCompile.ExceptionHandling)" ExpandAttributedSource="%(ClCompile.ExpandAttributedSource)" FavorSizeOrSpeed="%(ClCompile.FavorSizeOrSpeed)" FloatingPointExceptions="%(ClCompile.FloatingPointExceptions)" FloatingPointModel="%(ClCompile.FloatingPointModel)" ForceConformanceInForLoopScope="%(ClCompile.ForceConformanceInForLoopScope)" ForcedIncludeFiles="%(ClCompile.ForcedIncludeFiles)" ForcedUsingFiles="%(ClCompile.ForcedUsingFiles)" FunctionLevelLinking="%(ClCompile.FunctionLevelLinking)" GenerateModuleDependencies="%(ClCompile.GenerateModuleDependencies)" GenerateSourceDependencies="%(ClCompile.GenerateSourceDependencies)" GenerateXMLDocumentationFiles="%(ClCompile.GenerateXMLDocumentationFiles)" GuardEHContMetadata="%(ClCompile.GuardEHContMetadata)" IgnoreStandardIncludePath="%(ClCompile.IgnoreStandardIncludePath)" InlineFunctionExpansion="%(ClCompile.InlineFunctionExpansion)" IntelJCCErratum="%(ClCompile.IntelJCCErratum)" IntrinsicFunctions="%(ClCompile.IntrinsicFunctions)" LanguageStandard="%(ClCompile.LanguageStandard)" LanguageStandard_C="%(ClCompile.LanguageStandard_C)" MinimalRebuild="%(ClCompile.MinimalRebuild)" ModuleDependenciesFile="%(ClCompile.ModuleDependenciesFile)" ModuleOutputFile="%(ClCompile.ModuleOutputFile)" OmitDefaultLibName="%(ClCompile.OmitDefaultLibName)" OmitFramePointers="%(ClCompile.OmitFramePointers)" OpenMPSupport="%(ClCompile.OpenMPSupport)" Optimization="%(ClCompile.Optimization)" PREfastAdditionalOptions="%(ClCompile.PREfastAdditionalOptions)" PREfastAdditionalPlugins="%(ClCompile.PREfastAdditionalPlugins)" PREfastLog="%(ClCompile.PREfastLog)" PREfastRulesetFile="%(ClCompile.PREfastRulesetFile)" PREfastProjectDirectory="%(ClCompile.PREfastProjectDirectory)" PREfastRulesetDirectories="%(ClCompile.PREfastRulesetDirectories)" PreprocessKeepComments="%(ClCompile.PreprocessKeepComments)" PreprocessorDefinitions="%(ClCompile.PreprocessorDefinitions)" PreprocessSuppressLineNumbers="%(ClCompile.PreprocessSuppressLineNumbers)" PreprocessToFile="%(ClCompile.PreprocessToFile)" ProcessorNumber="%(ClCompile.ProcessorNumber)" ProgramDataBaseFileName="%(ClCompile.ProgramDataBaseFileName)" RemoveUnreferencedCodeData="%(ClCompile.RemoveUnreferencedCodeData)" RuntimeLibrary="%(ClCompile.RuntimeLibrary)" RuntimeTypeInfo="%(ClCompile.RuntimeTypeInfo)" SDLCheck="%(ClCompile.SDLCheck)" ShowIncludes="%(ClCompile.ShowIncludes)" SourceDependenciesFile="%(ClCompile.SourceDependenciesFile)" WarningVersion="%(ClCompile.WarningVersion)" SmallerTypeCheck="%(ClCompile.SmallerTypeCheck)" SpectreMitigation="%(ClCompile.SpectreMitigation)" StringPooling="%(ClCompile.StringPooling)" StructMemberAlignment="%(ClCompile.StructMemberAlignment)" SupportJustMyCode="%(ClCompile.SupportJustMyCode)" SuppressStartupBanner="%(ClCompile.SuppressStartupBanner)" TreatSpecificWarningsAsErrors="%(ClCompile.TreatSpecificWarningsAsErrors)" TreatWarningAsError="%(ClCompile.TreatWarningAsError)" TreatWChar_tAsBuiltInType="%(ClCompile.TreatWChar_tAsBuiltInType)" UndefineAllPreprocessorDefinitions="%(ClCompile.UndefineAllPreprocessorDefinitions)" UndefinePreprocessorDefinitions="%(ClCompile.UndefinePreprocessorDefinitions)" UseStandardPreprocessor="%(ClCompile.UseStandardPreprocessor)" UseUnicodeForAssemblerListing="%(ClCompile.UseUnicodeForAssemblerListing)" WarningLevel="%(ClCompile.WarningLevel)" WholeProgramOptimization="%(ClCompile.WholeProgramOptimization)" WinRTNoStdLib="%(ClCompile.WinRTNoStdLib)" XMLDocumentationFileName="%(ClCompile.XMLDocumentationFileName)" CreateHotpatchableImage="%(ClCompile.CreateHotpatchableImage)" TrackerLogDirectory="%(ClCompile.TrackerLogDirectory)" ExcludedInputPaths="%(ClCompile.ExcludedInputPaths)" TLogReadFiles="@(CLTLogReadFiles)" TLogWriteFiles="@(CLTLogWriteFiles)" ToolExe="$(CLToolExe)" ToolPath="$(CLToolPath)" TrackFileAccess="$(TrackFileAccess)" MinimalRebuildFromTracking="%(ClCompile.MinimalRebuildFromTracking)" ToolArchitecture="$(CLToolArchitecture)" TrackerFrameworkPath="$(CLTrackerFrameworkPath)" TrackerSdkPath="$(CLTrackerSdkPath)" TrackedInputFilesToIgnore="@(ClNoDependencies)" TrackedOutputFilesToIgnore="@(ClTrackedOutputFilesToIgnore)" DeleteOutputBeforeExecute="%(ClCompile.DeleteOutputBeforeExecute)" AcceptableNonZeroExitCodes="%(ClCompile.AcceptableNonZeroExitCodes)" YieldDuringToolExecution="$(ClYieldDuringToolExecution)"/>
+        <ItemGroup Condition="'$(XamlPrecompiledCreate)'=='true' and '@(ClCompile)'!=''">
+            <Lib Condition="'$(ConfigurationType)'=='StaticLibrary'" Include="$(OutDir)$(XamlPrecompiledObj)"/>
+            <Link Condition="'$(ConfigurationType)'!='StaticLibrary'" Include="$(OutDir)$(XamlPrecompiledObj)"/>
+        </ItemGroup>
+        <!-- Now that we have compiled the header, add the usage flags so all the sources files will use.-->
+        <ItemGroup>
+            <ClCompile Condition="'%(CompileAs)'!='CompileAsC'">
+                <PrecompiledHeader>Use</PrecompiledHeader>
+                <PrecompiledHeaderFile>$([System.IO.Path]::GetFileName($(XamlPrecompiledInclude)))</PrecompiledHeaderFile>
+                <PrecompiledHeaderOutputFile>$(XamlPrecompiledPchDir)$(XamlPrecompiledPch)</PrecompiledHeaderOutputFile>
+            </ClCompile>
+        </ItemGroup>
+        <OnError Condition="'$(OnXamlPreCompileErrorTarget)' != ''" ExecuteTargets="$(OnXamlPreCompileErrorTarget)" />
+    </Target>
+    <Target Name="PreCompClCompileOptions" BeforeTargets="ClCompile;GetPrecompiledHeaderFile" Condition="'$(XamlPrecompiledInclude)'!='' and '$(XamlPrecompiledCreate)'!='true'">
+        <ItemGroup>
+            <ClCompile Condition="'%(CompileAs)'!='CompileAsC'">
+                <PrecompiledHeader>Use</PrecompiledHeader>
+                <PrecompiledHeaderFile>$([System.IO.Path]::GetFileName($(XamlPrecompiledInclude)))</PrecompiledHeaderFile>
+                <PrecompiledHeaderOutputFile>$(XamlPrecompiledPchDir)$(XamlPrecompiledPch)</PrecompiledHeaderOutputFile>
+            </ClCompile>
+        </ItemGroup>
+    </Target>
+</Project>

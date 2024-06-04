@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{87d264ce-4220-4861-b0b9-b257b022fdd6}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\common.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+          $(ProjectIncludeDirectories);
+          $(XcpPath)\components\ContentRoot\inc;
+          $(XcpPath)\components\collection\inc;
+          $(XcpPath)\components\accesskeys\inc;
+          $(XcpPath)\components\gestures\inc;
+          $(XcpPath)\components\focus\inc;
+          $(XcpPath)\components\imaging\inc;
+          $(XcpPath)\components\focusrect\inc;
+          $(XcpPath)\components\xboxutility\inc;
+          $(XcpPath)\components\input\inc;
+          $(XcpPath)\components\runtimeEnabledFeatures\inc;
+          $(XcpPath)\components\KeyboardAccelerator\inc;
+          $(XcpPath)\components\Qualifiers\inc;
+          $(XcpPath)\components\OneCoreTransforms\inc;
+          $(XcpPath)\win\inc;
+          $(XcpPath)\control\inc;
+          $(XcpPath)\core\native\text\Controls;
+          $(XcpPath)\core\controls\generated;
+          $(XcpPath)\dxaml\lib;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\ContentRootCoordinator.cpp"/>
+        <ClCompile Include="..\ContentRoot.cpp"/>
+        <ClCompile Include="..\InputManager.cpp"/>
+        <ClCompile Include="..\KeyboardInputProcessor.cpp"/>
+        <ClCompile Include="..\PointerInputProcessor.cpp"/>
+        <ClCompile Include="..\InputPaneProcessor.cpp"/>
+        <ClCompile Include="..\InputDeviceCache.cpp"/>
+        <ClCompile Include="..\ActivationManager.cpp"/>
+        <ClCompile Include="..\FocusAdapter.cpp"/>
+        <ClCompile Include="..\FocusManagerCoreWindowAdapter.cpp"/>
+        <ClCompile Include="..\FocusManagerXamlIslandAdapter.cpp"/>
+        <ClCompile Include="..\ContentRootEventListener.cpp"/>
+        <ClCompile Include="..\ContextMenuProcessor.cpp"/>
+        <ClCompile Include="..\DragDropProcessor.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\prod\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{ccc61973-be99-4223-b935-353d03571e92}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

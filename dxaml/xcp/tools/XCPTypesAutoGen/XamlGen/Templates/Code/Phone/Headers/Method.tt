@@ -1,0 +1,18 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<MethodDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<# if (Model.IsInterfaceImplementation) { #>
+IFACEMETHOD(<#= Model.IdlMethodInfo.Name #>)(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>) override<# if (Model.IsPureVirtual) { #> = 0<# } #>;
+<#     if (Model.IsVirtual) {
+           if (Model.Modifier == Modifier.Protected) { #>
+virtual _Check_return_ HRESULT <#= Model.IdlMemberInfo.ProtectedName #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>);
+<#         } else if (Model.Modifier == Modifier.Public) { #>
+IFACEMETHOD(<#= Model.IdlMethodInfo.VirtualName #>)(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>) override<# if (Model.IsPureVirtual) { #> = 0<# } #>;
+<#         }
+       }
+   } else { #>
+<# if (!Model.IsStatic) { #>virtual <# } #>_Check_return_ HRESULT <#= Model.IdlMethodInfo.Name #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)<# if (Model.IsPureVirtual) { #> = 0<# } #>;
+<# } #>

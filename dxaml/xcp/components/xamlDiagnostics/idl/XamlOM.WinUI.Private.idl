@@ -1,0 +1,24 @@
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+
+cpp_quote("#pragma region Application Family")
+cpp_quote("#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)")
+
+import "XamlOM.WinUI.idl";
+
+cpp_quote("#define XAMLDIAGTAP_UWPSURFACECONNECTED L\"Test.XamlDiag.UwpSurfaceConnection\"")
+
+// Interfaces.
+
+[
+    object,
+    uuid(7776037b-cbbe-4de1-ad6f-0dbf1d5817b4),
+    pointer_default(unique)
+]
+interface IXamlDiagnosticsTestHooks : IUnknown
+{
+    HRESULT UnregisterInstance(InstanceHandle handle);
+    HRESULT TryGetDispatcherQueueForObject(InstanceHandle obj, IInspectable** queue); 
+};
+
+cpp_quote("#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */ ")
+cpp_quote("#pragma endregion")

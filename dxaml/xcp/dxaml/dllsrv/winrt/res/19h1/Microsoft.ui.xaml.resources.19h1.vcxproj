@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{c0955fbb-8fb9-40c1-a7e4-a93a0757ff66}</ProjectGuid>
+        <ResourceOnlyDll>true</ResourceOnlyDll>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+
+    <Import Project="..\sources.props"/>
+
+    <Import Project="$(ProjectRoot)eng\winui-version.props" />
+
+    <ItemGroup>
+        <ResourceCompile Include="Microsoft.UI.Xaml.19h1.rc"/>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(NativeAssemblyPackageLocation)"/>
+    </ItemGroup>
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

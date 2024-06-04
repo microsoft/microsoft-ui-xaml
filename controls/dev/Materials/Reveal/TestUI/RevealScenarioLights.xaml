@@ -1,0 +1,61 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.RevealScenarioLights"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:private="using:Microsoft.UI.Private.Media"
+    mc:Ignorable="d"
+    local:TestPage.CurrentTheme="{ThemeResource WhichTheme}">
+
+    <ScrollViewer>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="400"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Padding="24">
+                <Slider x:Name="SpotlightInnerCone" Header="Spotlight Inner Cone" Maximum="90" Value="{x:Bind SpotlightInnerConeValue, Mode=TwoWay}"/>
+                <Slider x:Name="SpotlightOuterCone" Header="Spotlight Outer Cone" Maximum="90" Value="{x:Bind SpotlightOuterConeValue, Mode=TwoWay}"/>
+                <Slider x:Name="SpotlightInnerConeAlpha" Header="Spotlight Inner Cone Alpha" Maximum="255" Value="{x:Bind SpotlightInnerConeAlphaValue, Mode=TwoWay}"/>
+                <Slider x:Name="SpotlightOuterConeAlpha" Header="Spotlight Outer Cone Alpha" Maximum="255" Value="{x:Bind SpotlightOuterConeAlphaValue, Mode=TwoWay}"/>
+                <Slider x:Name="SpotlightAttenuation" Header="Spotlight Attenuation" Maximum="50" Value="{x:Bind SpotlightAttenuationValue, Mode=TwoWay}"/>
+                <Slider x:Name="SpotlightMinSize" Header="Spotlight Min Size" Maximum="500" Value="{x:Bind SpotlightMinSizeValue, Mode=TwoWay}"/>
+                <Slider x:Name="SpotlightMaxSize" Header="Spotlight Max Size" Maximum="500" Value="{x:Bind SpotlightMaxSizeValue, Mode=TwoWay}"/>
+
+                <Slider Header="Button Width" Value="{x:Bind RevealButton.Width, Mode=TwoWay}" Maximum="500"/>
+                <Slider Header="Button Height" Value="{x:Bind RevealButton.Height, Mode=TwoWay}" Maximum="500"/>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,48">
+                    <Button Name="RevealButton" Content="Sizeable Button" Style="{StaticResource ButtonRevealStyle}" Width="120" Height="48" Margin="0,0,24,0"/>
+                    <Button Content="Static Reveal Button   " Style="{StaticResource ButtonRevealStyle}"/>
+                </StackPanel>
+
+                <Slider x:Name="BorderSpotlightInnerCone" Header="Border Spotlight Inner Cone" Maximum="90" Value="{x:Bind BorderSpotlightInnerConeValue, Mode=TwoWay}"/>
+                <Slider x:Name="BorderSpotlightOuterCone" Header="Border Spotlight Outer Cone" Maximum="90" Value="{x:Bind BorderSpotlightOuterConeValue, Mode=TwoWay}"/>
+                <Slider x:Name="BorderSpotlightAttenuation" Header="Border Spotlight Attenuation" Maximum="50" Value="{x:Bind BorderSpotlightAttenuationValue, Mode=TwoWay}"/>
+
+                <Slider x:Name="WideBorderSpotlightInnerCone" Header="Wide Border Spotlight Inner Cone"  Maximum="90" Value="{x:Bind WideBorderSpotlightInnerConeValue, Mode=TwoWay}"/>
+                <Slider x:Name="WideBorderSpotlightOuterCone" Header="Wide Border Spotlight Outer Cone" Maximum="90" Value="{x:Bind WideBorderSpotlightOuterConeValue, Mode=TwoWay}"/>
+                <Slider x:Name="WideBorderSpotlightAttenuation" Header="Wide Border Spotlight Attenuation" Maximum="50" Value="{x:Bind WideBorderSpotlightAttenuationValue, Mode=TwoWay}"/>
+               
+            </StackPanel>
+            <Grid x:Name="SpotLightSwatch" Grid.Column="1">
+                <StackPanel>
+                    <CheckBox x:Name="BackgroundLightVisible" Content="Background Light"/>
+                    <CheckBox x:Name="BorderLightVisible" Content="Border Light"/>
+                    <CheckBox x:Name="BorderWideLightVisible" Content="Wide Border Light"/>
+                    <Grid x:Name="SwatchInnerGrid" Margin="20" HorizontalAlignment="Stretch" Height="200" Width="360">
+                        <Grid x:Name="LightPosition" Width="1" Height="1" Background="Pink" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border x:Name="SwatchBorder" BorderBrush="White" BorderThickness="20" />
+                        <Border x:Name="SwatchBorderLightTarget" BorderBrush="White" BorderThickness="20" />
+                        <Border x:Name="SwatchBackground" Background="Black" BorderThickness="20"/>
+                        <Border x:Name="SwatchBackgroundLightTarget" Opacity="1" Background="White" BorderThickness="20"/>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</local:TestPage>

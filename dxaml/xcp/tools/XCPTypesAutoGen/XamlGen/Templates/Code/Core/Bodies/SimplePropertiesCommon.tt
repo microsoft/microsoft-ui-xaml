@@ -1,0 +1,107 @@
+<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#include "precomp.h"
+#include <StringConversions.h>
+#include <SimplePropertiesCommon.g.h>
+#include <DXamlTypes.h>
+#include <CValueBoxer.h>
+
+ // For every type used by simple properties, we need to generate its Reference type's name.
+ // One exception is if the type is an enum. Boxes.g.cpp will already generate its Reference type's name.
+ <# foreach (var typeName in Model.GetAllTypeTableSimpleProperties().Where(simpleProperty => !(simpleProperty.PropertyType.Type is EnumDefinition)).Select(simpleProperty => simpleProperty.PropertyType.AbiFullNameNoABIPrefix).Distinct()) {#>
+REFERENCE_ELEMENT_NAME_IMPL(<#= AsCppType(typeName) #>, L"<#= typeName #>");
+ <# } #>
+REFERENCE_ELEMENT_NAME_IMPL(<#= PrefixAbi("Windows::Foundation::Numerics::Quaternion") #>, L"Windows.Foundation.Numerics.Quaternion");
+
+
+// Type converters for types used by simple properties.
+// If a new type converter is required, add it to the source T4 file,
+// and then add an exception for the type to ObjectWriter::Logic_CreatePropertyValueFromText()
+namespace SimplePropertiesCommon {
+
+    HRESULT ConvertToVector2(const CValue& value, <#= PrefixAbi("Windows::Foundation::Numerics::Vector2") #>& convertedValue)
+    {
+        IFCEXPECT_RETURN(value.GetType() == valueString);
+        IFC_RETURN(Vector2FromString(value.As<valueString>(), convertedValue));
+        return S_OK;
+    }
+
+    HRESULT ConvertToVector3(const CValue& value, <#= PrefixAbi("Windows::Foundation::Numerics::Vector3") #>& convertedValue)
+    {
+        IFCEXPECT_RETURN(value.GetType() == valueString);
+        IFC_RETURN(Vector3FromString(value.As<valueString>(), convertedValue));
+        return S_OK;
+    }
+
+    HRESULT ConvertToQuaternion(const CValue& value, <#= PrefixAbi("Windows::Foundation::Numerics::Quaternion") #>& convertedValue)
+    {
+        IFCEXPECT_RETURN(value.GetType() == valueString);
+        IFC_RETURN(QuaternionFromString(value.As<valueString>(), convertedValue));
+        return S_OK;
+    }
+
+    HRESULT ConvertToMatrix3x2(const CValue& value, <#= PrefixAbi("Windows::Foundation::Numerics::Matrix3x2") #>& convertedValue)
+    {
+        IFCEXPECT_RETURN(value.GetType() == valueString);
+        IFC_RETURN(Matrix3x2FromString(value.As<valueString>(), convertedValue));
+        return S_OK;
+    }
+
+    HRESULT ConvertToMatrix4x4(const CValue& value, <#= PrefixAbi("Windows::Foundation::Numerics::Matrix4x4") #>& convertedValue)
+    {
+        IFCEXPECT_RETURN(value.GetType() == valueString);
+        IFC_RETURN(Matrix4x4FromString(value.As<valueString>(), convertedValue));
+        return S_OK;
+    }
+
+    HRESULT ConvertToTimeSpan(const CValue& value, <#= PrefixAbi("Windows::Foundation::TimeSpan") #>& convertedValue)
+    {
+        IFCEXPECT_RETURN(value.GetType() == valueObject);
+        const CTimeSpan* timeSpan = static_cast<const CTimeSpan*>(value.As<valueObject>());
+        convertedValue = { static_cast<long long>(timeSpan->m_rTimeSpan * 10000000.0) };
+        return S_OK;
+    }
+
+    HRESULT ConvertToVector3TransitionComponents(const CValue& value, <#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::Vector3TransitionComponents") #>& convertedValue)
+    {
+        IFCEXPECT_RETURN(value.GetType() == valueEnum8);
+        convertedValue = static_cast<<#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::Vector3TransitionComponents") #>>(value.AsEnum8());
+        return S_OK;
+    }
+
+    HRESULT ConvertToDouble(const CValue& value, double& convertedValue)
+    {
+        // Counterintuitively checking for valueFloat here because CDouble::CreateCValue actually
+        // creates a valueFloat, not a valueDouble (as one might expect)
+        if (value.GetType() == valueFloat)
+        {
+            convertedValue = value.As<valueFloat>();
+        }
+        else
+        {
+            IFCEXPECT_RETURN(value.GetType() == valueString);
+            IFC_RETURN(DirectUI::CValueBoxer::UnboxValue(&value, &convertedValue));
+        }
+        return S_OK;
+    }
+
+    HRESULT ConvertToInt32(const CValue& value, int32_t& convertedValue)
+    {
+        if (value.GetType() == valueSigned)
+        {
+            convertedValue = value.As<valueSigned>();
+        }
+        else
+        {
+            IFCEXPECT_RETURN(value.GetType() == valueString);
+            IFC_RETURN(DirectUI::CValueBoxer::UnboxValue(&value, &convertedValue));
+        }
+        return S_OK;
+    }
+}

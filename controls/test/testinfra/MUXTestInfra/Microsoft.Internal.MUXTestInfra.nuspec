@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.Internal.MUXTestInfra</id>
+    <version>$VERSION$</version>
+    <authors>Microsoft Corporation</authors>
+    <title>Microsoft.Internal.MUXTestInfra</title>
+    <owners>Microsoft Corporation</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Microsoft.Internal.MUXTestInfra</description>
+  </metadata>
+  <files>
+    <file target="build\Microsoft.Internal.MUXTestInfra.targets" src="Microsoft.Internal.MUXTestInfra.targets"/>
+    <file target="build\native\Microsoft.Internal.MUXTestInfra.targets" src="Microsoft.Internal.MUXTestInfra.Native.targets"/>
+    
+    <file target="runtimes\win10-x86\native" src="$BUILDBINDIR$\x86fre\Test\MUXTestInfra\MUXTestInfra.dll"/>
+    <file target="runtimes\win10-x64\native" src="$BUILDBINDIR$\amd64fre\Test\MUXTestInfra\MUXTestInfra.dll"/>
+    <file target="runtimes\win10-arm64\native" src="$BUILDBINDIR$\arm64fre\Test\MUXTestInfra\MUXTestInfra.dll"/>
+  </files>
+</package>

@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{d6a86b75-c0d2-4761-844c-9d83a130af69}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+
+    <Import Project="..\sources.props"/>
+
+    <Import Project="$(ProjectRoot)eng\winui-version.props" />
+
+    <Import Project="$(ProjectRoot)\perf\pgo\Microsoft.WinUI.PGO.props" />
+
+    <PropertyGroup>
+        <Mui>true</Mui>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) _DAYTONA_;</ProjectPreprocessorDefinitions>
+
+        <TargetDestination>$(ProductBinplaceDestinationPath)</TargetDestination>
+
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\brushes\inc;
+            $(XcpPath)\components\math\inc;
+            $(XcpPath)\components\scaling\inc;
+            $(XcpPath)\core\hw;
+            $(XcpPath)\core\imaging\imagingprovider;
+            $(XcpPath)\components\comptree\inc;
+            $(FrameworkUdkIncPath);
+            $(TempDir)
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\dxaml\idl\winrt\merged\microsoft.ui.xaml.vcxproj" Project="{869EA267-A81A-49ED-8404-812C2A03E25A}"/>
+        <ProjectReference Include="$(XcpPath)\dxaml\idl\winrt\merged\private\microsoft.ui.xaml.vcxproj" Project="{52b2ed64-1cfc-401b-8c5b-6d1e1deadf98}"/>
+        <ProjectReference Include="$(XcpPath)\dxaml\manifest\manifest.vcxproj" Project="{439d8d30-7118-4da6-956b-ee0c5b92d6a9}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+
+    <!-- These are needed to properly link against static libs that come from IXP -->
+    <Import Project="$(LiftedIXPBuildPath)\Microsoft.InteractiveExperiences.targets" />
+    <Import Project="$(LiftedIXPInternalBuildPath)\Microsoft.Internal.InteractiveExperiences.targets" />
+
+    <Import Project="$(PkgMicrosoft_PGO_Helpers_Cpp)\build\Microsoft.PGO-Helpers.Cpp.targets" />
+
+    <Target Name="MUXExternalBinaries" DependsOnTargets="ChooseExternalBinaries" BeforeTargets="Binplace">
+        <ItemGroup>
+            <PackageContent Include="@(ExternalBinaries)" PackageLocation="$(NativeAssemblyPackageLocation)"/>
+            <BinplaceItem Include="@(ExternalBinaries)"/>
+        </ItemGroup>
+
+        <ItemGroup Condition="'@(IXPPGDFiles)' != ''">
+            <BinplaceItem Include="@(IXPPGDFiles)" />
+        </ItemGroup>
+    </Target>
+
+    <ItemGroup>
+        <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(NativeAssemblyPackageLocation)"/>
+        <PackageContent Include="$(OutDir)$(TargetName).dll.mui" PackageLocation="$(NativeAssemblyPackageLocation)\en-us"/>
+
+        <!--
+            This project is responsible for binplacing and packaging all the external winmds and binaries that we put into 
+            our nuget. That's done here by including adding them to PackageContent.
+            
+            Do not add binaries to this list of externals, instead add them to eng\ProductMetadata.props, which are then
+            referenced here (for example in ExternalBinaries). Header files are listed here though.
+        -->
+        <PackageContent Include="@(ExternalWinMDs)" Exclude="@(IxpWinMds)" PackageLocation="$(WinMDPackageLocation)"/>
+        <BinplaceItem Include="@(ExternalWinMDs)"  Exclude="@(IxpWinMds)"/> <!-- We exclude the ixp winmds because those are currently merged into our Microsoft.UI.winmd -->
+        <PackageContent Include="$(LiftedIXPInternalIncludePath)\winrtdirect3d11.h" PackageLocation="$(IncludesPackageLocation)"/>
+        <PackageContent Include="$(LiftedIXPInternalIncludePath)\winrtdirectxcommon.h" PackageLocation="$(IncludesPackageLocation)"/>
+        <PackageContent Include="$(LocalizedMUIFilesPath)\**\*.mui" PackageLocation="$(NativeAssemblyPackageLocation)\%(RecursiveDir)"/>
+        <PackageContent Include="$(WebView2PackagePath)\build\native\include\WebView2.h" PackageLocation="$(IncludesPackageLocation)"/>
+        <PackageContent Include="$(WebView2PackagePath)\WebView2.idl" PackageLocation="$(IncludesPackageLocation)"/>
+        <BinplaceItem Include="$(LocalizedMUIFilesPath)\**\*.mui">
+            <DestinationSubDirectory>%(RecursiveDir)</DestinationSubDirectory>
+        </BinplaceItem>
+    </ItemGroup>
+</Project>

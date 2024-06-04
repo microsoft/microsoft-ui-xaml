@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <Error Condition="$(Platform) != 'x86'" />
+
+            <!-- Clang-CL options. -->
+            <AdditionalOptions>
+                %(AdditionalOptions)
+                --target=i686-pc-windows-msvc
+                /std:c++17
+                /Zc:strictStrings
+                -msse2
+                -Xclang -fno-wchar
+                -Wno-abstract-final-class
+                -Wno-address-of-temporary
+                -Wno-backslash-newline-escape
+                -Wno-c++11-narrowing
+                -Wno-c++20-extensions
+                -Wno-comment
+                -Wno-defaulted-function-deleted
+                -Wno-delete-abstract-non-virtual-dtor
+                -Wno-delete-non-abstract-non-virtual-dtor
+                -Wno-deprecated-declarations
+                -Wno-dynamic-exception-spec
+                -Wno-enum-compare-switch
+                -Wno-extern-c-compat
+                -Wno-extern-initializer
+                -Wno-extra-tokens
+                -Wno-gnu-folding-constant
+                -Wno-ignored-pragma-optimize
+                -Wno-implicit-exception-spec-mismatch
+                -Wno-inconsistent-missing-override
+                -Wno-instantiation-after-specialization
+                -Wno-invalid-noreturn
+                -Wno-invalid-offsetof
+                -Wno-logical-op-parentheses
+                -Wno-microsoft-enum-forward-reference
+                -Wno-microsoft-exception-spec
+                -Wno-microsoft-goto
+                -Wno-microsoft-include
+                -Wno-microsoft-pure-definition
+                -Wno-microsoft-template
+                -Wno-microsoft-template-shadow
+                -Wno-missing-braces
+                -Wno-nonportable-include-path
+                -Wno-overloaded-virtual
+                -Wno-pragma-pack
+                -Wno-reorder-ctor
+                -Wno-shift-negative-value
+                -Wno-switch
+                -Wno-undefined-inline
+                -Wno-unknown-pragmas
+                -Wno-unused-but-set-variable
+                -Wno-unused-command-line-argument
+                -Wno-unused-function
+                -Wno-unused-local-typedef
+                -Wno-unused-value
+                -Wno-unused-variable
+            </AdditionalOptions>
+
+            <AdditionalOptions Condition="$(ClangDB) == 'true'">
+                %(AdditionalOptions)
+                -clang:-MJ$(MSBuildProjectDirectory)\compdb_%(Filename)%(Extension).json.tmp
+            </AdditionalOptions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions)EXP_CLANG;</ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+</Project>

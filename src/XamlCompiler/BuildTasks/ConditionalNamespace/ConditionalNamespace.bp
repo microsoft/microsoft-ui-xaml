@@ -1,0 +1,14 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+import * as Sdk from "Sdk.OSGTools";
+
+namespace XAMLCompiler.BuildTasks.ConditionalNamespace {
+    // DEF: Microsoft.External.Tools.XAMLCompiler.ConditionalNamespace
+    export const conditionalNamespace: SourceFile[] = [
+        f`ConditionalNamespaceBaseListener.cs`,
+        f`ConditionalNamespaceLexer.cs`,
+        f`ConditionalNamespaceListener.cs`,
+        f`ConditionalNamespaceParser.cs`,
+    ];
+}

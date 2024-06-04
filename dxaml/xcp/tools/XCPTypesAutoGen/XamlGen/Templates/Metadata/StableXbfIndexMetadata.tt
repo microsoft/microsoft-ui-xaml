@@ -1,0 +1,130 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="XbfMetadataCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+
+namespace Microsoft.Xaml.WidgetSpinner.Metadata
+{
+    // Define the stable XBF type indices
+    public enum <#= StableXbfIndexGenerator.StableXbfTypeIndexEnumName #>
+    {
+<# foreach (var type in StableIndexes.GetStableTypeIndexes()) { #>
+        <#= type.stableIndexName + " = " + type.stableIndex #>,
+<# } #>
+    }
+
+    // Define the stable XBF property indices
+    public enum <#= StableXbfIndexGenerator.StableXbfPropertyIndexEnumName #>
+    {
+<# foreach (var property in StableIndexes.GetStablePropertyIndexes()) { #>
+        <#= property.stableIndexName + " = " + property.stableIndex #>,
+<# } #>
+    }
+
+    // Define the stable XBF event indices
+    public enum <#= StableXbfIndexGenerator.StableEventIndexEnumName #>
+    {
+<# foreach (var evt in StableIndexes.GetStableEventIndexes()) { #>
+        <#= evt.stableIndexName + " = " + evt.stableIndex #>,
+<# } #>
+    }
+
+    [Flags]
+    public enum XamlPropertyFlags
+    {
+        None = 0x0,
+        IsVisualTreeProperty = 0x1,
+        IsAttached = 0x2,
+    }
+
+    public struct XamlPropertyInfo
+    {
+        public readonly string FullName;
+        public readonly <#= StableXbfIndexGenerator.StableXbfTypeIndexEnumName #> PropertyTypeIndex;
+        public readonly <#= StableXbfIndexGenerator.StableXbfTypeIndexEnumName #> DeclaringTypeIndex;
+        public readonly XamlPropertyFlags Flags;
+
+        public XamlPropertyInfo(string fullName, <#= StableXbfIndexGenerator.StableXbfTypeIndexEnumName #> propertyTypeIndex, <#= StableXbfIndexGenerator.StableXbfTypeIndexEnumName #> declaringTypeIndex, XamlPropertyFlags flags)
+        {
+            FullName = fullName;
+            PropertyTypeIndex = propertyTypeIndex;
+            DeclaringTypeIndex = declaringTypeIndex;
+            Flags = flags;
+        }
+    }
+
+    [Flags]
+    public enum XamlTypeFlags
+    {
+        None = 0x0,
+        IsCollection = 0x1,
+        IsDictionary = 0x2,
+        IsMarkupExtension = 0x4,
+    }
+
+    public struct XamlTypeInfo
+    {
+        public readonly string FullName;
+        public readonly <#= StableXbfIndexGenerator.StableXbfTypeIndexEnumName #> BaseTypeIndex;
+        public readonly XamlTypeFlags Flags;
+
+        public XamlTypeInfo(string fullName, <#= StableXbfIndexGenerator.StableXbfTypeIndexEnumName #> baseTypeIndex, XamlTypeFlags flags)
+        {
+            FullName = fullName;
+            BaseTypeIndex = baseTypeIndex;
+            Flags = flags;
+        }
+    }
+
+    public class StableXbfIndexMetadata
+    {
+        // Map stable XBF type indices to known type full names
+        public static readonly IReadOnlyDictionary<<#= StableXbfIndexGenerator.StableXbfTypeIndexEnumName #>, XamlTypeInfo> StableXbfTypeIndexToTypeInfo = new ReadOnlyDictionary<<#= StableXbfIndexGenerator.StableXbfTypeIndexEnumName #>, XamlTypeInfo>(new Dictionary<<#= StableXbfIndexGenerator.StableXbfTypeIndexEnumName #>, XamlTypeInfo>()
+        {
+<# Func<ClassDefinition, bool> classSelector = c => !c.IsInterface && !c.IsAEventArgs; #>
+<# foreach (var type in Model.GetAllTypeTableTypes().Where(t => !(t is ClassDefinition) || classSelector(t as ClassDefinition))) { #>
+<#     var stableIndexName = StableIndexes.GetStableTypeIndexNameFromKnownTypeIndexName(type.IndexNameWithoutPrefix); #>
+<#     if (stableIndexName != StableIndexes.UnknownTypeName) { #>
+<#         var baseTypeIndexName = StableIndexes.UnknownTypeName; #>
+<#         var flags = "XamlTypeFlags.None"; #>
+<#         var typeAsClass = type as ClassDefinition; #>
+<#         if (typeAsClass != null) #>
+<#         { #>
+<#             baseTypeIndexName = StableIndexes.GetStableTypeIndexNameFromKnownTypeIndexName(typeAsClass.BaseClassInTypeTable.IndexNameWithoutPrefix); #>
+<#             var flagsList = new List<string>(); #>
+<#             if (typeAsClass.IsCollectionImplementationClass || typeAsClass.XamlClassFlags.IsICollection) { flagsList.Add("XamlTypeFlags.IsCollection"); } #>
+<#             if (typeAsClass.XamlClassFlags.IsIDictionary) { flagsList.Add("XamlTypeFlags.IsDictionary"); } #>
+<#             if (typeAsClass.XamlClassFlags.IsMarkupExtension) { flagsList.Add("XamlTypeFlags.IsMarkupExtension"); } #>
+<#             if (flagsList.Count > 0) { flags = flagsList.Aggregate((left, right) => left + " | " + right); } #>
+<#         } #>
+            <#= "{ " + StableXbfIndexGenerator.StableXbfTypeIndexEnumName + "." + stableIndexName + ", new XamlTypeInfo(\"" + type.GenericClrFullName + "\", " + StableXbfIndexGenerator.StableXbfTypeIndexEnumName + "." + baseTypeIndexName + ", " + flags + ") }," #>
+<#     } #>
+<# } #>
+        });
+
+        // Map stable XBF property indices to known properties
+        public static readonly IReadOnlyDictionary<<#= StableXbfIndexGenerator.StableXbfPropertyIndexEnumName #>, XamlPropertyInfo> StableXbfPropertyIndexToPropertyInfo = new ReadOnlyDictionary<<#= StableXbfIndexGenerator.StableXbfPropertyIndexEnumName #>, XamlPropertyInfo>(new Dictionary<<#= StableXbfIndexGenerator.StableXbfPropertyIndexEnumName #>, XamlPropertyInfo>()
+        {
+<# foreach (var property in Model.GetAllTypeTableProperties().Where(p => classSelector(p.DeclaringClass))) { #>
+<#     var stableIndexName = StableIndexes.GetStablePropertyIndexNameFromKnownPropertyIndexName(property.IndexNameWithoutPrefix); #>
+<#     if (stableIndexName != StableIndexes.UnknownPropertyName) { #>
+<#         var propertyTypeIndexName = StableXbfIndexGenerator.StableXbfTypeIndexEnumName + "." + StableIndexes.GetStableTypeIndexNameFromKnownTypeIndexName(property.PropertyType.Type.IndexNameWithoutPrefix); #>
+<#         var declaringTypeIndexName = StableXbfIndexGenerator.StableXbfTypeIndexEnumName + "." + StableIndexes.GetStableTypeIndexNameFromKnownTypeIndexName(property.DeclaringType.IndexNameWithoutPrefix); #>
+<#         var flags = "XamlPropertyFlags.None"; #>
+<#         var flagsList = new List<string>(); #>
+<#         if (property.IsVisualTreeProperty) { flagsList.Add("XamlPropertyFlags.IsVisualTreeProperty"); } #>
+<#         if (property is AttachedPropertyDefinition) { flagsList.Add("XamlPropertyFlags.IsAttached"); } #>
+<#         if (flagsList.Count > 0) { flags = flagsList.Aggregate((left, right) => left + " | " + right); } #>
+            <#= "{ " + StableXbfIndexGenerator.StableXbfPropertyIndexEnumName + "." + stableIndexName + ", new XamlPropertyInfo(\"" + property.DescriptiveName + "\", " + propertyTypeIndexName + ", " + declaringTypeIndexName + ", " + flags + ") }," #>
+<#     } #>
+<# } #>
+        });
+    }
+}

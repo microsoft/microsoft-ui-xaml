@@ -1,0 +1,24 @@
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+
+WrlCreatorMapIncludePragma(Pivot);
+WrlCreatorMapIncludePragma(PivotItem);
+WrlCreatorMapIncludePragma(PivotHeaderItem);
+WrlCreatorMapIncludePragma(PivotAutomationPeer);
+WrlCreatorMapIncludePragma(PivotItemAutomationPeer);
+WrlCreatorMapIncludePragma(PivotItemDataAutomationPeer);
+WrlCreatorMapIncludePragma(NavigationThemeTransition);
+WrlCreatorMapIncludePragma(CommonNavigationTransitionInfo);
+WrlCreatorMapIncludePragma(SlideNavigationTransitionInfo);
+WrlCreatorMapIncludePragma(ContinuumNavigationTransitionInfo);
+WrlCreatorMapIncludePragma(PickerFlyoutBase);
+WrlCreatorMapIncludePragma(PickerFlyout);
+WrlCreatorMapIncludePragma(PickerFlyoutPresenter);
+WrlCreatorMapIncludePragma(ListPickerFlyout);
+WrlCreatorMapIncludePragma(ListPickerFlyoutPresenter);
+WrlCreatorMapIncludePragma(LoopingSelector);
+WrlCreatorMapIncludePragma(DatePickerFlyout);
+WrlCreatorMapIncludePragma(DatePickerFlyoutPresenter);
+WrlCreatorMapIncludePragma(DatePickerFlyoutItem);
+WrlCreatorMapIncludePragma(TimePickerFlyout);
+WrlCreatorMapIncludePragma(TimePickerFlyoutPresenter);
+

@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ConfigurationType>Utility</ConfigurationType>
+    <ProjectGuid>{5876e568-b204-4219-8c08-9e8124edab9c}</ProjectGuid>
+    <MergeWinMd>false</MergeWinMd>
+    <ProjectName>Microsoft.ui.xaml-main</ProjectName>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))" />
+  <Import Project="$(XamlSourcePath)\xcp\project-lift.props" />
+  <ItemGroup>
+    <Midl Include="windows.foundation.declarations.idl" CopyToPublicHeadersPath="true" />
+    <Midl Include="microsoft.ui.xaml.idl" CopyToPublicHeadersPath="true" />
+    <Midl Include="microsoft.ui.xaml.private.idl" CopyToPublicHeadersPath="true" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- Prevent inclusion of kernel32, user32, gid32, etc. -->
+    <MinimalCoreWin>false</MinimalCoreWin>
+
+    <!-- Note: Although this is documented as a Link Metadata item, the Link task actually looks for it as a property -->
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <SetChecksum>true</SetChecksum>
+      <ImageHasSafeExceptionHandlers Condition="'$(Platform)' == 'Win32'">true</ImageHasSafeExceptionHandlers>
+      <SpecifySectionAttributes>.idata,R</SpecifySectionAttributes>
+      <StackCommitSize>0x1000</StackCommitSize>
+      <StackReserveSize>0x40000</StackReserveSize>
+      <Version>10.0</Version>
+      <EnableUAC>false</EnableUAC>
+      <!-- Moving to UCRT in Windows SDK 19041+, we need to ensure that our printf 
+          rounding behavior remains consistent for test visual tree dump comparisons, etc.
+          https://learn.microsoft.com/en-us/cpp/c-runtime-library/link-options?view=msvc-170 -->
+      <AdditionalOptions Condition="'$(ResourceOnlyDll)' != 'true'">legacy_stdio_float_rounding.obj %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+
+    <ProjectReference>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <OutputItemType>Content</OutputItemType>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+
+  <!-- For some reason NTBuild output an ix86 for Machine instead of x86 like MSBuild does so we -->
+  <!-- will tell MSBuild not to output it and manually do it in the additional options.          -->
+  <!-- Same applies for x64 (outputs amd64) and ARM64 (outputs arm64). Is there a reason we      -->
+  <!-- can't let the linker autodetect?                                                          -->
+  <ItemDefinitionGroup>
+    <Link>
+      <TargetMachine>NotSet</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <PropertyGroup>
+    <MachineType Condition="'$(Platform)' == 'Win32'" >ix86</MachineType>
+    <MachineType Condition="'$(Platform)' == 'x64'">amd64</MachineType>
+    <MachineType Condition="'$(Platform)' == 'ARM64'"  >arm64</MachineType>
+    <XamlDynamicLibraryOptions>$(XamlDynamicLibraryOptions) /machine:$(MachineType)</XamlDynamicLibraryOptions>
+  </PropertyGroup>
+
+  <!-- Because this happens so early in the process some of the converted projects may not property append additional options/definitions -->
+  <!-- and such.  So we define these values as properties and then let xaml.Cpp.Targes apply them after all the individual processing     -->
+  <!-- has occurred.                                                                                                                      -->
+  <PropertyGroup>
+    <XamlDynamicLibraryDependencies>
+      $(XamlDynamicLibraryDependencies)
+    </XamlDynamicLibraryDependencies>
+    <XamlDynamicLibraryOptions>$(XamlDynamicLibraryOptions)
+      /Brepro
+      /d2:-CoroOptsWorkaround
+      /d2:-guardspecload
+      /d2:-NoSmallFunctionOpt
+      /d2:-SpecDevirt-
+      /d2:-TypeProp-
+      /IGNORE:4199
+      /exportpadmin:5
+      /MERGE:.orpc=.text
+      /MERGE:_PAGE=PAGE
+      /MERGE:_RDATA=.rdata
+      /MERGE:_TEXT=.text
+      /NOVCFEATURE
+      /osversion:10.0
+      /pdbcompress
+      /RetryOnFileOpenFailure
+      /RunBelow4GB</XamlDynamicLibraryOptions>
+    <XamlDynamicLibraryOptionsNoEntry>
+    </XamlDynamicLibraryOptionsNoEntry>
+  </PropertyGroup>
+
+  <!-- We have some issues with duplicate sysmbols because, well we implement stuff in multiple places and then try    -->
+  <!-- to link them all together.  One of these cases is the PalDebugProject which must be linked after the allocation -->
+  <!-- project.  So before we resolve the references, we will take it out of ProjectRefrences and add it to the end    -->
+  <!-- Note: This is still fragile and we should clean up our implementations.  We can't do anything about the new/    -->
+  <!--       delete that we override from the crt, but a bunch of the other stuff can just be fixed but better         -->
+  <!--       organizing/selecting where stuff is located and what we link with                                         -->
+  <Target Name="BeforeResolveReferences">
+    <FindInList CaseSensitive="false" MatchFileNameOnly="true" List="@(ProjectReference)" ItemSpecToFind="PALDebug.vcxproj">
+      <Output TaskParameter="ItemFound" ItemName="PalDebugProject"/>
+    </FindInList>
+    <ItemGroup>
+      <ProjectReference Remove="@(PalDebugProject)"/>
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="@(PalDebugProject)"/>
+    </ItemGroup>
+  </Target>
+
+  <UsingTask
+      TaskName="DoSetObjectRoot"
+      TaskFactory="RoslynCodeTaskFactory"
+      AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+    <ParameterGroup />
+    <Task>
+      <Using Namespace="System"/>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+Environment.SetEnvironmentVariable("OBJECT_ROOT", "42");
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="DefineDummyObjectRoot" BeforeTargets="Link">
+    <DoSetObjectRoot/>
+  </Target>
+</Project>

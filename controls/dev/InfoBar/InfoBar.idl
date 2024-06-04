@@ -1,0 +1,153 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+enum InfoBarCloseReason
+{
+    CloseButton = 0,
+    Programmatic = 1
+};
+
+[MUX_PUBLIC]
+[webhosthidden]
+enum InfoBarSeverity
+{
+    Informational = 0,
+    Success = 1,
+    Warning = 2,
+    Error = 3,
+};
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass InfoBarClosedEventArgs
+{
+    InfoBarCloseReason Reason { get; };
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass InfoBarClosingEventArgs
+{
+    InfoBarCloseReason Reason { get; };
+    Boolean Cancel { get; set; };
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass InfoBarTemplateSettings : Microsoft.UI.Xaml.DependencyObject
+{
+    InfoBarTemplateSettings();
+
+    Microsoft.UI.Xaml.Controls.IconElement IconElement;
+
+    static Microsoft.UI.Xaml.DependencyProperty IconElementProperty{ get; };
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+[contentproperty("Content")]
+unsealed runtimeclass InfoBar : Microsoft.UI.Xaml.Controls.Control
+{
+    InfoBar();
+
+    [MUX_DEFAULT_VALUE("false")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean IsOpen{ get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    String Title{ get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    String Message{ get; set; };
+
+    [MUX_DEFAULT_VALUE("winrt::InfoBarSeverity::Informational")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    InfoBarSeverity Severity{ get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    IconSource IconSource{ get; set; };
+
+    [MUX_DEFAULT_VALUE("true")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean IsIconVisible{ get; set; };
+
+    [MUX_DEFAULT_VALUE("true")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean IsClosable{ get; set; };
+
+    Microsoft.UI.Xaml.Style CloseButtonStyle{ get; set; };
+    Microsoft.UI.Xaml.Input.ICommand CloseButtonCommand{ get; set; };
+    Object CloseButtonCommandParameter{ get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Microsoft.UI.Xaml.Controls.Primitives.ButtonBase ActionButton{ get; set; };
+
+    Object Content{ get; set; };
+    Microsoft.UI.Xaml.DataTemplate ContentTemplate{ get; set; };
+
+    InfoBarTemplateSettings TemplateSettings{ get; };
+
+    event Windows.Foundation.TypedEventHandler<InfoBar, Object> CloseButtonClick;
+    event Windows.Foundation.TypedEventHandler<InfoBar, InfoBarClosingEventArgs> Closing;
+    event Windows.Foundation.TypedEventHandler<InfoBar, InfoBarClosedEventArgs> Closed;
+
+    static Microsoft.UI.Xaml.DependencyProperty IsOpenProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty TitleProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty MessageProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty SeverityProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty IconSourceProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsIconVisibleProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsClosableProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty CloseButtonStyleProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty CloseButtonCommandProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty CloseButtonCommandParameterProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty ActionButtonProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty ContentProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty ContentTemplateProperty{ get; };
+
+    static Microsoft.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
+}
+
+}
+
+namespace MU_XCP_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass InfoBarPanel : Microsoft.UI.Xaml.Controls.Panel
+{
+    InfoBarPanel();
+
+    Microsoft.UI.Xaml.Thickness HorizontalOrientationPadding;
+    static Microsoft.UI.Xaml.DependencyProperty HorizontalOrientationPaddingProperty{ get; };
+
+    Microsoft.UI.Xaml.Thickness VerticalOrientationPadding;
+    static Microsoft.UI.Xaml.DependencyProperty VerticalOrientationPaddingProperty{ get; };
+
+    static void SetHorizontalOrientationMargin(Microsoft.UI.Xaml.DependencyObject object, Microsoft.UI.Xaml.Thickness value);
+    static Microsoft.UI.Xaml.Thickness GetHorizontalOrientationMargin(Microsoft.UI.Xaml.DependencyObject object);
+    static Microsoft.UI.Xaml.DependencyProperty HorizontalOrientationMarginProperty{ get; };
+
+    static void SetVerticalOrientationMargin(Microsoft.UI.Xaml.DependencyObject object, Microsoft.UI.Xaml.Thickness value);
+    static Microsoft.UI.Xaml.Thickness GetVerticalOrientationMargin(Microsoft.UI.Xaml.DependencyObject object);
+    static Microsoft.UI.Xaml.DependencyProperty VerticalOrientationMarginProperty{ get; };
+}
+
+}
+
+
+namespace MU_XAP_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass InfoBarAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    InfoBarAutomationPeer(MU_XC_NAMESPACE.InfoBar owner);
+}
+
+}
+

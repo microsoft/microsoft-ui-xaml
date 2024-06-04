@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{b686a4d4-ef60-411c-98c7-fd43225dc80f}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\common.props"/>
+
+    <ItemGroup>
+        <ClCompile Include="..\CustomWriterManager.cpp"/>
+        <ClCompile Include="..\ResourceDictionaryCustomRuntimeData.cpp"/>
+        <ClCompile Include="..\ResourceDictionaryCustomWriter.cpp"/>
+        <ClCompile Include="..\VisualStateGroupCollectionCustomRuntimeData.cpp"/>
+        <ClCompile Include="..\VisualStateGroupCollectionCustomWriter.cpp"/>
+        <ClCompile Include="..\StyleCustomRuntimeData.cpp"/>
+        <ClCompile Include="..\StyleCustomWriter.cpp"/>
+        <ClCompile Include="..\DeferredElementCustomRuntimeData.cpp"/>
+        <ClCompile Include="..\DeferredElementCustomWriter.cpp"/>
+        <ClCompile Include="..\CustomWriterRuntimeObjectCreator.cpp"/>
+        <ClCompile Include="..\VisualTransitionTableOptimizedLookup.cpp"/>
+        <ClCompile Include="..\CustomRuntimeDataSerializer.cpp"/>
+        <ClCompile Include="..\CustomWriterRuntimeData.cpp"/>
+        <ClCompile Include="..\ResourceDictionaryCustomRuntimeDataSerializer.cpp"/>
+        <ClCompile Include="..\VisualStateGroupCollectionCustomRuntimeDataSerializer.cpp"/>
+        <ClCompile Include="..\StyleCustomRuntimeDataSerializer.cpp"/>
+        <ClCompile Include="..\DeferredElementCustomRuntimeDataSerializer.cpp"/>
+        <ClCompile Include="..\NameDirectiveCapturingWriter.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\deferral\inc;
+            $(XcpPath)\components\runtimeEnabledFeatures\inc;
+            $(XcpPath)\components\dependencyLocator\inc;
+            $(XcpPath)\components\objectWriter\inc;
+            $(XcpPath)\components\qualifiers\inc;
+            $(XcpPath)\components\parser\inc;
+            $(XcpPath)\components\allocation\inc;
+            $(XcpPath)\components\resources\inc;
+            $(XcpPath)\components\colors\inc;
+            $(XcpPath)\components\theming\inc;
+            $(XcpPath)\core\parser;
+            $(XcpPath)\inc;
+            $(XcpPath)\core\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\prod\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{ccc61973-be99-4223-b935-353d03571e92}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

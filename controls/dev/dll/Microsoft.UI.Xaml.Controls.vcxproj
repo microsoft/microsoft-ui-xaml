@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.UI.Xaml.Common.props" />
+  <PropertyGroup Label="Globals">
+    <_NoWinAPIFamilyApp>true</_NoWinAPIFamilyApp>
+    <ProjectGuid>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</ProjectGuid>
+    <Keyword>DynamicLibrary</Keyword>
+    <TargetName>$(MUXTargetName)</TargetName>
+    <ProjectPriFileName>$(MUXTargetName).pri</ProjectPriFileName>
+    <RootNamespace>$(MUXNamespace)</RootNamespace>
+    <MUXControlsFrameworkPackageName>Microsoft.UI.Xaml.Controls</MUXControlsFrameworkPackageName>
+    <MUXControlsFrameworkPackageName Condition="'$(Configuration)'=='Debug'">Microsoft.UI.Xaml.Controls.Debug</MUXControlsFrameworkPackageName>
+    <!-- We only need XamlCompiler to provide us with XBF -->
+    <XamlCodeGenerationControlFlags>NoPageCodeGen;NoTypeInfoCodeGen</XamlCodeGenerationControlFlags>
+  </PropertyGroup>
+  <Import Project="$(ProjectRoot)\perf\pgo\Microsoft.WinUI.PGO.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(MUXCProjectRoot)MidlShared.props" />
+  <Import Project="$(MUXCProjectRoot)ProjectImports.targets" />
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\Lightup\Microsoft.UI.Xaml.Controls.Lightup.vcxproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <SharedPage Include="@(Page)" />
+  </ItemGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.UI.Xaml.Common.targets" />
+  <ItemDefinitionGroup>
+    <Link>
+      <ModuleDefinitionFile>Microsoft.UI.Xaml.Controls.def</ModuleDefinitionFile>
+    </Link>
+    <ClCompile>
+      <AdditionalOptions>/ZH:SHA_256 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MUXProjectRoot)dxaml\xcp\inc;$(TempDir)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MUXProjectRoot)dxaml\xcp\inc;$(TempDir)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="Microsoft.UI.Xaml.Controls.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Microsoft.UI.Xaml.Controls.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildProjectDirectory)\DensityStyles\Compact.xaml">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>DensityStyles\%(Filename)%(Extension)</Link>
+    </Page>
+    <Page Include="$(MSBuildProjectDirectory)\DensityStyles\CompactDatePickerTimePickerFlyout.xaml">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>DensityStyles\%(Filename)%(Extension)</Link>
+    </Page>
+    <CompactPage Include="$(MSBuildThisFileDirectory)DensityStyles\Compact.xaml" />
+  </ItemGroup>
+  <!-- For the purposes of code coverage, we need to know where the intermediates directory is,
+       since we need to re-link Microsoft.UI.Xaml.Controls.dll for code coverage.
+       We can't get it from any environment variable, so let's write it to a text file as a workaround.
+       We'll also output the MSVC tools directory for the same reason. -->
+  <Target Name="AfterBuild" Condition="(!Exists('$(OutDir)IntermediateDirectoryLocation.txt') Or !Exists('$(OutDir)VCToolsInstallDirectoryLocation.txt'))">
+    <WriteLinesToFile File="$(OutDir)IntermediateDirectoryLocation.txt" Lines="$(IntermediateOutputPath)" Overwrite="true" Encoding="Ascii" />
+    <WriteLinesToFile File="$(OutDir)VCToolsInstallDirectoryLocation.txt" Lines="$(VCToolsInstallDir)" Overwrite="true" Encoding="Ascii" />
+    <ItemGroup>
+      <FileWrites Include="$(OutDir)IntermediateDirectoryLocation.txt" />
+      <FileWrites Include="$(OutDir)VCToolsInstallDirectoryLocation.txt" />
+    </ItemGroup>
+  </Target>
+  <!-- Since we're not generating a WinMD file, we need to populate this manually. -->
+  <Target Name="CppWinRTSetXamlLocalAssembly">
+    <PropertyGroup>
+      <LocalAssembly>$(IntermediateOutputPath)Unmerged\Microsoft.UI.Xaml.Controls.g.winmd</LocalAssembly>
+    </PropertyGroup>
+  </Target>
+  <Target Name="XamlLightupConfigSources" BeforeTargets="SelectCustomBuild">
+    <ItemGroup>
+      <XamlLightup Include="@(ClCompile->HasMetadata('XamlLightup'))" />
+      <ClCompile Remove="@(XamlLightup)" />
+      <ClCompile Include="@(XamlLightup)">
+        <!-- Compile without PCH to permit latest UAP contract for light-up code.
+            In future, if we add more lightup sources, we can generate a light-up PCH. -->
+        <PrecompiledHeader>NotUsing</PrecompiledHeader>
+        <PrecompiledHeaderFile />
+        <PrecompiledHeaderOutputFile />
+        <!-- Pull C++/WinRT projection headers from Microsoft.UI.Xaml.Controls.Lightup -->
+        <AdditionalIncludeDirectories>$(GeneratedFilesDir)..\..\lightup\generated;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+        <!-- Latest Windows SDK headers have some analysis incompatibilities - address later -->
+        <DisableAnalyzeExternal>true</DisableAnalyzeExternal>
+        <EnablePREfast>false</EnablePREfast>
+        <PREfastAdditionalOptions />
+        <PREfastAdditionalPlugins />
+        <PREfastLog />
+        <PREfastRulesetFile />
+        <PREfastProjectDirectory />
+        <PREfastRulesetDirectories />
+      </ClCompile>
+    </ItemGroup>
+  </Target>
+</Project>

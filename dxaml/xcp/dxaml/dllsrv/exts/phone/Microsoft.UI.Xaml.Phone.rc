@@ -1,0 +1,52 @@
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+
+
+#include <windows.h>
+
+#define VER_INTERNALNAME_STR        "Microsoft.UI.Xaml.Phone.dll"
+#include <WinUIrc.ver>
+
+#include <RuntimeErrorCodes.h>
+#include <PhoneResource.h>
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+{
+    TEXT_DATEPICKERFLYOUT_TITLE "CHOOSE A DATE"
+    TEXT_TIMEPICKERFLYOUT_TITLE "CHOOSE A TIME"
+    TEXT_LISTPICKERFLYOUT_TITLE "CHOOSE AN ITEM"
+
+    TEXT_PICKERFLYOUTBASE_ACCEPTBTNLABEL "Done"
+    TEXT_PICKERFLYOUTBASE_CANCELBTNLABEL "Cancel"
+
+    UIA_AP_DATEPICKER_NAME "datepicker"
+    UIA_AP_DATEPICKER_DAYNAME "day"
+    UIA_AP_DATEPICKER_MONTHNAME "month"
+    UIA_AP_DATEPICKER_YEARNAME "year"
+    UIA_AP_TIMEPICKER_NAME "timepicker"
+    UIA_AP_TIMEPICKER_MINUTENAME "minute"
+    UIA_AP_TIMEPICKER_HOURNAME "hour"
+    UIA_AP_TIMEPICKER_PERIODNAME "period"
+    UIA_AP_LISTPICKERFLYOUT_NAME "listpicker"
+    UIA_AP_PICKERFLYOUT_NAME "picker"
+    UIA_DIALOG_ACCEPT "Accept"
+    UIA_DIALOG_DISMISS "Dismiss"
+
+    ERR_ASYNC_ALREADY_IN_PROGRESS "Only a single async operation can be in progress for a given flyout instance."
+    ERR_INVALID_ENUM_VALUE "Invalid enum value."
+    ERR_APP_BAR_LABEL_NEWLINES "Newline characters not supported in app bar button labels."
+    ERR_FLYOUT_ALREADY_OPEN "Async operation cannot be started on a flyout that is already open."
+}
+
+#include "XamlTypeInfo.g.rc"

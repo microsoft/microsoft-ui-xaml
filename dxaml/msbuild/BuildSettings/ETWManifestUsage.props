@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <!-- Used in a project (or common props file) to indicate that the compiler will need access to the ETW Manifest header -->
+
+    <!-- Allow the ETW Manifest directory to the include path -->
+    <PropertyGroup>
+        <!-- Note that we (at least temporarily) prepend the manifest include file path to the list of include directories
+             so that the the etw manifest header will be resolved from there rather than the external dependencies. -->
+        <ProjectIncludeDirectories>
+            $(XcpObjPath)\dxaml\Manifest;
+            $(ProjectIncludeDirectories);
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <!-- Ensure the header is built before its use -->
+    <ItemGroup>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{439d8d30-7118-4da6-956b-ee0c5b92d6a9}'" Include="$(XcpPath)\dxaml\manifest\manifest.vcxproj" Project="{439d8d30-7118-4da6-956b-ee0c5b92d6a9}"/>
+    </ItemGroup>
+</Project>

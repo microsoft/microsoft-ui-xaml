@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{0e9adea7-7e96-4f7c-9ce1-7b82ff6f70c4}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+
+    <!-- Task 14117377: Remove try/catch dependencies -->
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <ExceptionHandling>Sync</ExceptionHandling>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+    <Import Project="..\sources.props"/>
+
+    <PropertyGroup>
+        <TargetDestination>retail</TargetDestination>
+
+        <XamlPrecompiledInclude>precomp.h</XamlPrecompiledInclude>
+
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\Collection\inc;
+            $(XcpPath)\components\math\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\dxaml\idl\winrt\merged\private\Microsoft.UI.Xaml.vcxproj" Project="{52b2ed64-1cfc-401b-8c5b-6d1e1deadf98}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\xamlDiagnostics\idl\xamlom.vcxproj" />
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

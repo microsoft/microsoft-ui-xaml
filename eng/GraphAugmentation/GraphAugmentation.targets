@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <!-- Inherit the Configuration and Platform -->
+    <ShouldUnsetParentConfigurationAndPlatform>false</ShouldUnsetParentConfigurationAndPlatform>
+
+    <!-- Match Directory.Build.props -->
+    <WindowsSDKBuildToolsArchFolder Condition="'$(WindowsSDKBuildToolsArchFolder)' == '' And '$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)'== 'X64'">x64</WindowsSDKBuildToolsArchFolder>
+    <WindowsSDKBuildToolsArchFolder Condition="'$(WindowsSDKBuildToolsArchFolder)' == ''">x86</WindowsSDKBuildToolsArchFolder>
+  </PropertyGroup>
+  <!-- Tell the graph how the project will call its dependencies -->
+  <ItemGroup Condition="'$(IsGraphBuild)' == 'true'">
+    <ProjectReferenceTargets Include="Build" Targets=".projectReferenceTargetsOrDefaultTargets" />
+  </ItemGroup>
+  <!-- Don't actually do anything -->
+  <Target Name="Build" />
+</Project>

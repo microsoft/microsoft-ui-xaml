@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="ext::details::type_with_overlay&lt;*&gt;::layout">
+    <Expand>
+      <Item Name="data&lt;0&gt;()" Condition="c_overlayCount &gt; 0">m_overlay.m_value</Item>
+      <Item Name="data&lt;1&gt;()" Condition="c_overlayCount &gt; 1" Optional="true">m_overlay.m_prev.m_value</Item>
+      <Item Name="data&lt;2&gt;()" Condition="c_overlayCount &gt; 2" Optional="true">m_overlay.m_prev.m_prev.m_value</Item>
+      <Item Name="data&lt;3&gt;()" Condition="c_overlayCount &gt; 3" Optional="true">m_overlay.m_prev.m_prev.m_prev.m_value</Item>
+      <Item Name="data&lt;4&gt;()" Condition="c_overlayCount &gt; 4" Optional="true">m_overlay.m_prev.m_prev.m_prev.m_prev.m_value</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="ext::details::type_with_overlay&lt;std::shared_ptr&lt;*&gt;,*&gt;">
+    <Intrinsic Name="ptr" Expression="($T2*)(((uintptr_t)m_storage.m_raw[$T3]) &amp; ~3)"/>
+    <DisplayString>ptr = {ptr()}</DisplayString>
+    <Expand>
+      <Item Name="ptr">ptr()</Item>
+      <Item Name="data" >m_storage</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="ext::details::type_with_overlay&lt;*&gt;">
+    <Intrinsic Name="ptr" Expression="($T2*)(((uintptr_t)m_storage.m_raw[$T3]) &amp; ~7)"/>
+    <DisplayString>ptr = {ptr()}</DisplayString>
+    <Expand>
+      <Item Name="ptr">ptr()</Item>
+      <Item Name="data" >m_storage</Item>
+    </Expand>
+  </Type>
+</AutoVisualizer>

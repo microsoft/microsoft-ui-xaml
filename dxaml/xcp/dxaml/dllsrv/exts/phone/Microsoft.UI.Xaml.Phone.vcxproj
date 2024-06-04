@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{be2d8fe3-d933-404e-bfe4-88435d96d8e4}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+
+    <Import Project="$(ProjectRoot)eng\winui-version.props" />
+
+    <Import Project="$(ProjectRoot)\perf\pgo\Microsoft.WinUI.PGO.props" />
+
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved. -->
+    <PropertyGroup>
+        <ExtName>Phone</ExtName>
+    </PropertyGroup>
+
+    <Import Project="..\sources.props"/>
+
+    <ItemGroup>
+        <ClInclude Include="XamlTypeInfo.g.h"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(LiftedIXPIncludePaths);
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\pivot\inc;
+            $(XamlSourcePath)\phone\inc;
+            $(XamlSourcePath)\phone\lib;
+            $(XcpPhoneObjPath)\idl;
+            $(TempDir);
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <WarningLevel>Level4</WarningLevel>
+            <DisableSpecificWarnings>%(DisableSpecificWarnings);4481</DisableSpecificWarnings>
+            <TreatWarningAsError>false</TreatWarningAsError>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <ItemDefinitionGroup>
+        <Link>
+            <AdditionalDependencies>
+                %(AdditionalDependencies);
+                ntdll.lib;
+                $(FrameworkUdkLibPath)\Microsoft.Internal.FrameworkUdk.lib;
+            </AdditionalDependencies>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <PropertyGroup>
+        <TargetDestination>$(ProductBinplaceDestinationPath)</TargetDestination>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPhonePath)\idl\phone.vcxproj" Project="{84d22d7d-5fd0-4ccf-b8d2-c34506c6ba66}"/>
+        <ProjectReference Include="$(XcpPath)\components\pch\prod\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{ccc61973-be99-4223-b935-353d03571e92}"/>
+        <ProjectReference Include="$(XcpPhonePath)\lib\PhoneSignatureControls.vcxproj" Project="{1de4aad6-bc27-4945-a219-1df04667acc1}"/>
+        <ProjectReference Include="$(XcpPath)\components\pivot\lib\Microsoft.UI.Xaml.Pivot.vcxproj" Project="{80037dd4-5988-441f-8a1e-390a4b7c50ee}"/>
+        <ProjectReference Include="$(XcpPath)\components\staticpal\lib\Microsoft.UI.Xaml.StaticPal.vcxproj" Project="{c766b284-6b02-474b-9a87-58b2a997bc59}"/>
+        <ProjectReference Include="$(XcpPath)\common\common.vcxproj" Project="{4d75f86e-1c8e-40b3-9767-d8a7cdca82eb}"/>
+        <ProjectReference Include="$(XcpPath)\components\xboxutility\lib\Microsoft.UI.Xaml.XboxUtility.vcxproj" Project="{b69373ed-ec7e-46ee-9fe6-76645661a3cb}"/>
+        <ProjectReference Include="$(XcpPath)\components\focus\focusselection\lib\Microsoft.UI.Xaml.Focus.FocusSelection.vcxproj" Project="{06ee2711-8ce5-4abc-b80d-3b055d7df537}"/>
+        <ProjectReference Include="$(XcpPath)\components\telemetry\Microsoft.UI.Xaml.Instrumentation.vcxproj" Project="{073bb1fb-9ce9-4b52-becb-47bd8a77c6ca}"/>
+        <ProjectReference Include="$(XcpPath)\components\OneCoreTransforms\lib\Microsoft.UI.Xaml.OneCoreTransforms.vcxproj" Project="{4d59a898-7e24-4650-baa0-7fe2bb6c82d4}"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(NativeAssemblyPackageLocation)"/>
+        <PackageContent Include="$(OutDir)$(TargetName).dll.mui" PackageLocation="$(NativeAssemblyPackageLocation)\en-us"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+
+    <Import Project="$(PkgMicrosoft_PGO_Helpers_Cpp)\build\Microsoft.PGO-Helpers.Cpp.targets" />
+</Project>

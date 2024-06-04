@@ -1,0 +1,74 @@
+﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+[MUX_INTERNAL]
+[webhosthidden]
+enum LinedFlowLayoutInvalidationTrigger
+{
+    InvalidateLayoutCall = 0,
+    SnappedAverageItemsPerLineChange = 1,
+    ItemDesiredWidthChange = 2,
+};
+
+[MUX_INTERNAL]
+[webhosthidden]
+runtimeclass LayoutsTestHooksLinedFlowLayoutInvalidatedEventArgs
+{
+    LinedFlowLayoutInvalidationTrigger InvalidationTrigger { get; };
+}
+
+[MUX_INTERNAL]
+[webhosthidden]
+runtimeclass LayoutsTestHooksLinedFlowLayoutItemLockedEventArgs
+{
+    Int32 ItemIndex { get; };
+    Int32 LineIndex { get; };
+}
+
+[MUX_INTERNAL]
+[webhosthidden]
+[default_interface]
+runtimeclass LayoutsTestHooks
+{
+    static event Windows.Foundation.TypedEventHandler<Object, Object> LinedFlowLayoutSnappedAverageItemsPerLineChanged;
+    static event Windows.Foundation.TypedEventHandler<Object, LayoutsTestHooksLinedFlowLayoutInvalidatedEventArgs> LinedFlowLayoutInvalidated;
+    static event Windows.Foundation.TypedEventHandler<Object, LayoutsTestHooksLinedFlowLayoutItemLockedEventArgs> LinedFlowLayoutItemLocked;
+
+    static MU_XC_NAMESPACE.IndexBasedLayoutOrientation GetLayoutForcedIndexBasedLayoutOrientation(Object layout);
+    static void SetLayoutForcedIndexBasedLayoutOrientation(Object layout, MU_XC_NAMESPACE.IndexBasedLayoutOrientation forcedIndexBasedLayoutOrientation);
+    static void ResetLayoutForcedIndexBasedLayoutOrientation(Object layout);
+
+    static void LayoutInvalidateMeasure(Object layout, Boolean relayout);
+
+    static Int32 GetLayoutFirstRealizedItemIndex(Object layout);
+    static Int32 GetLayoutLastRealizedItemIndex(Object layout);
+
+    static Int32 GetLinedFlowLayoutFirstFrozenItemIndex(Object linedFlowLayout);
+    static Int32 GetLinedFlowLayoutLastFrozenItemIndex(Object linedFlowLayout);
+
+    static Double GetLinedFlowLayoutAverageItemAspectRatio(Object linedFlowLayout);
+    static Double GetLinedFlowLayoutRawAverageItemsPerLine(Object linedFlowLayout);
+    static Double GetLinedFlowLayoutSnappedAverageItemsPerLine(Object linedFlowLayout);
+
+    static Double GetLinedFlowLayoutForcedAverageItemsPerLineDivider(Object linedFlowLayout);
+    static void SetLinedFlowLayoutForcedAverageItemsPerLineDivider(Object linedFlowLayout, Double forcedAverageItemsPerLineDivider);
+
+    static Double GetLinedFlowLayoutForcedAverageItemAspectRatio(Object linedFlowLayout);
+    static void SetLinedFlowLayoutForcedAverageItemAspectRatio(Object linedFlowLayout, Double forcedAverageItemAspectRatio);
+
+    static Double GetLinedFlowLayoutForcedWrapMultiplier(Object linedFlowLayout);
+    static void SetLinedFlowLayoutForcedWrapMultiplier(Object linedFlowLayout, Double forcedWrapMultiplier);
+
+    static Boolean GetLinedFlowLayoutIsFastPathSupported(Object linedFlowLayout);
+    static void SetLinedFlowLayoutIsFastPathSupported(Object linedFlowLayout, Boolean isFastPathSupported);
+
+    static Int32 GetLinedFlowLayoutLogItemIndex(Object linedFlowLayout);
+    static void SetLinedFlowLayoutLogItemIndex(Object linedFlowLayout, Int32 itemIndex);
+
+    static Int32 GetLinedFlowLayoutLineIndex(Object linedFlowLayout, Int32 itemIndex);
+
+    static void ClearLinedFlowLayoutItemAspectRatios(Object linedFlowLayout);
+    static void UnlockLinedFlowLayoutItems(Object linedFlowLayout);
+}
+
+}

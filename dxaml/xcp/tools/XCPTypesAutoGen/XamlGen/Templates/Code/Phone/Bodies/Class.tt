@@ -1,0 +1,44 @@
+<#@ template language="C#" linePragmas="false" inherits="PhoneCppCodeGenerator<ClassDefinition>" debug="true"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<# if (!Model.IsAbstract) { #>
+<#= IncludeTemplate<RuntimeClassInitialize>(Model) #>
+
+<# } #>
+<#= IncludeTemplate<InitializeImpl>(Model) #>
+
+<# if (Model.ImplementOverridesExplicitly) { #>
+<#= IncludeTemplate<ClassExplicitOverrides>(Model) #>
+
+<# } #>
+// Properties.
+<# foreach (var p in Model.Properties.Where(p => p.GenerateStub)) { #>
+<#= IncludeTemplate<Property>(p) #>
+
+<# } #>
+
+// Events.
+<# foreach (var e in Model.Events.Where(e => e.GenerateStub)) { #>
+<#= IncludeTemplate<Event>(e) #>
+
+<# } #>
+
+// Methods
+<# foreach (var m in Model.Methods.Where(m => m.GenerateStub && !m.IsStatic)) { #>
+<#= IncludeTemplate<Method>(m) #>
+
+<# } #>
+
+// Overrides
+<# foreach (var overrideInterface in Model.OverrideInterfaces) {
+        foreach (var property in overrideInterface.InstanceProperties.Where(p => p.GenerateStub && (p.IsVirtual))) { #>
+<#= IncludeTemplate<InterfaceMethodImpl>(property.GetGetMethod(), Model) #>
+<#      }
+        foreach (var method in overrideInterface.InstanceMethods.Where(m => m.GenerateStub && (m.IsVirtual))) { #>
+<#= IncludeTemplate<InterfaceMethodImpl>(method, Model) #>
+
+<#      }
+   }#>

@@ -1,0 +1,139 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="MetadataCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+// Contains machine-independent metadata.
+
+#include "precomp.h"
+#include "Indexes.g.h"
+#include "TypeTableStructs.h"
+#include "Activators.g.h"
+#include "TypeTable.g.h"
+#include "EnumValueTable.h"
+
+// Namespaces.
+extern const MetaDataNamespace c_aNamespaces[KnownNamespaceCount] =
+{
+    <#= IncludeTemplate<NamespaceEntry>(NamespaceDefinition.UnknownNamespace) #>,
+<# foreach (var ns in Model.GetTypeTableNamespaces()) { #>
+    <#= IncludeTemplate<NamespaceEntry>(ns) #>,
+<# } #>
+};
+
+// Basic type info.
+extern const MetaDataType c_aTypes[KnownTypeCount] =
+{
+    <#= IncludeTypeEntry(ClassDefinition.UnknownType) #>,
+<# foreach (var type in Model.GetAllTypeTableTypes()) { #>
+    <#= IncludeTypeEntry(type) #>,
+<# } #>
+};
+
+// Type name information.
+extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
+{
+    <#= IncludeTypeNameInfoEntry(ClassDefinition.UnknownType) #>,
+<# foreach (var type in Model.GetAllTypeTableTypes()) { #>
+    <#= IncludeTypeNameInfoEntry(type) #>,
+<# } #>
+};
+
+// Type property information.
+extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
+{
+    <#= IncludeTypePropertiesEntry(ClassDefinition.UnknownType) #>,
+<# foreach (var type in Model.GetAllTypeTableTypes()) { #>
+    <#= IncludeTypePropertiesEntry(type) #>,
+<# } #>
+};
+
+// Type UUID information.
+extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
+{
+    <#= GetDefaultInterfaceGuidString(ClassDefinition.UnknownType) #>,
+<# foreach (var type in Model.GetAllTypeTableTypes()) { #>
+    <#= GetDefaultInterfaceGuidString(type) #>,
+<# } #>
+};
+
+// Types that can be referenced from XAML.
+extern const MetaDataTypeName c_aTypeNames[<#= 1 + Model.GetTypeTableTypesWithNames().Count() #>] =
+{
+    <#= IncludeTemplate<TypeNameEntry>(ClassDefinition.UnknownType) #>,
+<# foreach (var type in Model.GetTypeTableTypesWithNames().OrderBy(t => t.TypeTableName).OrderBy(t => t.TypeTableName.Length)) { #>
+    <#= IncludeTemplate<TypeNameEntry>(type) #>,
+<# } #>
+};
+
+// Properties.
+extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
+{
+    <#= IncludeTemplate<PropertyEntry>(PropertyDefinition.UnknownProperty) #>,
+<# foreach (var property in Model.GetAllTypeTableProperties()) { #>
+    <#= IncludeTemplate<PropertyEntry>(property) #>,
+<# } #>
+};
+
+// Property iteration.
+extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
+{
+    <#= PropertyDefinition.UnknownProperty.NextPropertyInTypeTable.IndexName #>, // <#= PropertyDefinition.UnknownProperty.IndexNameWithoutPrefix #>
+<# foreach (var property in Model.GetAllTypeTableProperties()) { #>
+    <#= property.NextPropertyInTypeTable.IndexName #>, // <#= property.IndexNameWithoutPrefix #>
+<# } #>
+};
+
+// Property slots.
+extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
+{
+    <#= PropertyDefinition.UnknownProperty.Slot #>, // <#= PropertyDefinition.UnknownProperty.IndexNameWithoutPrefix #>
+<# foreach (var property in Model.GetAllTypeTableProperties()) { #>
+    <#= property.Slot #>, // <#= property.IndexNameWithoutPrefix #>
+<# } #>
+};
+
+// Property names.
+extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
+{
+    <#= AsStringStorage(PropertyDefinition.UnknownProperty.TypeTableName) #>,
+<# foreach (var property in Model.GetAllTypeTableProperties()) { #>
+    <#= AsStringStorage(property.TypeTableName) #>,
+<# } #>
+};
+
+// Maps a type name length to a scan range in c_aTypeNames. pnEndIndex is not inclusive.
+UINT MapTypeNameLengthToSearchRange(_In_ UINT nLength, _Out_ UINT* pnEndIndex)
+{
+    switch (nLength)
+    {
+<# foreach (var range in GetSearchRanges(Model.GetTypeTableTypesWithNames())) { #>
+        case <#= range.TypeNameLength #>:
+            *pnEndIndex = <#= range.EndIndex #>;
+            return <#= range.StartIndex #>;
+<# } #>
+        default:
+            *pnEndIndex = 0;
+            return 0;
+    }
+}
+
+// Returns the enum value array which can be used to do enum<->string conversions.
+_Check_return_ HRESULT GetEnumValueTable(_In_ KnownTypeIndex nTypeIndex, _Out_ UINT* pnCount, _Outptr_result_buffer_(*pnCount) const XTABLE* ppTable[])
+{
+    switch (nTypeIndex)
+    {
+<# foreach (var type in Model.GetTypeTableEnums()) { #>
+        case <#= type.IndexName #>:
+            *pnCount = ARRAY_SIZE(<#= type.ValueTableArrayName #>);
+            *ppTable = <#= type.ValueTableArrayName #>;
+            return S_OK;
+<# } #>
+        default:
+            ASSERT(FALSE);
+            return E_FAIL;
+    }
+}

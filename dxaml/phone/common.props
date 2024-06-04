@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <Import Project="$(XamlSourcePath)\common.props"/>
+
+    <PropertyGroup>
+        <XcpPhonePath>$(XamlSourcePath)\phone</XcpPhonePath>
+        <XcpPhoneObjPath>$(XamlBinaryPath)\phone</XcpPhoneObjPath>
+        <ProjectPreprocessorDefinitions>
+            $(ProjectPreprocessorDefinitions)
+            __WRL_STRICT__;
+            __WRL_FORCE_INSPECTABLE_CLASS_MACRO__;
+            _WCTYPE_INLINE_DEFINED;
+            STRICT;
+            UNICODE;
+            _UNICODE;
+            MIDL_NS_PREFIX;
+        </ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <WarningLevel>Level4</WarningLevel>
+            <TreatWarningAsError>true</TreatWarningAsError>
+        </ClCompile>
+    </ItemDefinitionGroup>
+</Project>

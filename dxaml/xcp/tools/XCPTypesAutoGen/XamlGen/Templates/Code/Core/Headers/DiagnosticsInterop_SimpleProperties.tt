@@ -1,0 +1,130 @@
+<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#pragma once
+
+#include <SimpleProperty.h>
+#include <StringConversions.h>
+#include <windows.foundation.numerics.h>
+#include <Value.h>
+#include <CValueBoxer.h>
+#include <SimplePropertiesCommon.g.h>
+
+// Our generated property types are the right ones publicly, but our internal storage may differ.  For instance, UIElement.Rotation
+// is publicly a float, but internally stored and retrieved as a double.  We disable C4244 for this code, which covers the double -> float
+// precision loss.
+ #pragma warning( push )
+ #pragma warning( disable: 4244 )
+
+// Helper method that allows DiagnosticsInterop to get and set simple properties
+namespace Diagnostics {
+    bool IsCreatableSimplePropertyType(const CClassInfo* type)
+    {
+        switch (type->GetIndex())
+        {
+<# foreach (var type in Model.GetAllDiagSimplePropertyTypes()) {#>
+            case <#= type.Type.IndexName #>:
+<# } #>
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    HRESULT CreateSimplePropertyType(const CClassInfo* type, const xstring_ptr_view& value, IInspectable** created)
+    {
+        *created = nullptr;
+
+        switch (type->GetIndex())
+        {
+<# foreach (var type in Model.GetAllDiagSimplePropertyTypes()) {#>
+            case <#= type.Type.IndexName #>:
+            {
+                <#= AsCppType(type.AbiFullName) #> typeConvertedValue{};
+                IFC_RETURN(<#= type.Type.IndexNameWithoutPrefix #>FromString(value, typeConvertedValue));
+                IFC_RETURN(DirectUI::PropertyValue::CreateReference<<#= AsCppType(type.AbiFullName) #>>(typeConvertedValue, created));
+                break;
+            }
+<# } #>
+            default:
+                MICROSOFT_TELEMETRY_ASSERT_DISABLED(false);
+                return E_FAIL;
+        }
+        return S_OK;
+    }
+
+    HRESULT SetValueSimpleProperty(const CPropertyBase* property, SimpleProperty::objid_t obj, IInspectable* pValue)
+    {
+        switch (property->GetIndex())
+        {
+<# foreach (var simpleProperty in Model.GetAllTypeTableSimpleProperties().Where((def) => def.Modifier != Modifier.Internal)) { #>
+<#   var propTypeName = AsCppType(simpleProperty.PropertyType.AbiFullName); #>
+            case <#= simpleProperty.IndexName #>:
+            {
+                wrl::ComPtr<<#= PrefixAbi("Windows::Foundation::IReference") #><<#= propTypeName #>>> referencePropValue;
+                <#= propTypeName #> propertyValue;
+                if (SUCCEEDED(pValue->QueryInterface<<#= PrefixAbi("Windows::Foundation::IReference") #><<#= propTypeName #>>>(&referencePropValue)))
+                {
+                    IFC_RETURN(referencePropValue->get_Value(&propertyValue));
+                }
+                SimpleProperty::Property::id<<#= simpleProperty.IndexName #>>::Set(obj, propertyValue);
+                break;
+             }
+
+<# } #>
+            default:
+                MICROSOFT_TELEMETRY_ASSERT_DISABLED(false);
+                return E_FAIL;
+        }
+
+        return S_OK;
+    }
+
+    HRESULT GetValueSimpleProperty(const CPropertyBase* property, SimpleProperty::const_objid_t obj, _Outptr_ IInspectable** ppValue)
+    {
+        // If you see an error that a Box___ method is missing, it's likely due to a new simple property
+        // using a type that isn't in the Box helper methods yet.  You'll need to define it earlier up this file.
+        switch (property->GetIndex())
+        {
+<# foreach (var simpleProperty in Model.GetAllTypeTableSimpleProperties().Where((def) => def.Modifier != Modifier.Internal)) { #>
+<#   var propTypeName = AsCppType(simpleProperty.PropertyType.AbiFullName); #>
+            case <#= simpleProperty.IndexName #>:
+            {
+                IFC_RETURN(DirectUI::PropertyValue::CreateReference<<#= propTypeName #>>(SimpleProperty::Property::id<<#= simpleProperty.IndexName #>>::Get(obj), ppValue));
+                break;
+            }
+<# } #>
+            default:
+                MICROSOFT_TELEMETRY_ASSERT_DISABLED(false);
+                return E_FAIL;
+        }
+        
+        return S_OK;
+    }
+
+    void ClearSimpleProperty(SimpleProperty::objid_t obj, const CPropertyBase* property)
+    {
+        switch (property->GetIndex())
+        {
+<# foreach (var simpleProperty in Model.GetAllTypeTableSimpleProperties().Where((def) => def.Modifier != Modifier.Internal)) { #>
+<#   var propTypeName = AsCppType(simpleProperty.PropertyType.AbiFullName); #>
+            case <#= simpleProperty.IndexName #>:
+            {
+                const auto defaultValue = SimpleProperty::Property::Default<<#= simpleProperty.IndexName #>>();
+                SimpleProperty::Property::id<<#= simpleProperty.IndexName #>>::Set(obj, defaultValue);
+                break;
+            }
+
+<# } #>
+            default:
+                MICROSOFT_TELEMETRY_ASSERT_DISABLED(false);
+        }
+    }
+}
+
+#pragma warning(pop)

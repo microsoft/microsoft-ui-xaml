@@ -1,0 +1,37 @@
+/*
+ *
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ *
+ */
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+#define VER_INTERNALNAME_STR        "Microsoft.UI.Xaml.Resources.Common.dll"
+#define VER_LANGNEUTRAL
+#include <WinUIrc.ver>
+
+#include <nonLocalizedResource.h>
+#include <xcperrorresource.h>
+#include <mediaresource.h>
+
+#define TEXTFILE 256
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Neutral language
+//
+LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
+
+
+STRINGTABLE
+LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
+{
+#include <commonerrors.rc>
+}
+
+IMAGE_REVEAL_FOCUS               PNG  "..\\..\\..\\..\\images\\NineGridFocusGlow.png" 

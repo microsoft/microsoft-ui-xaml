@@ -1,0 +1,82 @@
+﻿<#@ template language="C#" inherits="CppWinRT_CodeGenerator<PageDefinition>" visibility="internal" linePragmas="false"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Xaml" #>
+<#
+    BindUniverse bu = Arguments[0] as BindUniverse;
+#>
+    struct <#=bu.BindingsTrackingClassName#> : public <#=Projection(ProjectInfo.RootNamespace)#>::implementation::XamlBindingTrackingBase
+    {
+        <#=bu.BindingsTrackingClassName#>()
+        {}
+
+        // Event handlers
+<# IEnumerable<XamlType>  observableVectorTypes = bu.BindPathSteps.Values.Where(s => s.ValueType.ImplementsIObservableVector()).Select(s => s.ValueType.ItemType).Distinct();#>
+<# IEnumerable<XamlType>  observableMapTypes = bu.BindPathSteps.Values.Where(s => s.ValueType.ImplementsIObservableMap()).Select(s => s.ValueType.ItemType).Distinct();#>
+<# foreach (XamlType type in observableVectorTypes)#>
+<# { #>
+
+        void VectorChanged_<#=type.MemberFriendlyName()#>(
+            ::winrt::Windows::Foundation::Collections::IObservableVector<<#=type#>> const& sender,
+            ::winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& e)
+        {
+            VectorChanged(sender, e);
+        }
+<# } #>
+<# #>
+<# foreach (XamlType type in observableMapTypes)#>
+<# { #>
+
+        void MapChanged_<#=type.MemberFriendlyName()#>(
+            ::winrt::Windows::Foundation::Collections::IObservableMap<::winrt::hstring, <#=type#>> const& sender,
+            ::winrt::Windows::Foundation::Collections::IMapChangedEventArgs<::winrt::hstring> const& e)
+        {
+            MapChanged(sender, e);
+        }
+<# } #>
+
+        // Listener update functions
+<# #>
+<# foreach (XamlType type in observableVectorTypes)#>
+<# { #>
+
+        void UpdateVectorChangedListener_<#=type.MemberFriendlyName()#>(
+            ::winrt::Windows::Foundation::Collections::IObservableVector<<#=type#>> const& obj,
+            ::winrt::Windows::Foundation::Collections::IObservableVector<<#=type#>> & cache,
+            ::winrt::event_token & token)
+        {
+            if (cache && cache != obj)
+            {
+                cache.VectorChanged(token);
+                cache = nullptr;
+            }
+            if (!cache && obj)
+            {
+                cache = obj;
+                token = obj.VectorChanged({this, &<#=GetBindingTrackingClassName(bu, Model.CodeInfo)#>::VectorChanged_<#=type.MemberFriendlyName()#>});
+            }
+        }
+<# } #>
+<# #>
+<# foreach (XamlType type in observableMapTypes)#>
+<# { #>
+
+        void UpdateMapChangedListener_<#=type.MemberFriendlyName()#>(
+            ::winrt::Windows::Foundation::Collections::IObservableMap<::winrt::hstring, <#=type#>> const& obj,
+            ::winrt::Windows::Foundation::Collections::IObservableMap<::winrt::hstring, <#=type#>> & cache,
+            ::winrt::event_token & token)
+        {
+            if (cache && cache != obj)
+            {
+                cache.MapChanged(token);
+                cache = nullptr;
+            }
+            if (!cache && obj)
+            {
+                cache = obj;
+                token = obj.MapChanged({this, &<#=GetBindingTrackingClassName(bu, Model.CodeInfo)#>::MapChanged_<#=type.MemberFriendlyName()#>});
+            }
+        }
+<# } #>
+    };

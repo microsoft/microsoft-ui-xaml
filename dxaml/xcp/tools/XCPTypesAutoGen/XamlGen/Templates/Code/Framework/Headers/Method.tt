@@ -1,0 +1,24 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<MethodDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<# if (Model.IsInterfaceImplementation) { 
+       if (Model.DeclaringVersion.IsVersionInterfaceForwarded() && !Model.IsStatic) { #>
+<#if (Model.IsImplVirtual) { #>virtual <# } #>_Check_return_ HRESULT STDMETHODCALLTYPE <#= Model.IdlMethodInfo.Name #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>);
+<#     } else { #>
+IFACEMETHOD(<#= Model.IdlMethodInfo.Name #>)(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)<# if (Model.IsPureVirtual) { #> = 0<# } else { #> <#=VelocityFeatures.GetOverrideString(Model.Version, Model.DeclaringClass.VelocityVersion)#><# } #>;
+<#     } #>
+<#     if (Model.IsVirtual) {
+           if (Model.Modifier == Modifier.Protected) { #>
+<# if (Model.IsImplVirtual) { #>virtual <# } #>_Check_return_ HRESULT <#= Model.IdlMemberInfo.ProtectedName #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>);
+<#         } else if (Model.DeclaringVersion.IsVersionInterfaceForwarded() && !Model.IsStatic) { #>
+_Check_return_ HRESULT STDMETHODCALLTYPE <#= Model.IdlMemberInfo.VirtualName #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>);
+<#         } else if (Model.Modifier == Modifier.Public) { #>
+IFACEMETHOD(<#= Model.IdlMethodInfo.VirtualName #>)(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)<# if (Model.IsPureVirtual) { #> = 0<# } else { #> <#=VelocityFeatures.GetOverrideString(Model.Version, Model.DeclaringClass.VelocityVersion)#><# } #>;
+<#         }
+       }
+   } else { #>
+<# if (!Model.IsStatic && (Model.IsPureVirtual || Model.IsImplVirtual)) { #>virtual <# } #>_Check_return_ HRESULT <#= Model.IdlMethodInfo.Name #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)<# if (Model.IsPureVirtual) { #> = 0<# } #>;
+<# } #>

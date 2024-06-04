@@ -1,0 +1,26 @@
+//
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+//
+
+#include "sdkddkver.h"
+
+cpp_quote("#pragma push_macro(\"GetCurrentTime\")")
+cpp_quote("#undef GetCurrentTime")
+
+import "oaidl.idl";
+import "inspectable.idl";
+import "eventtoken.idl";
+
+import "Windows.Foundation.idl";
+import "Windows.UI.Xaml.idl";
+
+//------------------------------------------------------------------------------
+//
+//  Automatically generated interfaces for Windows.UI.Xaml.Phone types
+//
+//------------------------------------------------------------------------------
+
+//CODEGEN
+
+cpp_quote("#pragma pop_macro(\"GetCurrentTime\")")
+

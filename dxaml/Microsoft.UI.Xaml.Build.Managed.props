@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project  ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ManagedConfig>true</ManagedConfig>
+        <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
+        <arch Condition="'$(arch)'==''">$(VSCMD_ARG_TGT_ARCH)</arch>
+        <NoWarn Condition="'$(DisableExperimentalWarnings)' == 'true' and '$(ShowExperimentalWarningsOverride)' != 'true'">$(NoWarn);8305</NoWarn>
+
+        <!-- By default the csc task will generate a dll if TargetType isn't set.  So if the project says it is an application, -->
+        <!-- then tell the csc task to bulid an executable.                                                                     -->
+        <TargetType Condition="'$(TargetType)'=='' and '$(ConfigurationType)'=='Application'">winexe</TargetType>
+    </PropertyGroup>
+    
+    <!-- Import common props first so that Directory.Build.props inclusion is picked up first -->
+    <Import Condition="'$(_InitialBaseIntermediateOutputPath)' == ''" Project="$(MSBuildExtensionsPath)\$(MsBuildToolsVersion)\Microsoft.Common.props" />
+    <Import Project="$(MSBuildThisFileDirectory)\Xaml.NTLegacy.CSharp.props" />
+</Project>

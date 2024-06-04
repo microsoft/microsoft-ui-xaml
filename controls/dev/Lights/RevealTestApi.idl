@@ -1,0 +1,26 @@
+﻿namespace MU_PRIVATE_MEDIA_NAMESPACE
+{
+
+[MUX_INTERNAL]
+[webhosthidden]
+runtimeclass RevealTestApi : Microsoft.UI.Xaml.DependencyObject
+{
+    RevealTestApi();
+
+    Microsoft.UI.Xaml.ApplicationTheme TargetTheme { get; set; };
+    Microsoft.UI.Composition.SpotLight BackgroundLight { get; };
+    Microsoft.UI.Xaml.Media.XamlLight BorderLight { get; };
+    Microsoft.UI.Xaml.Media.XamlLight BorderWideLight { get; };
+    Double BackgroundLightMinSize { get; set; };
+    Double BackgroundLightMaxSize { get; set; };
+    Microsoft.UI.Composition.SpotLight GetSpotLight(Microsoft.UI.Xaml.Media.XamlLight value);
+    Microsoft.UI.Composition.ExpressionAnimation GetHoverLightOffsetExpression(RevealHoverLight value);
+    RevealBorderLight GetAsRevealBorderLight(Microsoft.UI.Xaml.Media.XamlLight value);
+    RevealHoverLight GetAsRevealHoverLight(Microsoft.UI.Xaml.Media.XamlLight value);
+    Boolean BorderLight_ShouldBeOn(RevealBorderLight value);
+    Boolean HoverLight_ShouldBeOn(RevealHoverLight value);
+    Boolean HoverLight_IsPressed(RevealHoverLight value);
+    Boolean HoverLight_IsPointerOver(RevealHoverLight value);
+}
+
+}

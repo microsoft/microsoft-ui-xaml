@@ -1,0 +1,44 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project>
+
+  <!-- This project just sets some common properties for any project that sets the "AdHocApp" property to true -->
+  <PropertyGroup>
+    <!-- these projects don't need to be binplaced -->
+    <BinplaceOutputAssemblies Condition="'$(BinplaceOutputAssemblies)'==''">false</BinplaceOutputAssemblies>
+    <AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
+    <EnableTypeInfoReflection>false</EnableTypeInfoReflection>
+
+    <!--
+      Only default to ensure the product is built when projects reference private metadata. These are test projects, and
+      so they are built as part of the greater .sln build, and so we need to ensure proper ordering. Otherwise, we'll 
+      assume that other projects are samples and that folks have built the product before hand. Not having a ProjectReference
+      will save time on incremental builds, and make the sample apps behave closer to real apps.
+      
+      Plus, NuGet in VS complains if the Microsoft.WinUI.csproj project isn't part of the .sln you build when you have this
+      project reference. When you add the project, it just results in a cascading effect of every single project needing to 
+      be added. Also, using ProjectReference affects how the deps.json file is generated, which breaks .NET5 applications.
+      So, it's better to just manually reference the correct assemblies, and use the _VerifyConfigurationIsBuilt target to
+      help provide errors for users who haven't built the product code yet.
+     -->
+    <EnsureProductBuild Condition="'$(EnsureProductBuild)' == '' and '$(IncludePrivateMetadata)' == 'true'">true</EnsureProductBuild>
+    <EnsureProductBuild Condition="'$(EnsureProductBuild)' == ''">false</EnsureProductBuild>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wapproj'">
+    <AssetTargetFallback>net6.0-windows$(WindowsTargetPlatformVersion);$(AssetTargetFallback)</AssetTargetFallback>
+  </PropertyGroup>
+
+  <!-- These ProjectReferences have metadata on them with the purpose of affect the actual build as little as possible -->
+  <ItemGroup Condition="'$(EnsureProductBuild)'=='true'">
+    <ProjectReference Include="$(ProjectRoot)src\projection\Microsoft.WinUI.csproj"
+                      Condition="'$(UsingMicrosoftNETSdk)' == 'true' and '$(IncludePrivateMetadata)' != 'true'"
+                      ReferenceOutputAssembly="false" Private="false"/>
+    <ProjectReference Include="$(ProjectRoot)src\projection\private\Microsoft.WinUI.csproj"
+                      Condition="'$(UsingMicrosoftNETSdk)' == 'true' and '$(IncludePrivateMetadata)' == 'true'" 
+                      ReferenceOutputAssembly="false" Private="false" />
+    <ProjectReference Include="$(ProjectRoot)MergedWinMD\MergedWinMD.vcxproj"
+                      Condition="'$(UsingMicrosoftNETSdk)' != 'true' and '$(MSBuildProjectExtension)'!='.wapproj'"
+                      ReferenceOutputAssembly="false" Private="false" LinkLibraryDependencies="false"/>
+  </ItemGroup>
+
+</Project> 

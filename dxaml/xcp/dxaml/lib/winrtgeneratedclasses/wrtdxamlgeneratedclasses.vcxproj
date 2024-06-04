@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{046bce01-1f2d-4215-875c-566fb1f88c53}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="..\sources.props"/>
+
+    <PropertyGroup>
+        <TargetDestination>retail</TargetDestination>
+        <XamlPrecompiledShared>..\winrtpch\precomp.h</XamlPrecompiledShared>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="Boxes.g.cpp"/>
+        <ClCompile Include="Aggregate.g.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <BuildClientcore>1</BuildClientcore>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\dxaml\idl\com\microsoft.ui.xaml-com.vcxproj" Project="{a1eb01c3-ac8b-45a8-97c8-c459b77ed690}" />
+        <ProjectReference Include="$(XamlDiagPath)\idl\xamlom.vcxproj" Project="{823ccd70-deb4-45e2-ab5f-8454f7c7a76d}" />
+        <ProjectReference Include="..\winrtpch\wrtdxamlpch.vcxproj" Project="{826533f2-5762-4cb3-a5fc-ae1b1893170c}" />
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

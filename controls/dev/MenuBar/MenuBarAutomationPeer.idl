@@ -1,0 +1,22 @@
+﻿namespace MU_XAP_NAMESPACE
+{
+
+/* MenuBarAutomationPeer Content */
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass MenuBarAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    MenuBarAutomationPeer(MU_XC_NAMESPACE.MenuBar owner);
+}
+
+/* MenuBarItemAutomationPeer Content */
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass MenuBarItemAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
+Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider,
+Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider
+{
+    MenuBarItemAutomationPeer(MU_XC_NAMESPACE.MenuBarItem owner);
+}
+
+}

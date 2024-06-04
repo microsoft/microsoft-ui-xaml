@@ -1,0 +1,19 @@
+<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<AttachedPropertyDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<# if (!Model.IdlDPInfo.IsExcluded) {
+       if (Model.IsHandlePublic) { #>
+IFACEMETHOD(<#= Model.HandleGetterName #>)(_Outptr_ <#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyProperty") #>** ppValue);
+<#     } #>
+IFACEMETHOD(<#= Model.IdlAPInfo.GetterName #>)(<#= AsCppType(Model.TargetType.AnnotatedAbiParameterName) #>, <#= AsCppType(Model.PropertyType.AnnotatedAbiReturnParameterName) #>);
+<#     if (!Model.IsReadOnly) { #>
+IFACEMETHOD(<#= Model.IdlAPInfo.SetterName #>)(<#= AsCppType(Model.TargetType.AnnotatedAbiParameterName) #>, <#= AsCppType(Model.PropertyType.AnnotatedAbiParameterName) #>);
+<#     }
+   } #>
+_Check_return_ static HRESULT <#= Model.GetterName #>(<#= AsCppType(Model.TargetType.AnnotatedAbiParameterName) #>, <#= AsCppType(Model.PropertyType.AnnotatedAbiReturnParameterName) #>);
+<# if (!Model.IsReadOnly) { #>
+_Check_return_ static HRESULT <#= Model.SetterName #>(<#= AsCppType(Model.TargetType.AnnotatedAbiParameterName) #>, <#= AsCppType(Model.PropertyType.AnnotatedAbiParameterName) #>);
+<# }#>

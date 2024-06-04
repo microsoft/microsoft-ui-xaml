@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{76353825-06F5-4EA2-BB96-D6A9BB8B6545}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);MATERIALS_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Generated\AcrylicBrush.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AcrylicBrush.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AcrylicBrushFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AcrylicTestApi.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AcrylicBrush.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AcrylicBrushFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)AcrylicTestApi.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)AcrylicBrush.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)AcrylicTestApi.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="$(MSBuildThisFileDirectory)Assets\NoiseAsset_256X256_PNG.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)AcrylicBrush_themeresources.xaml">
+      <Type>ThemeResources</Type>
+      <Priority>2</Priority>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageContent Include="$(MSBuildThisFileDirectory)Assets\NoiseAsset_256x256_PNG.png" PackageLocation="$(NativeAssemblyPackageLocation)\Microsoft.UI.Xaml\Assets" />
+  </ItemGroup>
+</Project>

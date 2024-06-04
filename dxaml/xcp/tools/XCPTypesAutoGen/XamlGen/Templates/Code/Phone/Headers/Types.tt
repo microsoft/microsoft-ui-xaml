@@ -1,0 +1,40 @@
+<#@ template language="C#" linePragmas="false" inherits="PhoneCppCodeGenerator<OMContextView>" debug="true"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#pragma once
+
+<# foreach (NamespaceDefinition ns in Model.Namespaces) {#>
+<#      var classes = ns.ReferenceClasses.Where(c => c.GeneratePartialClass && !c.IsInterface ); #>
+<#      if (classes.Count() > 0) { #>
+<#          foreach (ClassDefinition cls in classes) { #>
+
+<#= IncludeTemplate<RuntimeClass>(cls) #>
+<#          } #>
+
+<#= AsCppNamespaceDeclarationBegin(ns) #>
+{
+    // Forward declarations.
+<#          foreach (ClassDefinition cls in classes.Where(c => !c.IsStatic)) { #>
+    class <#= cls.Name #>;
+<#          } #>
+
+    // Classes.
+<#          foreach (ClassDefinition cls in classes) {
+                if (cls.IdlClassInfo.HasAnyFactoryInterfaces || cls.HasStaticMembers) {#>
+<#= IncludeTemplate<Factory>(cls) #>
+<#              }
+                if (!cls.IsStatic) { #>
+    
+<#= IncludeTemplate<Class>(cls) #>
+<#              }
+
+            } #>
+}
+<#= AsCppNamespaceDeclarationEnd(ns) #>
+<#      }
+   } #>

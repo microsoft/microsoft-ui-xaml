@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29509.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleXbfViewer", "SampleXbfViewer\SampleXbfViewer.csproj", "{BB6CE1D3-AA88-4F8E-BA21-E1DE94571DC3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WidgetSpinner", "WidgetSpinner\WidgetSpinner.csproj", "{767D7345-33A0-43A3-9625-DB78B24DD1CD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BB6CE1D3-AA88-4F8E-BA21-E1DE94571DC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB6CE1D3-AA88-4F8E-BA21-E1DE94571DC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB6CE1D3-AA88-4F8E-BA21-E1DE94571DC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB6CE1D3-AA88-4F8E-BA21-E1DE94571DC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{767D7345-33A0-43A3-9625-DB78B24DD1CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{767D7345-33A0-43A3-9625-DB78B24DD1CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{767D7345-33A0-43A3-9625-DB78B24DD1CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{767D7345-33A0-43A3-9625-DB78B24DD1CD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E62CFA1E-8144-4187-A71D-E8A59F7490EA}
+	EndGlobalSection
+EndGlobal

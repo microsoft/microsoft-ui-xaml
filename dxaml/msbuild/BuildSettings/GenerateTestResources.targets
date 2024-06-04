@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Target Name="GenerateTestResources" BeforeTargets="ResourceCompile" Condition="'@(GenerateTestResources)'!='' " Inputs="@(GenerateTestResources)" Outputs="$(OutDir)Masters.rc">
+        <!-- Create a resource file referencing all the item in the target list -->
+        <Delete Files="$(OutDir)Masters.rc" />
+        <WriteLinesToFile
+          File="$(OutDir)Masters.rc"
+          Lines="@(GenerateTestResources -> '%(Filename)%(Extension) TESTRESOURCE &quot;%(Identity)&quot;', '%0D%0A')"
+          WriteOnlyWhenDifferent="true"/>
+    </Target>
+</Project>

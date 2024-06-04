@@ -1,0 +1,133 @@
+﻿<#@ template language="C#" inherits="CppCX_CodeGenerator<TypeGenInfo>" visibility="internal" linePragmas="false"#>
+<#@ assembly name="System.Core" #>
+<# 
+    bool prototypeOnly = (bool)Arguments[0] == true;
+#>
+
+<#  if (Model.HasActivator) { #>
+<#      if (prototypeOnly) { #>
+extern ::Platform::Object^ <#=Model.ActivatorName#>();
+<#      } else { #>
+::Platform::Object^ <#=Model.ActivatorName#>()
+{
+    return ref new <#=Model.FullName#>();
+}
+<#      } #>
+<#  } #>
+<##>
+<# if (!ProjectInfo.EnableTypeInfoReflection) #>
+<# { #>
+<#  if (Model.IsCollection) { #>
+<#      if (prototypeOnly) { #>
+extern void <#=Model.CollectionAddName#>(::Platform::Object^ instance, ::Platform::Object^ item);
+<#      } else { #>
+void <#=Model.CollectionAddName#>(::Platform::Object^ instance, ::Platform::Object^ item)
+{
+    safe_cast<<#=Model.FullName#>^>(instance)->Append((<#=Model.ItemType.FullName#><#=Model.ItemType.RefHat#>)item);
+}
+<#      } #>
+<#  } #>
+<##>
+<#  if (Model.IsDictionary) { #>
+<#      if (prototypeOnly) { #>
+extern void <#=Model.DictionaryAddName#>(::Platform::Object^ instance, ::Platform::Object^ key, ::Platform::Object^ item);
+<#      } else { #>
+void <#=Model.DictionaryAddName#>(::Platform::Object^ instance, ::Platform::Object^ key, ::Platform::Object^ item)
+{
+    safe_cast<<#=Model.FullName#>^>(instance)->Insert((<#=Model.KeyType.FullName#><#=Model.KeyType.RefHat#>)key, (<#=Model.ItemType.FullName#><#=Model.ItemType.RefHat#>)item);
+}
+<#      } #>
+<#  } #>
+<##>
+<#  if (Model.HasEnumValues) { #>
+<#      if (prototypeOnly) { #>
+extern ::Platform::Object^ <#=Model.FromStringConverterName#>(::XamlTypeInfo::InfoProvider::XamlUserType^ userType, ::Platform::String^ input);
+<#      } else { #>
+::Platform::Object^ <#=Model.FromStringConverterName#>(::XamlTypeInfo::InfoProvider::XamlUserType^ userType, ::Platform::String^ input)
+{
+    return ref new ::Platform::Box<<#=Model.FullName#>>((<#=Model.FullName#>)userType->CreateEnumUIntFromString(input));
+}
+<#      } #>
+<#  } #>
+<##>
+<# foreach(var member in Model.Members) { #>
+
+<#      if (member.HasGetAttachableMember) { #>
+<#          if (prototypeOnly) { #>
+extern ::Platform::Object^ <#=member.GetAttachableMemberName#>(::Platform::Object^ instance);
+<#          } else { #>
+::Platform::Object^ <#=member.GetAttachableMemberName#>(::Platform::Object^ instance)
+{
+    return <#=member.DeclaringType.FullName#>::Get<#=member.Name#>(safe_cast<<#=member.TargetType.FullName#>^>(instance));
+}
+<#          } #>
+<#      } #>
+<##>
+<#      if (member.HasSetAttachableMember) { #>
+<#          if (prototypeOnly) { #>
+extern void <#=member.SetAttachableMemberName#>(::Platform::Object^ instance, ::Platform::Object^ value);
+<#          } else { #>
+void <#=member.SetAttachableMemberName#>(::Platform::Object^ instance, ::Platform::Object^ value)
+{
+    <#=member.DeclaringType.FullName#>::Set<#=member.Name#>(safe_cast<<#=member.TargetType.FullName#>^>(instance), (<#=member.Type.FullName#><#=member.IsValueType ? String.Empty : "^" #>)value);
+}
+<#          } #>
+<#      } #>
+<##>
+<#      if (member.HasGetValueTypeMember) { #>
+<#          if (prototypeOnly) { #>
+extern ::Platform::Object^ <#=member.GetValueTypeMemberName#>(::Platform::Object^ instance);
+<#          } else { #>
+::Platform::Object^ <#=member.GetValueTypeMemberName#>(::Platform::Object^ instance)
+{
+    return ref new ::Platform::Box<<#=member.Type.FullName#>>(safe_cast<<#=member.DeclaringType.FullName#>^>(instance)-><#=member.Name#>);
+}
+<#          } #>
+<#      } #>
+<##>
+<#      if (member.HasSetValueTypeMember) { #>
+<#          if (prototypeOnly) { #>
+extern void <#=member.SetValueTypeMemberName#>(::Platform::Object^ instance, ::Platform::Object^ value);
+<#          } else { #>
+void <#=member.SetValueTypeMemberName#>(::Platform::Object^ instance, ::Platform::Object^ value)
+{
+    safe_cast<<#=member.DeclaringType.FullName#>^>(instance)-><#=member.Name#> = safe_cast<::Platform::IBox<<#=member.Type.FullName#>>^>(value)->Value;
+}
+<#          } #>
+<#      } #>
+<##>
+<#      if (member.HasSetEnumMember) { #>
+<#          if (prototypeOnly) { #>
+extern void <#=member.SetEnumMemberName#>(::Platform::Object^ instance, ::Platform::Object^ value);
+<#          } else { #>
+void <#=member.SetEnumMemberName#>(::Platform::Object^ instance, ::Platform::Object^ value)
+{
+    safe_cast<<#=member.DeclaringType.FullName#>^>(instance)-><#=member.Name#> = safe_cast<::Platform::IBox<<#=member.Type.FullName#>>^>(value)->Value;
+}
+<#          } #>
+<#      } #>
+<##>
+<#      if (member.HasGetReferenceTypeMember) { #>
+<#          if (prototypeOnly) { #>
+extern ::Platform::Object^ <#=member.GetReferenceTypeMemberName#>(::Platform::Object^ instance);
+<#          } else { #>
+::Platform::Object^ <#=member.GetReferenceTypeMemberName#>(::Platform::Object^ instance)
+{
+    return safe_cast<<#=member.DeclaringType.FullName#>^>(instance)-><#=member.Name#>;
+}
+<#          } #>
+<#      } #>
+<##>
+<#      if (member.HasSetReferenceTypeMember) { #>
+<#          if (prototypeOnly) { #>
+extern void <#=member.SetReferenceTypeMemberName#>(::Platform::Object^ instance, ::Platform::Object^ value);
+<#          } else { #>
+void <#=member.SetReferenceTypeMemberName#>(::Platform::Object^ instance, ::Platform::Object^ value)
+{
+    safe_cast<<#=member.DeclaringType.FullName#>^>(instance)-><#=member.Name#> = safe_cast<<#=member.Type.FullName#>^>(value);
+}
+<#          } #>
+<#      } #>
+<##>
+<#  } #>
+<# } // End of type info reflection check#>

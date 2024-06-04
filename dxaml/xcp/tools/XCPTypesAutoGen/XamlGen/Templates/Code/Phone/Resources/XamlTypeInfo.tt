@@ -1,0 +1,146 @@
+<#@ template language="C#" linePragmas="false" inherits="PhoneCppCodeGenerator<OMContextView>" debug="true"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#include "XamlTypeInfo.h"
+#include "XamlTypeInfo.g.h"
+
+#define TRUE 1
+#define FALSE 0
+#define NULL 0
+#define nullptr 0
+#define EnumBoxer_NULL 0
+#define AddToVector_NULL 0
+#define AddToMap_NULL 0
+
+XAMLSTRING XAMLSTRINGS
+{
+<#  foreach(var entry in QueryHelper.GetPhoneXamlStrings(Model)) { #>
+    <#= entry.Key.Length #>,
+    L"<#= entry.Key #>",
+    0,
+<#  } #>
+}
+
+XAMLTYPENAME XAMLTYPENAMES
+{
+<#  foreach (var t in QueryHelper.GetPhoneXamlTypes(Model))
+    { #>
+    <#= AsResourceIndex(t.MetadataName) #>, <#= AsResourceKey(t.MetadataFullName) #>, <#= t.IsPhoneSystemType ? "SC_SYSTEMTYPE" : t.PhoneTypeTableIndex.ToString() #>,
+<#  } #>
+}
+
+USERTYPEINFO USERTYPES
+{
+<#  foreach (var t in QueryHelper.GetPhoneXamlUserTypes(Model))
+    {
+        ClassDefinition typeAsClass = t as ClassDefinition;
+        EnumDefinition typeAsEnum = t as EnumDefinition;
+        #>
+
+    <#= AsResourceIndex(t.MetadataName) #>,
+    <#= AsResourceKey(t.MetadataName) #>,
+    <#= typeAsClass != null ? typeAsClass.ContentPropertyInTypeTable.PhoneMemberTableIndex : -1 #>, // Content Property
+    <#= typeAsClass != null && typeAsClass.BaseClass != null  &&  !typeAsClass.BaseClass.IsObjectType ? AsResourceIndex(typeAsClass.BaseClass.Name) : "-1" #>, // Base Type
+    <#= typeAsEnum != null ? typeAsEnum.PhoneEnumIndex : -1 #>, // iEnumIndex
+    <#= 0 * 0x01 #>  + // isArray
+    <#= typeAsClass?.IsVector == true ? 2 : 0 #>  + // isCollection
+    <#= !t.IsValueType && typeAsClass?.IsCreateableFromXAML == true ? 4 : 0 #>  + // isConstructable
+    <#= typeAsClass?.IsMap == true ? 8 : 0 #> + // isDictionary
+    <#= 0 * 0x10 #>, // isMarkupExtension
+    <#= t.PhoneMemberTableIndex #>L,  // Index into the MemberIndices[] table
+    <# if(!t.IsValueType && typeAsClass?.IsCreateableFromXAML == true) { #>activate_<#= AsCppDefine(t.MetadataName) #><# } else { #>nullptr<# }#>, // Activator
+    EnumBoxer_<#= typeAsEnum != null ? AsCppDefine(typeAsEnum.MetadataFullName) : "NULL" #>,  // enumBoxer
+    AddToVector_<#= typeAsClass?.IsVector == true ? AsCppDefine(t.MetadataFullName) : "NULL" #>,  // addToVector
+    AddToMap_<#= typeAsClass?.IsMap == true ? AsCppDefine(t.MetadataFullName) : "NULL" #>,  // addToMap
+<#  } #>
+}
+
+//--------------------------------------------------------------------------
+//
+//  Member index table
+//
+//  This table is used by XamlTypes to quickly look up IXamlMembers. 
+//  It contains indices that map to entries in the UserMembers table. 
+//  These indices are passed to FindXamlMember_FromInt32 which will get 
+//  or create a XamlMember object using the information in this table to 
+//  provide the metadata needed to set members in XAML to the parser. 
+//  The indices are separated by a negative one deliminater into the groups 
+//  of members that belong to each type such that they can be iterated over 
+//  to match string names of members of each XamlType.
+//
+//--------------------------------------------------------------------------
+
+MEMBERINDICE MEMBERINDICES
+{
+<#
+    int currentMemberIndex = 0;
+    GenerationEnvironment.Append("    ");
+    foreach (var obj in QueryHelper.GetPhoneXamlUserPropertiesWithSeparator(Model))
+    {
+        var objAsMember = obj as MemberDefinition;
+        currentMemberIndex++;
+        #><#= objAsMember != null? objAsMember.PhoneMemberTableIndex : -1 #>L, <#
+        if (currentMemberIndex % 13 == 0)
+        {
+            GenerationEnvironment.Append("\r\n    ");
+        }
+    } #>-1L
+}
+
+//--------------------------------------------------------------------------
+//
+//  User type member table
+//
+//--------------------------------------------------------------------------
+USERMEMBERINFO USERMEMBERS
+{
+<#  foreach (var m in QueryHelper.GetPhoneXamlUserProperties(Model)) { #>
+
+    <#=AsResourcePropertyIndex(m)#>,
+    <#=AsResourceKey(m.Name)#>,
+    <#=AsResourceIndex(m.DeclaringType.MetadataName)#>, // Target type
+    <#=AsResourceIndex(m.PropertyType.Type.MetadataName)#>, // Type
+    <#= m is AttachedPropertyDefinition ? 1 : 0 #> + // IsAttachable
+    2 + // IsDP
+    <#= m.IsReadOnly || m.SetterModifier == Modifier.Private ? 4 : 0 #>, // IsReadOnly
+<#      if (m is AttachedPropertyDefinition) { #>
+    put_<#= m.DeclaringType.Name #>_Attached<#= m.Name #>,
+    get_<#= m.DeclaringType.Name #>_Attached<#= m.Name #>
+<# } else { #>
+<#      if (m.SetterModifier == Modifier.Public) { #>
+    put_<#= m.DeclaringType.Name #>_<#= m.Name #>,
+<#      } else { #>
+    NULL,
+<#      } #>
+    get_<#= m.DeclaringType.Name #>_<#= m.Name #>
+<#      } #>
+<#  } #>
+}
+
+//--------------------------------------------------------------------------
+//
+//  User type enum table
+//
+//--------------------------------------------------------------------------
+<# foreach (var e in Model.GetAllEnums()) { #>
+User<#= e.Name #>EnumValues USERENUMVALUEINFO
+{
+<#     foreach (var v in e.Values)
+       { #>
+    <#= String.Format("{0,-41} {1, 5},", AsResourceKey(v.Name) + ",", v.Value) #>
+<#     } #>
+}
+
+<# } #>
+
+USERENUMINFO USERENUMS
+{
+<# foreach (var e in Model.GetAllEnums()) { #>
+    <#= String.Format("{0,-41} {1, 5},User{2}EnumValues ,", AsResourceIndex(e.Name) + ",", e.Values.Count(), e.Name) #>
+<# } #>
+}

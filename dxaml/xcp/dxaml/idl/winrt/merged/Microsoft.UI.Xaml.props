@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>Utility</ConfigurationType>
+        <ProjectGuid>{52b2ed64-1cfc-401b-8c5b-6d1e1deadf98}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+
+    <PropertyGroup>
+        <!--
+          TEMPORARY: explicitly hardcoded merge depths per namespace, to ensure that external refererences
+          are correctly generated for Microsoft.UI.Xaml.winmd, with the merge of Microsoft.UI.winmd.
+          Long term fix is switch IXP (Microsoft.UI) from mdmerge input to reference.
+        -->
+        <WinMdNamespaceOptions>-n:2 -n:Microsoft.UI.Xaml:3 -n:Microsoft.UI.Private:3</WinMdNamespaceOptions>
+        <IgnorePrivateMUXMetadataDir>true</IgnorePrivateMUXMetadataDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Reference Include="@(ExternalWinMDs)"/>
+    </ItemGroup>
+
+  <!--
+    This project still needs to define the $(OutputWinmds) because it doesn't actually produce it's own .winmd, instead it's just a project
+    that merges other already generated .winmd files.
+  -->
+    <PropertyGroup>
+        <OutputWinmds>
+          $(MergedWinmdOutputLocation)Microsoft.Foundation.winmd;
+          $(MergedWinmdOutputLocation)Microsoft.Graphics.winmd;
+          $(MergedWinmdOutputLocation)Microsoft.UI.winmd;
+          $(MergedWinmdOutputLocation)Microsoft.UI.Xaml.winmd;
+        </OutputWinmds>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="@(UnMergedMuxProject)"/>
+    </ItemGroup>
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

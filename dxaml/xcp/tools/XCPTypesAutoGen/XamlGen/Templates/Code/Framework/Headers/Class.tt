@@ -1,0 +1,255 @@
+<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<ClassDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#pragma once
+
+<# if (Model.BaseClass.GenerateFrameworkHFile) { #>
+#include "<#= Model.BaseClass.CppFrameworkGeneratedHeaderFileName #>"
+<# }
+   foreach (var dependency in Model.Dependencies.OfType<ClassDefinition>().Where(d => d.GenerateFrameworkHFile && (d.IsValueType || d.IsInterface)).OrderBy(d => d.CppFrameworkGeneratedHeaderFileName)) { #>
+#include "<#= dependency.CppFrameworkGeneratedHeaderFileName #>"
+<# } #>
+<#= IncludeTemplate<VelocityFeatureMacros>(Model) #>
+<# if (!Model.IsStatic) { #>
+<# if (Model.ClassGuidExplicitlySet) { #>
+#define <#= Model.GuidMacroName #> "<#= Model.RuntimeClassGuid #>"
+<# } #>
+<#
+  bool foundForwarder = false;
+  foreach (var version in Model.VersionProjections) {
+      if (version.IsVersionInterfaceForwarded()) {
+        if (!foundForwarder) {
+            foundForwarder = true; #>
+
+#pragma region forwarders
+<#           if (Model.VelocityVersion != 0) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(Model.VelocityVersion) #>)
+<#          }#>
+namespace ctl
+{
+<#      }#>
+    <#= IncludeTemplate<InterfaceForwarder>(version) #>
+<#     }
+  }
+  if (foundForwarder) { #>
+}
+<#     if (Model.VelocityVersion != 0) { #>
+#endif
+<#     }#>
+#pragma endregion
+<# } #>
+
+namespace <#= OMContext.DefaultImplementationNamespace #>
+{
+    class <#= AsCppType(Model.Name) #>;
+<# foreach (var dependency in Model.Dependencies.OfType<ClassDefinition>().Where(d => d.GenerateFrameworkHFile && !d.IsValueType && !d.IsInterface && d != Model.BaseClass).OrderBy(d => d.Name)) { #>
+    class <#= AsCppType(dependency.Name) #>;
+<# } #>
+
+    class __declspec(novtable) <# if (!Model.GeneratePartialClass) { #>__declspec(uuid(<#= Model.GuidMacroName #>)) <# } #><#= Model.GeneratedClassName #>:
+        public <#= GetBaseClassName(Model) #>
+<#           if (Model.VelocityVersion != 0) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(Model.VelocityVersion) #>)
+<#          }#>
+<#     foreach (var version in Model.VersionProjections) { #>
+<#          if (VelocityFeatures.IsVelocityVersion(version.Version)) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(version.Version) #>)
+<#         } #>
+<#          if (version.IdlClassInfo.HasPrimaryInterface) { #>
+<#             if (version.IsVersionInterfaceForwarded()) { #>
+        , public ctl::forwarder_holder< <#= AsCppType(version.IdlClassInfo.FullInterfaceName) #>, <#= Model.GeneratedClassName #> >
+<#             } #>
+<#              else { #>
+        , public <#= AsCppType(version.IdlClassInfo.FullInterfaceName) #>
+<#             } #>
+<#         } #>
+<#         if (version.IdlClassInfo.HasProtectedMembers) { #>
+<#             if (version.IsVersionInterfaceForwarded()) { #>
+        , public ctl::forwarder_holder< <#= AsCppType(version.IdlClassInfo.FullProtectedMembersInterfaceName) #>, <#= Model.GeneratedClassName #> >
+<#             } #>
+<#             else { #>
+        , public <#= AsCppType(version.IdlClassInfo.FullProtectedMembersInterfaceName) #>
+<#             } #>
+<#         } #>
+<#          if (version.IdlClassInfo.HasVirtualMembers) { #>
+<#             if (version.IsVersionInterfaceForwarded()) { #>
+        , public ctl::forwarder_holder< <#= AsCppType(version.IdlClassInfo.FullVirtualMembersInterfaceName) #>, <#= Model.GeneratedClassName #> >
+<#             } #>
+<#               else { #>
+        , public <#= AsCppType(version.IdlClassInfo.FullVirtualMembersInterfaceName) #>
+<#             } #>
+<#          } #>
+<#         foreach (var implementedInterface in version.ExplicitlyImplementedInterfaces.OrderBy(implementedInterface => implementedInterface.AbiFullName)) { #>
+        , public <#= AsCppType(implementedInterface.AbiFullName) #>
+<#         } #>
+<#         if (VelocityFeatures.IsVelocityVersion(version.Version)) { #>
+#endif
+<#       } #>
+<#    } #>
+<#           if (Model.VelocityVersion != 0) { #>
+#endif
+<#          }#>
+    {
+<#     if (Model.GeneratePartialClass) { #>
+        friend class <#= AsCppType(Model.AbiImplementationFullName) #>;
+<#     } #>
+
+<#     if (Model.IdlClassInfo.HasRuntimeClass) { #>
+        INSPECTABLE_CLASS(L"<#= Model.IdlClassInfo.FullName #>");
+<#     } #>
+
+<#     if (Model.IdlClassInfo.HasAnyInstanceInterfaces) { #>
+        BEGIN_INTERFACE_MAP(<#= Model.GeneratedClassName #>, <#= EncodeMacroParameter(GetBaseClassName(Model)) #>)
+<#         if (Model.VelocityVersion != 0) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(Model.VelocityVersion) #>)
+<#         }#>
+<# bool hasNonVelocityInterfaces = false; #>
+<#         foreach (var version in Model.Versions.OrderBy(v => v.Version).Select(v => v.GetProjection())) {
+               if (VelocityFeatures.IsVelocityVersion(version.Version)) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(version.Version) #>)
+<#             } else {#>
+<#                 hasNonVelocityInterfaces = true; #>
+<#              } #>
+<#             if (version.IdlClassInfo.HasPrimaryInterface) { #>
+            INTERFACE_ENTRY(<#= Model.GeneratedClassName #>, <#= EncodeMacroParameter(AsCppType(version.IdlClassInfo.FullInterfaceName)) #>)
+<#             }
+               if (version.IdlClassInfo.HasProtectedMembers) { #>
+            INTERFACE_ENTRY(<#= Model.GeneratedClassName #>, <#= EncodeMacroParameter(AsCppType(version.IdlClassInfo.FullProtectedMembersInterfaceName)) #>)
+<#             }
+               if (version.IdlClassInfo.HasVirtualMembers) { #>
+            INTERFACE_ENTRY(<#= Model.GeneratedClassName #>, <#= EncodeMacroParameter(AsCppType(version.IdlClassInfo.FullVirtualMembersInterfaceName)) #>)
+<#             }
+               foreach (var implementedInterface in version.ImplementedInterfaces.OrderBy(implementedInterface => implementedInterface.AbiFullName)) { #>
+            INTERFACE_ENTRY(<#= Model.GeneratedClassName #>, <#= EncodeMacroParameter(AsCppType(implementedInterface.AbiFullName)) #>)
+<#             }
+               if (VelocityFeatures.IsVelocityVersion(version.Version)) { #>
+<#                  if (!hasNonVelocityInterfaces) {#>
+#else
+            INTERFACE_ENTRY(DUMMYINTERFACE, IUnknown)
+<#                  } #>
+#endif
+<#             }
+           } #>
+<#         if (Model.VelocityVersion != 0) { #>
+#else
+            INTERFACE_ENTRY(DUMMYINTERFACE, IUnknown)
+#endif
+<#         } #>
+        END_INTERFACE_MAP(<#= Model.GeneratedClassName #>, <#= EncodeMacroParameter(GetBaseClassName(Model)) #>)
+<#     } #>
+
+    public:
+        <#= Model.GeneratedClassName #>();
+        ~<#= Model.GeneratedClassName #>() override;
+
+        // Event source typedefs.
+<#     foreach (var ev in Model.Events.Where(ev => ev.GenerateStub && !ev.XamlEventFlags.IsHidden)) { #>
+<#        if (VelocityFeatures.IsVelocityVersion(ev.Version)) { #>
+#if WI_IS_FEATURE_PRESENT(<#= ev.VelocityFeatureName #>)
+<#        }#>
+        <#= IncludeTemplate<EventSourceType>(ev) #>
+<#        if (VelocityFeatures.IsVelocityVersion(ev.Version)) { #>
+#endif
+<#        }#>
+<#     } #>
+
+<#     if (!Model.IsExcludedFromTypeTable && !Model.IsAEventArgs) { #>
+        <#= IndexGenerator.KnownTypeIndexEnumName #> GetTypeIndex() const override
+        {
+            return <#= Model.IndexName #>;
+        }
+
+        static XCP_FORCEINLINE <#= IndexGenerator.KnownTypeIndexEnumName #> GetTypeIndexStatic()
+        {
+            return <#= Model.IndexName #>;
+        }
+<#     } #>
+
+        // Properties.
+<#     foreach (var property in Model.InstanceProperties.Where(p => p.GenerateStub).OrderBy(property => property.Name)) { #>
+        <#= IncludeTemplate<Property>(property) #>
+<#     } #>
+
+        // Events.
+<#     foreach (var ev in Model.InstanceEvents.Where(ev => !ev.XamlEventFlags.IsHidden).OrderBy(ev => ev.Name)) { #>
+<#        if (VelocityFeatures.IsVelocityVersion(ev.Version)) { #>
+#if WI_IS_FEATURE_PRESENT(<#= ev.VelocityFeatureName #>)
+<#        }#>
+        <#= IncludeTemplate<Event>(ev) #>
+<#        if (VelocityFeatures.IsVelocityVersion(ev.Version)) { #>
+#endif
+<#        }#>
+<#     } #>
+
+        // Methods.
+<#     foreach (var method in Model.InstanceMethods.OrderBy(method => method.Name)) { #>
+<#        if (VelocityFeatures.IsVelocityVersion(method.Version)) { #>
+#if WI_IS_FEATURE_PRESENT(<#= method.VelocityFeatureName #>)
+<#        }#>
+        <#= IncludeTemplate<Method>(method) #>
+<#        if (VelocityFeatures.IsVelocityVersion(method.Version)) { #>
+#endif
+<#        }#>
+<#     } #>
+
+<#     if (Model.TemplateParts.Any()) { #>
+        IFACEMETHOD(OnApplyTemplate)() override;
+<#     } #>
+
+    protected:
+        HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
+<# // Only supports events on UIElements and their descendents
+    if (Model.IsAUIElement && Model.Events.Where(m => m.IdlEventInfo.ForwardDeclareIReference).Count() > 0) { #>
+        <# if (Model.Name == "UIElement") { #>virtual <# } #>_Check_return_ HRESULT EventAddHandlerByIndex(_In_ KnownEventIndex nEventIndex, _In_ IInspectable* pHandler, _In_ BOOLEAN handledEventsToo)<# if (Model.Name != "UIElement") { #> override<# } #>;
+        <# if (Model.Name == "UIElement") { #>virtual <# } #>_Check_return_ HRESULT EventRemoveHandlerByIndex(_In_ KnownEventIndex nEventIndex, _In_ IInspectable* pHandler)<# if (Model.Name != "UIElement") { #> override<# } #>;
+<# } #>
+
+    private:
+<# // If this type does not derive from DependencyObject, and it declares an event, then it needs to declare its own copy of
+   // EventAddPreValidation for now, since this simplifies codegen significantly and currently only affects ItemContainerGenerator.
+   if(Model.BaseClass.IsObjectType && Model.InstanceEvents.Where(ev => !ev.XamlEventFlags.IsHidden).Count() > 0) { #>
+       _Check_return_ HRESULT EventAddPreValidation(_In_ void* const pValue, EventRegistrationToken* const ptToken) const;
+<# } #>
+<# // The type may have some customized properties or methods, but we only need to emit anything here if the class is not partial.
+   // For a partial type, simply define the FooImpl function in the Foo_Partial.h/.cpp files and it will build.
+   if (!Model.GeneratePartialClass) { #>
+        // Customized properties.
+<#     foreach (var property in Model.InstanceProperties.Where(m => m.HasImplMethod)) { #>
+        <#= IncludeTemplate<PropertyImpl>(property) #>
+<#     } #>
+
+        // Customized methods.
+<#     foreach (var method in Model.InstanceMethods.Where(m => m.HasImplMethod)) { #>
+        <#= IncludeTemplate<MethodImpl>(method) #>
+<#     }
+   } #>
+
+        // Fields.
+<#     foreach (var templatePart in Model.TemplateParts.OrderBy(templatePart => templatePart.FieldName)) { #>
+        TrackerPtr<<#= AsCppType(templatePart.Type.AbiFullName) #>> <#= templatePart.FieldName #>;
+<#     }
+       foreach (var field in Model.InstanceFields.OrderBy(field => field.Name)) { #>
+        <#= AsCppType(field.FrameworkFieldTypeName) #> <#= field.FrameworkFieldName #>;
+<#     } #>
+<#     if (Model.InstanceEvents.Where(ev => ev.IsSimplePropertyChangedEvent).Any()) { #>
+        // Simple property changed handlers.
+<#         foreach (var ev in Model.InstanceEvents.Where(ev => ev.IsSimplePropertyChangedEvent).OrderBy(ev => ev.SimplePropertyChangedHandlerName)) { #>
+        static void <#= ev.SimplePropertyChangedHandlerName #>(SimpleProperty::objid_t obj);
+<#         } #>
+<#     } #>
+    };
+}
+<# } #>
+
+<# if (Model.GeneratePartialClass) { #>
+#include "<#= Model.CppFrameworkHeaderFileName #>"
+<# } #>
+
+<# if (Model.HasCustomFactory) { #>
+<#= IncludeTemplate<ClassFactory>(Model) #>
+<# } #>

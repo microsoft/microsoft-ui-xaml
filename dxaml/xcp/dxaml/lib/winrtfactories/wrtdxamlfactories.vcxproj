@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{62b922b3-b978-4230-bb5e-4abb77c84c5f}</ProjectGuid>
+    </PropertyGroup>
+
+    <!-- ******************************** File Header ******************************\ -->
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved.                   -->
+    <!--                                                                              -->
+    <!-- Project specific SOURCES file.                                               -->
+    <!--                                                                              -->
+    <!-- ***************************************************************************/ -->
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="..\sources.props"/>
+
+    <PropertyGroup>
+        <TargetDestination>retail</TargetDestination>
+
+        <XamlPrecompiledShared>..\winrtpch\precomp.h</XamlPrecompiledShared>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\Factories.g.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <BuildClientcore>1</BuildClientcore>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\dxaml\idl\com\microsoft.ui.xaml-com.vcxproj" Project="{a1eb01c3-ac8b-45a8-97c8-c459b77ed690}"/>
+        <ProjectReference Include="$(XamlDiagPath)\idl\xamlom.vcxproj" Project="{c6e1e90c-ee33-4352-a8de-067b013c7cc9}"/>
+        <ProjectReference Include="..\winrtpch\wrtdxamlpch.vcxproj" Project="{845d8296-bec7-4e97-8da9-db26a3a6d8c9}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

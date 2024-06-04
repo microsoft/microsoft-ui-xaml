@@ -1,0 +1,17 @@
+{
+    "$schema": "https://json.schemastore.org/component-detection-manifest.json",
+    "version": 1,
+    "registrations": [
+        {
+            "component": {
+                "type": "other",
+                "other": { 
+                    "name": "Facebook TinyRGB ICC Profile", 
+                    "version": "1.0",
+                    "downloadUrl": "https://phabricator.wikimedia.org/T100976",
+                },
+            },
+            "developmentDependency": false,
+        }
+    ],
+}

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <ItemDefinitionGroup>
+        <EtwManifest>
+            <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
+            <EventPrefix Condition="'%(EventPrefix)'==''">EventWrite</EventPrefix>
+            <OutputDirectory Condition="'%(OutputDirectory)'==''">$(OutDir)</OutputDirectory>
+            <UserModeLogging Condition="'%(UserModeLogging)'==''">true</UserModeLogging>
+            <!-- REVIEW: We currently override this schema, but that probably won't be necessary in a lifted world.  -->
+            <!--         Figure out if this is true. -->
+            <Schema Condition="'%(Schema)'==''">$(WindowsSdxUmIncludePath)\eventman.xsd</Schema>
+            <WinMetaFile Condition="'%(WinMetaFile)'==''">$(WindowsSdxUmIncludePath)\winmeta.xml</WinMetaFile>
+        </EtwManifest>
+    </ItemDefinitionGroup>
+    <Target Name="EtwManifest" BeforeTargets="Build" Inputs="@(EtwManifest)" Outputs="@(EtwManifest -> '$(OutDir)\%(Filename)Events.h')">
+        <ItemGroup>
+            <EtwManifest>
+                <AdditionalOptions Condition="'$(UserModeLogging)'=='true'">%(AdditionalOptions) -um</AdditionalOptions>
+            </EtwManifest>
+        </ItemGroup>
+        <PropertyGroup>
+            <Executable>&quot;$(FrameworkSDKDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\mc.exe&quot;</Executable>
+            <CommandLine>-p %(EtwManifest.EventPrefix) $(UserModeLoggingFlag) %(EtwManifest.AdditionalOptions) -r $(OutDir) -W "%(WinMetaFile)" -w "%(EtwManifest.Schema)" -h %(OutputDirectory) -z %(Filename)Events</CommandLine>
+        </PropertyGroup>
+        <Exec Command="$(Executable) $(CommandLine) %(EtwManifest.Identity) " />
+    </Target>
+    <Target Name="EtwManifestClean" BeforeTargets="Clean">
+        <Delete Files="@(EtwManifest -> '$(OutDir)\%(Filename)Events.h')" />
+    </Target>
+</Project>

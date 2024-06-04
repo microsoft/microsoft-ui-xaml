@@ -1,0 +1,79 @@
+<!--
+***********************************************************************************************
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) Microsoft Corporation. 
+Licensed under the MIT License. See LICENSE in the project root for license information.
+***********************************************************************************************
+
+This file is a trimmed down copy of the one that ships with Visual Studio. The one that ships with
+Visual Studio is stil used for C++ projects, but this will be used for .NET projects.
+-->
+<Project>
+  <PropertyGroup>
+    <AddProcessedXamlFilesToCopyLocalDependsOn>
+      ContentFilesProjectOutputGroup;
+      Prep_ComputeProcessXamlFiles;
+      $(AddProcessedXamlFilesToCopyLocalDependsOn)
+    </AddProcessedXamlFilesToCopyLocalDependsOn>
+  </PropertyGroup>
+
+  <Target Name="AddProcessedXamlFilesToCopyLocal" Condition="'$(AppxPackage)' != 'true'" DependsOnTargets="$(AddProcessedXamlFilesToCopyLocalDependsOn)" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <ItemGroup>
+      <_ProcessedXamlFilesToCopyLocal Include="@(GeneratedXamlSrc->'%(FullPath)')" />
+      <_ProcessedXamlFilesToCopyLocal Condition="'$(GenerateLibraryLayout)' == 'true' and '$(DisableXbfGeneration)' != 'true'" Include="@(GeneratedXamlSrc0->'%(FullPath)')" />
+    </ItemGroup>
+
+    <AssignTargetPath Files="@(_ProcessedXamlFilesToCopyLocal)" RootFolder="$(XamlGeneratedOutputPath)">
+      <Output TaskParameter="AssignedFiles" ItemName="_ProcessedXamlFilesToCopyLocalWithTargetPath" />
+    </AssignTargetPath>
+
+    <ItemGroup>
+      <_AllChildProjectItemsWithTargetPath Include="@(_ProcessedXamlFilesToCopyLocalWithTargetPath)" Condition="'%(Extension)' != '.xbf' OR ('%(Extension)' == '.xbf' AND '$(_SupportXbfAsEmbedFileResources)' != 'true')">
+        <TargetPath Condition="'$(PriInitialPath)' != ''">$(PriInitialPath)\%(_ProcessedXamlFilesToCopyLocalWithTargetPath.TargetPath)</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </_AllChildProjectItemsWithTargetPath>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_AllChildProjectItemsWithTargetPath Include="@(ContentFilesProjectOutputGroupOutput)">
+        <TargetPath Condition="'$(PriInitialPath)' != ''">$(PriInitialPath)\%(ContentFilesProjectOutputGroupOutput.TargetPath)</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </_AllChildProjectItemsWithTargetPath>
+    </ItemGroup>
+    
+    <Message Importance="Low" Text="(Out) _ProcessedXamlFilesToCopyLocal == @(_ProcessedXamlFilesToCopyLocal)" />
+    <Message Importance="Low" Text="(Out) _XamlFilesToCopyLocal == @(_XamlFilesToCopyLocal)" />
+  </Target>
+
+  <!-- Allow nuget pack task to pick up .xaml files -->
+  <PropertyGroup>
+    <IncludeXamlFilesInNugetPackage Condition="'$(OutputType)'=='Library' and '$(IncludeXamlFilesInNugetPackage)'==''">true</IncludeXamlFilesInNugetPackage>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder Condition="'$(IncludeXamlFilesInNugetPackage)'=='true'">$(AllowedOutputExtensionsInPackageBuildOutputFolder);.xaml</AllowedOutputExtensionsInPackageBuildOutputFolder>
+  </PropertyGroup>
+
+    <!--
+      Add xaml files to BuiltProjectOutputGroupOutput, so that it will get included in the NuGet package by the Pack target.
+      Even though this is called the build output group, we use the Page items to avoid an extra copy
+    -->
+  <Target Name="AddXamlFilesToNugetPackage"
+          BeforeTargets="BuiltProjectOutputGroup"
+          Condition="'$(IncludeXamlFilesInNugetPackage)'=='true'">
+    <ItemGroup>
+    <!-- 
+      If a library package doesn't want to pack a specific xaml file for some reason, they can update
+      the metadata on the item so that it isn't packed:
+      
+      <ItemGroup>
+         <Page Update="MyUserControl.xaml" Pack="false"/>
+      </ItemGroup>
+    -->
+      <BuiltProjectOutputGroupOutput Include="@(Page)" Condition="'%(Page.Pack)'!='False'" KeepMetadata="False"
+                                     TargetPath="$(AssemblyName)\%(Identity)"
+                                     FinalOutputPath="$(MSBuildProjectDirectory)\%(Identity)"/>
+    </ItemGroup>
+  </Target>
+
+</Project>

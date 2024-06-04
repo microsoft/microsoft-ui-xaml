@@ -1,0 +1,47 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass PersonPicture : Microsoft.UI.Xaml.Controls.Control
+{
+    PersonPicture();
+
+    Int32 BadgeNumber { get; set; };
+    String BadgeGlyph { get; set; };
+    Microsoft.UI.Xaml.Media.ImageSource BadgeImageSource { get; set; };
+    String BadgeText { get; set; };
+    Boolean IsGroup { get; set; };
+    Windows.ApplicationModel.Contacts.Contact Contact { get; set; };
+    String DisplayName { get; set; };
+    String Initials { get; set; };
+    Boolean PreferSmallImage { get; set; };
+    Microsoft.UI.Xaml.Media.ImageSource ProfilePicture { get; set; };
+
+    [MUX_PROPERTY_NEEDS_DP_FIELD]
+    PersonPictureTemplateSettings TemplateSettings { get; };
+
+    static Microsoft.UI.Xaml.DependencyProperty BadgeNumberProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty BadgeGlyphProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty BadgeImageSourceProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty BadgeTextProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsGroupProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty ContactProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty DisplayNameProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty InitialsProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty PreferSmallImageProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty ProfilePictureProperty { get; };
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+[MUX_PROPERTY_NEEDS_DP_FIELD]
+runtimeclass PersonPictureTemplateSettings : Microsoft.UI.Xaml.DependencyObject
+{
+    String ActualInitials { get; };
+    Microsoft.UI.Xaml.Media.ImageBrush ActualImageBrush { get; };
+}
+
+}

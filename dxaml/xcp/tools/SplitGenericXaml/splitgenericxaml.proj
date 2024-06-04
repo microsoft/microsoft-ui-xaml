@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="InstantCompile">
+
+  <Import Project="$(NTMAKEENV)\Microsoft.Build.settings" Condition="'$(BuildingWithBuildExe)'=='true'"/>
+
+  <PropertyGroup>
+    <OutputExe Condition="'$(BuildingWithBuildExe)'=='true'">$(ObjectPath)$(ObjectDirectory)SplitGenericXaml.exe</OutputExe>
+    <OutputExe Condition="'$(BuildingWithBuildExe)'!='true'">$(OutDir)SplitGenericXaml.exe</OutputExe>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CompileFiles Include="Program.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InstantCompilerReferencedAssemblies Include="System.dll"/>
+    <InstantCompilerReferencedAssemblies Include="System.Core.dll"/>
+    <InstantCompilerReferencedAssemblies Include="System.Xml.dll"/>
+    <InstantCompilerReferencedAssemblies Include="System.Xml.Linq.dll"/>
+  </ItemGroup>
+
+  <Target Name="InstantCompile"
+          Inputs="@(CompileFiles)"
+          Outputs="$(OutputExe)">
+    <MakeDir Condition="'$(BuildingWithBuildExe)'!='true'" Directories="$(OutDir)" />
+    <Csc Sources="@(CompileFiles)"
+         References="@(InstantCompilerReferencedAssemblies)"
+         OutputAssembly="$(OutputExe)"
+         TargetType="exe" />
+  </Target>
+
+</Project>

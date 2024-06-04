@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <ItemDefinitionGroup>
+        <MessageCompile>
+            <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
+            <EventPrefix Condition="'%(EventPrefix)'==''">EventWrite</EventPrefix>
+            <OutputDirectory Condition="'%(OutputDirectory)'==''">$(OutDir)</OutputDirectory>
+            <UserModeLogging Condition="'%(UserModeLogging)'==''">true</UserModeLogging>
+            <!-- REVIEW: We currently override this schema, but that probably won't be necessary in a lifted world.  -->
+            <!--         Figure out if this is true. -->
+            <Schema Condition="'%(Schema)'==''">$(FrameworkSDKDir)Include\$(WindowsTargetPlatformVersion)\um\eventman.xsd</Schema>
+        </MessageCompile>
+    </ItemDefinitionGroup>
+    <Target Name="MessageCompile" BeforeTargets="BeforeClCompile" Inputs="@(MessageCompile)" Outputs="@(MessageCompile -> '$(OutDir)\%(Filename).h')">
+        <PropertyGroup>
+            <Executable>&quot;$(FrameworkSDKDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\mc.exe&quot;</Executable>
+        </PropertyGroup>
+        <ItemGroup>
+            <Midl>
+                <AdditionalOptions Condition="'$(UserModeLogging)'=='true'">%(AdditionalOptions> -um</AdditionalOptions>
+            </Midl>
+        </ItemGroup>
+        <Message Text="******************************* Caling mc.exe"/>
+        <Exec Command="$(Executable) %(MessageCompile.Identity) -p %(MessageCompile.EventPrefix) $(UserModeLoggingFlag) %(MessageCompile.AdditionalOptions) -w %(MessageCompile.Schema) -h %(OutputDirectory)" />
+    </Target>
+</Project>

@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <ExceptionHandling>Sync</ExceptionHandling>    <!-- Allow try/catch for unittest code -->
+            <RuntimeTypeInfo>true</RuntimeTypeInfo>        <!-- Required for CxxMocks.h -->
+            <!-- Defined by the compiler for DLLs.  This is a static lib but (almost) all consumers of this PCH are DLLs. -->
+            <PreprocessorDefinitions>_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <!-- We link unit tests against a shared precompiled header file.             -->
+    <!-- The TEST_CODE macro below will disable LTCG for the unit tests which     -->
+    <!-- will generate errors at link time if using the shared precompiled header -->
+    <!-- generated when building with full optimization turned on. For that       -->
+    <!-- reason we generate two precompiled headers, one for unit tests           -->
+    <!-- and one for product code.                                                -->
+    <PropertyGroup>
+        <TestCode>true</TestCode>
+    </PropertyGroup>
+
+    <Import Project="$(XcpPath)\components\base.props"/>
+
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) __XAML_UNITTESTS__;</ProjectPreprocessorDefinitions>
+
+        <ProjectIncludeDirectories>$(ProjectIncludeDirectories) $(XcpPath)\components\criticalsection\inc;</ProjectIncludeDirectories>
+
+        <!-- This is a shared precompiled header. We do this so we can have multiple    -->
+        <!-- isolated libs without causing the obj output to grow 100MBs+ per DLL.      -->
+        <!--                                                                            -->
+        <!-- The downside is that changes to this file will not be automatically picked -->
+        <!-- up in incremental builds. Luckily correct usage of the precompiled header  -->
+        <!-- will make this edge case extremely unlikely.                               -->
+        <XamlPrecompiledInclude>$(XcpPath)\components\pch\precomp.h</XamlPrecompiledInclude>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

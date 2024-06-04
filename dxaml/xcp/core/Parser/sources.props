@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- ******************************** File Header ******************************\ -->
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved.                   -->
+    <!--                                                                              -->
+    <!-- Project specific SOURCES file.                                               -->
+    <!--                                                                              -->
+    <!-- ***************************************************************************/ -->
+
+    <Import Project="$(XcpPath)\core\common.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(XcpPath)\core\Parser\pch;
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\core\Parser;
+            $(XcpPath)\core\common;
+            $(XcpPath)\control\inc;
+            $(XcpPath)\core\inc;
+            $(XcpPath)\core\sw;
+            $(XcpPath)\core\text\inc;
+            $(XcpPath)\components\parser\inc;
+            $(XcpPath)\core\text\richtextservices\inc;
+            $(XcpPath)\components\criticalsection\inc;
+            $(XcpPath)\components\winuri\inc;
+            $(XcpPath)\win\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+</Project>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <ItemGroup>
+        <ClInclude Include="COMObjectWrapper.h"/>
+        <ClInclude Include="DirectManipulationFrameInfoProvider.h"/>
+        <ClInclude Include="DirectManipulationHubController.h"/>
+        <ClInclude Include="DirectManipulationService.h"/>
+        <ClInclude Include="DirectManipulationViewportEventHandler.h"/>
+        <ClInclude Include="FrameworkInputPaneHandler.h"/>
+        <ClInclude Include="InputPaneInteractionHelper.h"/>
+        <ClInclude Include="precomp.h"/>
+        <ClInclude Include="WinThreadPool.h"/>
+        <ClInclude Include="XcpCodeTracer.h"/>
+
+        <ClCompile Include="PlatformServices.cpp"/>
+        <ClCompile Include="stacktrace.cpp"/>
+        <ClCompile Include="WinApplicationSingleton.cpp"/>
+        <ClCompile Include="WinThreadPool.cpp"/>
+        <ClCompile Include="xcpwin.cpp"/>
+        <ClCompile Include="WinTheme.cpp"/>
+        <ClCompile Include="early_init.cpp"/>
+    </ItemGroup>
+</Project>

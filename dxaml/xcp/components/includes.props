@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved.   -->
+    <!--                                                              -->
+    <!-- The set of all component \inc directories that will be       -->
+    <!-- consumed by the framework at large. This is included in      -->
+    <!-- the common inc file for the rest of the product and allows   -->
+    <!-- us to quickly change the partitioning of header files within -->
+    <!-- this directory.                                              -->
+
+    <!-- Note that we first include the root components folder, this should be the preferred          -->
+    <!-- method of include going forward for new code. Include paths can be structured like this:     -->
+    <!--                                                                                              -->
+    <!-- include<namescope\inc\NameScopeTable.h>                                                      -->
+    <!--                                                                                              -->
+    <!-- This is a little nicer than larger sources files with the world implicitly listed and neatly -->
+    <!-- solves name conflicts.                                                                       -->
+    <PropertyGroup>
+        <CompIncludes>
+            $(XcpPath)\components;
+            $(XcpPath)\components\base\inc;
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\com\inc;
+            $(XcpPath)\components\common\inc;
+            $(XcpPath)\components\controls\lightdismissoverlay\inc;
+            $(XcpPath)\components\lifetime\inc;
+            $(XcpPath)\components\metadata\inc;
+            $(XcpPath)\components\telemetry\inc;
+            $(XcpPath)\components\deferral\inc;
+            $(XcpPath)\components\runtimeEnabledFeatures\inc;
+            $(XcpPath)\components\primitiveDependencyObjects\inc;
+            $(XcpPath)\components\dependencyLocator\inc;
+            $(XcpPath)\components\animation\inc;
+            $(XcpPath)\components\objectWriter\inc;
+            $(XcpPath)\components\vsm\inc;
+            $(XcpPath)\components\xstring\inc;
+            $(XcpPath)\components\legacy\inc;
+            $(XcpPath)\components\focus\inc;
+            $(XcpPath)\components\Telemetry\inc;
+            $(XcpPath)\components\resources\inc;
+            $(XcpPath)\components\style\inc;
+            $(XcpPath)\components\relativepanel\inc;
+            $(XcpPath)\components\qualifiers\inc;
+            $(XcpPath)\components\imaging\inc;
+            $(XcpPath)\components\input\inc;
+            $(XcpPath)\components\parser\inc;
+            $(XcpPath)\components\allocation\inc;
+            $(XcpPath)\components\colors\inc;
+            $(XcpPath)\components\theming\inc;
+            $(XcpPath)\components\accesskeys\inc;
+            $(XcpPath)\components\theminginterop\inc;
+            $(XcpPath)\components\DependencyObject\inc;
+            $(XcpPath)\components\mrt\inc;
+            $(XcpPath)\components\graphics\inc;
+            $(XcpPath)\components\offerableheap\inc;
+            $(XcpPath)\components\threading\inc;
+            $(XcpPath)\components\XboxUtility\inc;
+            $(XcpPath)\components\FocusRect\inc;
+            $(XcpPath)\components\associative\inc;
+            $(XcpPath)\components\flyweight\inc;
+            $(XcpPath)\components\text\inc;
+            $(XcpPath)\components\gestures\inc;
+            $(XcpPath)\components\ValueBoxer\inc;
+            $(XcpPath)\components\simple\inc;
+            $(XcpPath)\components\ContentRoot\inc;
+            $(XcpPath)\components\Switcher\inc;
+        </CompIncludes>
+    </PropertyGroup>
+
+    <!-- Required to correctly override the new/delete operators globally -->
+    <ItemGroup>
+        <Crtlibs Remove="@(Crtlibs)"/>
+        <Crtlibs Condition="'$(ProjectGuid)'!='{502b46a0-df35-4692-8275-ce66e7fdd741}'" Include="$(XcpPath)\components\allocation\lib\Microsoft.UI.Xaml.Allocation.vcxproj" Project="{502b46a0-df35-4692-8275-ce66e7fdd741}"/>
+
+        <!-- The set of base libs to be linked from ALL DLLs that are a part of Jupiter, -->
+        <!-- excluding unit tests.                                                       -->
+
+        <BaseComplibs Remove="@(BaseComplibs)"/>
+        <BaseComplibs Condition="'$(ProjectGuid)'!='{47c659b9-130a-4eb2-b367-c556a179d0cb}'" Include="$(XcpPath)\components\base\lib\Microsoft.UI.Xaml.Base.vcxproj" Project="{47c659b9-130a-4eb2-b367-c556a179d0cb}"/>
+        <BaseComplibs Condition="'$(ProjectGuid)'!='{e2ffd843-5c31-491b-b58e-8a0bf55875ca}'" Include="$(XcpPath)\components\dependencyLocator\lib\Microsoft.UI.Xaml.DependencyLocator.vcxproj" Project="{e2ffd843-5c31-491b-b58e-8a0bf55875ca}"/>
+        <BaseComplibs Condition="'$(ProjectGuid)'!='{ee89d265-0c07-49a3-b39c-d2a40adf9d19}'" Include="$(XcpPath)\components\criticalsection\lib\Microsoft.UI.Xaml.CriticalSection.vcxproj" Project="{ee89d265-0c07-49a3-b39c-d2a40adf9d19}"/>
+        <BaseComplibs Condition="'$(ProjectGuid)'!='{968dc6e1-0f0a-4211-97cc-57ab0754206b}'" Include="$(XcpPath)\components\runtimeEnabledFeatures\lib\Microsoft.UI.Xaml.RuntimeEnabledFeatures.vcxproj" Project="{968dc6e1-0f0a-4211-97cc-57ab0754206b}"/>
+        <BaseComplibs Condition="'$(ProjectGuid)'!='{bbabdb8f-db10-4ca7-9d8e-0634b5b2a183}'" Include="$(XcpPath)\components\math\lib\Microsoft.UI.Xaml.Math.vcxproj" Project="{bbabdb8f-db10-4ca7-9d8e-0634b5b2a183}"/>
+
+        <!-- These sets of libs represent the AccessKeys project -->
+
+        <AkComplibs Remove="@(AkComplibs)"/>
+        <AkComplibs Condition="'$(ProjectGuid)'!='{753e2de1-40b0-45d8-a231-5b41cf4cd88e}'" Include="$(XcpPath)\components\accesskeys\export\lib\AccessKeys.AKExport.vcxproj" Project="{753e2de1-40b0-45d8-a231-5b41cf4cd88e}"/>
+        <AkComplibs Condition="'$(ProjectGuid)'!='{f43ad9ae-a7c4-4e99-8d9f-fe2dbed5a568}'" Include="$(XcpPath)\components\accesskeys\accesskey\lib\AccessKeys.AKAccessKey.vcxproj" Project="{f43ad9ae-a7c4-4e99-8d9f-fe2dbed5a568}"/>
+        <AkComplibs Condition="'$(ProjectGuid)'!='{ed253c25-0512-4fd8-b050-3c3c6835f2ef}'" Include="$(XcpPath)\components\accesskeys\parser\lib\AccessKeys.AKParser.vcxproj" Project="{ed253c25-0512-4fd8-b050-3c3c6835f2ef}"/>
+        <AkComplibs Condition="'$(ProjectGuid)'!='{02e9ec89-0748-495e-b70e-a2403c88381e}'" Include="$(XcpPath)\components\accesskeys\modecontainer\lib\AccessKeys.AKModeContainer.vcxproj" Project="{02e9ec89-0748-495e-b70e-a2403c88381e}"/>
+        <AkComplibs Condition="'$(ProjectGuid)'!='{ff31e3f5-8c72-4428-9bfd-1f3589ff0f1e}'" Include="$(XcpPath)\components\accesskeys\keytips\lib\AccessKeys.KeyTips.vcxproj" Project="{ff31e3f5-8c72-4428-9bfd-1f3589ff0f1e}"/>
+
+        <!-- These sets of libs represent the Focus libraries -->
+
+        <FocusComplibs Remove="@(FocusComplibs)"/>
+        <FocusComplibs Condition="'$(ProjectGuid)'!='{1bfc2f99-b08b-4f54-ad99-80cbf35c216c}'" Include="$(XcpPath)\components\focus\xyfocus\lib\Microsoft.UI.Xaml.Focus.XYFocus.vcxproj" Project="{1bfc2f99-b08b-4f54-ad99-80cbf35c216c}"/>
+        <FocusComplibs Condition="'$(ProjectGuid)'!='{06ee2711-8ce5-4abc-b80d-3b055d7df537}'" Include="$(XcpPath)\components\focus\focusselection\lib\Microsoft.UI.Xaml.Focus.FocusSelection.vcxproj" Project="{06ee2711-8ce5-4abc-b80d-3b055d7df537}"/>
+        <FocusComplibs Condition="'$(ProjectGuid)'!='{61919b80-8852-43ab-810a-f013a6569048}'" Include="$(XcpPath)\components\focus\focusproperties\lib\Microsoft.UI.Xaml.Focus.FocusProperties.vcxproj" Project="{61919b80-8852-43ab-810a-f013a6569048}"/>
+        <FocusComplibs Condition="'$(ProjectGuid)'!='{1fff959e-2082-4106-afb3-543842fcd029}'" Include="$(XcpPath)\components\focus\focusobserver\Microsoft.UI.Xaml.Focus.FocusObserver.vcxproj" Project="{1fff959e-2082-4106-afb3-543842fcd029}"/>
+        <FocusComplibs Condition="'$(ProjectGuid)'!='{978e84ee-1fbe-4eb1-b9d2-31d9814dbdc3}'" Include="$(XcpPath)\components\focus\movement\lib\Microsoft.UI.Xaml.Focus.FocusMovement.vcxproj" Project="{978e84ee-1fbe-4eb1-b9d2-31d9814dbdc3}"/>
+        <FocusComplibs Condition="'$(ProjectGuid)'!='{741e4ad7-d028-40f2-b010-cef69fb91f1a}'" Include="$(XcpPath)\components\focus\export\lib\Microsoft.UI.Xaml.Focus.Export.vcxproj" Project="{741e4ad7-d028-40f2-b010-cef69fb91f1a}"/>
+
+        <!-- These sets of libs represent libraries that should be linked with MUX, but not other DLLs (like unittests) -->
+
+        <ExComplibs Remove="@(ExComplibs)"/>
+        <ExComplibs Condition="'$(ProjectGuid)'!='{f5ada118-91d4-4541-8713-46c3fc53a181}'" Include="$(XcpPath)\components\gestures\export\Microsoft.UI.Xaml.Gestures.Export.vcxproj" Project="{f5ada118-91d4-4541-8713-46c3fc53a181}"/>
+
+        <Complibs Remove="@(Complibs)"/>
+        <Complibs Include="@(BaseComplibs)"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{a96cf4ea-7170-4aff-90a5-5fce1055270f}'" Include="$(XcpPath)\components\CValue\lib\Microsoft.UI.Xaml.CValue.vcxproj" Project="{a96cf4ea-7170-4aff-90a5-5fce1055270f}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{38506cdd-c34a-404c-b6e2-4d1ed278da88}'" Include="$(XcpPath)\components\com\lib\Microsoft.UI.Xaml.Com.vcxproj" Project="{38506cdd-c34a-404c-b6e2-4d1ed278da88}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{71ada981-d444-464c-833d-290206b05240}'" Include="$(XcpPath)\components\lifetime\lib\Microsoft.UI.Xaml.Lifetime.vcxproj" Project="{71ada981-d444-464c-833d-290206b05240}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{9589cb4a-53a6-42dc-a7ee-7e4374cd737d}'" Include="$(XcpPath)\components\namescope\lib\Microsoft.UI.Xaml.NameScope.vcxproj" Project="{9589cb4a-53a6-42dc-a7ee-7e4374cd737d}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{b686a4d4-ef60-411c-98c7-fd43225dc80f}'" Include="$(XcpPath)\components\deferral\lib\Microsoft.UI.Xaml.Deferral.vcxproj" Project="{b686a4d4-ef60-411c-98c7-fd43225dc80f}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{968dc6e1-0f0a-4211-97cc-57ab0754206b}'" Include="$(XcpPath)\components\runtimeEnabledFeatures\lib\Microsoft.UI.Xaml.RuntimeEnabledFeatures.vcxproj" Project="{968dc6e1-0f0a-4211-97cc-57ab0754206b}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{bb0522d9-7e95-40a1-9522-88b6f42b2db6}'" Include="$(XcpPath)\components\animation\lib\Microsoft.UI.Xaml.Animation.vcxproj" Project="{bb0522d9-7e95-40a1-9522-88b6f42b2db6}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{f9da8380-5504-4acc-bde0-72cd5981826d}'" Include="$(XcpPath)\components\xstring\lib\Microsoft.UI.Xaml.XString.vcxproj" Project="{f9da8380-5504-4acc-bde0-72cd5981826d}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{365cdabf-7f04-445d-a598-ba372821b5a6}'" Include="$(XcpPath)\components\transforms\lib\Microsoft.UI.Xaml.Transforms.vcxproj" Project="{365cdabf-7f04-445d-a598-ba372821b5a6}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{425451f3-e2fe-49a1-a7f5-a3776e963b5e}'" Include="$(XcpPath)\components\elements\lib\Microsoft.UI.Xaml.Elements.vcxproj" Project="{425451f3-e2fe-49a1-a7f5-a3776e963b5e}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{b79375fb-fe8f-4b96-b48e-52548bae6141}'" Include="$(XcpPath)\components\eventArgs\lib\Microsoft.UI.Xaml.EventArgs.vcxproj" Project="{b79375fb-fe8f-4b96-b48e-52548bae6141}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{be2a3cdf-01e2-4600-8e77-305065c1fcc0}'" Include="$(XcpPath)\components\comptree\lib\Microsoft.UI.Xaml.CompTree.vcxproj" Project="{be2a3cdf-01e2-4600-8e77-305065c1fcc0}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{056bdedc-7099-4b6a-a170-f59b55ffd8d8}'" Include="$(XcpPath)\components\moco\lib\Microsoft.UI.Xaml.Components.Moco.vcxproj" Project="{056bdedc-7099-4b6a-a170-f59b55ffd8d8}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{073bb1fb-9ce9-4b52-becb-47bd8a77c6ca}'" Include="$(XcpPath)\components\Telemetry\Microsoft.UI.Xaml.Instrumentation.vcxproj" Project="{073bb1fb-9ce9-4b52-becb-47bd8a77c6ca}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{f7139209-4407-43f4-b04b-cddfcbfd5a65}'" Include="$(XcpPath)\components\dependencyObject\lib\Microsoft.UI.Xaml.DependencyObject.vcxproj" Project="{f7139209-4407-43f4-b04b-cddfcbfd5a65}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{e0dd7555-841b-40e4-967a-b6ec2df39258}'" Include="$(XcpPath)\components\dependencyObject\minlib\Microsoft.UI.Xaml.DependencyObjectMin.vcxproj" Project="{e0dd7555-841b-40e4-967a-b6ec2df39258}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{4baf458d-df02-4f8c-bb5a-97ceeb30027c}'" Include="$(XcpPath)\components\primitiveDependencyObjects\lib\Microsoft.UI.Xaml.PrimitiveDependencyObjects.vcxproj" Project="{4baf458d-df02-4f8c-bb5a-97ceeb30027c}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{ae6a3cb3-2d5f-4a15-843a-7d1dac6395d3}'" Include="$(XcpPath)\components\vsm\lib\Microsoft.UI.Xaml.VisualStateMachine.vcxproj" Project="{ae6a3cb3-2d5f-4a15-843a-7d1dac6395d3}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{95d07701-4af9-48e5-b726-0d42034811c8}'" Include="$(XcpPath)\components\legacy\lib\Microsoft.UI.Xaml.Legacy.vcxproj" Project="{95d07701-4af9-48e5-b726-0d42034811c8}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{5ced1575-13fc-4c58-85e7-d5a44848aa6f}'" Include="$(XcpPath)\components\relativepanel\lib\Microsoft.UI.Xaml.RelativePanel.vcxproj" Project="{5ced1575-13fc-4c58-85e7-d5a44848aa6f}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{7da37d6d-d8a3-4a3a-82ca-a21084cc152d}'" Include="$(XcpPath)\components\itemindexrangehelper\lib\Microsoft.UI.Xaml.ItemIndexRangeHelper.vcxproj" Project="{7da37d6d-d8a3-4a3a-82ca-a21084cc152d}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{834d7bb9-3cc6-43f5-8df9-2ac39ec2d8ef}'" Include="$(XcpPath)\components\resources\lib\Microsoft.UI.Xaml.XamlResources.vcxproj" Project="{834d7bb9-3cc6-43f5-8df9-2ac39ec2d8ef}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{a62ef27a-9759-4647-a1b9-c52ec131cb34}'" Include="$(XcpPath)\components\style\lib\Microsoft.UI.Xaml.Style.vcxproj" Project="{a62ef27a-9759-4647-a1b9-c52ec131cb34}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{c766b284-6b02-474b-9a87-58b2a997bc59}'" Include="$(XcpPath)\components\staticpal\lib\Microsoft.UI.Xaml.StaticPal.vcxproj" Project="{c766b284-6b02-474b-9a87-58b2a997bc59}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{23637f36-0cb9-4142-a60c-888b0efe9a4c}'" Include="$(XcpPath)\components\metadata\lib\Microsoft.UI.Xaml.Metadata.vcxproj" Project="{23637f36-0cb9-4142-a60c-888b0efe9a4c}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{91cdc786-7b41-4339-b3dc-5854c6f04d4f}'" Include="$(XcpPath)\components\metadata\dynamicmetadatastorage\Microsoft.UI.Xaml.DynamicMetadataStorage.vcxproj" Project="{91cdc786-7b41-4339-b3dc-5854c6f04d4f}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{83ba909b-3bf5-4a36-8118-7f398b52cc3e}'" Include="$(XcpPath)\components\brushes\lib\Microsoft.UI.Xaml.Brushes.vcxproj" Project="{83ba909b-3bf5-4a36-8118-7f398b52cc3e}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{664bb810-5217-4eb3-85c0-c7ab5e34060b}'" Include="$(XcpPath)\components\qualifiers\lib\Microsoft.UI.Xaml.Qualifiers.vcxproj" Project="{664bb810-5217-4eb3-85c0-c7ab5e34060b}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{cd13a3ef-0fed-4512-8b12-f1b6c96f65ab}'" Include="$(XcpPath)\components\imaging\lib\Microsoft.UI.Xaml.Media.Imaging.vcxproj" Project="{cd13a3ef-0fed-4512-8b12-f1b6c96f65ab}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{64ae8b11-e468-4b1f-bb3a-b570d99fb4b2}'" Include="$(XcpPath)\components\offerableheap\lib\Microsoft.UI.Xaml.OfferableHeap.vcxproj" Project="{64ae8b11-e468-4b1f-bb3a-b570d99fb4b2}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{84b53d4a-4aca-45fa-abed-71590c405915}'" Include="$(XcpPath)\components\threading\lib\Microsoft.UI.Xaml.Threading.vcxproj" Project="{84b53d4a-4aca-45fa-abed-71590c405915}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{911df019-bda7-47d0-b3ed-3db1807eefe1}'" Include="$(XcpPath)\components\input\lib\Microsoft.UI.Xaml.Input.vcxproj" Project="{911df019-bda7-47d0-b3ed-3db1807eefe1}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{ed49c070-4a08-47c9-9b7f-3106acee9fd1}'" Include="$(XcpPath)\components\visualstateshelper\lib\Microsoft.UI.Xaml.VisualStatesHelper.vcxproj" Project="{ed49c070-4a08-47c9-9b7f-3106acee9fd1}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{6b5aed1f-fd5d-47bc-9b9a-37d56e2c2e97}'" Include="$(XcpPath)\components\colors\lib\Microsoft.UI.Xaml.Colors.vcxproj" Project="{6b5aed1f-fd5d-47bc-9b9a-37d56e2c2e97}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{eb1e79fa-171b-4812-b0ee-fd162a81dc3b}'" Include="$(XcpPath)\components\theming\lib\Microsoft.UI.Xaml.Theming.vcxproj" Project="{eb1e79fa-171b-4812-b0ee-fd162a81dc3b}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{ed34e0c6-aa5e-45c8-b793-58e3a4171e19}'" Include="$(XcpPath)\components\theminginterop\lib\Microsoft.UI.Xaml.ThemingInterop.vcxproj" Project="{ed34e0c6-aa5e-45c8-b793-58e3a4171e19}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{dd66fbf9-b48e-41ae-bcee-b2548e39001b}'" Include="$(XcpPath)\components\mrt\lib\Microsoft.UI.Xaml.Mrt.vcxproj" Project="{dd66fbf9-b48e-41ae-bcee-b2548e39001b}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{8b386f16-9cf2-44e0-82ec-5c5129593a3c}'" Include="$(XcpPath)\components\graphics\lib\Microsoft.UI.Xaml.GraphicsUtility.vcxproj" Project="{8b386f16-9cf2-44e0-82ec-5c5129593a3c}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{c9cba2d3-6d77-464c-b0d9-b02da694b0c2}'" Include="$(XcpPath)\components\themeanimationshelper\lib\Microsoft.UI.Xaml.ThemeAnimationsHelper.vcxproj" Project="{c9cba2d3-6d77-464c-b0d9-b02da694b0c2}"/>
+        <Complibs Include="@(AkComplibs)"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{cecce5c4-d7c0-49b9-bb89-7e7edfc0fa5b}'" Include="$(XcpPath)\components\livereorderhelper\lib\Microsoft.UI.Xaml.LiveReorderHelper.vcxproj" Project="{cecce5c4-d7c0-49b9-bb89-7e7edfc0fa5b}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{4d59a898-7e24-4650-baa0-7fe2bb6c82d4}'" Include="$(XcpPath)\components\OneCoreTransforms\lib\Microsoft.UI.Xaml.OneCoreTransforms.vcxproj" Project="{4d59a898-7e24-4650-baa0-7fe2bb6c82d4}"/>
+        <Complibs Include="@(FocusComplibs)"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{f16e6fee-0a31-46d5-a6c9-cf19855e7266}'" Include="$(XcpPath)\components\diagnosticsInterop\lib\Microsoft.UI.Xaml.DiagnosticsInterop.vcxproj" Project="{f16e6fee-0a31-46d5-a6c9-cf19855e7266}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{fd988210-388a-45f0-b800-1b8c5251e527}'" Include="$(XcpPath)\components\KeyboardAccelerator\lib\Microsoft.UI.Xaml.KeyboardAcceleratorUtility.vcxproj" Project="{fd988210-388a-45f0-b800-1b8c5251e527}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{df854298-841f-4dd5-9ddf-fefbc280a6d1}'" Include="$(XcpPath)\components\text\lib\Microsoft.UI.Xaml.Text.vcxproj" Project="{df854298-841f-4dd5-9ddf-fefbc280a6d1}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{9ec4215f-0ebe-409c-8e49-65df310c4bd0}'" Include="$(XcpPath)\components\gestures\lib\Microsoft.UI.Xaml.Gestures.vcxproj" Project="{9ec4215f-0ebe-409c-8e49-65df310c4bd0}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{c9731a36-c282-4686-b9d3-f2db67ed7f85}'" Include="$(XcpPath)\components\controls\keydownup\lib\Microsoft.UI.Xaml.Controls.KeyDownUp.vcxproj" Project="{c9731a36-c282-4686-b9d3-f2db67ed7f85}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{79b93b13-006c-4166-a260-a6ccfab809b8}'" Include="$(XcpPath)\components\controls\inputValidation\lib\Microsoft.UI.Xaml.Controls.InputValidation.vcxproj" Project="{79b93b13-006c-4166-a260-a6ccfab809b8}"/>
+        <Complibs Include="@(ExComplibs)"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{87d264ce-4220-4861-b0b9-b257b022fdd6}'" Include="$(XcpPath)\components\ContentRoot\lib\Microsoft.UI.Xaml.ContentRoot.vcxproj" Project="{87d264ce-4220-4861-b0b9-b257b022fdd6}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{d0680ccb-b663-416e-8a9a-d214c989e81c}'" Include="$(XcpPath)\components\scaling\Microsoft.UI.Xaml.Scaling.vcxproj" Project="{d0680ccb-b663-416e-8a9a-d214c989e81c}"/>
+    </ItemGroup>
+</Project>

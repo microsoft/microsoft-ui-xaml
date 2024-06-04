@@ -1,0 +1,1013 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CompileFiles Include="ProgramParameters.cs" />
+    <CompileFiles Include="QueryHelper.cs" />
+    <CompileFiles Include="CSVHelper.cs" />
+    <CompileFiles Include="PhoneIndexGenerator.cs" />
+    <CompileFiles Include="StableXbfIndexGenerator.cs" />
+    <CompileFiles Include="Templates\Code\Core\Headers\GeneratedClasses.cs">
+      <DependentUpon>GeneratedClasses.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Headers\UIAEnums.cs">
+      <DependentUpon>UIAEnums.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\UIAEnums.cs">
+      <DependentUpon>UIAEnums.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\PhoneCppCodeGenerator.cs" />
+    <CompileFiles Include="Templates\Code\Phone\Bodies\AttachedPropertyGetterBodyObject.cs">
+      <DependentUpon>AttachedPropertyGetterBodyObject.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\AttachedPropertyGetterBodyString.cs">
+      <DependentUpon>AttachedPropertyGetterBodyString.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\AttachedPropertyGetterBodyReference.cs">
+      <DependentUpon>AttachedPropertyGetterBodyReference.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\AttachedPropertyGetterBodyEnum.cs">
+      <DependentUpon>AttachedPropertyGetterBodyEnum.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\AttachedPropertySetterBodyEnum.cs">
+      <DependentUpon>AttachedPropertySetterBodyEnum.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\AttachedPropertySetterBodyObject.cs">
+      <DependentUpon>AttachedPropertySetterBodyObject.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\AttachedPropertySetterBodyString.cs">
+      <DependentUpon>AttachedPropertySetterBodyString.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\AttachedPropertySetterBodyValue.cs">
+      <DependentUpon>AttachedPropertySetterBodyValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\AttachedPropertySetterBodyReference.cs">
+      <DependentUpon>AttachedPropertySetterBodyReference.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\ClassExplicitOverrides.cs">
+      <DependentUpon>ClassExplicitOverrides.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\Factory.cs">
+      <DependentUpon>Factory.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\AttachedPropertyImpl.cs">
+      <DependentUpon>AttachedPropertyImpl.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\InitializeProperty.cs">
+      <DependentUpon>InitializeProperty.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\InterfaceMethodImpl.cs">
+      <DependentUpon>InterfaceMethodImpl.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\Method.cs">
+      <DependentUpon>Method.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\Event.cs">
+      <DependentUpon>Event.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\MethodBody.cs">
+      <DependentUpon>MethodBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\ParameterValidation.cs">
+      <DependentUpon>ParameterValidation.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\Property.cs">
+      <DependentUpon>Property.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\InitializeImpl.cs">
+      <DependentUpon>InitializeImpl.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\PropertyGetter.cs">
+      <DependentUpon>PropertyGetter.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\PropertyGetterBody.cs">
+      <DependentUpon>PropertyGetterBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\PropertyGetterBodyReference.cs">
+      <DependentUpon>PropertyGetterBodyReference.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\PropertyGetterBodyObject.cs">
+      <DependentUpon>PropertyGetterBodyObject.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\AttachedPropertyGetterBodyValue.cs">
+      <DependentUpon>AttachedPropertyGetterBodyValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\PropertyGetterBodyDispatch.cs">
+      <DependentUpon>PropertyGetterBodyDispatch.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\PropertyGetterBodyValue.cs">
+      <DependentUpon>PropertyGetterBodyValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\PropertyGetterBodyPrimitive.cs">
+      <DependentUpon>PropertyGetterBodyPrimitive.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\PropertySetterBodyReference.cs">
+      <DependentUpon>PropertySetterBodyReference.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\PropertySetterBodyValue.cs">
+      <DependentUpon>PropertySetterBodyValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\PropertySetterBodyObject.cs">
+      <DependentUpon>PropertySetterBodyObject.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\PropertySetterBodyBoxer.cs">
+      <DependentUpon>PropertySetterBodyBoxer.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\PropertySetterBodyString.cs">
+      <DependentUpon>PropertySetterBodyString.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\PropertySetter.cs">
+      <DependentUpon>PropertySetter.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\PropertySetterBody.cs">
+      <DependentUpon>PropertySetterBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\RuntimeClassInitialize.cs">
+      <DependentUpon>RuntimeClassInitialize.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\ReferenceTypeGetValue.cs">
+      <DependentUpon>ReferenceTypeGetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\ObjectGetValue.cs">
+      <DependentUpon>ObjectGetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\PropertyGetterBodyString.cs">
+      <DependentUpon>PropertyGetterBodyString.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\StringGetValue.cs">
+      <DependentUpon>StringGetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\EnumGetValue.cs">
+      <DependentUpon>EnumGetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\Class.cs">
+      <DependentUpon>Class.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\Types.cs">
+      <DependentUpon>Types.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\ValueTypeGetValue.cs">
+      <DependentUpon>ValueTypeGetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\AttachedPropertyGetValue.cs">
+      <DependentUpon>AttachedPropertyGetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\ReferenceTypeSetValue.cs">
+      <DependentUpon>ReferenceTypeSetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\ObjectSetValue.cs">
+      <DependentUpon>ObjectSetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\StringSetValue.cs">
+      <DependentUpon>StringSetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\ValueTypeSetValue.cs">
+      <DependentUpon>ValueTypeSetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\EnumSetValue.cs">
+      <DependentUpon>EnumSetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\AttachedPropertySetValue.cs">
+      <DependentUpon>AttachedPropertySetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\MethodBodyVirtualDispatch.cs">
+      <DependentUpon>MethodBodyVirtualDispatch.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Bodies\XamlTypeInfo.cs">
+      <DependentUpon>XamlTypeInfo.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Headers\AttachedProperty.cs">
+      <DependentUpon>AttachedProperty.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Headers\Class.cs">
+      <DependentUpon>Class.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Headers\Constructor.cs">
+      <DependentUpon>Constructor.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Headers\ConstructorImpl.cs">
+      <DependentUpon>ConstructorImpl.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Headers\Event.cs">
+      <DependentUpon>Event.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Headers\Factory.cs">
+      <DependentUpon>Factory.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Headers\PrivateProperty.cs">
+      <DependentUpon>PrivateProperty.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Headers\SetPropertyMethod.cs">
+      <DependentUpon>SetPropertyMethod.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Headers\InterfaceMethod.cs">
+      <DependentUpon>InterfaceMethod.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Headers\GetPropertyMethod.cs">
+      <DependentUpon>GetPropertyMethod.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Headers\Method.cs">
+      <DependentUpon>Method.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Headers\MethodImpl.cs">
+      <DependentUpon>MethodImpl.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Headers\Property.cs">
+      <DependentUpon>Property.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Headers\PropertyImpl.cs">
+      <DependentUpon>PropertyImpl.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Headers\RuntimeClass.cs">
+      <DependentUpon>RuntimeClass.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Headers\Types.cs">
+      <DependentUpon>Types.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\Synonyms.cs">
+      <DependentUpon>Synonyms.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\ParameterValidation.cs">
+      <DependentUpon>ParameterValidation.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\ParameterValidationModel.cs" />
+    <CompileFiles Include="Templates\Code\StrictCheckModel.cs" />
+    <CompileFiles Include="Templates\Code\Phone\Headers\XamlTypeInfo.cs">
+      <DependentUpon>XamlTypeInfo.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Phone\Resources\XamlTypeInfo.cs">
+      <DependentUpon>XamlTypeInfo.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Manifests\Microsoft_Windows_Xaml_Etw.cs">
+      <DependentUpon>Microsoft_Windows_Xaml_Etw.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Manifests\Microsoft_Windows_DirectUI_EtwEvents.cs">
+      <DependentUpon>Microsoft_Windows_DirectUI_EtwEvents.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\ClassTypeCheckEntry.cs">
+      <DependentUpon>ClassTypeCheckEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\ClassTypeEntry.cs">
+      <DependentUpon>ClassTypeEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\ClassActivationEntry.cs">
+      <DependentUpon>ClassActivationEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\ClassNameInfoEntry.cs">
+      <DependentUpon>ClassNameInfoEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\ClassPropertiesEntry.cs">
+      <DependentUpon>ClassPropertiesEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\DynamicMetadataBody.cs">
+      <DependentUpon>DynamicMetadataBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\RenderPropertyEntry.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RenderPropertyEntry.tt</DependentUpon>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\StableXbfIndexes.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>StableXbfIndexes.tt</DependentUpon>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\StableXbfIndexMapping.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>StableXbfIndexMapping.tt</DependentUpon>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\StableXbfIndexMetadata.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>StableXbfIndexMetadata.tt</DependentUpon>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\StaticMetadataBody.cs">
+      <DependentUpon>StaticMetadataBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\TypeCheckData.cs">
+      <DependentUpon>TypeCheckData.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\PropertyRuntimeDataEntry.cs">
+      <DependentUpon>PropertyRuntimeDataEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\EnterPropertyEntry.cs">
+      <DependentUpon>EnterPropertyEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\EnumPropertiesEntry.cs">
+      <DependentUpon>EnumPropertiesEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\EnumNameInfoEntry.cs">
+      <DependentUpon>EnumNameInfoEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\EnumActivationEntry.cs">
+      <DependentUpon>EnumActivationEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\EnumTypeEntry.cs">
+      <DependentUpon>EnumTypeEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\EnumTypeCheckEntry.cs">
+      <DependentUpon>EnumTypeCheckEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\XbfMetadataCodeGenerator.cs" />
+    <CompileFiles Include="TypeHandleGenerator.cs" />
+    <CompileFiles Include="Templates\Code\Core\Bodies\Activators.cs">
+      <DependentUpon>Activators.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Bodies\Enums.cs">
+      <DependentUpon>Enums.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Bodies\EventArgsClass.cs">
+      <DependentUpon>EventArgsClass.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Bodies\EventArgsClasses.cs">
+      <DependentUpon>EventArgsClasses.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Headers\EventArgsProperty.cs">
+      <DependentUpon>EventArgsProperty.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Headers\EventArgsClasses.cs">
+      <DependentUpon>EventArgsClasses.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Headers\EventArgsClass.cs">
+      <DependentUpon>EventArgsClass.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Headers\EnumDefs.cs">
+      <DependentUpon>EnumDefs.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Headers\EnumValueTables.cs">
+      <DependentUpon>EnumValueTables.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Headers\Enums.cs">
+      <DependentUpon>Enums.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\ApplyTemplateMethod.cs">
+      <DependentUpon>ApplyTemplateMethod.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\CheckAPICall.cs">
+      <DependentUpon>CheckAPICall.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\MethodEtwStart.cs">
+      <DependentUpon>MethodEtwStart.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\MethodEtwStop.cs">
+      <DependentUpon>MethodEtwStop.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\Boxes.cs">
+      <DependentUpon>Boxes.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\PInvokeMethodBody.cs">
+      <DependentUpon>PInvokeMethodBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\EventArgsClass.cs">
+      <DependentUpon>EventArgsClass.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\EventArgsClasses.cs">
+      <DependentUpon>EventArgsClasses.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\Struct.cs">
+      <DependentUpon>Struct.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\FieldGetter.cs">
+      <DependentUpon>FieldGetter.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\FieldSetter.cs">
+      <DependentUpon>FieldSetter.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\PropertySetter.cs">
+      <DependentUpon>PropertySetter.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\PropertyGetter.cs">
+      <DependentUpon>PropertyGetter.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\AggregateSource.cs">
+      <DependentUpon>AggregateSource.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\StrictCheck.cs">
+      <DependentUpon>StrictCheck.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\EventArgsClass.cs">
+      <DependentUpon>EventArgsClass.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\EventArgsClasses.cs">
+      <DependentUpon>EventArgsClasses.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\Struct.cs">
+      <DependentUpon>Struct.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\DependencyObjectTraits.cs">
+      <DependentUpon>DependencyObjectTraits.tt</DependentUpon>
+      <SubType>Code</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </CompileFiles>
+    <CompileFiles Include="TypeTableOptimizer.cs" />
+    <CompileFiles Include="DependencyGenerator.cs" />
+    <CompileFiles Include="IndexGenerator.cs" />
+    <CompileFiles Include="GuidCollisionDetector.cs" />
+    <CompileFiles Include="Templates\Code\Core\Bodies\UIElement.cs">
+      <DependentUpon>UIElement.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\ClassFactory.cs">
+      <DependentUpon>ClassFactory.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\Constructor.cs">
+      <DependentUpon>Constructor.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\AttachedProperty.cs">
+      <DependentUpon>AttachedProperty.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\AttachedPropertyGetterBody.cs">
+      <DependentUpon>AttachedPropertyGetterBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\AttachedPropertySetterBody.cs">
+      <DependentUpon>AttachedPropertySetterBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\Event.cs">
+      <DependentUpon>Event.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\VirtualDispatchMethodBody.cs">
+      <DependentUpon>VirtualDispatchMethodBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\VelocityFeatureMacros.cs">
+      <DependentUpon>VelocityFeatureMacros.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\MethodBody.cs">
+      <DependentUpon>MethodBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\Method.cs">
+      <DependentUpon>Method.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\PropertyGetterBody.cs">
+      <DependentUpon>PropertyGetterBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\DependencyProperty.cs">
+      <DependentUpon>DependencyProperty.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\PropertySetterBody.cs">
+      <DependentUpon>PropertySetterBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\Property.cs">
+      <DependentUpon>Property.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\Class.cs">
+      <DependentUpon>Class.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Bodies\Classes.cs">
+      <DependentUpon>Classes.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\ConstructorImpl.cs">
+      <DependentUpon>ConstructorImpl.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\ClassFactory.cs">
+      <DependentUpon>ClassFactory.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\AttachedProperty.cs">
+      <DependentUpon>AttachedProperty.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\InterfaceEvent.cs">
+      <DependentUpon>InterfaceEvent.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\InterfaceProperty.cs">
+      <DependentUpon>InterfaceProperty.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\InterfaceMethod.cs">
+      <DependentUpon>InterfaceMethod.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\Interface.cs">
+      <DependentUpon>Interface.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\PropertyImpl.cs">
+      <DependentUpon>PropertyImpl.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\MethodImpl.cs">
+      <DependentUpon>MethodImpl.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\Method.cs">
+      <DependentUpon>Method.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\Event.cs">
+      <DependentUpon>Event.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\EventSourceType.cs">
+      <DependentUpon>EventSourceType.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\DependencyProperty.cs">
+      <DependentUpon>DependencyProperty.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\Constructor.cs">
+      <DependentUpon>Constructor.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\Property.cs">
+      <DependentUpon>Property.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\Class.cs">
+      <DependentUpon>Class.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\Classes.cs">
+      <DependentUpon>Classes.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\InterfaceForwarder.cs">
+      <DependentUpon>InterfaceForwarder.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Framework\Headers\ForwarderMemberModel.cs"/>
+    <CompileFiles Include="Templates\Code\Framework\Headers\ForwarderMethodModel.cs" />
+    <CompileFiles Include="Templates\Code\Framework\Headers\ForwarderRequestedInterface.cs"/>
+    <CompileFiles Include="Templates\Code\Framework\Headers\MethodForwarder.cs">
+      <DependentUpon>MethodForwarder.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Factories.cs">
+      <DependentUpon>Factories.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Bodies\Class.cs">
+      <DependentUpon>Class.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Bodies\Classes.cs">
+      <DependentUpon>Classes.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Bodies\LiftedSources.cs">
+      <DependentUpon>LiftedSources.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Bodies\SimplePropertiesCommon.cs">
+      <DependentUpon>SimplePropertiesCommon.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Headers\Classes.cs">
+      <DependentUpon>Classes.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Headers\Class.cs">
+      <DependentUpon>Class.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Headers\SimplePropertiesAdapter.cs">
+      <DependentUpon>SimplePropertiesAdapter.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Headers\SimplePropertiesMetadata.cs">
+      <DependentUpon>SimplePropertiesMetadata.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Bodies\SimplePropertiesHelpersBody.cs">
+      <DependentUpon>SimplePropertiesHelpersBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Bodies\UIElementSimplePropertiesCallbacks.cs">
+      <DependentUpon>UIElementSimplePropertiesCallbacks.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Copyright.cs">
+      <DependentUpon>Copyright.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Headers\Activators.cs">
+      <DependentUpon>Activators.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Headers\XamlNativeRuntime_SimpleProperties.cs">
+      <DependentUpon>XamlNativeRuntime_SimpleProperties.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Headers\DiagnosticsInterop_SimpleProperties.cs">
+      <DependentUpon>DiagnosticsInterop_SimpleProperties.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\Core\Headers\SimplePropertiesCommon.cs">
+      <DependentUpon>SimplePropertiesCommon.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Code\CppCodeGenerator.cs" />
+    <CompileFiles Include="Templates\MultiFileXamlCodeGenerator.cs" />
+    <CompileFiles Include="Templates\Metadata\TypeTableHeader.cs">
+      <DependentUpon>TypeTableHeader.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\ObjectPropertyEntry.cs">
+      <DependentUpon>ObjectPropertyEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\TypeNameEntry.cs">
+      <DependentUpon>TypeNameEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\PropertyEntry.cs">
+      <DependentUpon>PropertyEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\NamespaceEntry.cs">
+      <DependentUpon>NamespaceEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\Copyright.cs">
+      <DependentUpon>Copyright.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\MetadataCodeGenerator.cs" />
+    <CompileFiles Include="Templates\Metadata\Indexes.cs">
+      <DependentUpon>Indexes.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\XamlCodeGenerator.cs" />
+    <CompileFiles Include="Templates\T4CodeGenerator.cs" />
+    <CompileFiles Include="Program.cs" />
+    <CompileFiles Include="GlobalSuppressions.cs" />
+
+    <CompileFiles Include="Templates\ModernIDL\ModernIDLCodeGenerator.cs"/>
+    <CompileFiles Include="Templates\ModernIDL\ModelExtensionMethods.cs"/>
+    <CompileFiles Include="Templates\ModernIDL\Class.cs">
+      <DependentUpon>Class.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\ModernIDL\Constructor.cs">
+      <DependentUpon>Constructor.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\ModernIDL\Delegate.cs">
+      <DependentUpon>Delegate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\ModernIDL\Enum.cs">
+      <DependentUpon>Enum.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\ModernIDL\Interface.cs">
+      <DependentUpon>Interface.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\ModernIDL\MemberModel.cs" />
+    <CompileFiles Include="Templates\ModernIDL\MethodModel.cs" />
+    <CompileFiles Include="Templates\ModernIDL\PropertyModel.cs" />
+    <CompileFiles Include="Templates\ModernIDL\RequestedInterface.cs" />
+    <CompileFiles Include="Templates\ModernIDL\Struct.cs">
+      <DependentUpon>Struct.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\ModernIDL\Group.cs">
+      <DependentUpon>Group.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\ModernIDL\Copyright.cs">
+      <DependentUpon>Copyright.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\ModernIDL\Attribute.cs">
+      <DependentUpon>Attribute.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+    <CompileFiles Include="Templates\ModernIDL\Contract.cs">
+      <DependentUpon>Contract.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </CompileFiles>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{0c3c2872-56a3-4acf-b2f7-8c05710b93ae}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+
+    <Import Project="$(XcpPath)\components\common.props"/>
+
+    <ItemGroup>
+        <ClCompile Include="$(ClCompile)"/>
+        <ClCompile Include="WinURI.cpp"/>
+    </ItemGroup>
+
+    <!-- Add $(SDK_PATH)/amovie/inc for evcode.h -->
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\winuri\inc;
+            $(XcpPath)\inc;
+            $(XcpPath)\pal\inc;
+            $(XcpPath)\win\inc;
+            $(XcpPath)\pal\win\inc;
+            $(XcpPath)\components\runtimeEnabledFeatures\inc;
+            $(XcpPath)\core\inc;
+            $(XcpPath)\core\text\inc;
+            $(XcpPath)\components\base\inc;
+            $(XcpPath)\plat\win\common;
+            $(XcpPath)\plat\win\winbase;
+            $(XcpPath)\plat\win\browser;
+            $(XcpPath)\host\win\browser;
+            $(XcpPath)\plat\win\desktop;
+            $(XcpPath)\host\win\browserdesktop;
+            $(XcpPath)\components\base\inc;
+            $(XcpPath)\win\UIUtils;
+            $(XcpPath)\control\common\shared;
+            $(XcpPath)\control\inc;
+            $(XcpPath)\updater;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\prod\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{ccc61973-be99-4223-b935-353d03571e92}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

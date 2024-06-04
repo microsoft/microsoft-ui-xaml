@@ -1,0 +1,7 @@
+﻿<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- This is the targets file that we inherited. It will continue to be imported until all 
+         targets and props it contains have been refactored or otherwise found their resting place. -->
+    <Import Project="$(MSBuildThisFileDirectory)Microsoft.UI.Xaml.Markup.Compiler.interop.targets" />    
+</Project>

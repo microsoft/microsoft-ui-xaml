@@ -1,0 +1,14 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<MethodDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+if (EventEnabledApiFunctionCallStop())
+{
+<# if (Model.IsStatic) { #>
+    XamlTelemetry::PublicApiCall(false, 0, "<#= Model.IndexNameWithoutPrefix #>", hr);
+<# } else { #>
+    XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "<#= Model.IndexNameWithoutPrefix #>", hr);
+<# } #>
+}

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+    </PropertyGroup>
+
+    <!-- ******************************** File Header ******************************\ -->
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved.                   -->
+    <!--                                                                              -->
+    <!-- Project specific SOURCES file.                                               -->
+    <!--                                                                              -->
+    <!-- ***************************************************************************/ -->
+
+    <Import Project="$(XcpPath)\common.props"/>
+    <Import Project="$(XamlSourcePath)\atl.props"/>
+
+    <PropertyGroup>
+        <XamlPrecompiledInclude>precomp.h</XamlPrecompiledInclude>
+        <XamlPrecompiledPch>precomp.pch</XamlPrecompiledPch>
+        <XamlPrecompiledObj>precomp.obj</XamlPrecompiledObj>
+    </PropertyGroup>
+
+    <Import Project="sources.g.props"/>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <AdditionalOptions>%(AdditionalOptions) /D_ATL_NO_AUTOMATIC_NAMESPACE</AdditionalOptions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ClCompile Include="DirectManipulationViewportEventHandler.cpp"/>
+        <ClCompile Include="DirectManipulationService.cpp"/>
+        <ClCompile Include="InputPaneInteractionHelper.cpp"/>
+        <ClCompile Include="FrameworkInputPaneHandler.cpp"/>
+        <ClCompile Include="DirectManipulationFrameInfoProvider.cpp"/>
+
+        <TraceWpp Include="xcpwin.cpp">
+            <Function>DoTraceLevelMessage(LEVEL,FLAGS,MSG,...)</Function>
+            <ModuleName>Windows_UI_XAML</ModuleName>
+        </TraceWpp>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(LiftedIXPIncludePaths);
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\inc;
+            $(XcpPath)\pal\inc;
+            $(XcpPath)\win\inc;
+            $(XcpPath)\pal\win\inc;
+            $(XcpPath)\components\runtimeEnabledFeatures\inc;
+            $(XcpPath)\components\winuri\inc;
+            $(XcpPath)\components\graphics\inc;
+            $(XcpPath)\components\imaging\inc;
+            $(XcpPath)\components\brushes\inc;
+            $(XcpPath)\core\inc;
+            $(XcpPath)\core\text\inc;
+            $(XcpPath)\components\base\inc;
+            $(XcpPath)\plat\win\common;
+            $(XcpPath)\plat\win\winbase;
+            $(XcpPath)\plat\win\browser;
+            $(XcpPath)\host\win\browser;
+            $(XcpPath)\plat\win\desktop;
+            $(XcpPath)\host\win\browserdesktop;
+            $(XcpPath)\components\base\inc;
+            $(XcpPath)\win\UIUtils;
+            $(XcpPath)\control\common\shared;
+            $(XcpPath)\control\inc;
+            $(XcpPath)\updater;
+            $(XcpPath)\components\criticalsection\inc;
+            $(XcpPath)\components\allocation\inc;
+            $(XcpPath)\components\math\inc;
+            $(XcpPath)\components\inputpane\inc;
+            $(XcpPath)\components\OneCoreTransforms\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+</Project>

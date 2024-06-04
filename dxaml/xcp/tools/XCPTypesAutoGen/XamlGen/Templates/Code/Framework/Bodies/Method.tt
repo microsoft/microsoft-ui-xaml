@@ -1,0 +1,63 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<MethodDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<# if (Model.IsStatic) {
+       if (Model.IsInterfaceImplementation) { #>
+IFACEMETHODIMP <#= AsCppType(Model.DeclaringClass.GeneratedFactoryFullName) #>::<#= Model.IdlMethodInfo.Name #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
+<#     } else { #>
+_Check_return_ HRESULT <#= AsCppType(Model.DeclaringClass.GeneratedFactoryFullName) #>::<#= Model.IdlMethodInfo.Name #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
+<#     } #>
+{
+<#= IncludeTemplate<MethodBody>(Model) #>
+}
+
+<# } else if (Model.IsInterfaceImplementation) { #>
+<#                if (VelocityFeatures.IsVelocityVersion(Model.Version)) { #>
+#if WI_IS_FEATURE_PRESENT(<#= Model.VelocityFeatureName #>)
+<#                }#>
+<#       if (!Model.IsPureVirtual) {
+           if (Model.DeclaringVersion.IsVersionInterfaceForwarded()) { #>_Check_return_ HRESULT STDMETHODCALLTYPE <# }
+           else { #>IFACEMETHODIMP <# } #>
+<#= AsCppType(Model.DeclaringClass.GeneratedClassFullName) #>::<#= Model.IdlMethodInfo.Name #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
+{
+<#         if (Model.IsVirtual && Model.Modifier == Modifier.Public) { #>
+<#= IncludeTemplate<VirtualDispatchMethodBody>(Model) #>
+<#         } else { #>
+<#= IncludeTemplate<MethodBody>(Model) #>
+<#         } #>
+}
+<#                if (VelocityFeatures.IsVelocityVersion(Model.Version)) { #>
+#endif
+<#                }#>
+
+<#     }
+        if (Model.IsVirtual) {
+            if (Model.Modifier == Modifier.Protected) {
+                if (VelocityFeatures.IsVelocityVersion(Model.Version)) { #>
+#if WI_IS_FEATURE_PRESENT(<#= Model.VelocityFeatureName #>)
+<#                }#>
+_Check_return_ HRESULT <#= AsCppType(Model.DeclaringClass.GeneratedClassFullName) #>::<#= Model.IdlMemberInfo.ProtectedName #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
+{
+<#= IncludeTemplate<VirtualDispatchMethodBody>(Model) #>
+}
+<#                if (VelocityFeatures.IsVelocityVersion(Model.Version)) { #>
+#endif
+<#                }
+            } else if (Model.Modifier == Modifier.Public && !Model.IsPureVirtual) { #>
+IFACEMETHODIMP <#= AsCppType(Model.DeclaringClass.GeneratedClassFullName) #>::<#= Model.IdlMethodInfo.VirtualName #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
+{
+<#= IncludeTemplate<MethodBody>(Model) #>
+}
+
+<#         }
+       }
+   } else { #>
+_Check_return_ HRESULT <#= AsCppType(Model.DeclaringClass.GeneratedClassFullName) #>::<#= Model.IdlMethodInfo.Name #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
+{
+<#= IncludeTemplate<MethodBody>(Model) #>
+}
+
+<# } #>

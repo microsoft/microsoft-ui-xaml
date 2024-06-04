@@ -1,0 +1,32 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Common Project Defaults" >
+        <TargetPlatformVersion>$(WindowsSdkTargetPlatformVersion)</TargetPlatformVersion>
+        <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
+        <WindowsTargetPlatformVersion>$(TargetPlatformVersion)</WindowsTargetPlatformVersion>
+        <WindowsTargetPlatformMinVersion>$(TargetPlatformMinVersion)</WindowsTargetPlatformMinVersion>
+        <EnableTypeInfoReflection>false</EnableTypeInfoReflection>
+        <TestCertificatePath Condition="'$(TestCertificatePath)' == ''">$(ProjectRoot)build\WinUITest.pfx</TestCertificatePath>
+        <PackageCertificateKeyFile>$(TestCertificatePath)</PackageCertificateKeyFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Reference Include="@(WinUIWinMDReferences)" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="$(MSBuildProjectExtension)=='.vcxproj'">
+        <PlatformToolset>v142</PlatformToolset>
+    </PropertyGroup>
+
+    <PropertyGroup>
+         <!-- Our obj/bin paths get long enough to the point they break signtool.exe in the SDK ( APPX1204 file not found errors).
+              Trim some of the extraneous common path to a more managable one.
+         -->
+        <OutDir>$(OutDir.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</OutDir>        
+        <IntDir>$(IntDir.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</IntDir>
+        <BaseIntermediateOutputPath>$(BaseIntermediateOutputPath.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</BaseIntermediateOutputPath>
+        <IntermediateOutputPath>$(IntermediateOutputPath.Replace("src\XamlCompiler\Tests\RegressionProjects", "CompilerTests"))</IntermediateOutputPath>
+    </PropertyGroup>
+
+</Project>

@@ -1,0 +1,41 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="ModernIdlCodeGenerator<ClassDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+
+<# this.WriteRuntimeClassAttributes(Model); #>
+<#= Model.GetRuntimeClassString() #> <#= Model.IdlClassInfo.Name #>
+<# if (Model.IdlClassInfo.HasBaseClass) { #>
+    : <#= Model.IdlClassInfo.BaseClass.IdlTypeInfo.FullName #>
+<# } #>
+<# WriteImplementedInterfaces(Model); #>
+{
+<# foreach (var version in Model.Versions.Select(v => v.GetProjection()).OrderBy(v => v.Version)) { #>
+<#  StartVersion(version); #>
+<#   if (version.IdlClassInfo.HasDefaultConstructor) { #>
+    <#= Model.IdlClassInfo.Name + "();" #>
+<#   } #>
+<# if (version.IdlClassInfo.HasCustomConstructors) { #>
+<#   foreach (var ctor in version.IdlClassInfo.CustomConstructors.Where(m => m.OrderHint == null)) { #>
+    <#= IncludeTemplate<Constructor>(ctor) #>
+<#   } #>
+<#   foreach (var ctor in version.IdlClassInfo.CustomConstructors.Where(m => m.OrderHint != null).OrderBy(m => m.OrderHint)) { #>
+    <#= IncludeTemplate<Constructor>(ctor) #>
+
+<#   } #>
+<# } #>
+<# WriteInterfaceGroup(version, RequestedInterface.PublicMembers); #>
+<#   if (version.IdlClassInfo.HasPublicStaticMembers) { #>
+<# WriteInterfaceGroup(version, RequestedInterface.StaticMembers); #>
+<#   } #>
+<#   if (version.IdlClassInfo.ProtectedPMEs.Any()) { #>
+<# WriteInterfaceGroup(version, RequestedInterface.ProtectedMembers); #>
+<# } #>
+<#   if (version.IdlClassInfo.VirtualPMEs.Any()) { #>
+<# WriteInterfaceGroup(version, RequestedInterface.VirtualMembers); #>
+<# } #>
+<#   EndVersion(version); #>
+<# } #>
+};

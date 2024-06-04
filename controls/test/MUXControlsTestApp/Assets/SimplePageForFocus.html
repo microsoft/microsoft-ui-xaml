@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Page For Focus</title>
+    <style>
+    </style>
+    <script>
+        "use strict";
+
+        var colorMappings = {
+            "control1_has_focus": "#800080", //purple
+            "control2_has_focus": "#008080", //teal
+            "no_control_has_focus": "#00FF00" //lime
+        };
+
+        function changeColor(color) {
+            document.getElementById("rectangle").style.backgroundColor = color;
+        };
+
+        var changeColorControl1HasFocus = () => { changeColor(colorMappings.control1_has_focus); }     // purple
+        var changeColorControl2HasFocus = () => { changeColor(colorMappings.control2_has_focus); }     // teal
+        var changeColorNoControlHasFocus = () => { changeColor(colorMappings.no_control_has_focus); }  // lime
+
+        function doPostMessage(message) {
+            // Do different things in WebView2 vs the browser, so neither gets an error
+            try {
+                window.chrome.webview.postMessage(message);
+            }
+            catch {
+                window.postMessage(message);
+            }
+        };
+
+        function onLoad()
+        {
+            var w2_rect = document.getElementById("w2").getBoundingClientRect();
+
+            // Send w2 CenterPoint info to Xaml D&D test to use as drop coordinates
+            // Expected format: "w2 CenterPoint: (CenterX,CenterY)"
+            var w2_centerX = w2_rect.left + w2_rect.width / 2;
+            var w2_centerY = w2_rect.top + w2_rect.height / 2;
+            var w2_centerPointString = "w2 CenterPoint: (" + w2_centerX + "," + w2_centerY + ")";
+            doPostMessage(w2_centerPointString);
+            console.log(w2_centerPointString);
+        };
+
+        function onGotFocus(x) {
+            var output = (x.id) ? x.id : x;
+            doPostMessage("Focus on: " + output);
+            console.log("Focus on: " + output);
+
+            if (x.id == "w1") {
+                changeColorControl1HasFocus();
+            }
+            else if (x.id == "w2") {
+                changeColorControl2HasFocus();
+            }
+            else {
+                changeColorNoControlHasFocus();
+            }
+        };
+
+        function onFocusOut() {
+            if (!document.hasFocus()) {
+                doPostMessage("Focus on: document lost focus");
+                console.log("Focus on: document lost focus");
+            }
+        };
+
+        function onGotBlur(x)
+        {
+            var output = (x.id) ? x.id : x;
+            doPostMessage("Blur on: " + output);
+            console.log("Blur on: " + output);
+        };
+
+        function onInput(x)
+        {
+            doPostMessage("Input on " + x.id  + ": " + x.value);
+            console.log("Input on " + x.id  + ": " + x.value);
+        };
+
+        function handleVisibilityChange() {
+           doPostMessage("Visibility state is now " + document.visibilityState);
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange, false);
+    </script>
+</head>
+<body id="body" onload="onLoad()" onfocus="onGotFocus(this)" onblur="onGotBlur(this)" onfocusout="onFocusOut()">
+    <div id="rectangle" style="width:100px; height:100px; background-color:#ff8000"></div>
+    <a style="font-size:50px" id="w1" href="http://www.bing.com" onblur="onGotBlur(this)" onfocus="onGotFocus(this)">[w1] Visit Bing!</a> 
+    <form>
+        [w2]: <input style="font-size:50px" type="text" id="w2" onblur="onGotBlur(this)" onfocus="onGotFocus(this)" oninput="onInput(this)"><br>
+    </form>
+    <p>
+        <b><i><font size="4">Legend:</font></i></b><br>
+        <i><font size="3">x1, x2: XAML TabStops / w1, w2: Web TabStops</font></i><br>
+        <i><font size="3" color="#ff8000">ORANGE: initial state</font></i><br>
+        <i><font size="3" color="#800080">PURPLE: w1 has focus</font></i><br>
+        <i><font size="3" color="#008080">TEAL: w2 has focus</font></i><br>
+        <i><font size="3" color="#00ff00">LIME: no web control has focus</font></i><br>
+    </p>
+</body>
+</html>

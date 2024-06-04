@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{d087f47a-69f5-42d4-98b6-31c2c8e330b8}</ProjectGuid>
+    </PropertyGroup>
+
+    <!-- ******************************** File Header ******************************\ -->
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved.                   -->
+    <!--                                                                              -->
+    <!-- Project specific SOURCES file.                                               -->
+    <!--                                                                              -->
+    <!-- ***************************************************************************/ -->
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+
+    <Import Project="$(XcpPath)\core\common.props"/>
+
+    <PropertyGroup>
+        <TargetDestination>retail</TargetDestination>
+
+        <XamlPrecompiledInclude>precomp.h</XamlPrecompiledInclude>
+        <XamlPrecompiledPch>precomp.pch</XamlPrecompiledPch>
+        <XamlPrecompiledObj>precomp.obj</XamlPrecompiledObj>
+
+        <BuildClientcore>1</BuildClientcore>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="precomp.h"/>
+
+        <ClCompile Include="keyboardeventargs.cpp"/>
+        <ClCompile Include="CharacterReceivedEventArgs.cpp"/>
+        <ClCompile Include="DirectManipulationServiceSharedState.cpp"/>
+        <ClCompile Include="DMContent.cpp"/>
+        <ClCompile Include="DMViewport.cpp"/>
+        <ClCompile Include="DMDeferredRelease.cpp"/>
+        <ClCompile Include="InputManagerDMViewportEventHandler.cpp"/>
+        <ClCompile Include="InputServices.cpp"/>
+        <ClCompile Include="FrameworkInputViewHandler.cpp"/>
+        <ClCompile Include="routedeventargs.cpp"/>
+        <ClCompile Include="BringIntoViewHandler.cpp"/>
+        <ClCompile Include="pointereventargs.cpp"/>
+        <ClCompile Include="inputpointeventargs.cpp"/>
+        <ClCompile Include="manipulationeventargs.cpp"/>
+        <ClCompile Include="InputPaneHandler.cpp"/>
+        <ClCompile Include="ParametricCurve.cpp"/>
+        <ClCompile Include="FocusedElementRemovedEventArgs.cpp"/>
+        <ClCompile Include="KeyTipManager.cpp"/>
+        <ClCompile Include="InteractionManager.cpp"/>
+        <ClCompile Include="GettingFocusEventArgs.cpp"/>
+        <ClCompile Include="LosingFocusEventArgs.cpp"/>
+        <ClCompile Include="NoFocusCandidateFoundEventArgs.cpp"/>
+        <ClCompile Include="CKeyboardAcceleratorInvokedEventArgs.cpp"/>
+        <ClCompile Include="CKeyboardAccelerator.cpp"/>
+        <ClCompile Include="FocusManagerLostFocusEventArgs.cpp"/>
+        <ClCompile Include="FocusManagerGotFocusEventArgs.cpp"/>
+        <ClCompile Include="TextInputProducerHelper.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\core\input;
+            $(XcpPath)\core\inc;
+            $(XcpPath)\core\native\text\Controls;
+            $(XcpPath)\core\sw;
+            $(XcpPath)\core\text\inc;
+            $(XcpPath)\control\inc;
+            $(XcpPath)\core\text\richtextservices\inc;
+            $(XcpPath)\components\input\inc;
+            $(XcpPath)\components\XboxUtility\inc;
+            $(XcpPath)\components\Collection\inc;
+            $(XcpPath)\components\math\inc;
+            $(XcpPath)\components\KeyboardAccelerator\inc;
+            $(XcpPath)\components\UIBridgeFocus\inc;
+            $(XcpPath)\components\OneCoreTransforms\inc;
+            $(XcpPath)\dxaml\lib;
+            $(XcpPath)\win\inc;
+            $(XcpPath)\plat\win\browserdesktop;
+            $(FrameworkUdkIncPath);
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- The purpose of this project is to just build a set of C++/WinRT projection headers from the latest 
+    Windows SDK for lightup code that specifically requires it.  The default C++/WinRT projection uses 
+    metadata from 10.0.17763.0, the WinAppSDK downlevel limit. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <CppWinRTEnablePlatformProjection>true</CppWinRTEnablePlatformProjection>
+    <CppWinRTEnableComponentProjection>false</CppWinRTEnableComponentProjection>
+    <CppWinRTEnableReferenceProjection>false</CppWinRTEnableReferenceProjection>
+    <ProjectGuid>{711ec81d-74eb-401f-b397-7431e5f79ede}</ProjectGuid>
+    <ConfigurationType>Generic</ConfigurationType>
+    <XamlLightup>true</XamlLightup>
+    <TargetName>Microsoft.UI.Xaml.Controls.Lightup</TargetName>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(environment.props))" />
+  <Import Project="$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="$(MUXCProjectRoot)ProjectConfigurations.props" />
+  <Import Project="$(MUXCProjectRoot)version.props" />
+  <Import Project="$(MUXCProjectRoot)CppWinRT.props" />
+  <Import Project="$(MUXCProjectRoot)HybridCRT.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <Import Project="$(CppTargetsFilePath)" />
+  <Import Project="$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" />
+  <!-- We can omit importing CppWinRT.targets to build the projection against the latest Windows SDK -->
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+  </Target>
+</Project>

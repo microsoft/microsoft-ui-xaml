@@ -1,0 +1,16 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project>
+  <PropertyGroup>
+    <WinUIDetailsTargetsFile>$(WinUIDetailsPackagePath)\build\native\$(WinUIDetailsPackageName).targets</WinUIDetailsTargetsFile>
+    <UseWinUIDetails Condition="'$(UseWinUIDetails)'=='' and $(MSBuildProjectExtension)=='.vcxproj'">true</UseWinUIDetails>
+  </PropertyGroup>
+
+ <!-- (LUDK_IN_MUX) only need to import the nuget -->
+  <Import Project="$(WinUIDetailsTargetsFile)" Condition="'$(UseWinUIDetails)'=='true' and Exists('$(WinUIDetailsTargetsFile)')" />
+
+  <!-- remove the references and referencecopylocalpaths that come from the winuidetails so that we don't have them copied into every projects output directory -->
+  <ItemGroup>
+    <ReferenceCopyLocalPaths Remove="$(WinUIDetailsRuntimesPath)\Microsoft.UI.Xaml.Internal.dll" />
+    <ReferenceCopyLocalPaths Remove="$(WinUIDetailsRuntimesPath)\WinUIEdit.dll" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ConfigurationType>Utility</ConfigurationType>
+    <ProjectGuid>{f021a52a-6162-4e8d-b109-847ee5362df9}</ProjectGuid>
+    <MergeWinMd>false</MergeWinMd>
+    <ProjectName>Microsoft.ui.xaml.coretypes</ProjectName>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))" />
+ 
+  <Import Project="$(XamlSourcePath)\xcp\project-lift.props" />
+
+  <PropertyGroup>
+    <MidlFlags>$(MidlFlags) /noattributename</MidlFlags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Midl Include="microsoft.ui.xaml.coretypes.idl" CopyToPublicHeadersPath="true" />
+    <Midl Include="microsoft.ui.xaml.coretypes2.idl" CopyToPublicHeadersPath="true" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

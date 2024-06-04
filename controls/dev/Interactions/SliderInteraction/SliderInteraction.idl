@@ -1,0 +1,24 @@
+﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+[MUX_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass SliderInteraction : 
+#ifdef USE_INTERNAL_SDK
+Microsoft.UI.Xaml.InteractionBase,
+#else
+Microsoft.UI.Xaml.DependencyObject,
+#endif 
+Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+{
+    SliderInteraction();
+
+    Microsoft.UI.Xaml.Controls.Orientation Orientation { get; set; };
+    Double Minimum { get; set; };
+    Double Maximum { get; set; };
+    Double Position { get; };
+    Double SmallChange { get; set; };
+    Double LargeChange { get; set; };
+}
+
+}

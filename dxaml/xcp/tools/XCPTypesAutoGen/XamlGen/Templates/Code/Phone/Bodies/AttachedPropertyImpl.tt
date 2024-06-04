@@ -1,0 +1,47 @@
+<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<AttachedPropertyDefinition>" debug="true"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<InitializeProperty>(Model) #>
+
+<# if (Model.Modifier == Modifier.Public) { #>
+IFACEMETHODIMP <#= Model.DeclaringClass.GeneratedFactoryName #>::get_<#= Model.Name #>Property(_Outptr_ <#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyProperty") #>** ppValue)
+{
+    HRESULT hr = S_OK;
+    
+    ARG_VALIDRETURNPOINTER(ppValue);
+    
+    IFC(s_<#= Model.Name #>Property.CopyTo(ppValue));
+
+Cleanup:
+    RRETURN(hr);
+}
+
+<#      if (!Model.IsReadOnly) { #>
+IFACEMETHODIMP <#= Model.DeclaringClass.GeneratedFactoryName #>::Set<#= Model.Name #>(<#= AsCppType(Model.TargetType.AnnotatedAbiParameterName) #>, <#= AsCppType(Model.PropertyType.AnnotatedAbiParameterName) #>)
+{
+    RRETURN(<#= Model.DeclaringClass.GeneratedFactoryName #>::Set<#= Model.Name #>Static(<#= Model.TargetType.AbiParameterName #>, <#= AsCppType(Model.PropertyType.AbiParameterName) #>));
+}
+<#      } #>
+
+IFACEMETHODIMP <#= Model.DeclaringClass.GeneratedFactoryName #>::Get<#= Model.Name #>(<#= AsCppType(Model.TargetType.AnnotatedAbiParameterName) #>, <#= AsCppType(Model.PropertyType.AnnotatedAbiReturnParameterName) #>)
+{
+    RRETURN(<#= Model.DeclaringClass.GeneratedFactoryName #>::Get<#= Model.Name #>Static(<#= Model.TargetType.AbiParameterName #>, <#= AsCppType(Model.PropertyType.AbiReturnParameterName) #>));
+}
+<# } #>
+
+<# if (!Model.IsReadOnly) { #>
+_Check_return_ HRESULT
+<#= Model.DeclaringClass.GeneratedFactoryName #>::Set<#= Model.Name #>Static(<#= AsCppType(Model.TargetType.AnnotatedAbiParameterName) #>, <#= AsCppType(Model.PropertyType.AnnotatedAbiParameterName) #>)
+{
+<#= IncludeTemplate<PropertySetterBody>(Model) #>
+}
+
+<# } #>
+_Check_return_ HRESULT
+<#= Model.DeclaringClass.GeneratedFactoryName #>::Get<#= Model.Name #>Static(<#= AsCppType(Model.TargetType.AnnotatedAbiParameterName) #>, <#= AsCppType(Model.PropertyType.AnnotatedAbiReturnParameterName) #>)
+{
+<#= IncludeTemplate<PropertyGetterBody>(Model) #>
+}

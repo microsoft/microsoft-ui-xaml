@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{5fc5d82e-a0fc-4309-bf13-806f022e9ab9}</ProjectGuid>
+    </PropertyGroup>
+
+    <!-- ******************************** File Header ******************************\ -->
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved.                   -->
+    <!--                                                                              -->
+    <!-- Project specific SOURCES file.                                               -->
+    <!--                                                                              -->
+    <!-- ***************************************************************************/ -->
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="..\sources.props"/>
+
+    <PropertyGroup>
+        <TargetDestination>retail</TargetDestination>
+
+        <XamlPrecompiledShared>..\winrtpch\precomp.h</XamlPrecompiledShared>
+
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\collection\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\CalendarViewBaseItem_Partial.cpp"/>
+        <ClCompile Include="..\CalendarViewItem_Partial.cpp"/>
+        <ClCompile Include="..\CalendarViewDayItem_Partial.cpp"/>
+        <ClCompile Include="..\CalendarViewDayItemChangingEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\CalendarView_Partial.cpp"/>
+        <ClCompile Include="..\CalendarView_Partial_Selection.cpp"/>
+        <ClCompile Include="..\CalendarView_Partial_Interaction.cpp"/>
+        <ClCompile Include="..\CalendarView_Partial_TimeZone.cpp"/>
+        <ClCompile Include="..\CalendarViewGeneratorHost.cpp"/>
+        <ClCompile Include="..\CalendarViewGeneratorHost_DataVirtualization.cpp"/>
+        <ClCompile Include="..\CalendarViewGeneratorMonthViewHost.cpp"/>
+        <ClCompile Include="..\CalendarViewGeneratorMonthViewHost_ContainerPhase.cpp"/>
+        <ClCompile Include="..\CalendarViewGeneratorYearViewHost.cpp"/>
+        <ClCompile Include="..\CalendarViewGeneratorDecadeViewHost.cpp"/>
+        <ClCompile Include="..\CalendarPanel_Partial.cpp"/>
+        <ClCompile Include="..\InternalStringCollection.cpp"/>
+        <ClCompile Include="..\TrackableDateCollection.cpp"/>
+        <ClCompile Include="..\CalendarDatePicker_Partial.cpp"/>
+        <ClCompile Include="..\CalendarDatePickerDateChangedEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\Hub_Partial.cpp"/>
+        <ClCompile Include="..\Hub_Partial_DesktopOnly.cpp"/>
+        <ClCompile Include="..\HubSection_Partial.cpp"/>
+        <ClCompile Include="..\HubSection_Partial_DesktopOnly.cpp"/>
+        <ClCompile Include="..\HubSectionCollection_Partial.cpp"/>
+        <ClCompile Include="..\Selector_Partial.cpp"/>
+        <ClCompile Include="..\Selection.cpp"/>
+        <ClCompile Include="..\SelectorItem_Partial.cpp"/>
+        <ClCompile Include="..\ListBox_Partial.cpp"/>
+        <ClCompile Include="..\ListBoxItem_Partial.cpp"/>
+        <ClCompile Include="..\ComboBox_Partial.cpp"/>
+        <ClCompile Include="..\ComboBoxLightDismiss_Partial.cpp"/>
+        <ClCompile Include="..\ComboBoxItem_Partial.cpp"/>
+        <ClCompile Include="..\GroupItem_Partial.cpp"/>
+        <ClCompile Include="..\GroupStyle_Partial.cpp"/>
+        <ClCompile Include="..\UserControl_Partial.cpp"/>
+        <ClCompile Include="..\Panel_Partial.cpp"/>
+        <ClCompile Include="..\StackPanel_Partial.cpp"/>
+        <ClCompile Include="..\VirtualizingPanel_Partial.cpp"/>
+        <ClCompile Include="..\OrientedVirtualizingPanel_Partial.cpp"/>
+        <ClCompile Include="..\VirtualizingStackPanel_Partial.cpp"/>
+        <ClCompile Include="..\VariableSizedWrapGrid_Partial.cpp"/>
+        <ClCompile Include="..\VariableSizedWrapGrid_OccupancyMap.cpp"/>
+        <ClCompile Include="..\BuildTreeService_Partial.cpp"/>
+        <ClCompile Include="..\BudgetManager_Partial.cpp"/>
+        <ClCompile Include="..\ModernCollectionBasePanel_Partial.cpp"/>
+        <ClCompile Include="..\ModernCollectionBasePanel_IICM_Partial.cpp"/>
+        <ClCompile Include="..\ModernCollectionBasePanel_IICG2_Partial.cpp"/>
+        <ClCompile Include="..\ModernCollectionBasePanel_ICTCP_Partial.cpp"/>
+        <ClCompile Include="..\ModernCollectionBasePanel_IItemsLookupAndIPaginatedPanel.cpp"/>
+        <ClCompile Include="..\ModernCollectionBasePanel_SnapPoints.cpp"/>
+        <ClCompile Include="..\ItemsWrapGrid_Partial.cpp"/>
+        <ClCompile Include="..\ItemsStackPanel_Partial.cpp"/>
+        <ClCompile Include="..\ModernCollectionBasePanel_WindowManagement_Partial.cpp"/>
+        <ClCompile Include="..\ModernCollectionBasePanel_ViewportManagement_Partial.cpp"/>
+        <ClCompile Include="..\ModernCollectionBasePanel_ContainerMapper_Partial.cpp"/>
+        <ClCompile Include="..\ModernCollectionBasePanel_CacheManager_Partial.cpp"/>
+        <ClCompile Include="..\ModernCollectionBasePanel_LayoutDataInfoProvider.cpp"/>
+        <ClCompile Include="..\ModernCollectionBasePanel_CollectionIterator_Partial.cpp"/>
+        <ClCompile Include="..\ModernCollectionBasePanel_Interaction_Partial.cpp"/>
+        <ClCompile Include="..\ModernCollectionBasePanel_StickyHeaders.cpp"/>
+        <ClCompile Include="..\ModernCollectionBasePanel_ContainerContentChangingIterator.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <BuildClientcore>1</BuildClientcore>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\dxaml\idl\com\microsoft.ui.xaml-com.vcxproj" Project="{a1eb01c3-ac8b-45a8-97c8-c459b77ed690}"/>
+        <ProjectReference Include="$(XamlDiagPath)\idl\xamlom.vcxproj" Project="{c6e1e90c-ee33-4352-a8de-067b013c7cc9}"/>
+        <ProjectReference Include="..\winrtpch\wrtdxamlpch.vcxproj" Project="{845d8296-bec7-4e97-8da9-db26a3a6d8c9}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

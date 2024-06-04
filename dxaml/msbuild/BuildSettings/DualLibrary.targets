@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <!-- LibCompiled is set if we are a Static Libary (LinkCompiled if Dynamic Library) so override it to force -->
+    <!-- MSBuild to output a lib as well.                                                                       -->
+    <PropertyGroup>
+        <LibCompiled>true</LibCompiled>
+    </PropertyGroup>
+
+    <!-- By default the output name is is the project target, which for a dynamic library will be .dll.         -->
+    <!-- Explicitly set the output file to get around this.                                                     -->
+    <ItemDefinitionGroup>
+        <Lib>
+            <OutputFile>$(OutDir)$(MSBuildProjectName).lib</OutputFile>
+            <ModuleDefinitionFile>%(Link.ModuleDefinitionFile)</ModuleDefinitionFile>
+        </Lib>
+    </ItemDefinitionGroup>
+
+    <!-- The DoLibOutputFilesMatch target will verify that the output files are valid for the binary being      -->
+    <!-- produced (which .lib isn't for a dynamic library), so we will redefine this task so that it doesn't    -->
+    <!-- execute.  Note: It actually checks more stuff than just the extension, but all that other stuff is     -->
+    <!-- also check in DoLinkOutputFilesMatch, so the only check that is actually supressed here is whether     -->
+    <!-- we can produce a .lib in a dynamic library project.                                                    -->
+    <Target Name="DoLibOutputFilesMatch" Condition="'@(Lib)' != ''"/>
+</Project>

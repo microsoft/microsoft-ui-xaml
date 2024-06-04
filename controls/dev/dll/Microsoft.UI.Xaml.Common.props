@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <RunCodeAnalysisOnce></RunCodeAnalysisOnce>
+    <RunCodeAnalysis></RunCodeAnalysis>
+    <RunCodeAnalysisOnThisProject></RunCodeAnalysisOnThisProject>
+    <RunCppAnalysis></RunCppAnalysis>
+    <RunMsvcAnalysis></RunMsvcAnalysis>
+    <_ClExternalIncludesSupported></_ClExternalIncludesSupported>
+
+    <IsWinmdProject>true</IsWinmdProject>
+    <MergeWinMd>false</MergeWinMd>
+    <DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(environment.props))" />
+  <PropertyGroup>
+    <SdkPlatform Condition="'$(Platform)' == 'Win32'">x86</SdkPlatform>
+    <SdkPlatform Condition="'$(Platform)' != 'Win32'">$(Platform)</SdkPlatform>
+  </PropertyGroup>
+  <Import Project="$(MUXCProjectRoot)FeatureAreas.props" />
+  <Import Project="$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="$(NuGetPackageRoot)\Microsoft.SourceLink.GitHub.1.1.1\build\Microsoft.SourceLink.GitHub.props" Condition="Exists('$(NuGetPackageRoot)\Microsoft.SourceLink.GitHub.1.1.1\build\Microsoft.SourceLink.GitHub.props')" />
+  <Import Project="$(NuGetPackageRoot)\Microsoft.SourceLink.Common.1.1.1\build\Microsoft.SourceLink.Common.props" Condition="Exists('$(NuGetPackageRoot)\Microsoft.SourceLink.Common.1.1.1\build\Microsoft.SourceLink.Common.props')" />
+  <Import Project="$(NuGetPackageRoot)\Microsoft.Build.Tasks.Git.1.1.1\build\Microsoft.Build.Tasks.Git.props" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Build.Tasks.Git.1.1.1\build\Microsoft.Build.Tasks.Git.props')" />
+  <Import Project="$(MUXCProjectRoot)mux.controls.props" Condition="Exists('$(MUXCProjectRoot)mux.controls.props')" />
+  <Import Project="$(MUXCProjectRoot)ProjectConfigurations.props" />
+  <Import Project="$(MUXCProjectRoot)version.props" />
+  <Import Project="$(MUXCProjectRoot)CppWinRT.props" />
+  <Import Project="$(MUXCProjectRoot)HybridCRT.props" />
+  <PropertyGroup>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <AppContainerApplication>true</AppContainerApplication>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+    <!-- Use 64-bit compilers because 32-bit compilers run out of heap space -->
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+    <ScriptPath>..\..\tools\</ScriptPath>
+    <ForceMuiRes>true</ForceMuiRes>
+    <Use64BitLinker>true</Use64BitLinker>
+    <!--
+      XBF is no longer embedded to improve F5 times but we need it embedded for the Nuget package PRI file. We turn it on from the command line so that devs
+      can build their own local debug packages as well as for the official Nuget package creation run in CI
+    -->
+    <DisableEmbeddedXbf Condition="'$(BuildingInsideVisualStudio)' != 'true'">false</DisableEmbeddedXbf>
+    <AppxBundlePlatforms>x86|x64|ARM64</AppxBundlePlatforms>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Page>
+      <Type>Undefined</Type>
+      <Priority>Undefined</Priority>
+      <RequireInsiderSDK>false</RequireInsiderSDK>
+    </Page>
+  </ItemDefinitionGroup>
+</Project>

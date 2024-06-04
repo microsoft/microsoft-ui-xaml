@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- We put a version of Directory.Build.props here so projects in this folder ignore the Directory.Build.props a folder up in the directory tree. -->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)..\..\BuildOutput\obj\Tools\$(Configuration)\</BaseOutputPath>
+    <OutDir>$(BaseOutputPath)\$(Platform)\</OutDir>
+    <OutputPath>$(OutDir)$(MSBuildProjectName)\</OutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)..\..\BuildOutput\obj\Tools\$(Configuration)\$(Platform)\$(MSBuildProjectName)\Intermediates\</BaseIntermediateOutputPath>
+    <IntDir>$(BaseIntermediateOutputPath)</IntDir>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
+    <GeneratedFilesDir>$(BaseIntermediateOutputPath)Generated Files\</GeneratedFilesDir>
+    <GenerateProjectSpecificOutputFolder>True</GenerateProjectSpecificOutputFolder>
+  </PropertyGroup>
+</Project>

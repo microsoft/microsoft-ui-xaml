@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <Target Name="SanityCheckNativeOrManaged">
+        <Error Text="A project can only be native or managed but both were specified!" Condition="'$(NativeCode)'=='true' And '$(ManagedCode)'=='true'"/>
+    </Target>
+
+    <Import Project="$(XamlSourcePath)\Xaml.Cpp.targets" Condition="'$(NativeCode)'=='true'" />
+    <Import Project="$(XamlBuildSettingsPath)\Microsoft.UI.Xaml.Build.CSharp.targets" Condition="'$(ManagedCode)'=='true'" />
+
+    <Import Project="$(XamlBuildSettingsPath)\Microsoft.UI.Xaml.Build.Custom.targets" />
+
+    <Target Name="PreCompilePass" BeforeTargets="Midl;Build" />
+    <Target Name="CompilePass" DependsOnTargets="PreCompilePass" AfterTargets="Midl" />
+    <Target Name="PostCompilePass" DependsOnTargets="CompilePass" AfterTargets="Build" />
+
+    <Target Name="DisplayXamlConfigurationMessages" BeforeTargets="PlatformPrepareForBuild" Condition="'@(XamlConfigurationMessage)'!=''">
+        <Message Text="%(XamlConfigurationMessage.Identity)"/>
+    </Target>
+
+    <PropertyGroup>
+        <MIDLWrapperExePath>$(XamlBinaryPath)\tools\midlwrapper\midlwrapper.exe</MIDLWrapperExePath>
+    </PropertyGroup>
+
+    <!-- MIDLToolExe and MIDLToolPath are special properties picked up by the MIDL target,
+         so they have to be specified for MSBuild to pick up our MIDL wrapper. -->
+    <PropertyGroup Condition="'$(UseMidlWrapper)'=='true' and Exists('$(MIDLWrapperExePath)')">
+        <MIDLToolExe>$([System.IO.Path]::GetFileName('$(MIDLWrapperExePath)'))</MIDLToolExe>
+        <MIDLToolPath>$([System.IO.Path]::GetDirectoryName('$(MIDLWrapperExePath)'))</MIDLToolPath>
+    </PropertyGroup>
+
+    <Target Name="BuildMidlWrapper" BeforeTargets="MIDL" Condition="'$(UseMidlWrapper)'=='true' and !Exists('$(MIDLWrapperExePath)')">
+        <Message Text="Build MIDL wrapper"/>
+        <MSBuild Projects="$(RepoRoot)\tools\midlwrapper\midlwrapper.sln"/>
+        <Warning Condition="!Exists('$(MIDLWrapperExePath)')" Text="Error building MIDLWrapper"/>
+        <PropertyGroup Condition="Exists('$(MIDLWrapperExePath)')">
+            <MIDLToolExe>$([System.IO.Path]::GetFileName('$(MIDLWrapperExePath)'))</MIDLToolExe>
+            <MIDLToolPath>$([System.IO.Path]::GetDirectoryName('$(MIDLWrapperExePath)'))</MIDLToolPath>
+        </PropertyGroup>
+    </Target>
+
+    <Target Name="RemoveTaefRedistBinaries" BeforeTargets="_CopyFilesMarkedCopyLocal">
+        <ItemGroup>
+            <ReferenceCopyLocalPaths Remove="$(TaefPkgDirectory)\build\Binaries\$(PlatformTarget)\**\*.*"/>
+        </ItemGroup>
+    </Target>
+
+    <Import Project="msbuild\BuildSettings\SkipProjectBuild.targets" Condition="('$(BuildTestCode)'=='false' and '$(TestCode)'!='') or ('$(SkipProject)'=='true' and '$(BuildAll)'!='true')" />
+</Project>

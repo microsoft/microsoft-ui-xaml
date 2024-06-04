@@ -1,0 +1,46 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="MetadataCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#include "precomp.h"
+#include "Indexes.g.h"
+
+// Returns the number of slots (number of properties, including inherited properties from ancestors) a type has.
+XUINT8 GetTypeSlotCount(_In_ KnownTypeIndex nTypeIndex)
+{
+    switch (nTypeIndex)
+    {
+<# foreach (var type in Model.GetAllTypeTableClassesWithSlottedProperties()) { #>
+        case <#= type.IndexName #>: return <#= type.GetSlottedProperties().Count() #>;
+<# } #>
+    }
+
+    // We should never reach this.
+    ASSERT(FALSE);
+    return 0;
+}
+
+// Returns the slot number of a property for a given type.
+XUINT8 GetPropertySlot(_In_ KnownTypeIndex nTypeIndex, _In_ KnownPropertyIndex nPropertyIndex)
+{
+    switch (nTypeIndex)
+    {
+<# foreach (var type in Model.GetAllTypeTableClassesWithSlottedProperties()) { #>
+        case <#= type.IndexName #>:
+            switch (nPropertyIndex)
+            {
+<#     foreach (var property in type.GetSlottedProperties()) { #>
+                case <#= property.IndexName #>: return <#= property.GetSlotFor(type) #>;
+<#     } #>
+            }
+<# } #>
+    }
+
+    // We should never reach this.
+    ASSERT(FALSE);
+    return 0;
+}

@@ -1,0 +1,18 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#include "precomp.h"
+#include "EnumValueTable.h"
+
+<# foreach (var type in Model.GetTypeTableEnums()) { #>
+_Check_return_ HRESULT <#= type.CoreName #>::Create(_Outptr_ CDependencyObject** ppObject, _In_ CREATEPARAMETERS* pCreate)
+{
+    return CreateEnumerateHelper(ppObject, pCreate, ARRAY_SIZE(<#= type.ValueTableArrayName #>), <#= type.ValueTableArrayName #>, <#= type.IndexName #>, /* IsFlagsEnumeration */ <#= AsCppBoolean(type.XamlEnumFlags.AreValuesFlags) #>);
+}
+
+<# } #>

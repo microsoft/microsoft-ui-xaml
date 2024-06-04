@@ -1,0 +1,51 @@
+﻿namespace MU_XM_NAMESPACE
+{
+
+[MUX_PREVIEW]
+[webhosthidden]
+enum RevealBrushState
+{
+    Normal = 0,
+    PointerOver = 1,
+    Pressed = 2,
+};
+
+[MUX_PREVIEW]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass RevealBrush : Microsoft.UI.Xaml.Media.XamlCompositionBrushBase
+{
+    protected RevealBrush();
+
+    [MUX_DEFAULT_VALUE("RevealBrush::sc_defaultColor")]
+    Windows.UI.Color Color { get; set; };
+    [MUX_DEFAULT_VALUE("winrt::ApplicationTheme::Light")]
+    Microsoft.UI.Xaml.ApplicationTheme TargetTheme { get; set; };
+    Boolean AlwaysUseFallback { get; set; };
+
+    static Microsoft.UI.Xaml.DependencyProperty ColorProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty TargetThemeProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty AlwaysUseFallbackProperty { get; };
+    [MUX_DEFAULT_VALUE("winrt::RevealBrushState::Normal")]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnStatePropertyChanged")]
+    static Microsoft.UI.Xaml.DependencyProperty StateProperty { get; };
+    static void SetState(Microsoft.UI.Xaml.UIElement element, RevealBrushState value);
+    static RevealBrushState GetState(Microsoft.UI.Xaml.UIElement element);
+}
+
+[MUX_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass RevealBorderBrush : RevealBrush
+{
+    RevealBorderBrush();
+}
+
+[MUX_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass RevealBackgroundBrush : RevealBrush
+{
+    RevealBackgroundBrush();
+}
+
+}

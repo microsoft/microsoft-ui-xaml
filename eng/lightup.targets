@@ -1,0 +1,59 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project>
+
+  <!-- Unless compiling for light-up scenarios, disable implicit referencing of 
+    target platform SDK metadata for Xaml Compiler and C++/WinRT compiler,
+    instead using contract metadata for 17763 (WinAppSDK downlevel limit). -->
+  <PropertyGroup Condition="'$(XamlLightup)'!='true'">
+    <TargetPlatformWinMDLocation></TargetPlatformWinMDLocation>
+    <ReferenceDownlevelContractMetadata Condition="'$(ReferenceDownlevelContractMetadata)'=='' and ('$(ImplicitlyExpandTargetPlatform)'=='true' or '$(CppWinRTImplicitlyExpandTargetPlatform)'=='true')">true</ReferenceDownlevelContractMetadata>
+    <ImplicitlyExpandTargetPlatform>false</ImplicitlyExpandTargetPlatform>
+    <CppWinRTImplicitlyExpandTargetPlatform>false</CppWinRTImplicitlyExpandTargetPlatform>
+    <ResolveReferencesDependsOn>
+      $(ResolveReferencesDependsOn);
+      ReferenceDownlevelContractMetadata
+    </ResolveReferencesDependsOn>
+  </PropertyGroup>
+
+  <Target Name="ReferenceDownlevelContractMetadata" Condition="'$(ReferenceDownlevelContractMetadata)'=='true'">
+
+    <ItemGroup>
+      <_ContractWinMDs Remove="@(_ContractWinMDs)" />
+      <_ContractWinMDs Include="$(ContractMetadataPath)\**\*.winmd">
+        <WinMDFile>true</WinMDFile>
+        <CopyLocal>false</CopyLocal>
+        <ReferenceGrouping>$(TargetPlatformMoniker)</ReferenceGrouping>
+        <ReferenceGroupingDisplayName>$(TargetPlatformDisplayName)</ReferenceGroupingDisplayName>
+        <ResolvedFrom>ReferenceDownlevelContractMetadata</ResolvedFrom>
+        <IsSystemReference>True</IsSystemReference>
+      </_ContractWinMDs>
+    </ItemGroup>
+
+    <Warning Condition="'@(_ContractWinMDs)' == ''"
+      Text="Could not find Microsoft.Windows.SDK.Contracts metadata for version $(MicrosoftWindowsSDKContractsVersion)"/>
+
+    <Message Importance="Low" Text="Including @(_ContractWinMDs)" />
+
+    <ItemGroup>
+      <ReferencePath Include="@(_ContractWinMDs)" />
+      <_ResolveAssemblyReferenceResolvedFiles Include="@(_ContractWinMDs)" />
+    </ItemGroup>
+
+  </Target>
+
+  <!-- Non-lightup: Remove latest platform SDK winmds and replace with downlevel contract winmds -->
+  <Target Name="AfterPrepareForReferenceResolution" Condition="'$(WinMDAssembly)'=='true' and '$(XamlLightup)'!='true'" AfterTargets="_PrepareForReferenceResolution">
+
+    <ItemGroup>
+      <Reference Remove="@(Reference->WithMetadataValue('IsWinMDFile', 'true')->WithMetadataValue('IsSystemReference', 'true'))" />
+      <Reference Include="$(ContractMetadataPath)\**\*Contract.winmd">
+        <IsWinMDFile>true</IsWinMDFile>
+        <CopyLocal>false</CopyLocal>
+        <IsSystemReference>True</IsSystemReference>
+        <Implicit>true</Implicit>
+      </Reference>
+    </ItemGroup>
+
+  </Target>
+
+</Project>

@@ -1,0 +1,144 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="ModernIdlCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#include "sdkddkver.h"
+<#if (VelocityFeatures.ContextHasVelocityFeature(Model)) { #>
+#include <FeatureFlags.h>
+<# } #>
+
+import "oaidl.idl";
+import "eventtoken.idl";
+<# foreach (var import in Model.GetIdlFileNameImports()) { #>
+import "<#= import #>";
+<# } #>
+<# //TODO 22728412 - use the Imported attribute on the type model to import the public version of IDLs instead of the private IDLs, so we don't need to hardcode them below #>
+
+import "windows.applicationModel.datatransfer.dragdrop.idl";
+import "windows.applicationModel.datatransfer.dragdrop.core.idl";
+import "windows.foundation.customattributes.idl";
+import "windows.ui.xaml.interop.idl";
+
+<# if (UndefGetCurrentTime) { #>
+cpp_quote("#pragma push_macro(\"GetCurrentTime\")")
+cpp_quote("#undef GetCurrentTime")
+<# } #>
+
+<# foreach (var ns in Model.Namespaces) { #>
+<#   if (ns.Contracts.Any()) { #>
+namespace <#= ns.Name #>
+{
+<#     foreach (var contract in ns.Contracts) { #>
+    <#    IncludeTemplate<Contract>(contract); #>
+
+<#     } #>
+}
+<#   } #>
+<# } #>
+
+<# foreach (var ns in Model.Namespaces) { #>
+<#   if (ns.Enums.Any()) { #>
+namespace <#= ns.Name #>
+{
+<#     foreach (var e in ns.Enums) { #>
+<# this.EnsureEnumValues(e); #>
+
+<#	     if (!e.IdlTypeInfo.ExcludeFromLiftedCodegen) { #>
+    <#  IncludeTemplate<Enum>(e); #>
+<#       } #>
+
+<#     } #>
+}
+<#   } #>
+<# } #>
+
+<# foreach (var ns in Model.Namespaces) { #>
+<#   if (ns.ValueTypes.Any()) { #>
+namespace <#= ns.Name #>
+{
+<#     foreach (var type in ns.ValueTypes) { #>
+
+<#	     if (!type.IdlTypeInfo.ExcludeFromLiftedCodegen) { #>
+    <#   IncludeTemplate<Struct>(type); #>
+<#       } #>
+
+<#     } #>
+}
+<#   } #>
+<# } #>
+
+<# if (Model.GetAllEnums().Any() || (null == Model.IdlGroupName && Model.GetAllForwarDeclaredEventHandlers().Any()) || Model.GetDeclares().Any()) { #>
+namespace <#= DefaultIdlNamespace #>
+{
+    declare
+    {
+<#     foreach (var type in Model.GetAllEnums().OrderBy(e => e.DeclaringNamespace.Name)) { #>
+        interface Windows.Foundation.IReference<<#= type.IdlTypeInfo.FullName #>>;
+<#     } #>
+<#     if (null == Model.IdlGroupName) {
+           foreach (var type in Model.GetAllForwarDeclaredEventHandlers().OrderBy(e => e.AbiImplementationFullName))
+           {
+               if (OMContextView.IdlForwardDeclaredTypes.Add(type.Type)) {
+                   if (type.Type.IsGenericType) { #>
+        interface Windows.Foundation.IReference<<#= type.AbiImplementationFullName.Replace(">", "*>*").Replace(", ", "*, ") #>>;
+<#                 } else { #>
+        interface Windows.Foundation.IReference<<#= type.AbiImplementationFullName #>>;
+<#                 }
+               }
+           }
+       } #>
+<#     foreach (var type in Model.GetDeclares()) { #>
+        interface <#= type.IdlInfo.GenericFullName #>;
+<#     } #>
+    }
+}
+<# } #>
+
+<# foreach (var ns in Model.Namespaces) { #>
+<#   if (ns.Attributes.Any() || ns.Delegates.Any()) { #>
+namespace <#= ns.Name #>
+{
+<#     foreach (var type in ns.Attributes.Where(a => !a.IdlTypeInfo.IsExcluded)) { #>
+<#	     if (!type.IdlTypeInfo.ExcludeFromLiftedCodegen) { #>
+    <#   IncludeTemplate<Attribute>(type); #>
+
+<#		 } #>
+<#		} #>
+
+<#     foreach (var type in ns.Delegates.Where(d => !d.IdlTypeInfo.IsExcluded)) { #>
+<#	     if (!type.IdlTypeInfo.ExcludeFromLiftedCodegen) { #>
+    <#   IncludeTemplate<Delegate>(type); #>
+<#       } #>
+
+
+<#     } #>
+}
+<#   } #>
+<# } #>
+
+<# foreach (var ns in Model.Namespaces) { #>
+<#   if (ns.NonGenericReferenceClasses.Any()) { #>
+namespace <#= ns.Name #>
+{
+<#     foreach (var type in ns.NonGenericReferenceClasses.OrderByIdlHierarchy()) { #>
+<#	     if (!type.IdlTypeInfo.ExcludeFromLiftedCodegen) { #>
+<#			if (type.IsInterface) { #>
+    <#=    IncludeTemplate<Interface>(type) #>
+
+<#			} else { #>
+    <#=    IncludeTemplate<Class>(type) #>
+
+<#			} #>
+<#       } #>
+<#     } #>
+}
+<#  } #>
+<# } #>
+
+<# if (UndefGetCurrentTime) { #>
+cpp_quote("#pragma pop_macro(\"GetCurrentTime\")")
+<# } #>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+  <!-- Well-known target for initializing SourceRevisionId to include in InformationalVersion
+        (see Microsoft.Common.CurrentVersion.targets) -->
+  <Target Name="InitializeSourceControlInformation">
+    <Exec Command="git rev-parse HEAD" ConsoleToMsBuild="True">
+      <Output TaskParameter="ConsoleOutput" PropertyName="SourceRevisionId" />
+    </Exec>
+  </Target>
+</Project>

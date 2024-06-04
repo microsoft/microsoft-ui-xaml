@@ -1,0 +1,95 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project>
+  <!--
+    This file contains common properties related to the configuration of the build and projects
+  -->
+  <PropertyGroup>
+    <!-- Set default values for platform/configuration in case they weren't passed into msbuild -->
+    <Configuration Condition="'$(Configuration)' == '' and '$(_BuildType)' == 'chk'">Debug</Configuration>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+
+    <!-- MUXC projects have the configuration Debug_test -->
+    <Configuration Condition="'$(Configuration)' == 'Debug_test'">Debug</Configuration>
+
+    <Platform Condition="'$(Platform)' == '' and '$(_BuildArch)' == 'x86'">Win32</Platform>
+    <Platform Condition="'$(Platform)' == '' and '$(_BuildArch)' == 'amd64'">x64</Platform>
+    <Platform Condition="'$(Platform)' == ''">$(_BuildArch)</Platform>
+
+    <!-- 
+      TODO: A lot of this logic needs to be revisited - we shouldn't rely on environment variables being set because if you open
+      VS from the same command line they will be inherited as well. There is also a lot of duplication of concepts here, but they
+      each seem to do something a little different
+    -->
+    <!-- If we are being run from a command line, see if we have environment variables set to determine our configuration -->
+    <DefaultProjectConfiguration Condition=" ('$(chk)' != '' or '$(fre)' == '') and '$(DefaultProjectConfiguration)' == '' ">Debug</DefaultProjectConfiguration>
+    <DefaultProjectConfiguration Condition=" '$(fre)' != '' and '$(DefaultProjectConfiguration)' == '' ">Release</DefaultProjectConfiguration>
+    <DefaultProjectPlatform Condition=" ('$(x86)' != '' or '$(amd64)' == '') and '$(DefaultProjectPlatform)' == '' ">Win32</DefaultProjectPlatform>
+    <DefaultProjectPlatform Condition=" '$(amd64)' != '' and '$(DefaultProjectPlatform)' == '' ">x64</DefaultProjectPlatform>
+    <NoOptimization Condition='$(BUILD_NO_OPT)==1'>true</NoOptimization>
+
+  </PropertyGroup>
+
+  <!--
+    MUXOutputPlatform/Configuration are used for normalizing folder paths so that x86/Win32/x64 projects all go to the same location.
+    
+    This causes confusion for amd64 since the platform is x64 (and we call init.cmd with x64), but the build output goes to
+    the amd64 directory for MUX, so we need two separate properties.
+
+    Similarly VC++ expects/requires 'ARM' and 'ARM64' platforms to be upper case, but for consistency we want
+    the output directory to be lower case.
+    
+    This should be revisited.
+  -->
+  <PropertyGroup Condition="'$(MUXOutputPlatform)' == ''">
+    <MUXOutputPlatform Condition="'$(Platform)' != 'AnyCPU'">$(Platform)</MUXOutputPlatform>
+    <MUXOutputPlatform Condition="'$(Platform)' == 'Win32'">x86</MUXOutputPlatform>
+    <MUXOutputPlatform Condition="'$(Platform)' == 'x64'">amd64</MUXOutputPlatform>
+    <MUXOutputPlatform Condition="'$(Platform)' == 'ARM64'">arm64</MUXOutputPlatform>
+    <MUXOutputPlatform Condition="'$(Platform)' == 'AnyCPU'">$(_BuildArch)</MUXOutputPlatform>
+    <MUXOutputPlatform Condition="'$(MUXOutputPlatform)' == ''">$(_BuildArch)</MUXOutputPlatform>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MUXOutputConfiguration)' == ''">
+    <MUXOutputConfiguration Condition="('$(Configuration)' == 'Debug' or '$(Configuration)' == 'Debug_test' or '$(Configuration)' == '')">chk</MUXOutputConfiguration>
+    <MUXOutputConfiguration Condition="'$(Configuration)' == 'Release'">fre</MUXOutputConfiguration>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PlatformToUse Condition="'$(Platform)' != '' and '$(Platform)' != 'AnyCPU'">$(Platform)</PlatformToUse>
+    <PlatformToUse Condition="'$(PlatformToUse)' == ''">$(DefaultProjectPlatform)</PlatformToUse>
+
+    <ConfigurationToUse Condition="'$(Configuration)' != ''">$(Configuration)</ConfigurationToUse>
+    <ConfigurationToUse Condition="'$(Configuration)' == ''">$(DefaultProjectConfiguration)</ConfigurationToUse>
+
+    <arch Condition="'$(PlatformToUse)' == 'Win32' Or '$(PlatformToUse)' == 'x86'">x86</arch>
+    <arch Condition="'$(PlatformToUse)' == 'x64'">amd64</arch>
+    <arch Condition="'$(PlatformToUse)' == 'ARM64'">ARM64</arch>
+    <flavor Condition="'$(ConfigurationToUse)' == 'Debug'">chk</flavor>
+    <flavor Condition="'$(ConfigurationToUse)' == 'Release'">fre</flavor>
+    <DebugType>Full</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PlatformToolSet Condition="'$(VisualStudioVersion)'>='16.0'">v142</PlatformToolSet>
+    <PlatformToolSet Condition="'$(VisualStudioVersion)'>='17.0'">v143</PlatformToolSet>
+    <PlatformToolSet Condition="'$(PlatformToolSet)'==''">v141</PlatformToolSet>
+  </PropertyGroup>
+
+  <ItemGroup Label="ProjectConfigurations" Condition="'$(IsWinmdProject)' == 'true'">
+    <ProjectConfiguration Include="Debug|AnyCPU" />
+    <ProjectConfiguration Include="Release|AnyCPU" />
+  </ItemGroup>
+  
+  <PropertyGroup Condition="'$(UseDebugLibraries)' == ''">
+    <UseDebugLibraries Condition="'$(Configuration)' == 'Debug'">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="'$(Configuration)' == 'Release'">false</UseDebugLibraries>
+    
+    <!-- LinkIncremental - set by default with UseDebugLibraries - is incompatible with /debugtype:cv -->
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Ignore the NETSDK1152 we get when building an app with .NET 6 installed -->
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+</Project>

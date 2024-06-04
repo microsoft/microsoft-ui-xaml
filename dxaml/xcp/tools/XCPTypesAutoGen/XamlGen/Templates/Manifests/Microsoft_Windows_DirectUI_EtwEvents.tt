@@ -1,0 +1,15 @@
+<#@ template language="C#" linePragmas="false" inherits="XamlCodeGenerator<OMContextView>"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<instrumentation
+    xmlns:win="http://manifests.microsoft.com/win/2004/08/windows/events"
+    >
+  <events xmlns="http://schemas.microsoft.com/win/2004/08/events">
+<#= File.ReadAllText(Arguments[0] as string) #>
+<#= File.ReadAllText(Arguments[1] as string) #>
+  </events>
+</instrumentation>
+<#= File.ReadAllText(Arguments[2] as string) #>

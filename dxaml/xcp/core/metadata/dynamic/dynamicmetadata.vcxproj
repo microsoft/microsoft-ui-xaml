@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{3c27adda-177e-4da8-bb12-546633922531}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+
+    <Import Project="$(XcpPath)\core\common.props"/>
+
+    <PropertyGroup>
+        <XamlPrecompiledInclude>precomp.h</XamlPrecompiledInclude>
+        <XamlPrecompiledPch>precomp.pch</XamlPrecompiledPch>
+        <XamlPrecompiledObj>precomp.obj</XamlPrecompiledObj>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="precomp.h"/>
+
+        <ClCompile Include="..\Activators.g.cpp"/>
+        <ClCompile Include="..\DynamicMetadata.g.cpp"/>
+        <ClCompile Include="..\SimplePropertiesCommon.g.cpp"/>
+        <ClCompile Include="..\ReflectionAPI.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) WIN32_LEAN_AND_MEAN=1;WINRT_LEAN_AND_MEAN;_OLE32_;</ProjectPreprocessorDefinitions>
+
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpObjPath)\dxaml\idl\winrt;
+            $(XcpObjPath)\dxaml\idl\com;
+            $(XcpPath)\dxaml\lib;
+            $(XcpPath)\dxaml\lib\winrtgeneratedclasses;
+            $(XAML_DIAG_PATH)\inc;
+            $(XAML_DIAG_PATH)\idl;
+            $(XAML_DIAG_OBJ_PATH)\idl;
+            $(XcpPath);
+            $(XcpPath)\inc;
+            $(XcpPath)\core\parser;
+            $(XcpPath)\components\ExtMetadataProvider\inc;
+            $(XcpPath)\pal\inc;
+            $(XcpPath)\core\inc;
+            $(XcpPath)\core\controls\generated;
+            $(XcpPath)\core\sw;
+            $(XcpPath)\components\allocation\inc;
+            $(XcpPath)\components\base\inc;
+            $(XcpPath)\components\comptree\inc;
+            $(XcpPath)\components\brushes\inc;
+            $(XcpPath)\components\controls\lightdismissoverlay\inc;
+            $(XcpPath)\components\controls\inputValidation\inc;
+            $(XcpPath)\components\focus\inc;
+            $(XcpPath)\components\math\inc;
+            $(XcpPath)\components\moco\inc;
+            $(XcpPath)\components\transforms\inc;
+            $(XcpPath)\components\Telemetry\inc;
+            $(XcpPath)\components\experimental\inc;
+            $(XcpPath)\components\inputValidation\inc;
+            $(XcpPath)\components\WindowChrome\inc;
+            $(XcpPath)\core\compositor;
+            $(XcpPath)\core\hw;
+            $(XcpPath)\core\native\text\Controls;
+            $(XcpPath)\core\native\inc;
+            $(XcpPath)\pal\win\inc;
+            $(XcpPath)\control\inc;
+            $(XcpPath)\win\inc;
+            $(XcpPath)\control\common\Shared;
+            $(XcpPath)\core\text\inc;
+            $(XcpPath)\core\text\richtextservices\inc;
+            $(XcpPath)\plat\win\desktop;
+            $(XcpPath)\components\controls\keydownup\inc;
+            $(XcpPath)\components\itemindexrangehelper\inc;
+            $(XcpPath)\components\criticalsection\inc;
+            $(XcpPath)\components\qualifiers\inc;
+            $(XcpPath)\components\visualstateshelper\inc;
+            $(XcpPath)\components\livereorderhelper\inc;
+            $(XcpPath)\components\themeanimationshelper\inc;
+            $(XcpPath)\components\xboxutility\inc;
+            $(XcpPath)\components\desktoputility\inc;
+            $(XcpPath)\core\native\text\Controls;
+            $(XcpPath)\components\valueboxer\inc;
+            $(XcpPath)\components\AccessKeys\inc;
+            $(XcpPath)\components\diagnosticsInterop\inc;
+            $(XcpPath)\core\imaging\imagingprovider;
+            $(XcpPath)\components\KeyboardAccelerator\inc;
+            $(ModernInternalSdkIncludePathL);
+            $(XamlSourcePath)\phone\inc;
+            $(FrameworkUdkIncPath);
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\dxaml\idl\com\microsoft.ui.xaml-com.vcxproj" Project="{a1eb01c3-ac8b-45a8-97c8-c459b77ed690}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

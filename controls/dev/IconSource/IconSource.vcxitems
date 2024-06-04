@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{19ffff77-4814-4ad6-acd7-42c6a50ab0d8}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);ICONSOURCE_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\AnimatedIconSource.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ImageIconSource.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedIconSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ImageIconSource.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedIconSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ImageIconSource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)IconSource.idl" />
+  </ItemGroup>
+</Project>

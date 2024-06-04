@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{7C60C2AE-6ABC-4762-A0EF-1F50CDD0BA1E}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);MAPCONTROL_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MapControl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MapHelpers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MapLayer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MapElement.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MapElementClickEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MapControlMapServiceErrorOccurredEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MapElementsLayer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MapIcon.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\MapControl.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\MapElementsLayer.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\MapIcon.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MapControl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MapLayer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MapElement.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MapElementClickEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MapControlMapServiceErrorOccurredEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MapElementsLayer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)MapIcon.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)map.html" DeploymentContent="True" Link="Assets\%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)MapControl.xaml">
+      <Type>DefaultStyle</Type>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)MapControl.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageContent Include="$(MSBuildThisFileDirectory)map.html" PackageLocation="$(NativeAssemblyPackageLocation)\Microsoft.UI.Xaml\Assets" />
+  </ItemGroup>
+</Project>

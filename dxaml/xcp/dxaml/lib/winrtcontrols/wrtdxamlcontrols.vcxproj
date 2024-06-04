@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{1ff2008d-a3ae-4601-8f01-f4fd23c4fb88}</ProjectGuid>
+    </PropertyGroup>
+
+    <!-- ******************************** File Header ******************************\ -->
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved.                   -->
+    <!--                                                                              -->
+    <!-- Project specific SOURCES file.                                               -->
+    <!--                                                                              -->
+    <!-- ***************************************************************************/ -->
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="..\sources.props"/>
+
+    <PropertyGroup>
+        <TargetDestination>retail</TargetDestination>
+
+        <XamlPrecompiledShared>..\winrtpch\precomp.h</XamlPrecompiledShared>
+
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(FrameworkUdkIncPath);
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\KeyboardAccelerator\inc;
+            $(XcpPath)\components\input\inc;
+            $(XcpPath)\components\transforms\inc;
+            $(XcpPhoneObjPath)\idl;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\AppBarLightDismiss_Partial.cpp"/>
+        <ClCompile Include="..\AppBar_Partial.cpp"/>
+        <ClCompile Include="..\BringIntoViewOptions_Partial.cpp"/>
+        <ClCompile Include="..\CommandBar_Partial.cpp"/>
+        <ClCompile Include="..\CommandBarOverflowPresenter_Partial.cpp"/>
+        <ClCompile Include="..\ApplicationBarService_Partial.cpp"/>
+        <ClCompile Include="..\AppBarButton_Partial.cpp"/>
+        <ClCompile Include="..\AppBarToggleButton_Partial.cpp"/>
+        <ClCompile Include="..\AppBarSeparator_Partial.cpp"/>
+        <ClCompile Include="..\SymbolIcon_Partial.cpp"/>
+        <ClCompile Include="..\Flyout_Partial.cpp"/>
+        <ClCompile Include="..\FlyoutBase_Partial.cpp"/>
+        <ClCompile Include="..\FlyoutMetadata.cpp"/>
+        <ClCompile Include="..\FlyoutPresenter_Partial.cpp"/>
+        <ClCompile Include="..\FlipView_Partial.cpp"/>
+        <ClCompile Include="..\FlipViewItem_Partial.cpp"/>
+        <ClCompile Include="..\MenuFlyout_Partial.cpp"/>
+        <ClCompile Include="..\MenuFlyoutItem_Partial.cpp"/>
+        <ClCompile Include="..\MenuFlyoutItemBase_Partial.cpp"/>
+        <ClCompile Include="..\MenuFlyoutItemBaseCollection_Partial.cpp"/>
+        <ClCompile Include="..\MenuFlyoutPresenter_Partial.cpp"/>
+        <ClCompile Include="..\ToggleMenuFlyoutItem_Partial.cpp"/>
+        <ClCompile Include="..\MenuFlyoutSubItem_Partial.cpp"/>
+        <ClCompile Include="..\ContentControl_Partial.cpp"/>
+        <ClCompile Include="..\Control_Partial.cpp"/>
+        <ClCompile Include="..\ContentPresenter_Partial.cpp"/>
+        <ClCompile Include="..\DatePicker_Partial.cpp"/>
+        <ClCompile Include="..\Button_Partial.cpp"/>
+        <ClCompile Include="..\ButtonBase_Partial.cpp"/>
+        <ClCompile Include="..\CheckBox_Partial.cpp"/>
+        <ClCompile Include="..\HyperlinkButton_Partial.cpp"/>
+        <ClCompile Include="..\Popup_Partial.cpp"/>
+        <ClCompile Include="..\PopupRoot_Partial.cpp"/>
+        <ClCompile Include="..\RangeBase_Partial.cpp"/>
+        <ClCompile Include="..\RepeatButton_Partial.cpp"/>
+        <ClCompile Include="..\TextBox_Partial.cpp"/>
+        <ClCompile Include="..\PasswordBox_Partial.cpp"/>
+        <ClCompile Include="..\RichEditBox_Partial.cpp"/>
+        <ClCompile Include="..\TextBoxView_Partial.cpp"/>
+        <ClCompile Include="..\ToggleButton_Partial.cpp"/>
+        <ClCompile Include="..\LayoutTransition_partial.cpp"/>
+        <ClCompile Include="..\StaggerFunctionBase_Partial.cpp"/>
+        <ClCompile Include="..\Thumb_Partial.cpp"/>
+        <ClCompile Include="..\Transform_Partial.cpp"/>
+        <ClCompile Include="..\InternalTransform_Partial.cpp"/>
+        <ClCompile Include="..\RadioButton_Partial.cpp"/>
+        <ClCompile Include="..\Slider_Partial.cpp"/>
+        <ClCompile Include="..\TimelineTimer.cpp"/>
+        <ClCompile Include="..\TimePicker_Partial.cpp"/>
+        <ClCompile Include="..\Storyboard_Partial.cpp"/>
+        <ClCompile Include="..\ScrollContentPresenter_Partial.cpp"/>
+        <ClCompile Include="..\ScrollViewer_Partial.cpp"/>
+        <ClCompile Include="..\RootScrollViewer_Partial.cpp"/>
+        <ClCompile Include="..\ScrollData.cpp"/>
+        <ClCompile Include="..\ScrollBar_Partial.cpp"/>
+        <ClCompile Include="..\ItemsPresenter_Partial.cpp"/>
+        <ClCompile Include="..\ItemsPresenter_IManipulationDataProvider.cpp"/>
+        <ClCompile Include="..\ItemsPresenter_IScrollInfo.cpp"/>
+        <ClCompile Include="..\ItemsPresenter_ISnapPointsInfo.cpp"/>
+        <ClCompile Include="..\ItemsPresenter_IScrollOwner.cpp"/>
+        <ClCompile Include="..\ItemsControl_Partial.cpp"/>
+        <ClCompile Include="..\ItemCollection_Partial.cpp"/>
+        <ClCompile Include="..\ItemContainerGenerator_Partial.cpp"/>
+        <ClCompile Include="..\DragStartedEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\DragDeltaEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\DragCompletedEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\SelectionChangedEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\FullWindowMediaRoot_Partial.cpp"/>
+        <ClCompile Include="..\TextBoxPlaceholderTextHelper.cpp"/>
+        <ClCompile Include="..\CalendarLayoutStrategy_Partial.cpp"/>
+        <ClCompile Include="..\WrappingLayoutStrategy_Partial.cpp"/>
+        <ClCompile Include="..\StackingLayoutStrategy_Partial.cpp"/>
+        <ClCompile Include="..\ContextMenuEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\ElevationHelper.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <BuildClientcore>1</BuildClientcore>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\dxaml\idl\com\microsoft.ui.xaml-com.vcxproj" Project="{a1eb01c3-ac8b-45a8-97c8-c459b77ed690}"/>
+        <ProjectReference Include="$(XamlDiagPath)\idl\xamlom.vcxproj" Project="{c6e1e90c-ee33-4352-a8de-067b013c7cc9}"/>
+        <ProjectReference Include="$(XcpPhonePath)\idl\phone.vcxproj" Project="{84d22d7d-5fd0-4ccf-b8d2-c34506c6ba66}"/>
+        <ProjectReference Include="..\winrtpch\wrtdxamlpch.vcxproj" Project="{845d8296-bec7-4e97-8da9-db26a3a6d8c9}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

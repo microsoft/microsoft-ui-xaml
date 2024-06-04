@@ -1,0 +1,25 @@
+﻿namespace MU_XAP_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass TreeViewListAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.ListViewAutomationPeer
+{
+    [method_name("CreateInstanceWithOwner")] TreeViewListAutomationPeer(MU_XC_NAMESPACE.TreeViewList owner);
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass TreeViewItemAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.ListViewItemAutomationPeer, Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
+{
+    [method_name("CreateInstanceWithOwner")] TreeViewItemAutomationPeer(MU_XC_NAMESPACE.TreeViewItem owner);
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass TreeViewItemDataAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.ItemAutomationPeer, Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
+{
+    [method_name("CreateInstanceWithOwner")] TreeViewItemDataAutomationPeer(IInspectable item, MU_XAP_NAMESPACE.TreeViewListAutomationPeer parent);
+}
+
+}

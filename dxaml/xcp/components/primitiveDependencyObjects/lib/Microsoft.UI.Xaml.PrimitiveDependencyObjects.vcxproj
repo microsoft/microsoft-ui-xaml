@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{4baf458d-df02-4f8c-bb5a-97ceeb30027c}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\common.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\colors\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\CColor.cpp"/>
+        <ClCompile Include="..\CornerRadius.cpp"/>
+        <ClCompile Include="..\CString.cpp"/>
+        <ClCompile Include="..\Double.cpp"/>
+        <ClCompile Include="..\GridLength.cpp"/>
+        <ClCompile Include="..\Point.cpp"/>
+        <ClCompile Include="..\primitives.cpp"/>
+        <ClCompile Include="..\PropertyPath.cpp"/>
+        <ClCompile Include="..\Rect.cpp"/>
+        <ClCompile Include="..\Size.cpp"/>
+        <ClCompile Include="..\TextRange.cpp"/>
+        <ClCompile Include="..\Thickness.cpp"/>
+        <ClCompile Include="..\Type.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\prod\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{ccc61973-be99-4223-b935-353d03571e92}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

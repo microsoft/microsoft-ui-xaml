@@ -1,0 +1,23 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<PropertyDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+    HRESULT hr = S_OK;
+    <#= IncludeTemplate<CheckAPICall>(Model) #>
+<# if (Model.PropertyType.IdlInfo.Type.IsStringType) { #>
+    IFC(<#= Model.FrameworkFieldName #>.Set(<#= Model.PropertyType.AbiParameterName #>));
+<# } else if (Model.PropertyType.Type.IsTypeNameType) { #>
+    IFC(CValueBoxer::CopyValue(<#= Model.PropertyType.AbiParameterName #>, <#= Model.FrameworkFieldName #>.ReleaseAndGetAddressOf()));
+<# } else if (Model.PropertyType.IsValueType) { #>
+    IFC(CValueBoxer::CopyValue(<#= Model.PropertyType.AbiParameterName #>, &<#= Model.FrameworkFieldName #>));
+<# } else if (Model.XamlPropertyFlags.UseComPtr) { #>
+    <#= Model.FrameworkFieldName #> = <#= Model.PropertyType.AbiParameterName #>;
+<# } else { #>
+    SetPtrValue(<#= Model.FrameworkFieldName #>, <#= Model.PropertyType.AbiParameterName #>);
+<# }
+   if (!Model.AllowCrossThreadAccess || !Model.XamlPropertyFlags.UseComPtr) { #>
+Cleanup:
+<# } #>
+    RRETURN(hr);

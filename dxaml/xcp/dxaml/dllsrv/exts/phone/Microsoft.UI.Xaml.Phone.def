@@ -1,0 +1,16 @@
+;;
+;; Copyright (c) Microsoft Corporation.  All rights reserved.
+;;
+
+LIBRARY Microsoft.UI.Xaml.Phone.dll
+
+EXPORTS
+    DllGetActivationFactory         PRIVATE
+    DllCanUnloadNow                 PRIVATE
+    DllGetClassObject               PRIVATE
+    XamlControlsGetDatePickerSelection           PRIVATE
+    XamlControlsGetTimePickerSelection           PRIVATE
+    XamlControlsGetListPickerSelection           PRIVATE
+    XamlControlsTestHookCreateLoopingSelector    PRIVATE
+    XamlTestHookFreePhoneResourceLibrary         PRIVATE
+    SendTelemetryOnSuspend                       PRIVATE

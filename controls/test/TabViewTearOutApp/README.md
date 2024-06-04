@@ -1,0 +1,3 @@
+# Tab Tear-Out Test App
+
+A key scenario for tab tear-out is having XAML in an island that hosts the tab view - for example, that's the scenario in the case of File Explorer.  As such, we should make sure that that scenario is working properly.  This test app provides an example of that scenario, and will enable us to catch issues there before they bubble up to the larger WinAppSDK and to consumers thereof.

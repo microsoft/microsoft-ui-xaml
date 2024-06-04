@@ -1,0 +1,236 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.WebView2CoreObjectsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid>
+        <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="5,5,155,-315">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal" Margin="0,5,15,5">
+                        <TextBlock Text="Test Name:" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="TestNameComboBox" AutomationProperties.AutomationId="TestNameComboBox" SelectionChanged="TestNameComboBox_SelectionChanged" VerticalAlignment="Center">
+                            <ComboBox.Items>
+                                <ComboBoxItem AutomationProperties.Name="BasicCoreObjectCreationAndDestructionTest">BasicCoreObjectCreationAndDestructionTest</ComboBoxItem>
+                                <ComboBoxItem AutomationProperties.Name="ConcurrentCreationRequestsTest">ConcurrentCreationRequestsTest</ComboBoxItem>
+                                <ComboBoxItem AutomationProperties.Name="EdgeProcessFailedTest">EdgeProcessFailedTest</ComboBoxItem>
+                            </ComboBox.Items>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,15,0">
+                        <TextBlock Text="Test Result:    " FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <TextBox x:Name="TestResult" AutomationProperties.AutomationId="TestResult" IsReadOnly="true" Width="200" VerticalAlignment="Center"/>
+                    </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,15,0">
+                    <TextBox x:Name="CleanupResultTextBox" AutomationProperties.AutomationId="CleanupResultTextBox" IsReadOnly="true" Width="200" VerticalAlignment="Center"/>
+                    <Button x:Name="CleanupTestButton" AutomationProperties.AutomationId="CleanupTest" Content="Clean up Test" Click="CleanupCurrentTest" Margin="0,0,5,0"/>
+                </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,15,0">
+                        <TextBlock Text="Message Log:    " FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <TextBox x:Name="MessageLog" AutomationProperties.AutomationId="MessageLog" IsReadOnly="true" Width="200" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,5">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,15,0">
+                        <TextBlock Text="Status1:" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <TextBox x:Name="Status1" AutomationProperties.AutomationId="Status1" Width="200" Visibility="Visible" Background="#66C71F1F" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,15,0">
+                        <TextBlock Text="Status2:" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <TextBox x:Name="Status2" AutomationProperties.AutomationId="Status2" Width="200" Visibility="Visible" Background="#66C71F1F" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,15,0">
+                        <TextBlock Text="Status3:" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <TextBox x:Name="Status3" AutomationProperties.AutomationId="Status3" Width="200" Visibility="Visible" Background="#66C71F1F" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,15,0">
+                        <TextBlock Text="Event Detail:" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <TextBox x:Name="EventDetail" AutomationProperties.AutomationId="EventDetail" Width="200" Visibility="Visible" Background="#66C71F1F" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+                <ScrollViewer x:Name="EventCountersScrollviewer" HorizontalAlignment="Left" Width="800">
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,5" HorizontalAlignment="Left">
+                        <Button x:Name="ResetCounts_Button" AutomationProperties.AutomationId="ResetCounts_Button" Content="Reset" Click="OnResetCounts_ButtonClicked" Margin="1"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                            <TextBlock Text="CWV2Ready" Width="70" FontStyle="Italic" FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center" TextAlignment="Center"/>
+                            <TextBox x:Name="CoreWebView2InitializedCount" AutomationProperties.AutomationId="CoreWebView2InitializedCount" Width="10" Visibility="Visible" Background="#66C71F1F" VerticalAlignment="Center" IsReadOnly="true"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                            <TextBlock FontFamily="Arial" FontStyle="Italic" FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center" TextAlignment="Center">
+                                <Run Text="EnsureCWV2" Foreground="Black"/>
+                                <LineBreak/>
+                                <Run Text="Completion"/>
+                            </TextBlock>
+                            <TextBox x:Name="EnsureCoreWebView2CompletionCount" AutomationProperties.AutomationId="EnsureCoreWebView2CompletionCount" Width="10" Visibility="Visible" Background="#66C71F1F" VerticalAlignment="Center" IsReadOnly="true"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                            <TextBlock FontFamily="Arial" FontStyle="Italic" FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center" TextAlignment="Center">
+                                <Run Text="Navigation" Foreground="Black"/>
+                                <LineBreak/>
+                                <Run Text="Starting"/>
+                            </TextBlock>
+                            <TextBox x:Name="NavigationStartingCount" AutomationProperties.AutomationId="NavigationStartingCount" Width="10" Visibility="Visible" Background="#66C71F1F" VerticalAlignment="Center" IsReadOnly="true"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                            <TextBlock FontFamily="Arial" FontStyle="Italic" FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center" TextAlignment="Center">
+                                <Run Text="Navigation" Foreground="Black"/>
+                                <LineBreak/>
+                                <Run Text="Completed"/>
+                            </TextBlock>
+                            <TextBox x:Name="NavigationCompletedCount" AutomationProperties.AutomationId="NavigationCompletedCount" Width="10" Visibility="Visible" Background="#66C71F1F" VerticalAlignment="Center" IsReadOnly="true"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                            <TextBlock Text="Loaded" FontStyle="Italic" FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center" TextAlignment="Center"/>
+                            <TextBox x:Name="LoadedCount" AutomationProperties.AutomationId="LoadedCount" Width="10" Visibility="Visible" Background="#66C71F1F" VerticalAlignment="Center" IsReadOnly="true"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                            <TextBlock Text="Unloaded" FontStyle="Italic" FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center" TextAlignment="Center"/>
+                            <TextBox x:Name="UnloadedCount" AutomationProperties.AutomationId="UnloadedCount" Width="10" Visibility="Visible" Background="#66C71F1F" VerticalAlignment="Center" IsReadOnly="true"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                            <TextBlock Text="RO_E_CLOSED" FontStyle="Italic" FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center" TextAlignment="Center"/>
+                            <TextBox x:Name="ClosedExceptionCount" AutomationProperties.AutomationId="ClosedExceptionCount" Width="10" Visibility="Visible" Background="#66C71F1F" VerticalAlignment="Center" IsReadOnly="true"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                            <TextBlock Text="CoreProcessFailed" FontStyle="Italic" FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center" TextAlignment="Center"/>
+                            <TextBox x:Name="CoreProcessFailedCount" AutomationProperties.AutomationId="CoreProcessFailedCount" Width="10" Visibility="Visible" Background="#66C71F1F" VerticalAlignment="Center" IsReadOnly="true"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+                <ScrollViewer x:Name="TestContentScrollViewer" Width="650" Height="550" HorizontalAlignment="Left">
+                    <Border BorderBrush="Black" BorderThickness="2" HorizontalAlignment="Left">
+                        <Border.Resources>
+                            <Style TargetType="Button">
+                                <Setter Property="FontSize" Value="11"/>
+                                <Setter Property="Height" Value="25"/>
+                            </Style>
+                        </Border.Resources>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="290"/>
+                                <ColumnDefinition Width="350"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="40"/>
+                                <RowDefinition Height="150"/>
+                                <RowDefinition Height="150"/>
+                                <RowDefinition Height="150"/>
+                                <RowDefinition Height="150"/>
+                                <RowDefinition Height="150"/>
+                            </Grid.RowDefinitions>
+                            <Border BorderBrush="Gray" BorderThickness="1" Margin="3" HorizontalAlignment="Stretch">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                    <TextBlock Text="Custom URI:" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                    <TextBox x:Name="CustomSource_UriTextBox" AutomationProperties.AutomationId="CustomSource_UriTextBox" Width="160" Margin="4,0,4,0" Text="http://www.bing.com/"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="1" Margin="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock Text="Offline Creation (Preload)" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="Create_OfflineElement_Button" AutomationProperties.AutomationId="Create_OfflineElement_Button" Content="Create Offline WV2" Click="OnCreate_OfflineElement_ButtonClicked" Margin="1" Height="26" Width="85"/>
+                                        <Button x:Name="Add_OfflineElement_Button" AutomationProperties.AutomationId="Add_OfflineElement_Button" Content="Add to tree" Click="OnAdd_OfflineElement_ButtonClicked" Margin="1"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="SetSource_OfflineElement_Button" AutomationProperties.AutomationId="SetSource_OfflineElement_Button" Content="Set Source" Click="OnSetSource_OfflineElement_ButtonClicked" Margin="1"/>
+                                        <Button x:Name="EnsureCoreWebView2_OfflineElement_Button" AutomationProperties.AutomationId="EnsureCoreWebView2_OfflineElement_Button" Content="EnsureCoreWebView2()" Click="OnEnsureCoreWebView2_OfflineElement_ButtonClicked" Margin="1"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="Remove_OfflineElement_Button" AutomationProperties.AutomationId="Remove_OfflineElement_Button" Content="Remove" Click="OnRemove_OfflineElement_ButtonClicked" Margin="1"/>
+                                        <Button x:Name="ReleaseReference_OfflineElement_Button" AutomationProperties.AutomationId="ReleaseReference_OfflineElement_Button" Content="Release Ref" Click="OnReleaseReference_OfflineElement_ButtonClicked" Margin="1"/>
+                                        <Button x:Name="Close_OfflineElement_Button" AutomationProperties.AutomationId="Close_OfflineElement_Button" Content="Close" Click="OnClose_OfflineElement_ButtonClicked" Margin="1"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="SetCustomSource_OfflineElement_Button" AutomationProperties.AutomationId="SetCustomSource_OfflineElement_Button" Content="Set Custom Source" Click="OnSetCustomSource_OfflineElement_ButtonClicked" Margin="1"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Row="2" BorderBrush="Gray" BorderThickness="1" Margin="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock Text="Live (in-tree) Creation" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                    <Button x:Name="Create_LiveElement_Button" AutomationProperties.AutomationId="Create_LiveElement_Button" Content="Create Live WV2" Click="OnCreate_LiveElement_ButtonClicked" Margin="1"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="SetSource_LiveElement_Button" AutomationProperties.AutomationId="SetSource_LiveElement_Button" Content="Set Source" Click="OnSetSource_LiveElement_ButtonClicked" Margin="1"/>
+                                        <Button x:Name="EnsureCoreWebView2_LiveElement_Button" AutomationProperties.AutomationId="EnsureCoreWebView2_LiveElement_Button" Content="EnsureCoreWebView2()" Click="OnEnsureCoreWebView2_LiveElement_ButtonClicked" Margin="1"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="Remove_LiveElement_Button" AutomationProperties.AutomationId="Remove_LiveElement_Button" Content="Remove" Click="OnRemove_LiveElement_ButtonClicked" Margin="1"/>
+                                        <Button x:Name="ReleaseReference_LiveElement_Button" AutomationProperties.AutomationId="ReleaseReference_LiveElement_Button" Content="Release Ref" Click="OnReleaseReference_LiveElement_ButtonClicked" Margin="1"/>
+                                        <Button x:Name="Close_LiveElement_Button" AutomationProperties.AutomationId="Close_LiveElement_Button" Content="Close" Click="OnClose_LiveElement_ButtonClicked" Margin="1"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="SetCustomSource_LiveElement_Button" AutomationProperties.AutomationId="SetCustomSource_LiveElement_Button" Content="Set Custom Source" Click="OnSetCustomSource_LiveElement_ButtonClicked" Margin="1"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Row="3" BorderBrush="Gray" BorderThickness="1" Margin="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock Text="Markup-based Creation" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Create WV2 With Markup:" FontStyle="Italic" Height="22" FontSize="13" Foreground="Black" Margin="0,0,10, 0" HorizontalAlignment="Left"/>
+                                        <Button x:Name="Create_MarkupElement_Blank_Button" AutomationProperties.AutomationId="Create_MarkupElement_Blank_Button" Content="Blank" Click="OnCreate_MarkupElement_Blank_ButtonClicked" Margin="1"/>
+                                        <Button x:Name="Create_MarkupElement_Source_Button" AutomationProperties.AutomationId="Create_MarkupElement_Source_Button" Content="Source" Click="OnCreate_MarkupElement_Source_ButtonClicked" Margin="1"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="SetSource_MarkupElement_Button" AutomationProperties.AutomationId="SetSource_MarkupElement_Button" Content="Set Source" Click="OnSetSource_MarkupElement_ButtonClicked" Margin="1"/>
+                                        <Button x:Name="EnsureCoreWebView2_MarkupElement_Button" AutomationProperties.AutomationId="EnsureCoreWebView2_MarkupElement_Button" Content="EnsureCoreWebView2()" Click="OnEnsureCoreWebView2_MarkupElement_ButtonClicked" Margin="1"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="Remove_MarkupElement_Button" AutomationProperties.AutomationId="Remove_MarkupElement_Button" Content="Remove" Click="OnRemove_MarkupElement_ButtonClicked" Margin="1"/>
+                                        <Button x:Name="Close_MarkupElement_Button" AutomationProperties.AutomationId="Close_MarkupElement_Button" Content="Close" Click="OnClose_MarkupElement_ButtonClicked" Margin="1"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="SetCustomSource_MarkupElement_Button" AutomationProperties.AutomationId="SetCustomSource_MarkupElement_Button" Content="Set Custom Source" Click="OnSetCustomSource_MarkupElement_ButtonClicked" Margin="1"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Row="4" BorderBrush="Gray" BorderThickness="1" Margin="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock Text="Concurrent Creation" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                    <Button x:Name="Create_ConcurrentCreationElement_Button" AutomationProperties.AutomationId="Create_ConcurrentCreationElement_Button" Content="Create WV2" Click="OnCreate_ConcurrentCreationElement_ButtonClicked" Margin="1"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="Source_Source_Button" AutomationProperties.AutomationId="Source_Source_Button" Content="Source, Source" Click="OnSource_Source_ButtonClicked" Margin="1"/>
+                                        <Button x:Name="Source_Ensure_Button" AutomationProperties.AutomationId="Source_Ensure_Button" Content="Source, EnsureCWV2" Click="OnSource_Ensure_ButtonClicked" Margin="1"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="Ensure_Source_Button" AutomationProperties.AutomationId="Ensure_Source_Button" Content="EnsureCWV2, Source" Click="OnEnsure_Source_ButtonClicked" Margin="1"/>
+                                        <Button x:Name="Ensure_Ensure_Button" AutomationProperties.AutomationId="Ensure_Ensure_Button" Content="EnsureCWV2, EnsureCWV2" Click="OnEnsure_Ensure_ButtonClicked" Margin="1"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="Remove_ConcurrentCreationElement_Button" AutomationProperties.AutomationId="Remove_ConcurrentCreationElement_Button" Content="Remove" Click="OnRemove_ConcurrentCreationElement_ButtonClicked" Margin="1"/>
+                                        <Button x:Name="Close_ConcurrentCreationElement_Button" AutomationProperties.AutomationId="Close_ConcurrentCreationElement_Button" Content="Close" Click="OnClose_ConcurrentCreationElement_ButtonClicked" Margin="1"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Row="5" BorderBrush="Gray" BorderThickness="1" Margin="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock Text="CoreProcessFailed" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                    <Button x:Name="Create_CoreProcessFailed_Button" AutomationProperties.AutomationId="Create_CoreProcessFailed_Button" Content="Create WV2" Click="OnCreate_CoreProcessFailed_ButtonClicked" Margin="1"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="Bad_Source_Browser_Button" AutomationProperties.AutomationId="Bad_Source_Browser_Button" Content="Set Bad Source (Browser)" Click="OnBad_Source_Browser_ButtonClicked" Margin="1"/>
+                                        <Button x:Name="Bad_Source_Render_Button" AutomationProperties.AutomationId="Bad_Source_Render_Button" Content="Set Bad Source (Render)" Click="OnBad_Source_Render_ButtonClicked" Margin="1"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="Good_Source_Button" AutomationProperties.AutomationId="Good_Source_Button" Content="Set Good Source" Click="OnGood_Source_ButtonClicked" Margin="1"/>
+                                        <Button x:Name="Reload_Button" AutomationProperties.AutomationId="Reload_Button" Content="Reload" Click="OnReloadButtonClicked" Margin="1"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                            <Border x:Name="WebView2_Container1" Grid.Row="1" Grid.Column="1" Width="200" Height="130" BorderBrush="Blue" BorderThickness="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                            <Border x:Name="WebView2_Container2" Grid.Row="2" Grid.Column="1" Width="200" Height="130" BorderBrush="Blue" BorderThickness="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                            <Border x:Name="WebView2_Container3" Grid.Row="3" Grid.Column="1" Width="200" Height="130" BorderBrush="Blue" BorderThickness="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                            <Border x:Name="WebView2_Container4" Grid.Row="4" Grid.Column="1" Width="200" Height="130" BorderBrush="Blue" BorderThickness="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                            <Border x:Name="WebView2_Container5" Grid.Row="5" Grid.Column="1" Width="200" Height="130" BorderBrush="Blue" BorderThickness="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                        </Grid>
+                    </Border>
+                </ScrollViewer>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</local:TestPage>

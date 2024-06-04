@@ -1,0 +1,25 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project>
+  <!--
+    For unpackaged test apps, we don't need to run the PrepareForRun targets, because they will try to generate an appxmanifest
+    and run validation of the package, which fails. Since we can't conditionally declare a Target, we reset $(PrepareForRunDependsOn),
+    which determines what is executed during the PrepareForRun target.
+  -->
+    <PropertyGroup>
+      <PrepareForRunDependsOn Condition="'$(UnpackagedWinUITestApp)'=='true'">
+        CopyFilesToOutputDirectory;
+        AddBinplaceItems
+      </PrepareForRunDependsOn>
+    </PropertyGroup>
+
+    <!-- By default, build (but don't restore) all Release 64-bit .NET7+ managed tests and samples with PublishAot (which does not support x86 or WPF). -->
+    <PropertyGroup Condition="'$(PublishAot)' == '' and 
+        '$(Configuration)' == 'Release' and '$(ExcludeRestorePackageImports)' != 'true' and
+        ('$(Platform)' == 'x64' or '$(Platform)' == 'arm64') and '$(UseWpf)' != 'true' and 
+        $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">
+        <PublishAot>true</PublishAot>
+        <IsAotCompatible>true</IsAotCompatible>
+        <IsTrimmable>true</IsTrimmable>
+    </PropertyGroup>
+      
+</Project>

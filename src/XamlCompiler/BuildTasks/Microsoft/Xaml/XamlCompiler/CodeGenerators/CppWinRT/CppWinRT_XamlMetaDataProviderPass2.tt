@@ -1,0 +1,5 @@
+﻿<#@ template language="C#" inherits="CppWinRT_CodeGenerator<TypeInfoDefinition>" visibility="internal" linePragmas="false"#>
+<#@ assembly name="System.Core" #>
+<#  if(!String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { #>
+#include "<#=ProjectInfo.PrecompiledHeaderFile#>"
+<#  }#>

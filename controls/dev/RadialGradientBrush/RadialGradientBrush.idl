@@ -1,0 +1,50 @@
+﻿namespace MU_XM_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+[contentproperty("GradientStops")]
+unsealed runtimeclass RadialGradientBrush : Microsoft.UI.Xaml.Media.XamlCompositionBrushBase
+{
+    RadialGradientBrush();
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::Point(0.5,0.5)")]
+    Windows.Foundation.Point Center { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("0.5")]
+    Double RadiusX { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("0.5")]
+    Double RadiusY { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::Point(0.5,0.5)")]
+    Windows.Foundation.Point GradientOrigin { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::BrushMappingMode::RelativeToBoundingBox")]
+    Microsoft.UI.Xaml.Media.BrushMappingMode MappingMode { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::Microsoft::UI::Composition::CompositionColorSpace::Auto")]
+    Microsoft.UI.Composition.CompositionColorSpace InterpolationSpace { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::GradientSpreadMethod::Pad")]
+    Microsoft.UI.Xaml.Media.GradientSpreadMethod SpreadMethod { get; set; };
+
+    Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Media.GradientStop> GradientStops { get; };
+
+    static Microsoft.UI.Xaml.DependencyProperty CenterProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty RadiusXProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty RadiusYProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty GradientOriginProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty InterpolationSpaceProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty MappingModeProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty SpreadMethodProperty { get; };
+}
+
+}

@@ -1,0 +1,34 @@
+<#@ template language="C#" linePragmas="false" inherits="PhoneCppCodeGenerator<OMContextView>" debug="true"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#include "precomp.h"
+
+<# foreach (var ns in Model.Namespaces) {
+        var classes = ns.ReferenceClasses.Where(c => c.GeneratePartialClass && !c.IsInterface ).OrderBy(t => t.Name); 
+        if (classes.Count() > 0) { #>
+#if DBG
+<#          foreach (var c in classes.Where(t => t.IsADependencyObject)) { #>
+const LPCWSTR <#= c.Name #>RuntimeClass::s_typeName = L"<#= c.Name #>";
+<#          } #>
+#endif
+
+<#= AsCppNamespaceDeclarationBegin(ns) #>
+{
+<#          foreach (var c in classes) { #>
+
+<#= IncludeTemplate<Class>(c) #>
+<#              if (c.IdlClassInfo.HasAnyFactoryInterfaces || c.HasStaticMembers) {#>
+
+<#= IncludeTemplate<Factory>(c) #>
+<#              }
+            } #>
+}
+<#= AsCppNamespaceDeclarationEnd(ns) #>
+
+<#      } #>
+<# } #>

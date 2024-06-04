@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{92e5e794-20b0-46df-b0b8-1c5856cd0a6c}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+
+    <!-- Task 14117377: Remove try/catch dependencies -->
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <ExceptionHandling>Sync</ExceptionHandling>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+    <Import Project="..\sources.props"/>
+
+    <PropertyGroup>
+        <XamlPrecompiledShared>..\pch\precomp.h</XamlPrecompiledShared>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\binaryformatobjectwriter.cpp"/>
+        <ClCompile Include="..\objectwriterruntime.cpp"/>
+        <ClCompile Include="..\xamlnativeruntime.cpp"/>
+        <ClCompile Include="..\xamlmanagedruntime.cpp"/>
+        <ClCompile Include="..\xamlschemacontextruntime.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\Collection\inc;
+            $(XcpPath)\components\math\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\pch\Parser.pch.vcxproj" Project="{1cce739d-864a-4feb-be21-4cfbf758243f}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

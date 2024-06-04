@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <ItemGroup>
+        <ClInclude Include="InlineObjectHandlers.h"/>
+        <ClInclude Include="LineServicesCallbacks.h"/>
+        <ClInclude Include="LsClient.h"/>
+        <ClInclude Include="LsHostContext.h"/>
+        <ClInclude Include="LsParagraphSpan.h"/>
+        <ClInclude Include="LsRun.h"/>
+        <ClInclude Include="LsRunCache.h"/>
+        <ClInclude Include="LsSpan.h"/>
+        <ClInclude Include="LsTextFormatter.h"/>
+        <ClInclude Include="LsTextLine.h"/>
+        <ClInclude Include="LsTextLineBreak.h"/>
+        <ClInclude Include="precomp.h"/>
+        <ClInclude Include="TextAnalysisNode.h"/>
+        <ClInclude Include="TextDpi.h"/>
+        <ClInclude Include="TextItemizer.h"/>
+        <ClInclude Include="TextRunData.h"/>
+        <ClInclude Include="TextSegment.h"/>
+        <ClInclude Include="TextStore.h"/>
+
+        <ClCompile Include="InlineObjectHandlers.cpp"/>
+        <ClCompile Include="lineservicescallbacks.cpp"/>
+        <ClCompile Include="LsClient.cpp"/>
+        <ClCompile Include="LsHostContext.cpp"/>
+        <ClCompile Include="LsParagraphSpan.cpp"/>
+        <ClCompile Include="LsRun.cpp"/>
+        <ClCompile Include="LsRunCache.cpp"/>
+        <ClCompile Include="LsSpan.cpp"/>
+        <ClCompile Include="LsTextFormatter.cpp"/>
+        <ClCompile Include="LsTextLine.cpp"/>
+        <ClCompile Include="LsTextLineBreak.cpp"/>
+        <ClCompile Include="TextCollapsingCharacters.cpp"/>
+        <ClCompile Include="TextFormatter.cpp"/>
+        <ClCompile Include="TextFormatterCache.cpp"/>
+        <ClCompile Include="TextItemizer.cpp"/>
+        <ClCompile Include="TextLine.cpp"/>
+        <ClCompile Include="TextParagraphProperties.cpp"/>
+        <ClCompile Include="TextRun.cpp"/>
+        <ClCompile Include="TextRunCache.cpp"/>
+        <ClCompile Include="TextRunData.cpp"/>
+        <ClCompile Include="TextRunProperties.cpp"/>
+        <ClCompile Include="TextSegment.cpp"/>
+        <ClCompile Include="TextCharactersRun.cpp"/>
+        <ClCompile Include="HiddenRun.cpp"/>
+        <ClCompile Include="ObjectRun.cpp"/>
+        <ClCompile Include="EndOfLineRun.cpp"/>
+        <ClCompile Include="EndOfParagraphRun.cpp"/>
+        <ClCompile Include="DirectionalControlRun.cpp"/>
+        <ClCompile Include="TextStore.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\core\text\richtextservices\unicodedata;
+            $(XcpPath)\core\text\richtextservices\xcp;
+            $(XcpPath)\core\inc;
+            $(XcpPath)\pal\win\inc;
+            $(XcpPath)\win\inc;
+            $(XcpPath)\core\text\Inc;
+            $(XcpPath)\core\text\richtextservices\inc;
+            $(XcpPath)\core\text\richtextservices\inci;
+            $(XcpPath)\core\text\Analysis\inc;
+            $(XcpPath)\core\text\Classification;
+            $(XcpPath)\components\allocation\inc;
+            $(XcpPath)\components\math\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+</Project>

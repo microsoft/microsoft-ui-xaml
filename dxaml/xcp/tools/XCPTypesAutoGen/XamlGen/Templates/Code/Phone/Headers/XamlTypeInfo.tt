@@ -1,0 +1,66 @@
+<#@ template language="C#" linePragmas="false" inherits="PhoneCppCodeGenerator<OMContextView>" debug="true"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#pragma once
+
+<# foreach (var entry in QueryHelper.GetPhoneXamlStrings(Model))
+   { #>
+#define <#= AsResourceKey(entry.Key) #> <#= entry.Value #>
+<# } #>
+
+<# foreach (var t in QueryHelper.GetPhoneXamlTypes(Model))
+   { #>
+#define <#= AsResourceIndex(t.MetadataName) #> <#= t.PhoneTypeTableIndex #>
+<# } #>
+
+#define XamlTypeNameTableSize <#= QueryHelper.GetPhoneXamlTypes(Model).Count() #>
+
+<# int counter = 1;
+   foreach (var t in QueryHelper.GetPhoneXamlUserTypes(Model).Where(t => !t.IsValueType && (t as ClassDefinition)?.IsCreateableFromXAML == true)) { #>
+#define activate_<#= t.TypeTableName #> <#= counter++ #>
+<# } #>
+
+<# int getCount = 1;
+   int setCount = 1;
+   foreach (var p in QueryHelper.GetPhoneXamlUserProperties(Model)) {
+        if (p is AttachedPropertyDefinition) { #>
+#define put_<#= p.DeclaringType.TypeTableName #>_Attached<#= p.Name #> <#= setCount++ #>
+#define get_<#= p.DeclaringType.TypeTableName #>_Attached<#= p.Name #> <#= getCount++ #>
+<#      } else { #>
+
+<#          if (p != null && p.SetterModifier == Modifier.Public) { #>
+#define put_<#= p.DeclaringType.TypeTableName #>_<#= p.Name #> <#= setCount++ #>
+
+<#          } #>
+#define get_<#= p.DeclaringType.TypeTableName #>_<#= p.Name #> <#= getCount++ #>
+<#      }
+   } #>
+
+<# foreach (var m in QueryHelper.GetPhoneXamlUserProperties(Model)) { #>
+#define <#=AsResourcePropertyIndex(m)#> <#=m.PhoneMemberTableIndex #>
+<# } #>
+
+<# counter = 100;
+   foreach (var e in Model.GetAllEnums()) { #>
+#define User<#= e.Name #>EnumValues <#= counter++ #>
+<# } #>
+
+<# counter = 1;
+   foreach (var e in Model.GetAllEnums()) { #>
+#define EnumBoxer_<#= AsCppDefine(e.MetadataFullName) #> <#= counter++ #>
+<# } #>
+
+<# counter = 1;
+   foreach (var e in QueryHelper.GetPhoneXamlUserTypes(Model).Where(t => (t as ClassDefinition)?.IsVector == true) ) { #>
+#define AddToVector_<#= AsCppDefine(e.MetadataFullName) #> <#= counter++ #>
+<# } #>
+
+<# counter = 1;
+   foreach (var e in QueryHelper.GetPhoneXamlUserTypes(Model).Where(t => (t as ClassDefinition)?.IsMap == true) ) { #>
+#define AddToMap_<#= AsCppDefine(e.MetadataFullName) #> <#= counter++ #>
+<# } #>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{52B2ED64-1CFC-401B-8C5B-6D1E1DEADF98}</ProjectGuid>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IncludePrivateMetadata>true</IncludePrivateMetadata>
+    <GenerateWinRTClassRegistration>true</GenerateWinRTClassRegistration>
+    <IncludeIxpExtensions>true</IncludeIxpExtensions>
+    <IncludeMrtExtensions>true</IncludeMrtExtensions>
+  </PropertyGroup>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\dxaml\Xaml.Cpp.props" />
+  <PropertyGroup>
+    <!-- This project binplaces to the test location (since it contains private metadata -->
+    <TargetDestination>$(TestBinplaceDestinationPath)</TargetDestination>
+    <!-- This project produces the same output winmds as the parent, but also includes the private metadata -->
+    <OutputWinmds>
+      $(OutputWinmds);
+      $(MergedWinmdOutputLocation)\Microsoft.UI.Private.winmd;
+    </OutputWinmds>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageContent Include="$(OutDir)LiftedWinRTClassRegistrations.xml">
+      <PackageLocation>$(BuildTargetsPackageLocation)</PackageLocation>
+    </PackageContent>
+  </ItemGroup>
+  <Import Project="$(XamlSourcePath)\Microsoft.UI.Xaml.Build.targets" />
+</Project>

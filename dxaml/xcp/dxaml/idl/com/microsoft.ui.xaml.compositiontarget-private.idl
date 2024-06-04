@@ -1,0 +1,28 @@
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+
+import "oaidl.idl";
+
+cpp_quote("#if (NTDDI_VERSION >= NTDDI_WINTHRESHOLD)")
+
+/// <summary>
+/// Used to suspend Xaml rendering and animations (including animations ticking in the DWM). Does not stop layout in response to
+/// tree changes. Meant for CShell and not for public consumption.
+/// </summary>
+[
+    object,
+    uuid( fbfeda10-12a4-4ac2-86f7-857ea7a22791 ),
+    local,
+    pointer_default(unique)
+]
+interface ICompositionTargetPrivate : IUnknown
+{
+    /// <summary>
+    /// Sets whether or not to suspend rendering.
+    /// </summary>
+    /// <param name="isSuspended">
+    /// BOOLEAN
+    /// </param>
+    HRESULT SuspendRendering([in, annotation("_In_")] BOOLEAN isSuspended);
+};
+
+cpp_quote("#endif // NTDDI_VERSION >= NTDDI_WINTHRESHOLD")

@@ -1,0 +1,37 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<ClassDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#pragma once
+
+<# var dependencies = Model.Dependencies.OfType<ClassDefinition>().Where(d => d.GenerateFrameworkHFile && d.IsInterface).OrderBy(d => d.CppFrameworkGeneratedHeaderFileName);
+   if (dependencies.Count() > 0) {
+        foreach (var dependency in dependencies) { #>
+#include "<#= dependency.CppFrameworkGeneratedHeaderFileName #>"
+<#      }#>
+
+<# }#>
+namespace <#= OMContext.DefaultImplementationNamespace #>
+{
+    interface __declspec(uuid("<#= Model.IdlClassInfo.InterfaceGuid #>")) <#= Model.Name #> : public IInspectable
+    {
+        // Properties.
+<# foreach (var property in Model.InstanceProperties) { #>
+        <#= IncludeTemplate<InterfaceProperty>(property) #>
+<# } #>
+
+        // Events.
+<# foreach (var ev in Model.InstanceEvents.Where(ev => !ev.XamlEventFlags.IsHidden)) { #>
+        <#= IncludeTemplate<InterfaceEvent>(ev) #>
+<# } #>
+
+        // Methods.
+<# foreach (var method in Model.InstanceMethods) { #>
+        <#= IncludeTemplate<InterfaceMethod>(method) #>
+<# } #>
+    };
+}

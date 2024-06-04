@@ -1,0 +1,87 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PUBLIC_V5]
+[webhosthidden]
+enum ItemsViewSelectionMode
+{
+    None = 0,
+    Single = 1,
+    Multiple = 2,
+    Extended = 3,
+};
+
+[MUX_PUBLIC_V5]
+[webhosthidden]
+runtimeclass ItemsViewItemInvokedEventArgs
+{
+    Object InvokedItem{ get; };
+}
+
+[MUX_PUBLIC_V5]
+[default_interface]
+[webhosthidden]
+runtimeclass ItemsViewSelectionChangedEventArgs
+{
+}
+
+[MUX_PUBLIC_V5]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass ItemsView : Microsoft.UI.Xaml.Controls.Control
+{
+    ItemsView();
+
+    Object ItemsSource{ get; set; };
+    ScrollView ScrollView { get; };
+    Microsoft.UI.Xaml.Controls.Primitives.IScrollController VerticalScrollController { get; set; };
+    Microsoft.UI.Xaml.IElementFactory ItemTemplate{ get; set; };
+    Layout Layout{ get; set; };
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsItemInvokedEnabled { get; set; };
+    [MUX_DEFAULT_VALUE("ItemsView::s_defaultSelectionMode")]
+    ItemsViewSelectionMode SelectionMode{ get; set; };
+    ItemCollectionTransitionProvider ItemTransitionProvider{ get; set; };
+    [MUX_DEFAULT_VALUE("-1")]
+    Int32 CurrentItemIndex { get; };
+    Object SelectedItem { get; };
+    Windows.Foundation.Collections.IVectorView<Object> SelectedItems { get; };
+
+    Boolean TryGetItemIndex(Double horizontalViewportRatio, Double verticalViewportRatio, out Int32 index);
+    void StartBringItemIntoView(Int32 index, Microsoft.UI.Xaml.BringIntoViewOptions options);
+    void Select(Int32 itemIndex);
+    void Deselect(Int32 itemIndex);
+    Boolean IsSelected(Int32 itemIndex);
+    void SelectAll();
+    void DeselectAll();
+    void InvertSelection();
+
+    event Windows.Foundation.TypedEventHandler<ItemsView, ItemsViewItemInvokedEventArgs> ItemInvoked;
+    event Windows.Foundation.TypedEventHandler<ItemsView, ItemsViewSelectionChangedEventArgs> SelectionChanged;
+
+    static Microsoft.UI.Xaml.DependencyProperty IsItemInvokedEnabledProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty ItemsSourceProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty ItemTemplateProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty LayoutProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty SelectionModeProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty ItemTransitionProviderProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty CurrentItemIndexProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty SelectedItemProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty ScrollViewProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty VerticalScrollControllerProperty{ get; };
+}
+
+}
+
+namespace MU_XAP_NAMESPACE
+{
+
+[MUX_PUBLIC_V5]
+[webhosthidden]
+unsealed runtimeclass ItemsViewAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer, Microsoft.UI.Xaml.Automation.Provider.ISelectionProvider
+{
+    ItemsViewAutomationPeer(MU_XC_NAMESPACE.ItemsView owner);
+}
+
+}

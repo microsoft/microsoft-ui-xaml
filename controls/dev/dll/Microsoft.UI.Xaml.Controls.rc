@@ -1,0 +1,4 @@
+#include <winresrc.h>
+
+#define VER_INTERNALNAME_STR        "Microsoft.UI.Xaml.Controls.dll"
+#include <WinUIrc.ver>

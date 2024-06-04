@@ -1,0 +1,110 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.BreadcrumbBarPage"
+    x:Name="BreadcrumbTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:local2="using:Breadcrumb_TestUI"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12"
+        RowDefinitions="Auto, *, Auto">
+
+        <StackPanel>
+            <BreadcrumbBarItem />
+
+            <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*" x:Name="BreadcrumbContainerColumn"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Padding="12"
+                    Background="{ThemeResource SystemChromeLowColor}"
+                    MinWidth="250">
+                    <TextBlock Text="BreadcrumbBar control width" Style="{ThemeResource StandardGroupHeader}"/>
+                    <Slider x:Name="WidthSlider" Minimum="100" Maximum="700" Value="700" AutomationProperties.Name="WidthSlider" ValueChanged="WidthSlider_ValueChanged"/>
+
+                    <CheckBox x:Name="RTLCheckbox" AutomationProperties.Name="RightToLeftCheckbox" Content="BreadcrumbBar is RTL" Checked="RTL_Checked" Unchecked="RTL_Unchecked" />
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Last clicked element: " />
+                        <TextBlock x:Name="LastClickedItem" AutomationProperties.Name="LastClickedItem" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Last clicked element index: " />
+                        <TextBlock x:Name="LastClickedItemIndex" AutomationProperties.Name="LastClickedItemIndex" Text="-1" />
+                    </StackPanel>
+                </StackPanel>
+
+                <BreadcrumbBar ItemsSource="{x:Bind breadCrumbList}"
+                    x:Name="BreadcrumbControl"
+                    AutomationProperties.Name="BreadcrumbControl"
+                    ItemClicked="BreadcrumbControl_ItemClicked"
+                    Grid.Column="1">
+                    <BreadcrumbBar.ItemTemplate>
+                        <DataTemplate x:DataType="local2:TreeNode">
+                            <BreadcrumbBarItem Content="{Binding}">
+                                <BreadcrumbBarItem.ContentTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </BreadcrumbBarItem.ContentTemplate>
+                            </BreadcrumbBarItem>
+                        </DataTemplate>
+                    </BreadcrumbBar.ItemTemplate>
+                </BreadcrumbBar>
+
+                <Grid Background="Gray" Grid.Column="2" />
+            </Grid>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1">
+            <ScrollViewer VerticalScrollMode="Auto" HorizontalScrollMode="Disabled" Grid.Row="1">
+                <ItemsRepeater x:Name="ChildrenItemsRepeater"
+                    ItemsSource="{x:Bind currentNodeChildrenList}"
+                    ElementPrepared="Child_ElementPrepared">
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="local2:TreeNode">
+                            <Button Content="{Binding}" Click="ItemsRepeater_ButtonClick">
+                                <Button.ContentTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </Button.ContentTemplate>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </ScrollViewer>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2">
+            <Grid ColumnDefinitions="*, 500px">
+                <BreadcrumbBar ItemsSource="{x:Bind breadCrumbList}"
+                    x:Name="BreadcrumbControl2"
+                    ItemClicked="BreadcrumbControl_ItemClicked">
+                    <BreadcrumbBar.ItemTemplate>
+                        <DataTemplate x:DataType="local2:TreeNode">
+                            <BreadcrumbBarItem
+                                AutomationProperties.Name="{Binding CustomAutomationName}"
+                                AutomationProperties.LocalizedControlType="Custom localized control type for breadcrumb bar item"
+                                Content="{Binding}">
+                                <BreadcrumbBarItem.ContentTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" />
+                                    </DataTemplate>
+                                </BreadcrumbBarItem.ContentTemplate>
+                            </BreadcrumbBarItem>
+                        </DataTemplate>
+                    </BreadcrumbBar.ItemTemplate>
+                </BreadcrumbBar>
+            </Grid>
+        </StackPanel>
+    </Grid>
+</local:TestPage>

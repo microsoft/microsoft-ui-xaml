@@ -1,0 +1,27 @@
+// If this is specified then codegen will not create or register a default activation factory.
+#define MUX_HAS_CUSTOM_FACTORY Microsoft.UI.Xaml.CustomAttributes.MUXHasCustomActivationFactory
+
+// If specified on a property that doesn't have a corresponding "{...}Property" static DependencyProperty 
+// property, a DependencyProperty field will still be generated and registered. The scenario for this is 
+// TemplateSettings objects which don't need public DependencyProperty properties but use TemplateBinding
+// under the covers and TemplateBinding understands the DP registration and will use it.
+#define MUX_PROPERTY_NEEDS_DP_FIELD Microsoft.UI.Xaml.CustomAttributes.MUXPropertyNeedsDependencyPropertyField
+
+// Whether the property (or, if specified on the type, all properties) should have a OnPropertyChanged callback
+#define MUX_PROPERTY_CHANGED_CALLBACK(enable) Microsoft.UI.Xaml.CustomAttributes.MUXPropertyChangedCallback(enable)
+
+// Normally the codegen generates a static OnPropertyChanged method which then calls an instance OnPropertyChanged
+// method on your type. For attached properties you need to specify this callback so that you can also receive the sender.
+#define MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME(name) Microsoft.UI.Xaml.CustomAttributes.MUXPropertyChangedCallbackMethodName(name)
+
+// Specifies the default value for the DependencyProperty.Register call. If unspecified the default is the default 
+// for the property type (e.g. false for bool, 0 for int, 0.0 for double, "" for string, nullptr for reference types)
+#define MUX_DEFAULT_VALUE(value) Microsoft.UI.Xaml.CustomAttributes.MUXPropertyDefaultValue(value)
+
+// Codegen infers the type of a property from the instance property's getter or an attached properties' 
+// Get{...} method. If neither of these exist then the IDL must specify the override type or the codegen
+// will produce a build error.
+#define MUX_PROPERTY_TYPE(value) Microsoft.UI.Xaml.CustomAttributes.MUXPropertyType(value)
+
+// Instance method on the owning type that can be used to validate or coerce the value.
+#define MUX_PROPERTY_VALIDATION_CALLBACK(value) Microsoft.UI.Xaml.CustomAttributes.MUXPropertyValidationCallback(value)

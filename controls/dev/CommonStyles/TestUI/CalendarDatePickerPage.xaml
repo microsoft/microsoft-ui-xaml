@@ -1,0 +1,22 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.CalendarDatePickerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel Margin="12">
+        <TextBlock Text="Sample CalenderDatePicker" Style="{ThemeResource StandardGroupHeader}"/>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+            <CalendarDatePicker Margin="0,23,40,0"/>
+            <CalendarDatePicker Header="CalenderDatePicker with header" Margin="0,0,40,0"/>
+            <!-- With custom placeholder text -->
+            <CalendarDatePicker PlaceholderText="Pick a date" Margin="0,23,0,0"/>
+        </StackPanel>
+    </StackPanel>
+
+</local:TestPage>

@@ -1,0 +1,37 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass MenuBarItemFlyout : Microsoft.UI.Xaml.Controls.MenuFlyout
+{
+    MenuBarItemFlyout();
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+[contentproperty("Items")]
+unsealed runtimeclass MenuBarItem : Microsoft.UI.Xaml.Controls.Control
+{
+    MenuBarItem();
+
+    String Title { get; set; };
+    Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Controls.MenuFlyoutItemBase> Items { get; };
+
+    static Microsoft.UI.Xaml.DependencyProperty TitleProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty ItemsProperty { get; };
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+[contentproperty("Items")]
+unsealed runtimeclass MenuBar : Microsoft.UI.Xaml.Controls.Control
+{
+    MenuBar();
+
+    Windows.Foundation.Collections.IVector<MenuBarItem> Items { get; };
+
+    static Microsoft.UI.Xaml.DependencyProperty ItemsProperty { get; };
+}
+
+}
