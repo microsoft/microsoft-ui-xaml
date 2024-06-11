@@ -11,6 +11,8 @@
 #include "JupiterControl.h"
 #include "JupiterWindow.h"
 
+#include <IHwndComponentHost.h>
+
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
 namespace DirectUI
@@ -212,6 +214,23 @@ namespace DirectUI
         bool IsInBackgroundTask()
         {
             return !!GetHandle()->IsInBackgroundTask();
+        }
+
+        
+        HWND GetComponentHwndForPeer(_In_ CDependencyObject* pDO)
+        {
+            ctl::ComPtr<DirectUI::DependencyObject> peer;
+            DXamlCore::GetCurrent()->TryGetPeer(pDO, &peer);
+            if (peer)
+            {
+                ctl::ComPtr<IHwndComponentHost> host;
+                HRESULT qiResult = ctl::iinspectable_cast(peer.Get())->QueryInterface(__uuidof(IHwndComponentHost), reinterpret_cast<void**>(host.ReleaseAndGetAddressOf()));
+                if (SUCCEEDED(qiResult) && host != nullptr)
+                {
+                    return host->GetComponentHwnd(); 
+                }
+            }
+            return nullptr;
         }
     }
 }

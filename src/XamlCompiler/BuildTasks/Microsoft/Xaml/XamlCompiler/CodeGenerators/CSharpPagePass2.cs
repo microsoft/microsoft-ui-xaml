@@ -1504,13 +1504,20 @@ this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.GetNextPhase(0))
 
 this.Write(";\r\n                        this.SetDataRoot(item);\r\n                        if (!" +
         "removedDataContextHandler)\r\n                        {\r\n                         " +
-        "   removedDataContextHandler = true;\r\n                            ");
+        "   removedDataContextHandler = true;\r\n                            var rootElemen" +
+        "t = ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.RootElement.ReferenceExpression));
 
-this.Write(".DataContextChanged -= this.DataContextChangedHandler;\r\n                        }" +
-        "\r\n                        this.initialized = true;\r\n                        brea" +
-        "k;\r\n");
+this.Write(@";
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
+                        }
+                        this.initialized = true;
+                        break;
+");
 
                      foreach(KeyValuePair<int, List<PhaseAssignment>> kvp in bindUniverse.PhaseAssignments.Where(kvp => kvp.Key != 0).OrderBy(kvp => kvp.Key)) 
                      { 

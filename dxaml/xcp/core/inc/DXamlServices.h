@@ -51,5 +51,6 @@ namespace DirectUI
         wuc::ICoreWindow* GetCurrentCoreWindowNoRef();
         bool HasCompositionTargetRenderedEventHandlers();
         bool IsInBackgroundTask();
+        HWND GetComponentHwndForPeer(_In_ CDependencyObject* pDO);
     }
 }

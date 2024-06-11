@@ -143,7 +143,11 @@
                     SetDataRoot(item);
                     if (_dataContextChangedToken.value != 0)
                     {
-                        <#=bindUniverse.RootElement.ReferenceExpression#>.DataContextChanged(_dataContextChangedToken);
+                        auto rootElement = <#=bindUniverse.RootElement.ReferenceExpression#>;
+                        if (rootElement != nullptr)
+                        {
+                            rootElement.DataContextChanged(_dataContextChangedToken);
+                        }
                         _dataContextChangedToken.value = 0;
                     }
                     _isInitialized = true;

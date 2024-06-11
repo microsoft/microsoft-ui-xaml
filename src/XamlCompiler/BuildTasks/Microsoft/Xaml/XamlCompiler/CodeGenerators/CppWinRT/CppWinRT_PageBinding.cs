@@ -180,11 +180,20 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                     nextPhase = ");
             this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.GetNextPhase(0)));
             this.Write(";\r\n                    SetDataRoot(item);\r\n                    if (_dataContextCh" +
-                    "angedToken.value != 0)\r\n                    {\r\n                        ");
+                    "angedToken.value != 0)\r\n                    {\r\n                        auto root" +
+                    "Element = ");
             this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.RootElement.ReferenceExpression));
-            this.Write(".DataContextChanged(_dataContextChangedToken);\r\n                        _dataCont" +
-                    "extChangedToken.value = 0;\r\n                    }\r\n                    _isInitia" +
-                    "lized = true;\r\n                 }\r\n                 break;\r\n");
+            this.Write(@";
+                        if (rootElement != nullptr)
+                        {
+                            rootElement.DataContextChanged(_dataContextChangedToken);
+                        }
+                        _dataContextChangedToken.value = 0;
+                    }
+                    _isInitialized = true;
+                 }
+                 break;
+");
       foreach(KeyValuePair<int, List<PhaseAssignment>> kvp in bindUniverse.PhaseAssignments.Where(kvp => kvp.Key != 0).OrderBy(kvp => kvp.Key)) { 
             this.Write("            case ");
             this.Write(this.ToStringHelper.ToStringWithCulture(kvp.Key));

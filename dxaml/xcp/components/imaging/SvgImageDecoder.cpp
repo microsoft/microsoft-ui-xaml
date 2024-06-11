@@ -20,6 +20,10 @@
 #include <Corep.h>
 #include <d2d1_3.h>
 #include <WicService.h>
+#include <FrameworkUdk/Containment.h>
+
+// Bug 50717750: [1.5 Servicing][WASDK] [GitHub] SVG not longer rendering
+#define WINAPPSDK_CHANGEID_50717750 50717750
 
 using namespace DirectUI;
 
@@ -215,8 +219,16 @@ _Check_return_ HRESULT SvgImageDecoder::DecodeFrame(
             {
                 if (!hasWidth && !hasHeight)
                 {
-                    // If neither width nor height was specified, then just match the viewBoxes.
+                    // If neither width nor height was specified, then just match the viewBoxes...
                     containerViewBox = originalViewBox;
+
+                    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_50717750>())
+                    {
+                        // ...but reset the origin of the view box for the outer SVG. The inner SVG will be positioned at
+                        // the origin when it's stretched (1:1) in the outer SVG.
+                        containerViewBox.x = 0;
+                        containerViewBox.y = 0;
+                    }
                 }
                 else
                 {

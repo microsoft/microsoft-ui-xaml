@@ -806,7 +806,11 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            <#=bindUniverse.RootElement.ReferenceExpression#>.DataContextChanged -= this.DataContextChangedHandler;
+                            var rootElement = <#=bindUniverse.RootElement.ReferenceExpression#>;
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
                         }
                         this.initialized = true;
                         break;

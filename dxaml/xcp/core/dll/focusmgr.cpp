@@ -17,8 +17,14 @@
 #include <FocusManagerLostFocusEventArgs.h>
 #include <FocusManagerGotFocusEventArgs.h>
 
+#include <DXamlServices.h>
+
 #include "InitialFocusSIPSuspender.h"
 #include "FocusLockOverrideGuard.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 51401727: [1.5 Servicing][WASDK] [GitHub] Webview2: Window blur and focus events always fire when clicking the WebView
+#define WINAPPSDK_CHANGEID_51401727 51401727
 
 #define E_FOCUS_ASYNCOP_INPROGRESS 64L
 
@@ -1778,6 +1784,26 @@ bool CFocusManager::ShouldSetWindowFocus(const FocusMovement& movement) const
     if (focusIsForLightDismissOnInactiveWindow)
     {
         return false;
+    }
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_51401727>())
+    {
+        // If focused element is hwnd-based component hosted inside the Xaml island (aka WebView2), don't set focus to the hwnd,
+        // to avoid Xaml stealing focus back after the user interacts with the component hwnd, and focus is already there.
+        if (m_pFocusedElement && m_pFocusedElement->GetTypeIndex() == KnownTypeIndex::Panel)
+        {
+            HWND componentHwnd = DXamlServices::GetComponentHwndForPeer(m_pFocusedElement);
+            if(componentHwnd)
+            {
+                HWND focusedHwnd = ::GetFocus();
+                // Check if the componendHwnd has focus or its child has
+                // https://task.ms/49085931 -  [API Gap] InputFocusController needs some sort of ContainsFocus API to detect when Focus is in nested Content (eg XAML and a WebView2)
+                if (componentHwnd == focusedHwnd || ::IsChild(componentHwnd, focusedHwnd))
+                {
+                    return false;
+                }
+            }
+        }
     }
 
     return true;
