@@ -1,7 +1,7 @@
 ![WinUI hero image](docs/images/header.png)
 
 <h1 align="center">
-    WinUI 3
+    WinUI
 </h1>
 <p align="center">
   <a href="https://twitter.com/intent/follow?screen_name=windowsui">
