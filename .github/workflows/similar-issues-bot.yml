@@ -17,7 +17,7 @@ jobs:
           issueTitle: ${{ github.event.issue.title }}
           issueBody: ${{ github.event.issue.body }}
           repo: ${{ github.repository }}
-          similaritytolerance: "0.70"
+          similaritytolerance: "0.81"
           commentBody: | 
             Hi I'm an AI powered bot that finds similar issues based off the issue title.
 
