@@ -26,6 +26,11 @@
 #include <MUX-ETWEvents.h>
 #include <palnetwork.h>
 #include <PalResourceManager.h>
+#include <FrameworkUdk/Containment.h>
+
+// Telemetry: Image Decoding Activity is skipped in WinAppSDK 1.5.5+ Servicing releases to avoid crashing
+// Bug 44612834: [1.5 servicing] [Watson Failure] caused by FAIL_FAST_FATAL_APP_EXIT_c0000409_Microsoft.UI.Xaml.dll!ImagingTelemetry::ImageDecodeActivity::Split
+#define WINAPPSDK_CHANGEID_44612834 44612834
 
 typedef ImageAsyncCallback<ImageCache> ImageCacheAsyncTask;
 
@@ -341,17 +346,20 @@ _Check_return_ HRESULT ImageCache::TriggerProcessDecodeRequests()
 {
     if (!m_hasProcessDecodeRequestsTask)
     {
-        // This ImageCache may be associated with multiple ImageSources (i.e. the same image decoding to multiple
-        // different sizes). Telemetry is associated with the decoded image, so report telemetry for all the
-        // decodes that will be triggered by this ImageCache.
-        for (ImageDecodeRequest* decodeRequest : m_decodeRequests)
+        if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_44612834>())
         {
-            const auto& decodeParams = decodeRequest->GetDecodeParams();
+            // This ImageCache may be associated with multiple ImageSources (i.e. the same image decoding to multiple
+            // different sizes). Telemetry is associated with the decoded image, so report telemetry for all the
+            // decodes that will be triggered by this ImageCache.
+            for (ImageDecodeRequest* decodeRequest : m_decodeRequests)
+            {
+                const auto& decodeParams = decodeRequest->GetDecodeParams();
 
-            // The call below won't actually AV if there's nothing logging an ETW trace. Assert it explicitly so we
-            // crash consistently if it's null.
-            ASSERT(decodeParams->GetDecodeActivity());
-            decodeParams->GetDecodeActivity()->QueueProcessDecodeRequests(decodeParams->GetImageId(), decodeParams->GetStrSource().GetBuffer());
+                // The call below won't actually AV if there's nothing logging an ETW trace. Assert it explicitly so we
+                // crash consistently if it's null.
+                ASSERT(decodeParams->GetDecodeActivity());
+                decodeParams->GetDecodeActivity()->QueueProcessDecodeRequests(decodeParams->GetImageId(), decodeParams->GetStrSource().GetBuffer());
+            }
         }
 
         auto task = make_xref<ImageCacheAsyncTask>(this, &ImageCache::ProcessDecodeRequests);
@@ -372,10 +380,13 @@ _Check_return_ HRESULT ImageCache::ProcessDecodeRequests()
 {
     m_hasProcessDecodeRequestsTask = FALSE;
 
-    for (ImageDecodeRequest* decodeRequest : m_decodeRequests)
+    if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_44612834>())
     {
-        const auto& decodeParams = decodeRequest->GetDecodeParams();
-        decodeParams->GetDecodeActivity()->ProcessDecodeRequests(decodeParams->GetImageId(), decodeParams->GetStrSource().GetBuffer(), m_State);
+        for (ImageDecodeRequest* decodeRequest : m_decodeRequests)
+        {
+            const auto& decodeParams = decodeRequest->GetDecodeParams();
+            decodeParams->GetDecodeActivity()->ProcessDecodeRequests(decodeParams->GetImageId(), decodeParams->GetStrSource().GetBuffer(), m_State);
+        }
     }
 
     //
@@ -487,7 +498,11 @@ _Check_return_ HRESULT ImageCache::BeginDecode(
             const auto& decodeParams = decodeRequest->GetDecodeParams();
             const std::shared_ptr<ImagingTelemetry::ImageDecodeActivity>& decodeActivity = decodeParams->GetDecodeActivity();
 
-            decodeActivity->QueueDecodeFromImageCache(decodeParams->GetImageId(), decodeParams->GetStrSource().GetBuffer());
+            if (decodeActivity)
+            {
+                decodeActivity->QueueDecodeFromImageCache(decodeParams->GetImageId(), decodeParams->GetStrSource().GetBuffer());
+            }
+
             auto parseHR = m_encodedImageData->Parse(m_core->GetGraphicsDevice(), m_core->GetContentRootMaxSize());
 
             if (FAILED(parseHR))

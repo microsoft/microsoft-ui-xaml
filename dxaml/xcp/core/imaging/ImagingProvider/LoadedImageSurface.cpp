@@ -221,10 +221,15 @@ _Check_return_ HRESULT CLoadedImageSurface::InitFromUri(xstring_ptr uri)
 {
     IFCEXPECTRC_RETURN(!m_closed, RO_E_CLOSED);
 
-    GetContext()->GetImageProvider()->GetDecodeActivity()->SetLoadedImageSurfaceUri(reinterpret_cast<uint64_t>(this), uri.GetBuffer());
+    const auto& decodeActivity = GetContext()->GetImageProvider()->GetDecodeActivity();
+
+    if (decodeActivity)
+    {
+        decodeActivity->SetLoadedImageSurfaceUri(reinterpret_cast<uint64_t>(this), uri.GetBuffer());
+    }
 
     auto core = GetContext();
-    IFC_RETURN(GetImageCache(*core, uri, GetContext()->GetImageProvider()->GetDecodeActivity(), reinterpret_cast<uint64_t>(this), m_imageCache.ReleaseAndGetAddressOf()));
+    IFC_RETURN(GetImageCache(*core, uri, decodeActivity, reinterpret_cast<uint64_t>(this), m_imageCache.ReleaseAndGetAddressOf()));
 
     // Start asynchronous download/decode operation
     IFC_RETURN(GetImageDescription(*m_imageCache));
@@ -245,10 +250,15 @@ _Check_return_ HRESULT CLoadedImageSurface::InitFromMemory(_In_ wistd::unique_pt
 {
     IFCEXPECTRC_RETURN(!m_closed, RO_E_CLOSED);
 
-    GetContext()->GetImageProvider()->GetDecodeActivity()->SetLoadedImageSurfaceMemory(reinterpret_cast<uint64_t>(this));
+    const auto& decodeActivity = GetContext()->GetImageProvider()->GetDecodeActivity();
+
+    if (decodeActivity)
+    {
+        decodeActivity->SetLoadedImageSurfaceMemory(reinterpret_cast<uint64_t>(this));
+    }
 
     auto core = GetContext();
-    IFC_RETURN(GetImageCache(*core, xstring_ptr::NullString() /* uri */, GetContext()->GetImageProvider()->GetDecodeActivity(), reinterpret_cast<uint64_t>(this), m_imageCache.ReleaseAndGetAddressOf()));
+    IFC_RETURN(GetImageCache(*core, xstring_ptr::NullString() /* uri */, decodeActivity, reinterpret_cast<uint64_t>(this), m_imageCache.ReleaseAndGetAddressOf()));
 
     // Set encoded data to skip async downloading
     m_imageCache->SetEncodedImageData(std::make_shared<EncodedImageData>(std::move(rawData)));

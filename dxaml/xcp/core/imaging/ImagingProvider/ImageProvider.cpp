@@ -199,7 +199,10 @@ ImageProvider::GetImage(
 
             imageCache->SetEncodedImageData(spEncodedImageData);
 
-            decodeActivity->CreateImageCacheFromExistingEncodedData(spDecodeParams->GetImageId(), spDecodeParams->GetStrSource().GetBuffer());
+            if (decodeActivity)
+            {
+                decodeActivity->CreateImageCacheFromExistingEncodedData(spDecodeParams->GetImageId(), spDecodeParams->GetStrSource().GetBuffer());
+            }
 
             IFC_RETURN(imageCache->GetImage(spDecodeParams, spImageAvailableCallback, spAbortableImageOperation));
         }
@@ -442,7 +445,10 @@ ImageProvider::EnsureCacheEntry(
 
     if (imageCache == nullptr)
     {
-        decodeActivity->CreateImageCache(imageId, strUri.GetBuffer());
+        if (decodeActivity)
+        {
+            decodeActivity->CreateImageCache(imageId, strUri.GetBuffer());
+        }
 
         imageCache = make_xref<ImageCache>(
             strCacheKey,
@@ -463,7 +469,11 @@ ImageProvider::EnsureCacheEntry(
     }
     else
     {
-        decodeActivity->FoundImageCache(imageId, strUri.GetBuffer());
+        if (decodeActivity)
+        {
+            decodeActivity->FoundImageCache(imageId, strUri.GetBuffer());
+        }
+
         *pCacheHit = true;
     }
 

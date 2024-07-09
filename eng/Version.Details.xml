@@ -2,15 +2,15 @@
 <!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.WindowsAppSDK.Foundation.TransportPackage" Version="1.5.0-20240606.2.release">
+    <Dependency Name="Microsoft.WindowsAppSDK.Foundation.TransportPackage" Version="1.5.0-20240625.0.release">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
-      <Sha>f2f6538eacbbe1632040c207cde16b5413fb07bf</Sha>
+      <Sha>ad621f84e7cc1b2c4e2409f82582cda4570f22d9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="1.5.4-CI-26105.1001.240605-1418.7">
+    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="1.5.4-CI-26105.1002.240617-0923.0">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
       <Sha>8ae48bdfe2603ad520a56f5bcd40e136c2026c0e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.InteractiveExperiences" Version="1.5.4-CI-26105.1001.240605-1418.7">
+    <Dependency Name="Microsoft.Internal.InteractiveExperiences" Version="1.5.4-CI-26105.1002.240617-0923.0">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
       <Sha>8ae48bdfe2603ad520a56f5bcd40e136c2026c0e</Sha>
     </Dependency>

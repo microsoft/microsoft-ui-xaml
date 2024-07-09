@@ -128,7 +128,10 @@ CSoftwareBitmapSource::SetBitmap(
     {
         ASSERT(m_spAbortableImageOperation == nullptr);
 
-        GetContext()->GetImageProvider()->GetDecodeActivity()->SetSoftwareBitmap(reinterpret_cast<uint64_t>(this));
+        if (const auto& decodeActivity = GetContext()->GetImageProvider()->GetDecodeActivity())
+        {
+            decodeActivity->SetSoftwareBitmap(reinterpret_cast<uint64_t>(this));
+        }
 
         IFC_RETURN(ReloadSource(false /* forceCopyToSoftwareSurface */));
     }
@@ -178,7 +181,10 @@ _Check_return_ HRESULT CSoftwareBitmapSource::OnSoftwareBitmapImageAvailable(_In
 
         attemptCopyToSoftwareSurfaceInstead = true;
 
-        GetContext()->GetImageProvider()->GetDecodeActivity()->SoftwareBitmapFallbackAfterUploadError(reinterpret_cast<uint64_t>(this), uploadHResult);
+        if (const auto& decodeActivity = GetContext()->GetImageProvider()->GetDecodeActivity())
+        {
+            decodeActivity->SoftwareBitmapFallbackAfterUploadError(reinterpret_cast<uint64_t>(this), uploadHResult);
+        }
 
         // Force a copy into a software surface, which will never hit a device lost error. We'll upload this into a
         // hardware surface later on a UI thread frame.
