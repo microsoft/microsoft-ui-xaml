@@ -35,7 +35,7 @@ body:
       label: NuGet package version
       description: If you are seeing your issue on older versions please try the latest release
       options:
-        - "WinUI 3 - Windows App SDK 1.5.4: 1.5.240607001"
+        - "WinUI 3 - Windows App SDK 1.5.5: 1.5.240627000"
         - "WinUI 3 - Windows App SDK 1.5 Preview 1: 1.5.240205001-preview1"
         - "WinUI 3 - Windows App SDK 1.6 Experimental 2: 1.6.240701003-experimental2"
         - "WinUI 2 - Microsoft.UI.Xaml 2.8.2"
