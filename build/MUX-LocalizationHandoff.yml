@@ -17,14 +17,13 @@ jobs:
         -DestinationFilePath '${{ variables.resourceStagingDirectory }}'
     displayName: 'PrepLocFilesForUpload.ps1'
 
-  - task: TouchdownBuildTask@1
+  - task: TouchdownBuildTask@4
     displayName: 'Call Touchdown Build Service'
     inputs:
       environment: 'PRODEXT'
       teamId: '104'
-      authType: 'OAuth'
-      authId: 'e8416663-8a55-4cb6-9bba-12038b37a6ed'
-      authKey: $(WinUILab-TouchdownLoc-Key)
+      authType: 'FederatedIdentity'
+      FederatedIdentityServiceConnection: "WindowsAppSDKSigningConnection"
       relativePathRoot: ${{ variables.resourceStagingDirectory }}
       resourceFilePath: '**/Resources.resw'
       outputDirectoryRoot: ${{ variables.resourceOutputDirectory }}
