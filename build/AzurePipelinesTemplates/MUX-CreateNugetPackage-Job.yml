@@ -55,10 +55,15 @@ jobs:
     displayName: 'build-nupkg.ps1'
 
   - ${{ if eq( parameters.signOutput, true) }}:
-    - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@5
       displayName: 'CodeSign (nupkg)'
       inputs:
-        ConnectedServiceName: WinUISigning
+        ConnectedServiceName: $(WinUI2SigningConnectedServiceName)
+        AppRegistrationClientId: $(WinUI2SigningAppRegistrationClientId)
+        AppRegistrationTenantId: $(WinUI2SigningAppRegistrationTenantId)
+        AuthAKVName: $(ProjectReunionCerts)
+        AuthCertName: $(WinUI2SigningAuthCertName)
+        AuthSignCertName: $(WinUI2SigningAuthSignCertName)
         FolderPath: '${{ parameters.nupkgdir }}'
         Pattern: |
           **/Microsoft.UI.Xaml*.nupkg

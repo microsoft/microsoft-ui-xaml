@@ -64,10 +64,15 @@ steps:
       artifactName: nativecodeanalysis
 
   - ${{ if eq( parameters.signOutput, true) }}:
-    - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@5
       displayName: 'CodeSign'
       inputs:
-        ConnectedServiceName: WinUISigning
+        ConnectedServiceName: $(WinUI2SigningConnectedServiceName)
+        AppRegistrationClientId: $(WinUI2SigningAppRegistrationClientId)
+        AppRegistrationTenantId: $(WinUI2SigningAppRegistrationTenantId)
+        AuthAKVName: $(ProjectReunionCerts)
+        AuthCertName: $(WinUI2SigningAuthCertName)
+        AuthSignCertName: $(WinUI2SigningAuthSignCertName)
         FolderPath: '$(buildOutputDir)/$(buildConfiguration)/$(buildPlatform)/Microsoft.UI.Xaml'
         # Recursively finds files matching these patterns:
         Pattern: |

@@ -28,10 +28,15 @@ steps:
     displayName: 'Make FrameworkPackages'
 
   - ${{ if eq( parameters.signOutput, true) }}:
-    - task: EsrpCodeSigning@1
+    - task: EsrpCodeSigning@5
       displayName: First Party StoreSign Framework Package
       inputs:
-        ConnectedServiceName: WinUISigning
+        ConnectedServiceName: $(WinUI2SigningConnectedServiceName)
+        AppRegistrationClientId: $(WinUI2SigningAppRegistrationClientId)
+        AppRegistrationTenantId: $(WinUI2SigningAppRegistrationTenantId)
+        AuthAKVName: $(ProjectReunionCerts)
+        AuthCertName: $(WinUI2SigningAuthCertName)
+        AuthSignCertName: $(WinUI2SigningAuthSignCertName)
         FolderPath: '${{ parameters.buildOutputDir }}\$(buildConfiguration)\$(buildPlatform)\FrameworkPackage'
         Pattern: |
           *.appx
