@@ -1,5 +1,5 @@
 parameters:
-  dotNetVersion: 3.1.415
+  dotNetVersion: 6.0.414
 
 steps:
   - task: UseDotNet@2
