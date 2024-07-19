@@ -1,0 +1,95 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+// Do not include directly, but rather via SimpleProperties.h, which takes care of ordering dependencies.
+
+#pragma once
+
+// Forward declare host types.
+class CDependencyObject;
+<# foreach (var type in Model.GetAllTypeTableClassesWithSimpleProperties().Where((c) => c.SimpleProperties.Any((p) => p.SimpleStorage.Value == SimplePropertyStorage.Sparse || p.SimpleStorage.Value == SimplePropertyStorage.SparseGroup))) { #>
+class <#= type.CoreName #>;
+<# } #>
+
+namespace SimpleProperty
+{
+    // Type specializations.
+<# foreach (var type in Model.GetAllTypeTableSimpleTypes()) { #>
+
+    template <>
+    struct type_traits<<#= type.IndexName #>>
+    {
+        static constexpr TID tid = <#= type.IndexName #>;
+        static constexpr Kind kind = Kind::<#= type.SimpleTypeKind.Value.ToString() #>;
+        using type = <#= AsCppType(type.SimpleTypeName) #>;
+    };
+<# } #>
+
+    // Property specializations.
+<# foreach (var property in Model.GetAllTypeTableSimpleProperties()) { #>
+
+    template <>
+    struct prop_traits<<#= property.IndexName #>>
+    {
+        static constexpr TID tid = <#= property.PropertyType.Type.IndexName #>;
+        using declaring_type = <#= property.SimpleDeclaringClass #>;
+        static constexpr StorageType storage = StorageType::<#= property.SimpleStorage.Value.ToString() #>;
+<#   if (property.SimpleStorage.Value == SimplePropertyStorage.Field || property.SimpleStorage.Value == SimplePropertyStorage.SparseGroup) { #>
+<#     if (property.SimpleStorage.Value == SimplePropertyStorage.Field) { #>
+        using accessor_target_t = declaring_type;
+<#     } else { #>
+        using group_storage_type = <#= property.SimpleGroupStorageClass #>;
+        using accessor_target_t = group_storage_type;
+<#     } #>
+        static constexpr member_getter_t<tid, accessor_target_t> getter = &accessor_target_t::Get_<#= property.IndexNameWithoutPrefix #>;
+        static constexpr member_setter_t<tid, accessor_target_t> setter = &accessor_target_t::Set_<#= property.IndexNameWithoutPrefix #>;
+<#   } #>
+    };
+<# } #>
+
+    // Type default values.
+<# foreach (var type in Model.GetAllTypeTableSimpleTypes().Where((t) => t.SimpleDefaultValue != null)) { #>
+
+    template <>
+    inline typename interface_types_from_tid<<#= type.IndexName #>>::get_return Type::Default<<#= type.IndexName #>>()
+    {
+        static <# if (type.IsConstexprConstructible) { #>constexpr <# } #>type_from_tid<<#= type.IndexName #>> s_default = <#= type.SimpleDefaultValue #>;
+        return s_default;
+    };
+<# } #>
+
+    // Property default values.
+<# foreach (var property in Model.GetAllTypeTableSimpleProperties().Where((p) => p.SimpleDefaultValue != null)) { #>
+
+    template <>
+    inline typename interface_types_from_pid<<#= property.IndexName #>>::get_return Property::Default<<#= property.IndexName #>>()
+    {
+        static <# if (property.PropertyType.Type.IsConstexprConstructible) { #>constexpr <# } #>type_from_pid<<#= property.IndexName #>> s_default = <#= property.SimpleDefaultValue #>;
+        return s_default;
+    };
+<# } #>
+
+    // Tables.
+
+    struct sparsetables
+    {
+<# foreach (var property in Model.GetAllTypeTableSimpleProperties().Where((p) => p.SimpleStorage.Value == SimplePropertyStorage.Sparse)) { #>
+        sparsetable_from_pid<<#= property.IndexName #>> m_<#= property.IndexNameWithoutPrefix #>;
+<# } #>
+<# foreach (var groupName in Model.GetAllTypeTableSimpleProperties().Where((p) => p.SimpleStorage.Value == SimplePropertyStorage.SparseGroup).Select((p) => p.SimpleGroupStorageClass).Distinct()) { #>
+        sparsetable<<#= groupName #>> m_<#= groupName #>;
+<# } #>
+    };
+
+    struct changehandlerstables
+    {
+<# foreach (var property in Model.GetAllTypeTableSimpleProperties()) { #>
+        property_changed_handlers_from_pid<<#= property.IndexName #>> m_<#= property.IndexNameWithoutPrefix #>;
+<# } #>
+    };
+}

@@ -1,0 +1,36 @@
+<Project>
+  <!--
+    This file is intended to describe the project graph p2p protocol. These should be part of the common
+    targets barring any custom logic in this repo, but there currently are gaps which must be filled.
+  -->
+
+  <!-- C++ projects don't define ProjectReferenceTargets at all -->
+  <PropertyGroup Condition="'$(IsGraphBuild)' == 'true' and '$(MSBuildProjectExtension)' == '.vcxproj'">
+    <!-- Empty case is for builds which do not import the target files that set BuildProjectReferences -->
+    <_MainReferenceTargetForBuild Condition="'$(BuildProjectReferences)' == '' or '$(BuildProjectReferences)' == 'true'">.projectReferenceTargetsOrDefaultTargets</_MainReferenceTargetForBuild>
+    <_MainReferenceTargetForBuild Condition="'$(_MainReferenceTargetForBuild)' == ''">GetTargetPath</_MainReferenceTargetForBuild>
+
+    <ProjectReferenceTargetsForBuild>$(_MainReferenceTargetForBuild);GetNativeManifest;$(_RecursiveTargetForContentCopying);$(ProjectReferenceTargetsForBuild)</ProjectReferenceTargetsForBuild>
+
+    <ProjectReferenceTargetsForClean>Clean;$(ProjectReferenceTargetsForClean)</ProjectReferenceTargetsForClean>
+    <ProjectReferenceTargetsForRebuild>$(ProjectReferenceTargetsForClean);$(ProjectReferenceTargetsForBuild);$(ProjectReferenceTargetsForRebuild)</ProjectReferenceTargetsForRebuild>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(IsGraphBuild)' == 'true' and '$(MSBuildProjectExtension)' == '.vcxproj'">
+    <ProjectReferenceTargets Include="Build" Targets="$(ProjectReferenceTargetsForBuild)" Condition=" '$(ProjectReferenceTargetsForBuild)' != '' " />
+
+    <!-- C++ projects call GetProjectInfoForReference on referenced C++ projects. We can't express that condition so just call it on all projects, but with SkipNonexistentTargets=true -->
+    <ProjectReferenceTargets Include="Build" Targets="GetProjectInfoForReference" SkipNonexistentTargets="true" />
+
+    <!-- GetPackagingOutputs Target from $(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v17.0\AppxPackage\Microsoft.AppXPackage.Targets -->
+    <ProjectReferenceTargets Include="Build" Targets="GetPackagingOutputs" Condition="'$(WindowsAppContainer)' == 'true'" />
+
+    <ProjectReferenceTargets Include="Clean" Targets="$(ProjectReferenceTargetsForClean)" Condition=" '$(ProjectReferenceTargetsForClean)' != '' " />
+
+    <ProjectReferenceTargets Include="Rebuild" Targets="$(ProjectReferenceTargetsForRebuild)" Condition=" '$(ProjectReferenceTargetsForRebuild)' != '' " />
+  </ItemGroup>
+
+  <!-- GetPackagingOutputs Target from $(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v17.0\AppxPackage\Microsoft.AppXPackage.Targets -->
+  <ItemGroup Condition="'$(IsGraphBuild)' == 'true' and '$(WindowsAppContainer)' == 'true'">
+    <ProjectReferenceTargets Include="Build" Targets="GetPackagingOutputs" />
+  </ItemGroup>
+</Project>

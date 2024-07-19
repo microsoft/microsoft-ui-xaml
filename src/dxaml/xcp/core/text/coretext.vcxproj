@@ -1,0 +1,177 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ProjectGuid>{8f008900-e6e3-4443-92ed-34fbad8042b3}</ProjectGuid>
+  </PropertyGroup>
+  <!-- ******************************** File Header ******************************\ -->
+  <!-- Copyright (c) Microsoft Corporation.  All rights reserved.                   -->
+  <!--                                                                              -->
+  <!-- Project specific SOURCES file.                                               -->
+  <!--                                                                              -->
+  <!-- ***************************************************************************/ -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))" />
+  <Import Project="$(XamlSourcePath)\xcp\project-lift.props" />
+  <Import Project="$(XcpPath)\core\common.props" />
+  <PropertyGroup>
+    <XamlPrecompiledInclude>precomp.h</XamlPrecompiledInclude>
+    <XamlPrecompiledPch>precomp.pch</XamlPrecompiledPch>
+    <XamlPrecompiledObj>precomp.obj</XamlPrecompiledObj>
+  </PropertyGroup>
+
+  <ItemGroup>
+      <ClInclude Include="precomp.h"/>
+
+      <ClCompile Include="common\inheritedproperties.cpp"/>
+      <ClCompile Include="common\chash.cpp"/>
+      <ClCompile Include="common\text.cpp"/>
+      <ClCompile Include="common\textcore.cpp"/>
+      <ClCompile Include="common\textposition.cpp"/>
+      <ClCompile Include="common\selectionwordbreaker.cpp"/>
+      <ClCompile Include="common\textformatting.cpp"/>
+      <ClCompile Include="common\textoptions.cpp"/>
+      <ClCompile Include="common\textadapter.cpp"/>
+      <ClCompile Include="common\textrangeadapter.cpp"/>
+      <ClCompile Include="common\typography.cpp"/>
+      <ClCompile Include="common\BlockCollection.cpp"/>
+      <ClCompile Include="common\TextSelectionManager.cpp"/>
+      <ClCompile Include="common\Gripper.cpp"/>
+      <ClCompile Include="common\RichEditGripper.cpp"/>
+      <ClCompile Include="common\RichEditGripperChild.cpp"/>
+      <ClCompile Include="common\FocusRectangle.cpp"/>
+      <ClCompile Include="common\TextSelectionSettings.cpp"/>
+      <ClCompile Include="common\XcpTextGripperInputProcessor.cpp"/>
+      <ClCompile Include="common\InputProcessor.cpp"/>
+      <ClCompile Include="common\JupiterTextHelper.cpp"/>
+      <ClCompile Include="common\CaretBrowsingGlobal.cpp"/>
+      <ClCompile Include="common\TextNavigationHelper.cpp"/>
+
+      <ClCompile Include="blocklayout\BlockLayoutEngine.cpp"/>
+      <ClCompile Include="blocklayout\BlockLayoutHelpers.cpp"/>
+      <ClCompile Include="blocklayout\BlockNode.cpp"/>
+      <ClCompile Include="blocklayout\BlockNodeBreak.cpp"/>
+      <ClCompile Include="blocklayout\ContainerNode.cpp"/>
+      <ClCompile Include="blocklayout\PageNode.cpp"/>
+      <ClCompile Include="blocklayout\DrawingContext.cpp"/>
+      <ClCompile Include="blocklayout\ContainerDrawingContext.cpp"/>
+      <ClCompile Include="blocklayout\ParagraphDrawingContext.cpp"/>
+      <ClCompile Include="blocklayout\ParagraphNode.cpp"/>
+      <ClCompile Include="blocklayout\ParagraphTextSource.cpp"/>
+      <ClCompile Include="blocklayout\ParagraphNodeBreak.cpp"/>
+      <ClCompile Include="blocklayout\PageNodeBreak.cpp"/>
+      <ClCompile Include="blocklayout\PageHostedObjectRun.cpp"/>
+
+      <ClCompile Include="Classification\ucdlookup.cpp"/>
+      <ClCompile Include="Classification\build\ucddata.cpp"/>
+
+      <ClCompile Include="textlayout\inlineuicontainer.cpp"/>
+
+      <ClCompile Include="fonts\sharedname.cpp"/>
+      <ClCompile Include="fonts\fontfamily.cpp"/>
+      <ClCompile Include="fonts\compositefontfamily.cpp"/>
+      <ClCompile Include="fonts\fonttypeface.cpp"/>
+      <ClCompile Include="fonts\typefacecollection.cpp"/>
+
+      <ClCompile Include="richtextservices\shared\CharacterRunCollection.cpp"/>
+      <ClCompile Include="richtextservices\shared\CharacterRunNode.cpp"/>
+      <ClCompile Include="richtextservices\shared\CountedCharacterRunCollection.cpp"/>
+      <ClCompile Include="richtextservices\shared\SplayTreeCollection.cpp"/>
+      <ClCompile Include="richtextservices\shared\SplayTreeNode.cpp"/>
+      <ClCompile Include="richtextservices\shared\TextObject.cpp"/>
+      <ClCompile Include="richtextservices\shared\TextBreak.cpp"/>
+
+      <ClCompile Include="richtextservices\unicodedata\linebreaking.cpp"/>
+      <ClCompile Include="richtextservices\unicodedata\characterproperties.cpp"/>
+
+      <ClCompile Include="richtextservices\xcp\TxUtil.cpp"/>
+      <ClCompile Include="richtextservices\xcp\PALFontAndScriptServices.cpp"/>
+
+      <ClCompile Include="textblock\inline.cpp"/>
+      <ClCompile Include="textblock\inlinecollection.cpp"/>
+      <ClCompile Include="textblock\linebreak.cpp"/>
+      <ClCompile Include="textblock\textblock.cpp"/>
+      <ClCompile Include="textblock\textblockview.cpp"/>
+      <ClCompile Include="textblock\hyperlink.cpp"/>
+      <ClCompile Include="textblock\crun.cpp"/>
+      <ClCompile Include="textblock\dwritetextrenderer.cpp"/>
+
+      <ClCompile Include="richtextservices\textformatter\InlineObjectHandlers.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\lineservicescallbacks.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\LsClient.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\LsHostContext.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\LsParagraphSpan.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\LsRun.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\LsRunCache.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\LsSpan.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\LsTextFormatter.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\LsTextLine.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\LsTextLineBreak.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\TextCollapsingCharacters.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\TextFormatter.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\TextFormatterCache.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\TextItemizer.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\TextLine.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\TextParagraphProperties.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\TextRun.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\TextRunCache.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\TextRunData.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\TextRunProperties.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\TextSegment.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\TextCharactersRun.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\HiddenRun.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\ObjectRun.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\EndOfLineRun.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\EndOfParagraphRun.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\DirectionalControlRun.cpp"/>
+      <ClCompile Include="richtextservices\textformatter\TextStore.cpp"/>
+
+      <ClCompile Include="textbox\textselection.cpp"/>
+      <ClCompile Include="textbox\plaintextposition.cpp"/>
+      <ClCompile Include="textbox\TextBoxHelpers.cpp"/>
+
+      <ClCompile Include="richtextarea\textelementcollection.cpp"/>
+      <ClCompile Include="richtextarea\textelement.cpp"/>
+      <ClCompile Include="richtextarea\richtextserviceshelper.cpp"/>
+      <ClCompile Include="richtextarea\paragraph.cpp"/>
+      <ClCompile Include="richtextarea\linemetricscache.cpp"/>
+      <ClCompile Include="richtextarea\TextPointerWrapper.cpp"/>
+      <ClCompile Include="richtextarea\textschema.cpp"/>
+
+      <ClCompile Include="richtextblock\RichTextBlock.cpp"/>
+      <ClCompile Include="richtextblock\RichTextBlockOverflow.cpp"/>
+      <ClCompile Include="richtextblock\RichTextBlockBreak.cpp"/>
+      <ClCompile Include="richtextblock\RichTextBlockView.cpp"/>
+      <ClCompile Include="richtextblock\LinkedRichTextBlockView.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\math\inc;
+            $(XcpPath)\components\OneCoreTransforms\inc;
+            $(XcpPath)\core\inc;
+            $(XcpPath)\core\native\text\Common;
+            $(XcpPath)\core\native\text\Controls;
+            $(XcpPath)\core\text\Inc;
+            $(XcpPath)\core\sw;
+            $(XcpPath)\core\compositor;
+            $(XcpPath)\core\hw;
+            $(XcpPath)\core\text\BlockLayout;
+            $(XcpPath)\core\text\RichTextServices\inc;
+            $(XcpPath)\core\text\RichTextServices\xcp;
+            $(XcpPath)\core\text\shaping\inc;
+            $(XcpPath)\core\text\Classification;
+            $(XcpPath)\win\inc;
+            $(XcpPath)\control\inc;
+            $(XcpPath)\core\text\RichTextServices\inci;
+            $(XcpPath)\core\text\RichTextServices\TextFormatter;
+            $(XcpPath)\pal\win\inc;
+            $(FrameworkUdkIncPath);
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

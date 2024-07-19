@@ -1,0 +1,105 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_INTERNAL]
+[webhosthidden]
+[flags]
+enum ItemContainerMultiSelectMode
+{
+    Auto = 1,
+    Single = 2,
+    Extended = 4,
+    Multiple = 8
+};
+
+[MUX_INTERNAL]
+[webhosthidden]
+enum ItemContainerInteractionTrigger
+{
+    PointerPressed,
+    PointerReleased,
+    Tap,
+    DoubleTap,
+    EnterKey,
+    SpaceKey,
+    AutomationInvoke
+};
+
+[MUX_INTERNAL]
+[webhosthidden]
+[flags]
+enum ItemContainerUserInvokeMode
+{
+    Auto = 1,
+    UserCanInvoke = 2,
+    UserCannotInvoke = 4,
+};
+
+[MUX_INTERNAL]
+[webhosthidden]
+[flags]
+enum ItemContainerUserSelectMode
+{
+    Auto = 1,
+    UserCanSelect = 2,
+    UserCannotSelect = 4,
+};
+
+[MUX_INTERNAL]
+[webhosthidden]
+runtimeclass ItemContainerInvokedEventArgs
+{
+    Object OriginalSource { get; };
+    ItemContainerInteractionTrigger InteractionTrigger { get; };
+    Boolean Handled{ get; set; };
+}
+
+[MUX_PUBLIC_V5]
+[webhosthidden]
+[contentproperty("Child")]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass ItemContainer : Microsoft.UI.Xaml.Controls.Control
+{
+    ItemContainer();
+
+    Microsoft.UI.Xaml.UIElement Child{ get; set; };
+
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsSelected{ get; set; };
+
+    static Microsoft.UI.Xaml.DependencyProperty ChildProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsSelectedProperty{ get; };
+
+    [MUX_INTERNAL]
+    {
+        [MUX_DEFAULT_VALUE("winrt::ItemContainerUserSelectMode::Auto")]
+        ItemContainerUserSelectMode CanUserSelect{ get; set; };
+
+        [MUX_DEFAULT_VALUE("winrt::ItemContainerUserInvokeMode::Auto")]
+        ItemContainerUserInvokeMode CanUserInvoke{ get; set; };
+
+        [MUX_DEFAULT_VALUE("winrt::ItemContainerMultiSelectMode::Auto")]
+        ItemContainerMultiSelectMode MultiSelectMode{ get; set; };
+
+        event Windows.Foundation.TypedEventHandler<ItemContainer, ItemContainerInvokedEventArgs> ItemInvoked;
+
+        static Microsoft.UI.Xaml.DependencyProperty CanUserSelectProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty CanUserInvokeProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty MultiSelectModeProperty{ get; };
+    }
+}
+
+}
+
+namespace MU_XAP_NAMESPACE
+{
+
+[MUX_PUBLIC_V5]
+[webhosthidden]
+unsealed runtimeclass ItemContainerAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer, Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider, Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider
+{
+    ItemContainerAutomationPeer(MU_XC_NAMESPACE.ItemContainer owner);
+}
+
+}

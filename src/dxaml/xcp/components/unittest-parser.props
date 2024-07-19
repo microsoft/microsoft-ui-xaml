@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+    </PropertyGroup>
+
+    <Import Project="$(XcpPath)\components\unittest-stubs.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XamlSourcePath)\xcp\components\staticpal\mocks\;
+            $(XamlSourcePath)\xcp\components\metadata\mocks\;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <Link>
+            <AdditionalDependencies>
+                %(AdditionalDependencies);
+                wininet.lib;
+            </AdditionalDependencies>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}'" Include="$(XcpPath)\components\pch\ut\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}"/>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(ConfigurationType)'=='DynamicLibrary' or '$(ConfigurationType)'=='Application'">
+        <ProjectReference Condition="'$(ProjectGuid)'!='{f9da8380-5504-4acc-bde0-72cd5981826d}'" Include="$(XamlSourcePath)\xcp\components\xstring\lib\Microsoft.UI.Xaml.XString.vcxproj" Project="{f9da8380-5504-4acc-bde0-72cd5981826d}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{23637f36-0cb9-4142-a60c-888b0efe9a4c}'" Include="$(XamlSourcePath)\xcp\components\metadata\lib\Microsoft.UI.Xaml.Metadata.vcxproj" Project="{23637f36-0cb9-4142-a60c-888b0efe9a4c}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{2b9a325f-17af-40f1-98c9-2aa7856b77e7}'" Include="$(XamlSourcePath)\xcp\components\metadata\mocks\Microsoft.UI.Xaml.Tests.Isolated.Mocks.Framework.Metadata.vcxproj" Project="{2b9a325f-17af-40f1-98c9-2aa7856b77e7}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{4c54ca57-3fdb-4bd4-a5cd-6f89f8f3d46b}'" Include="$(XamlSourcePath)\xcp\core\parser\core\Parser.Core.vcxproj" Project="{4c54ca57-3fdb-4bd4-a5cd-6f89f8f3d46b}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{95d07701-4af9-48e5-b726-0d42034811c8}'" Include="$(XamlSourcePath)\xcp\components\legacy\lib\Microsoft.UI.Xaml.Legacy.vcxproj" Project="{95d07701-4af9-48e5-b726-0d42034811c8}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{0c3c2872-56a3-4acf-b2f7-8c05710b93ae}'" Include="$(XamlSourcePath)\xcp\components\winuri\lib\winuri.vcxproj" Project="{0c3c2872-56a3-4acf-b2f7-8c05710b93ae}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{b686a4d4-ef60-411c-98c7-fd43225dc80f}'" Include="$(XamlSourcePath)\xcp\components\deferral\lib\Microsoft.UI.Xaml.Deferral.vcxproj" Project="{b686a4d4-ef60-411c-98c7-fd43225dc80f}"/>
+    </ItemGroup>
+</Project>

@@ -1,0 +1,96 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.RevealStatesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:media="using:Microsoft.UI.Xaml.Media"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    >
+
+    <StackPanel Orientation="Vertical" Width="800" Height="600" Name="RootCanvas">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="TestResult: "/>
+            <TextBox x:Name="TestResult" AutomationProperties.AutomationId="TestResult" IsReadOnly="true" Width="200"/>
+        </StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="350"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <Border BorderBrush="Gray" BorderThickness="1" Margin="10">
+                <StackPanel Orientation="Vertical">
+                    <Border BorderBrush="Silver">
+                        <TextBlock FontSize="12" Text="Logical State Tests" HorizontalAlignment="Center" Padding="2"/>
+                    </Border>
+                    <StackPanel Orientation="Horizontal">
+                        <ComboBox x:Name="ElementThemeComboBox" AutomationProperties.AutomationId="ElementThemeComboBox" SelectedIndex="0" SelectionChanged="ElementTheme_Changed">
+                            <ComboBox.Items>
+                                <ComboBoxItem AutomationProperties.Name="Default">Default</ComboBoxItem>
+                                <ComboBoxItem AutomationProperties.Name="Light">Light</ComboBoxItem>
+                                <ComboBoxItem AutomationProperties.Name="Dark">Dark</ComboBoxItem>
+                            </ComboBox.Items>
+                        </ComboBox>
+                        <ComboBox x:Name="ValidationActionsComboBox" AutomationProperties.AutomationId="ValidationActionsComboBox" SelectionChanged="ValidationActionsComboBox_SelectionChanged">
+                            <ComboBox.Items>
+                                <ComboBoxItem AutomationProperties.Name="HoverLight_ValidateNormalState">HoverLight: Validate Normal state</ComboBoxItem>
+                                <ComboBoxItem AutomationProperties.Name="HoverLight_ValidatePointerOverState">HoverLight: Validate PointerOver state</ComboBoxItem>
+                                <ComboBoxItem AutomationProperties.Name="BorderLight_ValidateBorderLightPanAway">BorderLight: Validate after panning away</ComboBoxItem>
+                                <ComboBoxItem AutomationProperties.Name="HoverLight_ValidatePointerOverState_Values">HoverLight: Validate PointerOver state (Values)</ComboBoxItem>
+                                <ComboBoxItem AutomationProperties.Name="HoverLight_ValidatePressedState_Values">HoverLight: Validate Pressed state (Values)</ComboBoxItem>
+                                <ComboBoxItem AutomationProperties.Name="HoverLight_ValidateSlowRelease_Values">HoverLight: Validate SlowRelease state (Values)</ComboBoxItem>
+                                <ComboBoxItem AutomationProperties.Name="HoverLight_ValidateFastRelease_Values">HoverLight: Validate FastRelease state (Values)</ComboBoxItem>
+                                <ComboBoxItem AutomationProperties.Name="HoverLight_ValidatePosition_Offset1_Values">HoverLight: Validate Position Offset1 (Values)</ComboBoxItem>
+                                <ComboBoxItem AutomationProperties.Name="HoverLight_ValidatePosition_Offset2_Values">HoverLight: Validate Position Offset2 (Values)</ComboBoxItem>
+                                <ComboBoxItem AutomationProperties.Name="HoverLight_ValidatePosition_Offset3_Values">HoverLight: Validate Position Offset3 (Values)</ComboBoxItem>
+                            </ComboBox.Items>
+                        </ComboBox>
+                        <ComboBox x:Name="TargetComboBox" AutomationProperties.AutomationId="TargetComboBox" Width="200">
+                            <ComboBox.Items>
+                                <ComboBoxItem AutomationProperties.Name="NormalListViewItem">NormalListViewItem</ComboBoxItem>
+                                <ComboBoxItem AutomationProperties.Name="AnotherListViewItem">AnotherListViewItem</ComboBoxItem>
+                                <ComboBoxItem AutomationProperties.Name="OneMoreListViewItem">OneMoreListViewItem</ComboBoxItem>
+                                <ComboBoxItem AutomationProperties.Name="LargeButton">LargeButton</ComboBoxItem>
+                            </ComboBox.Items>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="LargeButton" Style="{StaticResource ButtonRevealStyle}" Content="Large Button" AutomationProperties.AutomationId="LargeButton" AutomationProperties.Name="LargeButton" MinWidth="100" MinHeight="100" Margin="5" Click="LargeButton_Click"/>
+                        <Button x:Name="NarrowButton" Style="{StaticResource ButtonRevealStyle}" Content="NarrowButton" AutomationProperties.AutomationId="NarrowButton" AutomationProperties.Name="NarrowButton" MaxWidth="50" MinHeight="100" Margin="5" Holding="NarrowButton_Holding"/>
+                        <Button x:Name="AnotherButton" Style="{StaticResource ButtonRevealStyle}" Content="AnotherButton" AutomationProperties.AutomationId="AnotherButton" AutomationProperties.Name="AnotherButton" MaxWidth="50" MinHeight="100" Margin="5" Click="AnotherButton_Click"/>
+                        <Button x:Name="NotificationsTestButton" Content="NotificationsTestButton" AutomationProperties.AutomationId="NotificationsTestButton" AutomationProperties.Name="NotificationsTestButton" MaxWidth="50" MinHeight="100" Margin="5" Click="NotificationsTestButton_Click"/>
+                    </StackPanel>
+                    <ListView x:Name="TestListView" AutomationProperties.AutomationId="TestListView"  AutomationProperties.Name="TestListView" Margin="5" IsItemClickEnabled="True" ItemClick="TestListView_ItemClick">
+                        <ListViewHeaderItem FontSize="12">Reveal List View Example</ListViewHeaderItem>
+                        <ListViewItem x:Name="NormalListViewItem" Style="{StaticResource ListViewItemRevealStyle}" AutomationProperties.AutomationId="NormalListViewItem" AutomationProperties.Name="NormalListViewItem">Normal</ListViewItem>
+                        <ListViewItem x:Name="AnotherListViewItem" Style="{StaticResource ListViewItemRevealStyle}" AutomationProperties.AutomationId="AnotherListViewItem" AutomationProperties.Name="AnotherListViewItem" Holding="AnotherListViewItem_Holding">Another</ListViewItem>
+                        <ListViewItem x:Name="OneMoreListViewItem" Style="{StaticResource ListViewItemRevealStyle}" AutomationProperties.AutomationId="OneMoreListViewItem" AutomationProperties.Name="OneMoreListViewItem" Holding="OneMoreListViewItem_Holding">One more</ListViewItem>
+                        <ListViewItem CanDrag="True" Style="{StaticResource ListViewItemRevealStyle}">Draggable</ListViewItem>
+                        <ListViewItem IsEnabled="False" Style="{StaticResource ListViewItemRevealStyle}">Disabled</ListViewItem>
+                        <ListViewItem></ListViewItem>
+                    </ListView>
+                    <StackPanel Orientation="Horizontal">
+                        <Grid>
+                            <Border x:Name="Border4SetStatePressed" BorderThickness="20" BorderBrush="Red" />
+                        </Grid>
+                        <Button x:Name="SetStatePressed" AutomationProperties.Name="SetStatePressed" Content="SetState Pressed" Click="SetState_Click" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            <Border BorderBrush="Gray" BorderThickness="1" Grid.Column="1" Margin="10">
+                <StackPanel Orientation="Vertical">
+                    <Border BorderBrush="Silver">
+                        <TextBlock FontSize="12" Text="Expression Values Tests" HorizontalAlignment="Center" Margin="2"/>
+                    </Border>
+                    <Button x:Name="StartLoggingValues" Content="Start Logging Values" AutomationProperties.Name="StartLoggingValues" Click="StartLoggingValues_Click"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="LargeButton2" Style="{StaticResource ButtonRevealStyle}" Content="Large Button 2" AutomationProperties.AutomationId="LargeButton2" AutomationProperties.Name="LargeButton2" MinWidth="100" MinHeight="100" Margin="5"/>
+                        <Button x:Name="NarrowButton2" Style="{StaticResource ButtonRevealStyle}" Content="Narrow Button 2" AutomationProperties.AutomationId="NarrowButton2" AutomationProperties.Name="NarrowButton2" MaxWidth="50" MinHeight="100" Margin="5" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </StackPanel>
+</local:TestPage>

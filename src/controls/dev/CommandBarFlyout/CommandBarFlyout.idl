@@ -1,0 +1,27 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+[contentproperty("PrimaryCommands")]
+unsealed runtimeclass CommandBarFlyout : Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase
+{
+    CommandBarFlyout();
+
+    [MUX_PUBLIC_V2]
+    {
+        Boolean AlwaysExpanded{ get; set; };
+    }
+
+    Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Controls.ICommandBarElement> PrimaryCommands { get; };
+    Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Controls.ICommandBarElement> SecondaryCommands { get; };
+};
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass TextCommandBarFlyout : CommandBarFlyout
+{
+    TextCommandBarFlyout();
+};
+
+}

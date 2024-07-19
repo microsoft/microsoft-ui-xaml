@@ -1,0 +1,12 @@
+﻿namespace MU_XAP_NAMESPACE
+{
+
+[MUX_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass PagerControlAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    PagerControlAutomationPeer(MU_XC_NAMESPACE.PagerControl owner);
+}
+
+}
+

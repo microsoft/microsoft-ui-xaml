@@ -1,0 +1,28 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#pragma once
+
+#define TEXT_DATEPICKERFLYOUT_TITLE 5030
+#define TEXT_TIMEPICKERFLYOUT_TITLE 5031
+#define TEXT_LISTPICKERFLYOUT_TITLE 5032
+
+#define TEXT_PICKERFLYOUTBASE_ACCEPTBTNLABEL 5130
+#define TEXT_PICKERFLYOUTBASE_CANCELBTNLABEL 5131
+
+#define UIA_AP_DATEPICKER_NAME 5230
+#define UIA_AP_DATEPICKER_DAYNAME 5231
+#define UIA_AP_DATEPICKER_MONTHNAME 5232
+#define UIA_AP_DATEPICKER_YEARNAME 5233
+#define UIA_AP_TIMEPICKER_NAME 5234
+#define UIA_AP_TIMEPICKER_MINUTENAME 5235
+#define UIA_AP_TIMEPICKER_HOURNAME 5236
+#define UIA_AP_TIMEPICKER_PERIODNAME 5237
+#define UIA_AP_LISTPICKERFLYOUT_NAME 5238
+#define UIA_AP_PICKERFLYOUT_NAME 5239
+
+
+// please do not conflict with resources ids in xcperrorresource.h.
+// let's use ids from 5600 onwards.
+#define UIA_DIALOG_ACCEPT 5602
+#define UIA_DIALOG_DISMISS 5603

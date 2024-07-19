@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- This needs to be set in Directory.Build.props before adhocapp.props is imported in the root Directory.Build.props
+         of the repo.  Setting it in the project itself or any other props/target would cause it to be set too late -->
+    <IncludePrivateMetadata>true</IncludePrivateMetadata>
+  </PropertyGroup>
+    
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+</Project>

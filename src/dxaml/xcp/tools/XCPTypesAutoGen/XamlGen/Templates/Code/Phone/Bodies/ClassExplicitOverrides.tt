@@ -1,0 +1,79 @@
+<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<ClassDefinition>" debug="true"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+_Success_(return) _Check_return_ bool
+<#= Model.GeneratedClassName #>::QueryInterfaceOverride(_In_ REFIID riid, _COM_Outptr_ void** ppInterface)
+{
+<#    bool once = false;
+    foreach (var virtualMemberInterface in Model.BaseClassesVirtualMemberInterfaces) {
+        if (VelocityFeatures.IsVelocityVersion(virtualMemberInterface.Version)) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(virtualMemberInterface.Version) #>)
+<#        }#>
+    <#if (once) {#>else <#}#>if (InlineIsEqualGUID(riid, __uuidof(<#= AsCppType(virtualMemberInterface.IdlClassInfo.FullVirtualMembersInterfaceName) #>)))
+    {
+        *ppInterface = static_cast<<#= AsCppType(virtualMemberInterface.IdlClassInfo.FullVirtualMembersInterfaceName)  #>*>(this);
+        static_cast<IUnknown*>(*ppInterface)->AddRef();
+    }
+<#      once = true;
+        if (VelocityFeatures.IsVelocityVersion(virtualMemberInterface.Version)) { #>
+#endif
+<#        }
+    }#>
+    else 
+    {
+        return false;
+    }
+    return true;
+}
+
+STDMETHODIMP <#= Model.GeneratedClassName #>::GetIids(_Out_ ULONG *iidCount,
+    _When_(*iidCount == 0, _At_(*iids, _Post_null_))
+    _When_(*iidCount > 0, _At_(*iids, _Post_notnull_))
+    _Outptr_result_buffer_maybenull_(*iidCount) _Result_nullonfailure_ IID **iids)
+{
+    IID* pBaseIids;
+    ULONG cBaseIids;
+    *iidCount = 0;
+    *iids = nullptr;
+    IFC_RETURN(ReferenceTrackerRuntimeClass::GetIids(&cBaseIids, &pBaseIids));
+ 
+    static const IID localIids[] =
+        {
+<#    foreach (var virtualMemberInterface in Model.BaseClassesVirtualMemberInterfaces) { 
+        if (VelocityFeatures.IsVelocityVersion(virtualMemberInterface.Version)) { #>
+#if WI_IS_FEATURE_PRESENT(<#= VelocityFeatures.GetFeatureName(virtualMemberInterface.Version) #>)
+<#        }#>
+	        __uuidof(<#= AsCppType(virtualMemberInterface.IdlClassInfo.FullVirtualMembersInterfaceName) #>),
+<#        if (VelocityFeatures.IsVelocityVersion(virtualMemberInterface.Version)) { #>
+#endif
+<#        }
+    }#>
+        };
+    ULONG cLocalIids = _countof(localIids);
+
+    IID* pIids = (IID*)::CoTaskMemAlloc((cBaseIids + cLocalIids) * sizeof(IID));
+    if (pIids != nullptr)
+    {
+        for (ULONG i = 0; i < cBaseIids; i++)
+        {
+            pIids[i] = pBaseIids[i];
+        }
+        ::CoTaskMemFree(pBaseIids);
+
+        for (ULONG i = 0; i < cLocalIids; i++)
+        {
+            pIids[cBaseIids + i] = localIids[i];
+        }
+
+        *iids = pIids;
+        *iidCount = cBaseIids + cLocalIids;
+    }
+    else
+    {
+        RRETURN(E_OUTOFMEMORY);
+    }
+    RRETURN(S_OK);
+}

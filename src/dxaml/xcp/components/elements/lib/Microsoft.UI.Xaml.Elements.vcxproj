@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{425451f3-e2fe-49a1-a7f5-a3776e963b5e}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+
+    <Import Project="$(XcpPath)\components\common.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\brushes\inc;
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\comptree\inc;
+            $(XcpPath)\components\deferral\inc;
+            $(XcpPath)\components\elements\inc;
+            $(XcpPath)\components\graphics\inc;
+            $(XcpPath)\components\resources\inc;
+            $(XcpPath)\components\transforms\inc;
+            $(XcpPath)\components\simple\inc;
+            $(XcpPath)\components\lifetime\inc;
+            $(XcpPath)\control\inc;
+            $(XcpPath)\dxaml\lib;
+            $(XcpPath)\dxaml\lib\winrtgeneratedclasses;
+            $(XcpPath)\plat\win\desktop;
+            $(XcpPath)\win\inc;
+            $(XcpPath)\components\telemetry\inc;
+            $(XcpPath)\core\parser;
+            $(XcpPath)\components\valueboxer\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\PropertySetListener.cpp"/>
+        <ClCompile Include="..\FacadeAnimationHelper.cpp"/>
+        <ClCompile Include="..\FacadeStorage.cpp"/>
+        <ClCompile Include="..\FacadeReferenceWrapper.cpp"/>
+        <ClCompile Include="..\UIElement.cpp"/>
+        <ClCompile Include="..\FrameworkElement.cpp"/>
+        <ClCompile Include="..\UIElementRenderWalk.cpp"/>
+        <ClCompile Include="..\UIElementLayout.cpp"/>
+        <ClCompile Include="..\UIElementHitTesting.cpp"/>
+        <ClCompile Include="..\TransitionTarget.cpp"/>
+        <ClCompile Include="..\LayoutTransitionElement.cpp"/>
+        <ClCompile Include="..\PopupRoot.cpp"/>
+        <ClCompile Include="..\Popup.cpp"/>
+        <ClCompile Include="..\UIElementSimplePropertiesCallbacks.g.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\prodexcept\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{d4b4d716-47d2-4b4b-8765-f879a171f1a2}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

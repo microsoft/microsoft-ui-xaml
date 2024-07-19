@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{1f4e7d98-44f1-4655-9b72-b1a7c91c510d}</ProjectGuid>
+    </PropertyGroup>
+
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved. -->
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+    <Import Project="$(XcpPath)\core\core\elements\sources.props"/>
+
+    <PropertyGroup>
+        <XamlPrecompiledShared>$(XcpPath)\core\core\elements\pch\precomp.h</XamlPrecompiledShared>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(FrameworkUdkIncPath);
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\gridlength.cpp"/>
+        <ClCompile Include="..\griddefinitions.cpp"/>
+        <ClCompile Include="..\imagesource.cpp"/>
+        <ClCompile Include="..\ImageDecodeBoundsFinder.cpp"/>
+        <ClCompile Include="..\itemscontrol.cpp"/>
+        <ClCompile Include="..\popup.cpp"/>
+        <ClCompile Include="..\itemspresenter.cpp"/>
+        <ClCompile Include="..\contentcontrol.cpp"/>
+        <ClCompile Include="..\scrollcontentcontrol.cpp"/>
+        <ClCompile Include="..\contentpresenter.cpp"/>
+        <ClCompile Include="..\rootvisual.cpp"/>
+        <ClCompile Include="..\dependencypropertyproxy.cpp"/>
+        <ClCompile Include="..\style.cpp"/>
+        <ClCompile Include="..\setter.cpp"/>
+        <ClCompile Include="..\viewbox.cpp"/>
+        <ClCompile Include="..\border.cpp"/>
+        <ClCompile Include="..\AutomationEventsHelper.cpp"/>
+        <ClCompile Include="..\automationpeer.cpp"/>
+        <ClCompile Include="..\uiapatternprovider.cpp"/>
+        <ClCompile Include="..\frameworkelementautomationpeer.cpp"/>
+        <ClCompile Include="..\textblockautomationpeer.cpp"/>
+        <ClCompile Include="..\richtextblockautomationpeer.cpp"/>
+        <ClCompile Include="..\richtextblockoverflowautomationpeer.cpp"/>
+        <ClCompile Include="..\visualstate.cpp"/>
+        <ClCompile Include="..\visualstategroup.cpp"/>
+        <ClCompile Include="..\layouttransition.cpp"/>
+        <ClCompile Include="..\visualstatemanager.cpp"/>
+        <ClCompile Include="..\imageautomationpeer.cpp"/>
+        <ClCompile Include="..\cachemode.cpp"/>
+        <ClCompile Include="..\transitionroot.cpp"/>
+        <ClCompile Include="..\nullextension.cpp"/>
+        <ClCompile Include="..\DragEventArgs.cpp"/>
+        <ClCompile Include="..\SizeChangedEventArgs.cpp"/>
+        <ClCompile Include="..\GeometryGroupSink.cpp"/>
+        <ClCompile Include="..\HitTestHelper.cpp"/>
+        <ClCompile Include="..\PointHitTestHelper.cpp"/>
+        <ClCompile Include="..\PolygonHitTestHelper.cpp"/>
+        <ClCompile Include="..\HitTestingGeometrySink.cpp"/>
+        <ClCompile Include="..\PointHitTestGeometrySink.cpp"/>
+        <ClCompile Include="..\PolygonHitTestGeometrySink.cpp"/>
+        <ClCompile Include="..\TransformGeometrySink.cpp"/>
+        <ClCompile Include="..\GeometryBoundsHelper.cpp"/>
+        <ClCompile Include="..\BoundsGeometrySink.cpp"/>
+        <ClCompile Include="..\InputScope.cpp"/>
+        <ClCompile Include="..\FlyoutBase.cpp"/>
+        <ClCompile Include="..\Flyout.cpp"/>
+        <ClCompile Include="..\MenuFlyout.cpp"/>
+        <ClCompile Include="..\MenuFlyoutSubItem.cpp"/>
+        <ClCompile Include="..\CommandBar.cpp"/>
+        <ClCompile Include="..\Button.cpp"/>
+        <ClCompile Include="..\icon.cpp"/>
+        <ClCompile Include="..\FullWindowMediaRoot.cpp"/>
+        <ClCompile Include="..\ItemsStackPanel.cpp"/>
+        <ClCompile Include="..\ListViewBaseItem.cpp"/>
+        <ClCompile Include="..\ListViewBaseItemChrome.cpp"/>
+        <ClCompile Include="..\ListViewBaseItemSecondaryChrome.cpp"/>
+        <ClCompile Include="..\CalendarView.cpp"/>
+        <ClCompile Include="..\CalendarViewBaseItemChrome.cpp"/>
+        <ClCompile Include="..\SizeUtil.cpp"/>
+        <ClCompile Include="..\MultiParentShareableDependencyObject.cpp"/>
+        <ClCompile Include="..\NoParentShareableDependencyObject.cpp"/>
+        <ClCompile Include="..\DependencyProperty.cpp"/>
+        <ClCompile Include="..\VisualTransitionCompletedData.cpp"/>
+        <ClCompile Include="..\SplitView.cpp"/>
+        <ClCompile Include="..\DeferredMapping.cpp"/>
+        <ClCompile Include="..\TargetPropertyPath.cpp"/>
+        <ClCompile Include="..\StateTriggerBase.cpp"/>
+        <ClCompile Include="..\StateTrigger.cpp"/>
+        <ClCompile Include="..\AdaptiveTrigger.cpp"/>
+        <ClCompile Include="..\SoftwareBitmapSource.cpp"/>
+        <ClCompile Include="..\SemanticZoom.cpp"/>
+        <ClCompile Include="..\ScrollViewer.cpp"/>
+        <ClCompile Include="..\connectedanimationroot.cpp"/>
+        <ClCompile Include="..\RenderTargetBitmapWaitExecutor.cpp"/>
+        <ClCompile Include="..\XamlIslandRoot.cpp"/>
+        <ClCompile Include="..\XamlIslandRootCollection.cpp"/>
+        <ClCompile Include="..\RangeBase.cpp"/>
+        <ClCompile Include="..\DeferredElement.cpp"/>
+        <ClCompile Include="..\CWindow.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\core\core\elements\pch\elements.pch.vcxproj" Project="{04cf55f2-f07d-452a-b1c6-279eca9312e6}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

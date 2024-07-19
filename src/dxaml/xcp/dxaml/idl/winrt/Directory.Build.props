@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <IsWinmdProject>true</IsWinmdProject>
+    <!-- IDL generation with public SDK does not work yet -->
+    <XamlUsePublicSdk>false</XamlUsePublicSdk>
+    <!-- MIDL version checks do not work with [experimental] (which is used in lifted IXP idl files) -->
+    <DisableMidlVersionChecks>1</DisableMidlVersionChecks>
+
+    <!-- Not sure if this is necessary, but the merged project didn't have this set -->
+    <MidlFlags Condition="'$(MergeWinMd)' != 'false'">$(MidlFlags) /noproxy</MidlFlags>
+    <DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  <PropertyGroup>
+    <ProjectIncludeDirectories>
+      $(ProjectIncludeDirectories);
+      $(ProjectRoot)\dxaml\xcp\inc;
+      $(LiftedIXPGeneratedIdlPath);
+      $(LiftedMRTGeneratedIdlPath);
+    </ProjectIncludeDirectories>
+  </PropertyGroup>
+
+  <!-- Not sure if this is necessary, but the merged project didn't have this set -->
+  <ItemDefinitionGroup Condition="'$(MergeWinMd)' != 'false'">
+    <Midl>
+      <MinimumTargetSystem>NT62</MinimumTargetSystem>
+    </Midl>
+  </ItemDefinitionGroup>
+</Project>

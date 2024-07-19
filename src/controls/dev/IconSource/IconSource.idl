@@ -1,0 +1,30 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass ImageIconSource : Microsoft.UI.Xaml.Controls.IconSource
+{
+    ImageIconSource();
+
+    Microsoft.UI.Xaml.Media.ImageSource ImageSource{ get; set; };
+
+    static Microsoft.UI.Xaml.DependencyProperty ImageSourceProperty{ get; };
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass AnimatedIconSource : Microsoft.UI.Xaml.Controls.IconSource
+{
+    AnimatedIconSource();
+
+    IAnimatedVisualSource2 Source{ get; set; };
+    IconSource FallbackIconSource{ get; set; };
+    Boolean MirroredWhenRightToLeft{ get; set; };
+
+    static Microsoft.UI.Xaml.DependencyProperty SourceProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty FallbackIconSourceProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty MirroredWhenRightToLeftProperty{ get; };
+}
+
+}

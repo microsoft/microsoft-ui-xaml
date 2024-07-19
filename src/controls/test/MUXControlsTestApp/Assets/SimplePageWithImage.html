@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Page With Image</title>
+    <script>
+        "use strict";
+
+        function doPostMessage(message) {
+            // Do different things in WebView2 vs the browser, so neither gets an error
+            try {
+                window.chrome.webview.postMessage(message);
+            }
+            catch {
+                window.postMessage(message);
+            }
+        };
+
+        function onImageLoaded() {
+            doPostMessage("Image loaded.");
+        }
+        function onImageLoadedFailed() {
+            doPostMessage("Image not loaded.");
+        }
+    </script>
+</head>
+<body>
+    <img id="LargeWisteria_image" src="https://testapp.example/LargeWisteria.jpg" width="600" height="300" 
+        onload="onImageLoaded();" onerror="onImageLoadedFailed();" />
+</body>
+</html>

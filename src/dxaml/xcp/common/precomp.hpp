@@ -1,0 +1,21 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#include "xcpwindows.h"
+#include "xcperror.h"
+#include "macros.h"
+#include "xcpdebug.h"
+#include "pal.h"
+#include "matrix.h"
+#include "rendertypes.h"
+#include "xcpmath.h"
+#include "ctypes.h"
+#include "xstrutil.h"
+#include "memutils.h"
+#include "xstring_ptr.h"
+#include "TextSurrogates.h"
+#include "XStringUtils.h"
+#include "refcounting.h"
+#include "XStringBuilder.h"
+#include "DataStructureFunctionProvider.h"
+#include "DataStructureFunctionSpecializations.h"

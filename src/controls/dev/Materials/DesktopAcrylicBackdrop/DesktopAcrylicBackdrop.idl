@@ -1,0 +1,11 @@
+namespace MU_XM_NAMESPACE
+{
+
+[MUX_PUBLIC_V4]
+[webhosthidden]
+unsealed runtimeclass DesktopAcrylicBackdrop : Microsoft.UI.Xaml.Media.SystemBackdrop
+{
+    DesktopAcrylicBackdrop();
+}
+
+}

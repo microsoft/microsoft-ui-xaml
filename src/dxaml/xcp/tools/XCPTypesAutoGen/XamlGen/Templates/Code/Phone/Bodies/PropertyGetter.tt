@@ -1,0 +1,50 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<PropertyDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<# if (Model.IsStatic) {
+       if (Model.IsInterfaceImplementation) { #>
+IFACEMETHODIMP <#= AsCppType(Model.DeclaringClass.GeneratedFactoryFullName) #>::<#= Model.GetterName #>(<#= AsCppType(Model.PropertyType.AnnotatedAbiReturnParameterName) #>)
+<#     } else { #>
+_Check_return_ HRESULT <#= AsCppType(Model.DeclaringClass.GeneratedFactoryFullName) #>::<#= Model.GetterName #>(<#= AsCppType(Model.PropertyType.AnnotatedAbiReturnParameterName) #>)
+<#     } #>
+{
+<#= IncludeTemplate<PropertyGetterBody>(Model) #>
+}
+
+<# } else if (Model.IsInterfaceImplementation) {
+       if (!Model.IsPureVirtual) { #>
+IFACEMETHODIMP <#= AsCppType(Model.DeclaringClass.GeneratedClassName) #>::<#= Model.GetterName #>(<#= AsCppType(Model.PropertyType.AnnotatedAbiReturnParameterName) #>)
+{
+<#         if (Model.IsVirtual && Model.Modifier == Modifier.Public) { #>
+Not implemented
+<#         } else { #>
+<#= IncludeTemplate<PropertyGetterBody>(Model) #>
+<#         } #>
+}
+
+<#     }
+       if (Model.IsVirtual) {
+           if (Model.Modifier == Modifier.Protected) { #>
+_Check_return_ HRESULT <#= AsCppType(Model.DeclaringClass.GeneratedClassName) #>::<#= Model.IdlPropertyInfo.ProtectedGetterName #>(<#= AsCppType(Model.PropertyType.AnnotatedAbiReturnParameterName) #>)
+{
+Not implemented
+}
+
+<#         } else if (Model.Modifier == Modifier.Public && !Model.IsPureVirtual) { #>
+IFACEMETHODIMP <#= AsCppType(Model.DeclaringClass.GeneratedClassName) #>::<#= Model.IdlPropertyInfo.VirtualGetterName #>(<#= AsCppType(Model.PropertyType.AnnotatedAbiReturnParameterName) #>)
+{
+<#= IncludeTemplate<PropertyGetterBody>(Model) #>
+}
+
+<#         }
+       }
+   } else { #>
+_Check_return_ HRESULT <#= AsCppType(Model.DeclaringClass.GeneratedClassName) #>::<#= Model.GetterName #>(<#= AsCppType(Model.PropertyType.AnnotatedAbiReturnParameterName) #>)
+{
+<#= IncludeTemplate<PropertyGetterBody>(Model) #>
+}
+
+<# } #>

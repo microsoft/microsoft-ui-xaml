@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <PrivateDependencyPackagePath>$(NugetPackageDirectory)\$(PrivateDependencyPackageName).$(CurrentPrivateDependencyPackageVersion)</PrivateDependencyPackagePath>
+        <ExternalDependenciesPath>$(PrivateDependencyPackagePath)\dxaml\external</ExternalDependenciesPath>
+        <TraceWPPIncludePath>$(ExternalDependenciesPath)\WppConfig</TraceWPPIncludePath>
+    </PropertyGroup>
+</Project>

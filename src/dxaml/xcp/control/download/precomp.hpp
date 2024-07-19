@@ -1,0 +1,20 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#include "xcpwindows.h"
+#include "Macros.h"
+#include "xcpdebug.h"
+#include "pal.h"
+#include "XStringBuilder.h"
+#include "hal.h"
+#include "download.h"
+#include "xcperror.h"
+#include "memutils.h"
+#include "xstrutil.h"
+#include "xuriutils.h"
+#include "core.h"
+#include "xcpmath.h"
+#include "ctypes.h"
+#include "downloadrequestinfo.h"
+#include "msresourcehelpers.h"
+#include "UriValidator.h"

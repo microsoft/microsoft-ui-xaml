@@ -1,0 +1,12 @@
+﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+[MUX_INTERNAL]
+[default_interface]
+[webhosthidden]
+runtimeclass SelectorBarTestHooks
+{
+    static MU_XC_NAMESPACE.ItemsView GetItemsViewPart(MU_XC_NAMESPACE.SelectorBar selectorBar);
+}
+
+}

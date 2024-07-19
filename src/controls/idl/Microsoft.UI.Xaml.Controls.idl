@@ -1,0 +1,203 @@
+﻿#define MU_XC_NAMESPACE Microsoft.UI.Xaml.Controls
+#define MU_XCP_NAMESPACE Microsoft.UI.Xaml.Controls.Primitives
+#define MU_XCAV_NAMESPACE Microsoft.UI.Xaml.Controls.AnimatedVisuals
+#define MU_XM_NAMESPACE Microsoft.UI.Xaml.Media
+#define MU_XAP_NAMESPACE Microsoft.UI.Xaml.Automation.Peers
+#define MU_PRIVATE_CONTROLS_NAMESPACE Microsoft.UI.Private.Controls
+#define MU_PRIVATE_MEDIA_NAMESPACE Microsoft.UI.Private.Media
+#define MU_X_XTI_NAMESPACE Microsoft.UI.Xaml.XamlTypeInfo
+
+namespace features
+{
+#ifdef MUX_PRERELEASE
+    // In prerelease, the feature is disabled by default (giving it the [experimental] tag)
+    feature_name Feature_Experimental = { DisabledByDefault, FALSE };
+#else
+    // In release, the experimental feature is disabled, removing it from the final WinMD
+    feature_name Feature_Experimental = { AlwaysDisabled, FALSE };
+#endif
+}
+
+namespace Microsoft.UI.Xaml.CustomAttributes
+{
+    [attributeusage(target_runtimeclass)]
+    [version(0x00000001)]
+    [webhosthidden]
+    attribute MUXHasCustomActivationFactoryAttribute
+    {
+    }
+
+    [attributeusage(target_runtimeclass, target_enum, target_struct, target_interface, target_delegate, target_property, target_method)]
+    [version(0x00000001)]
+    [webhosthidden]
+    attribute MUXPropertyNeedsDependencyPropertyFieldAttribute
+    {
+    }
+
+    [attributeusage(target_runtimeclass, target_enum, target_struct, target_interface, target_delegate, target_property, target_method)]
+    [version(0x00000001)]
+    [webhosthidden]
+    attribute MUXPropertyChangedCallbackAttribute
+    {
+        boolean enable;
+    }
+
+    [attributeusage(target_runtimeclass, target_enum, target_struct, target_interface, target_delegate, target_property, target_method)]
+    [version(0x00000001)]
+    [webhosthidden]
+    attribute MUXPropertyChangedCallbackMethodNameAttribute
+    {
+        String value;
+    }
+
+    [attributeusage(target_runtimeclass, target_enum, target_struct, target_interface, target_delegate, target_property, target_method)]
+    [version(0x00000001)]
+    [webhosthidden]
+    attribute MUXPropertyValidationCallbackAttribute
+    {
+        String value;
+    }
+
+    [attributeusage(target_property, target_method)]
+    [version(0x00000001)]
+    [webhosthidden]
+    attribute MUXPropertyDefaultValueAttribute
+    {
+        String value;
+    }
+
+    [attributeusage(target_property, target_method)]
+    [version(0x00000001)]
+    [webhosthidden]
+    attribute MUXPropertyTypeAttribute
+    {
+        String value;
+    }
+
+#include "DPCodeGenAttributes.idl"
+
+    [attributeusage(target_runtimeclass, target_enum, target_struct, target_interface, target_delegate, target_property, target_method)]
+    [attributename("muxoverrideensureproperties")]
+    [version(0x00000001)]
+    [webhosthidden]
+    attribute MUXOverrideEnsurePropertiesAttribute
+    {
+    }
+}
+
+// These attributes are used to indicate the state of an API from a consumer's perspective:
+// * Public (MUX_PUBLIC): Stable and ready to use, API will never change shape
+// * Preview (MUX_PREVIEW): Ready for experimentation and feedback, API may change
+// * Internal (MUX_INTERNAL): Only for internal testing purposes (like test hooks)
+//
+// Under the umbrella of Public we have versions as well. These versions are similar to
+// what you find for the versions of an API in the Windows SDK. Once we've shipped a version
+// of the library then the ABI (Application Binary Interface) of the things that were previously
+// public can never change. This includes the low-level WinRT interfaces that you don't see while
+// you're authoring or consuming the APIs but are under the covers. These interfaces are generated
+// by MIDL and have UUIDs calculated based on the names and layout of members of the interface.
+// This means that if we were to even add members to a MUX_PUBLIC class that has already shipped,
+// then its interface UUID would change and help signal that as an ABI breaking change.
+//
+// To maintain ABI compatibility what we do is: once we've shipped a version of the library and
+// go to add new members to a class that has already shipped as MUX_PUBLIC, the new members must
+// be tagged with a higher version (e.g. MUX_PUBLIC_V2 for now and then MUX_PUBLIC_V3 after that, etc).
+// For example:
+//
+//     [MUX_PUBLIC]
+//     runtimeclass Example
+//     {
+//         int SomeProp;
+//        
+//         [MUX_PUBLIC_V2]
+//         {
+//             double SomethingAddedLater;
+//         }
+//
+//         [MUX_PREVIEW]
+//         string SomethingInPreview;
+//     }
+//
+// New APIs that are being developed can still be MUX_PREVIEW (with no explicit version) for
+// as long as we want.
+//
+
+#define MUX_PUBLIC contract(Microsoft.UI.Xaml.XamlContract, 1)
+#define MUX_PUBLIC_V2 contract(Microsoft.UI.Xaml.XamlContract, 2)
+#define MUX_PUBLIC_V3 contract(Microsoft.UI.Xaml.XamlContract, 3)
+#define MUX_PUBLIC_V4 contract(Microsoft.UI.Xaml.XamlContract, 4)
+#define MUX_PUBLIC_V5 contract(Microsoft.UI.Xaml.XamlContract, 5)
+#define MUX_PUBLIC_V6 contract(Microsoft.UI.Xaml.XamlContract, 6)
+
+// Note: It's expected that these are the same version because we require internal be in a different namespace,
+// and we split out the public vs internal metadata by namespace as well as feature attributes.
+#define MUX_PREVIEW contract(Microsoft.UI.Xaml.XamlContract, 6), feature(Feature_Experimental)
+#define MUX_INTERNAL contract(Microsoft.UI.Xaml.XamlContract, 6), feature(Feature_Experimental)
+
+// If this is specified then codegen will not create or register a default activation factory.
+#define MUX_HAS_CUSTOM_FACTORY Microsoft.UI.Xaml.CustomAttributes.MUXHasCustomActivationFactory
+
+// If specified on a property that doesn't have a corresponding "{...}Property" static DependencyProperty 
+// property, a DependencyProperty field will still be generated and registered. The scenario for this is 
+// TemplateSettings objects which don't need public DependencyProperty properties but use TemplateBinding
+// under the covers and TemplateBinding understands the DP registration and will use it.
+#define MUX_PROPERTY_NEEDS_DP_FIELD Microsoft.UI.Xaml.CustomAttributes.MUXPropertyNeedsDependencyPropertyField
+
+// Whether the property (or, if specified on the type, all properties) should have a OnPropertyChanged callback
+#define MUX_PROPERTY_CHANGED_CALLBACK(enable) Microsoft.UI.Xaml.CustomAttributes.MUXPropertyChangedCallback(enable)
+
+// Normally the codegen generates a static OnPropertyChanged method which then calls an instance OnPropertyChanged
+// method on your type. For attached properties you need to specify this callback so that you can also receive the sender.
+#define MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME(name) Microsoft.UI.Xaml.CustomAttributes.MUXPropertyChangedCallbackMethodName(name)
+
+// Specifies the default value for the DependencyProperty.Register call. If unspecified the default is the default 
+// for the property type (e.g. false for bool, 0 for int, 0.0 for double, "" for string, nullptr for reference types)
+#define MUX_DEFAULT_VALUE(value) Microsoft.UI.Xaml.CustomAttributes.MUXPropertyDefaultValue(value)
+
+// Codegen infers the type of a property from the instance property's getter or an attached properties' 
+// Get{...} method. If neither of these exist then the IDL must specify the override type or the codegen
+// will produce a build error.
+#define MUX_PROPERTY_TYPE(value) Microsoft.UI.Xaml.CustomAttributes.MUXPropertyType(value)
+
+// Instance method on the owning type that can be used to validate or coerce the value.
+#define MUX_PROPERTY_VALIDATION_CALLBACK(value) Microsoft.UI.Xaml.CustomAttributes.MUXPropertyValidationCallback(value)
+
+// Allows the overriding of the EnsureProperties() function call.
+#define MUX_OVERRIDE_ENSURE_PROPERTIES muxoverrideensureproperties
+
+namespace MU_X_XTI_NAMESPACE
+{
+    [webhosthidden]
+    [default_interface]
+    runtimeclass XamlControlsXamlMetaDataProvider
+    // IXMP needs to be implemented by a public type in our assembly, but it doesn't need to be
+    // named anything special. Let's leverage the fact that we have this existing runtimeclass
+    // so we don't pollute our namespace with unnecessary public types.
+    : [default] Microsoft.UI.Xaml.Markup.IXamlMetadataProvider
+    {
+        XamlControlsXamlMetaDataProvider();
+
+        static void Initialize();
+    }
+}
+
+namespace MU_XC_NAMESPACE
+{
+    [webhosthidden]
+    [default_interface]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+    [MUX_PUBLIC]
+    runtimeclass XamlControlsResources : Microsoft.UI.Xaml.ResourceDictionary
+    {
+        XamlControlsResources();
+        static void EnsureRevealLights(Microsoft.UI.Xaml.UIElement element);
+
+        {
+            [MUX_DEFAULT_VALUE("false")]
+            Boolean UseCompactResources{ get; set; };
+
+            static Microsoft.UI.Xaml.DependencyProperty UseCompactResourcesProperty{ get; };
+        }
+    }
+}

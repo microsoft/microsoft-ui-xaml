@@ -1,0 +1,53 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Window x:Class="SampleXbfViewer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SampleXbfViewer"
+        mc:Ignorable="d"
+        Title="UWP XBFv2 Viewer" Height="350" Width="525">
+    <Window.Resources>
+        <DataTemplate x:Key="XbfFileTemplate" DataType="{x:Type local:XbfFileViewModel}">
+            <ScrollViewer>
+                <StackPanel>
+                    <!-- Dump the metadata -->
+                    <TextBlock Text="{Binding MetadataSize}" />
+                    <TreeView ItemsSource="{Binding Metadata}" />
+
+                    <!-- Dump the nodestreams -->
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding NodeStreamSize}" />
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </DataTemplate>
+        <DataTemplate x:Key="XamlObjectTemplate" DataType="{x:Type local:XamlObjectViewModel}">
+            <ScrollViewer>
+                <StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
+        </DataTemplate>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="FilePathTextBox" Grid.Column="0" TextWrapping="NoWrap" AcceptsReturn="False" AcceptsTab="False" KeyUp="FilePathTextBox_OnKeyUp" />
+            <Button x:Name="BrowseButton" Grid.Column="1" Content="Browse" Click="BrowseButton_Click" />
+            <Button x:Name="OpenFileButton" Grid.Column="2" Content="Open" Click="OpenFileButton_Click" />
+        </Grid>
+        <TabControl Grid.Row="1" x:Name="XbfDisplay">
+            <TabItem x:Name="XbfInfoTab" Header="XBF Information" Content="{Binding XbfFileViewModel}" ContentTemplate="{StaticResource XbfFileTemplate}" />
+            <TabItem x:Name="ObjectGraphTab" Header="Realized Object Graph" Content="{Binding XamlObjectViewModel}" ContentTemplate="{StaticResource XamlObjectTemplate}" />
+        </TabControl>
+    </Grid>
+</Window>

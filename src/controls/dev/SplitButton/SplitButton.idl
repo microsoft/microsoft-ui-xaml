@@ -1,0 +1,54 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+
+[MUX_PUBLIC]
+[webhosthidden]
+[default_interface]
+runtimeclass SplitButtonClickEventArgs
+{
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass SplitButton : Microsoft.UI.Xaml.Controls.ContentControl
+{
+    SplitButton();
+
+    Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase Flyout { get; set; };
+    Microsoft.UI.Xaml.Input.ICommand Command { get; set; };
+    Object CommandParameter { get; set; };
+
+    event Windows.Foundation.TypedEventHandler<SplitButton, SplitButtonClickEventArgs> Click;
+
+    static Microsoft.UI.Xaml.DependencyProperty FlyoutProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty CommandProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty CommandParameterProperty { get; };
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+[marshaling_behavior(agile)]
+[default_interface]
+runtimeclass ToggleSplitButtonIsCheckedChangedEventArgs
+{
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass ToggleSplitButton : SplitButton
+{
+    ToggleSplitButton();
+
+    Boolean IsChecked{ get; set; };
+
+    event Windows.Foundation.TypedEventHandler<ToggleSplitButton, ToggleSplitButtonIsCheckedChangedEventArgs> IsCheckedChanged;
+
+    static Microsoft.UI.Xaml.DependencyProperty IsCheckedProperty{ get; };
+}
+
+}

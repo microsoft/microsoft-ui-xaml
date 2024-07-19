@@ -1,0 +1,20 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<ClassDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#include "precomp.h"
+#include "<#= Model.CppCoreGeneratedHeaderFileName #>"
+#include "Activators.g.h"
+
+_Check_return_ HRESULT <#= Model.CoreName #>::GetPeer(_Outptr_ IInspectable** ppPeer)
+{
+<# if (Model.IsActivatable) { #>
+    RRETURN(<#= OMContext.DefaultImplementationNamespace #>::<#= Model.EventArgsFrameworkDefaultConstructor #>(this, ppPeer));
+<# } else { #>
+    RRETURN(E_NOTIMPL);
+<# } #>
+}

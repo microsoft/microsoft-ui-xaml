@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+        There are already some MSBuild projects in the build tree.  NT Build handles these by passing in a series of
+        property values when it executes them.  This legacy file will (when not being run under NT) set those 
+        appropriate values.
+    -->
+  <PropertyGroup>
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ManagedCode>true</ManagedCode>
+  </PropertyGroup>
+
+  <Import Project="Xaml.NTLegacy.props" />
+
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">Win32</Platform>
+    <DebugSymbols Condition="'$(Configuration)' == 'Debug'">true</DebugSymbols>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <DefineConstants Condition="'$(Configuration)' == 'Debug'">$(DefineConstants);DEBUG</DefineConstants>
+    <Optimize Condition="'$(Configuration)' == 'Release'">true</Optimize>
+    <NoWarn>$(NoWarn);2008</NoWarn>
+    <DebugType Condition="'$(Configuration)' == 'Debug'">full</DebugType>
+    <DebugType Condition="'$(Configuration)' == 'Release'">pdbonly</DebugType>
+    <PlatformTarget Condition="'$(Platform)' == 'Win32'">x86</PlatformTarget>
+    <PlatformTarget Condition="'$(Platform)' != 'Win32'">$(Platform)</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit Condition="'$(Configuration)' == 'Release'">true</Prefer32Bit>
+    <UseDotNetNativeToolchain Condition="'$(Configuration)' == 'Release'">true</UseDotNetNativeToolchain>
+  </PropertyGroup>
+
+  <!--  The CSC Task is different in that it uses properties instead of attributes -->
+  <PropertyGroup>
+    <!-- These might not be right in all scenarios, so check them out -->
+    <WarningLevel>4</WarningLevel>
+    <DefineConstants Condition="'$(Configuration)'=='Debug'">$(DefineConstants) DEBUG;</DefineConstants>
+    <DefineConstants>$(DefineConstants) TRACE;CODE_ANALYSIS;WIN32;</DefineConstants>
+    <DebugType Condition="'$(Configuration)'=='Debug'">Full</DebugType>
+    <NoLogo>true</NoLogo>
+    <Optimize>false</Optimize>
+    <Optimize Condition="'$(Configuration)'=='Debug' or '$(NoOptimization)'=='true'">true</Optimize>
+    <TreatWarningAsErrors>true</TreatWarningAsErrors>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib"/>
+    <Reference Include="$(SDKReferencesPath)\*.winmd"/>
+    <Reference Include="$(FacadeWinmdPath)" />
+    <Reference Include="@(WinUIWinMDReferences)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(ProjectRoot)\MergedWinMD\private\MergedWinMD.vcxproj" Project="{52b2ed64-1cfc-401b-8c5b-6d1e1deadf98}"/>
+  </ItemGroup>
+
+  <!--
+    Ignore private mux metadata dir since these projects reference the mergedwinmd project (see above)
+    The mergedwinmd project is (confusingly) not the same project
+  -->
+  <PropertyGroup>
+    <IgnorePrivateMUXMetadataDir>true</IgnorePrivateMUXMetadataDir>
+  </PropertyGroup>
+  <Target Name="FixWinmdExpPath" BeforeTargets="ExportWindowsMDFile">
+    <PropertyGroup>
+      <WinMdExpToolPath>$([System.IO.Directory]::GetParent($(MsAppxPackageTargets)))</WinMdExpToolPath>
+    </PropertyGroup>
+  </Target>
+</Project>

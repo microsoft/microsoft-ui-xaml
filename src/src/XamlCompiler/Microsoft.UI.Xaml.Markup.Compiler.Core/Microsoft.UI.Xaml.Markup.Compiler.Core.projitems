@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>06974794-A0B0-4339-AF27-158E26F15A86</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Microsoft.UI.Xaml.Markup.Compiler</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)IBindAssignment.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BindStatus.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IBindUniverse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ICodeGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ICodeGenOutput.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)InstanceCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IXamlMemberMeta.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IXamlTypeMeta.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IXamlTypeResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)KnownStrings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Platform.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)StringExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)XamlMemberExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)XamlTypeExtensions.cs" />
+  </ItemGroup>
+</Project>

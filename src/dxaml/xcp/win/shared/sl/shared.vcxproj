@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{e5804231-9d90-4e97-812d-855ba72b8426}</ProjectGuid>
+    </PropertyGroup>
+
+    <!-- ******************************** File Header ******************************\ -->
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved.                   -->
+    <!--                                                                              -->
+    <!-- Project specific SOURCES file.                                               -->
+    <!--                                                                              -->
+    <!-- ***************************************************************************/ -->
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+
+    <Import Project="..\sources.props"/>
+
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) ENABLE_UIAUTOMATION;</ProjectPreprocessorDefinitions>
+        <ProjectIncludeDirectories>
+            $(LiftedIXPIncludePaths);
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\Collection\inc;
+            $(XcpPath)\components\math\inc;
+            $(XcpPath)\components\brushes\inc;
+            $(XcpPath)\components\scaling\inc;
+            $(XcpPath)\components\OneCoreTransforms\inc;
+            $(XcpPath)\plat\win\desktop;
+            $(XcpPath)\dxaml\lib;
+            $(WilInternalPkgDirectory)\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+    <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+        <PropertyGroup>
+            <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+        </PropertyGroup>
+        <Error Condition="!Exists('$(TestInProductionPkgDirectory)\build\native\Microsoft.Windows.TestInProduction.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(TestInProductionPkgDirectory)\build\native\Microsoft.Windows.TestInProduction.targets'))" />
+    </Target>
+    <Import Project="$(TestInProductionPkgDirectory)\build\native\Microsoft.Windows.TestInProduction.targets" Condition="Exists('$(TestInProductionPkgDirectory)\build\native\Microsoft.Windows.TestInProduction.targets')" />
+</Project>

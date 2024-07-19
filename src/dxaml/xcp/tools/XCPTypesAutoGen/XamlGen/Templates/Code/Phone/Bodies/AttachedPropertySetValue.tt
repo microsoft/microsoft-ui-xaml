@@ -1,0 +1,24 @@
+<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<AttachedPropertyDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+case put_<#= Model.DeclaringType.TypeTableName #>_Attached<#= Model.Name #>:
+{
+    wrl::ComPtr<<#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyObject") #>> dependencyObj;
+    wrl::ComPtr<<#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyProperty") #>> dependencyProp;
+    wrl::ComPtr<<#= AsCppType(Model.DeclaringType.DeclaringNamespace.Name) #>::I<#= Model.DeclaringType.TypeTableName #>Statics> statics;
+    IFC(instance->QueryInterface(
+        __uuidof(<#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyObject") #>),
+        &dependencyObj));
+    IFC(<#= PrefixAbi("Windows::Foundation::GetActivationFactory") #>(
+        Microsoft::WRL::Wrappers::HStringReference(L"<#= Model.DeclaringType.TypeTableFullName #>").Get(),
+        statics.GetAddressOf()));
+    IFC(statics->get_<#= Model.Name #>Property(
+        &dependencyProp));
+    IFC(dependencyObj->SetValue(
+        dependencyProp.Get(),
+        value));
+    break;
+  }

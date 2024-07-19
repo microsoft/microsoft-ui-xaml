@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CompileFiles Include="AppBar.cs" />
+    <CompileFiles Include="AppBarAutomationPeer.cs" />
+    <CompileFiles Include="AppBarButton.cs" />
+    <CompileFiles Include="AppBarButtonAutomationPeer.cs" />
+    <CompileFiles Include="AppBarElementContainer.cs" />
+    <CompileFiles Include="AssemblyInfo.cs" />
+    <CompileFiles Include="Calendar\Calendar.cs" />
+    <CompileFiles Include="ComboBox.cs" />
+    <CompileFiles Include="CommandBar.cs" />
+    <CompileFiles Include="Commanding.cs" />
+    <CompileFiles Include="GlobalSuppressions.cs" />
+    <CompileFiles Include="Hub.cs" />
+    <CompileFiles Include="HubAutomationPeer.cs" />
+    <CompileFiles Include="IconSource.cs" />
+    <CompileFiles Include="MenuFlyout.cs" />
+    <CompileFiles Include="Page.cs" />
+    <CompileFiles Include="PasswordBox.cs" />
+    <CompileFiles Include="RichEditBox.cs" />
+    <CompileFiles Include="RichTextBlock.cs" />
+    <CompileFiles Include="RichTextBlockOverflow.cs" />
+    <CompileFiles Include="SplitView\SplitView.cs" />
+    <CompileFiles Include="SplitView\SplitViewTemplateSettings.cs" />
+    <CompileFiles Include="TextBlock.cs" />
+    <CompileFiles Include="TextBox.cs" />
+  </ItemGroup>
+</Project>

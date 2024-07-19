@@ -1,0 +1,22 @@
+﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+[MUX_INTERNAL]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+runtimeclass SpectrumBrush : Microsoft.UI.Xaml.Media.XamlCompositionBrushBase
+{
+    SpectrumBrush();
+
+    Microsoft.UI.Xaml.Media.LoadedImageSurface MinSurface { get; set; };
+    Microsoft.UI.Xaml.Media.LoadedImageSurface MaxSurface { get; set; };
+    [MUX_DEFAULT_VALUE("1.0")]
+    Double MaxSurfaceOpacity { get; set; };
+
+    static Microsoft.UI.Xaml.DependencyProperty MinSurfaceProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty MaxSurfaceProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty MaxSurfaceOpacityProperty { get; };
+}
+
+}

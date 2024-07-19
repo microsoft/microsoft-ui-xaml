@@ -1,0 +1,102 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<EventDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<# if (VelocityFeatures.IsVelocityVersion(Model.Version)) { #>
+#if WI_IS_FEATURE_PRESENT(<#= Model.VelocityFeatureName #>)
+<# }#>
+<# if (Model.IsSimplePropertyChangedEvent) { #>
+void <#= AsCppType(Model.DeclaringClass.GeneratedClassFullName) #>::<#= Model.SimplePropertyChangedHandlerName #>(SimpleProperty::objid_t obj)
+{
+    IFCFAILFAST((DependencyObject::RaiseSimplePropertyChangedNotification<<#= Model.DeclaringClass.Name #>, <#= Model.EventSourceTypeName #>>(
+        obj,
+        <#= Model.IndexName #>,
+        nullptr)));
+}
+
+<# } #>
+<# if (Model.GenerateDefaultBody) { #>
+_Check_return_ HRESULT <#= AsCppType(Model.DeclaringClass.GeneratedClassFullName) #>::<#= Model.GetEventSourceName #>(_Outptr_ <#= Model.EventSourceTypeName #>** ppEventSource)
+{
+    HRESULT hr = S_OK;
+
+    IFC(GetEventSourceNoRefWithArgumentValidation(<#= Model.IndexName #>, reinterpret_cast<IUntypedEventSource**>(ppEventSource)));
+
+    if (*ppEventSource == nullptr)
+    {
+        IFC(ctl::ComObject<<#= Model.EventSourceTypeName #>>::CreateInstance(ppEventSource, TRUE /* fDisableLeakChecks */));
+        (*ppEventSource)->Initialize(<#= Model.IndexName #>, this, /* bUseEventManager */ <#= AsCppBoolean(Model.UseEventManager) #>);
+        IFC(StoreEventSource(<#= Model.IndexName #>, *ppEventSource));
+<# if (Model.IsSimplePropertyChangedEvent) { #>
+        SimpleProperty::Property::RegisterHandler(<#= Model.SimplePropertyEventSourceMember.IndexName #>, &<#= Model.SimplePropertyChangedHandlerName #>);
+<# } #>
+
+        // The caller doesn't expect a ref, this function ends in "NoRef".  The ref is now owned by the map (inside StoreEventSource)
+        ReleaseInterfaceNoNULL(ctl::iunknown_cast(*ppEventSource));
+    }
+
+Cleanup:
+    return hr;
+}
+<# } #>
+
+<# if (Model.IsInterfaceImplementation) {
+       if (Model.DeclaringVersion.IsVersionInterfaceForwarded()) { #>
+_Check_return_ HRESULT STDMETHODCALLTYPE <#
+       } else { #>
+IFACEMETHODIMP <#
+       }
+   } else { #>
+_Check_return_ HRESULT <# } #>
+<#= AsCppType(Model.DeclaringClass.GeneratedClassFullName) #>::<#= Model.AddName #>(<#= AsCppType(Model.EventHandlerType.AnnotatedAbiParameterName) #>, _Out_ EventRegistrationToken* ptToken)
+{
+    HRESULT hr = S_OK;
+    <#= Model.EventSourceTypeName #>* pEventSource = nullptr;
+
+    IFC(EventAddPreValidation(<#= Model.EventHandlerType.AbiParameterName #>, ptToken));
+<#= IncludeTemplate<StrictCheck>(StrictCheckModel.Create(Model, true /*forceIndent*/)) #>
+    IFC(<#= Model.GetEventSourceName #>(&pEventSource));
+    IFC(pEventSource->AddHandler(pValue));
+
+    ptToken->value = (INT64)pValue;
+
+Cleanup:
+    return hr;
+}
+
+<# if (Model.IsInterfaceImplementation) {
+       if (Model.DeclaringVersion.IsVersionInterfaceForwarded()) { #>
+_Check_return_ HRESULT STDMETHODCALLTYPE <#
+       } else { #>
+IFACEMETHODIMP <#
+       }
+   } else { #>
+_Check_return_ HRESULT <# } #>
+<#= AsCppType(Model.DeclaringClass.GeneratedClassFullName) #>::<#= Model.RemoveName #>(_In_ EventRegistrationToken tToken)
+{
+    HRESULT hr = S_OK;
+    <#= Model.EventSourceTypeName #>* pEventSource = nullptr;
+    <#= AsCppType(Model.EventHandlerType.AbiFullName) #>* pValue = (<#= AsCppType(Model.EventHandlerType.AbiFullName) #>*)tToken.value;
+
+    <#= IncludeTemplate<CheckAPICall>(Model) #>
+    IFC(<#= Model.GetEventSourceName #>(&pEventSource));
+    IFC(pEventSource->RemoveHandler(pValue));
+
+<#     if (Model.DeclaringClass.IsADependencyObject) {#>
+    if (!pEventSource->HasHandlers())
+    {
+<# if (Model.IsSimplePropertyChangedEvent) { #>
+        SimpleProperty::Property::UnregisterHandler(<#= Model.SimplePropertyEventSourceMember.IndexName #>, &<#= Model.SimplePropertyChangedHandlerName #>);
+<# } #>
+        IFC(RemoveEventSource(<#= Model.IndexName #>));
+    }
+<#     } #>
+
+Cleanup:
+    RRETURN(hr);
+}
+<# if (VelocityFeatures.IsVelocityVersion(Model.Version)) { #>
+#endif
+<# }#>

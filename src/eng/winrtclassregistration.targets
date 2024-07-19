@@ -1,0 +1,112 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project>
+  <!-- 
+    Generates registrations for Lifted XAML activatable WinRT classes using the correct implementation DLLs.
+    This target uses the metadata defined in eng\productmetadata.props, as well as the winmd files that are
+    used as inputs to mdmerge. This ensures that our external partners, which may have an implementation
+    that doesn't match the winmd work as expected, and also that the MUX types, which don't follow the 1-1
+    mapping of winmd-.dll, also have the correct entries.
+   -->
+  <ItemGroup>
+    <WindowsSdkWinmds Include="$(WindowsSDK_MetadataPathVersioned)\*.winmd" />
+  </ItemGroup>
+
+  <Target Name="_GetClassRegistrationWinMDs"
+          Returns="@(WinMdsForClassRegistration)"
+          DependsOnTargets="_GatherComposedMetadataInputs">
+    <ItemGroup>
+      <!-- Include winmds for mdmerge and any external winmds that weren't part of the merge -->
+      <_WinMdsForClassRegistration Include="@(_WinMdInputsForMerge)"/>
+      <!-- TEMPORARY: with the -n:2 merge of Microsoft.UI.winmd, we can no longer use
+      IxpWinMDs to create IXP class entries (multiple dlls host Microsoft.UI.* types).
+      As a workaround, those entries are copied from the IXP transport package appx manifest. -->
+      <_WinMdsForClassRegistration Include="@(ExternalWinMDs)" Condition="'%(ExternalWinMDs.Merge)'=='false'"/>
+      <_WinMdsForClassRegistration Include="@(AdditionalWinMDsForClassRegistration)"/>
+      <WinMdsForClassRegistration Include="@(_WinMdsForClassRegistration)" Exclude="@(IxpWinMDs)" Condition="'$(IncludeMrtExtensions)' == 'true'" />
+      <WinMdsForClassRegistration Include="@(_WinMdsForClassRegistration)" Exclude="@(IxpWinMDs);@(MRTWinMDs)" Condition="'$(IncludeMrtExtensions)' != 'true'" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GenerateWinRTClassRegistrations"
+          BeforeTargets="_CreateWinUIPackageLayout;KillCreatedMSBuildInstances;Binplace"
+          AfterTargets="Build"
+          DependsOnTargets="_GetClassRegistrationWinMDs"
+          Inputs="@(WinMdsForClassRegistration);@(WindowsSdkWinmds);$(LiftedIXPPackagePath)\appxmanifest.xml"
+          Outputs="$(OutDir)LiftedWinRTClassRegistrations.xml;$(OutDir)TestExtensions.xml">
+    <GenerateWinRTClassRegistrations
+      WinMDs="@(WinMdsForClassRegistration)"
+      DefaultImplementationDll="Microsoft.UI.Xaml.dll"
+      Metadata_Dirs="$(WindowsSDK_MetadataPathVersioned);$(LiftedIxpWinmdPath)"
+      OutputFilename="$(OutDir)LiftedWinRTClassRegistrations.xml">
+      <Output TaskParameter="MSBuildProcessId" ItemName="MSBuildProcessIdsToKill"/>
+    </GenerateWinRTClassRegistrations>
+
+    <!--Copy IXP transport package appx manifest activatable class elements-->
+    <XmlPeek XmlInputPath="$(LiftedIXPPackagePath)\appxmanifest.xml"
+        Query="/ns:Package/ns:Extensions/ns:Extension"
+        Namespaces="&lt;Namespace Prefix='ns' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10' /&gt;"
+        Condition="'$(IncludeIxpExtensions)' == 'true'">
+        <Output TaskParameter="Result" ItemName="IXPTransportPackageExtensions" />
+    </XmlPeek>
+
+    <!--Read lifted Xaml registrations-->
+    <XmlPeek XmlInputPath="$(OutDir)LiftedWinRTClassRegistrations.xml"
+        Query="/ns:Data/ns:Extension"
+        Namespaces="&lt;Namespace Prefix='ns' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10' /&gt;"
+        Condition="'$(IncludeIxpExtensions)' == 'true'">
+        <Output TaskParameter="Result" ItemName="LiftedWinRTExtensions" />
+    </XmlPeek>
+
+    <!-- Combine IXP and Xaml extensions -->
+    <PropertyGroup Condition="'$(IncludeIxpExtensions)' == 'true'">
+        <TestExtensions>
+            @(LiftedWinRTExtensions->'%(Identity)','&#x0d;&#x0a;')
+            @(IXPTransportPackageExtensions->'%(Identity)','&#x0d;&#x0a;')
+        </TestExtensions>
+    </PropertyGroup>
+
+    <!-- Rewrite LiftedWinRTClassRegistrations.xml with IXP extensions -->
+    <XmlPoke XmlInputPath="$(OutDir)LiftedWinRTClassRegistrations.xml"
+        Query="/ns:Data"
+        Namespaces="&lt;Namespace Prefix='ns' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10' /&gt;"
+        Value="$(TestExtensions)"
+        Condition="'$(IncludeIxpExtensions)' == 'true'"/>
+
+    <!-- Rewrite TestExtensions.xml with IXP extensions -->
+    <WriteLinesToFile Overwrite="true" File="$(OutDir)TestExtensions.xml" Lines="$(TestExtensions)" Condition="'$(IncludeIxpExtensions)' == 'true'" />
+
+    <ItemGroup>
+      <FileWrites Include="$(OutDir)LiftedWinRTClassRegistrations.xml" />
+      <FileWrites Include="$(OutDir)TestExtensions.xml" />
+    </ItemGroup>
+  </Target>
+
+  <!-- <Target Name="_GenerateWinRTClassRegistrationsUnpackaged"
+    BeforeTargets="_CreateWinUIPackageLayout;KillCreatedMSBuildInstances;Binplace"
+    AfterTargets="Build"
+    DependsOnTargets="_GetClassRegistrationWinMDs"
+    Inputs="@(WinMdsForClassRegistration)"
+    Outputs="$(OutDir)LiftedWinRTClassRegistrationsUnpackaged.xml">
+    <GenerateWinRTClassRegistrationsUnpackaged
+      WinMDs="@(WinMdsForClassRegistration)"
+      DefaultImplementationDll="Microsoft.UI.Xaml.dll"
+      Metadata_Dir="$(WindowsSDK_MetadataPathVersioned)"
+      OutputFilename="$(OutDir)LiftedWinRTClassRegistrationsUnpackaged.xml">
+      <Output TaskParameter="MSBuildProcessId" ItemName="MSBuildProcessIdsToKill"/>
+    </GenerateWinRTClassRegistrationsUnpackaged>
+    <ItemGroup>
+      <PackageContent Include="$(OutDir)LiftedWinRTClassRegistrationsUnpackaged.xml">
+        <PackageLocation>$(BuildTargetsPackageLocation)</PackageLocation>
+      </PackageContent>
+    </ItemGroup>
+    <ItemGroup>
+      <FileWrites Include="$(OutDir)LiftedWinRTClassRegistrationsUnpackaged.xml" />
+    </ItemGroup>
+  </Target> -->
+
+  <!--
+    This is purposefully imported after the target _GenerateWinRTClassRegistrations is defined. Otherwise, the target execution order is a little different and the
+    MSBuildProcessIdsToKill item is not set properly, which leaves MSBuild instances around that have a lock on our WinMDs, causing access issues with subsequent builds
+   -->
+  <Import Project="$(NugetPackageDirectory)\MUXCustomBuildTasks.$(MuxCustomBuildTasksPackageVersion)\build\MUXCustomBuildTasks.targets" Condition="Exists('$(NugetPackageDirectory)\MUXCustomBuildTasks.$(MuxCustomBuildTasksPackageVersion)\build\MUXCustomBuildTasks.targets')" />
+</Project>

@@ -1,0 +1,50 @@
+<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<MethodDefinition>" debug="true"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<# if (Model.IsStatic) {
+        if (Model.IsInterfaceImplementation) { #>
+IFACEMETHODIMP <#= AsCppType(Model.DeclaringClass.GeneratedFactoryName) #>::<#= Model.IdlMethodInfo.Name #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
+<#      } else { #>
+_Check_return_ HRESULT <#= AsCppType(Model.DeclaringClass.GeneratedFactoryName) #>::<#= Model.IdlMethodInfo.Name #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
+<#      } #>
+{
+<#= IncludeTemplate<MethodBody>(Model) #>
+}
+
+<# } else if (Model.IsInterfaceImplementation) {
+        if (Model.IsVirtual) {
+            if (Model.Modifier == Modifier.Protected) { #>
+_Check_return_ HRESULT <#= AsCppType(Model.DeclaringClass.GeneratedClassName) #>::<#= Model.IdlMemberInfo.ProtectedName #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
+{
+<#= IncludeTemplate<MethodBodyVirtualDispatch>(Model) #>
+}
+
+<#          } else if (Model.Modifier == Modifier.Public && !Model.IsPureVirtual) { #>
+IFACEMETHODIMP <#= AsCppType(Model.DeclaringClass.GeneratedClassName) #>::<#= Model.IdlMethodInfo.VirtualName #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
+{
+<#= IncludeTemplate<MethodBody>(Model) #>
+}
+
+<#          }
+        }
+        if (!Model.IsPureVirtual) { #>
+IFACEMETHODIMP <#= AsCppType(Model.DeclaringClass.GeneratedClassName) #>::<#= Model.IdlMethodInfo.Name #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
+{
+<#          if (Model.IsVirtual && Model.Modifier == Modifier.Public) { #>
+// TODO: IncludeTemplate<VirtualDispatchMethodBody>(Model)
+<#          } else { #>
+<#= IncludeTemplate<MethodBody>(Model) #>
+<#          } #>
+}
+
+<#      }
+   } else { #>
+_Check_return_ HRESULT <#= AsCppType(Model.DeclaringClass.GeneratedClassName) #>::<#= Model.IdlMethodInfo.Name #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
+{
+<#= IncludeTemplate<MethodBody>(Model) #>
+}
+
+<# } #>

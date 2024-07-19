@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType Condition="'$(ConfigurationType)'==''">DynamicLibrary</ConfigurationType>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <TargetDestination>$(TestBinplaceDestinationPath)</TargetDestination>
+        <TestCode>true</TestCode>
+    </PropertyGroup>
+
+    <Import Project="$(XcpPath)\components\base.props"/>
+    <Import Condition="'$(ExternalDependenciesLiftPropsImported)' != 'true'" Project="$(XamlSourcePath)\test\external-dependencies-lift.props"/>
+    
+    <!-- TAEF.targets always sets INLINE_TEST_METHOD_MARKUP.  We don't want that defined so capture the value before the import and override it
+         back to the starting value afterwards. -->
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <BeforeTAEFPreprocessorDefinitions>%(PreprocessorDefinitions)</BeforeTAEFPreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+    <Import Project="$(TaefPkgDirectory)\build\Microsoft.Taef.targets"/>
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <PreprocessorDefinitions>%(BeforeTAEFPreprocessorDefinitions)</PreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <PropertyGroup>
+        <XamlPrecompiledShared>$(XcpPath)\components\pch\ut\precomp.h</XamlPrecompiledShared>
+
+        <!-- TODO: Stop using do { } while (0) for ASSERT/FAIL_ASSERT_HERE. -->
+
+        <!-- TODO: Fix nameless structs in CValue. -->
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <ExceptionHandling>Sync</ExceptionHandling>    <!-- Allow try/catch for unittest code -->
+            <TreatWarningAsError>false</TreatWarningAsError>
+            <DisableSpecificWarnings>%(DisableSpecificWarnings);4437;4605</DisableSpecificWarnings>
+            <RuntimeTypeInfo>true</RuntimeTypeInfo>        <!-- Required for CxxMocks.h -->
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) __XAML_UNITTESTS__;</ProjectPreprocessorDefinitions>
+
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(TestExternalDependencies);
+            $(XamlSourcePath)\xcp\components\unittests\;
+            $(XamlSourcePath)\test\native\inc\;
+            $(XamlSourcePath)\test\native\isolated\inc\;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(NoBaseCompstubs)'==''">
+        <BaseCompstubs Remove="@(BaseCompstubs)"/>
+        <BaseCompstubs Condition="'$(ProjectGuid)'!='{9e88d331-0324-428d-b7bc-70953f4b65d9}'" Include="$(XcpPath)\components\allocation\stubs\Microsoft.UI.Xaml.Allocation.Stubs.vcxproj" Project="{9e88d331-0324-428d-b7bc-70953f4b65d9}"/>
+        <BaseCompstubs Condition="'$(ProjectGuid)'!='{950d68b3-b34b-4453-96f9-5d1517f539ca}'" Include="$(XcpPath)\components\terminateProcessOnOOM\lib\Microsoft.UI.Xaml.TerminateProcessOnOOM.vcxproj" Project="{950d68b3-b34b-4453-96f9-5d1517f539ca}"/>
+
+        <BaseComplibs Include="@(BaseCompstubs)"/>
+    </ItemGroup>
+
+    <ItemDefinitionGroup>
+        <Link>
+            <ModuleDefinitionFile></ModuleDefinitionFile>
+
+            <AdditionalDependencies>
+                %(AdditionalDependencies);
+                onecoreuap.lib;
+                ntdll.lib;
+                dbghelp.lib;
+                $(FrameworkUdkLibPath)\Microsoft.Internal.FrameworkUdk.lib;
+            </AdditionalDependencies>
+            
+            <DelayLoadDLLs>api-ms-win-rtcore-ntuser-private-l1-*.dll;</DelayLoadDLLs>
+            <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_Desktop_CurrentPlatform_spectre);</AdditionalLibraryDirectories>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}'" Include="$(XcpPath)\components\pch\ut\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}"/>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(ConfigurationType)'=='DynamicLibrary' or '$(ConfigurationType)'=='Application'">
+        <ProjectReference Include="@(BaseComplibs)"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{3ea83b4a-7041-4ea2-9e18-9e571b97451f}'" Include="$(XamlSourcePath)\test\native\isolated\shared\Microsoft.UI.Xaml.Tests.Isolated.Shared.vcxproj" Project="{3ea83b4a-7041-4ea2-9e18-9e571b97451f}"/>
+    </ItemGroup>
+</Project>

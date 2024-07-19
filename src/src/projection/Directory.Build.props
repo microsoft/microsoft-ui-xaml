@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+         <!-- ignore experimental warnings and obselete api usage -->
+    <NoWarn>0108,0618,0628,8305</NoWarn>
+    <LangVersion>preview</LangVersion>
+    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT"/>
+    <PackageReference Include="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage"/>
+    <PackageReference Include="Microsoft.Internal.WinUIDetails" ExcludeAssets="All" />
+    <PackageReference Include="Microsoft.Web.WebView2" ExcludeAssets="All"/>
+  </ItemGroup>
+
+  <!--
+    Putting all the WinUI includes/excludes for C#/WinRT here. If projects need access to private metadata, they can't
+    reference the generated interop assembly due to this bug: https://github.com/microsoft/CsWinRT/issues/658. They
+    will instead have to generate their own interop sources.
+    
+    As of writing this comment, there doesn't need to be a change in the CSWinRTIncludes/CSWinRTExcludes,
+    as the inclusion of private types depends on which winmds are passed to cswinrt.exe. This behavior is
+    controlled by the ProjectReference the projection projects have.
+
+    To reference private metadata, add a ProjectReference to your project:
+    <ProjectReference Include="$(ProjectRoot)\src\projection\private\Microsoft.WinUI.csproj"/>
+  -->
+  <PropertyGroup>
+   <WinUI_CSWinRTIncludes>
+      Microsoft.UI.Private;
+      Microsoft.UI.Text;
+      Microsoft.UI.Xaml;
+      Microsoft.Web.WebView2;
+      Windows.UI.Xaml.Interop;
+      Windows.UI.Text;
+    </WinUI_CSWinRTIncludes>
+
+    <!-- Windows App SDK targets 17763, but [attributename] is defined in Windows SDK 19041,
+        so add definitions here.  Alternatively, use the midl /noattributename switch. -->
+    <WinUI_CSWinRTIncludes>
+      $(WinUI_CSWinRTIncludes);
+      Windows.Foundation.Metadata.AttributeNameAttribute;
+      Windows.Foundation.Metadata.AttributeName;
+    </WinUI_CSWinRTIncludes>
+
+      <!-- Bug 25974595: MUXC types mistakenly use WUX.ContentProperty attribute -->
+    <WinUI_CSWinRTIncludes>
+      $(WinUI_CSWinRTIncludes);
+      Windows.UI.Xaml.Markup.ContentPropertyAttribute;
+      Windows.UI.Xaml.Data.BindableAttribute;
+    </WinUI_CSWinRTIncludes>
+
+    <!-- Exclude duplicated text types (exist in SDK interop assembly as well as our own winmd) -->
+    <WinUI_CSWinRTExcludes>
+        Windows.UI.Text.Core;
+        Windows.UI.Text.FontStretch;
+        Windows.UI.Text.FontStyle;
+        Windows.UI.Text.FontWeight;
+        Windows.UI.Text.UnderlineType;
+    </WinUI_CSWinRTExcludes>
+        <!-- Exclude text types that have been moved to new namespace -->
+    <WinUI_CSWinRTExcludes>
+      $(WinUI_CSWinRTExcludes);
+      Windows.UI.Text.FontWeights;
+      Windows.UI.Text.IFontWeights;
+      Windows.UI.Text.IFontWeightsStatics;
+    </WinUI_CSWinRTExcludes>
+  </PropertyGroup>
+</Project>
