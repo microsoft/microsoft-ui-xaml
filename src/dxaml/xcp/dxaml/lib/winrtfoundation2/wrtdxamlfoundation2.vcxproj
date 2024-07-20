@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{febe7793-7794-4f61-a5d5-1c56fd4b09b1}</ProjectGuid>
+    </PropertyGroup>
+
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved. -->
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="..\sources.props"/>
+
+    <PropertyGroup>
+        <TargetDestination>retail</TargetDestination>
+
+        <XamlPrecompiledShared>..\winrtpch\precomp.h</XamlPrecompiledShared>
+
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\comptree\inc;
+            $(XcpPath)\components\transforms\inc;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\SoftwareBitmapSource_Partial.cpp"/>
+        <ClCompile Include="..\WriteableBitmap_Partial.cpp"/>
+        <ClCompile Include="..\SurfaceImageSourceFactory_Partial.cpp"/>
+        <ClCompile Include="..\SurfaceImageSource_Partial.cpp"/>
+        <ClCompile Include="..\VirtualSurfaceImageSource_Partial.cpp"/>
+        <ClCompile Include="..\RenderTargetBitmap_Partial.cpp"/>
+        <ClCompile Include="..\SwapChainBackgroundPanel_Partial.cpp"/>
+        <ClCompile Include="..\SwapChainPanel_Partial.cpp"/>
+        <ClCompile Include="..\CustomXamlResourceLoaderWrapper.cpp"/>
+        <ClCompile Include="..\CustomXamlResourceLoader_Partial.cpp"/>
+        <ClCompile Include="..\Timeline_Partial.cpp"/>
+        <ClCompile Include="..\Page_Partial.cpp"/>
+        <ClCompile Include="..\Frame_Partial.cpp"/>
+        <ClCompile Include="..\NavigationHelpers.cpp"/>
+        <ClCompile Include="..\NavigationCache.cpp"/>
+        <ClCompile Include="..\PageStackEntry_Partial.cpp"/>
+        <ClCompile Include="..\NavigationHistory.cpp"/>
+        <ClCompile Include="..\PageStackEntryTrackerCollection.cpp"/>
+        <ClCompile Include="..\PropertyPath_Partial.cpp"/>
+        <ClCompile Include="..\EventTrigger_Partial.cpp"/>
+        <ClCompile Include="..\NotifyCollectionChangedEventArgs_partial.cpp"/>
+        <ClCompile Include="..\InputScopeNameFactory.cpp"/>
+        <ClCompile Include="..\BindableVectorWrapper.cpp"/>
+        <ClCompile Include="..\BindableObservableVectorWrapper.cpp"/>
+        <ClCompile Include="..\DebugSettings_Partial.cpp"/>
+        <ClCompile Include="..\PropertyInfoPropertyAccess.cpp"/>
+        <ClCompile Include="..\TextRangeAdapter_partial.cpp"/>
+        <ClCompile Include="..\TextAdapter_partial.cpp"/>
+        <ClCompile Include="..\BlockCollection_Partial.cpp"/>
+        <ClCompile Include="..\InlineCollection_Partial.cpp"/>
+        <ClCompile Include="..\InlineUIContainer_Partial.cpp"/>
+        <ClCompile Include="..\Span_Partial.cpp"/>
+        <ClCompile Include="..\Paragraph_Partial.cpp"/>
+        <ClCompile Include="..\ManipulationPivot_Partial.cpp"/>
+        <ClCompile Include="..\ItemInvokeAdapter_partial.cpp"/>
+        <ClCompile Include="..\DropOperationTarget.cpp"/>
+        <ClCompile Include="..\AutomaticDragHelper.cpp"/>
+        <ClCompile Include="..\DragDropInternal.cpp"/>
+        <ClCompile Include="..\DragDropVisual.cpp"/>
+        <ClCompile Include="..\DragEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\DragVisual_Partial.cpp"/>
+        <ClCompile Include="..\StartDragAsyncOperation.cpp"/>
+        <ClCompile Include="..\RaiseDragDropEventAsyncOperation.cpp"/>
+        <ClCompile Include="..\DragOperationDeferral_partial.cpp"/>
+        <ClCompile Include="..\CompositionTarget.cpp"/>
+        <ClCompile Include="..\RepeatBehavior_Partial.cpp"/>
+        <ClCompile Include="..\Thickness_Partial.cpp"/>
+        <ClCompile Include="..\CornerRadius_Partial.cpp"/>
+        <ClCompile Include="..\Geometry_Partial.cpp"/>
+        <ClCompile Include="..\AutomationElementIdentifiers.cpp"/>
+        <ClCompile Include="..\PatternIdentifiers.cpp"/>
+        <ClCompile Include="..\AutomationProperties.cpp"/>
+        <ClCompile Include="..\PropertyChangedEventArgs.cpp"/>
+        <ClCompile Include="..\PrintDocument_partial.cpp"/>
+        <ClCompile Include="..\PaginateEventArgs_partial.cpp"/>
+        <ClCompile Include="..\AddPagesEventArgs_partial.cpp"/>
+        <ClCompile Include="..\EasingFunctionBase_partial.cpp"/>
+        <ClCompile Include="..\ErrorHelper.cpp"/>
+        <ClCompile Include="..\InternalDebugInterop.cpp"/>
+        <ClCompile Include="..\DependencyObjectCollection_Partial.cpp"/>
+        <ClCompile Include="..\CommandBarElementCollection_Partial.cpp"/>
+        <ClCompile Include="..\ErrorInfo.cpp"/>
+        <ClCompile Include="..\DataTemplate_Partial.cpp"/>
+        <ClCompile Include="..\DataTemplateSelector_Partial.cpp"/>
+        <ClCompile Include="..\SecondaryContentRelationship_Partial.cpp"/>
+        <ClCompile Include="..\BackgroundTaskFrameworkContext.cpp"/>
+        <ClCompile Include="..\XamlRenderingBackgroundTask_Partial.cpp"/>
+        <ClCompile Include="..\LayoutTransitionElementUtilities.cpp"/>
+        <ClCompile Include="..\VisualStateGroupCollection_Partial.cpp"/>
+        <ClCompile Include="..\TimedTextSource.cpp"/>
+        <ClCompile Include="..\CueRenderer.cpp"/>
+        <ClCompile Include="..\CueStyler.cpp"/>
+        <ClCompile Include="..\DragUI_partial.cpp"/>
+        <ClCompile Include="..\DragUIOverride_partial.cpp"/>
+        <ClCompile Include="..\DragStartingEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\XamlBindingHelperFactory_partial.cpp"/>
+        <ClCompile Include="..\TargetPropertyPath_Partial.cpp"/>
+        <ClCompile Include="..\TryStartConnectedAnimationOperation.cpp"/>
+        <ClCompile Include="..\ElementCompositionPreview.cpp"/>
+        <ClCompile Include="..\DebugTool.cpp"/>
+        <ClCompile Include="..\TextAlternativesAsyncOperation.cpp"/>
+        <ClCompile Include="..\InputManager.cpp"/>
+        <ClCompile Include="..\ContextRequestedEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\UtilityFunctions.cpp"/>
+        <ClCompile Include="..\XamlMarkupHelper_Partial.cpp"/>
+        <ClCompile Include="..\XamlLight_Partial.cpp"/>
+        <ClCompile Include="..\PointerSourceWrapper.cpp"/>
+        <ClCompile Include="..\MarkupExtension_Partial.cpp"/>
+        <ClCompile Include="..\TextRangeCollection_Partial.cpp"/>
+        <ClCompile Include="..\TextHighlighter_Partial.cpp"/>
+        <ClCompile Include="..\TextHighlighterCollection_Partial.cpp"/>
+        <ClCompile Include="..\InteractionBase_Partial.cpp"/>
+        <ClCompile Include="..\InteractionCollection.cpp"/>
+        <ClCompile Include="..\DataValidation.cpp"/>
+        <ClCompile Include="..\ValidationErrorsCollection_Partial.cpp"/>
+        <ClCompile Include="..\ValidationErrorsObservableVectorWrapper.cpp"/>
+        <ClCompile Include="..\UIElementWeakCollection_Partial.cpp"/>
+        <ClCompile Include="..\BrushTransition_Partial.cpp"/>
+        <ClCompile Include="..\ScalarTransition_Partial.cpp"/>
+        <ClCompile Include="..\Vector3Transition_Partial.cpp"/>
+        <ClCompile Include="..\ParserServiceProvider_Partial.cpp"/>
+        <ClCompile Include="..\ProvideValueTargetProperty_Partial.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <BuildClientcore>1</BuildClientcore>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\dxaml\idl\com\microsoft.ui.xaml-com.vcxproj" Project="{a1eb01c3-ac8b-45a8-97c8-c459b77ed690}"/>
+        <ProjectReference Include="$(XamlDiagPath)\idl\xamlom.vcxproj" Project="{c6e1e90c-ee33-4352-a8de-067b013c7cc9}"/>
+        <ProjectReference Include="..\winrtpch\wrtdxamlpch.vcxproj" Project="{845d8296-bec7-4e97-8da9-db26a3a6d8c9}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

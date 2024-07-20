@@ -1,0 +1,15 @@
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+
+import "oaidl.idl";
+
+// Private interface. Meant for WebView2 and not for public consumption.
+[
+    object,
+    uuid( F88A52AF-87D6-4F58-8758-55ED42BDCCF3 ),
+    local,
+    pointer_default(unique)
+]
+interface IXamlRootNative : IUnknown
+{
+    [propget] HRESULT HostWindow([out, retval] HWND* hWnd);
+};

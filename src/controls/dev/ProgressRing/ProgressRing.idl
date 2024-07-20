@@ -1,0 +1,79 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+[MUX_PROPERTY_NEEDS_DP_FIELD]
+runtimeclass ProgressRingTemplateSettings : Microsoft.UI.Xaml.DependencyObject
+{
+    // TemplateSetting properties from WUXC for backwards compatibility.
+    Double EllipseDiameter{ get; };
+    Microsoft.UI.Xaml.Thickness EllipseOffset{ get; };
+    Double MaxSideLength{ get; };
+}
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass ProgressRing : Microsoft.UI.Xaml.Controls.Control
+{
+    ProgressRing();
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsActive{ get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsIndeterminate{ get; set; };
+
+    [MUX_PREVIEW]
+    {
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        IAnimatedVisualSource DeterminateSource{ get; set; };
+
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        IAnimatedVisualSource IndeterminateSource{ get; set; };
+    }
+
+    [MUX_PROPERTY_NEEDS_DP_FIELD]
+    ProgressRingTemplateSettings TemplateSettings{ get; };
+
+    static Microsoft.UI.Xaml.DependencyProperty IsActiveProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsIndeterminateProperty{ get; };
+
+    [MUX_PREVIEW]
+    {
+        static Microsoft.UI.Xaml.DependencyProperty DeterminateSourceProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty IndeterminateSourceProperty{ get; };
+    }
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("0.0")]
+    Double Value;
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("0.0")]
+    Double Minimum;
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("100.0")]
+    Double Maximum;
+
+    static Microsoft.UI.Xaml.DependencyProperty ValueProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty MinimumProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty MaximumProperty{ get; };
+}
+
+}
+
+namespace MU_XAP_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+unsealed runtimeclass ProgressRingAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer, Microsoft.UI.Xaml.Automation.Provider.IRangeValueProvider
+{
+    ProgressRingAutomationPeer(MU_XC_NAMESPACE.ProgressRing owner);
+}
+
+}

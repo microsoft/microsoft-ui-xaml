@@ -1,0 +1,13 @@
+//
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+//
+
+#include <windows.h>
+
+#define VER_INTERNALNAME_STR        "GenXbf.dll"
+#include <WinUIrc.ver>
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US

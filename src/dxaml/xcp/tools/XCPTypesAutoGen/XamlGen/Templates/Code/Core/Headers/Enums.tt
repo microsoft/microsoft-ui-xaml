@@ -1,0 +1,22 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#pragma once
+#include "primitives.h"
+
+<# foreach (var type in Model.GetTypeTableEnums().Where(e => e.GenerateInCore)) { #>
+class <#= type.CoreName #> final : public CEnumerated
+{
+public:
+    static _Check_return_ HRESULT Create(_Outptr_ CDependencyObject** ppObject, _In_ CREATEPARAMETERS* pCreate);
+};
+
+<# } #>
+
+_Check_return_ HRESULT GetEnumValueFromKnownWinRTBox(_In_ IInspectable* pBox, _In_ const CClassInfo* pType, _Out_ UINT* pnValue);
+_Check_return_ HRESULT GetKnownWinRTBoxFromEnumValue(_In_ UINT nValue, _In_ const CClassInfo* pType, _Outptr_ IInspectable** ppBox);

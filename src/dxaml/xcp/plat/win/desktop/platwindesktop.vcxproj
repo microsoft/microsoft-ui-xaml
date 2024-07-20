@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{f868d210-0440-4a29-8cc5-285f4cd86bf4}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+
+    <Import Project="$(XcpPath)\common.props"/>
+
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) ENABLE_UIAUTOMATION;</ProjectPreprocessorDefinitions>
+
+        <XamlPrecompiledInclude>precomp.h</XamlPrecompiledInclude>
+        <XamlPrecompiledPch>precomp.pch</XamlPrecompiledPch>
+        <XamlPrecompiledObj>precomp.obj</XamlPrecompiledObj>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="ApplicationDataProvider.h"/>
+        <ClInclude Include="D2DAccelerated.h"/>
+        <ClInclude Include="D2DAcceleratedBrushes.h"/>
+        <ClInclude Include="D2DAcceleratedPrimitives.h"/>
+        <ClInclude Include="d2dacceleratedrt.h"/>
+        <ClInclude Include="D2DPrintingData.h"/>
+        <ClInclude Include="D2DPrintTarget.h"/>
+        <ClInclude Include="D2DUtils.h"/>
+        <ClInclude Include="d3d11device.h"/>
+        <ClInclude Include="D3D11DeviceInstance.h"/>
+        <ClInclude Include="d3D11SharedDeviceGuard.h"/>
+        <ClInclude Include="DCompInteropCompositorPartnerCallback.h"/>
+        <ClInclude Include="DCompSurface.h"/>
+        <ClInclude Include="DCompSurfaceFactoryManager.h"/>
+        <ClInclude Include="DCompSurfaceMonitor.h"/>
+        <ClInclude Include="ImageSharingEngineHost.h"/>
+        <ClInclude Include="ImageUtils.h"/>
+        <ClInclude Include="LockableGraphicsPointer.h"/>
+        <ClInclude Include="precomp.h"/>
+        <ClInclude Include="RefreshRateInfo.h"/>
+        <ClInclude Include="SystemMemoryBits.h"/>
+        <ClInclude Include="windowsgraphicsdevicemanager.h"/>
+        <ClInclude Include="windowspresenttarget.h"/>
+
+        <ClCompile Include="PlatformServices.cpp"/>
+        <ClCompile Include="WindowLessSiteHost.cpp"/>
+        <ClCompile Include="CommonResourceProvider.cpp"/>
+        <ClCompile Include="ApplicationDataProvider.cpp"/>
+        <ClCompile Include="d2dprinttarget.cpp"/>
+        <ClCompile Include="d2dprintingdata.cpp"/>
+        <ClCompile Include="ImageSharingEngineHost.cpp"/>
+        <ClCompile Include="SystemMemoryBits.cpp"/>
+        <ClCompile Include="DCompInteropCompositorPartnerCallback.cpp"/>
+        <ClCompile Include="DCompSurface.cpp"/>
+        <ClCompile Include="DCompSurfaceMonitor.cpp"/>
+        <ClCompile Include="windowsgraphicsdevicemanager.cpp"/>
+        <ClCompile Include="windowspresenttarget.cpp"/>
+        <ClCompile Include="d3d11device.cpp"/>
+        <ClCompile Include="d3d11deviceInstance.cpp"/>
+        <ClCompile Include="D2DAccelerated.cpp"/>
+        <ClCompile Include="D2DAcceleratedBrushes.cpp"/>
+        <ClCompile Include="D2DAcceleratedPrimitives.cpp"/>
+        <ClCompile Include="D2DAcceleratedRT.cpp"/>
+        <ClCompile Include="RefreshRateInfo.cpp"/>
+        <ClCompile Include="DCompSurfaceFactoryManager.cpp"/>
+        <ClCompile Include="ProcessCharacteristics.cpp"/>
+        <ClCompile Include="ImageUtils.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+          $(XcpPath)\core\native\inc;
+          $(ProjectIncludeDirectories);
+          $(XcpPath)\components\collection\inc;
+          $(XcpPath)\components\comptree\inc;
+          $(XcpPath)\components\brushes\inc;
+          $(XcpPath)\components\transforms\inc;
+          $(XcpPath)\components\math\inc;
+          $(XcpPath)\components\scaling\inc;
+          $(XcpPath)\inc;
+          $(XcpPath)\win\inc;
+          $(XcpPath)\pal\win\inc;
+          $(XcpPath)\core\inc;
+          $(XcpPath)\core\parser;
+          $(XcpPath)\core\imaging\ImagingProvider;
+          $(XcpPath)\core\controls\generated;
+          $(XcpPath)\plat\win\common;
+          $(XcpPath)\plat\win\browserdesktop;
+          $(XcpPath)\host\win\browserdesktop;
+          $(XcpPath)\core\compositor;
+          $(XcpPath)\core\hw;
+          $(XcpPath)\core\native\text\common;
+          $(XcpPath)\win\UIUtils;
+          $(XcpPath)\control\common\shared;
+          $(XcpPath)\control\inc;
+          $(XcpPath)\components\base\inc;
+          $(XcpPath)\pal\inc\;
+          $(XcpPath)\components\allocation\inc;
+          $(XcpPath)\components\criticalsection\inc;
+          $(XcpPath)\components\math\inc;
+          $(XcpPath)\core\text\inc;
+          $(XcpPath)\core\text\richtextservices\inc;
+          $(XcpPath)\dxaml\lib;
+          $(XcpObjPath)\win\shared\inc;
+          $(FrameworkUdkIncPath);
+          $(LiftedMRTIncludePaths);
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <AdditionalOptions>%(AdditionalOptions) /Zm300 /bigobj</AdditionalOptions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

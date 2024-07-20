@@ -1,0 +1,237 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#pragma once
+
+//  Abstract:
+//      Definition for various XCP Core constant arrays
+
+#include "TypeTable.g.h"
+
+const xstring_ptr_storage c_strLegacyEventNames[] =
+{
+    XSTRING_PTR_STORAGE(L"Opened"),
+    XSTRING_PTR_STORAGE(L"Closed"),
+    XSTRING_PTR_STORAGE(L"DownloadProgress"),
+    XSTRING_PTR_STORAGE(L"ImageOpened"),
+    XSTRING_PTR_STORAGE(L"ImageFailed"),
+    XSTRING_PTR_STORAGE(L"Click"),
+    XSTRING_PTR_STORAGE(L"DropDownClosed"),
+    XSTRING_PTR_STORAGE(L"DropDownOpened"),
+    XSTRING_PTR_STORAGE(L"Closing"),
+    XSTRING_PTR_STORAGE(L"Closed"),
+    XSTRING_PTR_STORAGE(L"Opened"),
+    XSTRING_PTR_STORAGE(L"PrimaryButtonClick"),
+    XSTRING_PTR_STORAGE(L"SecondaryButtonClick"),
+    XSTRING_PTR_STORAGE(L"IsEnabledChanged"),
+    XSTRING_PTR_STORAGE(L"InheritedPropertyChanged"),
+    XSTRING_PTR_STORAGE(L"DateChanged"),
+    XSTRING_PTR_STORAGE(L"BindingFailed"),
+    XSTRING_PTR_STORAGE(L"Collect"),
+    XSTRING_PTR_STORAGE(L"RaiseAsyncCallback"),
+    XSTRING_PTR_STORAGE(L"Tick"),
+    XSTRING_PTR_STORAGE(L"Opened"),
+    XSTRING_PTR_STORAGE(L"Closed"),
+    XSTRING_PTR_STORAGE(L"Opening"),
+    XSTRING_PTR_STORAGE(L"Navigated"),
+    XSTRING_PTR_STORAGE(L"Navigating"),
+    XSTRING_PTR_STORAGE(L"NavigationFailed"),
+    XSTRING_PTR_STORAGE(L"NavigationStopped"),
+    XSTRING_PTR_STORAGE(L"Loaded"),
+    XSTRING_PTR_STORAGE(L"Unloaded"),
+    XSTRING_PTR_STORAGE(L"CorePropertyChanged"),
+    XSTRING_PTR_STORAGE(L"DataContextChanged"),
+    XSTRING_PTR_STORAGE(L"SizeChanged"),
+    XSTRING_PTR_STORAGE(L"LayoutUpdated"),
+    XSTRING_PTR_STORAGE(L"SectionHeaderClick"),
+    XSTRING_PTR_STORAGE(L"SectionsInViewChanged"),
+    XSTRING_PTR_STORAGE(L"Click"),
+    XSTRING_PTR_STORAGE(L"ImageFailed"),
+    XSTRING_PTR_STORAGE(L"ImageOpened"),
+    XSTRING_PTR_STORAGE(L"DownloadProgressChanged"),
+    XSTRING_PTR_STORAGE(L"ImageFailed"),
+    XSTRING_PTR_STORAGE(L"ImageOpened"),
+    XSTRING_PTR_STORAGE(L"DownloadProgressChanged"),
+    XSTRING_PTR_STORAGE(L"ItemsChanged"),
+    XSTRING_PTR_STORAGE(L"ItemClick"),
+    XSTRING_PTR_STORAGE(L"DragItemsStarting"),
+    XSTRING_PTR_STORAGE(L"ContainerContentChanging"),
+    XSTRING_PTR_STORAGE(L"MediaOpened"),
+    XSTRING_PTR_STORAGE(L"MediaEnded"),
+    XSTRING_PTR_STORAGE(L"MediaFailed"),
+    XSTRING_PTR_STORAGE(L"DownloadProgressChanged"),
+    XSTRING_PTR_STORAGE(L"BufferingProgressChanged"),
+    XSTRING_PTR_STORAGE(L"CurrentStateChanged"),
+    XSTRING_PTR_STORAGE(L"MarkerReached"),
+    XSTRING_PTR_STORAGE(L"RateChanged"),
+    XSTRING_PTR_STORAGE(L"VolumeChanged"),
+    XSTRING_PTR_STORAGE(L"SeekCompleted"),
+    XSTRING_PTR_STORAGE(L"Click"),
+    XSTRING_PTR_STORAGE(L"VisibleIndicesUpdated"),
+    XSTRING_PTR_STORAGE(L"PasswordChanged"),
+    XSTRING_PTR_STORAGE(L"ContextMenuOpening"),
+    XSTRING_PTR_STORAGE(L"Paste"),
+    XSTRING_PTR_STORAGE(L"Opened"),
+    XSTRING_PTR_STORAGE(L"Closed"),
+    XSTRING_PTR_STORAGE(L"BeginPrint"),
+    XSTRING_PTR_STORAGE(L"PrintPage"),
+    XSTRING_PTR_STORAGE(L"EndPrint"),
+    XSTRING_PTR_STORAGE(L"Paginate"),
+    XSTRING_PTR_STORAGE(L"GetPreviewPage"),
+    XSTRING_PTR_STORAGE(L"AddPages"),
+    XSTRING_PTR_STORAGE(L"ValueChanged"),
+    XSTRING_PTR_STORAGE(L"TextChanged"),
+    XSTRING_PTR_STORAGE(L"SelectionChanged"),
+    XSTRING_PTR_STORAGE(L"ContextMenuOpening"),
+    XSTRING_PTR_STORAGE(L"Paste"),
+    XSTRING_PTR_STORAGE(L"SelectionChanged"),
+    XSTRING_PTR_STORAGE(L"ContextMenuOpening"),
+    XSTRING_PTR_STORAGE(L"Scroll"),
+    XSTRING_PTR_STORAGE(L"ThumbDragStarted"),
+    XSTRING_PTR_STORAGE(L"ThumbDragCompleted"),
+    XSTRING_PTR_STORAGE(L"ViewChanging"),
+    XSTRING_PTR_STORAGE(L"ViewChanged"),
+    XSTRING_PTR_STORAGE(L"QueryChanged"),
+    XSTRING_PTR_STORAGE(L"SuggestionsRequested"),
+    XSTRING_PTR_STORAGE(L"QuerySubmitted"),
+    XSTRING_PTR_STORAGE(L"ResultSuggestionChosen"),
+    XSTRING_PTR_STORAGE(L"PrepareForFocusOnKeyboardInput"),
+    XSTRING_PTR_STORAGE(L"SelectionChanged"),
+    XSTRING_PTR_STORAGE(L"ViewChangeStarted"),
+    XSTRING_PTR_STORAGE(L"ViewChangeCompleted"),
+    XSTRING_PTR_STORAGE(L"BackClick"),
+    XSTRING_PTR_STORAGE(L"CompositionScaleChanged"),
+    XSTRING_PTR_STORAGE(L"SelectionChanged"),
+    XSTRING_PTR_STORAGE(L"ContextMenuOpening"),
+    XSTRING_PTR_STORAGE(L"TextChanged"),
+    XSTRING_PTR_STORAGE(L"SelectionChanged"),
+    XSTRING_PTR_STORAGE(L"ContextMenuOpening"),
+    XSTRING_PTR_STORAGE(L"Paste"),
+    XSTRING_PTR_STORAGE(L"DragStarted"),
+    XSTRING_PTR_STORAGE(L"DragDelta"),
+    XSTRING_PTR_STORAGE(L"DragCompleted"),
+    XSTRING_PTR_STORAGE(L"Completed"),
+    XSTRING_PTR_STORAGE(L"TimeChanged"),
+    XSTRING_PTR_STORAGE(L"Checked"),
+    XSTRING_PTR_STORAGE(L"Unchecked"),
+    XSTRING_PTR_STORAGE(L"Indeterminate"),
+    XSTRING_PTR_STORAGE(L"Toggled"),
+    XSTRING_PTR_STORAGE(L"Closed"),
+    XSTRING_PTR_STORAGE(L"Opened"),
+    XSTRING_PTR_STORAGE(L"KeyUp"),
+    XSTRING_PTR_STORAGE(L"KeyDown"),
+    XSTRING_PTR_STORAGE(L"GotFocus"),
+    XSTRING_PTR_STORAGE(L"LostFocus"),
+    XSTRING_PTR_STORAGE(L"CharacterReceived"),
+    XSTRING_PTR_STORAGE(L"DragEnter"),
+    XSTRING_PTR_STORAGE(L"DragLeave"),
+    XSTRING_PTR_STORAGE(L"DragOver"),
+    XSTRING_PTR_STORAGE(L"Drop"),
+    XSTRING_PTR_STORAGE(L"TextComposition"),
+    XSTRING_PTR_STORAGE(L"InputMethodNotify"),
+    XSTRING_PTR_STORAGE(L"InputLangChange"),
+    XSTRING_PTR_STORAGE(L"TabProcessing"),
+    XSTRING_PTR_STORAGE(L"ManipulationInertiaProcessing"),
+    XSTRING_PTR_STORAGE(L"RequestBringIntoView"),
+    XSTRING_PTR_STORAGE(L"PointerPressed"),
+    XSTRING_PTR_STORAGE(L"PointerMoved"),
+    XSTRING_PTR_STORAGE(L"PointerReleased"),
+    XSTRING_PTR_STORAGE(L"PointerEntered"),
+    XSTRING_PTR_STORAGE(L"PointerExited"),
+    XSTRING_PTR_STORAGE(L"PointerCaptureLost"),
+    XSTRING_PTR_STORAGE(L"PointerCanceled"),
+    XSTRING_PTR_STORAGE(L"PointerWheelChanged"),
+    XSTRING_PTR_STORAGE(L"Tapped"),
+    XSTRING_PTR_STORAGE(L"DoubleTapped"),
+    XSTRING_PTR_STORAGE(L"Holding"),
+    XSTRING_PTR_STORAGE(L"RightTapped"),
+    XSTRING_PTR_STORAGE(L"RightTappedUnhandled"),
+    XSTRING_PTR_STORAGE(L"ManipulationStarting"),
+    XSTRING_PTR_STORAGE(L"ManipulationInertiaStarting"),
+    XSTRING_PTR_STORAGE(L"ManipulationStarted"),
+    XSTRING_PTR_STORAGE(L"ManipulationDelta"),
+    XSTRING_PTR_STORAGE(L"ManipulationCompleted"),
+    XSTRING_PTR_STORAGE(L"CleanUpVirtualizedItemEvent"),
+    XSTRING_PTR_STORAGE(L"CurrentStateChanged"),
+    XSTRING_PTR_STORAGE(L"CurrentStateChanging"),
+    XSTRING_PTR_STORAGE(L"LoadCompleted"),
+    XSTRING_PTR_STORAGE(L"ScriptNotify"),
+    XSTRING_PTR_STORAGE(L"NavigationFailed"),
+    XSTRING_PTR_STORAGE(L"NavigationStarting"),
+    XSTRING_PTR_STORAGE(L"ContentLoading"),
+    XSTRING_PTR_STORAGE(L"DOMContentLoaded"),
+    XSTRING_PTR_STORAGE(L"NavigationCompleted"),
+    XSTRING_PTR_STORAGE(L"FrameNavigationStarting"),
+    XSTRING_PTR_STORAGE(L"FrameContentLoading"),
+    XSTRING_PTR_STORAGE(L"FrameDOMContentLoaded"),
+    XSTRING_PTR_STORAGE(L"FrameNavigationCompleted"),
+    XSTRING_PTR_STORAGE(L"LongRunningScriptDetected"),
+    XSTRING_PTR_STORAGE(L"UnsafeContentWarningDisplaying"),
+    XSTRING_PTR_STORAGE(L"UnviewableContentIdentified"),
+    XSTRING_PTR_STORAGE(L"ContainsFullScreenElementChanged"),
+};
+
+const static KnownNamespaceIndex sa_xmlnsClient2007Indices[] = 
+{
+    KnownNamespaceIndex::Microsoft_UI_Xaml,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Controls,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Controls_Primitives,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Data,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Documents,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Input,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Markup,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Media,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Media_Media3D,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Media_Animation,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Media_Imaging,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Shapes,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Automation,
+    KnownNamespaceIndex::Windows_UI,
+    KnownNamespaceIndex::Windows_UI_Text,
+};
+
+const static KnownNamespaceIndex sa_xmlns2006Xps[] = 
+{
+    KnownNamespaceIndex::Microsoft_UI_Xaml,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Controls,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Controls_Primitives,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Data,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Documents,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Input,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Markup,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Media,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Media_Animation,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Media_Imaging,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Shapes,
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Automation,
+};
+
+const static KnownNamespaceIndex sa_xmlns2006XamlIndices[] = 
+{
+    KnownNamespaceIndex::Microsoft_UI_Xaml_Markup
+};
+
+const static KnownNamespaceIndex sa_xmlns2007DeploymentIndices[] = 
+{
+    KnownNamespaceIndex::Microsoft_UI_Xaml
+};
+
+struct XmlnsDefinition
+{
+    xstring_ptr_storage strNamespaceUriStorage;
+    const KnownNamespaceIndex *pNamespaceIndices;
+    XUINT32 cNamespaceIndices;
+};
+
+const static XmlnsDefinition sa_xmlnsDefinitions[] = 
+{
+    { XSTRING_PTR_STORAGE(L"http://schemas.microsoft.com/client/2007"),                   sa_xmlnsClient2007Indices,          ARRAY_SIZE(sa_xmlnsClient2007Indices)},
+    { XSTRING_PTR_STORAGE(L"http://schemas.microsoft.com/winfx/2006/xaml/presentation"),  sa_xmlnsClient2007Indices,          ARRAY_SIZE(sa_xmlnsClient2007Indices)},
+    { XSTRING_PTR_STORAGE(L"http://schemas.microsoft.com/winfx/2006/xaml"),               sa_xmlns2006XamlIndices,            ARRAY_SIZE(sa_xmlns2006XamlIndices)},
+    { XSTRING_PTR_STORAGE(L"http://schemas.microsoft.com/client/2007/deployment"),        sa_xmlns2007DeploymentIndices,      ARRAY_SIZE(sa_xmlns2007DeploymentIndices)},
+
+    // TODO this is just an expedient until full assembly-namespace support exists
+    // in the XamlSchemaContext.
+    { XSTRING_PTR_STORAGE(L"http://schemas.microsoft.com/xps/2005/06"),                   sa_xmlns2006Xps,                    ARRAY_SIZE(sa_xmlns2006Xps)},
+    
+};

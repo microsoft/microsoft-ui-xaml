@@ -1,0 +1,20 @@
+<#@ template language="C#" linePragmas="false" inherits="PhoneCppCodeGenerator<ClassDefinition>" debug="true"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<# if (!Model.HasParameterlessConstructor) { #>
+_Check_return_ HRESULT 
+<#= Model.GeneratedClassName #>::RuntimeClassInitialize()
+{
+    RRETURN(InitializeImpl());
+}
+<# } #>
+<# foreach (ConstructorDefinition ctor in Model.Constructors) { #>
+_Check_return_ HRESULT 
+<#= Model.GeneratedClassName #>::RuntimeClassInitialize(<#= GetParameterListAsString(ctor.Parameters) #>)
+{
+    RRETURN(InitializeImpl(<#= GetPhoneInitializeImplArgumentListAsString(Model, ctor) #>));
+}
+<# } #>

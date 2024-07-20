@@ -1,0 +1,1965 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="4.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform>AnyCPU</Platform>
+    <PlatformTarget>x86</PlatformTarget>
+    <ProjectGuid>{7EF0449A-8CD1-450A-B556-57FC5DF6D5B5}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>XamlGen</RootNamespace>
+    <AssemblyName>XamlGen</AssemblyName>
+    <FileAlignment>512</FileAlignment>
+    <AssemblyAttributeCLSCompliant>false</AssemblyAttributeCLSCompliant>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <ManagedCode>true</ManagedCode>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartArguments>-o temp\Core -i XamlGen -a XamlOM.dll -a XamlOM.ExCore.dll -a XamlOM.AutoSuggestBox.dll -a XamlOM.Controls.dll</StartArguments>
+    <StartWorkingDirectory>$(SolutionDir)</StartWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>TRACE;DEBUG;NOT_TypeIndexValueImposed, NOT_PropertyIndexValueImposed, NOT_MethodIndexValueImposed, NOT_NamespaceIndexValueImposed</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.4.5">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 4.5</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="XamlGen.Sources.targets" />
+  <ItemGroup>
+    <!--
+      PLEASE READ: if you are adding new sources to this project, please add them to
+      the targets file referenced above, so they can be used by the instant compiler, too.
+    -->
+    <Compile Include="ProgramParameters.cs" />
+    <Compile Include="QueryHelper.cs" />
+    <Compile Include="CSVHelper.cs" />
+    <Compile Include="PhoneIndexGenerator.cs" />
+    <Compile Include="StableXbfIndexGenerator.cs" />
+    <Compile Include="Templates\Code\Core\Bodies\LiftedSources.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>LiftedSources.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Bodies\UIElementSimplePropertiesCallbacks.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>UIElementSimplePropertiesCallbacks.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Headers\GeneratedClasses.cs">
+      <DependentUpon>GeneratedClasses.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Headers\UIAEnums.cs">
+      <DependentUpon>UIAEnums.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\AggregateSource.cs">
+      <DependentUpon>AggregateSource.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\UIAEnums.cs">
+      <DependentUpon>UIAEnums.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\PhoneCppCodeGenerator.cs" />
+    <Compile Include="Templates\Code\Phone\Bodies\AttachedPropertyGetterBodyObject.cs">
+      <DependentUpon>AttachedPropertyGetterBodyObject.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\AttachedPropertyGetterBodyString.cs">
+      <DependentUpon>AttachedPropertyGetterBodyString.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\AttachedPropertyGetterBodyReference.cs">
+      <DependentUpon>AttachedPropertyGetterBodyReference.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\AttachedPropertyGetterBodyEnum.cs">
+      <DependentUpon>AttachedPropertyGetterBodyEnum.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\AttachedPropertySetterBodyEnum.cs">
+      <DependentUpon>AttachedPropertySetterBodyEnum.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\AttachedPropertySetterBodyObject.cs">
+      <DependentUpon>AttachedPropertySetterBodyObject.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\AttachedPropertySetterBodyString.cs">
+      <DependentUpon>AttachedPropertySetterBodyString.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\AttachedPropertySetterBodyValue.cs">
+      <DependentUpon>AttachedPropertySetterBodyValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\AttachedPropertySetterBodyReference.cs">
+      <DependentUpon>AttachedPropertySetterBodyReference.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\ClassExplicitOverrides.cs">
+      <DependentUpon>ClassExplicitOverrides.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\Factory.cs">
+      <DependentUpon>Factory.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\AttachedPropertyImpl.cs">
+      <DependentUpon>AttachedPropertyImpl.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\InitializeProperty.cs">
+      <DependentUpon>InitializeProperty.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\InterfaceMethodImpl.cs">
+      <DependentUpon>InterfaceMethodImpl.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\Method.cs">
+      <DependentUpon>Method.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\Event.cs">
+      <DependentUpon>Event.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\MethodBody.cs">
+      <DependentUpon>MethodBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\ParameterValidation.cs">
+      <DependentUpon>ParameterValidation.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\Property.cs">
+      <DependentUpon>Property.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\InitializeImpl.cs">
+      <DependentUpon>InitializeImpl.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\PropertyGetter.cs">
+      <DependentUpon>PropertyGetter.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\PropertyGetterBody.cs">
+      <DependentUpon>PropertyGetterBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\PropertyGetterBodyReference.cs">
+      <DependentUpon>PropertyGetterBodyReference.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\PropertyGetterBodyObject.cs">
+      <DependentUpon>PropertyGetterBodyObject.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\AttachedPropertyGetterBodyValue.cs">
+      <DependentUpon>AttachedPropertyGetterBodyValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\PropertyGetterBodyDispatch.cs">
+      <DependentUpon>PropertyGetterBodyDispatch.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\PropertyGetterBodyValue.cs">
+      <DependentUpon>PropertyGetterBodyValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\PropertyGetterBodyPrimitive.cs">
+      <DependentUpon>PropertyGetterBodyPrimitive.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\PropertySetterBodyReference.cs">
+      <DependentUpon>PropertySetterBodyReference.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\PropertySetterBodyValue.cs">
+      <DependentUpon>PropertySetterBodyValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\PropertySetterBodyObject.cs">
+      <DependentUpon>PropertySetterBodyObject.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\PropertySetterBodyBoxer.cs">
+      <DependentUpon>PropertySetterBodyBoxer.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\PropertySetterBodyString.cs">
+      <DependentUpon>PropertySetterBodyString.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\PropertySetter.cs">
+      <DependentUpon>PropertySetter.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\PropertySetterBody.cs">
+      <DependentUpon>PropertySetterBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\RuntimeClassInitialize.cs">
+      <DependentUpon>RuntimeClassInitialize.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\ReferenceTypeGetValue.cs">
+      <DependentUpon>ReferenceTypeGetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\ObjectGetValue.cs">
+      <DependentUpon>ObjectGetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\PropertyGetterBodyString.cs">
+      <DependentUpon>PropertyGetterBodyString.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\StringGetValue.cs">
+      <DependentUpon>StringGetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\EnumGetValue.cs">
+      <DependentUpon>EnumGetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\Class.cs">
+      <DependentUpon>Class.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\Types.cs">
+      <DependentUpon>Types.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\ValueTypeGetValue.cs">
+      <DependentUpon>ValueTypeGetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\AttachedPropertyGetValue.cs">
+      <DependentUpon>AttachedPropertyGetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\ReferenceTypeSetValue.cs">
+      <DependentUpon>ReferenceTypeSetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\ObjectSetValue.cs">
+      <DependentUpon>ObjectSetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\StringSetValue.cs">
+      <DependentUpon>StringSetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\ValueTypeSetValue.cs">
+      <DependentUpon>ValueTypeSetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\EnumSetValue.cs">
+      <DependentUpon>EnumSetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\AttachedPropertySetValue.cs">
+      <DependentUpon>AttachedPropertySetValue.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\MethodBodyVirtualDispatch.cs">
+      <DependentUpon>MethodBodyVirtualDispatch.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Bodies\XamlTypeInfo.cs">
+      <DependentUpon>XamlTypeInfo.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Headers\AttachedProperty.cs">
+      <DependentUpon>AttachedProperty.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Headers\Class.cs">
+      <DependentUpon>Class.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Headers\Constructor.cs">
+      <DependentUpon>Constructor.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Headers\ConstructorImpl.cs">
+      <DependentUpon>ConstructorImpl.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Headers\Event.cs">
+      <DependentUpon>Event.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Headers\Factory.cs">
+      <DependentUpon>Factory.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Headers\PrivateProperty.cs">
+      <DependentUpon>PrivateProperty.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Headers\SetPropertyMethod.cs">
+      <DependentUpon>SetPropertyMethod.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Headers\InterfaceMethod.cs">
+      <DependentUpon>InterfaceMethod.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Headers\GetPropertyMethod.cs">
+      <DependentUpon>GetPropertyMethod.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Headers\Method.cs">
+      <DependentUpon>Method.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Headers\MethodImpl.cs">
+      <DependentUpon>MethodImpl.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Headers\Property.cs">
+      <DependentUpon>Property.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Headers\PropertyImpl.cs">
+      <DependentUpon>PropertyImpl.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Headers\RuntimeClass.cs">
+      <DependentUpon>RuntimeClass.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Headers\Types.cs">
+      <DependentUpon>Types.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\Synonyms.cs">
+      <DependentUpon>Synonyms.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\ParameterValidation.cs">
+      <DependentUpon>ParameterValidation.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\ParameterValidationModel.cs" />
+    <Compile Include="Templates\Code\StrictCheckModel.cs" />
+    <Compile Include="Templates\Code\Phone\Headers\XamlTypeInfo.cs">
+      <DependentUpon>XamlTypeInfo.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Phone\Resources\XamlTypeInfo.cs">
+      <DependentUpon>XamlTypeInfo.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Manifests\Microsoft_Windows_Xaml_Etw.cs">
+      <DependentUpon>Microsoft_Windows_Xaml_Etw.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Manifests\Microsoft_Windows_DirectUI_EtwEvents.cs">
+      <DependentUpon>Microsoft_Windows_DirectUI_EtwEvents.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\ClassTypeCheckEntry.cs">
+      <DependentUpon>ClassTypeCheckEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\ClassTypeEntry.cs">
+      <DependentUpon>ClassTypeEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\ClassActivationEntry.cs">
+      <DependentUpon>ClassActivationEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\ClassNameInfoEntry.cs">
+      <DependentUpon>ClassNameInfoEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\ClassPropertiesEntry.cs">
+      <DependentUpon>ClassPropertiesEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\DynamicMetadataBody.cs">
+      <DependentUpon>DynamicMetadataBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\RenderPropertyEntry.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RenderPropertyEntry.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Templates\Metadata\StableXbfIndexes.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>StableXbfIndexes.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Templates\Metadata\StableXbfIndexMapping.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>StableXbfIndexMapping.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Templates\Metadata\StableXbfIndexMetadata.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>StableXbfIndexMetadata.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Templates\Metadata\StaticMetadataBody.cs">
+      <DependentUpon>StaticMetadataBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\PropertyRuntimeDataEntry.cs">
+      <DependentUpon>PropertyRuntimeDataEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\EnterPropertyEntry.cs">
+      <DependentUpon>EnterPropertyEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\EnumPropertiesEntry.cs">
+      <DependentUpon>EnumPropertiesEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\EnumNameInfoEntry.cs">
+      <DependentUpon>EnumNameInfoEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\EnumActivationEntry.cs">
+      <DependentUpon>EnumActivationEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\EnumTypeEntry.cs">
+      <DependentUpon>EnumTypeEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\EnumTypeCheckEntry.cs">
+      <DependentUpon>EnumTypeCheckEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\TypeCheckData.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TypeCheckData.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Templates\Metadata\XbfMetadataCodeGenerator.cs" />
+    <Compile Include="TypeHandleGenerator.cs" />
+    <Compile Include="Templates\Code\Core\Bodies\Activators.cs">
+      <DependentUpon>Activators.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Bodies\Enums.cs">
+      <DependentUpon>Enums.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Bodies\EventArgsClass.cs">
+      <DependentUpon>EventArgsClass.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Bodies\EventArgsClasses.cs">
+      <DependentUpon>EventArgsClasses.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Headers\EventArgsProperty.cs">
+      <DependentUpon>EventArgsProperty.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Headers\EventArgsClasses.cs">
+      <DependentUpon>EventArgsClasses.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Headers\EventArgsClass.cs">
+      <DependentUpon>EventArgsClass.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Headers\EnumDefs.cs">
+      <DependentUpon>EnumDefs.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Headers\EnumValueTables.cs">
+      <DependentUpon>EnumValueTables.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Headers\Enums.cs">
+      <DependentUpon>Enums.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\ApplyTemplateMethod.cs">
+      <DependentUpon>ApplyTemplateMethod.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\CheckAPICall.cs">
+      <DependentUpon>CheckAPICall.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\MethodEtwStart.cs">
+      <DependentUpon>MethodEtwStart.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\MethodEtwStop.cs">
+      <DependentUpon>MethodEtwStop.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\Boxes.cs">
+      <DependentUpon>Boxes.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\PInvokeMethodBody.cs">
+      <DependentUpon>PInvokeMethodBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\EventArgsClass.cs">
+      <DependentUpon>EventArgsClass.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\EventArgsClasses.cs">
+      <DependentUpon>EventArgsClasses.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\Struct.cs">
+      <DependentUpon>Struct.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\FieldGetter.cs">
+      <DependentUpon>FieldGetter.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\FieldSetter.cs">
+      <DependentUpon>FieldSetter.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\PropertySetter.cs">
+      <DependentUpon>PropertySetter.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\PropertyGetter.cs">
+      <DependentUpon>PropertyGetter.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\StrictCheck.cs">
+      <DependentUpon>StrictCheck.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\EventArgsClass.cs">
+      <DependentUpon>EventArgsClass.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\EventArgsClasses.cs">
+      <DependentUpon>EventArgsClasses.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\Struct.cs">
+      <DependentUpon>Struct.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\DependencyObjectTraits.cs">
+      <DependentUpon>DependencyObjectTraits.tt</DependentUpon>
+      <SubType>Code</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="TypeTableOptimizer.cs" />
+    <Compile Include="DependencyGenerator.cs" />
+    <Compile Include="IndexGenerator.cs" />
+    <Compile Include="GuidCollisionDetector.cs" />
+    <Compile Include="Templates\Code\Core\Bodies\UIElement.cs">
+      <DependentUpon>UIElement.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\ClassFactory.cs">
+      <DependentUpon>ClassFactory.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\Constructor.cs">
+      <DependentUpon>Constructor.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\AttachedProperty.cs">
+      <DependentUpon>AttachedProperty.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\AttachedPropertyGetterBody.cs">
+      <DependentUpon>AttachedPropertyGetterBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\AttachedPropertySetterBody.cs">
+      <DependentUpon>AttachedPropertySetterBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\Event.cs">
+      <DependentUpon>Event.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\VirtualDispatchMethodBody.cs">
+      <DependentUpon>VirtualDispatchMethodBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\VelocityFeatureMacros.cs">
+      <DependentUpon>VelocityFeatureMacros.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\MethodBody.cs">
+      <DependentUpon>MethodBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\Method.cs">
+      <DependentUpon>Method.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\PropertyGetterBody.cs">
+      <DependentUpon>PropertyGetterBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\DependencyProperty.cs">
+      <DependentUpon>DependencyProperty.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\PropertySetterBody.cs">
+      <DependentUpon>PropertySetterBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\Property.cs">
+      <DependentUpon>Property.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\Class.cs">
+      <DependentUpon>Class.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Bodies\Classes.cs">
+      <DependentUpon>Classes.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\ConstructorImpl.cs">
+      <DependentUpon>ConstructorImpl.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\ClassFactory.cs">
+      <DependentUpon>ClassFactory.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\AttachedProperty.cs">
+      <DependentUpon>AttachedProperty.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\InterfaceEvent.cs">
+      <DependentUpon>InterfaceEvent.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\InterfaceProperty.cs">
+      <DependentUpon>InterfaceProperty.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\InterfaceMethod.cs">
+      <DependentUpon>InterfaceMethod.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\Interface.cs">
+      <DependentUpon>Interface.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\PropertyImpl.cs">
+      <DependentUpon>PropertyImpl.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\MethodImpl.cs">
+      <DependentUpon>MethodImpl.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\Method.cs">
+      <DependentUpon>Method.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\Event.cs">
+      <DependentUpon>Event.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\EventSourceType.cs">
+      <DependentUpon>EventSourceType.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\DependencyProperty.cs">
+      <DependentUpon>DependencyProperty.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\Constructor.cs">
+      <DependentUpon>Constructor.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\Property.cs">
+      <DependentUpon>Property.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\Class.cs">
+      <DependentUpon>Class.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\Classes.cs">
+      <DependentUpon>Classes.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\InterfaceForwarder.cs">
+      <DependentUpon>InterfaceForwarder.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Framework\Headers\ForwarderMemberModel.cs" />
+    <Compile Include="Templates\Code\Framework\Headers\ForwarderMethodModel.cs" />
+    <Compile Include="Templates\Code\Framework\Headers\ForwarderRequestedInterface.cs" />
+    <Compile Include="Templates\Code\Framework\Headers\MethodForwarder.cs">
+      <DependentUpon>MethodForwarder.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Factories.cs">
+      <DependentUpon>Factories.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Bodies\Class.cs">
+      <DependentUpon>Class.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Bodies\Classes.cs">
+      <DependentUpon>Classes.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Bodies\SimplePropertiesCommon.cs">
+      <DependentUpon>SimplePropertiesCommon.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Headers\Classes.cs">
+      <DependentUpon>Classes.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Headers\Class.cs">
+      <DependentUpon>Class.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Headers\SimplePropertiesAdapter.cs">
+      <DependentUpon>SimplePropertiesAdapter.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Headers\SimplePropertiesMetadata.cs">
+      <DependentUpon>SimplePropertiesMetadata.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Bodies\SimplePropertiesHelpersBody.cs">
+      <DependentUpon>SimplePropertiesHelpersBody.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Copyright.cs">
+      <DependentUpon>Copyright.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Headers\Activators.cs">
+      <DependentUpon>Activators.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Headers\XamlNativeRuntime_SimpleProperties.cs">
+      <DependentUpon>XamlNativeRuntime_SimpleProperties.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Headers\DiagnosticsInterop_SimpleProperties.cs">
+      <DependentUpon>DiagnosticsInterop_SimpleProperties.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\Core\Headers\SimplePropertiesCommon.cs">
+      <DependentUpon>SimplePropertiesCommon.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Code\CppCodeGenerator.cs" />
+    <Compile Include="Templates\MultiFileXamlCodeGenerator.cs" />
+    <Compile Include="Templates\Metadata\TypeTableHeader.cs">
+      <DependentUpon>TypeTableHeader.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\ObjectPropertyEntry.cs">
+      <DependentUpon>ObjectPropertyEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\TypeNameEntry.cs">
+      <DependentUpon>TypeNameEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\PropertyEntry.cs">
+      <DependentUpon>PropertyEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\NamespaceEntry.cs">
+      <DependentUpon>NamespaceEntry.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\Copyright.cs">
+      <DependentUpon>Copyright.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\Metadata\MetadataCodeGenerator.cs" />
+    <Compile Include="Templates\Metadata\Indexes.cs">
+      <DependentUpon>Indexes.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\XamlCodeGenerator.cs" />
+    <Compile Include="Templates\T4CodeGenerator.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Templates\ModernIDL\ModernIDLCodeGenerator.cs" />
+    <Compile Include="Templates\ModernIDL\ModelExtensionMethods.cs" />
+    <Compile Include="Templates\ModernIDL\Class.cs">
+      <DependentUpon>Class.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\ModernIDL\Constructor.cs">
+      <DependentUpon>Constructor.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\ModernIDL\Delegate.cs">
+      <DependentUpon>Delegate.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\ModernIDL\Enum.cs">
+      <DependentUpon>Enum.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\ModernIDL\Interface.cs">
+      <DependentUpon>Interface.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\ModernIDL\MemberModel.cs" />
+    <Compile Include="Templates\ModernIDL\MethodModel.cs" />
+    <Compile Include="Templates\ModernIDL\PropertyModel.cs" />
+    <Compile Include="Templates\ModernIDL\RequestedInterface.cs" />
+    <Compile Include="Templates\ModernIDL\Struct.cs">
+      <DependentUpon>Struct.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\ModernIDL\Group.cs">
+      <DependentUpon>Group.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\ModernIDL\Copyright.cs">
+      <DependentUpon>Copyright.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\ModernIDL\Attribute.cs">
+      <DependentUpon>Attribute.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\ModernIDL\Contract.cs">
+      <DependentUpon>Contract.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="EtwEvents-Diagnostics.man" />
+    <None Include="EtwEvents.man" />
+    <None Include="Templates\Code\Core\Bodies\Activators.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Activators.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Bodies\Enums.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Enums.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Bodies\EventArgsClass.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EventArgsClass.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Bodies\EventArgsClasses.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EventArgsClasses.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Bodies\SimplePropertiesCommon.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>SimplePropertiesCommon.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Headers\EventArgsProperty.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EventArgsProperty.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Headers\EventArgsClasses.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EventArgsClasses.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Headers\EventArgsClass.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EventArgsClass.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Headers\EnumDefs.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EnumDefs.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Headers\EnumValueTables.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EnumValueTables.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Headers\Enums.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Enums.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Bodies\UIElement.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>UIElement.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Headers\SimplePropertiesAdapter.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>SimplePropertiesAdapter.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Headers\SimplePropertiesMetadata.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>SimplePropertiesMetadata.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Bodies\SimplePropertiesHelpersBody.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>SimplePropertiesHelpersBody.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\Synonyms.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Synonyms.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\ParameterValidation.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ParameterValidation.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\ClassFactory.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ClassFactory.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\Constructor.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Constructor.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\AttachedProperty.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AttachedProperty.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\AttachedPropertyGetterBody.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AttachedPropertyGetterBody.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\AttachedPropertySetterBody.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AttachedPropertySetterBody.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\ApplyTemplateMethod.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ApplyTemplateMethod.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\CheckAPICall.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CheckAPICall.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\MethodEtwStart.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>MethodEtwStart.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\MethodEtwStop.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>MethodEtwStop.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\Boxes.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Boxes.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\PInvokeMethodBody.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PInvokeMethodBody.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\EventArgsClass.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EventArgsClass.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\EventArgsClasses.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EventArgsClasses.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\Struct.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Struct.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\FieldGetter.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>FieldGetter.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\FieldSetter.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>FieldSetter.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\PropertySetter.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertySetter.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\PropertyGetter.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertyGetter.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\Event.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Event.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\VirtualDispatchMethodBody.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>VirtualDispatchMethodBody.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\MethodBody.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>MethodBody.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\Method.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Method.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\PropertyGetterBody.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertyGetterBody.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\DependencyProperty.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>DependencyProperty.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\PropertySetterBody.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertySetterBody.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\Property.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Property.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\Class.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Class.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\Classes.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Classes.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\StrictCheck.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>StrictCheck.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\ConstructorImpl.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ConstructorImpl.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\ClassFactory.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ClassFactory.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\AttachedProperty.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AttachedProperty.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\EventArgsClass.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EventArgsClass.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\EventArgsClasses.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EventArgsClasses.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\Struct.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Struct.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\InterfaceEvent.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>InterfaceEvent.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\InterfaceProperty.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>InterfaceProperty.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\InterfaceForwarder.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>InterfaceForwarder.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\InterfaceMethod.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>InterfaceMethod.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\Interface.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Interface.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\PropertyImpl.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertyImpl.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\MethodImpl.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>MethodImpl.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\MethodForwarder.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>MethodForwarder.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\Method.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Method.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\Event.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Event.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\EventSourceType.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EventSourceType.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\DependencyProperty.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>DependencyProperty.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\Constructor.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Constructor.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\Property.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Property.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\Class.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Class.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\Classes.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Classes.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Factories.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Factories.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Bodies\Class.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Class.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Bodies\Classes.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Classes.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Headers\Classes.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Classes.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Headers\Class.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Class.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Copyright.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Copyright.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Headers\Activators.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Activators.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Manifests\Microsoft_Windows_DirectUI_EtwEvents.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Microsoft_Windows_DirectUI_EtwEvents.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\ClassTypeCheckEntry.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ClassTypeCheckEntry.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\ClassTypeEntry.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ClassTypeEntry.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\ClassActivationEntry.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ClassActivationEntry.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\ClassNameInfoEntry.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ClassNameInfoEntry.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\ClassPropertiesEntry.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ClassPropertiesEntry.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\DynamicMetadataBody.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>DynamicMetadataBody.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\RenderPropertyEntry.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>RenderPropertyEntry.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\StableXbfIndexes.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>StableXbfIndexes.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\StableXbfIndexMapping.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>StableXbfIndexMapping.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\StableXbfIndexMetadata.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>StableXbfIndexMetadata.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\StaticMetadataBody.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>StaticMetadataBody.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\PropertyRuntimeDataEntry.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertyRuntimeDataEntry.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\EnterPropertyEntry.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EnterPropertyEntry.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\EnumPropertiesEntry.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EnumPropertiesEntry.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\EnumNameInfoEntry.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EnumNameInfoEntry.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\EnumActivationEntry.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EnumActivationEntry.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\EnumTypeEntry.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EnumTypeEntry.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\EnumTypeCheckEntry.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EnumTypeCheckEntry.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\DependencyObjectTraits.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>DependencyObjectTraits.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\TypeTableHeader.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>TypeTableHeader.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\ObjectPropertyEntry.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ObjectPropertyEntry.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\TypeNameEntry.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>TypeNameEntry.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\PropertyEntry.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertyEntry.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\NamespaceEntry.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>NamespaceEntry.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\Copyright.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Copyright.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\Indexes.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Indexes.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\ModernIDL\Class.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Class.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\ModernIDL\Constructor.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Constructor.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\ModernIDL\Delegate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Delegate.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\ModernIDL\Enum.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Enum.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\ModernIDL\Interface.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Interface.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\ModernIDL\Struct.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Struct.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Core\Headers\GeneratedClasses.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>GeneratedClasses.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Headers\RuntimeClass.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>RuntimeClass.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Headers\Types.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Types.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Headers\Factory.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Factory.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Headers\AttachedProperty.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AttachedProperty.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Headers\Class.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Class.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Headers\MethodImpl.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>MethodImpl.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Headers\PropertyImpl.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertyImpl.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Headers\Property.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Property.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Headers\Method.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Method.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Headers\Event.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Event.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Headers\InterfaceMethod.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>InterfaceMethod.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Headers\GetPropertyMethod.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>GetPropertyMethod.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Headers\ConstructorImpl.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ConstructorImpl.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Headers\Constructor.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Constructor.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Headers\SetPropertyMethod.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>SetPropertyMethod.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Headers\PrivateProperty.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PrivateProperty.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Resources\XamlTypeInfo.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>XamlTypeInfo.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Headers\XamlTypeInfo.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>XamlTypeInfo.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Bodies\XamlTypeInfo.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>XamlTypeInfo.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Bodies\AttachedPropertySetValue.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AttachedPropertySetValue.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Bodies\EnumSetValue.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EnumSetValue.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\Code\Phone\Bodies\ValueTypeSetValue.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ValueTypeSetValue.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Templates\Code\Core\Bodies\UIElementSimplePropertiesCallbacks.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>UIElementSimplePropertiesCallbacks.cs</LastGenOutput>
+    </Content>
+    <Content Include="Templates\Metadata\TypeCheckData.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>TypeCheckData.cs</LastGenOutput>
+    </Content>
+    <None Include="Templates\ModernIDL\Attribute.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Attribute.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\ModernIDL\Contract.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Contract.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\ModernIDL\Copyright.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Copyright.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\ModernIDL\Group.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Group.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Manifests\Microsoft_Windows_Xaml_Etw.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Microsoft_Windows_Xaml_Etw.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\MethodBodyVirtualDispatch.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>MethodBodyVirtualDispatch.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\PropertyGetterBodyString.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertyGetterBodyString.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\InitializeImpl.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>InitializeImpl.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\Class.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Class.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\Types.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Types.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\EnumGetValue.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>EnumGetValue.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\ObjectGetValue.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ObjectGetValue.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\StringGetValue.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>StringGetValue.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\ReferenceTypeGetValue.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ReferenceTypeGetValue.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\ValueTypeGetValue.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ValueTypeGetValue.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\AttachedPropertyGetValue.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AttachedPropertyGetValue.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\RuntimeClassInitialize.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>RuntimeClassInitialize.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\Property.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Property.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\Event.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Event.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\Method.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Method.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\InterfaceMethodImpl.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>InterfaceMethodImpl.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\Factory.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>Factory.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\PropertyGetter.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertyGetter.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\PropertySetter.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertySetter.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\PropertySetterBody.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertySetterBody.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\PropertyGetterBody.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertyGetterBody.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\PropertySetterBodyString.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertySetterBodyString.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\PropertyGetterBodyReference.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertyGetterBodyReference.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\PropertyGetterBodyPrimitive.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertyGetterBodyPrimitive.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\PropertySetterBodyBoxer.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertySetterBodyBoxer.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\PropertySetterBodyReference.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertySetterBodyReference.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\PropertyGetterBodyValue.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertyGetterBodyValue.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\PropertySetterBodyValue.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertySetterBodyValue.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\PropertyGetterBodyObject.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertyGetterBodyObject.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\PropertySetterBodyObject.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertySetterBodyObject.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\InitializeProperty.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>InitializeProperty.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\MethodBody.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>MethodBody.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\ParameterValidation.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ParameterValidation.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\AttachedPropertyImpl.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AttachedPropertyImpl.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\AttachedPropertyGetterBodyValue.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AttachedPropertyGetterBodyValue.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\AttachedPropertyGetterBodyReference.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AttachedPropertyGetterBodyReference.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\AttachedPropertySetterBodyReference.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AttachedPropertySetterBodyReference.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\AttachedPropertySetterBodyValue.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AttachedPropertySetterBodyValue.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\AttachedPropertyGetterBodyEnum.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AttachedPropertyGetterBodyEnum.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\AttachedPropertySetterBodyEnum.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AttachedPropertySetterBodyEnum.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\AttachedPropertyGetterBodyObject.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AttachedPropertyGetterBodyObject.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\AttachedPropertySetterBodyObject.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AttachedPropertySetterBodyObject.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\PropertyGetterBodyDispatch.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>PropertyGetterBodyDispatch.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\AttachedPropertyGetterBodyString.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AttachedPropertyGetterBodyString.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\AttachedPropertySetterBodyString.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AttachedPropertySetterBodyString.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\ClassExplicitOverrides.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ClassExplicitOverrides.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\UIAEnums.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>UIAEnums.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Headers\UIAEnums.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>UIAEnums.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Headers\VelocityFeatureMacros.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>VelocityFeatureMacros.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Bodies\LiftedSources.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>LiftedSources.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Framework\Bodies\AggregateSource.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AggregateSource.cs</LastGenOutput>
+    </None>
+    <Content Include="Templates\Code\Phone\Bodies\ReferenceTypeSetValue.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ReferenceTypeSetValue.cs</LastGenOutput>
+    </Content>
+    <None Include="Templates\Code\Phone\Bodies\ObjectSetValue.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>ObjectSetValue.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Phone\Bodies\StringSetValue.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>StringSetValue.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Headers\XamlNativeRuntime_SimpleProperties.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>XamlNativeRuntime_SimpleProperties.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Headers\DiagnosticsInterop_SimpleProperties.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>DiagnosticsInterop_SimpleProperties.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Code\Core\Headers\SimplePropertiesCommon.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>SimplePropertiesCommon.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition="'$(BuildingInsideVisualStudio)'=='true'">
+    <ProjectReference Include="..\Modules\AutoSuggestBox\XamlOM.AutoSuggestBox.csproj">
+      <Project>{05078ce6-9828-446c-aad7-096885e378d8}</Project>
+      <Name>XamlOM.AutoSuggestBox</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Modules\Controls\XamlOM.Controls.csproj">
+      <Project>{0172f700-db92-46b1-aa21-ee0ba878f499}</Project>
+      <Name>XamlOM.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Modules\ExtendedCore\XamlOM.ExCore.csproj">
+      <Project>{2e7650f4-af40-43dc-9d05-0c9418e308aa}</Project>
+      <Name>XamlOM.ExCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Modules\Phone\XamlOM.Phone.csproj">
+      <Project>{676ea754-7bd5-43eb-9b2c-10b43e59d810}</Project>
+      <Name>XamlOM.Phone</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\XamlOM\XamlOM.csproj">
+      <Project>{676ea754-7bd5-43eb-9b2c-10b43e59d911}</Project>
+      <Name>XamlOM</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OM\OM.csproj">
+      <Project>{25a09bd9-cff5-4f6b-8bce-bc3611c3d392}</Project>
+      <Name>OM</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(BuildingInsideVisualStudio)'!='true'">
+    <BinplaceCompiled Include="$(ObjectPath)\$(ObjectDirectory)$(TargetFileName)">
+      <DestinationFolder>idw</DestinationFolder>
+    </BinplaceCompiled>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+  <Target Name="BeforeBuild">
+    <Message Text="Platform = $(Platform) arch=$(arch)" />
+  </Target>
+</Project>

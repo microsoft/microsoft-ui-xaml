@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- Copyright (C) Microsoft Corporation.  All rights reserved. -->
+
+    <Import Project="$(XcpPath)\components\base.props"/>
+
+    <PropertyGroup>
+        <XamlPrecompiledShared>$(XcpPath)\components\pch\prod\precomp.h</XamlPrecompiledShared>
+
+        <ProjectPreprocessorDefinitions>
+            $(ProjectPreprocessorDefinitions)
+            __WRL_STRICT__;
+            __WRL_FORCE_INSPECTABLE_CLASS_MACRO__;
+            _HAS_EXCEPTIONS=0;
+            WIL_SUPPRESS_EXCEPTIONS=1;
+        </ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{ccc61973-be99-4223-b935-353d03571e92}'" Include="$(XcpPath)\components\pch\prod\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{ccc61973-be99-4223-b935-353d03571e92}"/>
+    </ItemGroup>
+</Project>

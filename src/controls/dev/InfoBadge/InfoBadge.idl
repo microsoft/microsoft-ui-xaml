@@ -1,0 +1,37 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PUBLIC_V3]
+[webhosthidden]
+unsealed runtimeclass InfoBadgeTemplateSettings : Microsoft.UI.Xaml.DependencyObject
+{
+    InfoBadgeTemplateSettings();
+
+    Microsoft.UI.Xaml.CornerRadius InfoBadgeCornerRadius;
+    Microsoft.UI.Xaml.Controls.IconElement IconElement;
+
+    static Microsoft.UI.Xaml.DependencyProperty InfoBadgeCornerRadiusProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty IconElementProperty{ get; };
+}
+
+[MUX_PUBLIC_V3]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass InfoBadge : Microsoft.UI.Xaml.Controls.Control
+{
+    InfoBadge();
+
+    [MUX_DEFAULT_VALUE("-1")]
+    Int32 Value;
+
+    IconSource IconSource;
+
+    InfoBadgeTemplateSettings TemplateSettings{ get; };
+
+    static Microsoft.UI.Xaml.DependencyProperty ValueProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty IconSourceProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
+}
+
+}

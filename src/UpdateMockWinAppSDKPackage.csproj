@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <Import Project="Directory.Build.props" />
+  <Import Project="$(NugetPackageDirectory)\MUXCustomBuildTasks.$(MuxCustomBuildTasksPackageVersion)\build\MUXCustomBuildTasks.targets" />
+  <Import Project="Directory.Build.targets" />
+  <Target Name="Rebuild" Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+    <CallTarget Targets="Clean" />
+    <CallTarget Targets="Build" />
+  </Target>
+  <Target Name="Clean" Condition="'$(BuildingInsideVisualStudio)' == 'true'" />
+  <Target Name="Build" Condition="'$(BuildingInsideVisualStudio)' == 'true'" DependsOnTargets="CheckIfUpdateIsRequired" />
+  <Target Name="CheckIfUpdateIsRequired">
+    <PropertyGroup>
+      <PackagesDirectory>$(ProjectRoot)packages\</PackagesDirectory>
+      <TempPackagesDirectory>$(OutDir)packages\</TempPackagesDirectory>
+      <MicrosoftWindowsSDKBuildToolsPackageName>Microsoft.Windows.SDK.BuildTools</MicrosoftWindowsSDKBuildToolsPackageName>
+      <MicrosoftWindowsSDKBuildToolsTempPackagesDir>$(TempPackagesDirectory)$(MicrosoftWindowsSDKBuildToolsPackageName).$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)</MicrosoftWindowsSDKBuildToolsTempPackagesDir>
+      <WASDKPackageCppDirectoryName>Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)</WASDKPackageCppDirectoryName>
+      <WASDKPackageCSharpDirectoryName>microsoft.windowsappsdk\$(WindowsAppSdkPackageVersion)</WASDKPackageCSharpDirectoryName>
+      <BuildMockPackageScriptPath>$(ProjectRoot)scripts\buildMockWinAppSdkPackage.ps1</BuildMockPackageScriptPath>
+      <BuildMockPackageScriptParams>$(ProjectRoot) $(Platform) $(Configuration) $(WinUIVersion) 999.0.0-mock $(TempPackagesDirectory)</BuildMockPackageScriptParams>
+    </PropertyGroup>
+    <RunPowershellScript Path="$(BuildMockPackageScriptPath)" Parameters="$(BuildMockPackageScriptParams) -Fake">
+      <Output TaskParameter="ExitCode" PropertyName="FakeScriptRunExitCode"/>
+    </RunPowershellScript>
+    <PropertyGroup>
+      <UpdateIsRequired Condition="'$(FakeScriptRunExitCode)' == '1'">true</UpdateIsRequired>
+    </PropertyGroup>
+  </Target>
+  <Target Name="UpdateMockWinAppSDKPackage" Condition="'$(UpdateIsRequired)' == 'true'" AfterTargets="Build">
+    <!-- First we'll create the package themselves and extract them to a temp folder using the Powershell script.
+         Microsoft.Windows.SDK.BuildTools is a package we depend on that needs to be in the packages directory
+         for dependency resolution. -->
+    <ItemGroup>
+      <MicrosoftWindowsSDKBuildToolsFile Include="$(PackagesDirectory)$(MicrosoftWindowsSDKBuildToolsPackageName).$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)\**\*" />
+    </ItemGroup>
+    <Message Text="Copying $(MicrosoftWindowsSDKBuildToolsPackageName), which is a package we depend on for WinAppSDK package creation." Condition="!Exists('$(MicrosoftWindowsSDKBuildToolsTempPackagesDir)')" />
+    <Copy SourceFiles="@(MicrosoftWindowsSDKBuildToolsFile)" DestinationFiles="@(MicrosoftWindowsSDKBuildToolsFile->'$(MicrosoftWindowsSDKBuildToolsTempPackagesDir)\%(RecursiveDir)\%(Filename)%(Extension)')"  Condition="!Exists('$(MicrosoftWindowsSDKBuildToolsTempPackagesDir)')" />
+    <RunPowershellScript Path="$(ProjectRoot)scripts\buildMockWinAppSdkPackage.ps1" Parameters="$(ProjectRoot) $(Platform) $(Configuration) $(WinUIVersion) 999.0.0-mock $(TempPackagesDirectory)" />
+    <!-- Next we'll install the packages. Visual Studio complains if we completely delete and regenerate in-use NuGet package folders,
+         so instead of that, if the package folders already exist, we'll just copy over all of the lib, runtimes, and MSIX files.
+         This ensures that the newest built files get used correctly without breaking any Visual Studio NuGet integration. -->
+    <ItemGroup>
+      <WASDKPackageTempFileToCopy Include="$(TempPackagesDirectory)$(WASDKPackageCppDirectoryName)\**\*" Condition="!Exists('$(PackagesDirectory)$(WASDKPackageCppDirectoryName)')">
+        <!-- Note: C++ projects put restored nuget packages in a directory of the form pacakges\PackageName.PackageVersion,
+             while C# projects put restored nuget packages in a directory of the form pacakges\packagename\packageversion.
+             We need to update files in both locations. -->
+        <CppTargetDirectory>$(PackagesDirectory)$(WASDKPackageCppDirectoryName)\</CppTargetDirectory>
+        <CSharpTargetDirectory>$(PackagesDirectory)$(WASDKPackageCSharpDirectoryName)\</CSharpTargetDirectory>
+      </WASDKPackageTempFileToCopy>
+      <WASDKPackageTempFileToCopy Include="$(TempPackagesDirectory)$(WASDKPackageCppDirectoryName)\lib\**\*" Condition="Exists('$(PackagesDirectory)$(WASDKPackageCppDirectoryName)')">
+        <CppTargetDirectory>$(PackagesDirectory)$(WASDKPackageCppDirectoryName)\lib\</CppTargetDirectory>
+        <CSharpTargetDirectory>$(PackagesDirectory)$(WASDKPackageCSharpDirectoryName)\lib\</CSharpTargetDirectory>
+      </WASDKPackageTempFileToCopy>
+      <WASDKPackageTempFileToCopy Include="$(TempPackagesDirectory)$(WASDKPackageCppDirectoryName)\runtimes\**\*" Condition="Exists('$(PackagesDirectory)$(WASDKPackageCppDirectoryName)')">
+        <CppTargetDirectory>$(PackagesDirectory)$(WASDKPackageCppDirectoryName)\runtimes\</CppTargetDirectory>
+        <CSharpTargetDirectory>$(PackagesDirectory)$(WASDKPackageCSharpDirectoryName)\runtimes\</CSharpTargetDirectory>
+      </WASDKPackageTempFileToCopy>
+      <WASDKPackageTempFileToCopy Include="$(TempPackagesDirectory)$(WASDKPackageCppDirectoryName)\tools\MSIX\**\*" Condition="Exists('$(PackagesDirectory)$(WASDKPackageCppDirectoryName)')">
+        <CppTargetDirectory>$(PackagesDirectory)$(WASDKPackageCppDirectoryName)\tools\MSIX\</CppTargetDirectory>
+        <CSharpTargetDirectory>$(PackagesDirectory)$(WASDKPackageCSharpDirectoryName)\tools\MSIX\</CSharpTargetDirectory>
+      </WASDKPackageTempFileToCopy>
+    </ItemGroup>
+    <Copy SourceFiles="@(WASDKPackageTempFileToCopy)" DestinationFolder="%(CppTargetDirectory)%(RecursiveDir)" />
+    <Copy SourceFiles="@(WASDKPackageTempFileToCopy)" DestinationFolder="%(CSharpTargetDirectory)%(RecursiveDir)" />
+  </Target>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_test|ARM64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_test|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|Win32'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|Win32'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_test|Win32'" />
+  <PropertyGroup>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+    <ProjectGuid>{2F1F8DCD-98F2-4C02-97BA-15105E933057}</ProjectGuid>
+  </PropertyGroup>
+  <!-- Define targets required for MSBuild's project-to-project protocol -->
+  <Target Name="GetNativeManifest" />
+  <Target Name="GetCopyToOutputDirectoryItems" />
+  <Target Name="GetTargetPathWithTargetPlatformMoniker" />
+  <Target Name="GetPackagingOutputs" />
+</Project>

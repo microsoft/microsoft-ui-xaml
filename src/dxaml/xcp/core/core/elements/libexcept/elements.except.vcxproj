@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{27e82ec4-58f3-4b2d-afb8-4e902212c3ea}</ProjectGuid>
+    </PropertyGroup>
+
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved. -->
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+    <Import Project="$(XcpPath)\core\core\elements\sources.props"/>
+
+    <PropertyGroup>
+        <XamlPrecompiledShared>$(XcpPath)\core\core\elements\pchexcept\precomp.h</XamlPrecompiledShared>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <ExceptionHandling>Sync</ExceptionHandling>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\Resources.cpp"/>
+        <ClCompile Include="..\ThemeResourceExtension.cpp"/>
+        <ClCompile Include="..\VisualTransition.cpp"/>
+        <ClCompile Include="..\XamlPredicate.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\core\core\elements\pchexcept\elements.except.pch.vcxproj" Project="{96f6e5af-3fe0-4d11-881b-f4cc87a2a414}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

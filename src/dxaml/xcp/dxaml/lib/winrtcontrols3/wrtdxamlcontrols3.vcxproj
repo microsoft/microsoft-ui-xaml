@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{3cf1ecd0-3b72-49bb-b83e-9e44b9558718}</ProjectGuid>
+    </PropertyGroup>
+
+    <!-- ******************************** File Header ******************************\ -->
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved.                   -->
+    <!--                                                                              -->
+    <!-- Project specific SOURCES file.                                               -->
+    <!--                                                                              -->
+    <!-- ***************************************************************************/ -->
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="..\sources.props"/>
+
+    <PropertyGroup>
+        <TargetDestination>retail</TargetDestination>
+
+        <XamlPrecompiledShared>..\winrtpch\precomp.h</XamlPrecompiledShared>
+
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\UIBridgeFocus\inc;
+            $(XcpPath)\components\transforms\inc;
+            $(FrameworkUdkIncPath);
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\ContainerContentChangingEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\StickyHeaderWrapper.cpp"/>
+        <ClCompile Include="..\TextBlock_Partial.cpp"/>
+        <ClCompile Include="..\RichTextBlock_Partial.cpp"/>
+        <ClCompile Include="..\RichTextBlockOverflow_Partial.cpp"/>
+        <ClCompile Include="..\TextPointer_Partial.cpp"/>
+        <ClCompile Include="..\TextElement_Partial.cpp"/>
+        <ClCompile Include="..\Hyperlink_Partial.cpp"/>
+        <ClCompile Include="..\IRawElementProviderSimple_Partial.cpp"/>
+        <ClCompile Include="..\ListViewBase_Partial.cpp"/>
+        <ClCompile Include="..\ListViewBase_Partial_Selection.cpp"/>
+        <ClCompile Include="..\ListViewBase_Partial_Interaction.cpp"/>
+        <ClCompile Include="..\ListViewBase_Partial_Reorder.cpp"/>
+        <ClCompile Include="..\ListViewBase_Partial_DataVirtualization.cpp"/>
+        <ClCompile Include="..\ListViewBase_Partial_SemanticZoomInformation.cpp"/>
+        <ClCompile Include="..\ListViewBase_Partial_UIAProperties.cpp"/>
+        <ClCompile Include="..\ListViewBase_Partial_ContainerPhase.cpp"/>
+        <ClCompile Include="..\ListViewBase_Partial_Serialization.cpp"/>
+        <ClCompile Include="..\ListViewItem_Partial.cpp"/>
+        <ClCompile Include="..\ListView_Partial.cpp"/>
+        <ClCompile Include="..\Brush_Partial.cpp"/>
+        <ClCompile Include="..\SemanticZoom_Partial.cpp"/>
+        <ClCompile Include="..\ListViewBaseItem_Partial.cpp"/>
+        <ClCompile Include="..\GridViewItem_Partial.cpp"/>
+        <ClCompile Include="..\GridViewHeaderItem_Partial.cpp"/>
+        <ClCompile Include="..\ListViewHeaderItem_Partial.cpp"/>
+        <ClCompile Include="..\GridView_Partial.cpp"/>
+        <ClCompile Include="..\WrapGrid_partial.cpp"/>
+        <ClCompile Include="..\CurrentChangingEventArgs_partial.cpp"/>
+        <ClCompile Include="..\BitmapImage_Partial.cpp"/>
+        <ClCompile Include="..\LinearGradientBrush_Partial.cpp"/>
+        <ClCompile Include="..\SolidColorBrush_Partial.cpp"/>
+        <ClCompile Include="..\ToggleSwitch_Partial.cpp"/>
+        <ClCompile Include="..\XamlIslandRoot_Partial.cpp"/>
+        <ClCompile Include="..\DesktopWindowXamlSource_Partial.cpp"/>
+        <ClCompile Include="..\WindowsXamlManager_Partial.cpp"/>
+        <ClCompile Include="..\XamlSourceFocusNavigationRequest_Partial.cpp"/>
+        <ClCompile Include="..\XamlSourceFocusNavigationResult_Partial.cpp"/>
+        <ClCompile Include="..\TickBar_Partial.cpp"/>
+        <ClCompile Include="..\ToolTip_Partial.cpp"/>
+        <ClCompile Include="..\ToolTipService_Partial.cpp"/>
+        <ClCompile Include="..\MediaTransportControls_Partial.cpp"/>
+        <ClCompile Include="..\MediaTransportControlsMPE_Partial.cpp"/>
+        <ClCompile Include="..\MediaPlayerElement_partial.cpp"/>
+        <ClCompile Include="..\MediaPlayerPresenter_partial.cpp"/>
+        <ClCompile Include="..\Image_Partial.cpp"/>
+        <ClCompile Include="..\Shape_Partial.cpp"/>
+        <ClCompile Include="..\CarouselPanel_Interfaces_Partial.cpp"/>
+        <ClCompile Include="..\CarouselPanel_Partial.cpp"/>
+        <ClCompile Include="..\GeneratorPosition_Partial.cpp"/>
+        <ClCompile Include="..\ListViewBaseHeaderItem_Partial.cpp"/>
+        <ClCompile Include="..\ListViewBaseItemPresenter_Partial.cpp"/>
+        <ClCompile Include="..\ListViewItemPresenter_Partial.cpp"/>
+        <ClCompile Include="..\GridViewItemPresenter_Partial.cpp"/>
+        <ClCompile Include="..\EventCallbacks.cpp"/>
+        <ClCompile Include="..\ContentDialog_Partial.cpp"/>
+        <ClCompile Include="..\ContentDialogMetadata.cpp"/>
+        <ClCompile Include="..\ListViewPersistenceHelper_Partial.cpp"/>
+        <ClCompile Include="..\AutoSuggestBox_Partial.cpp"/>
+        <ClCompile Include="..\ItemIndexRange_Partial.cpp"/>
+        <ClCompile Include="..\SplitView_Partial.cpp"/>
+        <ClCompile Include="..\ReversedVector.cpp"/>
+        <ClCompile Include="..\ElementSoundPlayer.cpp"/>
+        <ClCompile Include="..\ElementSoundPlayerService_Partial.cpp"/>
+        <ClCompile Include="..\XamlCompositionBrushBase_Partial.cpp"/>
+        <ClCompile Include="..\LoadedImageSurface_Partial.cpp"/>
+        <ClCompile Include="..\IconSource_Partial.cpp"/>
+        <ClCompile Include="..\XamlUICommand_Partial.cpp"/>
+        <ClCompile Include="..\StandardUICommand_Partial.cpp"/>
+        <ClCompile Include="..\CommandingHelpers.cpp"/>
+        <ClCompile Include="..\XamlDirect_Partial.cpp"/>
+        <ClCompile Include="..\ThemeShadow_Partial.cpp"/>
+        <ClCompile Include="..\ThemeShadowFactory_Partial.cpp"/>
+        <ClCompile Include="..\CommandingContainer_Partial.cpp"/>
+        <ClCompile Include="..\AppBarElementContainer_Partial.cpp"/>
+        <ClCompile Include="..\CascadingMenuHelper.cpp"/>
+        <ClCompile Include="..\FlyoutShowOptions_Partial.cpp"/>
+        <ClCompile Include="..\CaretBrowsingDialog.cpp"/>
+        <ClCompile Include="..\DisplayOrientationHelper.cpp"/>
+        <ClCompile Include="..\BitmapIconSource_Partial.cpp"/>
+        <ClCompile Include="..\FontIconSource_Partial.cpp"/>
+        <ClCompile Include="..\PathIconSource_Partial.cpp"/>
+        <ClCompile Include="..\SymbolIconSource_Partial.cpp"/>
+        <ClCompile Include="..\SystemBackdrop_Partial.cpp"/>
+        <ClCompile Include="..\XamlIsland_Partial.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <BuildClientcore>1</BuildClientcore>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\dxaml\idl\com\microsoft.ui.xaml-com.vcxproj" Project="{a1eb01c3-ac8b-45a8-97c8-c459b77ed690}"/>
+        <ProjectReference Include="$(XamlDiagPath)\idl\xamlom.vcxproj" Project="{c6e1e90c-ee33-4352-a8de-067b013c7cc9}"/>
+        <ProjectReference Include="..\winrtpch\wrtdxamlpch.vcxproj" Project="{845d8296-bec7-4e97-8da9-db26a3a6d8c9}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

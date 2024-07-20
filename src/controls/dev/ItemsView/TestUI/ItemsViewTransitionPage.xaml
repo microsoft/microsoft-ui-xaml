@@ -1,0 +1,71 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.ItemsViewTransitionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <local:TestPage.Resources>
+        <ResourceDictionary>
+            <LinedFlowLayout x:Key="LinedFlowLayout"
+                LineHeight="96" LineSpacing="4" MinItemSpacing="4" ItemsStretch="Fill"/>
+            <StackLayout x:Key="StackLayout"
+                Orientation="Vertical" Spacing="10"/>
+            <UniformGridLayout x:Key="UniformGridLayout"
+                MaximumRowsOrColumns="4"
+                MinColumnSpacing="10" MinRowSpacing="10"
+                MinItemWidth="100" MinItemHeight="150"/>
+            <LinedFlowLayoutItemCollectionTransitionProvider x:Key="LinedFlowLayoutItemCollectionTransitionProvider"
+                TransitionCompleted="OnTransitionProviderTransitionCompleted"/>
+        </ResourceDictionary>
+    </local:TestPage.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="300" />
+        </Grid.ColumnDefinitions>
+        <ItemsView x:Name="itemsView"
+                   AutomationProperties.AutomationId="ItemsView"
+                   ItemsSource="{x:Bind items}"
+                   KeyDown="OnItemsViewKeyDown">
+            <ItemsView.ItemTemplate>
+                <DataTemplate>
+                    <ItemContainer MinWidth="1" AutomationProperties.AutomationId="{Binding Path=UriSource.AbsoluteUri}">
+                        <Image Height="120" Source="{Binding}" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </ItemContainer>
+                </DataTemplate>
+            </ItemsView.ItemTemplate>
+        </ItemsView>
+        <ScrollViewer Grid.Column="1">
+            <StackPanel Spacing="5" Margin="5">
+                <Button AutomationProperties.AutomationId="DeleteButton" Content="Delete selected item" Click="OnDeleteButtonClick" />
+                <Button AutomationProperties.AutomationId="AddButton" Content="Add new first item" Click="OnAddButtonClick" />
+                <Button AutomationProperties.AutomationId="MoveButton" Content="Move selected item to first" Click="OnMoveButtonClick" />
+                <Button AutomationProperties.AutomationId="RefreshButton" Content="Refresh items" Click="OnRefreshButtonClick" />
+                <ComboBox Header="Layout" SelectionChanged="OnLayoutSelectionChanged" SelectedIndex="1">
+                    <ComboBoxItem>null</ComboBoxItem>
+                    <ComboBoxItem>LinedFlowLayout</ComboBoxItem>
+                    <ComboBoxItem>StackLayout</ComboBoxItem>
+                    <ComboBoxItem>UniformGridLayout</ComboBoxItem>
+                </ComboBox>
+                <ComboBox x:Name="ItemCountComboBox" Header="Item Count">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button AutomationProperties.AutomationId="ClearHistoryButton" Content="Clear TransitionCompleted history" Click="OnClearHistoryButtonClick" />
+                <StackPanel Margin="5">
+                    <TextBlock Text="TransitionCompleted history:" />
+                    <TextBox IsReadOnly="True" TextWrapping="Wrap" Height="200"
+                        x:Name="TransitionCompletedHistoryTextBox"
+                        AutomationProperties.AutomationId="TransitionCompletedHistoryTextBox" />
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</local:TestPage>

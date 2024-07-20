@@ -1,0 +1,60 @@
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+
+cpp_quote("#pragma region Application Family")
+cpp_quote("#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)")
+
+#include <sdkddkver.h>
+
+// Include the existing Windows.UI.Xaml version of XamlOM.idl, which defines
+// most of the interfaces the WinUI XamlDiagnostics implements.
+// The interfaces defined in this XamlOM.WinUI.idl file are for new functionality
+// exclusive to WinUI 3.
+import "XamlOM.idl";
+
+cpp_quote("// Win32 API definitions")
+cpp_quote("#define E_NOTFOUND HRESULT_FROM_WIN32(ERROR_NOT_FOUND)")
+cpp_quote("#define E_UNKNOWNTYPE MAKE_HRESULT(SEVERITY_ERROR, FACILITY_XAML, 40L)")
+
+
+// Interfaces.
+
+// IVisualTreeServiceCallback3: implemented by the tap dll
+// to receive change notifications about XamlRoots being added/removed.
+// Used to support multi-window and multi-island scenarios.
+[
+    object,
+    uuid(765DF10A-08C8-46B0-82C9-297CFC4CEAD7),
+    pointer_default(unique)
+]
+interface IVisualTreeServiceCallback3 : IUnknown
+{
+    HRESULT OnXamlRootChange(
+        [in] InstanceHandle root,
+        [in] VisualMutationType mutationType);
+};
+
+// IXamlDiagnostics2: implemented by WinUI 3's XamlDiagnostics instance
+// to provide multi-window/multi-island specific functionality.
+// GetUiLayerForXamlRoot returns the UI layer used to host the in-app toolbar
+// for the XamlRoot instanceHandle passed in.
+// HitTestForXamlRoot hit tests for the XamlRoot instanceHandle passed in
+// within the given bounds rect.
+[
+    object,
+    uuid(523A35EE-EB38-4AE6-A3E1-5B7D0D547BD0),
+    pointer_default(unique)
+]
+interface IXamlDiagnostics2 : IUnknown
+{
+    HRESULT GetUiLayerForXamlRoot(
+        [in] InstanceHandle instanceHandle,
+        [out, retval] IInspectable** ppLayer);
+    HRESULT HitTestForXamlRoot(
+        [in] InstanceHandle instanceHandle,
+        [in] RECT rect,
+        [out] unsigned int* pCount,
+        [out, size_is(, *pCount)] InstanceHandle** ppInstanceHandles);
+};
+
+cpp_quote("#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */ ")
+cpp_quote("#pragma endregion")

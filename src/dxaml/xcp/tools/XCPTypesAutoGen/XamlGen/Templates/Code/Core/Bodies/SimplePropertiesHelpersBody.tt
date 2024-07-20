@@ -1,0 +1,38 @@
+<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#include "precomp.h"
+#include <SimplePropertiesHelpers.h>
+
+namespace SimpleProperties
+{
+
+bool IsSimplePropertySetToDefault(KnownPropertyIndex propertyIndex, SimpleProperty::const_objid_t obj)
+{
+    switch (propertyIndex)
+    {
+<# foreach (var simpleProperty in Model.GetAllTypeTableSimpleProperties().Where((def) => def.Modifier != Modifier.Internal)) { #>
+        case <#= simpleProperty.IndexName #>:
+        {
+            if (SimpleProperty::Property::id<<#= simpleProperty.IndexName #>>::IsSet(obj))
+            {
+                return (SimpleProperty::Property::id<<#= simpleProperty.IndexName #>>::Get(obj) ==
+                        SimpleProperty::Property::Default<<#= simpleProperty.IndexName #>>());
+            }
+        }
+        break;
+
+<# } #>
+        default:
+            XAML_FAIL_FAST();  // investigate unknown simple property
+    }
+
+    return true;
+}
+
+} // namespace SimpleProperties

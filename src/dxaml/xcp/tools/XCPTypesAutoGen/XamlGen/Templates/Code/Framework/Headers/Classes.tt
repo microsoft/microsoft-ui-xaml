@@ -1,0 +1,17 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="MultiFileXamlCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<# foreach (var type in Model.GetAllClasses().Where(c => !c.IsAEventArgs && c.GenerateFrameworkHFile)) {
+       if (type.IsInterface) {
+           if (type.IdlClassInfo.IsExcluded) {
+               AddGenerator<Interface>(type.CppFrameworkGeneratedHeaderFileName, type);
+           }
+       } else if (type.IsValueType) {
+           AddGenerator<Struct>(type.CppFrameworkGeneratedHeaderFileName, type);
+       } else {
+           AddGenerator<Class>(type.CppFrameworkGeneratedHeaderFileName, type);
+       }
+   } #>

@@ -1,0 +1,95 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="MetadataCodeGenerator<OMContextView>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+// Contains method pointers, offsets and other machine-dependent metadata.
+
+#include "precomp.h"
+#include "Indexes.g.h"
+#include "Activators.g.h"
+#include "TypeTable.g.h"
+#include "EnumValueTable.h"
+
+using namespace DirectUI;
+
+<# foreach (var property in Model.GetAllTypeTableObjectFieldBackedProperties()) { #>
+static_assert(sizeof(<#=Model.GetFieldBackedPropertyMemberName(property)#>) == sizeof(<#=Model.GetFieldBackedPropertyMemberType(property)#>), "Incorrect size for <#=Model.GetFieldBackedPropertyMemberName(property)#>");
+<# } #>
+
+<# foreach (var type in Model.GetAllTypeTableTypes()) { 
+     if (type is ClassDefinition && (type as ClassDefinition).GenerateFrameworkHFile) {
+	   ClassDefinition classDef = type as ClassDefinition;
+       if (classDef.GeneratePartialClass) { #>
+#include "<#= classDef.CppFrameworkHeaderFileName #>"
+<#     } else {#>
+#include "<#= classDef.CppFrameworkGeneratedHeaderFileName #>"
+<#     }
+     } 
+   } #>
+
+// Type activation information.
+extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
+{
+    <#= IncludeActivationEntry(ClassDefinition.UnknownType) #>,
+<# foreach (var type in Model.GetAllTypeTableTypes()) { #>
+    <#= IncludeActivationEntry(type) #>,
+<# } #>
+};
+
+// All properties.
+extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeData[KnownDependencyPropertyCount] =
+{
+    <#= IncludeTemplate<PropertyRuntimeDataEntry>(PropertyDefinition.UnknownProperty) #>,
+<# foreach (var property in Model.GetAllTypeTableDependencyProperties()) { #>
+    <#= IncludeTemplate<PropertyRuntimeDataEntry>(property) #>,
+<# } #>
+};
+
+// Object properties.
+extern const MetaDataObjectProperty c_aObjectProperties[<#= 1 + Model.GetAllTypeTableObjectProperties().Count() #>] =
+{
+    <#= IncludeTemplate<ObjectPropertyEntry>(PropertyDefinition.UnknownProperty) #>,
+<# foreach (var property in Model.GetAllTypeTableObjectProperties()) { #>
+    <#= IncludeTemplate<ObjectPropertyEntry>(property) #>,
+<# } #>
+};
+
+// Render properties.
+extern const MetaDataObjectProperty c_aRenderProperties[<#= 1 + Model.GetAllTypeTableRenderProperties().Count() #>] =
+{
+    <#= IncludeTemplate<RenderPropertyEntry>(PropertyDefinition.UnknownProperty) #>,
+<# foreach (var property in Model.GetAllTypeTableRenderProperties()) { #>
+    <#= IncludeTemplate<RenderPropertyEntry>(property) #>,
+<# } #>
+};
+
+// Enter/Leave properties.
+extern const MetaDataEnterProperty c_aEnterProperties[<#= 1 + Model.GetAllTypeTableEnterProperties().Count() #>] =
+{
+    <#= IncludeTemplate<EnterPropertyEntry>(PropertyDefinition.UnknownProperty) #>,
+<# foreach (var property in Model.GetAllTypeTableEnterProperties()) { #>
+    <#= IncludeTemplate<EnterPropertyEntry>(property) #>,
+<# } #>
+};
+
+// Conversion methods for enums that don't have consecutive values
+<# foreach (var type in Model.GetAllEnums().Where(t => t.GenerateInCore && !t.XamlEnumFlags.IsExcludedFromNative && t.XamlEnumFlags.GenerateConsecutiveEnum).OrderBy(t => t.Name)) { #>
+DirectUI::<#= type.Name #>Consecutive DirectUI::Convert(DirectUI::<#= type.Name #> value)
+{
+    switch (value)
+    {
+<# foreach (var value in type.Values) { #>
+        case <#= type.Name #>::<#= value.Name #>:    return <#= type.Name #>Consecutive::<#= value.Name #>;
+<# } #>
+        default:
+            XAML_FAIL_FAST();
+            return <#= type.Name #>Consecutive::InvalidValue;
+    }
+}
+
+<# } #>
+

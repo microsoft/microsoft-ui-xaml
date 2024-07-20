@@ -1,0 +1,46 @@
+﻿namespace MU_XCP_NAMESPACE
+{
+
+[MUX_PUBLIC]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass ColorSpectrum : Microsoft.UI.Xaml.Controls.Control
+{
+    ColorSpectrum();
+
+    [MUX_DEFAULT_VALUE("{ 255, 255, 255, 255 }")]
+    Windows.UI.Color Color { get; set; };
+    [MUX_DEFAULT_VALUE("{ 0, 0, 1, 1 }")]
+    Windows.Foundation.Numerics.Vector4 HsvColor { get; set; };
+    [MUX_DEFAULT_VALUE("0")]
+    Int32 MinHue { get; set; };
+    [MUX_DEFAULT_VALUE("359")]
+    Int32 MaxHue { get; set; };
+    [MUX_DEFAULT_VALUE("0")]
+    Int32 MinSaturation { get; set; };
+    [MUX_DEFAULT_VALUE("100")]
+    Int32 MaxSaturation { get; set; };
+    [MUX_DEFAULT_VALUE("0")]
+    Int32 MinValue { get; set; };
+    [MUX_DEFAULT_VALUE("100")]
+    Int32 MaxValue { get; set; };
+    [MUX_DEFAULT_VALUE("winrt::ColorSpectrumShape::Box")]
+    MU_XC_NAMESPACE.ColorSpectrumShape Shape { get; set; };
+    [MUX_DEFAULT_VALUE("winrt::ColorSpectrumComponents::HueSaturation")]
+    MU_XC_NAMESPACE.ColorSpectrumComponents Components { get; set; };
+    event Windows.Foundation.TypedEventHandler<ColorSpectrum, MU_XC_NAMESPACE.ColorChangedEventArgs> ColorChanged;
+
+    static Microsoft.UI.Xaml.DependencyProperty ColorProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty HsvColorProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty MinHueProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty MaxHueProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty MinSaturationProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty MaxSaturationProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty MinValueProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty MaxValueProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty ShapeProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty ComponentsProperty { get; };
+}
+
+}

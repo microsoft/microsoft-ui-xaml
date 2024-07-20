@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{10313621-37bf-4039-9dfe-e8b49d131758}</ProjectGuid>
+    </PropertyGroup>
+
+    <!-- ******************************** File Header ******************************\ -->
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved.                   -->
+    <!--                                                                              -->
+    <!-- Project specific SOURCES file.                                               -->
+    <!--                                                                              -->
+    <!-- ***************************************************************************/ -->
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="..\sources.props"/>
+
+    <PropertyGroup>
+        <TargetDestination>retail</TargetDestination>
+
+        <XamlPrecompiledShared>..\winrtpch\precomp.h</XamlPrecompiledShared>
+
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\comptree\inc;
+            $(XcpPath)\components\transforms\inc;
+            $(XcpPath)\components\KeyboardAccelerator\inc;
+            $(XcpPath)\components\WindowChrome\inc;
+            $(FrameworkUdkIncPath);
+            $(LiftedIXPGeneratedIncludePath);
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <!-- This will batch a separate CL task due to %PrecompiledHeader = NotUsing -->
+    <Target Name="NonPreCompClCompile" AfterTargets="PreCompClCompileOptions">
+        <ItemGroup>
+            <!-- Compile without PCH to permit latest UAP contract for light-up code.
+                In future, if we add more lightup sources, we can generate a light-up PCH. 
+                See DXamlCoreLightup.cpp for details. -->
+            <ClCompile Include="..\DXamlCoreLightup.cpp">
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <PrecompiledHeaderFile />
+                <PrecompiledHeaderOutputFile />
+                <DisableAnalyzeExternal />
+            </ClCompile>
+        </ItemGroup>
+    </Target>
+
+    <ItemGroup>
+        <ClCompile Include="..\JupiterControl.cpp"/>
+        <ClCompile Include="..\JupiterWindow.cpp"/>
+        <ClCompile Include="..\InputSiteAdapter.cpp"/>
+        <ClCompile Include="..\DXamlInstanceStorage.cpp"/>
+        <ClCompile Include="..\JoltClasses.cpp"/>
+        <ClCompile Include="..\JoltCollections.cpp"/>
+        <ClCompile Include="..\PropertyChangedParamsHelper.cpp"/>
+        <ClCompile Include="..\CustomProperty.cpp"/>
+        <ClCompile Include="..\UIAffinityReleaseQueue.cpp"/>
+        <ClCompile Include="..\DXamlCore.cpp"/>
+        <ClCompile Include="..\XamlBinaryWriter.cpp"/>
+        <ClCompile Include="..\DependencyObject.cpp"/>
+        <ClCompile Include="..\DependencyObjectAbstractionHelpers.cpp"/>
+        <ClCompile Include="..\DependencyPropertyHandle.cpp"/>
+        <ClCompile Include="..\FrameworkEventArgs.cpp"/>
+        <ClCompile Include="..\PropertyPathStep.cpp"/>
+        <ClCompile Include="..\PropertyPath.cpp"/>
+        <ClCompile Include="..\DependencyObjectPropertyAccess.cpp"/>
+        <ClCompile Include="..\IndexerPropertyAccess.cpp"/>
+        <ClCompile Include="..\IntIndexerPathStep.cpp"/>
+        <ClCompile Include="..\MapPropertyAccess.cpp"/>
+        <ClCompile Include="..\PropertyAccessPathStep.cpp"/>
+        <ClCompile Include="..\INPCListenerBase.cpp"/>
+        <ClCompile Include="..\PropertyProviderPropertyAccess.cpp"/>
+        <ClCompile Include="..\SourceAccessPathStep.cpp"/>
+        <ClCompile Include="..\StringIndexerPathStep.cpp"/>
+        <ClCompile Include="..\BindingExpression_Partial.cpp"/>
+        <ClCompile Include="..\StaticStore.cpp"/>
+        <ClCompile Include="..\XBFXamlTypeWrapper.cpp"/>
+        <ClCompile Include="..\MetadataAPI.cpp"/>
+        <ClCompile Include="..\MetadataResetter.cpp"/>
+        <ClCompile Include="..\ActivationAPI.cpp"/>
+        <ClCompile Include="..\ResourceDictionary_partial.cpp"/>
+        <ClCompile Include="..\DirectUIXamlQualifiedObject.cpp"/>
+        <ClCompile Include="..\XamlParserCallbacks.cpp"/>
+        <ClCompile Include="..\VisualTreeHelper.cpp"/>
+        <ClCompile Include="..\XamlReader.cpp"/>
+        <ClCompile Include="..\LayoutInformation.cpp"/>
+        <ClCompile Include="..\TemplateBindingExpression.cpp"/>
+        <ClCompile Include="..\ThemeResourceExpression.cpp"/>
+        <ClCompile Include="..\KeyboardNavigation.cpp"/>
+        <ClCompile Include="..\DefaultStyles.cpp"/>
+        <ClCompile Include="..\EffectiveValueEntry.cpp"/>
+        <ClCompile Include="..\FrameworkApplication_Partial.cpp"/>
+        <ClCompile Include="..\VisualState.cpp"/>
+        <ClCompile Include="..\DataTemplateKey_Partial.cpp"/>
+        <ClCompile Include="..\VisualStateManager_Partial.cpp"/>
+        <ClCompile Include="..\VisualStateGroup_Partial.cpp"/>
+        <ClCompile Include="..\StateTriggerBase_Partial.cpp"/>
+        <ClCompile Include="..\Window_Partial.cpp"/>
+        <ClCompile Include="..\WindowChrome_Partial.cpp"/>
+        <ClCompile Include="..\UWPWindowImpl.cpp"/>
+        <ClCompile Include="..\DesktopWindowImpl.cpp"/>
+        <ClCompile Include="..\FrameworkViewSource_Partial.cpp"/>
+        <ClCompile Include="..\FrameworkView_Partial.cpp"/>
+        <ClCompile Include="..\DependencyPropertyChangedEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\PropertyMetadata_Partial.cpp"/>
+        <ClCompile Include="..\DispatcherTimer_Partial.cpp"/>
+        <ClCompile Include="..\Duration_Partial.cpp"/>
+        <ClCompile Include="..\FontFamily_Partial.cpp"/>
+        <ClCompile Include="..\ColorDisplayNameHelper_Partial.cpp"/>
+        <ClCompile Include="..\ThemeGenerator.cpp"/>
+        <ClCompile Include="..\FrameworkElement_Partial.cpp"/>
+        <ClCompile Include="..\ThemeAnimations.cpp"/>
+        <ClCompile Include="..\comModule.cpp"/>
+        <ClCompile Include="..\comTemplateLibrary.cpp"/>
+        <ClCompile Include="..\ExternalObjectReference_partial.cpp"/>
+        <ClCompile Include="..\UIElement_Partial.cpp"/>
+        <ClCompile Include="..\UIElement_Partial_DragDrop.cpp"/>
+        <ClCompile Include="..\Binding_Partial.cpp"/>
+        <ClCompile Include="..\DefaultValueConverter.cpp"/>
+        <ClCompile Include="..\DynamicValueConverter.cpp"/>
+        <ClCompile Include="..\DependencyPropertyProxy_Partial.cpp"/>
+        <ClCompile Include="..\Setter_Partial.cpp"/>
+        <ClCompile Include="..\Style_Partial.cpp"/>
+        <ClCompile Include="..\RoutedEvent_Partial.cpp"/>
+        <ClCompile Include="..\Matrix_Partial.cpp"/>
+        <ClCompile Include="..\Matrix3D_Partial.cpp"/>
+        <ClCompile Include="..\KeyTime_Partial.cpp"/>
+        <ClCompile Include="..\DebugOutput.cpp"/>
+        <ClCompile Include="..\PLMIntegration.cpp"/>
+        <ClCompile Include="..\DXamlServices.cpp"/>
+        <ClCompile Include="..\TouchHitTestingHandler.cpp"/>
+        <ClCompile Include="..\ContentManager.cpp"/>
+        <ClCompile Include="..\CoreWindowWrapper.cpp"/>
+        <ClCompile Include="..\dispatcher.cpp"/>
+        <ClCompile Include="..\CollectionViewGroup_Partial.cpp"/>
+        <ClCompile Include="..\IncrementalLoading.cpp"/>
+        <ClCompile Include="..\PropertyPathStepDescriptor.cpp"/>
+        <ClCompile Include="..\PropertyPathParser.cpp"/>
+        <ClCompile Include="..\Point_Partial.cpp"/>
+        <ClCompile Include="..\Rect_Partial.cpp"/>
+        <ClCompile Include="..\Size_Partial.cpp"/>
+        <ClCompile Include="..\GridLength_Partial.cpp"/>
+        <ClCompile Include="..\RoutedEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\PointerRoutedEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\PointerPointTransform.cpp"/>
+        <ClCompile Include="..\Transition_Partial.cpp"/>
+        <ClCompile Include="..\ManipulationStartedRoutedEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\ManipulationDeltaRoutedEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\ManipulationCompletedRoutedEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\ManipulationInertiaStartingRoutedEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\KeyRoutedEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\characterreceivedeventargs_partial.cpp"/>
+        <ClCompile Include="..\FocusManager.cpp"/>
+        <ClCompile Include="..\CollectionViewSource_Partial.cpp"/>
+        <ClCompile Include="..\CollectionView_Partial.cpp"/>
+        <ClCompile Include="..\VectorCollectionView_Partial.cpp"/>
+        <ClCompile Include="..\IterableCollectionView_Partial.cpp"/>
+        <ClCompile Include="..\CollectionViewManager.cpp"/>
+        <ClCompile Include="..\GroupedDataCollectionView_Partial.cpp"/>
+        <ClCompile Include="..\VectorViewCollectionView_Partial.cpp"/>
+        <ClCompile Include="..\Timeline_Partial.cpp"/>
+        <ClCompile Include="..\BitmapSource_Partial.cpp"/>
+        <ClCompile Include="..\AccessKeyManager_Partial.cpp"/>
+        <ClCompile Include="..\ConnectedAnimationService_Partial.cpp"/>
+        <ClCompile Include="..\ConnectedAnimation_Partial.cpp"/>
+        <ClCompile Include="..\ConnectedAnimationConfiguration_partial.cpp"/>
+        <ClCompile Include="..\GravityConnectedAnimationConfiguration_partial.cpp"/>
+        <ClCompile Include="..\DirectConnectedAnimationConfiguration_partial.cpp"/>
+        <ClCompile Include="..\FxCallbacks.cpp"/>
+        <ClCompile Include="..\SVGImageSource_Partial.cpp"/>
+        <ClCompile Include="..\XamlIslandRoot_Partial.cpp"/>
+        <ClCompile Include="..\KeyboardAccelerator_Partial.cpp"/>
+        <ClCompile Include="..\GettingFocusEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\LosingFocusEventArgs_Partial.cpp"/>
+        <ClCompile Include="..\DxamlCoreTestHooks_Partial.cpp"/>
+        <ClCompile Include="..\TextControlFlyoutHelper.cpp"/>
+        <ClCompile Include="..\XamlRoot_Partial.cpp"/>
+        <ClCompile Include="..\Launcher.cpp"/>
+        <ClCompile Include="..\LayoutBoundsChangedHelper.cpp"/>
+        <ClCompile Include="..\WindowedPopupInputSiteAdapter.cpp"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <BuildClientcore>1</BuildClientcore>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\dxaml\idl\com\microsoft.ui.xaml-com.vcxproj" Project="{a1eb01c3-ac8b-45a8-97c8-c459b77ed690}"/>
+        <ProjectReference Include="$(XamlDiagPath)\idl\xamlom.vcxproj" Project="{c6e1e90c-ee33-4352-a8de-067b013c7cc9}"/>
+        <ProjectReference Include="..\winrtpch\wrtdxamlpch.vcxproj" Project="{845d8296-bec7-4e97-8da9-db26a3a6d8c9}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+    <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+        <PropertyGroup>
+            <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+        </PropertyGroup>
+        <Error Condition="!Exists('$(TestInProductionPkgDirectory)\build\native\Microsoft.Windows.TestInProduction.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(TestInProductionPkgDirectory)\build\native\Microsoft.Windows.TestInProduction.targets'))" />
+    </Target>
+    <Import Project="$(TestInProductionPkgDirectory)\build\native\Microsoft.Windows.TestInProduction.targets" Condition="Exists('$(TestInProductionPkgDirectory)\build\native\Microsoft.Windows.TestInProduction.targets')" />
+</Project>

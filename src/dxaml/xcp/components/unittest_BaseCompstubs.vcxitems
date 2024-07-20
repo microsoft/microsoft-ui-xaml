@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <ItemGroup Condition="'$(ConfigurationType)'=='DynamicLibrary' or '$(ConfigurationType)'=='Application'">
+        <BaseCompstubs Condition="'$(ProjectGuid)'!='{df3154b6-eea4-4de8-91e6-b4fca9b33e0f}'" Include="$(XcpPath)\components\allocation\stubs\Windows.UI.Xaml.Allocation.Stubs.vcxproj" Project="{df3154b6-eea4-4de8-91e6-b4fca9b33e0f}" />
+        <BaseCompstubs Condition="'$(ProjectGuid)'!='{950d68b3-b34b-4453-96f9-5d1517f539ca}'" Include="$(XcpPath)\components\terminateProcessOnOOM\lib\Windows.UI.Xaml.TerminateProcessOnOOM.vcxproj" Project="{950d68b3-b34b-4453-96f9-5d1517f539ca}" />
+        <ProjectReference Include="@(BaseCompstubs)"/>
+    </ItemGroup>
+</Project>

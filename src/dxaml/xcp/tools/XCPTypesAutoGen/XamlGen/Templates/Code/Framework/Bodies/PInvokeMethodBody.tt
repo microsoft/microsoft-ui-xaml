@@ -1,0 +1,63 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<MethodDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+    HRESULT hr = S_OK;
+<# if (Model.IndexName != null) { #>
+    <#= IncludeTemplate<MethodEtwStart>(Model) #>
+<# } #>
+<# if (Model.DeclaringClass.IsAEventArgs) { #>
+    CEventArgs* pCoreEventArgsNoRef = nullptr;
+<# } #>
+
+<# foreach (var parameter in Model.Parameters) {
+       if (parameter.ParameterType.Type.IsStringType) { #>
+    xephemeral_string_ptr <#= parameter.ParameterType.CoreParameterName #>(<#= parameter.ParameterType.AbiParameterName #>);
+<#     } else if (parameter.ParameterType.IsNullable) { #>
+    <#= AsCppType(parameter.ParameterType.AbiFullName) #>* <#= parameter.ParameterType.CoreParameterName #> = <#= parameter.ParameterType.AbiParameterName #>;
+<#     } else if (parameter.ParameterType.Type is EnumDefinition) { #>
+    <#= AsCppType(parameter.ParameterType.AbiImplementationFullName) #> <#= parameter.ParameterType.CoreParameterName #> = static_cast<<#= AsCppType(parameter.ParameterType.AbiImplementationFullName) #>>(<#= parameter.ParameterType.AbiParameterName #>);
+<#     } else if (parameter.ParameterType.IsValueType) { #>
+    <#= AsCppType(parameter.ParameterType.AbiFullName) #> <#= parameter.ParameterType.CoreParameterName #> = <#= parameter.ParameterType.AbiParameterName #>;
+<#     } else if (parameter.ParameterType.Type.IsADependencyObject) { #>
+    <#= AsCppType(parameter.ParameterType.Type.CoreName) #>* <#= parameter.ParameterType.CoreParameterName #> = static_cast<<#= AsCppType(parameter.ParameterType.Type.CoreName) #>*>(<#= parameter.ParameterType.AbiParameterName #> ? static_cast<<#= AsCppType(parameter.ParameterType.AbiImplementationFullName) #>*>(<#= parameter.ParameterType.AbiParameterName #>)->GetHandle() : nullptr);
+<#     } else { #>
+    IUnknown* <#= parameter.ParameterType.CoreParameterName #> = <#= parameter.ParameterType.AbiParameterName #>;
+<#     }
+   }
+   if (Model.HasReturnType) {
+       if (Model.ReturnType.Type.IsStringType) { #>
+    xstring_ptr <#= Model.ReturnType.CoreParameterName #>;
+<#     } else if (Model.ReturnType.Type is EnumDefinition) { #>
+    <#= AsCppType(Model.ReturnType.AbiImplementationFullName) #> <#= Model.ReturnType.CoreParameterName #>;
+<#     } else if (Model.ReturnType.IsValueType) { #>
+    <#= AsCppType(Model.ReturnType.AbiFullName) #> <#= Model.ReturnType.CoreParameterName #>;
+<#     } else if (Model.ReturnType.Type.IsADependencyObject) { #>
+    <#= AsCppType(Model.ReturnType.Type.CoreName) #>* <#= Model.ReturnType.CoreParameterName #> = nullptr;
+<#     } else { #>
+    IUnknown* <#= Model.ReturnType.CoreParameterName #> = nullptr;
+<#     }
+   } #>
+
+    <#= IncludeTemplate<ParameterValidation>(ParameterValidationModel.Create(Model)) #>
+
+<# if (Model.DeclaringClass.IsAEventArgs) { #>
+    IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
+    IFC(static_cast<<#= AsCppType(Model.DeclaringClass.CoreName) #>*>(pCoreEventArgsNoRef)-><#= Model.IdlMemberInfo.Name #>(<#= GetPInvokeArgumentListAsString(Model) #>));
+<# } else { #>
+    <#= IncludeTemplate<CheckAPICall>(Model) #>
+
+    IFC(static_cast<<#= AsCppType(Model.DeclaringClass.CoreName) #>*>(GetHandle())-><#= Model.IdlMemberInfo.Name #>(<#= GetPInvokeArgumentListAsString(Model) #>));
+<# } #>
+
+<# if (Model.HasReturnType) { #>
+    IFC(CValueBoxer::ConvertToFramework(<#= Model.ReturnType.CoreParameterName #>, <#= Model.ReturnType.AbiReturnParameterName #>, /* fReleaseCoreValue */ TRUE));
+<# } #>
+
+Cleanup:
+<# if (Model.IndexName != null) { #>
+    <#= IncludeTemplate<MethodEtwStop>(Model) #>
+<# } #>
+    RRETURN(hr);

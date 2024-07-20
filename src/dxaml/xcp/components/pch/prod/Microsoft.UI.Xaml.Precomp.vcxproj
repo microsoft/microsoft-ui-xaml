@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{ccc61973-be99-4223-b935-353d03571e92}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\common.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>$(ProjectIncludeDirectories) $(XcpPath)\components\criticalsection\inc;</ProjectIncludeDirectories>
+
+        <!-- This is a shared precompiled header. We do this so we can have multiple    -->
+        <!-- isolated libs without causing the obj output to grow 100MBs+ per DLL.      -->
+        <!--                                                                            -->
+        <!-- The downside is that changes to this file will not be automatically picked -->
+        <!-- up in incremental builds. Luckily correct usage of the precompiled header  -->
+        <!-- will make this edge case extremely unlikely.                               -->
+        <XamlPrecompiledInclude>$(XcpPath)\components\pch\precomp.h</XamlPrecompiledInclude>
+    </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(XcpPath)\dxaml\idl\winrt\merged\private\Microsoft.UI.Xaml.vcxproj" Project="{52b2ed64-1cfc-401b-8c5b-6d1e1deadf98}" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

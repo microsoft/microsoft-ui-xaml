@@ -1,0 +1,62 @@
+﻿<#@ template language="C#" linePragmas="false" inherits="CppCodeGenerator<ClassDefinition>" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="OM" #>
+<#= IncludeTemplate<Copyright>() #>
+
+#pragma once
+
+namespace <#= OMContext.DefaultImplementationNamespace #>
+{
+    class <#= Model.GeneratedFactoryName #>:
+<# foreach (var version in Model.Versions.OrderBy(v => v.Version).Select(v => v.GetProjection())) {
+       if (version.IdlClassInfo.HasFactoryMethods) { #>
+        public <#= AsCppType(version.IdlClassInfo.FullFactoryInterfaceName) #>,
+<#     }
+       if (version.IdlClassInfo.HasStaticMembers) { #>
+        public <#= AsCppType(version.IdlClassInfo.FullStaticMembersInterfaceName) #>,
+<#     }
+   } #>
+        public <#= GetBaseFactoryFullName(Model) #>
+    {
+<# if (Model.IdlClassInfo.HasAnyFactoryInterfaces) { #>
+        BEGIN_INTERFACE_MAP(<#= Model.GeneratedFactoryName #>, <#= GetBaseFactoryFullName(Model) #>)
+<# foreach (var version in Model.Versions.OrderBy(v => v.Version).Select(v => v.GetProjection())) {
+       if (version.IdlClassInfo.HasFactoryMethods) { #>
+            INTERFACE_ENTRY(<#= Model.GeneratedFactoryName #>, <#= AsCppType(version.IdlClassInfo.FullFactoryInterfaceName) #>)
+<#     }
+       if (version.IdlClassInfo.HasStaticMembers) { #>
+            INTERFACE_ENTRY(<#= Model.GeneratedFactoryName #>, <#= AsCppType(version.IdlClassInfo.FullStaticMembersInterfaceName) #>)
+<#     }
+   } #>
+        END_INTERFACE_MAP(<#= Model.GeneratedFactoryName #>, <#= GetBaseFactoryFullName(Model) #>)
+<# } #>
+
+    public:
+        // Extension methods.
+<# foreach (var method in Model.InstanceMethods) { #>
+        <#= IncludeTemplate<Method>(method) #>
+<# } #>
+
+        // Static properties.
+<# foreach (var property in Model.StaticProperties) { #>
+        <#= IncludeTemplate<Property>(property) #>
+<# } #>
+
+        // Static methods.
+<# foreach (var method in Model.StaticMethods) { #>
+        <#= IncludeTemplate<Method>(method) #>
+<# } #>
+
+    protected:
+<# if (Model.IdlClassInfo.HasAnyFactoryInterfaces) { #>
+        HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
+<# } #>
+    };
+}
+
+<# if (Model.GeneratePartialClass) { #>
+#include "<#= Model.CppFrameworkHeaderFileName #>"
+<# } #>

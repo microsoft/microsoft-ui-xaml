@@ -1,0 +1,134 @@
+﻿<#@ template language="C#" inherits="CppWinRT_CodeGenerator<TypeGenInfo>" visibility="internal" linePragmas="false"#>
+<#@ assembly name="System.Core" #>
+<# 
+    bool prototypeOnly = (bool)Arguments[0] == true;
+#>
+
+<#  if (Model.HasActivator) { #>
+<#      if (prototypeOnly) { #>
+<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable <#=Model.ActivatorName#>();
+<#      } else { #>
+<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable <#=Model.ActivatorName#>()
+{
+<#  if (Model.IsLocalType) { #>
+    return ::winrt::make<<#=Model.FullName.CppWinRTName().ToLocalCppWinRTTypeName()#>>();
+<#  } else { #>
+    return <#=Model.FullName#>();
+<#  } #>
+}
+<#      } #>
+<#  } #>
+<##>
+<#  if (Model.IsCollection) { #>
+<#      if (prototypeOnly) { #>
+extern void <#=Model.CollectionAddName#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance, <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& item);
+<#      } else { #>
+void <#=Model.CollectionAddName#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance, <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& item)
+{
+    instance.as<<#=Model.FullName#>>().Append(::winrt::unbox_value<<#=Model.ItemType.FullName#>>(item));
+}
+<#      } #>
+<#  } #>
+<##>
+<#  if (Model.IsDictionary) { #>
+<#      if (prototypeOnly) { #>
+extern void <#=Model.DictionaryAddName#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance, <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& key, <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& item);
+<#      } else { #>
+void <#=Model.DictionaryAddName#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance, <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& key, <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& item)
+{
+    instance.as<<#=Model.FullName#>>().Insert(::winrt::unbox_value<<#=Model.KeyType.FullName#>>(key), ::winrt::unbox_value<<#=Model.ItemType.FullName#>>(item));
+}
+<#      } #>
+<#  } #>
+<##>
+<#  if (Model.HasEnumValues) { #>
+<#      if (prototypeOnly) { #>
+extern <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable <#=Model.FromStringConverterName#>(XamlUserType const& userType, ::winrt::hstring const& input);
+<#      } else { #>
+<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable <#=Model.FromStringConverterName#>(<#=Projection(ProjectInfo.RootNamespace)#>::implementation::XamlUserType const& userType, ::winrt::hstring const& input)
+{
+    return ::winrt::box_value((<#=Model.FullName#>)userType.CreateEnumUIntFromString(input));
+}
+<#      } #>
+<#  } #>
+<##>
+<# foreach(var member in Model.Members) { #>
+
+<#      if (member.HasGetAttachableMember) { #>
+<#          if (prototypeOnly) { #>
+extern <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable <#=member.GetAttachableMemberName#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance);
+<#          } else { #>
+<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable <#=member.GetAttachableMemberName#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance)
+{
+    return ::winrt::box_value(<#=member.DeclaringType.FullName#>::Get<#=member.Name#>(instance.as<<#=member.TargetType.FullName#>>()));
+}
+<#          } #>
+<#      } #>
+<##>
+<#      if (member.HasSetAttachableMember) { #>
+<#          if (prototypeOnly) { #>
+extern void <#=member.SetAttachableMemberName#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance, <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& value);
+<#          } else { #>
+void <#=member.SetAttachableMemberName#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance, <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& value)
+{
+    <#=member.DeclaringType.FullName#>::Set<#=member.Name#>(instance.as<<#=member.TargetType.FullName#>>(), ::winrt::unbox_value<<#=member.Type.FullName#>>(value));
+}
+<#          } #>
+<#      } #>
+<##>
+<#      if (member.HasGetValueTypeMember) { #>
+<#          if (prototypeOnly) { #>
+extern <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable <#=member.GetValueTypeMemberName#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance);
+<#          } else { #>
+<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable <#=member.GetValueTypeMemberName#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance)
+{
+    return ::winrt::box_value<<#=member.Type.FullName#>>(instance.as<<#=member.DeclaringType.FullName#>>().<#=member.Name#>());
+}
+<#          } #>
+<#      } #>
+<##>
+<#      if (member.HasSetValueTypeMember) { #>
+<#          if (prototypeOnly) { #>
+extern void <#=member.SetValueTypeMemberName#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance, <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& value);
+<#          } else { #>
+void <#=member.SetValueTypeMemberName#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance, <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& value)
+{
+    instance.as<<#=member.DeclaringType.FullName#>>().<#=member.Name#>(::winrt::unbox_value<<#=member.Type.FullName#>>(value));
+}
+<#          } #>
+<#      } #>
+<##>
+<#      if (member.HasSetEnumMember) { #>
+<#          if (prototypeOnly) { #>
+extern void <#=member.SetEnumMemberName#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance, <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& value);
+<#          } else { #>
+void <#=member.SetEnumMemberName#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance, <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& value)
+{
+    instance.as<<#=member.DeclaringType.FullName#>>().<#=member.Name#>(::winrt::unbox_value<<#=member.Type.FullName#>>(value));
+}
+<#          } #>
+<#      } #>
+<##>
+<#      if (member.HasGetReferenceTypeMember) { #>
+<#          if (prototypeOnly) { #>
+extern <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable <#=member.GetReferenceTypeMemberName#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance);
+<#          } else { #>
+<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable <#=member.GetReferenceTypeMemberName#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance)
+{
+    return ::winrt::box_value(instance.as<<#=member.DeclaringType.FullName#>>().<#=member.Name#>());
+}
+<#          } #>
+<#      } #>
+<##>
+<#      if (member.HasSetReferenceTypeMember) { #>
+<#          if (prototypeOnly) { #>
+extern void <#=member.SetReferenceTypeMemberName#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance, <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& value);
+<#          } else { #>
+void <#=member.SetReferenceTypeMemberName#>(<#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& instance, <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable const& value)
+{
+    instance.as<<#=member.DeclaringType.FullName#>>().<#=member.Name#>(::winrt::unbox_value<<#=member.Type.FullName#>>(value));
+}
+<#          } #>
+<#      } #>
+<##>
+<#  } #>

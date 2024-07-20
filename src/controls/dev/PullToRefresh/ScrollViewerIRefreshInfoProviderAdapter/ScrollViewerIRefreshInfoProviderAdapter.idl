@@ -1,0 +1,30 @@
+﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+[MUX_PREVIEW]
+[webhosthidden]
+interface IRefreshInfoProviderAdapter
+{
+    IRefreshInfoProvider AdaptFromTree(Microsoft.UI.Xaml.UIElement root, Windows.Foundation.Size visualizerSize);
+    void SetAnimations(Microsoft.UI.Xaml.UIElement refreshVisualizerAnimatableContainer);
+}
+
+[MUX_PREVIEW]
+[webhosthidden]
+interface IAdapterAnimationHandler
+{
+    void InteractionTrackerAnimation(Microsoft.UI.Xaml.UIElement refreshVisualizer, Microsoft.UI.Xaml.UIElement infoProvider, Microsoft.UI.Composition.Interactions.InteractionTracker interactionTracker);
+    void RefreshRequestedAnimation(Microsoft.UI.Xaml.UIElement refreshVisualizer, Microsoft.UI.Xaml.UIElement infoProvider, Double executionRatio);
+    void RefreshCompletedAnimation(Microsoft.UI.Xaml.UIElement refreshVisualizer, Microsoft.UI.Xaml.UIElement infoProvider);
+}
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass ScrollViewerIRefreshInfoProviderAdapter : IRefreshInfoProviderAdapter
+{
+    ScrollViewerIRefreshInfoProviderAdapter(MU_XC_NAMESPACE.RefreshPullDirection refreshPullDirection, IAdapterAnimationHandler animationHandler);
+
+    IRefreshInfoProvider Adapt(Microsoft.UI.Xaml.Controls.ScrollViewer adaptee, Windows.Foundation.Size visualizerSize);
+}
+
+}

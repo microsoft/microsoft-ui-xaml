@@ -1,0 +1,194 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+    </PropertyGroup>
+
+    <Import Project="$(XcpPath)\common.props"/>
+    <Import Project="$(XamlSourcePath)\atl.props"/>
+
+    <PropertyGroup>
+        <Dllentry>_DllMainCRTStartup</Dllentry>
+
+        <LogTextureInfo Condition="'$(LogTextureInfo)'==''">0</LogTextureInfo>
+
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) ENABLE_ANTI_DEBUGGING=1; LOG_TEXTURE_INFO=$(LogTextureInfo);</ProjectPreprocessorDefinitions>
+
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpObjPath)\dxaml\idl\winrt;
+            $(XcpPath)\dxaml\dllsrv\winrt;
+            $(XcpPath)\dxaml\lib;
+            $(XcpPath)\dxaml\lib\winrtgeneratedclasses;
+            $(XcpPath)\dxaml\tools\xamldiagnostics\lib;
+            $(XcpPath)\dxaml\tools\xamldiagnostics\inc;
+            $(XcpPath);
+            $(XcpPath)\pal\inc;
+            $(XcpPath)\core\inc;
+            $(XcpPath)\core\controls\generated;
+            $(XcpPath)\core\native\text\Controls;
+            $(XcpPath)\core\native\inc;
+            $(XcpPath)\core\Parser;
+            $(XcpPath)\pal\win\inc;
+            $(XcpPath)\control\inc;
+            $(XcpPath)\win\agcore.debug;
+            $(XcpPath)\win\inc;
+            $(XcpPath)\control\common\Shared;
+            $(XcpPath)\core\text\Inc;
+            $(XcpPath)\core\text\RichTextServices\inc;
+            $(XcpPath)\plat\win\desktop;
+            $(XamlSourcePath)\..\winrt\async\inc;
+            $(XcpObjPath)\dxaml\manifest;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="precomp.h"/>
+
+        <ClCompile Include="..\dllentry.cpp"/>
+        <ResourceCompile Include="..\Microsoft.UI.Xaml.common.rc"/>
+    </ItemGroup>
+
+    <ItemDefinitionGroup>
+        <!--                                                                      -->
+        <!-- The -Zm flag below addresses a compiler limitation in that it        -->
+        <!-- must know in advance the total max size of the precompiled header    -->
+        <!-- The code included in this precompiled header substantially exceeds   -->
+        <!-- the default limit. The compiler will, when this limit is reached,    -->
+        <!-- suggest a number that is large enough, but just large enough, to     -->
+        <!-- fix the compilation. Using the number provided will lead to frequent -->
+        <!-- churn on the sources.                                                -->
+        <!--                                                                      -->
+        <!-- !! to reduce churn, please increment the number in the -Zm flag by a -->
+        <!-- !! multiple of 50 when changing it.                                  -->
+        <!--                                                                      -->
+        <ClCompile>
+            <AdditionalOptions>%(AdditionalOptions) /Zm400</AdditionalOptions>
+
+            <ExceptionHandling>Sync</ExceptionHandling>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <PropertyGroup>
+        <XamlPrecompiledInclude>..\precomp.h</XamlPrecompiledInclude>
+        <XamlPrecompiledPch>precomp.pch</XamlPrecompiledPch>
+        <XamlPrecompiledObj>precomp.obj</XamlPrecompiledObj>
+    </PropertyGroup>
+
+    <!-- NOTE: For USER / GDI, need to host the "rtcore-ntuser" version (1) before the regular "ntuser"     -->
+    <!-- version (2), since (2) will often just stub out functions implemented in in (1).  Since the linker -->
+    <!-- will pick up in declared order, it will use (1) correctly instead of (2).                          -->
+    <!--                                                                                                    -->
+    <!-- Therefore, onecoreuap_internal.lib must appear before ext-ms-win-ntuser-draw-l1.lib.               -->
+    <!--                                                                                                    -->
+    <!-- There are a lot of libs here. Try not to add duplicates.                                           -->
+
+    <ItemDefinitionGroup>
+        <Link>
+
+            <ModuleDefinitionFile>..\Microsoft.UI.Xaml.def</ModuleDefinitionFile>
+
+            <AdditionalOptions Condition="'$(Platform)'!='ARM64'">%(AdditionalOptions) -d2:-pspeed1</AdditionalOptions>
+
+            <!-- If urlmon.lib comes after onecoreuap.lib in this list, RegisterBindStatusCallback doesn't resolve correctly. -->
+            <AdditionalDependencies>
+              urlmon.lib;
+              onecoreuap.lib;
+              imm32.lib;
+              uxtheme.lib;
+              dwmapi.lib;
+              ntdll.lib;
+              Dbghelp.lib;
+              mfuuid.lib;
+              muiload.lib;
+              ninput.lib;
+              %(AdditionalDependencies);
+            </AdditionalDependencies>
+
+            <!-- For some reason, the ARM64 version of muiload.lib, and *only* the ARM64 version of
+                 that specific lib file, has a reference to the non-inlined verion of vsnwprintf,
+                 which requires that we also add references to these legacy libs. -->
+            <AdditionalDependencies Condition="'$(Platform)' == 'ARM64'">
+                %(AdditionalDependencies);
+                $(VisualStudioLibPath)legacy_stdio_definitions.lib;
+                $(VisualStudioLibPath)legacy_stdio_wide_specifiers.lib;
+            </AdditionalDependencies>
+
+            <DelayLoadDLLs>
+                crypt32.dll;
+                dwmapi.dll;
+                ext-ms-win-imm-l1-*.dll;
+                ext-ms-win-uiacore-l1-*.dll;
+                imm32.dll;
+                microsoft.ui.xaml.internal.dll;
+                propsys.dll;
+                shell32.dll;
+                uiautomationcore.dll;
+                xmllite.dll;
+                %(DelayLoadDLLs);
+            </DelayLoadDLLs>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) UNLOADABLE_DELAYLOAD_IMPLEMENTATION;</ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{439d8d30-7118-4da6-956b-ee0c5b92d6a9}'" Include="$(XcpPath)\dxaml\manifest\manifest.vcxproj" Project="{439d8d30-7118-4da6-956b-ee0c5b92d6a9}"/>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(ConfigurationType)'=='DynamicLibrary' or '$(ConfigurationType)'=='Application'">
+        <ProjectReference Include="@(Complibs)"/>
+        <ProjectReference Include="$(XcpPath)\core\xcpcore.vcxproj" Project="{86eab859-48aa-4efe-b2c2-8c6a345a318a}"/>
+        <ProjectReference Include="$(XcpPath)\common\common.vcxproj" Project="{4d75f86e-1c8e-40b3-9767-d8a7cdca82eb}"/>
+        <ProjectReference Include="$(XcpPath)\core\core\elements\lib\elements.vcxproj" Project="{37935e07-b46a-4d00-b1f5-7fb7d99bfadb}"/>
+        <ProjectReference Include="$(XcpPath)\core\core\elements\lib2\elements2.vcxproj" Project="{1f4e7d98-44f1-4655-9b72-b1a7c91c510d}"/>
+        <ProjectReference Include="$(XcpPath)\core\core\elements\libexcept\elements.except.vcxproj" Project="{27e82ec4-58f3-4b2d-afb8-4e902212c3ea}"/>
+        <ProjectReference Include="$(XcpPath)\core\input\Input.vcxproj" Project="{d087f47a-69f5-42d4-98b6-31c2c8e330b8}"/>
+        <ProjectReference Include="$(XcpPath)\core\hw\hw.vcxproj" Project="{d78bea58-bf05-4bbd-a310-b4a99052c6f8}"/>
+        <ProjectReference Include="$(XcpPath)\core\text\coretext.vcxproj" Project="{8f008900-e6e3-4443-92ed-34fbad8042b3}"/>
+        <ProjectReference Include="$(XcpPath)\pal\debug\PALDebug.vcxproj" Project="{F1BEDBAB-6F95-4A90-8352-F54BF17F6FD0}"/>
+        <ProjectReference Include="$(XcpPath)\core\parser\core\Parser.Core.vcxproj" Project="{4c54ca57-3fdb-4bd4-a5cd-6f89f8f3d46b}"/>
+        <ProjectReference Include="$(XcpPath)\core\parser\runtime\Parser.Runtime.vcxproj" Project="{92e5e794-20b0-46df-b0b8-1c5856cd0a6c}"/>
+        <ProjectReference Include="$(XcpPath)\core\native\media\mediaengine.vcxproj" Project="{d3ee2594-dbb3-44a0-b2e1-303cc27ce041}"/>
+        <ProjectReference Include="$(XcpPath)\core\native\text\Common\Native.Text.Common.vcxproj" Project="{c2443329-1a74-46fd-be03-d66534fe58a6}"/>
+        <ProjectReference Include="$(XcpPath)\core\native\text\Controls\Native.Text.Controls.vcxproj" Project="{9b1c4ec5-7142-4445-9c75-cabaf74b09e6}"/>
+        <ProjectReference Include="$(XcpPath)\hostpalplatmisc.vcxproj" Project="{379aa0e5-75bd-4ac3-9e9d-2168f400f1b0}"/>
+        <ProjectReference Include="$(XcpPath)\plat\win\browserdesktop\platwinbrowserdesktop.vcxproj" Project="{ABFA3EDA-0917-4FCF-8166-B70D5763B743}"/>
+        <ProjectReference Include="$(XcpPath)\plat\win\desktop\platwindesktop.vcxproj" Project="{f868d210-0440-4a29-8cc5-285f4cd86bf4}"/>
+        <ProjectReference Include="$(XcpPath)\control\common\shared\$(ObjTargetDir)\controlBase.vcxproj" Project="{4dd81164-31b9-4127-8a64-f3bf1e544067}"/>
+        <ProjectReference Include="$(XcpPath)\win\shared\sl\shared.vcxproj" Project="{e5804231-9d90-4e97-812d-855ba72b8426}"/>
+        <ProjectReference Include="$(XcpPath)\win\UIUtils\winrt\uiutils.vcxproj" Project="{c9184280-7438-4601-91c5-8bc9322ac599}"/>
+        <ProjectReference Include="$(XcpPath)\control\download\download.vcxproj" Project="{d94b047d-1978-4bcd-a124-7302766133b6}"/>
+        <ProjectReference Include="$(XcpPath)\dxaml\lib\winrtgeneratedclasses\wrtdxamlgeneratedclasses.vcxproj" Project="{046bce01-1f2d-4215-875c-566fb1f88c53}"/>
+        <ProjectReference Include="$(XcpPath)\dxaml\lib\winrtfactories\wrtdxamlfactories.vcxproj" Project="{62b922b3-b978-4230-bb5e-4abb77c84c5f}"/>
+        <ProjectReference Include="$(XcpPath)\dxaml\lib\winrtcontrols2\wrtdxamlcontrols2.vcxproj" Project="{5fc5d82e-a0fc-4309-bf13-806f022e9ab9}"/>
+        <ProjectReference Include="$(XcpPath)\dxaml\lib\winrtcontrols3\wrtdxamlcontrols3.vcxproj" Project="{3cf1ecd0-3b72-49bb-b83e-9e44b9558718}"/>
+        <ProjectReference Include="$(XcpPath)\dxaml\lib\winrtautomation\wrtdxamlautomation.vcxproj" Project="{418cb7c6-a4f4-452a-9087-439ab8a61a66}"/>
+        <ProjectReference Include="$(XcpPath)\dxaml\lib\winrtexcept\wrtdxamlexceptions.vcxproj" Project="{8835fd69-17ab-452e-ba7d-74a82d3e8f42}"/>
+        <ProjectReference Include="$(XcpPath)\core\metadata\dynamic\dynamicmetadata.vcxproj" Project="{3c27adda-177e-4da8-bb12-546633922531}"/>
+        <ProjectReference Include="$(XcpPath)\core\controls\generated\CoreControlsGenerated.vcxproj" Project="{D4D488D4-440D-4D95-A10F-226D34E9B790}"/>
+        <ProjectReference Include="$(XcpPath)\dxaml\lib\winrtfoundation\wrtdxamlfoundation.vcxproj" Project="{10313621-37bf-4039-9dfe-e8b49d131758}"/>
+        <ProjectReference Include="$(XcpPath)\dxaml\lib\winrtfoundation2\wrtdxamlfoundation2.vcxproj" Project="{febe7793-7794-4f61-a5d5-1c56fd4b09b1}"/>
+        <ProjectReference Include="$(XcpPath)\dxaml\lib\winrtcontrols\wrtdxamlcontrols.vcxproj" Project="{1ff2008d-a3ae-4601-8f01-f4fd23c4fb88}"/>
+        <ProjectReference Include="$(XcpPath)\components\ExtMetadataProvider\lib\Microsoft.UI.Xaml.ExtMetadataProvider.vcxproj" Project="{f9a1e93c-35dc-4ece-a464-8346c4126e30}"/>
+        <ProjectReference Include="$(XcpPath)\components\experimental\Microsoft.UI.Xaml.Experimental.vcxproj" Project="{e179fce0-a041-4d3d-b501-e09e8aee5abf}"/>
+        <ProjectReference Include="$(XcpPath)\components\winuri\lib\winuri.vcxproj" Project="{0c3c2872-56a3-4acf-b2f7-8c05710b93ae}"/>
+        <ProjectReference Include="$(XcpPath)\components\allocation\lib\Microsoft.UI.Xaml.Allocation.vcxproj" Project="{502b46a0-df35-4692-8275-ce66e7fdd741}"/>
+        <ProjectReference Include="$(XcpPath)\components\terminateProcessOnOOM\lib\Microsoft.UI.Xaml.TerminateProcessOnOOM.vcxproj" Project="{950d68b3-b34b-4453-96f9-5d1517f539ca}"/>
+        <ProjectReference Include="$(XcpPath)\components\criticalsection\lib\Microsoft.UI.Xaml.CriticalSection.vcxproj" Project="{ee89d265-0c07-49a3-b39c-d2a40adf9d19}"/>
+        <ProjectReference Include="$(XcpPath)\components\inputpane\lib\Microsoft.UI.Xaml.InputPane.vcxproj" Project="{9f887b18-729e-4c7a-a577-45523ff4baf9}"/>
+        <ProjectReference Include="$(XcpPath)\components\xboxutility\lib\Microsoft.UI.Xaml.XboxUtility.vcxproj" Project="{b69373ed-ec7e-46ee-9fe6-76645661a3cb}"/>
+        <ProjectReference Include="$(XcpPath)\components\desktoputility\lib\Microsoft.UI.Xaml.DesktopUtility.vcxproj" Project="{62b946c2-099d-499a-991c-a47b7cdf5263}"/>
+        <ProjectReference Include="$(XcpPath)\components\valueboxer\lib\Microsoft.UI.Xaml.ValueBoxer.vcxproj" Project="{bbdd985f-5ab4-40f4-8eb9-18ab4a76169a}"/>
+        <ProjectReference Include="$(XcpPath)\components\Collection\lib\Microsoft.UI.Xaml.Collection.vcxproj" Project="{808bc3a6-a9e1-4e36-bdf7-1f3c12de8464}"/>
+        <ProjectReference Include="$(XcpPath)\components\FocusRect\lib\Microsoft.UI.Xaml.FocusRect.vcxproj" Project="{c554e0d5-58e6-4772-bad3-2e62e3579957}"/>
+        <ProjectReference Include="$(XcpPath)\components\UIBridgeFocus\Microsoft.UI.Xaml.UIBridgeFocus.vcxproj" Project="{bd943a8a-c5cb-454a-82c2-4b7e6c14cb75}"/>
+        <ProjectReference Include="$(XcpPath)\components\xamldiagnostics\lib\Microsoft.UI.Xaml.XamlDiagnostics.vcxproj" Project="{0e6efb75-5844-4f7a-90aa-eaba4f6b76a9}"/>
+        <ProjectReference Include="$(XcpPath)\components\flyweight\lib\Microsoft.UI.Xaml.Flyweight.vcxproj" Project="{88536608-bab9-49f1-9cc6-36b7f8e73d8a}"/>
+        <ProjectReference Include="$(XcpPath)\components\simple\lib\Microsoft.UI.Xaml.Framework.SimpleProperties.vcxproj" Project="{4a1f0ce8-0b6e-4d29-9799-a629c067543a}"/>
+        <ProjectReference Include="$(XcpPath)\components\WindowChrome\Microsoft.UI.Xaml.WindowChrome.vcxproj" Project="{950ff51a-b772-4185-bc1c-0065fdd2cefd}"/>
+    </ItemGroup>
+</Project>

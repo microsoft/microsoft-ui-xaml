@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved. -->
+
+    <!-- DEPRECATED. Do not use these in new sources file. Remove as time allows from -->
+    <!-- other sources files that use them.                                           -->
+    <PropertyGroup>
+        <ObjTargetDir>sl</ObjTargetDir>
+
+        <!-- default to public SDK for xcp directory -->
+        <XamlUsePublicSdk Condition="'$(XamlUsePublicSdk)'==''">true</XamlUsePublicSdk>
+    </PropertyGroup>
+
+    <!-- As we move things to the components folder there will often be    -->
+    <!-- many \inc folders. To ease the burden of updating 100s of sources -->
+    <!-- files we bulk include all their public include folders here. We   -->
+    <!-- define COMP_INCLUDES to include all these paths.                  -->
+
+    <Import Project="$(XcpPath)\components\includes.props"/>
+
+    <!-- We list the nested includes first in all our header files. This is a litte -->
+    <!-- couner-intuitive at first glance because it makes it hard to override a    -->
+    <!-- header file with an identially named one in a directory closer to you when -->
+    <!-- including with <>. That's not really a great thing to do and I'd rather we -->
+    <!-- catch it here than allow us to shadow over a header file silently.         -->
+    <PropertyGroup>
+        <XamlDiagPath>$(XamlSourcePath)\xcp\components\xamldiagnostics</XamlDiagPath>
+        <XamlDiagObjPath>$(XamlBinaryPath)\xcp\components\xamldiagnostics</XamlDiagObjPath>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(LiftedIXPIncludePaths);
+            $(RepoRoot)\external\inc;
+            $(ExternalDependencies);
+            $(CompIncludes);
+            $(XamlDiagPath)\idl;
+            $(XamlDiagObjPath)\idl;
+            $(XcpPath)\inc;
+            $(XcpPath)\core\imaging\ImagingProvider;
+            $(XcpPath)\pal\inc;
+            $(XcpPath)\components\criticalsection\inc;
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\imaging\inc;
+        </ProjectIncludeDirectories>
+
+        <!-- _WCTYPE_INLINE_DEFINED - DEPRECATED: disables normal inline wchar operators. Remove as time allows. -->
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) _WCTYPE_INLINE_DEFINED; UNICODE; _UNICODE;</ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <!-- Optimization flags -->
+
+    <!-- Disable comdat folding for debug builds. Takes a filesize hit in chk, but it's outweighed by the benefits -->
+    <!-- Comdat folding can give a pretty bad debugging experience when identical functions are folded together    -->
+    <!-- It can also interfere with our efforts to grab stack traces for various data.                             -->
+
+    <ItemDefinitionGroup>
+        <Link Condition="'$(Configuration)'=='Debug'">
+            <EnableCOMDATfolding>false</EnableCOMDATfolding>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <!-- DEPRECATED. Do not use these in new files. Remove as time allows. -->
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) BUILD_ON_WINDOWS=1; BUILD_ON_WIN8; WIL_SUPPRESS_PRIVATE_API_USE;</ProjectPreprocessorDefinitions>
+
+        <!-- Allow opt-out (e.g. XAML Spy tool) -->
+        <ProjectPreprocessorDefinitions Condition="'$(NoMidlNsPrefix)'==''">$(ProjectPreprocessorDefinitions) MIDL_NS_PREFIX;</ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="$(XamlDiagPath)\idl\xamlom.vcxproj" />
+    </ItemGroup>
+</Project>

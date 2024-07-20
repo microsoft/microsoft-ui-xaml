@@ -1,0 +1,293 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link href="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css" rel="stylesheet" />
+    <script src="https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js"></script>
+    <script src="https://atlas.microsoft.com/sdk/javascript/service/2/atlas-service.min.js"></script>
+</head>
+
+<style>
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+        font-family: segoeui;
+    }
+
+    #mapContainer {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+</style>
+
+<body>
+    <div id="mapContainer"></div>
+
+    <script>
+        var map;
+        var symbolLayers = [];
+        var layersData = {};
+        var pointsData = [];
+        var dataSource;
+
+        function initializeMap(longitude, latitude, mapServiceToken) {
+            try {
+                //Initialize a map instance.
+                map = new atlas.Map('mapContainer', {
+                    center: [longitude, latitude],
+                    zoom: 3,
+                    view: 'Auto',
+
+                    //Add authentication details for connecting to Azure Maps.
+                    // Note: an invalid token doesn't seem to throw any errors.
+                    authOptions: {
+                        authType: 'subscriptionKey',
+                        subscriptionKey: mapServiceToken
+                    }
+                });
+
+                map.events.add('ready', function () {
+                    dataSource = new atlas.source.DataSource();
+                    map.sources.add(dataSource);
+                });
+            }
+            catch (error) {
+                sendErrorInfo(error);
+            }
+        }
+
+        function addSymbolLayer() {
+            try {
+                var layerSource = new atlas.source.DataSource();
+                var newLayer = new atlas.layer.SymbolLayer(layerSource, null);
+
+                layersData[newLayer.getId()] = layerSource;
+                pointsData[newLayer.getId()] = {};
+                symbolLayers.push(newLayer);
+
+                map.events.add('ready', function () {
+                    map.sources.add(layerSource);
+                    map.layers.add(newLayer);
+                    map.events.add('click', newLayer, sendPushpinClickInfo);
+                });
+
+            }
+            catch (error) {
+                sendErrorInfo(error);
+            }
+            return newLayer.getId();
+        }
+
+        function addPoint(longitude, latitude, layerId) {
+            var point = new atlas.Shape(new atlas.data.Point([longitude, latitude]));
+            try {
+                map.events.add('ready', function () {
+                    layersData[layerId].add([point]);
+                    pointsData[layersData][point.getId()] = point;
+                });
+            }
+            catch (error) {
+                sendErrorInfo(error);
+            }
+
+            return point.getId();
+        }
+
+        function updatePoint(longitude, latitude, pointId, layerId) {
+            try {
+                map.events.add('ready', function () {
+                    pointsData[layerId][pointId].setCoordinates([longitude, latitude]);
+
+                    logSymbolLayers();
+                });
+            }
+            catch (error) {
+                sendErrorInfo(error);
+            }
+        }
+
+        function removePoint(pointId, layerId) {
+            try {
+                map.events.add( 'ready', function() {
+                    delete pointsData[layerId][pointId];
+                    layersData[layerId].remove(pointId);
+                });
+            }
+            catch (error) {
+                sendErrorInfo(error);
+            }
+        }
+
+        function clearLayer(layerId) {
+            try {
+                map.events.add( 'ready', function() {
+                    layersData[layerId].clear();
+                    pointsData[layerId] = {};
+                });
+            }
+            catch (error) {
+                sendErrorInfo(error);
+            }
+        }
+
+        function clearMap() {
+            try {
+                map.events.add( 'ready', function() {
+                    symbolLayers = [];
+                    layersData = {};
+                    pointsData = {};
+                });
+            }
+            catch (error) {
+                sendErrorInfo(error);
+            }
+        }
+
+        function interactiveControlsVisible(enable) {
+            if (enable) {
+                map.controls.add([
+                    new atlas.control.ZoomControl(),
+                    new atlas.control.CompassControl(),
+                    new atlas.control.PitchControl(),
+                    new atlas.control.StyleControl()
+                ], {
+                    position: "top-right"
+                });
+            } else {
+                map.controls.clear();
+            }
+        }
+
+        function updateCenter(latitude, longitude) {
+            try {
+                map.setCamera({
+                    center: [longitude, latitude]
+                });
+            }
+            catch (error) {
+                sendErrorInfo(error);
+            }
+        }
+
+        function updateZoom(level) {
+            try {
+                map.setCamera({
+                    zoom: level
+                });
+            }
+            catch (error) {
+                sendErrorInfo(error);
+            }
+        }
+
+        function updateMapServiceToken(mapServiceToken) {
+            try {
+                clearMap();
+                var location = map.getCamera().center;
+                longitude = location[0];
+                latitude = location[1];
+                // create a new map with the new API key
+                initializeMap(longitude, latitude, mapServiceToken);
+            } catch (error) {
+                sendErrorInfo(error);
+            }
+        }
+
+        function sendPushpinClickInfo(e) {
+            var latitude = e.position[1];
+            var longitude = e.position[0];
+            var layerClicked = 0;
+            var pointClicked = 0;
+            try {
+                var layer = map.layers.getLayerById(e.layerId);
+                for (var i = 0; i < symbolLayers.length; i++) {
+                    if (layer == symbolLayers[i]){
+                        layerClicked = i;
+                    }
+                }
+                var layer = layersData[e.layerId];
+                for (var pointId in layer) {
+                    var pointCoordinate = layer[pointId].getCoordinates();
+                    if (pointCoordinate[0] == longitude && pointCoordinate[1] == latitude) {
+                        pointClicked = pointId;
+                    }
+                }
+            }
+            catch (error) {
+                sendErrorInfo(error);
+            }
+
+            const coordinate = {
+                "latitude": latitude,
+                "longitude": longitude,
+            }
+            const message = {
+                "type": "pushpinClickEvent",
+                "coordinate": coordinate,
+                "layer": layerClicked,
+                "point": pointClicked,
+                "text": "Pushpin clicked!"
+            };
+
+            window.chrome.webview.postMessage(message);
+        }
+
+        function getMapLayers() {
+            try {
+                layers = map.layers.getLayers();
+                console.log("Number of layers: " + layers.length + "\n");
+                // print out the name and type of each layer
+                for (var i = 0; i < layers.length; i++) {
+                    if (layers[i] instanceof atlas.layer.SymbolLayer) {
+                        console.log(layers[i].getId() + " is a SymbolLayer\n");
+                        console.log("Source: " + layers[i].getSource() + "\n");
+                    }
+                }
+            }
+            catch (error) {
+                sendErrorInfo(error);
+            }
+        }
+
+        function logSymbolLayers() {
+            try {
+                // print out each symbolLayer in symbolLayers by id
+                console.log("Number of symbol layers: " + symbolLayers.length + "\n");
+                for (var i = 0; i < symbolLayers.length; i++) {
+                    console.log("Id: " + symbolLayers[i].getId() + "\n");
+                }
+            }
+            catch (error) {
+                sendErrorInfo(error);
+            }
+        }
+
+        function getSymbolLayers() {
+            return symbolLayers;
+        }
+
+        function sendErrorInfo(e) {
+            console.log(e);
+            const coordinate = {
+                "latitude": 0,
+                "longitude": 0,
+            }
+
+            const message = {
+                "type": "javascriptError",
+                "coordinate": coordinate,
+                "text": e.stack
+            };
+
+            window.chrome.webview.postMessage(message);
+        }
+
+    </script>
+</body>
+
+</html>

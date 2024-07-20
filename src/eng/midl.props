@@ -1,0 +1,64 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project>
+  <Target Name="SetMidlOutputFiles" BeforeTargets="Midl">
+    <!-- We need to ensure lower case filenames (as does NT), however, we can't use string functions on -->
+    <!-- metadata in an item group.  So we will use this "pre" target to set up those values            -->
+    <ItemGroup>
+      <Midl>
+        <HeaderFileName>$(OutDir)$([System.String]::Copy('%(Filename)').ToLower()).h</HeaderFileName>
+        <TypeLibraryName>$(OutDir)$([System.String]::Copy('%(Filename)').ToLower()).tlb</TypeLibraryName>
+        <InterfaceIdentifierFileName>$(OutDir)$([System.String]::Copy('%(Filename)').ToLower())_i.c</InterfaceIdentifierFileName>
+        <ProxyFileName>$(OutDir)$([System.String]::Copy('%(Filename)').ToLower())_p.c</ProxyFileName>
+      </Midl>
+    </ItemGroup>
+  </Target>
+
+  <ItemDefinitionGroup>
+    <Midl>
+      <EnableWindowsRuntime>true</EnableWindowsRuntime>
+      <DefaultCharType>Unsigned</DefaultCharType>
+      <DllDataFileName>$(OutDir)dlldata.c</DllDataFileName>
+      <LocaleID>1033</LocaleID>
+      <MinimumTargetSystem>NT100</MinimumTargetSystem>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Midl>
+  </ItemDefinitionGroup>
+
+  <!-- Because this happens so early in the process some of the converted projects may not property append additional options/definitions -->
+  <!-- and such.  So we define these values as properties and then let xaml.Cpp.Targes apply them after all the individual processing     -->
+  <!-- has occurred.     -->
+
+  <!-- NOTE: WE may have an issue here.  we use %(FileName), but that should only be used inside of the Midl thing.  We need to see if -->
+  <!-- This is something to worry about. -->
+  <PropertyGroup>
+    <!-- THese only apply to winrt midl types.  When we get to the other types, we will either need to make a different propos file  -->
+    <!-- or make this conditional somehow.                                                                                           -->
+    <!-- <AdditionalOptions>%(AdditionalOptions) /winrt</AdditionalOptions> -->
+    <XamlMetadataDirectory>$(SDKReferencesPath)</XamlMetadataDirectory>
+
+    <XamlMidlOptions>$(XamlMidlOptions) /metadata_dir $(XamlMetadataDirectory)</XamlMidlOptions>
+
+    <XamlMidlOptions>$(XamlMidlOptions) /nomidl /no_stamp /no_settings_comment /sal /savePP /Zp8 /ms_ext /enable_true_async true /ns_prefix optional</XamlMidlOptions>
+    <XamlMidlOptions>$(XamlMidlOptions) /winmd $(OutDir)%(Filename).winmd</XamlMidlOptions>
+    <XamlMidlOptions>$(XamlMidlOptions) /winrt_header $(OutDir)%(Filename)_winrt_p.h</XamlMidlOptions>
+
+    <XamlMidlPreprocessorDefinitions>MSC_NOOPT;BUILD_UMS_ENABLED=0;BUILD_WOW64_ENABLED=0;_USE_DECLSPECS_FOR_SAL=1;_WCHAR_T_DEFINED;</XamlMidlPreprocessorDefinitions>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      The default behavior for any project that sets $(IsWinmdProject) to "true" is to have mdmerge ran.
+      Projects opt out of this behavior by setting this property to "false"
+    -->
+    <MergeWinMd Condition="'$(MergeWinMd)'==''">true</MergeWinMd>
+
+    <!-- This is so we generate the proper implementation metadata on our winmd items (.dll instead of .exe) -->
+    <OutputType Condition="'$(OutputType)'=='' and '$(MergeWinMd)'=='false'">library</OutputType>
+
+    <!--
+      Projects that build midl don't need to reference WinUI details nuget. Importing the nuget adds the winmd to references, which
+      collides with the metadata specified in productmetadata.props, most notably that we don't merge Microsoft.UI.Text.winmd
+    -->
+    <UseWinUIDetails>false</UseWinUIDetails>
+  </PropertyGroup>
+</Project>

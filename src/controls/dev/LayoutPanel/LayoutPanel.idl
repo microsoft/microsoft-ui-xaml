@@ -1,0 +1,28 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PREVIEW]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass LayoutPanel : Microsoft.UI.Xaml.Controls.Panel
+{
+    LayoutPanel();
+
+    Layout Layout{ get; set; };
+    static Microsoft.UI.Xaml.DependencyProperty LayoutProperty{ get; };
+
+    Microsoft.UI.Xaml.Media.Brush BorderBrush{ get; set; };
+    static Microsoft.UI.Xaml.DependencyProperty BorderBrushProperty{ get; };
+
+    Microsoft.UI.Xaml.Thickness BorderThickness{ get; set; };
+    static Microsoft.UI.Xaml.DependencyProperty BorderThicknessProperty{ get; };
+
+    Microsoft.UI.Xaml.Thickness Padding{ get; set; };
+    static Microsoft.UI.Xaml.DependencyProperty PaddingProperty{ get; };
+
+    Microsoft.UI.Xaml.CornerRadius CornerRadius{ get; set; };
+    static Microsoft.UI.Xaml.DependencyProperty CornerRadiusProperty{ get; };
+}
+
+}
