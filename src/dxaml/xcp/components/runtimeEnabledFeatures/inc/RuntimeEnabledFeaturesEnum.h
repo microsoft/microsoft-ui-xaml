@@ -72,6 +72,8 @@ namespace RuntimeFeatureBehavior
         DenySelectionIndicatorVisualEnabled,
         ForceSelectionIndicatorModeInline,
         ForceSelectionIndicatorModeOverlay,
+        DisableDWriteTypographicModel,
+        ForceDWriteTypographicModel,        // overides DisableDWriteTypographicModel
 
         // Insert new enum values before this one.
         // This is used to initialize the lengths of the

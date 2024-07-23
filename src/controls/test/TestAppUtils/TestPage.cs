@@ -107,24 +107,27 @@ namespace MUXControlsTestApp
 
         public static DependencyObject FindVisualChildByName(FrameworkElement parent, string name)
         {
-            if (parent.Name == name)
+            if (parent != null)
             {
-                return parent;
-            }
-
-            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
-
-            for (int i = 0; i < childrenCount; i++)
-            {
-                FrameworkElement childAsFE = VisualTreeHelper.GetChild(parent, i) as FrameworkElement;
-
-                if (childAsFE != null)
+                if (parent.Name == name)
                 {
-                    DependencyObject result = FindVisualChildByName(childAsFE, name);
+                    return parent;
+                }
 
-                    if (result != null)
+                int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+
+                for (int i = 0; i < childrenCount; i++)
+                {
+                    FrameworkElement childAsFE = VisualTreeHelper.GetChild(parent, i) as FrameworkElement;
+
+                    if (childAsFE != null)
                     {
-                        return result;
+                        DependencyObject result = FindVisualChildByName(childAsFE, name);
+
+                        if (result != null)
+                        {
+                            return result;
+                        }
                     }
                 }
             }
@@ -174,7 +177,7 @@ namespace MUXControlsTestApp
                 var frame = XamlRoot.Content != null ? 
                                 XamlRoot.Content as Frame:
                                 this.Frame;
-                var testContentLoadedCheckBox = FindVisualChildByName(frame, "TestContentLoadedCheckBox") as CheckBox;
+                var testContentLoadedCheckBox = FindVisualChildByName(frame ?? (FrameworkElement)XamlRoot.Content, "TestContentLoadedCheckBox") as CheckBox;
                 if (testContentLoadedCheckBox != null)
                 {
                     testContentLoadedCheckBox.IsChecked = true;

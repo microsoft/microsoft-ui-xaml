@@ -36,7 +36,7 @@
       <Enumclass>false</Enumclass>
     </Midl>
     <Link>
-      <AdditionalDependencies>user32.lib;mincore.lib;dxguid.lib;dcomp.lib;$(FrameworkUdkLibPath)\Microsoft.Internal.FrameworkUdk.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>user32.lib;mincore.lib;dxguid.lib;dcomp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <!-- Microsoft.winmd will contain the definition of both public, preview and private types. -->
       <WindowsMetadataFile>$(OutDir)$(ProjectWinMDName)</WindowsMetadataFile>
       <GenerateMapFile>true</GenerateMapFile>
@@ -50,6 +50,10 @@
       <!-- Disabling 4505 because it's firing incorrectly on C++/WinRT headers. Filed this issue for tracking: https://developercommunity.visualstudio.com/content/problem/848007/warning-4505-unreferenced-local-function-has-been.html-->
       <!-- Temporarily disabling 6285, recent regression in VS 16.10 Preview 4 (which vs_buildtools is somehow installing): https://vsf-prod.westus.cloudapp.azure.com/content/problem/1429721/codeanalysis-warning-c6285-in-stl-functionalh-in-v.html -->
       <DisableSpecificWarnings>4505;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <!-- A C++/WinRT header is currently giving the following warning:
+           "C28112: A variable (s_module) which is accessed via an Interlocked function must always be accessed via an Interlocked function. See line 78: It is not always safe to access a variable which is accessed via the Interlocked* family of functions in any other way."
+           We'll disable it until it gets fixed. Bug 50575671 tracks this issue. -->
+      <DisableSpecificWarnings>28112;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <AdditionalIncludeDirectories>
         %(AdditionalIncludeDirectories);
         $(WindowsSDK_IncludePath)\winrt;
@@ -300,7 +304,7 @@
   <PropertyGroup>
     <GenerateXamlFileBeforeTargets>BeforeBuildGenerateSources;CompileXaml;Prep_ComputeProcessXamlFiles;CompilePageRequiringCustomCompilation</GenerateXamlFileBeforeTargets>
   </PropertyGroup>
-  <!-- MergeXamlConfig is using msbuild task batching, each BatchMergeXaml below is executed multilple times. 
+  <!-- MergeXamlConfig is using msbuild task batching, each BatchMergeXaml below is executed multilple times.
         https://docs.microsoft.com/en-us/visualstudio/msbuild/item-metadata-in-task-batching?view=vs-2019 -->
   <Target Name="GenerateGenericResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(StylePage)" Outputs="$(OutDir)generic.xaml">
     <Message Text="Generating generic resources XAML file " />
@@ -322,7 +326,7 @@
       to only set a property if the target actually runs. -->
     <CreateProperty Value="True">
       <Output TaskParameter="ValueSetByTask" PropertyName="ThemeResourceFileNeedsCompilation" />
-    </CreateProperty>    
+    </CreateProperty>
   </Target>
   <!-- Controls styles were missing in packaged generic.xaml file. Merge MUX Generic.xaml with MUXC Generic.xaml and ThemeResource.xaml -->
   <Target Name="MergeMuxMuxcGenericResourceFiles" AfterTargets="GenerateThemeResourceFile" Inputs="$(ScriptPath)GenerateMergedXaml.ps1;$(MUXProjectRoot)dxaml\xcp\dxaml\themes\generic.xaml;$(OutDir)generic.xaml;$(OutDir)themeresources.xaml" Outputs="$(TempRoot)\generic.xaml">
@@ -652,5 +656,5 @@
         <AdditionalOptions>%(Link.AdditionalOptions) /sourcelink:"$(SourceLink)"</AdditionalOptions>
       </Link>
     </ItemGroup>
-  </Target>  
+  </Target>
 </Project>

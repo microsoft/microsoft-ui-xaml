@@ -32,7 +32,7 @@
   </ItemGroup>
   <Import Project="$([MSBuild]::GetPathOfFileAbove(environment.props))" />
   <Import Project="..\eng\versions.props" />
-  <Import Project="$(NuGetPackageRoot)\MUXCustomBuildTasks.$(MuxCustomBuildTasksPackageVersion)\build\MUXCustomBuildTasks.targets" Condition="Exists('$(NuGetPackageRoot)\MUXCustomBuildTasks\$(MuxCustomBuildTasksPackageVersion)\build\MUXCustomBuildTasks.targets')" />
+  <Import Project="$(NuGetPackageRoot)\MUXCustomBuildTasks.$(MuxCustomBuildTasksPackageVersion)\build\MUXCustomBuildTasks.targets" Condition="Exists('$(NuGetPackageRoot)\MUXCustomBuildTasks.$(MuxCustomBuildTasksPackageVersion)\build\MUXCustomBuildTasks.targets')" />
   <Target Name="KillLeftOverMSBuildProcesses">
     <ItemGroup>
       <LeftOverMSBuildProcesses Include="$(TEMP)\*.msbproc" />

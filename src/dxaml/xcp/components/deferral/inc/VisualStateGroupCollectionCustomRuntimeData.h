@@ -35,8 +35,8 @@ public:
     VisualStateGroupEssence(VisualStateGroupEssence&& other) = default;
     VisualStateGroupEssence& operator=(VisualStateGroupEssence&& other) = default;
 
-    const xstring_ptr& GetName() const throw() { return m_name; }
-    bool HasDynamicTimelines() const throw() { return m_hasDynamicTimelines; }
+    const xstring_ptr& GetName() const noexcept { return m_name; }
+    bool HasDynamicTimelines() const noexcept { return m_hasDynamicTimelines; }
 
 private:
     xstring_ptr m_name;
@@ -66,22 +66,22 @@ public:
     VisualStateEssence& operator=(VisualStateEssence&& other) = default;
 
 
-    const xstring_ptr& GetName() const throw() { return m_name; }
-    StreamOffsetToken GetStoryboardToken() const throw() { return m_deferredStoryboardToken; }
+    const xstring_ptr& GetName() const noexcept { return m_name; }
+    StreamOffsetToken GetStoryboardToken() const noexcept { return m_deferredStoryboardToken; }
     const std::vector<StreamOffsetToken>& GetPropertySetterTokens() const WI_NOEXCEPT { return m_deferredPropertySetterTokens; }
-    bool HasStoryboard() const throw() { return m_hasStoryboard; }
-    bool HasPropertySetters() const throw() { return !m_deferredPropertySetterTokens.empty(); }
-    const std::vector<std::vector<int>>& GetStateTriggerValues() const throw() { return m_stateTriggerValues; }
-    bool HasStateTriggers() const throw() { return (m_stateTriggerValues.size() > 0); }
+    bool HasStoryboard() const noexcept { return m_hasStoryboard; }
+    bool HasPropertySetters() const noexcept { return !m_deferredPropertySetterTokens.empty(); }
+    const std::vector<std::vector<int>>& GetStateTriggerValues() const noexcept { return m_stateTriggerValues; }
+    bool HasStateTriggers() const noexcept { return (m_stateTriggerValues.size() > 0); }
 
-    const std::vector<StreamOffsetToken>& GetExtensibleStateTriggerTokens() const throw() { return m_extensibleStateTriggerTokens; }
-    bool HasExtensibleStateTriggers() const throw() { return (m_extensibleStateTriggerTokens.size() > 0); }
+    const std::vector<StreamOffsetToken>& GetExtensibleStateTriggerTokens() const noexcept { return m_extensibleStateTriggerTokens; }
+    bool HasExtensibleStateTriggers() const noexcept { return (m_extensibleStateTriggerTokens.size() > 0); }
 
-    const std::vector<StreamOffsetToken>& GetStateTriggerCollectionTokens() const throw() { return m_stateTriggerCollectionTokens; }
-    bool HasStateTriggerCollectionTokens() const throw() { return (m_stateTriggerCollectionTokens.size() > 0); }
+    const std::vector<StreamOffsetToken>& GetStateTriggerCollectionTokens() const noexcept { return m_stateTriggerCollectionTokens; }
+    bool HasStateTriggerCollectionTokens() const noexcept { return (m_stateTriggerCollectionTokens.size() > 0); }
 
-    const std::vector<StreamOffsetToken>& GetStaticResourceTriggerTokens() const throw() { return m_staticResourceTriggerTokens; }
-    bool HasStaticResourceTriggerTokens() const throw() { return (m_stateTriggerCollectionTokens.size() > 0); }
+    const std::vector<StreamOffsetToken>& GetStaticResourceTriggerTokens() const noexcept { return m_staticResourceTriggerTokens; }
+    bool HasStaticResourceTriggerTokens() const noexcept { return (m_stateTriggerCollectionTokens.size() > 0); }
 
 private:
     xstring_ptr m_name;
@@ -126,9 +126,9 @@ public:
     VisualTransitionEssence(VisualTransitionEssence&& other) = default;
     VisualTransitionEssence& operator=(VisualTransitionEssence&& other) = default;
 
-    const xstring_ptr& GetToState() const throw() { return m_toState; }
-    const xstring_ptr& GetFromState() const throw() { return m_fromState; }
-    StreamOffsetToken GetVisualTransitionToken() const throw() { return m_deferredTransitionToken; }
+    const xstring_ptr& GetToState() const noexcept { return m_toState; }
+    const xstring_ptr& GetFromState() const noexcept { return m_fromState; }
+    StreamOffsetToken GetVisualTransitionToken() const noexcept { return m_deferredTransitionToken; }
 
 private:
     xstring_ptr m_toState;

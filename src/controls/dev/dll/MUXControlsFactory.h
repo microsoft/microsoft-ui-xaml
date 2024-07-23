@@ -29,16 +29,8 @@ private:
     static bool s_initialized;
 };
 
-#ifndef MUX_EXPERIMENTAL
 namespace winrt::Microsoft::UI::Xaml::XamlTypeInfo
 {
     namespace factory_implementation { using XamlControlsXamlMetaDataProvider = MUXControlsFactory; }
     namespace implementation { using XamlControlsXamlMetaDataProvider = XamlMetadataProvider; }
 }
-#else
-namespace winrt::Microsoft::Experimental::UI::Xaml::XamlTypeInfo
-{
-    namespace factory_implementation { using XamlControlsXamlMetaDataProvider = MUXControlsFactory; }
-    namespace implementation { using XamlControlsXamlMetaDataProvider = XamlMetadataProvider; }
-}
-#endif

@@ -176,6 +176,9 @@ private:
     void OnZoomAnimationStarting(
         const winrt::IInspectable& sender,
         const winrt::ScrollingZoomAnimationStartingEventArgs& args);
+    void OnScrollPresenterViewChanging(
+        const winrt::IInspectable& sender,
+        const winrt::ScrollingViewChangingEventArgs& args);
     void OnScrollPresenterViewChanged(
         const winrt::IInspectable& sender,
         const winrt::IInspectable& args);
@@ -198,7 +201,7 @@ private:
         const winrt::IInspectable& sender,
         const winrt::IInspectable& args);
 
-    void ResetHideIndicatorsTimer(bool isForDestructor = false, bool restart = false);
+    void ResetHideIndicatorsTimer(bool restart = false);
 
     void HookUISettingsEvent();
     void HookCompositionTargetRendering();
@@ -226,11 +229,11 @@ private:
 
     bool IsInputKindIgnored(winrt::ScrollingInputKinds const& inputKind);
 
-    bool AreAllScrollControllersCollapsed() const;
+    bool AreAllScrollControllersCollapsed(bool useSafeGet = false) const;
     bool AreBothScrollControllersVisible() const;
     bool AreScrollControllersAutoHiding();
     bool IsScrollControllersSeparatorVisible() const;
-    void HideIndicators(bool useTransitions = true);
+    void HideIndicators(bool useTransitions = true, bool useSafeGet = false);
     void HideIndicatorsAfterDelay();
     void UpdateScrollControllersAutoHiding(bool forceUpdate = false);
     void UpdateVisualStates(
@@ -282,7 +285,8 @@ private:
     tracker_ref<winrt::IUIElement> m_verticalScrollControllerElement{ this };
     tracker_ref<winrt::IUIElement> m_scrollControllersSeparatorElement{ this };
     tracker_ref<winrt::IScrollPresenter> m_scrollPresenter{ this };
-    tracker_ref<winrt::DispatcherTimer> m_hideIndicatorsTimer{ this };
+
+    winrt::DispatcherTimer m_hideIndicatorsTimer{ nullptr };
 
     // Event Tokens
     winrt::event_token m_gettingFocusToken{};
@@ -293,6 +297,7 @@ private:
     winrt::event_token m_scrollPresenterStateChangedToken{};
     winrt::event_token m_scrollPresenterScrollAnimationStartingToken{};
     winrt::event_token m_scrollPresenterZoomAnimationStartingToken{};
+    winrt::event_token m_scrollPresenterViewChangingToken{};
     winrt::event_token m_scrollPresenterViewChangedToken{};
     winrt::event_token m_scrollPresenterScrollCompletedToken{};
     winrt::event_token m_scrollPresenterZoomCompletedToken{};
@@ -365,7 +370,7 @@ private:
 
     // Private constants    
     // 2 seconds delay used to hide the indicators for example when OS animations are turned off.
-    static constexpr int64_t s_noIndicatorCountdown = 2000 * 10000; 
+    static constexpr int64_t s_noIndicatorCountdown = 2000 * 10000;
 
     static constexpr std::wstring_view s_noIndicatorStateName{ L"NoIndicator"sv };
     static constexpr std::wstring_view s_touchIndicatorStateName{ L"TouchIndicator"sv };

@@ -19,32 +19,47 @@ using xaml_controls::EstimationReference;
 // When called the first time, this method starts tracking the first
 // visible element. Otherwise, it does nothing.
 _Check_return_ HRESULT
-ModernCollectionBasePanel::BeginTrackingFirstVisibleElement()
+ModernCollectionBasePanel::BeginTrackingFirstVisibleElement(bool ignoreIsTrackingExtentEnd)
 {
     INT32 index = -1;
     xaml_controls::ElementType type = xaml_controls::ElementType_ItemContainer;
 
     ctl::ComPtr<IUIElement> spFirstVisibleElement;
-    wf::Rect window = m_windowState.GetVisibleWindow();
+    const wf::Rect window = m_windowState.GetVisibleWindow();
     auto spScrollViewer = m_wrScrollViewer.AsOrNull<IScrollViewer>();
 
     const ItemsUpdatingScrollMode itemsUpdatingScrollMode = GetItemsUpdatingScrollMode();
 
     // We only support ItemsStackPanel for this viewport behavior.
     // Also, if we are already tracking something, we can leave.
-    if(!IsMaintainViewportSupportedAndEnabled() ||
+    if (!IsMaintainViewportSupportedAndEnabled() ||
         m_viewportBehavior.isTracking ||
-        m_viewportBehavior.isTrackingExtentEnd ||
+        (!ignoreIsTrackingExtentEnd && m_viewportBehavior.isTrackingExtentEnd) ||
         !spScrollViewer)
     {
+#ifdef IUSM_DEBUG
+        IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG,
+            L"IUSM_DEBUG[0x%p]: ModernCollectionBasePanel::BeginTrackingFirstVisibleElement. Early exit.", m_viewportBehavior));
+#endif
         return S_OK;
     }
+
+#ifdef IUSM_DEBUG
+    if (ignoreIsTrackingExtentEnd && m_viewportBehavior.isTrackingExtentEnd)
+    {
+        IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG,
+            L"IUSM_DEBUG[0x%p]: ModernCollectionBasePanel::BeginTrackingFirstVisibleElement. Ignores isTrackingExtentEnd & skips early exit.", m_viewportBehavior));
+    }
+#endif
+
+    const float windowFirstEdge = window.*PointFromRectInVirtualizingDirection();
+    const float windowSecondEdge = windowFirstEdge + window.*SizeFromRectInVirtualizingDirection();
 
     // If we are at the very beginning and we are tracking the first visible element,
     // we don't have to do anything. KeepItemsInView actually means Keep*First*ItemInView
     // because we added KeepLastItemInView in RS1.
-    if(itemsUpdatingScrollMode == ItemsUpdatingScrollMode::KeepItemsInView &&
-       (window.*PointFromRectInVirtualizingDirection() <= 0.0f || DoubleUtil::IsZero(static_cast<double>(window.*PointFromRectInVirtualizingDirection()))))
+    if (itemsUpdatingScrollMode == ItemsUpdatingScrollMode::KeepItemsInView &&
+       (windowFirstEdge <= 0.0f || DoubleUtil::IsZero(static_cast<double>(windowFirstEdge))))
     {
         return S_OK;
     }
@@ -56,28 +71,34 @@ ModernCollectionBasePanel::BeginTrackingFirstVisibleElement()
     {
         // We use m_estimatedSize instead of get_DesiredSize because the latter accounts for layout rounding.
         const wf::Size extent = m_estimatedSize;
-        const double extentInVirtualizingDirection = static_cast<double>(extent.*PointFromSizeInVirtualizingDirection());
-        const double windowEdgeInVirtualizingDirection = static_cast<double>(window.*PointFromRectInVirtualizingDirection() + window.*SizeFromRectInVirtualizingDirection());
-        if (extentInVirtualizingDirection <= (windowEdgeInVirtualizingDirection + 0.5))
+        const float extentInVirtualizingDirection = extent.*PointFromSizeInVirtualizingDirection();
+        
+        if (static_cast<double>(extentInVirtualizingDirection) <= static_cast<double>(windowSecondEdge) + 0.5)
         {
             m_viewportBehavior.isTrackingExtentEnd = TRUE;
-            m_viewportBehavior.originalExtent = m_viewportBehavior.currentExtent = extent.*PointFromSizeInVirtualizingDirection();
+            m_viewportBehavior.originalExtent = m_viewportBehavior.currentExtent = extentInVirtualizingDirection;
+
+#ifdef IUSM_DEBUG
+            m_viewportBehavior.TraceChangesDbg(L"ModernCollectionBasePanel::BeginTrackingFirstVisibleElement for KeepLastItemInView.");
+#endif
         }
     }
 
     // Finds the first visible element, if any.
     IFC_RETURN(GetFirstVisibleElement(&type, &index, &spFirstVisibleElement));
 
-    if(spFirstVisibleElement)
+    if (spFirstVisibleElement)
     {
         m_viewportBehavior.isTracking = TRUE;
         m_viewportBehavior.index = index;
         m_viewportBehavior.type = type;
         m_viewportBehavior.initialViewportEdge =
-            itemsUpdatingScrollMode == ItemsUpdatingScrollMode::KeepItemsInView ?
-            window.*PointFromRectInVirtualizingDirection() :
-            window.*PointFromRectInVirtualizingDirection() + window.*SizeFromRectInVirtualizingDirection();
+            itemsUpdatingScrollMode == ItemsUpdatingScrollMode::KeepItemsInView ? windowFirstEdge : windowSecondEdge;
         m_viewportBehavior.elementBounds = GetBoundsFromElement(spFirstVisibleElement);
+
+#ifdef IUSM_DEBUG
+        m_viewportBehavior.TraceChangesDbg(L"ModernCollectionBasePanel::BeginTrackingFirstVisibleElement for FirstVisibleElement.");
+#endif
 
         SetTrackedElementOffsetRelativeToViewport();
     }
@@ -188,6 +209,10 @@ ModernCollectionBasePanel::BeginTrackingOnOrientationChange(_Out_ wf::Rect* pCom
             window.*PointFromRectInVirtualizingDirection();
         m_viewportBehavior.elementBounds = GetBoundsFromElement(spFirstVisibleElement);
 
+#ifdef IUSM_DEBUG
+        m_viewportBehavior.TraceChangesDbg(L"ModernCollectionBasePanel::BeginTrackingOnOrientationChange.");
+#endif
+
         SetTrackedElementOffsetRelativeToViewport();
     }
 
@@ -253,8 +278,17 @@ ModernCollectionBasePanel::BeginTrackingOnRefresh(_Out_ wf::Rect* newVisibleWind
                 newVisibleWindow));
         }
 
+#ifdef IUSM_DEBUG
+        IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG,
+            L"IUSM_DEBUG[0x%p]: ModernCollectionBasePanel::BeginTrackingOnRefresh. Initiated scroll to index %d.", m_viewportBehavior, scrollToTargetIndex));
+#endif
+
         m_viewportBehavior.isTrackingExtentEnd = TRUE;
         m_viewportBehavior.originalExtent = m_viewportBehavior.currentExtent = m_estimatedSize.*PointFromSizeInVirtualizingDirection();
+
+#ifdef IUSM_DEBUG
+        m_viewportBehavior.TraceChangesDbg(L"ModernCollectionBasePanel::BeginTrackingOnRefresh.");
+#endif
 
         auto itemsPresenter = m_wrItemsPresenter.AsOrNull<IItemsPresenter>();
         if (itemsPresenter)
@@ -278,13 +312,13 @@ ModernCollectionBasePanel::BeginTrackingFirstVisibleElement(
     HRESULT hr = S_OK;
     BOOLEAN wasTrackingBeforeThisCall = m_viewportBehavior.isTracking;
 
-    if(isCollectionChange && action == wfc::CollectionChange_Reset)
+    if (isCollectionChange && action == wfc::CollectionChange_Reset)
         goto Cleanup;
 
     IFC(BeginTrackingFirstVisibleElement());
 
     // We should keep the tracked element's index up to date.
-    if( m_viewportBehavior.isTracking &&
+    if (m_viewportBehavior.isTracking &&
         isCollectionChange &&
         ((isGroupChange && m_viewportBehavior.type == xaml_controls::ElementType_GroupHeader) ||
         (!isGroupChange && m_viewportBehavior.type == xaml_controls::ElementType_ItemContainer)) &&
@@ -344,7 +378,7 @@ ModernCollectionBasePanel::BeginTrackingFirstVisibleElement(
     }
 
     // If an element (container or header) was inserted or removed or changed size before the tracked element.
-    // We need to redo the layout of the tracked element based on itself.
+    // We need to reevaluate the layout of the tracked element, using estimations.
     if (m_viewportBehavior.isTracking &&
         (!isCollectionChange ||
         action == wfc::CollectionChange_ItemInserted ||
@@ -357,18 +391,73 @@ ModernCollectionBasePanel::BeginTrackingFirstVisibleElement(
         IFC(IsChangeBeforeTrackedElement(isCollectionChange, isGroupChange, index, action, &isChangeBeforeTrackedElement, &isChangeGoingToHideTrackedGroupHeader));
         if (isChangeBeforeTrackedElement)
         {
-            if(isCollectionChange)
+            if (isCollectionChange)
             {
-                switch(action)
-                {
-                case wfc::CollectionChange_ItemInserted:
-                    m_viewportBehavior.elementBounds.*PointFromRectInVirtualizingDirection() += m_viewportBehavior.elementBounds.*SizeFromRectInVirtualizingDirection();
-                    break;
+                float estimatedElementBoundsShift = 0.0f;
 
-                case wfc::CollectionChange_ItemRemoved:
-                    m_viewportBehavior.elementBounds.*PointFromRectInVirtualizingDirection() -= m_viewportBehavior.elementBounds.*SizeFromRectInVirtualizingDirection();
-                    m_viewportBehavior.elementBounds.*PointFromRectInVirtualizingDirection() = std::max(m_viewportBehavior.elementBounds.*PointFromRectInVirtualizingDirection(), 0.0f);
-                    break;
+                switch (action)
+                {
+                    case wfc::CollectionChange_ItemInserted:
+                    case wfc::CollectionChange_ItemRemoved:
+                    {
+                        if (isGroupChange)
+                        {
+                            // First, only account for the header itself when it's inline.
+                            GroupHeaderStrategy headerStrategy = GroupHeaderStrategy::None;
+
+                            IFC(GetGroupHeaderStrategy(&headerStrategy));
+
+                            if (headerStrategy == GroupHeaderStrategy::Inline)
+                            {
+                                // A group header was inserted before the tracked element.
+                                // Attempt to access an average header size in the virtualized direction.
+                                IFC(GetAverageHeaderSize(&estimatedElementBoundsShift));
+                            }
+                            // Else headers that are placed in Parallel and have no effect on the tracked element's position.
+                        }
+                        else
+                        {
+                            // A container was inserted before the tracked element.
+                            // Attempt to access an average container size in the virtualized direction.
+                            IFC(GetAverageContainerSize(&estimatedElementBoundsShift));
+                        }
+
+                        // When estimatedElementBoundsShift >= 0.0f, use that successfully accessed average size as the estimated shift...
+                        if (estimatedElementBoundsShift < 0.0f)
+                        {
+                            // ...else fall back to using the tracked element's size.
+                            estimatedElementBoundsShift = m_viewportBehavior.elementBounds.*SizeFromRectInVirtualizingDirection();
+                        }
+
+                        if (isGroupChange)
+                        {
+                            // Second, take the GroupPadding into account irrespective of the GroupHeaderStrategy value.
+                            double groupPadding = 0.0;
+
+                            IFC(GroupPaddingSizeInVirtualizingDirection(&groupPadding));
+
+                            estimatedElementBoundsShift += static_cast<float>(groupPadding);
+                        }
+                        break;
+                    }
+                }
+
+                switch (action)
+                {
+                    case wfc::CollectionChange_ItemInserted:
+                    {
+                        // When an item was inserted before the tracked element, its estimated bounds are increased.
+                        m_viewportBehavior.elementBounds.*PointFromRectInVirtualizingDirection() += estimatedElementBoundsShift;
+                        break;
+                    }
+
+                    case wfc::CollectionChange_ItemRemoved:
+                    {
+                        // When an item was inserted before the tracked element, its estimated bounds are decreased.
+                        m_viewportBehavior.elementBounds.*PointFromRectInVirtualizingDirection() -= estimatedElementBoundsShift;
+                        m_viewportBehavior.elementBounds.*PointFromRectInVirtualizingDirection() = std::max(m_viewportBehavior.elementBounds.*PointFromRectInVirtualizingDirection(), 0.0f);
+                        break;
+                    }
                 }
             }
         }
@@ -382,6 +471,10 @@ ModernCollectionBasePanel::BeginTrackingFirstVisibleElement(
             m_viewportBehavior.Reset();
         }
     }
+
+#ifdef IUSM_DEBUG
+    m_viewportBehavior.TraceChangesDbg(L"ModernCollectionBasePanel::BeginTrackingFirstVisibleElement.");
+#endif
 
 Cleanup:
     RRETURN(hr);
@@ -420,11 +513,19 @@ ModernCollectionBasePanel::BeginTrackingOnViewportSizeChange(
             static_cast<double>(previousWindow.*SizeFromRectInVirtualizingDirection()),
             static_cast<double>(currentWindow.*SizeFromRectInVirtualizingDirection())))
     {
-        IFC_RETURN(BeginTrackingFirstVisibleElement());
+        // Since m_viewportBehavior.isTrackingExtentEnd is unconditionally reset below, BeginTrackingFirstVisibleElement
+        // must not exit early when m_viewportBehavior.isTrackingExtentEnd is True. Instead, it must carry on and update
+        // the m_viewportBehavior fields originalExtent, isTracking, index, type, initialViewportEdge and elementBounds.
+        // This is particularly critical when the viewport shrinks in both dimensions.
+        IFC_RETURN(BeginTrackingFirstVisibleElement(true /*ignoreIsTrackingExtentEnd*/));
         // Don't allow tracking the extent end because it's not going to change.
         // We need to track a specific element and its offset to the bottom of the viewport
         // that just changed size.
         m_viewportBehavior.isTrackingExtentEnd = false;
+
+#ifdef IUSM_DEBUG
+        m_viewportBehavior.TraceChangesDbg(L"ModernCollectionBasePanel::BeginTrackingOnViewportSizeChange.");
+#endif
     }
     return S_OK;
 }
@@ -446,6 +547,10 @@ ModernCollectionBasePanel::ApplyTrackedElementShift()
         m_viewportBehavior.trackedElementShift =
             m_viewportBehavior.elementBounds.*PointFromRectInVirtualizingDirection() -
             GetBoundsFromElement(spTrackedElement).*PointFromRectInVirtualizingDirection();
+
+#ifdef IUSM_DEBUG
+        m_viewportBehavior.TraceChangesDbg(L"ModernCollectionBasePanel::ApplyTrackedElementShift.");
+#endif
 
         for (int typeIndex = 0; typeIndex < ElementType_Count; ++typeIndex)
         {
@@ -655,6 +760,10 @@ ModernCollectionBasePanel::TrackLastElement()
             };
             m_windowState.m_command = func;
         }
+
+#ifdef IUSM_DEBUG
+        m_viewportBehavior.TraceChangesDbg(L"ModernCollectionBasePanel::TrackLastElement.");
+#endif
     }
     return S_OK;
 }
@@ -685,12 +794,14 @@ ModernCollectionBasePanel::EndTrackingFirstVisibleElement()
         {
             m_viewportBehavior.elementBounds = GetBoundsFromElement(spTrackedElement);
 
-            viewportShift = (GetNewViewportEdge() - m_viewportBehavior.initialViewportEdge);
+            const float newViewportEdge = GetNewViewportEdge();
+
+            viewportShift = newViewportEdge - m_viewportBehavior.initialViewportEdge;
 
             // Shifts the viewport.
             const wf::Rect visibleWindow = m_windowState.GetVisibleWindow();
             const float windowShift =
-                GetNewViewportEdge() -
+                newViewportEdge -
                 (GetItemsUpdatingScrollMode() == ItemsUpdatingScrollMode::KeepItemsInView ?
                     visibleWindow.*PointFromRectInVirtualizingDirection() :
                     visibleWindow.*PointFromRectInVirtualizingDirection() + visibleWindow.*SizeFromRectInVirtualizingDirection()) +
@@ -704,9 +815,18 @@ ModernCollectionBasePanel::EndTrackingFirstVisibleElement()
 
                 // Scroll to the new window by coercing the visible window.
                 m_windowState.ApplyAdjustment(correction);
+
+#ifdef IUSM_DEBUG
+                IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG,
+                    L"IUSM_DEBUG[0x%p]: ModernCollectionBasePanel::EndTrackingFirstVisibleElement. Applied windowShift: %f.", m_viewportBehavior, windowShift));
+#endif
             }
         }
     }
+
+#ifdef IUSM_DEBUG
+    m_viewportBehavior.TraceChangesDbg(L"ModernCollectionBasePanel::EndTrackingFirstVisibleElement.");
+#endif
 
     IFC_RETURN(AdjustLayoutTransitions(viewportShift));
     return S_OK;
@@ -864,7 +984,7 @@ ModernCollectionBasePanel::GetFirstVisibleElementForSerialization(
 {
     HRESULT hr = S_OK;
     INT elementIndex = 0;
-    wf::Rect window = m_windowState.GetVisibleWindow();
+    const wf::Rect window = m_windowState.GetVisibleWindow();
     wf::Rect actualWindow = {}; // adjusted for sticky headers, if any.
 
     *pOffset = 0.0;
@@ -947,37 +1067,37 @@ ModernCollectionBasePanel::GetFirstElementInWindow(
 
     // We will be going through the valid range.
     // For each type, retrieve the offset relative to the viewport and store it.
-    for(int typeIndex = 0; typeIndex < ElementType_Count; ++typeIndex)
+    for (int typeIndex = 0; typeIndex < ElementType_Count; ++typeIndex)
     {
         const xaml_controls::ElementType type = static_cast<xaml_controls::ElementType>(typeIndex);
         if (m_containerManager.GetValidElementCount(type) == 0) continue;
 
         const wf::Rect intersectionWindow = (typeIndex == xaml_controls::ElementType_ItemContainer) ? adjustedWindowForStickyHeaders : window;
 
-        int startIndex =
+        const int startIndex =
             itemsUpdatingScrollMode == ItemsUpdatingScrollMode::KeepLastItemInView ?
             m_containerManager.GetValidElementCount(type) - 1 :
             currentValidIndices[typeIndex];
 
-        int endIndex =
+        const int endIndex =
             itemsUpdatingScrollMode == ItemsUpdatingScrollMode::KeepLastItemInView ?
             currentValidIndices[typeIndex] - 1 :
             m_containerManager.GetValidElementCount(type);
 
-        int increment = (itemsUpdatingScrollMode == ItemsUpdatingScrollMode::KeepLastItemInView) ? -1 : 1;
+        const int increment = (itemsUpdatingScrollMode == ItemsUpdatingScrollMode::KeepLastItemInView) ? -1 : 1;
 
-        for(int validIndex = startIndex; validIndex != endIndex; validIndex += increment)
+        for (int validIndex = startIndex; validIndex != endIndex; validIndex += increment)
         {
             wf::Rect bounds = {};
             ctl::ComPtr<IUIElement> spElement;
 
-            if(validIndex == trackedElementValidIndex && m_viewportBehavior.type == type)
+            if (validIndex == trackedElementValidIndex && m_viewportBehavior.type == type)
                 continue;
 
             IFC_RETURN(m_containerManager.GetElementAtValidIndex(type, validIndex, &spElement));
 
             // Ignores any sentinel.
-            if(GetElementIsSentinel(spElement))
+            if (GetElementIsSentinel(spElement))
                 continue;
 
             bounds = GetBoundsFromElement(spElement);
@@ -1001,7 +1121,7 @@ ModernCollectionBasePanel::GetFirstElementInWindow(
     }
 
     // If we found something, return it.
-    if(found)
+    if (found)
     {
         // Preference goes to header.
         auto type = (elementsOffsets[xaml_controls::ElementType_GroupHeader] <= elementsOffsets[xaml_controls::ElementType_ItemContainer])
@@ -1021,7 +1141,6 @@ ModernCollectionBasePanel::GetFirstElementInWindow(
     return S_OK;
 }
 
-
 // Sets the offset between the tracked element and the visible window.
 void ModernCollectionBasePanel::SetTrackedElementOffsetRelativeToViewport()
 {
@@ -1030,30 +1149,14 @@ void ModernCollectionBasePanel::SetTrackedElementOffsetRelativeToViewport()
     // Note: trackedElementShift's value is always zero outside of Measure/Arrange.
     const FLOAT effectiveViewport = m_viewportBehavior.initialViewportEdge + m_viewportBehavior.trackedElementShift;
     const wf::Rect bounds = m_viewportBehavior.elementBounds;
-    FLOAT stickyHeadersAdjustement = 0.0f;
-
     const ItemsUpdatingScrollMode itemsUpdatingScrollMode = GetItemsUpdatingScrollMode();
-
-    // While we calculate the element offset relative to the (effective) viewport, we want
-    // to consider sticky headers when picking the relative edge. This is only necessary when tracking items.
-    if (itemsUpdatingScrollMode != ItemsUpdatingScrollMode::KeepLastItemInView &&
-        m_viewportBehavior.type == xaml_controls::ElementType_ItemContainer)
-    {
-        stickyHeadersAdjustement = m_lastVisibleWindowClippingHeight;
-    }
-
     const float boundsFirstEdge =
         itemsUpdatingScrollMode == ItemsUpdatingScrollMode::KeepLastItemInView ?
         bounds.*PointFromRectInVirtualizingDirection() + bounds.*SizeFromRectInVirtualizingDirection() :
         bounds.*PointFromRectInVirtualizingDirection();
 
-    const float boundsSecondEdge =
-        itemsUpdatingScrollMode == ItemsUpdatingScrollMode::KeepLastItemInView ?
-        bounds.*PointFromRectInVirtualizingDirection() :
-        bounds.*PointFromRectInVirtualizingDirection() + bounds.*SizeFromRectInVirtualizingDirection();
-
     // The calculated offset between the element and the viewport is relative to an edge (first or second from the top\left).
-    if ((itemsUpdatingScrollMode != ItemsUpdatingScrollMode::KeepLastItemInView && boundsFirstEdge >= (effectiveViewport + stickyHeadersAdjustement)) ||
+    if (itemsUpdatingScrollMode != ItemsUpdatingScrollMode::KeepLastItemInView ||
         (itemsUpdatingScrollMode == ItemsUpdatingScrollMode::KeepLastItemInView && boundsFirstEdge <= effectiveViewport))
     {
         m_viewportBehavior.isOffsetRelativeToSecondEdge = FALSE;
@@ -1061,9 +1164,18 @@ void ModernCollectionBasePanel::SetTrackedElementOffsetRelativeToViewport()
     }
     else
     {
+        const float boundsSecondEdge =
+            itemsUpdatingScrollMode == ItemsUpdatingScrollMode::KeepLastItemInView ?
+            bounds.*PointFromRectInVirtualizingDirection() :
+            bounds.*PointFromRectInVirtualizingDirection() + bounds.*SizeFromRectInVirtualizingDirection();
+
         m_viewportBehavior.isOffsetRelativeToSecondEdge = TRUE;
         m_viewportBehavior.elementOffset = effectiveViewport - boundsSecondEdge;
     }
+
+#ifdef IUSM_DEBUG
+    m_viewportBehavior.TraceChangesDbg(L"ModernCollectionBasePanel::SetTrackedElementOffsetRelativeToViewport.");
+#endif
 }
 
 // Returns the tracked UIElement or null.
@@ -1074,7 +1186,7 @@ ModernCollectionBasePanel::GetTrackedElement(_Out_ ctl::ComPtr<IUIElement>* pspT
     HRESULT hr = S_OK;
     ctl::ComPtr<IUIElement> spElement;
 
-    INT32 validIndex = m_containerManager.GetValidElementIndexFromDataIndex(m_viewportBehavior.type, m_viewportBehavior.index);
+    const INT32 validIndex = m_containerManager.GetValidElementIndexFromDataIndex(m_viewportBehavior.type, m_viewportBehavior.index);
 
     ASSERT(m_containerManager.GetValidElementCount(m_viewportBehavior.type) > 0);
     ASSERT(m_containerManager.IsValidElementIndexWithinBounds(m_viewportBehavior.type, validIndex));
@@ -1116,7 +1228,7 @@ ModernCollectionBasePanel::ElectNewTrackedElement()
 
     const wf::Rect elementBounds = spNewTrackedElement ? GetBoundsFromElement(spNewTrackedElement) : wf::Rect{};
 
-    if(spNewTrackedElement &&
+    if (spNewTrackedElement &&
        !RectUtil::AreDisjoint(elementBounds, m_windowState.GetVisibleWindow()))
     {
         m_viewportBehavior.index = elementIndex;
@@ -1136,36 +1248,38 @@ ModernCollectionBasePanel::ElectNewTrackedElement()
     }
 
 Cleanup:
+#ifdef IUSM_DEBUG
+    m_viewportBehavior.TraceChangesDbg(L"ModernCollectionBasePanel::ElectNewTrackedElement.");
+#endif
     RRETURN(hr);
 }
 
-// Returns where should the viewport move to 'follow' the tracked element.
-FLOAT ModernCollectionBasePanel::GetNewViewportEdge()
+// Returns where the viewport should move to 'follow' the tracked element.
+FLOAT ModernCollectionBasePanel::GetNewViewportEdge() const
 {
     FLOAT newViewportOffset = 0;
 
     ASSERT(m_viewportBehavior.isTracking);
 
-    wf::Rect bounds = m_viewportBehavior.elementBounds;
-
+    const wf::Rect bounds = m_viewportBehavior.elementBounds;
     const ItemsUpdatingScrollMode itemsUpdatingScrollMode = GetItemsUpdatingScrollMode();
 
-    const float boundsFirstEdge =
-        itemsUpdatingScrollMode == ItemsUpdatingScrollMode::KeepLastItemInView ?
-        bounds.*PointFromRectInVirtualizingDirection() + bounds.*SizeFromRectInVirtualizingDirection() :
-        bounds.*PointFromRectInVirtualizingDirection();
-
-    const float boundsSecondEdge =
-        itemsUpdatingScrollMode == ItemsUpdatingScrollMode::KeepLastItemInView ?
-        bounds.*PointFromRectInVirtualizingDirection() :
-        bounds.*PointFromRectInVirtualizingDirection() + bounds.*SizeFromRectInVirtualizingDirection();
-
-    if(m_viewportBehavior.isOffsetRelativeToSecondEdge)
+    if (m_viewportBehavior.isOffsetRelativeToSecondEdge)
     {
+        const float boundsSecondEdge =
+            itemsUpdatingScrollMode == ItemsUpdatingScrollMode::KeepLastItemInView ?
+            bounds.*PointFromRectInVirtualizingDirection() :
+            bounds.*PointFromRectInVirtualizingDirection() + bounds.*SizeFromRectInVirtualizingDirection();
+
         newViewportOffset = boundsSecondEdge + m_viewportBehavior.elementOffset;
     }
     else
     {
+        const float boundsFirstEdge =
+            itemsUpdatingScrollMode == ItemsUpdatingScrollMode::KeepLastItemInView ?
+            bounds.*PointFromRectInVirtualizingDirection() + bounds.*SizeFromRectInVirtualizingDirection() :
+            bounds.*PointFromRectInVirtualizingDirection();
+
         newViewportOffset = boundsFirstEdge + m_viewportBehavior.elementOffset;
     }
 
@@ -1210,5 +1324,9 @@ void ModernCollectionBasePanel::UpdateViewportOffsetDelta(
         m_viewportBehavior.viewportOffsetDelta =
             newVisibleWindow.*PointFromRectInVirtualizingDirection() -
             oldVisibleWindow.*PointFromRectInVirtualizingDirection();
+
+#ifdef IUSM_DEBUG
+        m_viewportBehavior.TraceChangesDbg(L"ModernCollectionBasePanel::UpdateViewportOffsetDelta.");
+#endif
     }
 }

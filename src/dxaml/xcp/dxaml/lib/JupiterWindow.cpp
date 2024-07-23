@@ -200,7 +200,7 @@ _Check_return_ HRESULT CJupiterWindow::Create(_In_ HWND hwnd, WindowType::Enum w
     *ppWindow = nullptr;
 
     ctl::ComPtr<CJupiterWindow> spWindow;
-    ctl::make(hwnd, windowType, &spWindow);
+    IFC_RETURN(ctl::make(hwnd, windowType, &spWindow));
 
     spWindow->SetControl(pControl);
 
@@ -302,6 +302,8 @@ CJupiterWindow::~CJupiterWindow()
 
     IGNOREHR(UnregisterDropTargetRequested());
 
+    UninitializeInputSiteAdapterForCoreWindow();
+
     ReleaseInterface(m_pCoreWindow);
 }
 
@@ -394,8 +396,21 @@ LRESULT CALLBACK CJupiterWindow::CoreWindowSubclassProc(_In_ HWND hwnd, UINT uMs
                     // (If it doesn't, we're only showing islands; don't hook up UIA to the main window.
                     // Each island's UIA tree will get hooked up separately.)
 
-                    lresult = m_pControl->HandleGetObjectMessage(uMsg, wParam, lParam);
-                    fHandled = true;
+                    if (m_inputSiteAdapterHwndHandlesWmGetObject)
+                    {
+                        // Automation is handled via the Island infrastructure and a different HWND entrypoint for WM_GETOBJECT.
+                        // See CJupiterWindow::OnContentAutomationProviderRequested and CJupiterWindow::EnsureInputSiteAdapterForCoreWindow.
+                        // Handle this the same way we handle input above by doing nothing.
+                        return (m_subclassedWndProc) ? 
+                            CallWindowProc(m_subclassedWndProc, hwnd, uMsg, wParam, lParam) :
+                            DefWindowProc(hwnd, uMsg, wParam, lParam);
+                    }
+                    else
+                    {
+                        lresult = m_pControl->HandleGetObjectMessage(uMsg, wParam, lParam);
+                        fHandled = true;
+                        m_legacyCoreWindowUiaProviderSet = true;
+                    }
                 }
             }
             fDefaultToControl = false;
@@ -1299,6 +1314,25 @@ _Check_return_ HRESULT CJupiterWindow::OnIslandPointerMessage(
     return S_OK;
 }
 
+_Check_return_ HRESULT CJupiterWindow::OnIslandNonClientPointerMessage(
+    const UINT msg,
+    _In_opt_ CContentRoot* contentRoot,
+    _In_ ixp::IPointerPoint* pointerPoint,
+    const bool isReplayedMessage)
+{
+    if (!contentRoot)
+    {
+        return S_OK;
+    }
+
+    UINT32 pointerId = 0;
+    IFCFAILFAST(pointerPoint->get_PointerId(&pointerId));
+
+    m_pControl->HandleNonClientPointerMessage(msg, pointerId, contentRoot, isReplayedMessage, pointerPoint);
+
+    return S_OK;
+}
+
 _Check_return_ HRESULT CJupiterWindow::OnIslandMessage(
     _In_ UINT uMsg,
     _In_ WPARAM wParam,
@@ -1424,6 +1458,24 @@ _Check_return_ HRESULT CJupiterWindow::RegisterCoreWindowEvents()
     return S_OK;
 }
 
+_Check_return_ HRESULT
+CJupiterWindow::OnContentAutomationProviderRequested(
+    _In_ ixp::IContentIsland* content,
+    _In_ ixp::IContentIslandAutomationProviderRequestedEventArgs* e)
+{
+    auto uiaWindow = m_pControl->GetUIAHostWindow();
+    if (nullptr == uiaWindow)
+    {
+        IFC_RETURN(m_pControl->CreateUIAHostWindowForHwnd(m_hwnd));
+        uiaWindow = m_pControl->GetUIAHostWindow();
+    }
+
+    IFC_RETURN(e->put_AutomationProvider(uiaWindow.Get()));
+    IFC_RETURN(e->put_Handled(true));
+
+    return S_OK;
+}
+
 void CJupiterWindow::EnsureInputSiteAdapterForCoreWindow(_In_ ixp::IContentIsland* const coreWindowContentIsland)
 {
     if (m_inputSiteAdapter != nullptr)
@@ -1431,13 +1483,49 @@ void CJupiterWindow::EnsureInputSiteAdapterForCoreWindow(_In_ ixp::IContentIslan
         return;
     }
 
+    m_contentIsland = coreWindowContentIsland;
     m_inputSiteAdapter = std::make_unique<InputSiteAdapter>();
-    m_inputSiteAdapter->Initialize(coreWindowContentIsland, GetCoreWindowContentRootNoRef(), this);
+    m_inputSiteAdapter->Initialize(m_contentIsland.Get(), GetCoreWindowContentRootNoRef(), this);
+
+    // If the InputSiteAdapter has a different underlying Input HWND, then automation is expected to flow
+    // only via the ContentIsland AutomationProviderRequested event.
+    if (CInputServices::GetUnderlyingInputHwndFromIslandInputSite(m_inputSiteAdapter->GetIslandInputSite().Get()) != m_hwnd)
+    {
+        FAIL_FAST_IF_FAILED(m_contentIsland->add_AutomationProviderRequested(WRLHelper::MakeAgileCallback<wf::ITypedEventHandler<
+            ixp::ContentIsland*,
+            ixp::ContentIslandAutomationProviderRequestedEventArgs*>>([&](
+                ixp::IContentIsland* content,
+                ixp::IContentIslandAutomationProviderRequestedEventArgs* args) -> HRESULT
+                {
+                    return OnContentAutomationProviderRequested(content, args);
+                }).Get(),
+                &m_automationProviderRequestedToken));
+
+        if (m_legacyCoreWindowUiaProviderSet)
+        {
+            // If a WM_GETOBJECT was received before the ContentIsland was set up, remove the legacy provider.
+            ::UiaReturnRawElementProvider(m_hwnd, 0, 0, nullptr);
+            m_legacyCoreWindowUiaProviderSet = false;
+        }
+
+        m_inputSiteAdapterHwndHandlesWmGetObject = true;
+    }
 }
 
 void CJupiterWindow::UninitializeInputSiteAdapterForCoreWindow()
 {
+    if (nullptr != m_inputSiteAdapter)
+    {
+        if (0 != m_automationProviderRequestedToken.value)
+        {
+            VERIFYHR(m_contentIsland->remove_AutomationProviderRequested(m_automationProviderRequestedToken));
+            m_automationProviderRequestedToken = {};
+            m_inputSiteAdapterHwndHandlesWmGetObject = false;
+        }
+    }
+
     m_inputSiteAdapter = nullptr;
+    m_contentIsland = nullptr;
 }
 
 _Check_return_ HRESULT CJupiterWindow::UnregisterCoreWindowEvents()

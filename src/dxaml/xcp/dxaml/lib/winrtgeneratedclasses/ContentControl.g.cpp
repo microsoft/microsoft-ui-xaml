@@ -75,6 +75,7 @@ IFACEMETHODIMP DirectUI::ContentControlGenerated::get_ContentTemplateRoot(_Outpt
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ContentControl*>(this)->get_ContentTemplateRootImpl(ppValue));
 Cleanup:
@@ -118,6 +119,7 @@ IFACEMETHODIMP DirectUI::ContentControlGenerated::GetGlobalBounds(_Out_ ABI::Win
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ContentControl_GetGlobalBounds", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ContentControl*>(this)->GetGlobalBoundsImpl(pResult));
@@ -136,6 +138,7 @@ IFACEMETHODIMP DirectUI::ContentControlGenerated::GetRasterizationScale(_Out_ FL
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ContentControl_GetRasterizationScale", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ContentControl*>(this)->GetRasterizationScaleImpl(pResult));

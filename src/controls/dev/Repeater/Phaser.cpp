@@ -126,7 +126,7 @@ void Phaser::DoPhasedWorkCallback()
                     // If we are the first item or 
                     // If the current items phase is higher than the next items phase, then move to the next item.
                     if (currentIndex == 0 ||
-                        virtInfo->Phase() > m_pendingElements[currentIndex - 1].VirtInfo()->Phase())
+                        virtInfo->Phase() > m_pendingElements[static_cast<std::vector<ElementInfo>::size_type>(currentIndex) - 1].VirtInfo()->Phase())
                     {
                         currentIndex--;
                     }
@@ -155,7 +155,7 @@ void Phaser::DoPhasedWorkCallback()
                 bool nextItemIsVisible = SharedHelpers::DoRectsIntersect(visibleWindow, m_pendingElements[currentIndex].VirtInfo()->ArrangeBounds());
                 if (!nextItemIsVisible)
                 {
-                    bool haveVisibleItems = SharedHelpers::DoRectsIntersect(visibleWindow, m_pendingElements[pendingCount - 1].VirtInfo()->ArrangeBounds());
+                    bool haveVisibleItems = SharedHelpers::DoRectsIntersect(visibleWindow, m_pendingElements[static_cast<size_t>(pendingCount) - 1].VirtInfo()->ArrangeBounds());
                     if (haveVisibleItems)
                     {
                         currentIndex = pendingCount - 1;

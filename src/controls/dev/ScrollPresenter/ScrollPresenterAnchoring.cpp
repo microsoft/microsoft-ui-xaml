@@ -376,8 +376,8 @@ void ScrollPresenter::EnsureAnchorElementSelection()
             globalTestHooks->NotifyAnchorEvaluated(*this, requestedAnchorElement, viewportAnchorPointHorizontalOffset, viewportAnchorPointVerticalOffset);
         }
 
-        SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, m_anchorElement.get(), L"m_anchorElement set.");
-        SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str(), L"m_anchorElementBounds set.");
+        SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, m_anchorElement.get(), L"m_anchorElement set from ScrollingAnchorRequestedEventArgs.");
+        SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str(), L"m_anchorElementBounds set from ScrollingAnchorRequestedEventArgs.");
 
         return;
     }
@@ -432,8 +432,10 @@ void ScrollPresenter::EnsureAnchorElementSelection()
         m_anchorElement.set(bestAnchorCandidate);
         m_anchorElementBounds = bestAnchorCandidateBounds;
 
-        SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, m_anchorElement.get(), L"m_anchorElement set.");
-        SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str(), L"m_anchorElementBounds set.");
+        SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, m_anchorElement.get(),
+            anchorCandidates ? L"m_anchorElement set from anchorCandidates." : L"m_anchorElement set from m_anchorCandidates.");
+        SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str(),
+            anchorCandidates ? L"m_anchorElementBounds set from anchorCandidates." : L"m_anchorElementBounds set from m_anchorCandidates.");
     }
 
     if (globalTestHooks && globalTestHooks->AreAnchorNotificationsRaised())
@@ -477,13 +479,13 @@ void ScrollPresenter::ProcessAnchorCandidate(
     if (!isnan(viewportAnchorPointHorizontalOffset))
     {
         anchorCandidateDistance += std::pow(viewportAnchorPointHorizontalOffset - anchorCandidateBounds.X, 2);
-        anchorCandidateDistance += std::pow(viewportAnchorPointHorizontalOffset - (anchorCandidateBounds.X + anchorCandidateBounds.Width), 2);
+        anchorCandidateDistance += std::pow(viewportAnchorPointHorizontalOffset - (static_cast<double>(anchorCandidateBounds.X) + static_cast<double>(anchorCandidateBounds.Width)), 2);
     }
 
     if (!isnan(viewportAnchorPointVerticalOffset))
     {
         anchorCandidateDistance += std::pow(viewportAnchorPointVerticalOffset - anchorCandidateBounds.Y, 2);
-        anchorCandidateDistance += std::pow(viewportAnchorPointVerticalOffset - (anchorCandidateBounds.Y + anchorCandidateBounds.Height), 2);
+        anchorCandidateDistance += std::pow(viewportAnchorPointVerticalOffset - (static_cast<double>(anchorCandidateBounds.Y) + static_cast<double>(anchorCandidateBounds.Height)), 2);
     }
 
     if (anchorCandidateDistance <= *bestAnchorCandidateDistance)

@@ -25,7 +25,7 @@ public:
     // * Download - access, network issues, corrupted media
     // * Decode - unsupported format, data corruption
     // * Upload - driver errors
-    virtual HRESULT GetHR(_In_ const std::shared_ptr<ImagingTelemetry::ImageDecodeActivity>& decodeActivity, uint64_t imageId) const = 0;
+    virtual HRESULT GetHR(uint64_t imageId) const = 0;
 
 protected:
     std::vector<IImageViewListener*> m_imageViewListeners;

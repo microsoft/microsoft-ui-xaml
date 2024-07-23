@@ -11,4 +11,15 @@
         AddBinplaceItems
       </PrepareForRunDependsOn>
     </PropertyGroup>
+
+    <!-- By default, build (but don't restore) all Release 64-bit .NET7+ managed tests and samples with PublishAot (which does not support x86 or WPF). -->
+    <PropertyGroup Condition="'$(PublishAot)' == '' and 
+        '$(Configuration)' == 'Release' and '$(ExcludeRestorePackageImports)' != 'true' and
+        ('$(Platform)' == 'x64' or '$(Platform)' == 'arm64') and '$(UseWpf)' != 'true' and 
+        $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">
+        <PublishAot>true</PublishAot>
+        <IsAotCompatible>true</IsAotCompatible>
+        <IsTrimmable>true</IsTrimmable>
+    </PropertyGroup>
+      
 </Project>

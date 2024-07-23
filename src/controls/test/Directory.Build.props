@@ -7,6 +7,7 @@
     <BinplaceOutputAssemblies Condition="!$(MSBuildProjectName.Contains('TAEF'))">false</BinplaceOutputAssemblies>
     <!-- Use the version in the mock, not the repo -->
     <UseXamlCompiler Condition="'$(UseXamlCompiler)'==''">false</UseXamlCompiler>
+    <UseRidGraph>true</UseRidGraph>
   </PropertyGroup>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
   <PropertyGroup>

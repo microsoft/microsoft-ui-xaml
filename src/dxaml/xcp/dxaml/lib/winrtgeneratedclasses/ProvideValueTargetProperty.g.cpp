@@ -45,6 +45,7 @@ IFACEMETHODIMP DirectUI::ProvideValueTargetPropertyGenerated::get_DeclaringType(
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ProvideValueTargetProperty*>(this)->get_DeclaringTypeImpl(pValue));
 Cleanup:
@@ -54,6 +55,7 @@ IFACEMETHODIMP DirectUI::ProvideValueTargetPropertyGenerated::get_Name(_Out_ HST
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ProvideValueTargetProperty*>(this)->get_NameImpl(pValue));
 Cleanup:
@@ -63,6 +65,7 @@ IFACEMETHODIMP DirectUI::ProvideValueTargetPropertyGenerated::get_Type(_Out_ ABI
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ProvideValueTargetProperty*>(this)->get_TypeImpl(pValue));
 Cleanup:

@@ -130,7 +130,7 @@ private:
     //
     tracker_ref<winrt::IAnimatedVisual> m_animatedVisual{ this };
     // The native size of the current animated visual. Only valid if m_animatedVisual is not nullptr.
-    winrt::float2 m_animatedVisualSize;
+    winrt::float2 m_animatedVisualSize{};
     winrt::Visual m_animatedVisualRoot{ nullptr };
     int m_playAsyncVersion{ 0 };
     double m_currentPlayFromProgress{ 0 };

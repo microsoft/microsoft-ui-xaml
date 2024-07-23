@@ -1194,6 +1194,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void VerifyTeachingTipTargetChange()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
+            {
+                elements = new TeachingTipTestPageElements();
+
+                OpenTeachingTip();
+
+                double oldYOffset = GetTipVerticalOffset();
+
+                elements.GetSwitchTargetButton().InvokeAndWait();
+
+                double newYOffset = GetTipVerticalOffset();
+
+                Verify.IsFalse(oldYOffset == newYOffset);
+            }
+        }
+
         private void CloseOpenAndCloseWithJustKeyboardViaF6()
         {
             KeyboardHelper.PressKey(Key.F6);

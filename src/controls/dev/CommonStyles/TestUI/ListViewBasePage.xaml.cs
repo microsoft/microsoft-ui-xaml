@@ -140,6 +140,14 @@ namespace MUXControlsTestApp
             _ = this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, UpdateScrollViewerProperties);
         }
 
+        private void UpdateListViewBaseReorderMode()
+        {
+            if (_listViewBase != null && cmbListViewBaseReorderMode != null)
+            {
+                cmbListViewBaseReorderMode.SelectedIndex = (int)_listViewBase.ReorderMode;
+            }
+        }
+
         private void UpdateListViewBaseSelectionMode()
         {
             if (_listViewBase != null && cmbListViewBaseSelectionMode != null)
@@ -644,6 +652,19 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void BtnGetListViewBaseReorderMode_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateListViewBaseReorderMode();
+        }
+
+        private void BtnSetListViewBaseReorderMode_Click(object sender, RoutedEventArgs e)
+        {
+            if (_listViewBase != null && cmbListViewBaseReorderMode != null)
+            {
+                _listViewBase.ReorderMode = (ListViewReorderMode)cmbListViewBaseReorderMode.SelectedIndex;
+            }
+        }
+
         private void BtnGetListViewBaseSelectionMode_Click(object sender, RoutedEventArgs e)
         {
             UpdateListViewBaseSelectionMode();
@@ -1053,6 +1074,70 @@ namespace MUXControlsTestApp
 
                     AppendEventMessage("DataSourceReplace " + itemIndex);
                     DataSourceReplaceItem(itemIndex);
+                }
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                AppendEventMessage(ex.ToString());
+            }
+        }
+
+        private void ChkListViewBaseAllowDrop_IsCheckedChanged(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_listViewBase != null)
+                {
+                    _listViewBase.AllowDrop = (bool)chkListViewBaseAllowDrop.IsChecked;
+                }
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                AppendEventMessage(ex.ToString());
+            }
+        }
+
+        private void ChkListViewBaseCanDragItems_IsCheckedChanged(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_listViewBase != null)
+                {
+                    _listViewBase.CanDragItems = (bool)chkListViewBaseCanDragItems.IsChecked;
+                }
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                AppendEventMessage(ex.ToString());
+            }
+        }
+
+        private void ChkListViewBaseCanReorderItems_IsCheckedChanged(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_listViewBase != null)
+                {
+                    _listViewBase.CanReorderItems = (bool)chkListViewBaseCanReorderItems.IsChecked;
+                }
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                AppendEventMessage(ex.ToString());
+            }
+        }
+
+        private void ChkListViewBaseIsSwipeEnabled_IsCheckedChanged(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_listViewBase != null)
+                {
+                    _listViewBase.IsSwipeEnabled = (bool)chkListViewBaseIsSwipeEnabled.IsChecked;
                 }
             }
             catch (Exception ex)

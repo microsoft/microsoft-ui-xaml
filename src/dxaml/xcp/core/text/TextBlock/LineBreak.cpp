@@ -10,13 +10,13 @@
 //------------------------------------------------------------------------
 
 _Check_return_ HRESULT CLineBreak::GetRun(
-    _In_                              XUINT32               characterPosition,
-    _Out_opt_                   const TextFormatting      **ppTextFormatting,
-    _Out_opt_                   const InheritedProperties **ppInheritedProperties,
-    _Out_opt_                         TextNestingType      *pNestingType,
-    _Out_opt_                         CTextElement        **ppNestedElement,
-    _Outptr_result_buffer_(*pcCharacters) const WCHAR         **ppCharacters,
-    _Out_                             XUINT32              *pcCharacters
+    _In_                              XUINT32                     characterPosition,
+    _Out_opt_                   const TextFormatting            **ppTextFormatting,
+    _Out_opt_                   const InheritedProperties       **ppInheritedProperties,
+    _Out_opt_                         TextNestingType            *pNestingType,
+    _Out_opt_                         CTextElement              **ppNestedElement,
+    _Outptr_result_buffer_maybenull_(*pcCharacters) const WCHAR **ppCharacters,
+    _Out_                             XUINT32                    *pcCharacters
 )
 {
     // LineBreak only has 2 positions - Open/Close.

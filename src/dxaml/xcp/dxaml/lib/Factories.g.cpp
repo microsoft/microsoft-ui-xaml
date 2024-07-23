@@ -221,7 +221,6 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_MarkupExtension();
     _Check_return_ IActivationFactory* CreateActivationFactory_PrintDocument();
     _Check_return_ IActivationFactory* CreateActivationFactory_XamlIslandRoot();
-    _Check_return_ IActivationFactory* CreateActivationFactory_XamlDirect();
     _Check_return_ IActivationFactory* CreateActivationFactory_TriggerActionCollection();
     _Check_return_ IActivationFactory* CreateActivationFactory_UIElementWeakCollection();
     _Check_return_ IActivationFactory* CreateActivationFactory_CompositionTarget();
@@ -876,7 +875,6 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Markup.MarkupExtension"), &DirectUI::CreateActivationFactory_MarkupExtension)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Printing.PrintDocument"), &DirectUI::CreateActivationFactory_PrintDocument)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Hosting.XamlIslandRoot"), &DirectUI::CreateActivationFactory_XamlIslandRoot)
-    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Core.Direct.XamlDirect"), &DirectUI::CreateActivationFactory_XamlDirect)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.TriggerActionCollection"), &DirectUI::CreateActivationFactory_TriggerActionCollection)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.UIElementWeakCollection"), &DirectUI::CreateActivationFactory_UIElementWeakCollection)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.CompositionTarget"), &DirectUI::CreateActivationFactory_CompositionTarget)

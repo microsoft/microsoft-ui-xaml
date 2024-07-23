@@ -47,6 +47,7 @@ IFACEMETHODIMP DirectUI::RichTextBlockOverflowGenerated::get_BaselineOffset(_Out
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<RichTextBlockOverflow*>(this)->get_BaselineOffsetImpl(pValue));
 Cleanup:
@@ -56,6 +57,7 @@ IFACEMETHODIMP DirectUI::RichTextBlockOverflowGenerated::get_ContentEnd(_Outptr_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<RichTextBlockOverflow*>(this)->get_ContentEndImpl(ppValue));
 Cleanup:
@@ -65,6 +67,7 @@ IFACEMETHODIMP DirectUI::RichTextBlockOverflowGenerated::get_ContentSource(_Outp
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<RichTextBlockOverflow*>(this)->get_ContentSourceImpl(ppValue));
 Cleanup:
@@ -74,6 +77,7 @@ IFACEMETHODIMP DirectUI::RichTextBlockOverflowGenerated::get_ContentStart(_Outpt
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<RichTextBlockOverflow*>(this)->get_ContentStartImpl(ppValue));
 Cleanup:
@@ -181,6 +185,7 @@ IFACEMETHODIMP DirectUI::RichTextBlockOverflowGenerated::GetPositionFromPoint(_I
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "RichTextBlockOverflow_GetPositionFromPoint", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<RichTextBlockOverflow*>(this)->GetPositionFromPointImpl(point, ppReturnValue));

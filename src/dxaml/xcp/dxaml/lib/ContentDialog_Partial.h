@@ -136,15 +136,6 @@ namespace DirectUI
 
         _Check_return_ HRESULT GetPlainText(_Out_ HSTRING* strPlainText) override;
 
-        // React to the IHM (touch keyboard) showing or hiding by repositioning
-        // the ContentDialog or shifting its command buttons.
-        _Check_return_ HRESULT NotifyInputPaneStateChange(
-            _In_ InputPaneState inputPaneState,
-            _In_ XRECTF inputPaneBounds);
-
-        // For testing purposes only. Invoked by IXamlTestHooks::SimulateRegionsForContentDialog implementation.
-        void SimulateRegionsForContentDialog();
-
         _Check_return_ HRESULT put_XamlRootImpl(_In_ xaml::IXamlRoot* pValue) override;
 
     private:
@@ -171,15 +162,6 @@ namespace DirectUI
             Full
         };
 
-        enum class TemplateVersion
-        {
-            Unsupported = 0,
-            PhoneBlue = 1,
-            Threshold = 2,
-            Redstone2 = 3,
-            Redstone3 = 4
-        };
-
         _Check_return_ HRESULT OnPopupOpened(
             _In_ IInspectable* pSender,
             _In_ IInspectable* pArgs);
@@ -190,10 +172,6 @@ namespace DirectUI
             const ctl::ComPtr<IInspectable>& commandParameter,
             xaml_controls::ContentDialogResult result
             );
-
-        _Check_return_ HRESULT OnWindowActivated(
-            _In_ IInspectable* sender,
-            _In_ xaml::IWindowActivatedEventArgs* args);
 
         _Check_return_ HRESULT OnFinishedClosing();
 
@@ -215,12 +193,6 @@ namespace DirectUI
         // Helpers
         _Check_return_ HRESULT GetButtonHelper(xaml_controls::ContentDialogButton buttonType, _Outptr_ xaml_primitives::IButtonBase** button);
         _Check_return_ HRESULT GetDefaultButtonHelper(_Outptr_ xaml_primitives::IButtonBase** button);
-        _Check_return_ HRESULT BuildAndConfigureButtons() noexcept;
-        _Check_return_ HRESULT CreateButton(_In_ HSTRING text, _Outptr_ xaml_primitives::IButtonBase** ppButton) const;
-        _Check_return_ HRESULT PopulateButtonContainer(
-            _In_ const ctl::ComPtr<xaml_primitives::IButtonBase>& primaryButton,
-            _In_ const ctl::ComPtr<xaml_primitives::IButtonBase>& secondaryButton
-            );
 
         _Check_return_ HRESULT AttachButtonEvents();
         _Check_return_ HRESULT DetachButtonEvents();
@@ -231,8 +203,6 @@ namespace DirectUI
         _Check_return_ HRESULT EnsureDeferralManagers();
         _Check_return_ HRESULT ResetAndPrepareContent();
         _Check_return_ HRESULT DetachEventHandlers();
-        _Check_return_ HRESULT AttachEventHandlersForOpenDialog();
-        _Check_return_ HRESULT DetachEventHandlersForOpenDialog();
 
         _Check_return_ HRESULT OnPopupChildUnloaded(
             _In_ IInspectable* sender,
@@ -278,23 +248,9 @@ namespace DirectUI
 
         _Check_return_ HRESULT ExecuteCloseAction();
 
-        _Check_return_ HRESULT AdjustVisualStateForInputPane();
-
-        _Check_return_ HRESULT CreateStoryboardForLayoutAdjustmentsForInputPane(
-            xaml::Thickness layoutRootPadding,
-            xaml_controls::ScrollBarVisibility contentVerticalScrollBarVisiblity,
-            bool setDialogVerticalAlignment,
-            xaml::VerticalAlignment dialogVerticalAlignment,
-            _Out_ xaml_animation::IStoryboard** storyboard);
-
-        void DetermineTemplateVersion();
-
         _Check_return_ HRESULT RaiseOpenedEvent();
         _Check_return_ HRESULT RaiseClosedEvent(xaml_controls::ContentDialogResult result);
 
-        _Check_return_ HRESULT GetDialogInnerMargin(
-            _In_ wf::Rect adjustedLayoutBounds,
-            _Out_ xaml::Thickness* innerMargin);
         _Check_return_ HRESULT GetFocusedElementPosition(
             _Out_ wf::Point* focusedPosition);
 
@@ -331,7 +287,7 @@ namespace DirectUI
 
         ctl::WeakRefPtr m_spFocusedElementBeforeContentDialogShows;
 
-        TemplateVersion m_templateVersion{ TemplateVersion::Unsupported };
+        bool m_isTemplateApplied{ false };
 
         PlacementMode m_placementMode{ PlacementMode::Undetermined };
         bool m_isLayoutRootTransplanted{ false };
@@ -350,15 +306,6 @@ namespace DirectUI
         // Flag to indicate that we shouldn't fine the closing event when hiding because we
         // want to hide without the ability to cancel it.
         bool m_skipClosingEventOnHide{ false };
-
-        // Apply our layout adjustments using a storyboard so that we don't stomp over template or user
-        // provided values.  When we stop the storyboard, it will restore the previous values.
-        TrackerPtr<xaml_animation::IStoryboard> m_layoutAdjustmentsForInputPaneStoryboard;
-
-        double m_dialogMinHeight = 0;
-
-        // This only gets set from the SimulateRegionsForContentDialog() test hook.
-        bool m_simulateRegions{ false };
 
         // Flag to indicate if the content dialog should be opened in windowed mode.
         bool m_isWindowed{ false };

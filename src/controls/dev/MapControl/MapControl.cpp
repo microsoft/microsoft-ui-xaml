@@ -85,15 +85,16 @@ winrt::IAsyncOperation<winrt::hstring> MapControl::InitializeWebMap()
         const auto centerPosition = center.Position();
         pos = std::format(L"{},{}", centerPosition.Longitude, centerPosition.Latitude);
     }
-    auto token = IsValidMapServiceToken() ? MapServiceToken() : L"";
-    auto parameters =  std::format(L"{},\"{}\"", pos, token);
+
+    auto token = winrt::Windows::Data::Json::JsonValue::CreateStringValue(MapServiceToken());
+    // Initializing Azure Maps on WebView
+    // params: longitude, latitude, mapServiceToken
+    auto script = std::format(L"initializeMap({},{});", pos, token.Stringify().c_str());
 
     if (auto webView = m_webView.get())
     {
         auto core = webView.CoreWebView2();
-        // Initializing Azure Maps on WebView
-        // params: longitude, latitude, mapServiceToken
-        returnedValue = co_await core.ExecuteScriptAsync(L"initializeMap(" + parameters + L");");
+        returnedValue = co_await core.ExecuteScriptAsync(script);
 
         for (uint32_t i = 0; i < Layers().Size(); i++)
         {
@@ -113,10 +114,7 @@ void MapControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
 
     if (property == s_MapServiceTokenProperty)
     {
-        if (IsValidMapServiceToken())
-        {
-            UpdateMapServiceTokenInWebPage();
-        }
+        UpdateMapServiceTokenInWebPage();
     }
     else if (property == s_CenterProperty)
     {
@@ -132,13 +130,6 @@ void MapControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     }
 }
 
-bool MapControl::IsValidMapServiceToken()
-{
-    // This token is passed as a JavaScript param in double quotes. Make sure the token itself doesn't contain any.
-    return !MapServiceToken().empty()
-        && std::all_of(MapServiceToken().begin(), MapServiceToken().end(), [](wchar_t i){return i != '"';});
-}
-
 // Updates Azure Maps Authentication Key on WebView
 winrt::fire_and_forget MapControl::UpdateMapServiceTokenInWebPage()
 {
@@ -147,7 +138,9 @@ winrt::fire_and_forget MapControl::UpdateMapServiceTokenInWebPage()
         auto core = co_await GetCoreWebView2();
         // Sends new token to WebView
         // params: mapServiceToken
-        co_await core.ExecuteScriptAsync(L"updateMapServiceToken(\"" + MapServiceToken() + L"\");");
+        auto token = winrt::Windows::Data::Json::JsonValue::CreateStringValue(MapServiceToken());
+        auto script = std::format(L"updateMapServiceToken({});", token.Stringify().c_str());
+        co_await core.ExecuteScriptAsync(script);
 
         for (uint32_t i = 0; i < Layers().Size(); i++)
         {
@@ -201,22 +194,22 @@ void MapControl::WebMessageReceived(winrt::WebView2 sender, winrt::CoreWebView2W
         winrt::Windows::Data::Json::JsonObject obj = winrt::Windows::Data::Json::JsonObject();
         if (winrt::Windows::Data::Json::JsonObject::TryParse(jsonAsString, obj))
         {
-            auto type = obj.GetNamedObject(L"type");
+            auto type = obj.TryLookup(L"type");
             // Handles click events on MapElements
             if (type.GetString() == L"pushpinClickEvent")
             {
-                auto clickedLayer = Layers().GetAt(static_cast<uint32_t>(obj.GetNamedObject(L"layer").GetNumber())).try_as<MapElementsLayer>();
+                auto clickedLayer = Layers().GetAt(static_cast<uint32_t>(obj.TryLookup(L"layer").GetNumber())).try_as<MapElementsLayer>();
                 auto location = winrt::Geopoint{ winrt::BasicGeoposition{
-                    obj.GetNamedObject(L"coordinate").GetNamedValue(L"longitude").GetNumber(),
-                    obj.GetNamedObject(L"coordinate").GetNamedValue(L"latitude").GetNumber() }};
+                    obj.TryLookup(L"coordinate").GetObject().TryLookup(L"longitude").GetNumber(),
+                    obj.TryLookup(L"coordinate").GetObject().TryLookup(L"latitude").GetNumber() }};
 
-                auto pointId = obj.GetNamedObject(L"point").GetString();
+                auto pointId = obj.TryLookup(L"point").GetNumber();
                 winrt::MapElement clickedElement{nullptr};
                 auto elements = clickedLayer->MapElements();
                 for (uint32_t i = 0; i < elements.Size(); i++)
                 {
                     auto elem = elements.GetAt(i);
-                    if (winrt::get_self<MapElement>(elem)->Id == pointId)
+                    if (winrt::get_self<MapElement>(elem)->Id == winrt::to_hstring(pointId))
                     {
                         clickedElement = elem.try_as<winrt::MapElement>();
                     }
@@ -295,6 +288,8 @@ void MapControl::OnLayersVectorChanged(const winrt::IObservableVector<winrt::Map
 
 winrt::fire_and_forget MapControl::OnLayerAdded(const winrt::MapElementsLayer layer)
 {
+    auto mapLayer = winrt::get_self<MapElementsLayer>(layer);
+    mapLayer->SetParentMapControl(*this);
     if (auto webView = m_webView.get())
     {
         auto core = co_await GetCoreWebView2();
@@ -351,7 +346,7 @@ winrt::fire_and_forget MapControl::UpdateMapIcon(winrt::Geopoint mapIconPoint, w
     }
 }
 
-winrt::fire_and_forget MapControl::LayerElementsChanged(const winrt::MapElementsLayer& layer, const winrt::IObservableVector<winrt::MapElement>& elements, const winrt::Collections::IVectorChangedEventArgs& args, winrt::hstring elementId)
+winrt::IAsyncAction MapControl::LayerElementsChanged(const winrt::MapElementsLayer& layer, winrt::IVector<winrt::MapElement> elements, const winrt::Collections::IVectorChangedEventArgs& args, winrt::hstring elementId)
 {
     const auto index = args.Index();
     auto layerId = winrt::get_self<MapElementsLayer>(layer)->Id;
@@ -380,6 +375,7 @@ winrt::fire_and_forget MapControl::LayerElementsChanged(const winrt::MapElements
         break;
     }
     }
+    co_return;
 }
 
 winrt::IAsyncOperation<winrt::hstring> MapControl::GetMapHtmlContent()

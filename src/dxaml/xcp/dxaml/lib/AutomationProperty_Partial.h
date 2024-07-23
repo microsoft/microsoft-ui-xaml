@@ -36,6 +36,6 @@ namespace DirectUI
             }
 
         private:
-            DirectUI::AutomationPropertiesEnum m_eProperty;
+            DirectUI::AutomationPropertiesEnum m_eProperty{};
     };
 }

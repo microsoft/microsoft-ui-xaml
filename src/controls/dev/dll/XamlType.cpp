@@ -73,7 +73,7 @@ bool XamlTypeBase::IsMarkupExtension()
 
 bool XamlTypeBase::IsBindable()
 {
-    return false;
+    return m_isBindable;
 }
 
 winrt::IXamlType XamlTypeBase::ItemType()
@@ -211,6 +211,11 @@ void XamlType::SetCollectionAddFunc(std::function<void(winrt::IInspectable const
 void XamlType::SetAddToMapFunc(std::function<void(winrt::IInspectable const&, winrt::IInspectable const&, winrt::IInspectable const&)> addToMap)
 {
     m_addToMap = addToMap;
+}
+
+void XamlType::SetIsBindable(bool isBindable)
+{
+    m_isBindable = isBindable;
 }
 
 EnumXamlType::EnumXamlType(

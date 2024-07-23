@@ -60,6 +60,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerElementGenerated::
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<MediaPlayerElement*>(this)->get_AutoPlayImpl(pValue));
 Cleanup:
@@ -101,6 +102,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerElementGenerated::
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<MediaPlayerElement*>(this)->get_SourceImpl(ppValue));
 Cleanup:
@@ -129,6 +131,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerElementGenerated::
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<MediaPlayerElement*>(this)->get_TransportControlsImpl(ppValue));
 Cleanup:

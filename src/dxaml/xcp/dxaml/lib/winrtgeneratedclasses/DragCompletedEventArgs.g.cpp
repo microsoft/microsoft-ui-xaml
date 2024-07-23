@@ -49,6 +49,7 @@ IFACEMETHODIMP DirectUI::DragCompletedEventArgsGenerated::get_HorizontalChange(_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<DragCompletedEventArgs*>(this)->get_HorizontalChangeImpl(pValue));
 Cleanup:
@@ -67,6 +68,7 @@ IFACEMETHODIMP DirectUI::DragCompletedEventArgsGenerated::get_VerticalChange(_Ou
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<DragCompletedEventArgs*>(this)->get_VerticalChangeImpl(pValue));
 Cleanup:
@@ -85,6 +87,7 @@ IFACEMETHODIMP DirectUI::DragCompletedEventArgsGenerated::get_Canceled(_Out_ BOO
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<DragCompletedEventArgs*>(this)->get_CanceledImpl(pValue));
 Cleanup:

@@ -46,6 +46,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseItemAutomationPeerGenerated::get_DropEffect
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ListViewBaseItemAutomationPeer*>(this)->get_DropEffectImpl(pValue));
 Cleanup:
@@ -55,6 +56,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseItemAutomationPeerGenerated::get_DropEffect
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ListViewBaseItemAutomationPeer*>(this)->get_DropEffectsImpl(pCount, pValue));
 Cleanup:
@@ -64,6 +66,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseItemAutomationPeerGenerated::get_IsGrabbed(
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ListViewBaseItemAutomationPeer*>(this)->get_IsGrabbedImpl(pValue));
 Cleanup:
@@ -81,6 +84,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseItemAutomationPeerGenerated::GetGrabbedItem
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ListViewBaseItemAutomationPeer_GetGrabbedItems", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ListViewBaseItemAutomationPeer*>(this)->GetGrabbedItemsImpl(pReturnValueCount, ppReturnValue));

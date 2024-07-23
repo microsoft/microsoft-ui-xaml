@@ -16,6 +16,8 @@
 #include <Microsoft.UI.Input.Partner.h>
 #include <Microsoft.UI.Content.h>
 #include "microsoft.ui.input.dragdrop.h"
+#include <Microsoft.UI.Input.Partner.h>
+#include <optional>
 
 class CContentRoot;
 
@@ -41,6 +43,7 @@ public:
     _Check_return_ HRESULT Initialize(_In_ WUComp::Desktop::IDesktopWindowContentBridgeInterop* contentBridge);
 
     void OnPostDesktopWindowContentBridgeInitialized(_In_ IUnknown* contentBridge);
+    void InitializeNonClientPointerSource(ABI::Microsoft::UI::WindowId windowId);
 
     //  IFrameworkApplicationPrivate::CreateIslandRoot():
     _Check_return_ HRESULT Initialize();
@@ -154,7 +157,7 @@ public:
     // this will apply a window style to the desktop site bridge's hwnd, but that is a child hwnd of the app's top-level
     // hwnd and forcing the child hwnd to LTR isn't expected to affect things like the min/max/close buttons in the
     // nonclient area.
-    void ForceLTRLayoutDirection();
+    _Check_return_ HRESULT ForceLTRLayoutDirection();
 
     wrl::ComPtr<ixp::IContentIslandEnvironment> GetContentIslandEnvironment() const { return m_topLevelHost; }
 
@@ -205,6 +208,25 @@ protected:
         UINT msg,
         _In_ ixp::IPointerEventArgs* pArgs);
 
+    _Check_return_ HRESULT OnIslandNonClientPointerEntered(
+        _In_ ixp::IPointerPoint* pointerPoint);
+
+    _Check_return_ HRESULT OnIslandNonClientPointerExited(
+        _In_ ixp::IPointerPoint* pointerPoint);
+
+    _Check_return_ HRESULT OnIslandNonClientPointerMoved(
+        _In_ ixp::IPointerPoint* pointerPoint);
+
+    _Check_return_ HRESULT OnIslandNonClientPointerPressed(
+        _In_ ixp::IPointerPoint* pointerPoint);
+
+    _Check_return_ HRESULT OnIslandNonClientPointerReleased(
+        _In_ ixp::IPointerPoint* pointerPoint);
+
+    _Check_return_ HRESULT InjectNonClientPointerMessage(
+        UINT msg,
+        ixp::IPointerPoint* pointerPoint);
+
     void OnIslandActualSizeChanged();
 
     _Check_return_ HRESULT OnIslandGotFocus();
@@ -251,11 +273,15 @@ private:
     void InitInputObjects(_In_ ixp::IContentIsland* const contentIsland);
     void SubscribeToInputKeyboardSourceEvents();
     void SubscribeToInputPointerSourceEvents();
+    void SubscribeToInputNonClientPointerSourceEvents();
     void UnsubscribeToInputEvents();
+
+    typedef decltype(&CXamlIslandRoot::OnIslandNonClientPointerEntered) PointerHandlerFunction;
+    wrl::ComPtr<wf::ITypedEventHandler<ixp::InputNonClientPointerSource*, ixp::NonClientPointerEventArgs*>> GetNonClientPointerEventHandler(PointerHandlerFunction pointerHandler, std::optional<bool> newContactState = std::optional<bool>());
 
     bool IsDisposed() const { return m_contentRoot == nullptr; }
 
-    void UpdateLastPointerPointForReplay(const UINT uMsg, _In_ ixp::IPointerPoint* pointerPoint, _In_ ixp::IPointerEventArgs* pointerEventArgs);
+    void UpdateLastPointerPointForReplay(const UINT uMsg, _In_ ixp::IPointerPoint* pointerPoint, _In_opt_ ixp::IPointerEventArgs* pointerEventArgs, bool previousPointerPointIsNonClient = false);
 
     // For testing - normally we can get the visual out of m_spVisualTreeIsland, but for tests this returns a real
     // visual when we want the mock. So track the root visual separately.
@@ -300,6 +326,7 @@ private:
 
     bool m_hasCapture = false;
 
+    ABI::Microsoft::UI::WindowId m_contentBridgeWindowId{};
     HWND m_contentBridgeWindow = nullptr;
 
     wrl::ComPtr<ixp::IIslandInputSitePartner> m_islandInputSite;
@@ -307,6 +334,7 @@ private:
     wrl::ComPtr<ixp::IInputKeyboardSource2> m_inputKeyboardSource2;
     wrl::ComPtr<ixp::IInputPointerSource> m_inputPointerSource;
     wrl::ComPtr<ixp::IInputPointerSource2> m_inputPointerSource2;
+    wrl::ComPtr<ixp::IInputNonClientPointerSource> m_inputNonClientPointerSource;
     wrl::ComPtr<ixp::IInputPreTranslateKeyboardSourceInterop> m_inputPreTranslateKeyboardSourceInterop;
     wrl::ComPtr<ixp::IInputActivationListener> m_inputActivationListener;
     wrl::ComPtr<ixp::IDesktopChildSiteBridge> m_contentBridgeDW;
@@ -336,6 +364,13 @@ private:
 
     EventRegistrationToken m_touchHitTestRequestedToken = {};
 
+    EventRegistrationToken m_nonClientCaptionTappedToken = {};
+    EventRegistrationToken m_nonClientPointerEnteredToken = {};
+    EventRegistrationToken m_nonClientPointerExitedToken = {};
+    EventRegistrationToken m_nonClientPointerMovedToken = {};
+    EventRegistrationToken m_nonClientPointerPressedToken = {};
+    EventRegistrationToken m_nonClientPointerReleasedToken = {};
+
     EventRegistrationToken m_activationChangedToken = {};
 
     EventRegistrationToken m_topLevelHost_StateChanged = {};
@@ -363,5 +398,11 @@ private:
 
     wrl::ComPtr<ixp::IPointerPoint> m_previousPointerPoint;
     wrl::ComPtr<ixp::IPointerEventArgs> m_previousPointerEventArgs;
+    bool m_previousPointerPointIsNonClient{ false };
+    bool m_isNonClientPointerDown{ false };
+    
+    wrl::ComPtr<ixp::IPartnerPointerPointStatics> m_partnerPointerPointStatics;
+
+    _Check_return_ HRESULT EnsurePartnerPointerPointStatics();
 };
 

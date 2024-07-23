@@ -53,7 +53,7 @@ namespace DirectUI
             std::wstring Region;
             int AnimationStep;
             double AnimationDistance;
-            bool UseAnimation;
+            bool UseAnimation{};
         };
 
         _Check_return_ HRESULT AddCueContainerToVisualTree();
@@ -114,8 +114,8 @@ namespace DirectUI
         std::list<std::shared_ptr<CCueItem>> m_cueList;
         std::map<std::wstring, ctl::ComPtr<Border>> m_regionList;
         ctl::ComPtr<Storyboard> m_spStoryboard;
-        EventRegistrationToken m_tokLayoutBoundsChanged{0};
-        EventRegistrationToken m_tokSizeChanged;
-        EventRegistrationToken m_orientationChangedToken;
+        EventRegistrationToken m_tokLayoutBoundsChanged{};
+        EventRegistrationToken m_tokSizeChanged{};
+        EventRegistrationToken m_orientationChangedToken{};
     };
 }

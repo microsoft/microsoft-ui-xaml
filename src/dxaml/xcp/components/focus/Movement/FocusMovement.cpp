@@ -31,10 +31,10 @@ FocusMovement::FocusMovement(
     _In_opt_ CDependencyObject* pTarget)
     : xyFocusOptions(&xyFocusOptions),
     direction(direction),
-    pTarget(pTarget)
+    pTarget(pTarget),
+    correlationId(Focus::CreateCorrelationId())
 {
     forceBringIntoView = true;
-    UuidCreate(&correlationId);
     focusState = DirectUI::FocusState::Programmatic;
     if (direction == DirectUI::FocusNavigationDirection::Down ||
         direction == DirectUI::FocusNavigationDirection::Left ||
@@ -45,3 +45,12 @@ FocusMovement::FocusMovement(
     }
 }
 
+GUID Focus::CreateCorrelationId()
+{
+    GUID uuid {};
+    if (UuidCreate(&uuid) != RPC_S_OK)
+    {
+        IFCFAILFAST(E_UNEXPECTED);
+    }
+    return uuid;
+}

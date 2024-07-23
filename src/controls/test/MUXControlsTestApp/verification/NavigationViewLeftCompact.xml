@@ -258,7 +258,7 @@
                   Margin=0,-2,0,0
                   Name=PaneTitleTextBlock
                   Padding=0,0,0,0
-                  RenderSize=20,19
+                  RenderSize=20,17
                   Visibility=Collapsed
         [Microsoft.UI.Xaml.Controls.Grid]
             Background=[NULL]
@@ -961,7 +961,7 @@
                                                   RenderSize=20,20
                                                   Visibility=Visible
                                                 [Microsoft.UI.Xaml.Controls.ContentPresenter]
-                                                    Background=[NULL]
+                                                    Background=#FFFF0000
                                                     BorderBrush=[NULL]
                                                     BorderThickness=0,0,0,0
                                                     CornerRadius=0,0,0,0
@@ -1020,7 +1020,7 @@
                                               Margin=0,0,0,0
                                               Name=ContentPresenter
                                               Padding=0,0,0,0
-                                              RenderSize=0,19
+                                              RenderSize=0,17
                                               Visibility=Visible
                                             [Microsoft.UI.Xaml.Controls.TextBlock]
                                                 FocusVisualPrimaryBrush=#E4000000
@@ -1030,7 +1030,7 @@
                                                 Foreground=#E4000000
                                                 Margin=0,0,0,0
                                                 Padding=0,0,0,0
-                                                RenderSize=34,19
+                                                RenderSize=34,17
                                                 Visibility=Visible
                                           [Microsoft.UI.Xaml.Controls.ContentPresenter]
                                               Background=[NULL]
@@ -1198,7 +1198,7 @@
                                                   RenderSize=20,20
                                                   Visibility=Visible
                                                 [Microsoft.UI.Xaml.Controls.ContentPresenter]
-                                                    Background=[NULL]
+                                                    Background=#00FFFFFF
                                                     BorderBrush=[NULL]
                                                     BorderThickness=0,0,0,0
                                                     CornerRadius=0,0,0,0
@@ -1257,7 +1257,7 @@
                                               Margin=0,0,0,0
                                               Name=ContentPresenter
                                               Padding=0,0,0,0
-                                              RenderSize=0,19
+                                              RenderSize=0,17
                                               Visibility=Visible
                                             [Microsoft.UI.Xaml.Controls.TextBlock]
                                                 FocusVisualPrimaryBrush=#E4000000
@@ -1267,7 +1267,7 @@
                                                 Foreground=#E4000000
                                                 Margin=0,0,0,0
                                                 Padding=0,0,0,0
-                                                RenderSize=22,19
+                                                RenderSize=22,17
                                                 Visibility=Visible
                                           [Microsoft.UI.Xaml.Controls.ContentPresenter]
                                               Background=[NULL]
@@ -1643,7 +1643,7 @@
                                                   RenderSize=48,48
                                                   Visibility=Visible
                                                 [Microsoft.UI.Xaml.Controls.ContentPresenter]
-                                                    Background=[NULL]
+                                                    Background=#00FFFFFF
                                                     BorderBrush=[NULL]
                                                     BorderThickness=0,0,0,0
                                                     CornerRadius=0,0,0,0
@@ -1701,7 +1701,7 @@
                                               Margin=0,0,0,0
                                               Name=ContentPresenter
                                               Padding=0,0,0,0
-                                              RenderSize=0,19
+                                              RenderSize=0,17
                                               Visibility=Visible
                                             [Microsoft.UI.Xaml.Controls.TextBlock]
                                                 FocusVisualPrimaryBrush=#E4000000
@@ -1711,7 +1711,7 @@
                                                 Foreground=#E4000000
                                                 Margin=0,0,0,0
                                                 Padding=0,0,0,0
-                                                RenderSize=50,19
+                                                RenderSize=50,17
                                                 Visibility=Visible
                                           [Microsoft.UI.Xaml.Controls.ContentPresenter]
                                               Background=[NULL]
@@ -1936,7 +1936,7 @@
                       Foreground=#E4000000
                       Margin=0,0,0,0
                       Padding=0,0,0,0
-                      RenderSize=120,19
+                      RenderSize=120,17
                       Visibility=Visible
             [Microsoft.UI.Xaml.Shapes.Rectangle]
                 FocusVisualPrimaryBrush=#E4000000

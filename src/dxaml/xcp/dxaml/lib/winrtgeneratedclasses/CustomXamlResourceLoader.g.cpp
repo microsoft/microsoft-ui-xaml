@@ -61,6 +61,7 @@ IFACEMETHODIMP DirectUI::CustomXamlResourceLoader::GetResource(_In_ HSTRING reso
     ARG_NOTNULL(propertyName, "propertyName");
     ARG_NOTNULL(propertyType, "propertyType");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<CustomXamlResourceLoader*>(this)->GetResourceImpl(resourceId, objectType, propertyName, propertyType, ppReturnValue));
 Cleanup:
@@ -135,6 +136,7 @@ IFACEMETHODIMP DirectUI::CustomXamlResourceLoaderFactory::get_Current(_Outptr_re
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckActivationAllowed());
     IFC(get_CurrentImpl(ppValue));
 Cleanup:

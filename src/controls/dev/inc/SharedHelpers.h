@@ -33,6 +33,8 @@ public:
     static bool IsMouseModeEnabled();
 
     // Rect helpers
+    static bool DoesRectContainPoint(const winrt::Rect& rect, const winrt::Point& point);
+    static bool DoesRectContainPoint(const winrt::RectInt32& rect, const winrt::PointInt32& point);
     static bool DoRectsIntersect(const winrt::Rect& rect1, const winrt::Rect& rect2);
 
     // DependencyObject helpers

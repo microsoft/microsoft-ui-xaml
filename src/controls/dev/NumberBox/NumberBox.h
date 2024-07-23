@@ -101,7 +101,7 @@ private:
     bool m_valueUpdating{ false };
     bool m_textUpdating{ false };
 
-    winrt::IncrementNumberRounder m_displayRounder{};
+    winrt::SignificantDigitsNumberRounder m_displayRounder{};
 
     tracker_ref<winrt::TextBox> m_textBox{ this };
     tracker_ref<winrt::ContentPresenter> m_headerPresenter{ this };

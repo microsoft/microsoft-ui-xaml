@@ -13,8 +13,8 @@
             -->
             <FontFamily x:Key="ContentControlThemeFontFamily">XamlAutoFontFamily</FontFamily>
             <FontFamily x:Key="MTCMediaFontFamily">XamlAutoFontFamily</FontFamily>
-            <FontFamily x:Key="PhoneFontFamilyNormal">Segoe WP</FontFamily>
-            <FontFamily x:Key="PhoneFontFamilySemiLight">Segoe WP SemiLight</FontFamily>
+            <FontFamily x:Key="PhoneFontFamilyNormal">Segoe UI</FontFamily>
+            <FontFamily x:Key="PhoneFontFamilySemiLight">Segoe UI</FontFamily>
             <FontFamily x:Key="PivotHeaderItemFontFamily">XamlAutoFontFamily</FontFamily>
             <FontFamily x:Key="PivotTitleFontFamily">XamlAutoFontFamily</FontFamily>
             <FontFamily x:Key="SymbolThemeFontFamily">Segoe Fluent Icons,Segoe MDL2 Assets</FontFamily>
@@ -2795,8 +2795,8 @@
             -->
             <FontFamily x:Key="ContentControlThemeFontFamily">XamlAutoFontFamily</FontFamily>
             <FontFamily x:Key="MTCMediaFontFamily">XamlAutoFontFamily</FontFamily>
-            <FontFamily x:Key="PhoneFontFamilyNormal">Segoe WP</FontFamily>
-            <FontFamily x:Key="PhoneFontFamilySemiLight">Segoe WP SemiLight</FontFamily>
+            <FontFamily x:Key="PhoneFontFamilyNormal">Segoe UI</FontFamily>
+            <FontFamily x:Key="PhoneFontFamilySemiLight">Segoe UI</FontFamily>
             <FontFamily x:Key="PivotHeaderItemFontFamily">XamlAutoFontFamily</FontFamily>
             <FontFamily x:Key="PivotTitleFontFamily">XamlAutoFontFamily</FontFamily>
             <FontFamily x:Key="SymbolThemeFontFamily">Segoe Fluent Icons,Segoe MDL2 Assets</FontFamily>
@@ -3938,8 +3938,8 @@
             -->
             <FontFamily x:Key="ContentControlThemeFontFamily">XamlAutoFontFamily</FontFamily>
             <FontFamily x:Key="MTCMediaFontFamily">XamlAutoFontFamily</FontFamily>
-            <FontFamily x:Key="PhoneFontFamilyNormal">Segoe WP</FontFamily>
-            <FontFamily x:Key="PhoneFontFamilySemiLight">Segoe WP SemiLight</FontFamily>
+            <FontFamily x:Key="PhoneFontFamilyNormal">Segoe UI</FontFamily>
+            <FontFamily x:Key="PhoneFontFamilySemiLight">Segoe UI</FontFamily>
             <FontFamily x:Key="PivotHeaderItemFontFamily">XamlAutoFontFamily</FontFamily>
             <FontFamily x:Key="PivotTitleFontFamily">XamlAutoFontFamily</FontFamily>
             <FontFamily x:Key="SymbolThemeFontFamily">Segoe Fluent Icons,Segoe MDL2 Assets</FontFamily>

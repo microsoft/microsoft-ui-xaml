@@ -45,6 +45,7 @@ IFACEMETHODIMP DirectUI::MenuFlyoutSubItemAutomationPeerGenerated::get_ExpandCol
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<MenuFlyoutSubItemAutomationPeer*>(this)->get_ExpandCollapseStateImpl(pValue));
 Cleanup:

@@ -41,7 +41,7 @@ public:
         double lineSpacing,
         unsigned int maxItemsPerLine,
         const ScrollOrientation& orientation,
-        const bool disableVirtualization,
+        const bool isVirtualizationEnabled,
         const wstring_view& layoutId);
     winrt::Size Arrange(
         const winrt::Size& finalSize,
@@ -76,7 +76,7 @@ private:
         const winrt::Size& availableSize,
         bool isWrapping,
         double minItemSpacing,
-        const bool disableVirtualization,
+        const bool isVirtualizationEnabled,
         const wstring_view& layoutId);
     void Generate(
         GenerateDirection direction,
@@ -85,7 +85,7 @@ private:
         double minItemSpacing,
         double lineSpacing,
         unsigned int maxItemsPerLine,
-        const bool disableVirtualization,
+        const bool isVirtualizationEnabled,
         const wstring_view& layoutId);
     void MakeAnchor(
         const winrt::VirtualizingLayoutContext& context,

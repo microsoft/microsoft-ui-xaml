@@ -494,10 +494,12 @@ void ItemsRepeater::OnLoaded(const winrt::IInspectable& /*sender*/, const winrt:
 {
     // If we skipped an unload event, reset the scrollers now and invalidate measure so that we get a new
     // layout pass during which we will hookup new scrollers.
+    // The potential cache buffer is also reset so that the realization window regrows from scratch.
     if (_loadedCounter > _unloadedCounter)
     {
         InvalidateMeasure();
         m_viewportManager->ResetScrollers();
+        m_viewportManager->ResetLayoutRealizationWindowCacheBuffer();
     }
     ++_loadedCounter;
 }
@@ -508,9 +510,11 @@ void ItemsRepeater::OnUnloaded(const winrt::IInspectable& /*sender*/, const winr
 
     ++_unloadedCounter;
     // Only reset the scrollers if this unload event is in-sync.
+    // The potential cache buffer is also reset so that the realization window regrows from scratch.
     if (_unloadedCounter == _loadedCounter)
     {
         m_viewportManager->ResetScrollers();
+        m_viewportManager->ResetLayoutRealizationWindowCacheBuffer();
     }
 }
 
@@ -559,6 +563,9 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
 
         if (auto const virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
         {
+            // After a data source change, reset the potential cache buffer so that the realization window regrows from scratch.
+            m_viewportManager->ResetLayoutRealizationWindowCacheBuffer();
+
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
         }
         else if (auto const nonVirtualLayout = layout.try_as<winrt::NonVirtualizingLayout>())

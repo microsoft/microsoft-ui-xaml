@@ -63,6 +63,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_AccessKeyScopeOwner(_Outptr_r
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<TextElement*>(this)->get_AccessKeyScopeOwnerImpl(ppValue));
 Cleanup:
@@ -100,6 +101,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_ContentEnd(_Outptr_result_may
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<TextElement*>(this)->get_ContentEndImpl(ppValue));
 Cleanup:
@@ -109,6 +111,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_ContentStart(_Outptr_result_m
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<TextElement*>(this)->get_ContentStartImpl(ppValue));
 Cleanup:
@@ -118,6 +121,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_ElementEnd(_Outptr_result_may
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<TextElement*>(this)->get_ElementEndImpl(ppValue));
 Cleanup:
@@ -127,6 +131,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_ElementStart(_Outptr_result_m
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<TextElement*>(this)->get_ElementStartImpl(ppValue));
 Cleanup:
@@ -253,6 +258,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_Name(_Out_ HSTRING* pValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<TextElement*>(this)->get_NameImpl(pValue));
 Cleanup:
@@ -271,6 +277,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_XamlRoot(_Outptr_result_maybe
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<TextElement*>(this)->get_XamlRootImpl(ppValue));
 Cleanup:
@@ -464,6 +471,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::FindName(_In_ HSTRING name, _Outp
     }
     ARG_NOTNULL(name, "name");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextElement*>(this)->FindNameImpl(name, ppReturnValue));
@@ -482,6 +490,7 @@ _Check_return_ HRESULT DirectUI::TextElementGenerated::OnCreateAutomationPeer(_O
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "TextElement_OnCreateAutomationPeer", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
 Cleanup:

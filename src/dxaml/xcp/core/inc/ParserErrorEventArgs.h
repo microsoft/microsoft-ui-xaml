@@ -12,8 +12,8 @@ public:
     xstring_ptr  m_strXmlElement;            // The name of the element tag in the xaml file.
     xstring_ptr  m_strXmlAttribute;          // The Attribute name in the xaml file.
 
-    XUINT32     m_uLineNumber;            // Line number in xaml file where syntactic error happens.
-    XUINT32     m_uCharPosition;          // Charactor position in the error line where the error occurs.
+    XUINT32     m_uLineNumber;               // Line number in xaml file where syntactic error happens.
+    XUINT32     m_uCharPosition{};           // Character position in the error line where the error occurs.
 
     CParserErrorEventArgs(_In_ CCoreServices* pCore) : CErrorEventArgs(pCore)
     {

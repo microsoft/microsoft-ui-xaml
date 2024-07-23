@@ -42,6 +42,9 @@ public:
     void TemplateSettings(winrt::PipsPagerTemplateSettings const& value);
     winrt::PipsPagerTemplateSettings TemplateSettings();
 
+    void WrapMode(winrt::PipsPagerWrapMode const& value);
+    winrt::PipsPagerWrapMode WrapMode();
+
     static winrt::DependencyProperty MaxVisiblePipsProperty() { return s_MaxVisiblePipsProperty; }
     static winrt::DependencyProperty NextButtonStyleProperty() { return s_NextButtonStyleProperty; }
     static winrt::DependencyProperty NextButtonVisibilityProperty() { return s_NextButtonVisibilityProperty; }
@@ -53,6 +56,7 @@ public:
     static winrt::DependencyProperty SelectedPageIndexProperty() { return s_SelectedPageIndexProperty; }
     static winrt::DependencyProperty SelectedPipStyleProperty() { return s_SelectedPipStyleProperty; }
     static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
+    static winrt::DependencyProperty WrapModeProperty() { return s_WrapModeProperty; }
 
     static GlobalDependencyProperty s_MaxVisiblePipsProperty;
     static GlobalDependencyProperty s_NextButtonStyleProperty;
@@ -65,6 +69,7 @@ public:
     static GlobalDependencyProperty s_SelectedPageIndexProperty;
     static GlobalDependencyProperty s_SelectedPipStyleProperty;
     static GlobalDependencyProperty s_TemplateSettingsProperty;
+    static GlobalDependencyProperty s_WrapModeProperty;
 
     winrt::event_token SelectedIndexChanged(winrt::TypedEventHandler<winrt::PipsPager, winrt::PipsPagerSelectedIndexChangedEventArgs> const& value);
     void SelectedIndexChanged(winrt::event_token const& token);
@@ -115,6 +120,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnTemplateSettingsPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnWrapModePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

@@ -365,6 +365,7 @@ IFACEMETHODIMP DirectUI::SplitViewGenerated::OnBackButtonPressed(_Out_ BOOLEAN* 
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "SplitView_OnBackButtonPressed", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<SplitView*>(this)->OnBackButtonPressedImpl(pResult));

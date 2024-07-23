@@ -298,31 +298,7 @@
           <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
             <VisualStateManager.VisualStateGroups>
               <VisualStateGroup x:Name="CombinedStates">
-                <VisualState x:Name="UncheckedNormal">
-                  <Storyboard>
-                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
-                      <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxForegroundUnchecked}" />
-                    </ObjectAnimationUsingKeyFrames>
-                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
-                      <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBackgroundUnchecked}" />
-                    </ObjectAnimationUsingKeyFrames>
-                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="BorderBrush">
-                      <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxBorderBrushUnchecked}" />
-                    </ObjectAnimationUsingKeyFrames>
-                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Stroke">
-                      <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundStrokeUnchecked}" />
-                    </ObjectAnimationUsingKeyFrames>
-                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NormalRectangle" Storyboard.TargetProperty="Fill">
-                      <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckBackgroundFillUnchecked}" />
-                    </ObjectAnimationUsingKeyFrames>
-                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="CheckGlyph" Storyboard.TargetProperty="Foreground">
-                      <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource CheckBoxCheckGlyphForegroundUnchecked}" />
-                    </ObjectAnimationUsingKeyFrames>
-                  </Storyboard>
-                  <VisualState.Setters>
-                    <Setter Target="CheckGlyph.(controls:AnimatedIcon.State)" Value="NormalOff" />
-                  </VisualState.Setters>
-                </VisualState>
+                <VisualState x:Name="UncheckedNormal" />
                 <VisualState x:Name="UncheckedPointerOver">
                   <Storyboard>
                     <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
@@ -625,14 +601,14 @@
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="0" VerticalAlignment="Center" Height="{StaticResource CheckBoxSize}" Width="{StaticResource CheckBoxSize}">
               <Rectangle x:Name="NormalRectangle" Fill="{ThemeResource CheckBoxCheckBackgroundFillUnchecked}" Stroke="{ThemeResource CheckBoxCheckBackgroundStrokeUnchecked}" StrokeThickness="{StaticResource CheckBoxBorderThickness}" UseLayoutRounding="False" Height="{StaticResource CheckBoxSize}" Width="{StaticResource CheckBoxSize}" RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}" RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
-              <controls:AnimatedIcon x:Name="CheckGlyph" Foreground="{ThemeResource CheckBoxCheckGlyphForegroundUnchecked}" Margin="0,1,0,-1">
+              <controls:AnimatedIcon x:Name="CheckGlyph" Foreground="{ThemeResource CheckBoxCheckGlyphForegroundUnchecked}" controls:AnimatedIcon.State="NormalOff" Margin="0,1,0,-1">
                 <animatedvisuals:AnimatedAcceptVisualSource />
                 <controls:AnimatedIcon.FallbackIconSource>
                   <controls:FontIconSource x:Name="DownLevelCheckGlyph" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="{StaticResource CheckBoxCheckedGlyph}" FontSize="{StaticResource CheckBoxGlyphSize}" />
                 </controls:AnimatedIcon.FallbackIconSource>
               </controls:AnimatedIcon>
             </Grid>
-            <ContentPresenter x:Name="ContentPresenter" Grid.Column="1" ContentTemplate="{TemplateBinding ContentTemplate}" ContentTransitions="{TemplateBinding ContentTransitions}" Content="{TemplateBinding Content}" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" AutomationProperties.AccessibilityView="Raw" TextWrapping="Wrap" />
+            <ContentPresenter x:Name="ContentPresenter" Grid.Column="1" ContentTemplate="{TemplateBinding ContentTemplate}" ContentTransitions="{TemplateBinding ContentTransitions}" Content="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" AutomationProperties.AccessibilityView="Raw" TextWrapping="Wrap" />
           </Grid>
         </ControlTemplate>
       </Setter.Value>

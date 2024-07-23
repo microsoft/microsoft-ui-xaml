@@ -507,6 +507,10 @@ namespace CoreImports
         _In_ const xstring_ptr& strText,
         _Out_ CValue* pValue);
 
+    // Keep these in sync with VisualTreeHelper::RelativeKind
+    const XINT32 VisualRelativeKind_Child = 0;
+    const XINT32 VisualRelativeKind_Parent = 1;
+    const XINT32 VisualRelativeKind_Root = 2;
     _Check_return_ HRESULT DependencyObject_GetVisualRelative(
         _In_ CUIElement* pElement,
         _In_ XINT32 iRelativeLinkKind,

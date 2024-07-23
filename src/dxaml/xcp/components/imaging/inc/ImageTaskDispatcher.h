@@ -28,7 +28,7 @@ public:
 private:
     ~ImageTaskDispatcher() override;
 
-    CCoreServices* m_core;
+    CCoreServices* m_core{};
     std::deque<xref_ptr<IImageTask>> m_tasks;
     wil::critical_section m_taskLock;
     LONG m_hasCallbackQueued = FALSE;

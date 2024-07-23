@@ -44,6 +44,7 @@ ScrollViewProperties::ScrollViewProperties()
     , m_scrollCompletedEventSource{static_cast<ScrollView*>(this)}
     , m_stateChangedEventSource{static_cast<ScrollView*>(this)}
     , m_viewChangedEventSource{static_cast<ScrollView*>(this)}
+    , m_viewChangingEventSource{static_cast<ScrollView*>(this)}
     , m_zoomAnimationStartingEventSource{static_cast<ScrollView*>(this)}
     , m_zoomCompletedEventSource{static_cast<ScrollView*>(this)}
 {
@@ -900,6 +901,16 @@ winrt::event_token ScrollViewProperties::ViewChanged(winrt::TypedEventHandler<wi
 void ScrollViewProperties::ViewChanged(winrt::event_token const& token)
 {
     m_viewChangedEventSource.remove(token);
+}
+
+winrt::event_token ScrollViewProperties::ViewChanging(winrt::TypedEventHandler<winrt::ScrollView, winrt::ScrollingViewChangingEventArgs> const& value)
+{
+    return m_viewChangingEventSource.add(value);
+}
+
+void ScrollViewProperties::ViewChanging(winrt::event_token const& token)
+{
+    m_viewChangingEventSource.remove(token);
 }
 
 winrt::event_token ScrollViewProperties::ZoomAnimationStarting(winrt::TypedEventHandler<winrt::ScrollView, winrt::ScrollingZoomAnimationStartingEventArgs> const& value)

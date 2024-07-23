@@ -40,6 +40,7 @@ IFACEMETHODIMP DirectUI::SizeHelperFactory::get_Empty(_Out_ ABI::Windows::Founda
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckActivationAllowed());
     IFC(get_EmptyImpl(pValue));
 Cleanup:
@@ -55,6 +56,7 @@ IFACEMETHODIMP DirectUI::SizeHelperFactory::FromDimensions(_In_ FLOAT width, _In
         XamlTelemetry::PublicApiCall(true, 0, "SizeHelper_FromDimensions", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(FromDimensionsImpl(width, height, pReturnValue));
 Cleanup:
@@ -72,6 +74,7 @@ IFACEMETHODIMP DirectUI::SizeHelperFactory::GetIsEmpty(_In_ ABI::Windows::Founda
         XamlTelemetry::PublicApiCall(true, 0, "SizeHelper_GetIsEmpty", 0);
     }
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckActivationAllowed());
     IFC(GetIsEmptyImpl(target, pValue));
 Cleanup:
@@ -89,6 +92,7 @@ IFACEMETHODIMP DirectUI::SizeHelperFactory::Equals(_In_ ABI::Windows::Foundation
         XamlTelemetry::PublicApiCall(true, 0, "SizeHelper_Equals", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(EqualsImpl(target, value, pReturnValue));
 Cleanup:

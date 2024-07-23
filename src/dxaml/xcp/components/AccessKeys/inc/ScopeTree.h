@@ -293,7 +293,7 @@ namespace AccessKeys {
             }
 
             // We walked all the way up without finding any valid scopes.  Exit AccessKey DisplayMode.
-            m_modeContainer.SetIsActive(false);
+            IFC_RETURN(m_modeContainer.SetIsActive(false));
             
             return S_OK;
         }
@@ -308,6 +308,8 @@ namespace AccessKeys {
 
         _Check_return_ HRESULT ProcessNormalKey(_In_ const wchar_t character, _In_ const bool wasActive, _Out_ bool* wasInvoked)
         {
+            *wasInvoked = false;
+
             // Invoke can be reentrant, we need to protect m_current by having our own reference
             std::shared_ptr<Scope> current = m_current;
             if (current)
@@ -348,7 +350,7 @@ namespace AccessKeys {
                         // The invoke handles entering the scope.
                         if (!wasActive)
                         {
-                            m_modeContainer.SetIsActive(true);
+                            IFC_RETURN(m_modeContainer.SetIsActive(true));
                         }
                         IFC_RETURN(EnterScope(invokedElement.get(), wasActive));
                     }

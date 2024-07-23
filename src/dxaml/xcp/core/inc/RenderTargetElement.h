@@ -105,7 +105,7 @@ protected:
 
     CUIElement *m_pRenderElement;
     CUIElement *m_pConnectionElement;
-    CompositorTreeHost *m_pCompositorTreeHost;
+    CompositorTreeHost *m_pCompositorTreeHost{};
     TransformAndClipStack *m_pPrependTransformAndClip;
     xchainedmap<CUIElement*, HWCompTreeNode*> m_mapUIElementNoRefToCompTreeNode;
     ICoreAsyncAction *m_pRenderAsyncAction;

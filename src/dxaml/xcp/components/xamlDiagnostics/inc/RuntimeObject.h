@@ -120,7 +120,7 @@ namespace Diagnostics
 
         virtual void Initialize(_In_ IInspectable* backingObject, std::shared_ptr<RuntimeObject> parent);
     private:
-        InstanceHandle m_handle;
+        InstanceHandle m_handle{};
         Microsoft::WRL::ComPtr<IInspectable> m_backingObject;
         std::weak_ptr<RuntimeObject> m_parent;
         std::map<RuntimeProperty, std::shared_ptr<RuntimeObject>> m_values;

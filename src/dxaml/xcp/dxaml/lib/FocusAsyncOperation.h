@@ -91,6 +91,6 @@ namespace DirectUI
     private:
         ctl::ComPtr<FocusMovementResult> m_focusMovementResult;
         static ULONG m_uniqueAsyncActionId;
-        GUID m_correlationId;
+        GUID m_correlationId {};
     };
 }

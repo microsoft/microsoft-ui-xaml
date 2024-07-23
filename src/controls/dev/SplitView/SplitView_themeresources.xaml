@@ -508,7 +508,8 @@
                               <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="Visible"/>
                           </ObjectAnimationUsingKeyFrames>
                           <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PaneClipRectangleTransform" Storyboard.TargetProperty="TranslateX">
-                              <SplineDoubleKeyFrame KeyTime="{StaticResource SplitViewPaneAnimationCloseDuration}" KeySpline="0.0,0.35 0.15,1.0" Value="{Binding TemplateSettings.CompactPaneGridLength, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+                            <LinearDoubleKeyFrame KeyTime="0:0:0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.OpenPaneLengthMinusCompactLength}" />
+                            <SplineDoubleKeyFrame KeySpline="0.0,0.35 0.15,1.0" KeyTime="{StaticResource SplitViewPaneAnimationOpenPreDuration}" Value="0" />
                           </DoubleAnimationUsingKeyFrames>
                       </Storyboard>
                   </VisualTransition>

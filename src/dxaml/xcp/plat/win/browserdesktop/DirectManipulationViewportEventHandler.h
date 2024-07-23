@@ -9,6 +9,9 @@
 
 #include <Microsoft.DirectManipulation.h>
 
+// Uncomment for DManip debug outputs.
+//#define DM_DEBUG
+
 class CDirectManipulationService;
 
 class CDirectManipulationViewportEventHandler : public ATL::CComObjectRootEx<ATL::CComMultiThreadModel>,
@@ -19,6 +22,10 @@ class CDirectManipulationViewportEventHandler : public ATL::CComObjectRootEx<ATL
 private:
     // CDirectManipulationService implementation that handles the notifications.
     CDirectManipulationService* m_pDMService;
+
+#ifdef DM_DEBUG
+    bool DMVEH_TraceDbg() const;
+#endif // DM_DEBUG
 
 protected:
     CDirectManipulationViewportEventHandler();

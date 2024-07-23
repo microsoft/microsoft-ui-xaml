@@ -18,6 +18,8 @@ namespace MUXControlsTestApp
             CanExecuteChanged?.Invoke(this, null);
         }
 
+        public TestFrame TestFrame { get; set; }
+
         public bool CanExecute(object parameter)
         {
             return (parameter != null && parameter is TestDeclaration);
@@ -26,7 +28,7 @@ namespace MUXControlsTestApp
         public void Execute(object parameter)
         {
             var testDeclaration = parameter as TestDeclaration;
-            TestFrame.Instance.NavigateWithoutAnimation(testDeclaration.PageType, testDeclaration.Name);
+            TestFrame.NavigateWithoutAnimation(testDeclaration.PageType, testDeclaration.Name);
         }
     }
 

@@ -562,30 +562,27 @@ CUIElementCollectionWrapper CUIElement::GetUnsortedChildren()
     return CUIElementCollectionWrapper(GetChildren());
 }
 
-void CUIElement::LockParent()
+wil::details::lambda_call<std::function<void()>> CUIElement::LockParent()
 {
+    xref_ptr<CCollection> pCollection;
     CUIElement* pParent = GetUIElementParentInternal();
     if (pParent)
     {
-        CCollection *pCollection = pParent->GetChildren();
+        pCollection = pParent->GetChildren();
         if (pCollection)
         {
             pCollection->Lock();
         }
     }
-}
 
-void CUIElement::UnlockParent()
-{
-    CUIElement* pParent = GetUIElementParentInternal();
-    if (pParent)
-    {
-        CCollection *pCollection = pParent->GetChildren();
-        if (pCollection)
+    // make sure we unlock when we are done.
+    return wil::scope_exit<std::function<void()>>([pCollection]
         {
-            pCollection->Unlock();
-        }
-    }
+            if (pCollection)
+            {
+                pCollection->Unlock();
+            }
+        });
 }
 
 bool CUIElement::HasDepthLegacy() const
@@ -2538,12 +2535,12 @@ double CUIElement::GetRasterizationScaleIncludingAncestors()
     {
         rasterizationScale *= element->GetRasterizationScale();
 
-        // Note: This walks through windowed popups, as well. It's expected that windowed popups are treated the same way as
-        // normal popups as far as RasterizationScale goes - i.e. the child of a popup will inherit all RasterizationScales
-        // above it, regardless of whether the popup is windowed. This means whatever is hosting the windowed popup (hwnd or
-        // an island) should be scaled by the system the same way as whatever is hosting the main tree (CoreWindow or an
-        // island). Otherwise, we end up with inconsistent behavior where the popup's content can be sharp or blurry/grainy
-        // depending on whether that popup is windowed.
+        // Note: This walks through windowed popups, as well. It's expected that windowed popups are treated the same
+        // way as normal popups as far as RasterizationScale goes - i.e. the child of a popup will inherit all
+        // RasterizationScales above it, regardless of whether the popup is windowed. This means the island hosting the
+        // windowed popup should be scaled by the system the same way as whatever is hosting the main tree (an island,
+        // or a CoreWindow for some tests). Otherwise, we end up with inconsistent behavior where the popup's content
+        // can be sharp or blurry/grainy depending on whether that popup is windowed.
         CDependencyObject* elementAncestor = element->GetParentFollowPopups();
         ASSERT(!elementAncestor || elementAncestor->OfTypeByIndex(KnownTypeIndex::UIElement));  // The parent of a UIElement must be a UIElement
         element = static_cast<CUIElement*>(elementAncestor);

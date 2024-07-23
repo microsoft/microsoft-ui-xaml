@@ -82,6 +82,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 foreach (var logEvent in comboBoxEvents.AllItems)
                 {
                     Log.Comment(logEvent.Name);
+
                 }
                 Log.Comment("=== END ===");
             }

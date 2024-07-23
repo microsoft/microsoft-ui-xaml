@@ -1759,7 +1759,7 @@ int ItemsView::GetItemInternal(
 
                     if (useKeyboardNavigationReferenceHorizontalOffset)
                     {
-                        signedHorizontalDistance = elementZoomedRect.X + elementZoomedRect.Width / 2.0f - keyboardNavigationReferenceOffset * zoomFactor;
+                        signedHorizontalDistance = static_cast<double>(elementZoomedRect.X) + elementZoomedRect.Width / 2.0 - static_cast<double>(keyboardNavigationReferenceOffset) * zoomFactor;
                     }
                     else
                     {
@@ -1773,7 +1773,7 @@ int ItemsView::GetItemInternal(
 
                     if (useKeyboardNavigationReferenceVerticalOffset)
                     {
-                        signedVerticalDistance = elementZoomedRect.Y + elementZoomedRect.Height / 2.0f - keyboardNavigationReferenceOffset * zoomFactor;
+                        signedVerticalDistance = static_cast<double>(elementZoomedRect.Y) + elementZoomedRect.Height / 2.0 - static_cast<double>(keyboardNavigationReferenceOffset) * zoomFactor;
                     }
                     else
                     {

@@ -596,7 +596,7 @@ CValue::~CValue()
 }
 
 CValue& CValue::operator=(
-    _Inout_ CValue&& source)
+    _Inout_ CValue&& source) noexcept
 {
     if (this != &source)
     {

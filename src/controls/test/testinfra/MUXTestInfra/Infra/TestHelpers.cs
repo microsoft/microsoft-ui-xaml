@@ -31,6 +31,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
     {
         private int OpenedTestPages = 0;
 
+        // Tests that fail will automatically get a screenshot taken when run in the ADO pipeline. We have to leave the
+        // test in the broken state and not clean up after it so that the screenshot is meaningful. This flag lets a
+        // test control whether or not to clean up and only clean up if the test passes.
+        private bool _doCleanup = true;
+
         public class TestSetupHelperOptions
         {
             public string LanguageOverride {get; set;}
@@ -38,6 +43,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             public string ClassNameOfNavigationItemToInvoke { get; set; } = "Button";
 
             public string AutomationIdOfSafeItemToClick { get; set; } = "__CurrentPage";
+
+            public bool AutomaticCleanup { get; set; } = true;
         }
 
         public TestSetupHelper(string testName, TestSetupHelperOptions options = null)
@@ -108,11 +115,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         // this function returns true for successful run and false for unsuccessful run
         // in case of false, the calling function will retry calling this function
         private bool TestSingleRun(ICollection<string> testNames, bool shouldRestrictInnerFrameSize)
-        {   
+        {
             PreTestSetup();
 
-            // We were hitting an issue in the lab where sometimes the very first click would fail to go through resulting in 
-            // test instability. We work around this by clicking on element when the app launches. 
+            // We were hitting an issue in the lab where sometimes the very first click would fail to go through resulting in
+            // test instability. We work around this by clicking on element when the app launches.
             if (!string.IsNullOrEmpty(Options.AutomationIdOfSafeItemToClick))
             {
                 var safeItemToClick = FindElement.ById(Options.AutomationIdOfSafeItemToClick);
@@ -197,7 +204,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             }
 
             TestCleanupHelper.TestSetupHelperPendingDisposals++;
-            
+
             return true;  //no retry needed, it is a success
         }
 
@@ -218,8 +225,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             this.OutputDebugStringLevel = outputDebugStringLevel;
             this.OutputDebugStringComponentTypes = outputDebugStringComponentTypes;
 
-            // If a test crashes, it can take a little bit of time before we can 
-            // restart the app again especially if watson is collecting dumps. Adding a 
+            this._doCleanup = options.AutomaticCleanup;
+
+            // If a test crashes, it can take a little bit of time before we can
+            // restart the app again especially if watson is collecting dumps. Adding a
             // delayed retry can help avoid the case where we might otherwise fail a slew of
             // tests that come after the one that crashes the app.
             var retryCount = 10;
@@ -255,6 +264,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     }
                 }
             }
+        }
+
+        public void AllowCleanup()
+        {
+            _doCleanup = true;
         }
 
         public static void SetInnerFrameInLabDimensions(bool shouldRestrictInnerFrameSize)
@@ -329,13 +343,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
         protected virtual void Dispose(bool isDisposing)
         {
-            TestEnvironment.LogVerbose("TestSetupHelper.Dispose()");
+            Log.Comment("TestSetupHelper.Dispose()");
             TestCleanupHelper.TestSetupHelperPendingDisposals--;
 
-            while (OpenedTestPages > 0)
+            if (_doCleanup)
             {
-                GoBack();
-                OpenedTestPages--;
+                while (OpenedTestPages > 0)
+                {
+                    GoBack();
+                    OpenedTestPages--;
+                }
+            }
+            else
+            {
+                Log.Comment("> Skipping going back due to test failure.");
             }
         }
     }
@@ -350,7 +371,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
             if (TestEnvironment.TestContext == null || TestEnvironment.Application == null)
             {
-                Log.Error("TestContext or Application is not initialized successfully! TestContext is null: {0}", 
+                Log.Error("TestContext or Application is not initialized successfully! TestContext is null: {0}",
                     TestEnvironment.TestContext == null);
                 return;
             }
@@ -444,7 +465,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             {
                 Log.Comment(otherLanguageString);
             }
-            
+
             Log.Comment(Environment.NewLine);
 
             // We want to make sure that every English string is different than its non-English counterpart -

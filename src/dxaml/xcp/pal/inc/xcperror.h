@@ -24,6 +24,11 @@
 #define E_NOT_SUPPORTED                  _HRESULT_TYPEDEF_(0x80131515L)
 #endif
 
+// different than above, used widely in OS for general error reporting
+#ifndef E_NOTSUPPORTED
+#define E_NOTSUPPORTED HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED)
+#endif
+
 //
 // Webcam/Microphone error codes.
 //

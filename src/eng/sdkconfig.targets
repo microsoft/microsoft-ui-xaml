@@ -7,7 +7,7 @@
    -->
   <ItemGroup Condition="'$(UsingMicrosoftNETSdk)'=='true' and '$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)'!=''">
     <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="$(TargetPlatformVersion.TrimEnd('0'))$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)" />
-    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="$(TargetPlatformVersion.TrimEnd('0'))$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)" />  
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="$(TargetPlatformVersion.TrimEnd('0'))$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)" />
   </ItemGroup>
   
   <!-- TODO: Remove this when https://github.com/microsoft/CsWinRT/issues/530 is fixed and we've picked up a new version. -->

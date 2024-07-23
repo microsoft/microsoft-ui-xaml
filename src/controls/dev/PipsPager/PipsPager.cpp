@@ -10,6 +10,7 @@
 #include "PipsPagerTemplateSettings.h"
 #include "PipsPagerSelectedIndexChangedEventArgs.h"
 #include "PipsPagerAutomationPeer.h"
+#include "StackLayout.h"
 
 typedef winrt::PipsPagerButtonVisibility ButtonVisibility;
 
@@ -67,6 +68,11 @@ PipsPager::PipsPager()
     SetDefaultStyleKey(this);
 }
 
+PipsPager::~PipsPager()
+{
+    RestoreLayoutVirtualization();
+}
+
 void PipsPager::OnApplyTemplate()
 {
     winrt::AutomationProperties::SetName(*this, ResourceAccessor::GetLocalizedStringResource(SR_PipsPagerNameText));
@@ -96,6 +102,8 @@ void PipsPager::OnApplyTemplate()
     m_pipsPagerElementPreparedRevoker.revoke();
     m_pipsAreaGettingFocusRevoker.revoke();
     m_pipsAreaBringIntoViewRequestedRevoker.revoke();
+    m_itemsRepeaterStackLayoutChangedRevoker.revoke();
+    RestoreLayoutVirtualization();
     [this](const winrt::ItemsRepeater repeater)
     {
         m_pipsPagerRepeater.set(repeater);
@@ -104,6 +112,12 @@ void PipsPager::OnApplyTemplate()
             m_pipsPagerElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { this, &PipsPager::OnElementPrepared });
             m_pipsAreaGettingFocusRevoker = repeater.GettingFocus(winrt::auto_revoke, { this, &PipsPager::OnPipsAreaGettingFocus });
             m_pipsAreaBringIntoViewRequestedRevoker = repeater.BringIntoViewRequested(winrt::auto_revoke, { this, &PipsPager::OnPipsAreaBringIntoViewRequested });
+            
+            m_itemsRepeaterStackLayoutChangedRevoker = RegisterPropertyChanged(repeater,
+            winrt::ItemsRepeater::LayoutProperty(),
+            { this, &PipsPager::OnItemsRepeaterLayoutChanged });
+
+            UpdateLayoutVirtualization();
         }
     }(GetTemplateChildT<winrt::ItemsRepeater>(c_pipsPagerRepeaterName, *this));
 
@@ -189,17 +203,18 @@ void PipsPager::UpdateIndividualNavigationButtonVisualState(
     const wstring_view& enabledStateName,
     const wstring_view& disabledStateName) {
 
-    const auto ifGenerallyVisible = !hiddenOnEdgeCondition && NumberOfPages() != 0 && MaxVisiblePips() > 0;
+    const auto isGenerallyVisible = (!hiddenOnEdgeCondition || (IsWrapEnabled() && NumberOfPages() > 1)) && 
+                                     NumberOfPages() != 0 && MaxVisiblePips() > 0;
     if (visibility != ButtonVisibility::Collapsed)
     {
-        if ((visibility == ButtonVisibility::Visible || m_isPointerOver || m_isFocused) && ifGenerallyVisible)
+        if ((visibility == ButtonVisibility::Visible || m_isPointerOver || m_isFocused) && isGenerallyVisible)
         {
             winrt::VisualStateManager::GoToState(*this, visibleStateName, false);
             winrt::VisualStateManager::GoToState(*this, enabledStateName, false);
         }
         else
         {
-            if (!ifGenerallyVisible)
+            if (!isGenerallyVisible)
             {
                 winrt::VisualStateManager::GoToState(*this, disabledStateName, false);
             }
@@ -216,13 +231,13 @@ void PipsPager::UpdateNavigationButtonVisualStates() {
     const int selectedPageIndex = SelectedPageIndex();
     const int numberOfPages = NumberOfPages();
 
-    auto const ifPreviousButtonHiddenOnEdge = selectedPageIndex == 0;
-    UpdateIndividualNavigationButtonVisualState(ifPreviousButtonHiddenOnEdge, PreviousButtonVisibility(),
+    auto const isPreviousButtonHiddenOnEdge = selectedPageIndex == 0;
+    UpdateIndividualNavigationButtonVisualState(isPreviousButtonHiddenOnEdge, PreviousButtonVisibility(),
         c_previousPageButtonVisibleVisualState, c_previousPageButtonHiddenVisualState,
         c_previousPageButtonEnabledVisualState, c_previousPageButtonDisabledVisualState);
 
-    auto const ifNextButtonHiddenOnEdge = selectedPageIndex == numberOfPages - 1;
-    UpdateIndividualNavigationButtonVisualState(ifNextButtonHiddenOnEdge, NextButtonVisibility(),
+    auto const isNextButtonHiddenOnEdge = selectedPageIndex == numberOfPages - 1;
+    UpdateIndividualNavigationButtonVisualState(isNextButtonHiddenOnEdge, NextButtonVisibility(),
         c_nextPageButtonVisibleVisualState, c_nextPageButtonHiddenVisualState,
         c_nextPageButtonEnabledVisualState, c_nextPageButtonDisabledVisualState);
 }
@@ -276,7 +291,7 @@ double PipsPager::CalculateScrollViewerSize(const double defaultPipSize, const d
     {
         numberOfPagesToDisplay = maxVisualIndicators;
     }
-    return defaultPipSize * (numberOfPagesToDisplay - 1) + selectedPipSize;
+    return defaultPipSize * (static_cast<double>(numberOfPagesToDisplay) - 1) + selectedPipSize;
 }
 
 void PipsPager::SetScrollViewerMaxSize() {
@@ -436,6 +451,12 @@ void PipsPager::OnSelectedPageIndexChanged(const int oldValue)
     }
 }
 
+void PipsPager::OnWrapModeChanged()
+{
+    UpdateLayoutVirtualization();
+    UpdateNavigationButtonVisualStates();
+}
+
 void PipsPager::OnOrientationChanged()
 {
     if (Orientation() == winrt::Orientation::Horizontal)
@@ -505,14 +526,47 @@ void PipsPager::OnNavigationButtonVisibilityChanged(const ButtonVisibility visib
 
 void PipsPager::OnPreviousButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& e)
 {
-    // In this method, SelectedPageIndex is always greater than 0.
-    SelectedPageIndex(SelectedPageIndex() - 1);
+    // Navigation buttons are hidden in this scenario.
+    // However in case someone re-templates the control and
+    // leaves the buttons active, we want to make sure
+    // we don't navigate to a non-existent index.
+    if (NumberOfPages() == 0 || NumberOfPages() == 1)
+    {
+        return;
+    }
+
+    auto newPageIndex = std::max(0, SelectedPageIndex() - 1);
+
+    if (IsWrapEnabled() && NumberOfPages() > -1 &&
+        SelectedPageIndex() == 0)
+    {
+        newPageIndex = NumberOfPages() - 1;
+    }
+
+    SelectedPageIndex(newPageIndex);
 }
 
 void PipsPager::OnNextButtonClicked(const IInspectable& sender, const winrt::RoutedEventArgs& e)
 {
-    // In this method, SelectedPageIndex is always less than maximum.
-    SelectedPageIndex(SelectedPageIndex() + 1);
+    // Navigation buttons are hidden in this scenario.
+    // However in case someone re-templates the control and
+    // leaves the buttons active, we want to make sure
+    // we don't navigate to a non-existent index.
+    if (NumberOfPages() == 0 || NumberOfPages() == 1)
+    {
+        return;
+    }
+
+    auto newPageIndex = NumberOfPages() > -1 ? 
+                            std::min(SelectedPageIndex() + 1, NumberOfPages() - 1) : SelectedPageIndex() + 1;
+    
+    if (IsWrapEnabled() &&
+        SelectedPageIndex() == (NumberOfPages() - 1))
+    {
+        newPageIndex = 0;
+    }
+
+    SelectedPageIndex(newPageIndex);
 }
 
 
@@ -636,6 +690,44 @@ void PipsPager::OnScrollViewerBringIntoViewRequested(const IInspectable& sender,
     args.Handled(true);
 }
 
+void PipsPager::OnItemsRepeaterLayoutChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args)
+{
+    RestoreLayoutVirtualization();
+    UpdateLayoutVirtualization();
+}
+
+void PipsPager::RestoreLayoutVirtualization()
+{
+    // Make sure to reset the layout virtualization settings on old layout
+    if (auto stackLayout = m_itemsRepeaterStackLayout.get())
+    {
+        auto stackLayoutImpl = winrt::get_self<StackLayout>(stackLayout);
+        stackLayoutImpl->IsVirtualizationEnabled(m_cachedIsVirtualizationEnabledFlag);
+    }
+    m_itemsRepeaterStackLayout = nullptr;
+    m_cachedIsVirtualizationEnabledFlag = true;
+}
+
+void PipsPager::UpdateLayoutVirtualization()
+{
+    if (auto repeater = m_pipsPagerRepeater.get())
+    {
+        if (auto stackLayout = repeater.Layout().try_as<winrt::StackLayout>())
+        {
+            // Turn off virtualization when wrap around is enabled
+            // in order to avoid a bug where the pips disappear
+            // when navigating to the last page from the first page
+            auto stackLayoutImpl = winrt::get_self<StackLayout>(stackLayout);
+            if (m_itemsRepeaterStackLayout.get() == nullptr)
+            {
+                m_cachedIsVirtualizationEnabledFlag = stackLayoutImpl->IsVirtualizationEnabled();
+                m_itemsRepeaterStackLayout = winrt::make_weak(stackLayout);
+            }
+            stackLayoutImpl->IsVirtualizationEnabled(!IsWrapEnabled());
+        }
+    }
+}
+
 void PipsPager::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
@@ -651,6 +743,10 @@ void PipsPager::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArg
         }
         else if (property == MaxVisiblePipsProperty()) {
             OnMaxVisiblePipsChanged();
+        }
+        else if (property == WrapModeProperty())
+        {
+            OnWrapModeChanged();
         }
         else if (property == PreviousButtonVisibilityProperty())
         {

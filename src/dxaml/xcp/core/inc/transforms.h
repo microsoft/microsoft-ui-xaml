@@ -124,9 +124,8 @@ class CMatrixTransformer : public CTransformer
 {
 public:
     CMatrixTransformer(_In_ const CMILMatrix& matTransform)
-    {
-        m_matTransform = matTransform;
-    }
+        : m_matTransform(matTransform)
+    {}
 
 protected:
     ~CMatrixTransformer() override {}

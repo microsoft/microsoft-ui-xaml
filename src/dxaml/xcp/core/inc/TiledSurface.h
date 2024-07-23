@@ -28,7 +28,7 @@ public:
         XRECT                           bounds;
         XUINT64                         timeStamp;
         IntrusiveList<Tile>::ListEntry  tempListEntry;
-        bool                           shouldInitializeToTransparent;
+        bool                            shouldInitializeToTransparent{};
 
         // Returns the number of bytes of atlas space used by this tile - even if atlas space has not yet been allocated.
         XUINT64 GetAllocationSize() const

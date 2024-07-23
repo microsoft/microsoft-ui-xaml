@@ -70,12 +70,12 @@ public:
         _In_opt_ IInvalidateImageCacheCallback* pInvalidateCallback
         );
 
-    std::shared_ptr<ImageMetadataView> GetMetadataView(_In_opt_ const std::shared_ptr<ImagingTelemetry::ImageDecodeActivity>& decodeActivity, uint64_t imageId);
+    std::shared_ptr<ImageMetadataView> GetMetadataView(uint64_t imageId);
 
     _Check_return_ HRESULT GetImage(
         _In_ xref_ptr<ImageDecodeParams>& spDecodeParams,
         _In_ const xref_ptr<IImageAvailableCallback>& spImageAvailableCallback,
-        _Outref_ xref_ptr<IAbortableImageOperation>& spAbortableImageOperation
+        _Out_ xref_ptr<IAbortableImageOperation>& spAbortableImageOperation
         );
 
     std::shared_ptr<EncodedImageData> GetEncodedImageData() const;
@@ -148,7 +148,7 @@ private:
 
     bool IsSvg() const { return m_isSvg; }
 
-    CCoreServices* m_core;
+    CCoreServices* m_core{};
     xref_ptr<ImageTaskDispatcher> m_dispatcher;
     xstring_ptr m_strCacheKey;
     xstring_ptr m_strUri;

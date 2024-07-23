@@ -19,7 +19,7 @@ namespace DirectUI
     public:
         _Check_return_ HRESULT Initialize() override;
         IFACEMETHOD(Close)() override;
-        HRESULT CloseImpl(bool synchronous);
+        _Check_return_ HRESULT CloseImpl(bool synchronous);
 
         _Check_return_ HRESULT GetXamlShutdownCompletedOnThreadEventSourceNoRef(
             _Outptr_ XamlShutdownCompletedOnThreadEventSourceType** ppEventSource) override
@@ -65,7 +65,7 @@ namespace DirectUI
             State GetState() const { return m_state; }
             void SetState(State state) { m_state = state; }
            
-            virtual void OnManagerCreated(_In_ WindowsXamlManager* manager) = 0;
+            virtual void RegisterManager(_In_ WindowsXamlManager* manager) = 0;
             virtual void OnManagerClosed(_In_ WindowsXamlManager* manager) = 0;
             virtual ctl::ComPtr<DirectUI::WindowsXamlManager> GetForCurrentThread() = 0;
             virtual bool ReadyForEarlyShutdown() const = 0;

@@ -54,6 +54,7 @@ IFACEMETHODIMP DirectUI::IsPropertyNotPresentGenerated::Evaluate(_In_ ABI::Windo
     }
     ARG_NOTNULL(pArguments, "arguments");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<IsPropertyNotPresent*>(this)->EvaluateImpl(pArguments, pReturnValue));

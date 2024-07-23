@@ -40,21 +40,21 @@ public:
         _In_ EncodedImageData& encodedImageData,
         _In_ const ImageDecodeParams& decodeParams,
         int frameIndex,
-        _Outref_ wrl::ComPtr<IWICBitmapSource>& bitmapSource,
-        _Outref_ std::chrono::milliseconds& frameDelay
+        _Out_ wrl::ComPtr<IWICBitmapSource>& bitmapSource,
+        _Out_ std::chrono::milliseconds& frameDelay
         ) override;
 
     static _Check_return_ HRESULT CreateDeltaFrameSource(
         _In_ const wrl::ComPtr<IWICBitmapDecoder>& spBitmapDecoder,
         int frameIndex,
-        _Outref_ DeltaFrameInfo& gifDeltaFrameInfo,
-        _Outref_ wrl::ComPtr<IWICBitmapSource>& spBitmapSource
+        _Out_ DeltaFrameInfo& gifDeltaFrameInfo,
+        _Out_ wrl::ComPtr<IWICBitmapSource>& spBitmapSource
         );
 
 private:
     static _Check_return_ HRESULT GetDeltaFrameInfo(
         _In_ const wrl::ComPtr<IWICBitmapFrameDecode>& spBitmapFrameDecode,
-        _Outref_ DeltaFrameInfo& deltaFrameInfo
+        _Out_ DeltaFrameInfo& deltaFrameInfo
         );
 
     DeltaFrameInfo m_currentDeltaFrameInfo = {};

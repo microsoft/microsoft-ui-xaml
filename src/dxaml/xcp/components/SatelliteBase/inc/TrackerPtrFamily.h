@@ -62,7 +62,7 @@ namespace Private
             other.m_pOwnerNoRef = nullptr;
         }
 
-        ReferenceTrackerBase& operator=(ReferenceTrackerBase&& other)
+        ReferenceTrackerBase& operator=(ReferenceTrackerBase&& other) noexcept
         {
             if (this != std::addressof(other))
             {

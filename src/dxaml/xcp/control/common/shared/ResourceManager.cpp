@@ -291,7 +291,7 @@ _Check_return_ HRESULT ResourceManager::TryResolveUri(
     IFC(IsLocalResourceUri(pResourceUri, &fLocalResource));
     if (fLocalResource)
     {
-        TryGetLocalResource(pResourceUri, ppResource);
+        IFC(TryGetLocalResource(pResourceUri, ppResource));
         goto Cleanup;
     }
 

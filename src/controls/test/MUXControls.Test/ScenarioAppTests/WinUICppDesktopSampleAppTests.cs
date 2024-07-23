@@ -700,7 +700,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [Description("This test tests the event order on minimize, restore, maximize for Main Window")]
-        [TestProperty("Ignore", "True")]    // 32252939: event order has changed during WinUI Desktop
         public void WindowChromeTestMainWindowEvents()
         {
             WindowChromeCommonSetup();
@@ -716,15 +715,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             WinUISampleAppTestsUtils.VerifyNoErrorReport();
             TestHelpers.MinimizeWindow();
 
-            // TODO: Task 32252939: Test Failure: event order has changed during WinUI Desktop window minimization
-            // The last event fired was XamlRoot_Changed at the time of the 0.5 GA release
-            //WinUISampleAppTestsUtils.VerifyText("textBoxLastEvent", "XamlRoot_Changed event");
-            WinUISampleAppTestsUtils.VerifyText("textBoxLastEvent", "Window_Activated - Window=Main, Handled=False, WindowActivationState=1");
+            WinUISampleAppTestsUtils.VerifyText("textBoxLastEvent", "XamlRoot_Changed event");
 
             TestHelpers.RestoreWindow();
-            WinUISampleAppTestsUtils.VerifyText("textBoxLastEvent", "Window_Activated - Window=Main, Handled=False, WindowActivationState=0");
+            WinUISampleAppTestsUtils.VerifyText("textBoxLastEvent", "XamlRoot_Changed event");
+
             TestHelpers.MaximizeWindow();
+            WinUISampleAppTestsUtils.VerifyText("textBoxLastEvent", "XamlRoot_Changed event");
+
             TestHelpers.RestoreWindow();
+            WinUISampleAppTestsUtils.VerifyText("textBoxLastEvent", "XamlRoot_Changed event");
+
             WinUISampleAppTestsUtils.VerifyNoErrorReport();
 
             List<string> expectedLogEvents = new List<string>();
@@ -734,17 +735,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             // TODO: Task 32252939: Test Failure: event order has changed during WinUI Desktop window minimization
             // These next two events were in the opposite order for 0.5 GA release
-            expectedLogEvents.Add("XamlRoot_Changed event");
+            // minimize
             expectedLogEvents.Add("Window_Activated - Window=Main, Handled=False, WindowActivationState=1");
-
+            expectedLogEvents.Add("XamlRoot_Changed event");
+            // restore
             expectedLogEvents.Add("Window_Activated - Window=Main, Handled=False, WindowActivationState=0");
             expectedLogEvents.Add("Window_VisibilityChanged - Handled=False, Visible=True");
             expectedLogEvents.Add("Window_Activated - Window=Main, Handled=False, WindowActivationState=0");
             expectedLogEvents.Add("XamlRoot_Changed event");
-            expectedLogEvents.Add("Window_Activated - Window=Main, Handled=False, WindowActivationState=1");
-            expectedLogEvents.Add("Window_Activated - Window=Main, Handled=False, WindowActivationState=0");
+            // maximize
             expectedLogEvents.Add("Window_SizeChanged - Handled=False");
             expectedLogEvents.Add("XamlRoot_Changed event");
+            // restore
             expectedLogEvents.Add("Window_SizeChanged - Handled=False");
             expectedLogEvents.Add("XamlRoot_Changed event");
             WinUISampleAppTestsUtils.VerifyLogEvents(expectedLogEvents.ToArray());
@@ -776,19 +778,43 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [Description("Validate the running cleanup code in DispatcherQueue.ShutdownStarting handler is safe.")]
-         public void RunCleanupCodeInShutdownStarting()
+        [Description("Validate the order of various shutdown events remains constant.")]
+         public void ValidateShutdownOrder()
         {
             UIObject root = TestEnvironment.Application.ApplicationFrameWindow ?? TestEnvironment.Application.CoreWindow;
             WindowChromeCommonSetup();
             SelectWindowUI();
 
-            Log.Comment("Check cleanupCheckbox");
-            WinUISampleAppTestsUtils.SelectCheckbox("cleanupCheckbox");
+            Log.Comment("Check testShutdownCheckbox");
+            WinUISampleAppTestsUtils.SelectCheckbox("testShutdownCheckbox");
             Log.Comment("Clicking Close button");
             TestHelpers.TryCaptionButtonLeftClick(TestHelpers.CaptionButtons.Close, true);
-            // The validation here is that the test process doesn't crash during shutdown.
+            
             TestEnvironment.Application.WaitForExit();
+
+            // Read contents of %temp%\ShutdownOrderLog_<pid>.txt, this is written out by the test app.
+            string logFilePath = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                "ShutdownOrderLog_" + TestEnvironment.Application.Process.Id + ".txt");
+            
+            string shutdownLog = System.IO.File.ReadAllText(logFilePath);
+
+            Log.Comment($"Validate that shutdown log $logFilePath contains expected order of events.");
+            
+            // NOTE: the dtors listed below are not officially part of the contract, but they can be important because
+            // Cpp apps may rely on the timing of when they're called (intentionally or not).
+            string expectedShutdownLog =             
+            @"  Window.Closed raised.
+                ShutdownStarting raised.
+                DispatcherQueue work is running.
+                Page1 Unloaded event raised.
+                Page1::~Page1 called.
+                App::~App called.
+                MainWindow::~MainWindow called.
+                XamlShutdownCompletedOnThread raised.
+                ShutdownCompleted raised.";
+
+            VerifyLogsEqual(expectedShutdownLog, shutdownLog);
         }
 
         [TestMethod]
@@ -1555,6 +1581,56 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     Verify.AreEqual(finalDimensionsRect.Width, initialDimensionsRect.Width, "window did not resize in width");
                 }
+            }
+        }
+
+        private static string[] SplitIntoLines(string str)
+        {
+            List<string> lines = new List<string>();
+            foreach (var line in str.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (!line.StartsWith("#"))
+                {
+                    lines.Add(line.Trim());
+                }
+            }
+            return lines.ToArray();
+        }
+
+        private static void VerifyLogsEqual(string expected, string observed)
+        {
+            string[] expectedLines = SplitIntoLines(expected);
+            string[] observedLines = SplitIntoLines(observed);
+
+            bool passed = true;
+
+            if (expectedLines.Length != observedLines.Length)
+            {
+                passed = false;
+            }
+            else
+            {
+                for (int i = 0; i < expectedLines.Length; i++)
+                {
+                    if (expectedLines[i] != observedLines[i])
+                    {
+                        passed = false;
+                        break;
+                    }
+                }
+            }
+
+            if (!passed)
+            {
+                Log.Comment("Logs did not match. Expected:");
+                Log.Comment("---");
+                Log.Comment(string.Join("\n", expectedLines));
+                Log.Comment("---");
+                Log.Comment("Observed:");
+                Log.Comment("---");
+                Log.Comment(string.Join("\n", observedLines));
+                Log.Comment("---");
+                Verify.Fail("Logs did not match.");
             }
         }
 

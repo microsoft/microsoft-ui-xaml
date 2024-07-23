@@ -321,9 +321,16 @@ public:
 
     wrl::ComPtr<ixp::IIslandInputSitePartner> GetIslandInputSite() const;
 
-    wf::Point GetTranslationFromMainWindow() { return m_offsetFromMainWindow; }
+    // https://task.ms/48749483
+    // TODO: Remove once XAML creates Windowed popups without a DesktopSiteBridge. This is a
+    // temporary workaround since we need a DesktopSiteBridge to create windowed popups.
+    // XamlIslands do not have access to a bridge, and may not be hosted in a DesktopSiteBridge
+    // at all, but to unblock the scenario we need a way to create popups. This method
+    // should not be used except to create windowed popups, and once we have another way to
+    // create them this should be removed.
+    wrl::ComPtr<ixp::IDesktopSiteBridge> GetDesktopSiteBridge();
 
-    _Check_return_ HRESULT GetScreenOffsetFromOwner(_Out_ XPOINTF_COORDS* offset);
+    wf::Point GetTranslationFromMainWindow() { return m_offsetFromMainWindow; }
 
     // Used for MockDComp dumping
     wgr::RectInt32 GetWindowedPopupMoveAndResizeRect() const { return m_windowedPopupMoveAndResizeRect; }
@@ -429,7 +436,7 @@ private:
 
     // This method is called once per lifetime of the CPopup. Resources created here aren't released until the CPopup is
     // deleted.
-    _Check_return_ HRESULT EnsureWindowForWindowedPopup();
+    _Check_return_ HRESULT EnsureWindowForWindowedPopup(_Out_ bool* windowCreated);
 
     // These methods are called once per open/close for the CPopup. Resources created here will be released when the
     // CPopup is closed.
@@ -594,12 +601,6 @@ private:
     // later. This flag guards against that.
     bool m_isImplicitClose                      : 1;
 
-    // Debug flag. If someone opens a windowed popup after the main Xaml window has been destroyed, we'll no-op instead
-    // of trying to create an HWND for it. In these cases Xaml is shutting down.
-    bool m_skippedCreatingPopupHwnd             : 1;
-
-    bool m_registeredWindowPositionChangedHandler : 1;
-
     XUINT32 m_cEventListenerCount;
     ITransformer *m_pTransformer;
 
@@ -719,7 +720,7 @@ protected:
         _In_ const D2DRenderParams& printParams
         ) override;
 
-    _Check_return_ HRESULT EffectiveViewportWalkToChild(
+    virtual _Check_return_ HRESULT EffectiveViewportWalkToChild(
         _In_ CUIElement* child,
         const bool dirtyFound,
         _In_ std::vector<TransformToPreviousViewport>& transformsToViewports,
@@ -748,8 +749,6 @@ public:
     _Check_return_ HRESULT AddToDeferredOpenPopupList(_Inout_ CPopup *pPopup);
 
     void CloseAllPopupsForTreeReset();
-
-    void OnHostWindowPositionChanged();
 
     void OnIslandLostFocus();
 

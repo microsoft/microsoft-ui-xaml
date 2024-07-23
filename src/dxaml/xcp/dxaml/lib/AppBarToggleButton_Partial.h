@@ -68,7 +68,7 @@ namespace DirectUI
         // Animate the width to NaN if width is not overrided and right-aligned labels and no LabelOnRightStyle. 
         TrackerPtr<xaml_animation::IStoryboard> m_widthAdjustmentsForLabelOnRightStyleStoryboard;
 
-        xaml_controls::CommandBarDefaultLabelPosition m_defaultLabelPosition;
+        xaml_controls::CommandBarDefaultLabelPosition m_defaultLabelPosition{};
         DirectUI::InputDeviceType m_inputDeviceTypeUsedToOpenOverflow;
 
         TrackerPtr<xaml_controls::ITextBlock> m_tpKeyboardAcceleratorTextLabel;

@@ -496,7 +496,7 @@ XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { n
             wrl::ComPtr<wf::IAsyncInfo> m_spInnerAsyncInfo;
             wrl::ComPtr<xaml_controls::IListPickerFlyout> m_spPendingFlyout;
             bool m_isCompleted;
-            INT32 m_selectedIndex;
+            INT32 m_selectedIndex{};
     };
 
 } } } } XAML_ABI_NAMESPACE_END

@@ -219,7 +219,7 @@ template< typename T >
 class CDefaultHashTraits
 {
 public:
-    static HRESULT Hash(_In_ void * /*pOwner*/, _In_ const T& element, UINT32 *puHash) throw()
+    static HRESULT Hash(_In_ void * /*pOwner*/, _In_ const T& element, UINT32 *puHash) noexcept
     {
         *puHash = ( ULONG( ULONG_PTR( element ) ) );
         return S_OK;
@@ -359,7 +359,7 @@ private:
         }
 
     public:
-        UINT GetHash() const throw()
+        UINT GetHash() const noexcept
         {
             return( m_nHash );
         }
@@ -379,20 +379,20 @@ public:
         _In_ float fOptimalLoad = 0.75f,
         _In_ float fLoThreshold = 0.25f,
         _In_ float fHiThreshold = 2.25f,
-        _In_ UINT nBlockSize = 10) throw();
+        _In_ UINT nBlockSize = 10) noexcept;
 
-    XHashMap(XHashMap&& src) throw();
-    XHashMap& operator=(XHashMap&& src) throw();
+    XHashMap(XHashMap&& src) noexcept;
+    XHashMap& operator=(XHashMap&& src) noexcept;
 
-    size_t GetCount() const throw();
-    bool IsEmpty() const throw();
+    size_t GetCount() const noexcept;
+    bool IsEmpty() const noexcept;
 
     HRESULT Lookup(
         /* _In_ */ KINARGTYPE key,
         _Out_ VOUTARGTYPE value,
         _Out_ bool* retval) const;
-    HRESULT Lookup(/* _In_ */ KINARGTYPE key, _Out_ const CPair** retval) const throw();
-    HRESULT Lookup(/* _In_ */ KINARGTYPE key, _Out_ CPair** retval) throw();
+    HRESULT Lookup(/* _In_ */ KINARGTYPE key, _Out_ const CPair** retval) const noexcept;
+    HRESULT Lookup(/* _In_ */ KINARGTYPE key, _Out_ CPair** retval) noexcept;
     // V& operator[](/* _In_ */ KINARGTYPE key) throw(...);
 
     HRESULT SetAt(
@@ -403,17 +403,17 @@ public:
         _In_ XPOSITION pos,
         /* _In_ */ VINARGTYPE value);
 
-    HRESULT RemoveKey(/* _In_ */ KINARGTYPE key, _Out_  bool* retval) throw();
+    HRESULT RemoveKey(/* _In_ */ KINARGTYPE key, _Out_  bool* retval) noexcept;
     HRESULT RemoveAll();
     HRESULT RemoveAtPos(_In_ XPOSITION pos) noexcept;
 
-    XPOSITION GetStartPosition() const throw();
+    XPOSITION GetStartPosition() const noexcept;
     void GetNextAssoc(
         _Inout_ XPOSITION& pos,
         _Out_ KOUTARGTYPE key,
         _Out_ VOUTARGTYPE value) const;
-    const CPair* GetNext(_Inout_ XPOSITION& pos) const throw();
-    CPair* GetNext(_Inout_ XPOSITION& pos) throw();
+    const CPair* GetNext(_Inout_ XPOSITION& pos) const noexcept;
+    CPair* GetNext(_Inout_ XPOSITION& pos) noexcept;
     const K& GetNextKey(_Inout_ XPOSITION& pos) const;
     const V& GetNextValue(_Inout_ XPOSITION& pos) const;
     V& GetNextValue(_Inout_ XPOSITION& pos);
@@ -421,20 +421,20 @@ public:
         _In_ XPOSITION pos,
         _Out_ KOUTARGTYPE key,
         _Out_ VOUTARGTYPE value) const;
-    CPair* GetAt(_In_ XPOSITION pos) throw();
-    const CPair* GetAt(_In_ XPOSITION pos) const throw();
+    CPair* GetAt(_In_ XPOSITION pos) noexcept;
+    const CPair* GetAt(_In_ XPOSITION pos) const noexcept;
     const K& GetKeyAt(_In_ XPOSITION pos) const;
     const V& GetValueAt(_In_ XPOSITION pos) const;
     V& GetValueAt(_In_ XPOSITION pos);
 
-    UINT GetHashTableSize() const throw();
+    UINT GetHashTableSize() const noexcept;
     HRESULT InitHashTable(
         _In_ UINT nBins,
         _In_ bool bAllocNow, // default value: true
         _Out_ bool *retval);
 
-    void EnableAutoRehash() throw();
-    void DisableAutoRehash() throw();
+    void EnableAutoRehash() noexcept;
+    void DisableAutoRehash() noexcept;
     HRESULT Rehash(_In_ UINT nBins = 0);
     HRESULT SetOptimalLoad(
         _In_ float fOptimalLoad,
@@ -459,49 +459,49 @@ private:
     CNode* m_pFree;
 
 private:
-    bool IsLocked() const throw();
-    UINT PickSize(_In_ size_t nElements) const throw();
+    bool IsLocked() const noexcept;
+    UINT PickSize(_In_ size_t nElements) const noexcept;
     HRESULT NewNode(
         /* _In_ */ KINARGTYPE key,
         _In_ UINT iBin,
         _In_ UINT nHash,
         _Out_ CNode** retval);
     HRESULT FreeNode(_Inout_ CNode* pNode);
-    void FreePlexes() throw();
+    void FreePlexes() noexcept;
     HRESULT GetNode(
         /* _In_ */ KINARGTYPE key,
         _Out_ UINT& iBin,
         _Out_ UINT& nHash,
         _Out_opt_ CNode*& pPrev,
-        _Out_ CNode** ppNode) const throw();
+        _Out_ CNode** ppNode) const noexcept;
     HRESULT CreateNode(
         /* _In_ */ KINARGTYPE key,
         _In_ UINT iBin,
         _In_ UINT nHash,
-        _Out_ CNode** retval) throw() /*was throw(...) in ATL*/;
+        _Out_ CNode** retval) noexcept /*was throw(...) in ATL*/;
     void RemoveNode(
         _In_ CNode* pNode,
         _In_opt_ CNode* pPrev) noexcept;
-    CNode* FindNextNode(_In_ CNode* pNode) const throw();
-    void UpdateRehashThresholds() throw();
+    CNode* FindNextNode(_In_ CNode* pNode) const noexcept;
+    void UpdateRehashThresholds() noexcept;
 
 public:
-    ~XHashMap() throw();
+    ~XHashMap() noexcept;
 
 private:
     // Private to prevent use
-    XHashMap(_In_ const XHashMap&) throw();
-    XHashMap& operator=(_In_ const XHashMap&) throw();
+    XHashMap(_In_ const XHashMap&) noexcept;
+    XHashMap& operator=(_In_ const XHashMap&) noexcept;
 };
 
 template< typename K, typename V, class KTraits, class VTraits >
-inline size_t XHashMap< K, V, KTraits, VTraits >::GetCount() const throw()
+inline size_t XHashMap< K, V, KTraits, VTraits >::GetCount() const noexcept
 {
     return( m_nElements );
 }
 
 template< typename K, typename V, class KTraits, class VTraits >
-inline bool XHashMap< K, V, KTraits, VTraits >::IsEmpty() const throw()
+inline bool XHashMap< K, V, KTraits, VTraits >::IsEmpty() const noexcept
 {
     return( m_nElements == 0 );
 }
@@ -527,7 +527,7 @@ inline bool XHashMap< K, V, KTraits, VTraits >::IsEmpty() const throw()
 //}
 
 template< typename K, typename V, class KTraits, class VTraits >
-inline UINT XHashMap< K, V, KTraits, VTraits >::GetHashTableSize() const throw()
+inline UINT XHashMap< K, V, KTraits, VTraits >::GetHashTableSize() const noexcept
 {
     return( m_nBins );
 }
@@ -548,14 +548,14 @@ inline void XHashMap< K, V, KTraits, VTraits >::GetAt(
 
 template< typename K, typename V, class KTraits, class VTraits >
 inline typename XHashMap< K, V, KTraits, VTraits >::CPair* XHashMap< K, V, KTraits, VTraits >::GetAt(
-    _In_ XPOSITION pos) throw()
+    _In_ XPOSITION pos) noexcept
 {
     return( static_cast< CPair* >( pos ) );
 }
 
 template< typename K, typename V, class KTraits, class VTraits >
 inline const typename XHashMap< K, V, KTraits, VTraits >::CPair* XHashMap< K, V, KTraits, VTraits >::GetAt(
-    _In_ XPOSITION pos) const throw()
+    _In_ XPOSITION pos) const noexcept
 {
     return( static_cast< const CPair* >( pos ) );
 }
@@ -591,26 +591,26 @@ inline V& XHashMap< K, V, KTraits, VTraits >::GetValueAt(_In_ XPOSITION pos)
 }
 
 template< typename K, typename V, class KTraits, class VTraits >
-inline void XHashMap< K, V, KTraits, VTraits >::DisableAutoRehash() throw()
+inline void XHashMap< K, V, KTraits, VTraits >::DisableAutoRehash() noexcept
 {
     m_nLockCount++;
 }
 
 template< typename K, typename V, class KTraits, class VTraits >
-inline void XHashMap< K, V, KTraits, VTraits >::EnableAutoRehash() throw()
+inline void XHashMap< K, V, KTraits, VTraits >::EnableAutoRehash() noexcept
 {
     XWINRT_ASSUME( m_nLockCount > 0 );
     m_nLockCount--;
 }
 
 template< typename K, typename V, class KTraits, class VTraits >
-inline bool XHashMap< K, V, KTraits, VTraits >::IsLocked() const throw()
+inline bool XHashMap< K, V, KTraits, VTraits >::IsLocked() const noexcept
 {
     return( m_nLockCount != 0 );
 }
 
 template< typename K, typename V, class KTraits, class VTraits >
-UINT XHashMap< K, V, KTraits, VTraits >::PickSize(_In_ size_t nElements) const throw()
+UINT XHashMap< K, V, KTraits, VTraits >::PickSize(_In_ size_t nElements) const noexcept
 {
     // List of primes such that s_anPrimes[i] is the smallest prime greater than 2^(5+i/3)
     static const UINT s_anPrimes[] =
@@ -648,7 +648,7 @@ HRESULT XHashMap< K, V, KTraits, VTraits >::CreateNode(
     /* _In_ */ KINARGTYPE key,
     _In_ UINT iBin,
     _In_ UINT nHash,
-    _Out_ CNode** retval) throw() /*was throw(...) in ATL*/
+    _Out_ CNode** retval) noexcept /*was throw(...) in ATL*/
 {
     CNode* pNode;
 
@@ -669,7 +669,7 @@ HRESULT XHashMap< K, V, KTraits, VTraits >::CreateNode(
 }
 
 template< typename K, typename V, class KTraits, class VTraits >
-XPOSITION XHashMap< K, V, KTraits, VTraits >::GetStartPosition() const throw()
+XPOSITION XHashMap< K, V, KTraits, VTraits >::GetStartPosition() const noexcept
 {
     if( IsEmpty() )
     {
@@ -742,7 +742,7 @@ XHashMap< K, V, KTraits, VTraits >::XHashMap(
         _In_ float fOptimalLoad,
         _In_ float fLoThreshold,
         _In_ float fHiThreshold,
-        _In_ UINT nBlockSize) throw() :
+        _In_ UINT nBlockSize) noexcept :
     m_pOwner( pOwner ),
     m_ppBins( NULL ),
     m_nBins( nBins ),
@@ -769,7 +769,7 @@ XHashMap< K, V, KTraits, VTraits >::XHashMap(
 
 template< typename K, typename V, class KTraits, class VTraits >
 XHashMap< K, V, KTraits, VTraits>::XHashMap(
-    _In_ XHashMap&& src) throw()
+    _In_ XHashMap&& src) noexcept
 {
     m_pOwner = src.m_pOwner;
     m_ppBins = src.m_ppBins;
@@ -793,7 +793,7 @@ XHashMap< K, V, KTraits, VTraits>::XHashMap(
 
 template< typename K, typename V, class KTraits, class VTraits >
 XHashMap< K, V, KTraits, VTraits> &XHashMap< K, V, KTraits, VTraits>::operator=(
-    _In_ XHashMap&& src) throw()
+    _In_ XHashMap&& src) noexcept
 {
     RemoveAll();
 
@@ -845,7 +845,7 @@ HRESULT XHashMap< K, V, KTraits, VTraits >::SetOptimalLoad(
 }
 
 template< typename K, typename V, class KTraits, class VTraits >
-void XHashMap< K, V, KTraits, VTraits >::UpdateRehashThresholds() throw()
+void XHashMap< K, V, KTraits, VTraits >::UpdateRehashThresholds() noexcept
 {
     m_nHiRehashThreshold = size_t( m_fHiThreshold*m_nBins );
     m_nLoRehashThreshold = size_t( m_fLoThreshold*m_nBins );
@@ -924,7 +924,7 @@ HRESULT XHashMap< K, V, KTraits, VTraits >::RemoveAll()
 }
 
 template< typename K, typename V, class KTraits, class VTraits >
-XHashMap< K, V, KTraits, VTraits >::~XHashMap() throw()
+XHashMap< K, V, KTraits, VTraits >::~XHashMap() noexcept
 {
     //_ATLTRY
     //{
@@ -1022,7 +1022,7 @@ HRESULT XHashMap< K, V, KTraits, VTraits >::FreeNode(_Inout_ CNode* pNode)
 }
 
 template< typename K, typename V, class KTraits, class VTraits >
-void XHashMap< K, V, KTraits, VTraits >::FreePlexes() throw()
+void XHashMap< K, V, KTraits, VTraits >::FreePlexes() noexcept
 {
     m_pFree = NULL;
     if( m_pBlocks != NULL )
@@ -1038,7 +1038,7 @@ HRESULT XHashMap< K, V, KTraits, VTraits >::GetNode(
     _Out_ UINT& iBin,
     _Out_ UINT& nHash,
     _Out_opt_ CNode*& pPrev,
-    _Out_ CNode** retval) const throw()
+    _Out_ CNode** retval) const noexcept
 {
     CNode* pFollow;
 
@@ -1095,7 +1095,7 @@ HRESULT XHashMap< K, V, KTraits, VTraits >::Lookup(
 template< typename K, typename V, class KTraits, class VTraits >
 HRESULT XHashMap< K, V, KTraits, VTraits >::Lookup(
     /* _In_ */ KINARGTYPE key,
-    _Out_ const CPair** retval) const throw()
+    _Out_ const CPair** retval) const noexcept
 {
     UINT iBin;
     UINT nHash;
@@ -1110,7 +1110,7 @@ HRESULT XHashMap< K, V, KTraits, VTraits >::Lookup(
 template< typename K, typename V, class KTraits, class VTraits >
 HRESULT XHashMap< K, V, KTraits, VTraits >::Lookup(
     /* _In_ */ KINARGTYPE key,
-    _Out_ CPair** retval) throw()
+    _Out_ CPair** retval) noexcept
 {
     UINT iBin;
     UINT nHash;
@@ -1123,7 +1123,7 @@ HRESULT XHashMap< K, V, KTraits, VTraits >::Lookup(
 }
 
 template< typename K, typename V, class KTraits, class VTraits >
-HRESULT XHashMap< K, V, KTraits, VTraits >::RemoveKey(/* _In_ */ KINARGTYPE key, _Out_ bool* retval) throw()
+HRESULT XHashMap< K, V, KTraits, VTraits >::RemoveKey(/* _In_ */ KINARGTYPE key, _Out_ bool* retval) noexcept
 {
     CNode* pNode;
     UINT iBin;
@@ -1276,7 +1276,7 @@ void XHashMap< K, V, KTraits, VTraits >::GetNextAssoc(
 
 template< typename K, typename V, class KTraits, class VTraits >
 const typename XHashMap< K, V, KTraits, VTraits >::CPair* XHashMap< K, V, KTraits, VTraits >::GetNext(
-    _Inout_ XPOSITION& pos) const throw()
+    _Inout_ XPOSITION& pos) const noexcept
 {
     CNode* pNode;
     CNode* pNext;
@@ -1294,7 +1294,7 @@ const typename XHashMap< K, V, KTraits, VTraits >::CPair* XHashMap< K, V, KTrait
 
 template< typename K, typename V, class KTraits, class VTraits >
 typename XHashMap< K, V, KTraits, VTraits >::CPair* XHashMap< K, V, KTraits, VTraits >::GetNext(
-    _Inout_ XPOSITION& pos) throw()
+    _Inout_ XPOSITION& pos) noexcept
 {
     XWINRT_ASSUME( m_ppBins != NULL );
     XWINRT_ASSERT( pos != NULL );
@@ -1363,7 +1363,7 @@ V& XHashMap< K, V, KTraits, VTraits >::GetNextValue(
 
 template< typename K, typename V, class KTraits, class VTraits >
 typename XHashMap< K, V, KTraits, VTraits >::CNode* XHashMap< K, V, KTraits, VTraits >::FindNextNode(
-    _In_ CNode* pNode) const throw()
+    _In_ CNode* pNode) const noexcept
 {
     CNode* pNext;
 

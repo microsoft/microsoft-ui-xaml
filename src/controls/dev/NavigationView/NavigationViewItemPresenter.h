@@ -39,11 +39,19 @@ private:
     NavigationViewItem * GetNavigationViewItem();
     void UpdateMargin();
     void UnhookEventsAndClearFields();
+    void ResetTrackedPointerId();
+    bool IgnorePointerId(const winrt::PointerRoutedEventArgs& args);
 
     void OnExpandCollapseChevronPointerPressed(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnExpandCollapseChevronPointerReleased(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnExpandCollapseChevronPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnExpandCollapseChevronPointerCanceled(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnExpandCollapseChevronPointerCaptureLost(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
 
+    bool m_isChevronPressed{ false };
     double m_compactPaneLengthValue { 40 };
+    double m_leftIndentation{ 0 };
+    uint32_t m_trackedPointerId{ 0 };
 
     NavigationViewItemHelper<NavigationViewItemPresenter> m_helper{ this };
     tracker_ref<winrt::Grid> m_contentGrid{ this };
@@ -52,9 +60,10 @@ private:
 
     winrt::UIElement::PointerPressed_revoker m_expandCollapseChevronPointerPressedRevoker{};
     winrt::UIElement::PointerReleased_revoker m_expandCollapseChevronPointerReleasedRevoker{};
-
-    double m_leftIndentation{ 0 };
-
+    RoutedEventHandler_revoker m_expandCollapseChevronPointerExitedRevoker{};
+    RoutedEventHandler_revoker m_expandCollapseChevronPointerCanceledRevoker{};
+    RoutedEventHandler_revoker m_expandCollapseChevronPointerCaptureLostRevoker{};
+    
     tracker_ref<winrt::Storyboard> m_chevronExpandedStoryboard{ this };
     tracker_ref<winrt::Storyboard> m_chevronCollapsedStoryboard{ this };
 };

@@ -38,6 +38,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterTrace.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingScrollCompletedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingScrollAnimationStartingEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingViewChangingEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SnapPoint.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SnapPointWrapper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingZoomAnimationStartingEventArgs.h" />
@@ -66,6 +67,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingBringingIntoViewEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingScrollCompletedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingScrollAnimationStartingEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingViewChangingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingZoomAnimationStartingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingAnchorRequestedEventArgs.cpp" />

@@ -57,6 +57,7 @@ IFACEMETHODIMP DirectUI::ManipulationInertiaStartingRoutedEventArgs::get_Contain
     CUIElement* pValueCore = nullptr;
 
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CManipulationInertiaStartingEventArgs*>(pCoreEventArgsNoRef)->get_Container(&pValueCore));
@@ -70,6 +71,7 @@ IFACEMETHODIMP DirectUI::ManipulationInertiaStartingRoutedEventArgs::get_Expansi
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ManipulationInertiaStartingRoutedEventArgs*>(this)->get_ExpansionBehaviorImpl(ppValue));
 Cleanup:
@@ -88,6 +90,7 @@ IFACEMETHODIMP DirectUI::ManipulationInertiaStartingRoutedEventArgs::get_Rotatio
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ManipulationInertiaStartingRoutedEventArgs*>(this)->get_RotationBehaviorImpl(ppValue));
 Cleanup:
@@ -106,6 +109,7 @@ IFACEMETHODIMP DirectUI::ManipulationInertiaStartingRoutedEventArgs::get_Transla
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ManipulationInertiaStartingRoutedEventArgs*>(this)->get_TranslationBehaviorImpl(ppValue));
 Cleanup:
@@ -128,6 +132,7 @@ IFACEMETHODIMP DirectUI::ManipulationInertiaStartingRoutedEventArgs::get_Handled
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CManipulationInertiaStartingEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));
@@ -161,6 +166,7 @@ IFACEMETHODIMP DirectUI::ManipulationInertiaStartingRoutedEventArgs::get_Pointer
     DirectUI::PointerDeviceType valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CManipulationInertiaStartingEventArgs*>(pCoreEventArgsNoRef)->get_PointerDeviceType(&valueCore));
@@ -174,6 +180,7 @@ IFACEMETHODIMP DirectUI::ManipulationInertiaStartingRoutedEventArgs::get_Delta(_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ManipulationInertiaStartingRoutedEventArgs*>(this)->get_DeltaImpl(pValue));
 Cleanup:
@@ -183,6 +190,7 @@ IFACEMETHODIMP DirectUI::ManipulationInertiaStartingRoutedEventArgs::get_Cumulat
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ManipulationInertiaStartingRoutedEventArgs*>(this)->get_CumulativeImpl(pValue));
 Cleanup:
@@ -192,6 +200,7 @@ IFACEMETHODIMP DirectUI::ManipulationInertiaStartingRoutedEventArgs::get_Velocit
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ManipulationInertiaStartingRoutedEventArgs*>(this)->get_VelocitiesImpl(pValue));
 Cleanup:

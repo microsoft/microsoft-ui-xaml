@@ -153,6 +153,7 @@ IFACEMETHODIMP DirectUI::PropertyMetadataFactory::CreateWithDefaultValue(_In_opt
         XamlTelemetry::PublicApiCall(true, 0, "PropertyMetadata_CreateWithDefaultValue", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     
     IFC(CreateWithDefaultValueImpl(pDefaultValue, ppReturnValue));
 Cleanup:
@@ -170,6 +171,7 @@ IFACEMETHODIMP DirectUI::PropertyMetadataFactory::CreateWithDefaultValueAndCallb
         XamlTelemetry::PublicApiCall(true, 0, "PropertyMetadata_CreateWithDefaultValueAndCallback", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     
     IFC(CreateWithDefaultValueAndCallbackImpl(pDefaultValue, pPropertyChangedCallback, ppReturnValue));
 Cleanup:
@@ -188,6 +190,7 @@ IFACEMETHODIMP DirectUI::PropertyMetadataFactory::CreateWithFactory(_In_ ABI::Mi
     }
     ARG_NOTNULL(pCreateDefaultValueCallback, "createDefaultValueCallback");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     
     IFC(CreateWithFactoryImpl(pCreateDefaultValueCallback, ppReturnValue));
 Cleanup:
@@ -206,6 +209,7 @@ IFACEMETHODIMP DirectUI::PropertyMetadataFactory::CreateWithFactoryAndCallback(_
     }
     ARG_NOTNULL(pCreateDefaultValueCallback, "createDefaultValueCallback");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     
     IFC(CreateWithFactoryAndCallbackImpl(pCreateDefaultValueCallback, pPropertyChangedCallback, ppReturnValue));
 Cleanup:

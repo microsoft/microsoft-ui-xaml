@@ -104,6 +104,7 @@ IFACEMETHODIMP DirectUI::NavigationTransitionInfoGenerated::GetNavigationStateCo
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "NavigationTransitionInfo_GetNavigationStateCore", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<NavigationTransitionInfo*>(this)->GetNavigationStateCoreImpl(pReturnValue));

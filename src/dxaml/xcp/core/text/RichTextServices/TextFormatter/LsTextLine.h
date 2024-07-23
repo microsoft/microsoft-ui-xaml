@@ -272,7 +272,7 @@ namespace RichTextServices
             Ptls6::PLSLINE m_pLsLine;
                 // Pointer to Line Services line wrapped by this object.
 
-            Ptls6::LSLINFO m_lsLineInfo;
+            Ptls6::LSLINFO m_lsLineInfo{};
                 // Line metrics for this line maintained by Line Services.
 
             XUINT32 m_startIndex;

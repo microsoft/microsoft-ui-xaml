@@ -334,7 +334,7 @@ namespace RichTextServices
         TextLineBreak *m_pTextLineBreak;
             // The state of the line when broken by line breaking process.
 
-        bool m_alignmentFollowsReadingOrder;
+        bool m_alignmentFollowsReadingOrder{};
             // The flag to indicate whether the detected text reading order is different from the set flow direction.
     };
 }

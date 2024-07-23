@@ -342,7 +342,7 @@ namespace DirectUI
             wfc::IVectorChangedEventArgs> m_evtVectorChangedHandlers;
 
         // Registration for our wrapped vector's changed event.
-        EventRegistrationToken m_VectorChangedToken;
+        EventRegistrationToken m_VectorChangedToken{};
 
     }; // class IterableWrappedObservableCollection
 }

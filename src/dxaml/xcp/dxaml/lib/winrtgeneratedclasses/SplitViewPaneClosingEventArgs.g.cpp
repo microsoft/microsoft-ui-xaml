@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::SplitViewPaneClosingEventArgs::get_Cancel(_Out_ BOOLEAN
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CSplitViewPaneClosingEventArgs*>(pCoreEventArgsNoRef)->get_Cancel(&valueCore));

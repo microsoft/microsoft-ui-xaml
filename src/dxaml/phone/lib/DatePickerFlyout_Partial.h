@@ -74,9 +74,9 @@ XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { n
 
         Private::TrackerPtr<xaml_primitives::IButtonBase> _tpAcceptButton;
         Private::TrackerPtr<xaml_primitives::IButtonBase> _tpDismissButton;
-        EventRegistrationToken _acceptClickToken;
-        EventRegistrationToken _dismissClickToken;
-        EventRegistrationToken _keyDownToken;
+        EventRegistrationToken _acceptClickToken{};
+        EventRegistrationToken _dismissClickToken{};
+        EventRegistrationToken _keyDownToken{};
     };
 
     ActivatableClassWithFactory(DatePickerFlyout, DatePickerFlyoutFactory);

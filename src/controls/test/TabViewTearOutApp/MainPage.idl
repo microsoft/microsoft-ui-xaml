@@ -1,0 +1,10 @@
+﻿namespace TabViewTearOutApp
+{
+    [default_interface]
+    runtimeclass MainPage : Microsoft.UI.Xaml.Controls.Page
+    {
+        MainPage();
+
+        IObservableVector<IInspectable> StringList{ get; };
+    }
+}

@@ -61,6 +61,7 @@ IFACEMETHODIMP DirectUI::ParserServiceProviderGenerated::get_BaseUri(_Outptr_res
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ParserServiceProvider*>(this)->get_BaseUriImpl(ppValue));
 Cleanup:
@@ -70,6 +71,7 @@ IFACEMETHODIMP DirectUI::ParserServiceProviderGenerated::get_RootObject(_Outptr_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ParserServiceProvider*>(this)->get_RootObjectImpl(ppValue));
 Cleanup:
@@ -79,6 +81,7 @@ IFACEMETHODIMP DirectUI::ParserServiceProviderGenerated::get_TargetObject(_Outpt
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ParserServiceProvider*>(this)->get_TargetObjectImpl(ppValue));
 Cleanup:
@@ -88,6 +91,7 @@ IFACEMETHODIMP DirectUI::ParserServiceProviderGenerated::get_TargetProperty(_Out
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ParserServiceProvider*>(this)->get_TargetPropertyImpl(ppValue));
 Cleanup:
@@ -105,6 +109,7 @@ IFACEMETHODIMP DirectUI::ParserServiceProviderGenerated::GetService(_In_ ABI::Wi
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ParserServiceProvider_GetService", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<ParserServiceProvider*>(this)->GetServiceImpl(type, ppReturnValue));
 Cleanup:
@@ -123,6 +128,7 @@ IFACEMETHODIMP DirectUI::ParserServiceProviderGenerated::Resolve(_In_ HSTRING qu
     }
     ARG_NOTNULL(qualifiedTypeName, "qualifiedTypeName");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<ParserServiceProvider*>(this)->ResolveImpl(qualifiedTypeName, pReturnValue));
 Cleanup:

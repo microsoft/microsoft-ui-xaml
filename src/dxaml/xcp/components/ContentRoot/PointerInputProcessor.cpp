@@ -45,6 +45,9 @@
 
 using namespace ContentRootInput;
 
+// Define as 1 (i.e. XCP_TRACE_OUTPUT_MSG) to get DirectManipulation debug outputs, and 0 otherwise
+#define DMIM_DBG 0
+
 static const XUINT32 sc_Mouse_Pointer_Id = 1;
 
 PointerInputProcessor::PointerInputProcessor(_In_ CInputManager& inputManager)
@@ -442,7 +445,7 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerInput(
             if (m_inputManager.m_coreServices.GetInputServices()->IsDMInfoTracingEnabled())
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER | DMIM_DBG) /*traceType*/, L"DMIM[0x%p]:  ProcessPointerInput - Raising PointerCaptureLost for 0x%p and pointerId=%d.",
-                    this, spDOContact, pointerId));
+                    this, spDOContact.get(), pointerId));
             }
     #endif // DM_DEBUG
 
@@ -531,7 +534,7 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerInput(
 #ifdef DM_DEBUG
         if (m_inputManager.m_coreServices.GetInputServices()->IsDMInfoTracingEnabled())
         {
-            IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER | DMIM_DBG) /*traceType*/, L"DMIM[0x%p]:  ProcessPointerInput - Raising PointerPressed for 0x%p.", this, spDOContact));
+            IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER | DMIM_DBG) /*traceType*/, L"DMIM[0x%p]:  ProcessPointerInput - Raising PointerPressed for 0x%p.", this, spDOContact.get()));
         }
 #endif // DM_DEBUG
 
@@ -609,7 +612,7 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerInput(
         if (m_inputManager.m_coreServices.GetInputServices()->IsDMInfoTracingEnabled())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER | DMIM_DBG) /*traceType*/, L"DMIM[0x%p]:  ProcessPointerInput - Raising PointerReleased for 0x%p.",
-                this, pPointerCaptureDO ? pPointerCaptureDO : spDOContact));
+                this, pPointerCaptureDO ? pPointerCaptureDO : spDOContact.get()));
         }
 #endif // DM_DEBUG
 

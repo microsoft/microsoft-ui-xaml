@@ -519,7 +519,7 @@ namespace XWinRT
             : _pLock(nullptr)
             {
             }
-            LockHolder(LockHolder&& other)
+            LockHolder(LockHolder&& other) noexcept
             : _pLock(nullptr)
             {
                 using XWinRT::FakeStl::swap;

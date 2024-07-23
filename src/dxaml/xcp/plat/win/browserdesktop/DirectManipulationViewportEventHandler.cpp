@@ -6,6 +6,19 @@
 // Define as 1 (i.e. XCP_TRACE_OUTPUT_MSG) to get debug outputs, and 0 otherwise
 #define DMVEH_DBG 0
 
+#ifdef DM_DEBUG
+bool CDirectManipulationViewportEventHandler::DMVEH_TraceDbg() const
+{
+    bool result = gps->IsDebugTraceTypeActive(XCP_TRACE_DM_PAL_SERVICE_VIEWPORT_EVENTHANDLER);
+
+    if constexpr (DMVEH_DBG)
+    {
+        result = true;
+    }
+
+    return result;
+}
+#endif // DM_DEBUG
 
 //------------------------------------------------------------------------
 //
@@ -18,7 +31,7 @@
 CDirectManipulationViewportEventHandler::CDirectManipulationViewportEventHandler()
 {
 #ifdef DM_DEBUG
-    if (DMVEH_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_PAL_SERVICE_VIEWPORT_EVENTHANDLER))
+    if (DMVEH_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_PAL_SERVICE_VIEWPORT_EVENTHANDLER | XCP_TRACE_APPEND_OUTPUT_WITH_THREAD_ID | DMVEH_DBG) /*traceType*/,
             L"DMVEH[0x%p]: CDirectManipulationViewportEventHandler constructor.", this));
@@ -39,7 +52,7 @@ CDirectManipulationViewportEventHandler::CDirectManipulationViewportEventHandler
 CDirectManipulationViewportEventHandler::~CDirectManipulationViewportEventHandler()
 {
 #ifdef DM_DEBUG
-    if (DMVEH_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_PAL_SERVICE_VIEWPORT_EVENTHANDLER))
+    if (DMVEH_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_PAL_SERVICE_VIEWPORT_EVENTHANDLER | XCP_TRACE_APPEND_OUTPUT_WITH_THREAD_ID | DMVEH_DBG) /*traceType*/,
             L"DMVEH[0x%p]: ~CDirectManipulationViewportEventHandler destructor.", this));
@@ -86,7 +99,7 @@ CDirectManipulationViewportEventHandler::OnViewportStatusChanged(
     HRESULT hr = S_OK;
 
 #ifdef DM_DEBUG
-    if (DMVEH_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_PAL_SERVICE_VIEWPORT_EVENTHANDLER))
+    if (DMVEH_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_PAL_SERVICE_VIEWPORT_EVENTHANDLER | XCP_TRACE_APPEND_OUTPUT_WITH_THREAD_ID | DMVEH_DBG) /*traceType*/,
             L"DMVEH[0x%p]: OnViewportStatusChanged entry for UI thread consumption. pDMViewport=0x%p, previous=%d, current=%d.", this, pDMViewport, previous, current));
@@ -155,7 +168,7 @@ CDirectManipulationViewportEventHandler::OnInteraction(
     HRESULT hr = S_OK;
 
 #ifdef DM_DEBUG
-    if (DMVEH_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_PAL_SERVICE_VIEWPORT_EVENTHANDLER))
+    if (DMVEH_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_PAL_SERVICE_VIEWPORT_EVENTHANDLER | XCP_TRACE_APPEND_OUTPUT_WITH_THREAD_ID | DMVEH_DBG) /*traceType*/,
             L"DMVEH[0x%p]: OnInteraction entry for UI thread consumption. pDMViewport=0x%p, newInteractionType=%d.", this, pDMViewport, newInteractionType));
@@ -190,7 +203,7 @@ CDirectManipulationViewportEventHandler::OnDragDropStatusChange(
     )
 {
 #ifdef DM_DEBUG
-    if (DMVEH_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_PAL_SERVICE_VIEWPORT_EVENTHANDLER))
+    if (DMVEH_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_PAL_SERVICE_VIEWPORT_EVENTHANDLER | XCP_TRACE_APPEND_OUTPUT_WITH_THREAD_ID | DMVEH_DBG) /*traceType*/,
             L"DMVEH[0x%p]: OnDragDropStatusChange entry for UI thread consumption. pDMViewport=0x%p, current=%d, previous=%d.", this, pDMViewport, current, previous));

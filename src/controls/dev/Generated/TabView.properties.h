@@ -24,6 +24,9 @@ public:
     void CanReorderTabs(bool value);
     bool CanReorderTabs();
 
+    void CanTearOutTabs(bool value);
+    bool CanTearOutTabs();
+
     void CloseButtonOverlayMode(winrt::TabViewCloseButtonOverlayMode const& value);
     winrt::TabViewCloseButtonOverlayMode CloseButtonOverlayMode();
 
@@ -68,6 +71,7 @@ public:
     static winrt::DependencyProperty AllowDropTabsProperty() { return s_AllowDropTabsProperty; }
     static winrt::DependencyProperty CanDragTabsProperty() { return s_CanDragTabsProperty; }
     static winrt::DependencyProperty CanReorderTabsProperty() { return s_CanReorderTabsProperty; }
+    static winrt::DependencyProperty CanTearOutTabsProperty() { return s_CanTearOutTabsProperty; }
     static winrt::DependencyProperty CloseButtonOverlayModeProperty() { return s_CloseButtonOverlayModeProperty; }
     static winrt::DependencyProperty IsAddTabButtonVisibleProperty() { return s_IsAddTabButtonVisibleProperty; }
     static winrt::DependencyProperty SelectedIndexProperty() { return s_SelectedIndexProperty; }
@@ -87,6 +91,7 @@ public:
     static GlobalDependencyProperty s_AllowDropTabsProperty;
     static GlobalDependencyProperty s_CanDragTabsProperty;
     static GlobalDependencyProperty s_CanReorderTabsProperty;
+    static GlobalDependencyProperty s_CanTearOutTabsProperty;
     static GlobalDependencyProperty s_CloseButtonOverlayModeProperty;
     static GlobalDependencyProperty s_IsAddTabButtonVisibleProperty;
     static GlobalDependencyProperty s_SelectedIndexProperty;
@@ -103,6 +108,10 @@ public:
 
     winrt::event_token AddTabButtonClick(winrt::TypedEventHandler<winrt::TabView, winrt::IInspectable> const& value);
     void AddTabButtonClick(winrt::event_token const& token);
+    winrt::event_token ExternalTornOutTabsDropped(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewExternalTornOutTabsDroppedEventArgs> const& value);
+    void ExternalTornOutTabsDropped(winrt::event_token const& token);
+    winrt::event_token ExternalTornOutTabsDropping(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewExternalTornOutTabsDroppingEventArgs> const& value);
+    void ExternalTornOutTabsDropping(winrt::event_token const& token);
     winrt::event_token SelectionChanged(winrt::SelectionChangedEventHandler const& value);
     void SelectionChanged(winrt::event_token const& token);
     winrt::event_token TabCloseRequested(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabCloseRequestedEventArgs> const& value);
@@ -119,8 +128,14 @@ public:
     void TabStripDragOver(winrt::event_token const& token);
     winrt::event_token TabStripDrop(winrt::DragEventHandler const& value);
     void TabStripDrop(winrt::event_token const& token);
+    winrt::event_token TabTearOutRequested(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabTearOutRequestedEventArgs> const& value);
+    void TabTearOutRequested(winrt::event_token const& token);
+    winrt::event_token TabTearOutWindowRequested(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabTearOutWindowRequestedEventArgs> const& value);
+    void TabTearOutWindowRequested(winrt::event_token const& token);
 
     event_source<winrt::TypedEventHandler<winrt::TabView, winrt::IInspectable>> m_addTabButtonClickEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewExternalTornOutTabsDroppedEventArgs>> m_externalTornOutTabsDroppedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewExternalTornOutTabsDroppingEventArgs>> m_externalTornOutTabsDroppingEventSource;
     event_source<winrt::SelectionChangedEventHandler> m_selectionChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabCloseRequestedEventArgs>> m_tabCloseRequestedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDragCompletedEventArgs>> m_tabDragCompletedEventSource;
@@ -129,9 +144,15 @@ public:
     event_source<winrt::TypedEventHandler<winrt::TabView, winrt::IVectorChangedEventArgs>> m_tabItemsChangedEventSource;
     event_source<winrt::DragEventHandler> m_tabStripDragOverEventSource;
     event_source<winrt::DragEventHandler> m_tabStripDropEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabTearOutRequestedEventArgs>> m_tabTearOutRequestedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabTearOutWindowRequestedEventArgs>> m_tabTearOutWindowRequestedEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnCanTearOutTabsPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnCloseButtonOverlayModePropertyChanged(
         winrt::DependencyObject const& sender,

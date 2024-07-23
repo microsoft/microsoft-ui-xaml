@@ -30,4 +30,11 @@ namespace Microsoft.UI.Content
     public sealed class ContentIsland
     {
     }
+
+    [Imported("microsoft.ui.content.idl")]
+    [DefaultInterfaceName("IContentCoordinateConverter")]
+    [WindowsTypePattern]
+    public sealed class ContentCoordinateConverter
+    {
+    }
 }

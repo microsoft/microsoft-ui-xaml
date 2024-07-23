@@ -58,6 +58,7 @@ IFACEMETHODIMP DirectUI::CalendarViewAutomationPeerGenerated::get_CanSelectMulti
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarViewAutomationPeer*>(this)->get_CanSelectMultipleImpl(pValue));
 Cleanup:
@@ -67,6 +68,7 @@ IFACEMETHODIMP DirectUI::CalendarViewAutomationPeerGenerated::get_ColumnCount(_O
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarViewAutomationPeer*>(this)->get_ColumnCountImpl(pValue));
 Cleanup:
@@ -76,6 +78,7 @@ IFACEMETHODIMP DirectUI::CalendarViewAutomationPeerGenerated::get_IsReadOnly(_Ou
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarViewAutomationPeer*>(this)->get_IsReadOnlyImpl(pValue));
 Cleanup:
@@ -85,6 +88,7 @@ IFACEMETHODIMP DirectUI::CalendarViewAutomationPeerGenerated::get_IsSelectionReq
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarViewAutomationPeer*>(this)->get_IsSelectionRequiredImpl(pValue));
 Cleanup:
@@ -94,6 +98,7 @@ IFACEMETHODIMP DirectUI::CalendarViewAutomationPeerGenerated::get_RowCount(_Out_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarViewAutomationPeer*>(this)->get_RowCountImpl(pValue));
 Cleanup:
@@ -103,6 +108,7 @@ IFACEMETHODIMP DirectUI::CalendarViewAutomationPeerGenerated::get_RowOrColumnMaj
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarViewAutomationPeer*>(this)->get_RowOrColumnMajorImpl(pValue));
 Cleanup:
@@ -112,6 +118,7 @@ IFACEMETHODIMP DirectUI::CalendarViewAutomationPeerGenerated::get_Value(_Out_ HS
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarViewAutomationPeer*>(this)->get_ValueImpl(pValue));
 Cleanup:
@@ -129,6 +136,7 @@ IFACEMETHODIMP DirectUI::CalendarViewAutomationPeerGenerated::GetColumnHeaders(_
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarViewAutomationPeer_GetColumnHeaders", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CalendarViewAutomationPeer*>(this)->GetColumnHeadersImpl(pReturnValueCount, ppReturnValue));
@@ -147,6 +155,7 @@ IFACEMETHODIMP DirectUI::CalendarViewAutomationPeerGenerated::GetItem(_In_ INT r
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarViewAutomationPeer_GetItem", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CalendarViewAutomationPeer*>(this)->GetItemImpl(row, column, ppReturnValue));
@@ -165,6 +174,7 @@ IFACEMETHODIMP DirectUI::CalendarViewAutomationPeerGenerated::GetRowHeaders(_Out
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarViewAutomationPeer_GetRowHeaders", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CalendarViewAutomationPeer*>(this)->GetRowHeadersImpl(pReturnValueCount, ppReturnValue));
@@ -183,6 +193,7 @@ IFACEMETHODIMP DirectUI::CalendarViewAutomationPeerGenerated::GetSelection(_Out_
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarViewAutomationPeer_GetSelection", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CalendarViewAutomationPeer*>(this)->GetSelectionImpl(pReturnValueCount, ppReturnValue));

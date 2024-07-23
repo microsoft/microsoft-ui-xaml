@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::RenderingEventArgs::get_RenderingTime(_Out_ ABI::Window
     ABI::Windows::Foundation::TimeSpan valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CRenderingEventArgs*>(pCoreEventArgsNoRef)->get_RenderingTime(&valueCore));

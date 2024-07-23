@@ -65,6 +65,7 @@ _Check_return_ HRESULT DirectUI::CalendarPanelGenerated::get_FirstCacheIndex(_Ou
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarPanel*>(this)->get_FirstCacheIndexImpl(pValue));
 Cleanup:
@@ -74,6 +75,7 @@ _Check_return_ HRESULT DirectUI::CalendarPanelGenerated::get_FirstVisibleIndex(_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarPanel*>(this)->get_FirstVisibleIndexImpl(pValue));
 Cleanup:
@@ -99,6 +101,7 @@ _Check_return_ HRESULT DirectUI::CalendarPanelGenerated::get_LastCacheIndex(_Out
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarPanel*>(this)->get_LastCacheIndexImpl(pValue));
 Cleanup:
@@ -108,6 +111,7 @@ _Check_return_ HRESULT DirectUI::CalendarPanelGenerated::get_LastVisibleIndex(_O
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarPanel*>(this)->get_LastVisibleIndexImpl(pValue));
 Cleanup:
@@ -133,6 +137,7 @@ _Check_return_ HRESULT DirectUI::CalendarPanelGenerated::get_ScrollingDirection(
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarPanel*>(this)->get_ScrollingDirectionImpl(pValue));
 Cleanup:

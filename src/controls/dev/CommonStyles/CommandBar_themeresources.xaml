@@ -1016,6 +1016,7 @@
               CornerRadius="{TemplateBinding CornerRadius}"
               ContentTransitions="{TemplateBinding ContentTransitions}"
               ContentTemplate="{TemplateBinding ContentTemplate}"
+              Foreground="{TemplateBinding Foreground}"
               Margin="{StaticResource AppBarEllipsisButtonInnerBorderMargin}"
               Padding="0"
               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"

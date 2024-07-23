@@ -74,6 +74,7 @@ IFACEMETHODIMP DirectUI::MenuFlyoutItemGenerated::get_KeyboardAcceleratorTextOve
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<MenuFlyoutItem*>(this)->get_KeyboardAcceleratorTextOverrideImpl(pValue));
 Cleanup:
@@ -182,7 +183,7 @@ _Check_return_ HRESULT DirectUI::MenuFlyoutItemGenerated::EventAddHandlerByIndex
     case KnownEventIndex::MenuFlyoutItem_Click:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IRoutedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -211,7 +212,7 @@ _Check_return_ HRESULT DirectUI::MenuFlyoutItemGenerated::EventRemoveHandlerByIn
     case KnownEventIndex::MenuFlyoutItem_Click:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IRoutedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

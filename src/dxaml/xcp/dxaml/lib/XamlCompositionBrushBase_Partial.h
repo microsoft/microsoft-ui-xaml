@@ -35,7 +35,7 @@ namespace DirectUI
         xaml_media::IXamlCompositionBrushBaseOverridesPrivate* GetPrivateOverridesNoRef();
 
         bool m_didQueryForPrivateOverrides = false;
-        xaml_media::IXamlCompositionBrushBaseOverridesPrivate* m_privateOverridesNoRef;
+        xaml_media::IXamlCompositionBrushBaseOverridesPrivate* m_privateOverridesNoRef{};
     };
 }
 

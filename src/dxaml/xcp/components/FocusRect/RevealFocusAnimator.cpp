@@ -527,7 +527,9 @@ wf::TimeSpan RevealFocusAnimator::GetPulsingAnimationDelay()
 wf::TimeSpan RevealFocusAnimator::GetIntensityDuration(const RevealFocusSource& source, DirectUI::FocusNavigationDirection direction)
 {
     const auto spotlightDuration = source.GetSpotLightDuration(direction);
-    return wf::TimeSpan { static_cast<int64_t>(spotlightDuration.Duration * GetDefaultValue(DefaultValue::SpotLightIntensityDurationFactor))};
+    return wf::TimeSpan { static_cast<int64_t>(
+        static_cast<float>(spotlightDuration.Duration) * GetDefaultValue(DefaultValue::SpotLightIntensityDurationFactor)
+        )};
 }
 
 void RevealFocusAnimator::OnFocusedElementKeyPressed(_In_ const RevealFocusSource& source)

@@ -24,14 +24,6 @@ namespace OM
             private set;
         }
 
-        public int XamlDirectVersion
-        {
-            get
-            {
-                return Definition.GetXamlDirectVersion(Version);
-            }
-        }
-
         public string FullName
         {
             get

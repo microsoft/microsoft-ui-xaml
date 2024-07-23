@@ -37,7 +37,7 @@
 // except AddRef/Release call the base class instead of RuntimeClassT directly and GetIids is not implemented
 #define WuxpInspectableClassNoGetIids(runtimeClassName, trustLevel) \
     public: \
-        static const wchar_t* STDMETHODCALLTYPE InternalGetRuntimeClassName() throw() \
+        static const wchar_t* STDMETHODCALLTYPE InternalGetRuntimeClassName() noexcept \
         { \
             static_assert((RuntimeClassT::ClassFlags::value & ::Microsoft::WRL::WinRtClassicComMix) == ::Microsoft::WRL::WinRt || \
                 (RuntimeClassT::ClassFlags::value & ::Microsoft::WRL::WinRtClassicComMix) == ::Microsoft::WRL::WinRtClassicComMix, \
@@ -46,7 +46,7 @@
             static_assert(!__is_base_of(IActivationFactory, RuntimeClassT), "Incorrect usage of IActivationFactory interface. Make sure that your RuntimeClass doesn't implement IActivationFactory interface use ::Windows::WRL::ActivationFactory instead or 'InspectableClass' macro is not used on ::Windows::WRL::ActivationFactory"); \
             return runtimeClassName; \
         } \
-        static TrustLevel STDMETHODCALLTYPE InternalGetTrustLevel() throw() \
+        static TrustLevel STDMETHODCALLTYPE InternalGetTrustLevel() noexcept \
         { \
             return trustLevel; \
         } \

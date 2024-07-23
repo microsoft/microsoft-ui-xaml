@@ -50,5 +50,5 @@ private:
     KnownPropertyIndex                                      m_nContentPropertyIndex;
     KnownTypeIndex                                          m_boxedTypeIndex;
     KnownNamespaceIndex                                     m_nNamespaceIndex;
-    bool                                                    m_isBindable;
+    bool                                                    m_isBindable{};
 };

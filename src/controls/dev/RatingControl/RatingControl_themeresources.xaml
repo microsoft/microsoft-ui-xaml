@@ -35,13 +35,17 @@
       <controls:RatingItemFontInfo x:Key="MUX_RatingControlDefaultFontInfo" Glyph="&#xE735;" UnsetGlyph="&#xE734;" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
+  <!-- 32 = 2 * [default fontsize] - because of double size rendering, remove when MSFT #10030063 is done -->
+  <x:Double x:Key="RatingControlFontSizeForRendering">32</x:Double>
+  <x:Double x:Key="RatingControlItemSpacing">8</x:Double>
+  <x:Double x:Key="RatingControlCaptionTopMargin">2</x:Double>
   <DataTemplate x:Key="BackgroundGlyphDefaultTemplate">
     <!-- -8, -8 are to compensate for the default scale down, plus factoring in margins -->
-    <TextBlock Foreground="{ThemeResource RatingControlUnselectedForeground}" Margin="-8,-8,0,0" FontSize="32" Text="&#xE734;" AutomationProperties.AccessibilityView="Raw" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
+    <TextBlock Foreground="{ThemeResource RatingControlUnselectedForeground}" Margin="-8,-8,0,0" FontSize="{StaticResource RatingControlFontSizeForRendering}" Text="&#xE734;" AutomationProperties.AccessibilityView="Raw" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
   </DataTemplate>
   <DataTemplate x:Key="ForegroundGlyphDefaultTemplate">
     <!-- -8, -8 are to compensate for the default scale down, plus factoring in margins -->
-    <TextBlock Margin="-8,-8,0,0" FontSize="32" Text="&#xE735;" AutomationProperties.AccessibilityView="Raw" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
+    <TextBlock Margin="-8,-8,0,0" FontSize="{StaticResource RatingControlFontSizeForRendering}" Text="&#xE735;" AutomationProperties.AccessibilityView="Raw" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
   </DataTemplate>
   <DataTemplate x:Key="BackgroundImageDefaultTemplate">
     <Image Margin="-8,-8,0,0" AutomationProperties.AccessibilityView="Raw" />

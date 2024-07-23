@@ -118,7 +118,7 @@ public:
     }
 
     // Move constructor and assignment for efficient return from a method
-    CLockedGraphicsPointer(CLockedGraphicsPointer&& other)
+    CLockedGraphicsPointer(CLockedGraphicsPointer&& other) noexcept
     {
         this->m_pointer = other.m_pointer;
         this->m_d2dMultithread = other.m_d2dMultithread;

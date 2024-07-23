@@ -46,6 +46,7 @@ IFACEMETHODIMP DirectUI::InputManagerFactory::GetLastInputDeviceType(_Out_ ABI::
         XamlTelemetry::PublicApiCall(true, 0, "InputManager_GetLastInputDeviceType", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckActivationAllowed());
     IFC(GetLastInputDeviceTypeImpl(pResult));
 Cleanup:

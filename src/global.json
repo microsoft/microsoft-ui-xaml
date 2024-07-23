@@ -15,6 +15,6 @@
   },
   "msbuild-sdks": {
     "Microsoft.Build.NoTargets": "3.3.0",
-    "Microsoft.WinAppSDK.EngCommon": "1.4.230710"
+    "Microsoft.WinAppSDK.EngCommon": "1.6.240418"
   }
 }

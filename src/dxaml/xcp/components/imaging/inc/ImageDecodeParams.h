@@ -18,7 +18,6 @@ public:
         unsigned int decodeWidth,
         unsigned int decodeHeight,
         bool isLoadedImageSurface,
-        _In_ std::shared_ptr<ImagingTelemetry::ImageDecodeActivity> decodeActivity,
         uint64_t imageId,
         xstring_ptr source
         )
@@ -27,7 +26,6 @@ public:
         , m_decodeHeight(decodeHeight)
         , m_autoPlay(false)
         , m_isLoadedImageSurface(isLoadedImageSurface)
-        , m_decodeActivity(decodeActivity)
         , m_imageId(imageId)
         , m_strSource(source)
     {
@@ -40,7 +38,6 @@ public:
         bool autoPlay,
         _In_ SurfaceUpdateList const& surfaceUpdateList,
         bool isLoadedImageSurface,
-        _In_ std::shared_ptr<ImagingTelemetry::ImageDecodeActivity> decodeActivity,
         uint64_t imageId,
         xstring_ptr source
         )
@@ -50,7 +47,6 @@ public:
         , m_autoPlay(autoPlay)
         , m_surfaceUpdateList(std::move(surfaceUpdateList))
         , m_isLoadedImageSurface(isLoadedImageSurface)
-        , m_decodeActivity(decodeActivity)
         , m_imageId(imageId)
         , m_strSource(source)
     {
@@ -62,7 +58,6 @@ public:
         unsigned int decodeHeight,
         bool autoPlay,
         bool isLoadedImageSurface,
-        _In_ std::shared_ptr<ImagingTelemetry::ImageDecodeActivity> decodeActivity,
         uint64_t imageId,
         xstring_ptr source
         )
@@ -71,7 +66,6 @@ public:
         , m_decodeHeight(decodeHeight)
         , m_autoPlay(autoPlay)
         , m_isLoadedImageSurface(isLoadedImageSurface)
-        , m_decodeActivity(decodeActivity)
         , m_imageId(imageId)
         , m_strSource(source)
     {
@@ -83,7 +77,6 @@ public:
     bool IsAutoPlay() const { return m_autoPlay; }
     bool IsHardwareOutput() const { return !m_surfaceUpdateList.empty(); }
     bool IsLoadedImageSurface() const { return m_isLoadedImageSurface; }
-    const std::shared_ptr<ImagingTelemetry::ImageDecodeActivity> GetDecodeActivity() const { return m_decodeActivity; }
 
     uint64_t GetImageId() const { return m_imageId; }
     xstring_ptr GetStrSource() const { return m_strSource; }
@@ -105,9 +98,6 @@ private:
     bool m_autoPlay;
     SurfaceUpdateList m_surfaceUpdateList;
     bool m_isLoadedImageSurface;
-
-    // Used for ETW tracing
-    std::shared_ptr<ImagingTelemetry::ImageDecodeActivity> m_decodeActivity;
     uint64_t m_imageId;
     xstring_ptr m_strSource;
 };

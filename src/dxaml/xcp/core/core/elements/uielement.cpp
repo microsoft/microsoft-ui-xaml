@@ -2997,6 +2997,12 @@ CUIElement::TransformToVisualHelperGetTransformer(
     {
         // For app-compat reasons, use this code path when not in an island scenario.
         // TODO:  Can we delete this code path altogether?
+        // Update: If we can host media controls on the media root then it would be possible to hit this path even
+        //         in a Lifted island scenario. 
+        //         Theoretically, we could combine these two code paths now that GetTreeRoot will stop at the
+        //         the island roots, since for the media root it will stop at the same place, but, it is unclear
+        //         what the purpose of the RootScale check is and why we switch to the public root and whether it
+        //         would apply in our media root scenario or whether it should be applied for the non-media scenarios.
         IFC_RETURN(DoPointerCast(pRoot, GetTreeRoot()));
 
         IFC_RETURN(pRoot ? S_OK : E_FAIL);
@@ -3592,7 +3598,6 @@ CUIElement::InvalidateMeasureInternal(_In_opt_ CLayoutManager* layoutManager)
         }
     }
 
-
     SetIsMeasureDirty(TRUE);
     PropagateOnMeasureDirtyPath();
     if (EventEnabledInvalidateMeasureInfo())
@@ -3652,7 +3657,6 @@ CUIElement::InvalidateArrangeInternal(_In_opt_ CLayoutManager* layoutManager)
             __debugbreak();
         }
     }
-
 
     SetIsArrangeDirty(TRUE);
     PropagateOnArrangeDirtyPath();
@@ -3914,10 +3918,8 @@ CUIElement::Measure(XSIZEF availableSize)
 
     bool wasInNonClippingTree = false;
 
-    // All paths exiting this method MUST go through Cleanup.
-    // This line should ALWAYS execute.
-    LockParent();
-
+    auto scopedParentLock = LockParent();
+    
     pLayoutManager = VisualTree::GetLayoutManagerForElement(this);
     IFCPTR(pLayoutManager);
 
@@ -4020,8 +4022,9 @@ CUIElement::Measure(XSIZEF availableSize)
     ASSERT(count > 0);
 
 Cleanup:
-
-    UnlockParent();
+    // We manually release the lock here because there was concern that the rest of cleanup code may be
+    // afftected by the lock.
+    scopedParentLock.reset();
 
     // We're not on Measure Stack anymore.
     SetIsOnMeasureStack(FALSE);
@@ -4221,7 +4224,7 @@ CUIElement::Arrange(XRECTF finalRect)
     bool bSavedAllowTransitionsToRun = false;
     int count = CLayoutManager::MaxLayoutIterations;
 
-    LockParent(); // all paths exiting this method MUST go through Cleanup, and this line should ALWAYS execute
+    auto scopedParentLock = LockParent();
 
     CLayoutManager* pLayoutManager = VisualTree::GetLayoutManagerForElement(this);
     IFCPTR(pLayoutManager);
@@ -4318,7 +4321,9 @@ CUIElement::Arrange(XRECTF finalRect)
     }
 
 Cleanup:
-    UnlockParent();
+    // We manually release the lock here because there was concern that the rest of cleanup code may be
+    // afftected by the lock.
+    scopedParentLock.reset();
 
     if (pLayoutManager->GetRequiresMeasure())
     {
@@ -14715,7 +14720,7 @@ ApplyTransformToHitType(
     )
 {
     pSrcTarget->CopyTo(pDestTarget);
-    pDestTarget->Transform(pTransform != nullptr);
+    pDestTarget->Transform(*pTransform);
 }
 
 //------------------------------------------------------------------------
@@ -15219,7 +15224,7 @@ void CUIElement::EnsureRootCanvasCompNode()
 
     if (publicRoot->OfTypeByIndex<KnownTypeIndex::Canvas>() && !publicRoot->IsProjectedShadowDefaultReceiver())
     {
-        publicRoot->SetRequiresComposition(CompositionRequirement::ProjectedShadowDefaultReceiver, IndependentAnimationType::None);
+        IFCFAILFAST(publicRoot->SetRequiresComposition(CompositionRequirement::ProjectedShadowDefaultReceiver, IndependentAnimationType::None));
     }
 }
 

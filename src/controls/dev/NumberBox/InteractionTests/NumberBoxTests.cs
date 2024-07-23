@@ -43,7 +43,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("NumberBox Tests"))
             {
                 RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
-                numBox.SetValue(0);
+                numBox.SetValue(1);
 
                 ComboBox spinModeComboBox = FindElement.ByName<ComboBox>("SpinModeComboBox");
                 spinModeComboBox.SelectItemByName("Inline");
@@ -51,6 +51,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Button upButton = FindButton(numBox, "Increase");
                 Button downButton = FindButton(numBox, "Decrease");
+
+                Log.Comment("Change SmallChange value to 0.01");
+                RangeValueSpinner smallChangeNumBox = FindElement.ByName<RangeValueSpinner>("SmallChangeNumberBox");
+                EnterText(smallChangeNumBox, "0.01");
+                Wait.ForIdle();
+
+                Log.Comment("Verify that up button increases value by 0.01");
+                upButton.InvokeAndWait();
+                Edit edit = FindTextBox(numBox);
+                Verify.AreEqual("1.01", edit.GetText());
+
+                Log.Comment("Change Value to 0");
+                numBox.SetValue(0);
+
+                Log.Comment("Change SmallChange value to 1");
+                EnterText(smallChangeNumBox, "1");
+                Wait.ForIdle();
 
                 Log.Comment("Verify that up button increases value by 1");
                 upButton.InvokeAndWait();
@@ -61,7 +78,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(0, numBox.Value);
 
                 Log.Comment("Change SmallChange value to 5");
-                RangeValueSpinner smallChangeNumBox = FindElement.ByName<RangeValueSpinner>("SmallChangeNumberBox");
                 smallChangeNumBox.SetValue(5);
                 Wait.ForIdle();
 
@@ -189,6 +205,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Verify that even if the value doesn't change, the textbox text is updated");
                 EnterText(numBox, " 15 ");
                 Verify.AreEqual("15", edit.GetText());
+
+                Log.Comment("Verify that there is no rounding error for value 25.8");
+                EnterText(numBox, "25.8");
+                Verify.AreEqual("25.8", edit.GetText());
+
+                Log.Comment("Verify that there is no rounding error for value 0.0001");
+                EnterText(numBox, "0.0001");
+                Verify.AreEqual("0.0001", edit.GetText());
+
+                Log.Comment("Verify that there is no rounding error for value 294.1");
+                EnterText(numBox, "294.1");
+                Verify.AreEqual("294.1", edit.GetText());
+
+                Log.Comment("Verify that there is no rounding error for value 2924.8");
+                EnterText(numBox, "2924.8");
+                Verify.AreEqual("2924.8", edit.GetText());
+
+                Log.Comment("Verify that there is no rounding error for value 1.01");
+                EnterText(numBox, "1.01");
+                Verify.AreEqual("1.01", edit.GetText());
+
+                Log.Comment("Verify that there is no rounding error for value 0.03");
+                EnterText(numBox, "0.03");
+                Verify.AreEqual("0.03", edit.GetText());
             }
         }
 

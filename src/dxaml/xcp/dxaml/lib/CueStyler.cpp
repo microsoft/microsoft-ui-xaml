@@ -718,6 +718,11 @@ _Check_return_ HRESULT CCueStyler::SetTextBlockEffect(_In_ TextBlock* pTextBlock
             break;
     }
 
+    // For consistency, we render the caption via CVS regardless of what EdgeEffect (even for ClosedCaptionEdgeEffect_None).
+    // Run layout immediately to get the caption size and propagate it up to the parent wrappers/containers,
+    // as these will be determine the size of the SpriteVisual used for CVS rendering.
+    IFC_RETURN(pTextBlock->UpdateLayout());
+
     if (userEdgeEffect == wm::ClosedCaptioning::ClosedCaptionEdgeEffect::ClosedCaptionEdgeEffect_None)
     {
         // Nothing to do
@@ -752,7 +757,6 @@ _Check_return_ HRESULT CCueStyler::SetTextBlockEffect(_In_ TextBlock* pTextBlock
         // back into this method to get the updated size of the TextBlock. The alternative is to create an expression
         // that binds the copy's size to the size of the TextBlock visual, but that's overkill considering the TextBlock
         // isn't animated.
-        IFC_RETURN(pTextBlock->UpdateLayout());
         wfn::Vector2 textSize;
         IFC_RETURN(pTextBlock->get_ActualSize(&textSize));
 
@@ -797,7 +801,7 @@ _Check_return_ HRESULT CCueStyler::SetTextBlockEffect(_In_ TextBlock* pTextBlock
     //          |      
     //    BottomWrapper [Grid]    <-- Placeholder for sourcing CVS Snapshot. Provides handoff Visual used as CVS.SourceVisual
     //          |                          NOTE: Captures layout (eg margins) of TextContainer inside CueElement, so that snapshot size matches TopWrapper 
-    //          |                                and we don't need speical offsets/positioning of handin w/ CVS.
+    //          |                                and we don't need special offsets/positioning of handin w/ CVS.
     //          |                          NOTE: CVS Handoff needs to be from a different element than the one that has the Clip set,
     //          |                                otherwise it will capture the zero-sized clip and render nothing (this necessitates introduction of 'MiddleWrapper').
     //          |                      

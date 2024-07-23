@@ -127,7 +127,7 @@ winrt::Rect ViewportManagerDownLevel::GetLayoutRealizationWindow() const
     return realizationWindow;
 }
 
-void ViewportManagerDownLevel::SetLayoutExtent(winrt::Rect extent)
+void ViewportManagerDownLevel::SetLayoutExtent(const winrt::Rect& extent)
 {
     m_expectedViewportShift.X += m_layoutExtent.X - extent.X;
     m_expectedViewportShift.Y += m_layoutExtent.Y - extent.Y;
@@ -168,6 +168,23 @@ void ViewportManagerDownLevel::OnElementCleared(const winrt::UIElement& element)
     {
         m_verticalScroller.get().UnregisterAnchorCandidate(element);
     }
+}
+
+void ViewportManagerDownLevel::OnOwnerMeasuring()
+{
+    winrt::Rect currentLayoutRealizationWindow = GetLayoutRealizationWindow();
+
+    if ((m_horizontalCacheBufferPerSide != 0.0 || m_verticalCacheBufferPerSide != 0.0) &&
+        (m_lastLayoutRealizationWindow.Width <= 0.0f || m_lastLayoutRealizationWindow.Height <= 0.0f ||
+            currentLayoutRealizationWindow.Width <= 0.0f || currentLayoutRealizationWindow.Height <= 0.0f ||
+            !SharedHelpers::DoRectsIntersect(m_lastLayoutRealizationWindow, currentLayoutRealizationWindow)))
+    {
+        // Two consecutive measure passes use disconnected realization windows.
+        // Reset the potential cache buffer so that it regrows from scratch.
+        ResetLayoutRealizationWindowCacheBuffer();
+    }
+
+    m_lastLayoutRealizationWindow = currentLayoutRealizationWindow;
 }
 
 void ViewportManagerDownLevel::OnOwnerArranged()
@@ -211,7 +228,7 @@ void ViewportManagerDownLevel::OnMakeAnchor(const winrt::UIElement& anchor, cons
     m_isAnchorOutsideRealizedRange = isAnchorOutsideRealizedRange;
 }
 
-void ViewportManagerDownLevel::OnBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs args)
+void ViewportManagerDownLevel::OnBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs& args)
 {
     if (!m_managingViewportDisabled)
     {
@@ -417,12 +434,17 @@ void ViewportManagerDownLevel::UpdateViewport()
     }
 }
 
-void ViewportManagerDownLevel::ResetCacheBuffer()
+void ViewportManagerDownLevel::ResetLayoutRealizationWindowCacheBuffer()
+{
+    ResetCacheBuffer(false /*registerCacheBuildWork*/);
+}
+
+void ViewportManagerDownLevel::ResetCacheBuffer(bool registerCacheBuildWork)
 {
     m_horizontalCacheBufferPerSide = 0.0;
     m_verticalCacheBufferPerSide = 0.0;
 
-    if (!m_managingViewportDisabled)
+    if (!m_managingViewportDisabled && registerCacheBuildWork)
     {
         // We need to start building the realization buffer again.
         RegisterCacheBuildWork();

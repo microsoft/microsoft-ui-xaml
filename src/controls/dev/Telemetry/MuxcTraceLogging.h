@@ -65,6 +65,8 @@
 #define TRACE_MSG_METH_STR_DBL_DBL L"%s[0x%p](%s, %lf, %lf)\n"
 #define TRACE_MSG_METH_STR_FLT L"%s[0x%p](%s, %f)\n"
 #define TRACE_MSG_METH_STR_INT L"%s[0x%p](%s, %d)\n"
+#define TRACE_MSG_METH_STR_STR_PTR L"%s[0x%p](%s, %s, 0x%p)\n"
+#define TRACE_MSG_METH_STR_STR_DBL L"%s[0x%p](%s, %s, %lf)\n"
 #define TRACE_MSG_METH_STR_STR_INT L"%s[0x%p](%s, %s, %d)\n"
 #define TRACE_MSG_METH_STR_STR_STR L"%s[0x%p](%s, %s, %s)\n"
 #define TRACE_MSG_METH_STR_INT_INT L"%s[0x%p](%s, %d, %d)\n"
@@ -73,6 +75,7 @@
 #define TRACE_MSG_METH_STR_STR_FLT_FLT_FLT_FLT L"%s[0x%p](%s, %s, %f, %f, %f, %f)\n"
 #define TRACE_MSG_METH_STR_STR_FLT L"%s[0x%p](%s, %s, %f)\n"
 #define TRACE_MSG_METH_STR_STR_INT_INT L"%s[0x%p](%s, %s, %d, %d)\n"
+#define TRACE_MSG_METH_STR_STR_DBL_DBL L"%s[0x%p](%s, %s, %lf, %lf)\n"
 
 #define TRACE_MSG_METH_METH L"%s[0x%p] - calls %s()\n"
 #define TRACE_MSG_METH_METH_INT L"%s[0x%p] - calls %s(%d)\n"

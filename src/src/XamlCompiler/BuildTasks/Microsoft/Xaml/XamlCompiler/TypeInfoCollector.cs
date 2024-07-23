@@ -177,6 +177,19 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             List<Type> bindableTypes;
             FindAllMetadataAndBindableTypes(loadedAssemblies, localAssembly, out otherProviders, out bindableTypes);
 
+            // We want to ensure that the MUXC IXMP comes first in the list.
+            // We previously ran into an issue where apps that were compiled against a newer version of WinAppSDK and
+            // referenced libraries compiled against an older version of WinAppSDK would run into issues due to the older 
+            // library providing out of date metadata for types in MUXC. We work around this issue by making sure that we
+            // always check the MUXC IXMP first.
+            var indexOfControlsIXMP = otherProviders.FindIndex(p => p.FullName == KnownTypes.XamlControlsXamlMetaDataProvider);
+            if (indexOfControlsIXMP != -1)
+            {
+                var controlsIXMP = otherProviders[indexOfControlsIXMP];
+                otherProviders.RemoveAt(indexOfControlsIXMP);
+                otherProviders.Insert(0, controlsIXMP);
+            }
+
             // This selects all types we found that implement IXMP, 
             // and excludes"local types", which are types that we may have 
             // received in a reference to a static libray (which is treated as local).

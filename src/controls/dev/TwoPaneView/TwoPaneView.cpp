@@ -218,17 +218,17 @@ void TwoPaneView::UpdateRowsColumns(ViewMode newMode, DisplayRegionHelperInfo in
 
             if (info.Mode == winrt::TwoPaneViewMode::Wide)
             {
-                m_columnMiddle.get().Width({ rc2.X - rc1.Width, winrt::GridUnitType::Pixel });
+                m_columnMiddle.get().Width({ static_cast<double>(rc2.X) - rc1.Width, winrt::GridUnitType::Pixel });
 
-                m_columnLeft.get().Width({ rc1.Width - rcControl.X , winrt::GridUnitType::Pixel });
-                m_columnRight.get().Width({ rc2.Width - ((rcWindow.Width - rcControl.Width) - rcControl.X) , winrt::GridUnitType::Pixel });
+                m_columnLeft.get().Width({ static_cast<double>(rc1.Width) - rcControl.X , winrt::GridUnitType::Pixel });
+                m_columnRight.get().Width({ static_cast<double>(rc2.Width) - ((static_cast<double>(rcWindow.Width) - rcControl.Width) - rcControl.X) , winrt::GridUnitType::Pixel });
             }
             else
             {
-                m_rowMiddle.get().Height({ rc2.Y - rc1.Height, winrt::GridUnitType::Pixel });
+                m_rowMiddle.get().Height({ static_cast<double>(rc2.Y) - rc1.Height, winrt::GridUnitType::Pixel });
 
-                m_rowTop.get().Height({ rc1.Height - rcControl.Y , winrt::GridUnitType::Pixel });
-                m_rowBottom.get().Height({ rc2.Height - ((rcWindow.Height - rcControl.Height) - rcControl.Y) , winrt::GridUnitType::Pixel });
+                m_rowTop.get().Height({ static_cast<double>(rc1.Height) - rcControl.Y , winrt::GridUnitType::Pixel });
+                m_rowBottom.get().Height({ static_cast<double>(rc2.Height) - ((static_cast<double>(rcWindow.Height) - rcControl.Height) - rcControl.Y) , winrt::GridUnitType::Pixel });
             }
         }
     }

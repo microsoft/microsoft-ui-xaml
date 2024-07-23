@@ -54,6 +54,7 @@ IFACEMETHODIMP DirectUI::CarouselPanelGenerated::get_AreHorizontalSnapPointsRegu
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CarouselPanel*>(this)->get_AreHorizontalSnapPointsRegularImpl(pValue));
 Cleanup:
@@ -63,6 +64,7 @@ IFACEMETHODIMP DirectUI::CarouselPanelGenerated::get_AreVerticalSnapPointsRegula
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CarouselPanel*>(this)->get_AreVerticalSnapPointsRegularImpl(pValue));
 Cleanup:
@@ -72,6 +74,7 @@ IFACEMETHODIMP DirectUI::CarouselPanelGenerated::get_CanHorizontallyScroll(_Out_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CarouselPanel*>(this)->get_CanHorizontallyScrollImpl(pValue));
 Cleanup:
@@ -91,6 +94,7 @@ IFACEMETHODIMP DirectUI::CarouselPanelGenerated::get_CanVerticallyScroll(_Out_ B
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CarouselPanel*>(this)->get_CanVerticallyScrollImpl(pValue));
 Cleanup:
@@ -110,6 +114,7 @@ IFACEMETHODIMP DirectUI::CarouselPanelGenerated::get_ExtentHeight(_Out_ DOUBLE* 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CarouselPanel*>(this)->get_ExtentHeightImpl(pValue));
 Cleanup:
@@ -119,6 +124,7 @@ IFACEMETHODIMP DirectUI::CarouselPanelGenerated::get_ExtentWidth(_Out_ DOUBLE* p
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CarouselPanel*>(this)->get_ExtentWidthImpl(pValue));
 Cleanup:
@@ -128,6 +134,7 @@ IFACEMETHODIMP DirectUI::CarouselPanelGenerated::get_HorizontalOffset(_Out_ DOUB
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CarouselPanel*>(this)->get_HorizontalOffsetImpl(pValue));
 Cleanup:
@@ -137,6 +144,7 @@ IFACEMETHODIMP DirectUI::CarouselPanelGenerated::get_MinHorizontalOffset(_Out_ D
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CarouselPanel*>(this)->get_MinHorizontalOffsetImpl(pValue));
 Cleanup:
@@ -146,6 +154,7 @@ IFACEMETHODIMP DirectUI::CarouselPanelGenerated::get_MinVerticalOffset(_Out_ DOU
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CarouselPanel*>(this)->get_MinVerticalOffsetImpl(pValue));
 Cleanup:
@@ -155,6 +164,7 @@ IFACEMETHODIMP DirectUI::CarouselPanelGenerated::get_ScrollOwner(_Outptr_result_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<CarouselPanel*>(this)->get_ScrollOwnerImpl(ppValue));
 Cleanup:
@@ -174,6 +184,7 @@ IFACEMETHODIMP DirectUI::CarouselPanelGenerated::get_VerticalOffset(_Out_ DOUBLE
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CarouselPanel*>(this)->get_VerticalOffsetImpl(pValue));
 Cleanup:
@@ -183,6 +194,7 @@ IFACEMETHODIMP DirectUI::CarouselPanelGenerated::get_ViewportHeight(_Out_ DOUBLE
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CarouselPanel*>(this)->get_ViewportHeightImpl(pValue));
 Cleanup:
@@ -192,6 +204,7 @@ IFACEMETHODIMP DirectUI::CarouselPanelGenerated::get_ViewportWidth(_Out_ DOUBLE*
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CarouselPanel*>(this)->get_ViewportWidthImpl(pValue));
 Cleanup:
@@ -319,6 +332,7 @@ IFACEMETHODIMP DirectUI::CarouselPanelGenerated::GetIrregularSnapPoints(_In_ ABI
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CarouselPanel_GetIrregularSnapPoints", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CarouselPanel*>(this)->GetIrregularSnapPointsImpl(orientation, alignment, ppReturnValue));
@@ -337,6 +351,7 @@ IFACEMETHODIMP DirectUI::CarouselPanelGenerated::GetRegularSnapPoints(_In_ ABI::
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CarouselPanel_GetRegularSnapPoints", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CarouselPanel*>(this)->GetRegularSnapPointsImpl(orientation, alignment, pOffset, pReturnValue));
@@ -428,6 +443,7 @@ IFACEMETHODIMP DirectUI::CarouselPanelGenerated::MakeVisible(_In_ ABI::Microsoft
     }
     ARG_NOTNULL(pVisual, "visual");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CarouselPanel*>(this)->MakeVisibleImpl(pVisual, rectangle, pReturnValue));
@@ -644,7 +660,7 @@ _Check_return_ HRESULT DirectUI::CarouselPanelGenerated::EventAddHandlerByIndex(
     case KnownEventIndex::CarouselPanel_HorizontalSnapPointsChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -661,7 +677,7 @@ _Check_return_ HRESULT DirectUI::CarouselPanelGenerated::EventAddHandlerByIndex(
     case KnownEventIndex::CarouselPanel_VerticalSnapPointsChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

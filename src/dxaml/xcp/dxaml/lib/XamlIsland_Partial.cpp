@@ -237,16 +237,24 @@ _Check_return_ HRESULT XamlIsland::put_ContentImpl(_In_opt_ xaml::IUIElement* pV
     // Determine and set the content's layout direction.
     if (pValue)
     {
-        ctl::ComPtr<xaml::IUIElement> content = pValue;
-
-        auto contentAsFE = content.AsOrNull<xaml::IFrameworkElement>();
         ixp::ContentLayoutDirection layoutDirection;
         m_pXamlIslandCore->GetContentIsland()->get_LayoutDirection(&layoutDirection);
 
-        contentAsFE->put_FlowDirection(
-            layoutDirection == ixp::ContentLayoutDirection_RightToLeft ? 
-            xaml::FlowDirection_RightToLeft : 
-            xaml::FlowDirection_LeftToRight);
+        // https://task.ms/43100993: In a Xaml island, we have no access to a bridge or HWND to
+        // enforce the LTR layout that Xaml needs to perform layout correctly.
+        // Until Xaml correctly handles the RTL coordinate space, this will lead to issues with input and
+        // output, as the underlying HWND will be in RTL, so we FAILFAST here. Once RTL is properly
+        // handled, we should be able to respond correctly to the ContentIsland's LayoutDirection.
+
+        if (layoutDirection == ixp::ContentLayoutDirection_RightToLeft)
+        {
+            ::RoOriginateError(
+                E_NOT_SUPPORTED,
+                wrl_wrappers::HStringReference(
+                L"RTL layout on the ContentIsland is not supported for XamlIsland. Use Xaml FlowDirection to set RTL on the content instead."
+                ).Get());
+            IFC_RETURN(E_NOT_SUPPORTED);        
+        }
     }
 
     IFC_RETURN(m_spXamlIsland->put_Content(pValue));
@@ -321,7 +329,7 @@ _Check_return_ HRESULT XamlIsland::put_SystemBackdropImpl(_In_opt_ xaml::Media::
 
             ctl::ComPtr<DirectUI::SystemBackdrop> systemBackdrop;
             IFC_RETURN(m_systemBackdrop.As(&systemBackdrop));
-            systemBackdrop->InvokeOnTargetConnected(this, xamlRoot.Get());
+            IFC_RETURN(systemBackdrop->InvokeOnTargetConnected(this, xamlRoot.Get()));
         }
     }
 

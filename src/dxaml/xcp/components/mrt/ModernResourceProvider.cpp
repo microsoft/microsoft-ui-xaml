@@ -564,7 +564,7 @@ HRESULT ModernResourceProvider::UpdateThemeQualifier()
 _Check_return_
 HRESULT ModernResourceProvider::TryGetResourceCandidate(
     _In_ IPALUri* pMSResourceUri,
-    _Outptr_result_maybenull_ wrl::ComPtr<mwar::IResourceCandidate>& resourceCandidate)
+    _Out_ wrl::ComPtr<mwar::IResourceCandidate>& resourceCandidate)
 {
     resourceCandidate.Reset();
 

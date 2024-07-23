@@ -106,7 +106,7 @@ _Check_return_ HRESULT PVLStaggerFunction::GetTransitionDelays(
 
         LayoutTransitionStaggerItem* pStaggerItem = static_cast<LayoutTransitionStaggerItem*>(pStaggerItemAsI);
 
-        pStaggerItem->put_StaggerTime(runningTime);
+        IFC(pStaggerItem->put_StaggerTime(runningTime));
         ReleaseInterface(pStaggerItemAsI);
 
         Delay *= DelayReduce;

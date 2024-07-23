@@ -261,7 +261,7 @@ _Check_return_ HRESULT
 CDMViewport::SetOldStatus(_In_ XDMViewportStatus oldStatus)
 {
 #ifdef DM_DEBUG
-    if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+    if (DM_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetOldStatus - oldStatus=%d.", this, oldStatus));
     }
@@ -304,7 +304,7 @@ _Check_return_ HRESULT
 CDMViewport::SetCurrentStatus(_In_ XDMViewportStatus currentStatus)
 {
 #ifdef DM_DEBUG
-    if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+    if (DM_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetCurrentStatus - currentStatus=%d.", this, currentStatus));
     }
@@ -341,7 +341,7 @@ void
 CDMViewport::PushInteractionType(_In_ XDMViewportInteractionType interactionType)
 {
 #ifdef DM_DEBUG
-    if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+    if (DM_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   PushInteractionType - interactionType=%d.", this, interactionType));
     }
@@ -371,7 +371,7 @@ void
 CDMViewport::PopInteractionType()
 {
 #ifdef DM_DEBUG
-    if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+    if (DM_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   PopInteractionType - interactionType=%d.", this, m_queuedInteractionTypes.front()));
     }
@@ -522,7 +522,7 @@ CDMViewport::AddConfiguration(_In_ XDMConfigurations configuration)
     if (configurationIndex == -1)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   AddConfiguration - Adding configuration=%d.", this, configuration));
         }
@@ -551,7 +551,7 @@ CDMViewport::RemoveConfiguration(_In_ XDMConfigurations configuration)
     if (configurationIndex != -1)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   RemoveConfiguration - Removing configuration=%d.", this, configuration));
         }
@@ -627,7 +627,7 @@ CDMViewport::AddContent(_In_ CUIElement* pContentElement, _In_ XDMContentType co
     CDMContent* pContent = NULL;
 
 #ifdef DM_DEBUG
-    if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+    if (DM_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   AddContent - pContentElement=0x%p, contentType=%d.",
             this, pContentElement, contentType));
@@ -682,7 +682,7 @@ CDMViewport::RemoveContent(_In_ CUIElement* pContentElement, _Outptr_result_mayb
     CDMContent* pContent = NULL;
 
 #ifdef DM_DEBUG
-    if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+    if (DM_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   RemoveContent - pContentElement=0x%p.",
             this, pContentElement));
@@ -827,7 +827,7 @@ CDMViewport::ClearContents()
     CDMContent* pContent = NULL;
 
 #ifdef DM_DEBUG
-    if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+    if (DM_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   ClearContents.", this));
     }
@@ -866,7 +866,7 @@ CDMViewport::AddClipContent(_In_ CUIElement* pContentElement, _In_ XDMContentTyp
     CDMContent* pContent = NULL;
 
 #ifdef DM_DEBUG
-    if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+    if (DM_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   AddClipContent - pContentElement=0x%p, contentType=%d.",
             this, pContentElement, contentType));
@@ -921,7 +921,7 @@ CDMViewport::RemoveClipContent(_In_ CUIElement* pContentElement, _Outptr_result_
     CDMContent* pContent = NULL;
 
 #ifdef DM_DEBUG
-    if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+    if (DM_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   RemoveClipContent - pContentElement=0x%p.",
             this, pContentElement));
@@ -1077,7 +1077,7 @@ CDMViewport::ClearClipContents()
     CDMContent* pContent = NULL;
 
 #ifdef DM_DEBUG
-    if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+    if (DM_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   ClearClipContents.", this));
     }

@@ -34,6 +34,7 @@
     <CallTarget Targets="Clean" />
     <CallTarget Targets="Build" />
   </Target>
+  <Target Name="Publish" />
   <Target Name="Clean" Condition="'$(BuildingInsideVisualStudio)' == 'true'" />
   <Target Name="Build" Condition="'$(BuildingInsideVisualStudio)' == 'true'" DependsOnTargets="CheckIfUpdateIsRequired" />
   <Target Name="CheckIfUpdateIsRequired">

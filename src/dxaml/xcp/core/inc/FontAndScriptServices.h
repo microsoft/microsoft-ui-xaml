@@ -18,7 +18,7 @@ struct IGlyphAnalyzer;
 struct IScriptAnalyzer;
 struct IFontFallback;
 struct IFontFallbackBuilder;
-struct CWeightStyleStretch;
+struct CFontFaceCriteria;
 class CCompositeFontFamily;
 class CCoreServices;
 class CUIElement;
@@ -26,6 +26,7 @@ class CFontFamily;
 
 DECLARE_CONST_XSTRING_PTR_STORAGE(c_strUltimateFallbackFontNameStorage, L"Global User Interface");
 DECLARE_CONST_XSTRING_PTR_STORAGE(c_strUltimateFallbackFontNameTHStorage, L"Segoe UI");
+DECLARE_CONST_XSTRING_PTR_STORAGE(c_strUltimateFallbackFontNameCobaltStorage, L"Segoe UI Variable");
 DECLARE_CONST_XSTRING_PTR_STORAGE(c_strUltimateFontNameAutoStorage, L"XamlAutoFontFamily");
 
 

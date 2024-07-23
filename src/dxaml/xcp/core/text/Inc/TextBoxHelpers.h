@@ -120,6 +120,10 @@ public:
         _In_ XUINT32 iTextPosition1,
         _In_ XUINT32 iTextPosition2);
 
+    static
+    XUINT32 GetMaxTextPosition(
+        _In_ ITextContainer* pTextContainer);
+
     static 
     _Check_return_ HRESULT GetText(
         _In_ ITextContainer *pTextContainer,

@@ -108,6 +108,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::get_IsConstrainedToRootBounds(_Out
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<FlyoutBase*>(this)->get_IsConstrainedToRootBoundsImpl(pValue));
 Cleanup:
@@ -117,6 +118,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::get_IsLightDismissOverlayEnabled(_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<FlyoutBase*>(this)->get_IsLightDismissOverlayEnabledImpl(pValue));
 Cleanup:
@@ -136,6 +138,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::get_IsOpen(_Out_ BOOLEAN* pValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<FlyoutBase*>(this)->get_IsOpenImpl(pValue));
 Cleanup:
@@ -208,6 +211,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::get_UsePickerFlyoutTheme(_Out_ BOO
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<FlyoutBase*>(this)->get_UsePickerFlyoutThemeImpl(pValue));
 Cleanup:
@@ -227,6 +231,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::get_XamlRoot(_Outptr_result_mayben
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<FlyoutBase*>(this)->get_XamlRootImpl(ppValue));
 Cleanup:
@@ -474,6 +479,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::CreatePresenter(_Outptr_ ABI::Micr
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "FlyoutBase_CreatePresenter", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<FlyoutBase*>(this)->CreatePresenterImpl(ppReturnValue));
@@ -770,6 +776,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseFactory::get_TargetProperty(_Outptr_result_ma
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckActivationAllowed());
     IFC(get_TargetPropertyImpl(ppValue));
 Cleanup:

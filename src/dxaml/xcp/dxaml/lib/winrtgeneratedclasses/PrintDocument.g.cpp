@@ -54,6 +54,7 @@ IFACEMETHODIMP DirectUI::PrintDocumentGenerated::get_DocumentSource(_Outptr_resu
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<PrintDocument*>(this)->get_DocumentSourceImpl(ppValue));
 Cleanup:

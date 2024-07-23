@@ -327,6 +327,7 @@ IFACEMETHODIMP DirectUI::AppBarGenerated::OnBackButtonPressed(_Out_ BOOLEAN* pRe
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AppBar_OnBackButtonPressed", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AppBar*>(this)->OnBackButtonPressedImpl(pResult));
@@ -505,7 +506,7 @@ _Check_return_ HRESULT DirectUI::AppBarGenerated::EventAddHandlerByIndex(_In_ Kn
     case KnownEventIndex::AppBar_Closed:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -522,7 +523,7 @@ _Check_return_ HRESULT DirectUI::AppBarGenerated::EventAddHandlerByIndex(_In_ Kn
     case KnownEventIndex::AppBar_Closing:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -539,7 +540,7 @@ _Check_return_ HRESULT DirectUI::AppBarGenerated::EventAddHandlerByIndex(_In_ Kn
     case KnownEventIndex::AppBar_Opened:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -556,7 +557,7 @@ _Check_return_ HRESULT DirectUI::AppBarGenerated::EventAddHandlerByIndex(_In_ Kn
     case KnownEventIndex::AppBar_Opening:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

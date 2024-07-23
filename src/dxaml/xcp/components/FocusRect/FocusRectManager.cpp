@@ -235,7 +235,7 @@ CFocusRectManager::GetFocusOptionsForElement(
 CFocusRectManager::CallCustomizationFunction(
     _In_ CDependencyObject* focusTarget,
     _Inout_ FocusRectangleOptions& options,
-    _Out_ bool* shouldDrawFocusRect)
+    _Inout_ bool* shouldDrawFocusRect)
 {
     CDependencyObject* focusTargetOrChrome = focusTarget;
 
@@ -349,7 +349,7 @@ CFocusRectManager::DetermineRenderOptions(
 /*static*/void
 CFocusRectManager::GetDefaultFocusOptionsForLink(
     _In_ CCoreServices* core,
-    _Out_ FocusRectangleOptions* newOptions)
+    _Inout_ FocusRectangleOptions* newOptions)
 {
     CDependencyObject* baseHighBrush = nullptr;
     CDependencyObject* altHighBrush = nullptr;
@@ -392,7 +392,7 @@ CFocusRectManager::GetDefaultFocusOptionsForLink(
 /*static*/void
 CFocusRectManager::GetDefaultFocusOptions(
     _In_ CCoreServices* core,
-    _Out_ FocusRectangleOptions* newOptions)
+    _Inout_ FocusRectangleOptions* newOptions)
 {
     CValue blackColorValue;
     blackColorValue.SetColor(0xFF000000);
@@ -414,7 +414,7 @@ CFocusRectManager::GetDefaultFocusOptions(
 /*static*/ bool
 CFocusRectManager::SetLegacyRenderOptions(
     _In_ const Focusable& focusTarget,
-    _Out_ FocusRectangleOptions* options)
+    _Inout_ FocusRectangleOptions* options)
 {
     GetDefaultFocusOptions(focusTarget.Object->GetContext(), options);
 
@@ -939,7 +939,7 @@ void CFocusRectManager::UpdateFocusRect(
     }
 
     // Apply or remove clip to m_transitionRoot as needed.
-    // It seems a little hacky to put a clip on the transition root, since this transition root coule theoretically have
+    // It seems a little hacky to put a clip on the transition root, since this transition root could theoretically have
     // another unrelated LTE on it, and that LTE would get clipped by this clip as well.  But this is such a specific element
     // in a specific place in the tree, it should be super unlikely that would happen.  LTEs are typically attached to
     // specific elements in a control's template.
@@ -950,7 +950,7 @@ void CFocusRectManager::UpdateFocusRect(
         {
             CUIElement::NWSetContentDirty(m_transitionRoot, DirtyFlags::Render);
         }
-        m_transitionRoot->SetClip(nullptr);
+        IFCFAILFAST(m_transitionRoot->SetClip(nullptr));
     }
     else if (!existingClipRect || existingClipRect->m_rc != newClipRect)
     {
@@ -961,7 +961,7 @@ void CFocusRectManager::UpdateFocusRect(
         svClipRect.attach(static_cast<CRectangleGeometry*>(obj));
 
         svClipRect->m_rc = newClipRect;
-        m_transitionRoot->SetClip(svClipRect);
+        IFCFAILFAST(m_transitionRoot->SetClip(svClipRect));
         CUIElement::NWSetContentDirty(m_transitionRoot, DirtyFlags::Render);
     }
 }

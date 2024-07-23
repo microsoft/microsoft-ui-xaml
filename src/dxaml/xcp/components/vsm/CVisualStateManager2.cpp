@@ -169,10 +169,10 @@ _Check_return_ HRESULT CVisualStateManager2::FaultInChildren(_In_ CVisualStateGr
         indexRangesToSkip = customRuntimeData->GetStateTriggerCollectionTokens();
     }
 
-    creator.ApplyStreamToExistingInstance(
+    IFC_RETURN(creator.ApplyStreamToExistingInstance(
         groupCollection->GetCustomRuntimeData()->GetEntireGroupCollectionToken(),
         groupCollection,
-        indexRangesToSkip);
+        indexRangesToSkip));
 
     ASSERT(groupCollection->size() == 0 || groupCollection->GetGroupContext().size() == 0 ||
         groupCollection->size() == groupCollection->GetGroupContext().size());

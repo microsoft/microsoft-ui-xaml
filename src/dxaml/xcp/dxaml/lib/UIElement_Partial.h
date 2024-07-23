@@ -41,10 +41,6 @@ namespace DirectUI
         friend class VirtualizationInformation;
         friend class AutomaticDragHelper;
 
-        // Grant XamlDirect class friend access so it can call
-        // EventAddHandlerByIndex and EventRemoveHandlerByIndex
-        friend class XamlDirect;
-
         public:
             // Initializes a new instance of the UIElement class.
             UIElement();
@@ -830,7 +826,7 @@ namespace DirectUI
                 void SetBounds(_In_ const wf::Rect& bounds);
 
                 ctl::ComPtr<IInspectable> GetItem() const;
-                _Check_return_ HRESULT SetItem(_In_ IInspectable* pDataitem);
+                _Check_return_ HRESULT SetItem(_In_opt_ IInspectable* pDataitem);
 
                 void SetIsRealized(bool isRealized);
                 bool GetIsRealized() const { return m_isRealized; }

@@ -278,9 +278,9 @@ XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { n
         INT32 _minuteIncrement;
         wf::TimeSpan _time;
 
-        EventRegistrationToken _hourSelectionChangedToken;
-        EventRegistrationToken _minuteSelectionChangedToken;
-        EventRegistrationToken _periodSelectionChangedToken;
+        EventRegistrationToken _hourSelectionChangedToken{};
+        EventRegistrationToken _minuteSelectionChangedToken{};
+        EventRegistrationToken _periodSelectionChangedToken{};
     };
 
     ActivatableClass(TimePickerFlyoutPresenter);

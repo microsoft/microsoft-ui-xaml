@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::PointerRoutedEventArgsGenerated::get_Pointer(_Outptr_re
     CPointer* pValueCore = nullptr;
 
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CPointerEventArgs*>(pCoreEventArgsNoRef)->get_Pointer(&pValueCore));
@@ -70,6 +71,7 @@ IFACEMETHODIMP DirectUI::PointerRoutedEventArgsGenerated::get_KeyModifiers(_Out_
     DirectUI::VirtualKeyModifiers valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CPointerEventArgs*>(pCoreEventArgsNoRef)->get_KeyModifiers(&valueCore));
@@ -87,6 +89,7 @@ _Check_return_ HRESULT DirectUI::PointerRoutedEventArgsGenerated::get_GestureFol
     DirectUI::GestureModes valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CPointerEventArgs*>(pCoreEventArgsNoRef)->get_GestureFollowing(&valueCore));
@@ -104,6 +107,7 @@ IFACEMETHODIMP DirectUI::PointerRoutedEventArgsGenerated::get_Handled(_Out_ BOOL
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CPointerEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));
@@ -137,6 +141,7 @@ IFACEMETHODIMP DirectUI::PointerRoutedEventArgsGenerated::get_IsGenerated(_Out_ 
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CPointerEventArgs*>(pCoreEventArgsNoRef)->get_IsGenerated(&valueCore));
@@ -156,6 +161,7 @@ IFACEMETHODIMP DirectUI::PointerRoutedEventArgsGenerated::GetCurrentPoint(_In_op
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "PointerRoutedEventArgs_GetCurrentPoint", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<PointerRoutedEventArgs*>(this)->GetCurrentPointImpl(pRelativeTo, ppReturnValue));
 Cleanup:
@@ -173,6 +179,7 @@ IFACEMETHODIMP DirectUI::PointerRoutedEventArgsGenerated::GetIntermediatePoints(
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "PointerRoutedEventArgs_GetIntermediatePoints", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<PointerRoutedEventArgs*>(this)->GetIntermediatePointsImpl(pRelativeTo, ppReturnValue));
 Cleanup:

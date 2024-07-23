@@ -831,7 +831,7 @@ private:
     // smaller than 7. The interval begins at 100ms and is then increased by 50% each time it is re-started, until
     // m_invalidateMeasureTimerTickCount reaches 7. By then the interval is 1.7s and the total time elapsed is about 5s
     // when the timer is no longer re-started.
-    tracker_ref<winrt::DispatcherTimer> m_invalidateMeasureTimer{ this };
+    winrt::DispatcherTimer m_invalidateMeasureTimer{ nullptr };
 
     // Fields used to support the LayoutsTestHooks
     int m_logItemIndexDbg{ -1 };

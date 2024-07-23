@@ -681,7 +681,7 @@ _Check_return_ HRESULT UWPWindowImpl::OnWindowSizeChanged()
     IFC_RETURN(m_contentManager.OnWindowSizeChanged());
 
     wf::Rect layoutBounds;
-    GetLayoutBounds(&layoutBounds);
+    IFC_RETURN(GetLayoutBounds(&layoutBounds));
 
     // Save the current layout bounds.
     m_layoutBounds = layoutBounds;

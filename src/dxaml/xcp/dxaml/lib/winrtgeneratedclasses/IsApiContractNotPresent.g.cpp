@@ -54,6 +54,7 @@ IFACEMETHODIMP DirectUI::IsApiContractNotPresentGenerated::Evaluate(_In_ ABI::Wi
     }
     ARG_NOTNULL(pArguments, "arguments");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<IsApiContractNotPresent*>(this)->EvaluateImpl(pArguments, pReturnValue));

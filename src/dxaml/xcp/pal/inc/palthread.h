@@ -188,6 +188,6 @@ public:
     }
 
 private:
-    T m_value;
+    T m_value{};
     bool m_initialized;
 };

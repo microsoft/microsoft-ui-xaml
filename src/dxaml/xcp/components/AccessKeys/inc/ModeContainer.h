@@ -11,7 +11,7 @@ class CFocusManager;
 namespace AccessKeys
 {
     // Global callback to be defined by caller
-    _Check_return_ HRESULT AKOnIsActiveChanged(_In_ CFocusManager* focusManager, _In_ IInspectable* sender, _Out_ IInspectable* args);
+    _Check_return_ HRESULT AKOnIsActiveChanged(_In_opt_ CFocusManager* focusManager, _In_ IInspectable* sender, _In_ IInspectable* args);
 
     class AKModeContainer
     {

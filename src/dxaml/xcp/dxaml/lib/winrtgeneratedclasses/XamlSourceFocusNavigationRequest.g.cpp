@@ -45,6 +45,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlSourceFocusNavigationRequ
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<XamlSourceFocusNavigationRequest*>(this)->get_CorrelationIdImpl(pValue));
 Cleanup:
@@ -54,6 +55,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlSourceFocusNavigationRequ
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<XamlSourceFocusNavigationRequest*>(this)->get_HintRectImpl(pValue));
 Cleanup:
@@ -63,6 +65,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlSourceFocusNavigationRequ
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<XamlSourceFocusNavigationRequest*>(this)->get_ReasonImpl(pValue));
 Cleanup:

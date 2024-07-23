@@ -55,6 +55,7 @@ IFACEMETHODIMP DirectUI::FrameGenerated::get_BackStack(_Outptr_result_maybenull_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<Frame*>(this)->get_BackStackImpl(ppValue));
 Cleanup:
@@ -109,6 +110,7 @@ IFACEMETHODIMP DirectUI::FrameGenerated::get_ForwardStack(_Outptr_result_maybenu
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<Frame*>(this)->get_ForwardStackImpl(ppValue));
 Cleanup:
@@ -364,6 +366,7 @@ IFACEMETHODIMP DirectUI::FrameGenerated::GetNavigationState(_Out_ HSTRING* pRetu
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Frame_GetNavigationState", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Frame*>(this)->GetNavigationStateImpl(pReturnValue));
@@ -454,6 +457,7 @@ IFACEMETHODIMP DirectUI::FrameGenerated::Navigate(_In_ ABI::Windows::UI::Xaml::I
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Frame_Navigate", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Frame*>(this)->NavigateImpl(sourcePageType, pParameter, pReturnValue));
@@ -472,6 +476,7 @@ IFACEMETHODIMP DirectUI::FrameGenerated::Navigate(_In_ ABI::Windows::UI::Xaml::I
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Frame_Navigate", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Frame*>(this)->NavigateImpl(sourcePageType, pReturnValue));
@@ -490,6 +495,7 @@ IFACEMETHODIMP DirectUI::FrameGenerated::NavigateToType(_In_ ABI::Windows::UI::X
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Frame_NavigateToType", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Frame*>(this)->NavigateToTypeImpl(sourcePageType, pParameter, pNavigationOptions, pReturnValue));
@@ -508,6 +514,7 @@ IFACEMETHODIMP DirectUI::FrameGenerated::NavigateWithTransitionInfo(_In_ ABI::Wi
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Frame_NavigateWithTransitionInfo", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Frame*>(this)->NavigateWithTransitionInfoImpl(sourcePageType, pParameter, pInfoOverride, pReturnValue));
@@ -580,7 +587,7 @@ _Check_return_ HRESULT DirectUI::FrameGenerated::EventAddHandlerByIndex(_In_ Kno
     case KnownEventIndex::Frame_Navigated:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Navigation::INavigatedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -597,7 +604,7 @@ _Check_return_ HRESULT DirectUI::FrameGenerated::EventAddHandlerByIndex(_In_ Kno
     case KnownEventIndex::Frame_Navigating:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Navigation::INavigatingCancelEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -614,7 +621,7 @@ _Check_return_ HRESULT DirectUI::FrameGenerated::EventAddHandlerByIndex(_In_ Kno
     case KnownEventIndex::Frame_NavigationFailed:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Navigation::INavigationFailedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -631,7 +638,7 @@ _Check_return_ HRESULT DirectUI::FrameGenerated::EventAddHandlerByIndex(_In_ Kno
     case KnownEventIndex::Frame_NavigationStopped:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Navigation::INavigationStoppedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

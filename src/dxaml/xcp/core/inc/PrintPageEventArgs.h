@@ -44,7 +44,7 @@ public:
     CUIElement *m_pPageVisual;
     bool       m_fHasMorePages;
     XSIZEF      m_sPrintableArea;
-    XTHICKNESS  m_tPageMargins;
+    XTHICKNESS  m_tPageMargins{};
 
 private:
     CCoreServices* m_pCore;

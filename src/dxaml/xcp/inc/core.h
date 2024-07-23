@@ -19,7 +19,7 @@ enum DisplayRotation : uint8_t;
 class DCompTreeHost;
 class CEventArgs;
 struct IPALDownloadRequest;
-struct IPALTickableClock;
+class RefreshAlignedClock;
 struct IPALSurface;
 struct IPALGraphicsDeviceChangeListener;
 struct IErrorService;
@@ -192,7 +192,7 @@ struct ITickableFrameScheduler : IFrameScheduler
     virtual _Check_return_ HRESULT EndTick() = 0;
     virtual bool IsInTick() = 0;
     virtual bool IsHighPriority() = 0;
-    virtual IPALTickableClock* GetClock() = 0;  // TODO: HWPC: Can we factor TimeManager's clock dependency into the UIThreadFrameScheduler completely?
+    virtual RefreshAlignedClock* GetClock() = 0;  // TODO: HWPC: Can we factor TimeManager's clock dependency into the UIThreadFrameScheduler completely?
 };
 
 //------------------------------------------------------------------------------

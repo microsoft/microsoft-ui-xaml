@@ -9,7 +9,7 @@ template<typename TDelegateInterface, typename TCallbackObject, typename TArg1, 
 Microsoft::WRL::ComPtr<typename Microsoft::WRL::Details::ArgTraitsHelper<TDelegateInterface>::Interface>
 DispatcherCallback(
     _In_ TCallbackObject *pObject,
-    _In_ HRESULT (TCallbackObject::* pMethod)(TArg1*, TArg2*)) throw()
+    _In_ HRESULT (TCallbackObject::* pMethod)(TArg1*, TArg2*)) noexcept
 {
     static_assert(__is_base_of(IUnknown, TDelegateInterface) && !__is_base_of(IInspectable, TDelegateInterface), "Delegates objects must be 'IUnknown' base and not 'IInspectable'");
     static_assert(Microsoft::WRL::Details::ArgTraitsHelper<TDelegateInterface>::Traits::args == 2, "Number of arguments on object method doesn't match number of arguments on Delegate::Invoke");
@@ -20,7 +20,7 @@ DispatcherCallback(
 
     struct ComObject : wrl::RuntimeClass<wrl::RuntimeClassFlags<wrl::Delegate>, TDelegateInterface, wrl::FtmBase>
     {
-        ComObject(TCallbackObject *pDO, TCallbackMethod pMethod) throw()
+        ComObject(TCallbackObject *pDO, TCallbackMethod pMethod) noexcept
             : m_wpDO(xref::get_weakref(pDO)), m_pMethod(pMethod)
         {
             ctl::ComPtr<msy::IDispatcherQueueStatics> spDispatcherQueueStatics;

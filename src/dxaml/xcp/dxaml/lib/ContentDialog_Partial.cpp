@@ -62,7 +62,6 @@ static const DOUBLE ContentDialog_SIP_Bottom_Margin = 12.0;
 ContentDialog::~ContentDialog()
 {
     VERIFYHR(DetachEventHandlers());
-    VERIFYHR(DetachEventHandlersForOpenDialog());
 
     auto xamlRoot = XamlRoot::GetForElementStatic(this);
     if (m_xamlRootChangedEventHandler && xamlRoot)
@@ -84,11 +83,8 @@ ContentDialog::OnPropertyChanged2(_In_ const PropertyChangedParams& args)
 {
     IFC_RETURN(__super::OnPropertyChanged2(args));
 
-    // We only react to property changes if we have a complete
-    // control template and a ContentDialog is currently visible or in design mode
-    // Else what's the point?
-    if (m_templateVersion == TemplateVersion::Unsupported || // Template is not complete
-        (!m_tpCurrentAsyncOperation && !DesignerInterop::GetDesignerMode(DesignerMode::V2Only)) || // or no active ShowAsync operation and not under the designer
+    // We only react to property changes in a ContentDialog is currently visible or in design mode
+    if ((!m_tpCurrentAsyncOperation && !DesignerInterop::GetDesignerMode(DesignerMode::V2Only)) || // or no active ShowAsync operation and not under the designer
         !m_hasPreparedContent || // or content hasn't been prepared
         m_hideInProgress
         )
@@ -99,72 +95,8 @@ ContentDialog::OnPropertyChanged2(_In_ const PropertyChangedParams& args)
     switch (args.m_pDP->GetIndex())
     {
     case KnownPropertyIndex::ContentDialog_FullSizeDesired:
-        IFC_RETURN(UpdateVisualState());
-        break;
-
     case KnownPropertyIndex::ContentDialog_PrimaryButtonText:
-        if (m_templateVersion < TemplateVersion::Redstone2)
-        {
-            wrl_wrappers::HString newString;
-            wrl_wrappers::HString oldString;
-
-            IFC_RETURN(IValueBoxer::UnboxValue(args.m_pNewValue->AsIInspectable(), newString.ReleaseAndGetAddressOf()));
-            IFC_RETURN(IValueBoxer::UnboxValue(args.m_pNewValue->AsIInspectable(), oldString.ReleaseAndGetAddressOf()));
-
-            if (oldString.Get() == nullptr || newString.Get() == nullptr)
-            {
-                IFC_RETURN(ResetAndPrepareContent());
-            }
-            else
-            {
-                ctl::ComPtr<xaml_primitives::IButtonBase> primaryButton;
-                IFC_RETURN(GetButtonHelper(xaml_controls::ContentDialogButton_Primary, primaryButton.GetAddressOf()));
-                ASSERT(primaryButton);
-
-                ctl::ComPtr<IContentControl> spContentControl;
-                IFC_RETURN(primaryButton.As(&spContentControl));
-                IFC_RETURN(spContentControl->put_Content(args.m_pNewValue->AsIInspectable()));
-            }
-        }
-        else
-        {
-            IFC_RETURN(UpdateVisualState());
-        }
-        break;
-
     case KnownPropertyIndex::ContentDialog_SecondaryButtonText:
-        if (m_templateVersion < TemplateVersion::Redstone2)
-        {
-            wrl_wrappers::HString newString;
-            wrl_wrappers::HString oldString;
-
-            IFC_RETURN(IValueBoxer::UnboxValue(args.m_pNewValue->AsIInspectable(), newString.ReleaseAndGetAddressOf()));
-            IFC_RETURN(IValueBoxer::UnboxValue(args.m_pNewValue->AsIInspectable(), oldString.ReleaseAndGetAddressOf()));
-
-            // Going to or from a null value (blank string) causes a change in the content
-            // of the button so we rebuild.
-
-            if (oldString.Get() == nullptr || newString.Get() == nullptr)
-            {
-                IFC_RETURN(ResetAndPrepareContent());
-            }
-            else
-            {
-                ctl::ComPtr<xaml_primitives::IButtonBase> secondaryButton;
-                IFC_RETURN(GetButtonHelper(xaml_controls::ContentDialogButton_Secondary, secondaryButton.GetAddressOf()));
-                ASSERT(secondaryButton);
-
-                ctl::ComPtr<IContentControl> spContentControl;
-                IFC_RETURN(secondaryButton.As(&spContentControl));
-                IFC_RETURN(spContentControl->put_Content(args.m_pNewValue->AsIInspectable()));
-            }
-        }
-        else
-        {
-            IFC_RETURN(UpdateVisualState());
-        }
-        break;
-
     case KnownPropertyIndex::ContentDialog_CloseButtonText:
     case KnownPropertyIndex::ContentDialog_DefaultButton:
         IFC_RETURN(UpdateVisualState());
@@ -172,17 +104,6 @@ ContentDialog::OnPropertyChanged2(_In_ const PropertyChangedParams& args)
 
     case KnownPropertyIndex::ContentDialog_IsPrimaryButtonEnabled:
     case KnownPropertyIndex::ContentDialog_IsSecondaryButtonEnabled:
-        if (m_templateVersion < TemplateVersion::Redstone2)
-        {
-            ctl::ComPtr<xaml_primitives::IButtonBase> button;
-            bool isPrimary = (args.m_pDP->GetIndex() == KnownPropertyIndex::ContentDialog_IsPrimaryButtonEnabled);
-
-            IFC_RETURN(GetButtonHelper(isPrimary ? xaml_controls::ContentDialogButton_Primary : xaml_controls::ContentDialogButton_Secondary, button.GetAddressOf()));
-            if (button)
-            {
-                IFC_RETURN(button.AsOrNull<xaml_controls::IControl>()->put_IsEnabled(args.m_pNewValue->As<valueBool>()));
-            }
-        }
         break;
 
     case KnownPropertyIndex::ContentDialog_PrimaryButtonCommand:
@@ -260,64 +181,48 @@ IFACEMETHODIMP ContentDialog::OnApplyTemplate()
 
     m_isLayoutRootTransplanted = false;
 
-    DetermineTemplateVersion();
+    m_isTemplateApplied = true;
 
-    if (m_templateVersion != TemplateVersion::Unsupported)
+    if (DesignerInterop::GetDesignerMode(DesignerMode::V2Only))
     {
-        if (DesignerInterop::GetDesignerMode(DesignerMode::V2Only))
+        // In designer mode the dialog is displayed in-place.  Do nothing special
+        // to display the popup, but only worry about the contents
+        m_isShowing = true;
+        m_placementMode = PlacementMode::InPlace;
+
+        IFC_RETURN(PrepareContent());
+    }
+
+    // For dialogs that were shown when not in the visual tree, since we couldn't prepare
+    // their content during the ShowAsync() call, do it now that it's loaded.
+    if (m_placementMode == PlacementMode::EntireControlInPopup)
+    {
+        IFC_RETURN(PrepareContent());
+    }
+
+    // On non-PhoneBlue templates, it is possible to resize the app, in which case we would like to reposition the
+    // ContentDialog. FullSize behavior also needs to be checked as the window height might become smaller than
+    // the MaxHeight, in which case positioning behavior changes.
+    auto xamlRoot = XamlRoot::GetForElementStatic(this);
+    if (xamlRoot)
+    {
+        ctl::WeakRefPtr weakInstance;
+        IFC_RETURN(ctl::AsWeak(this, &weakInstance));
+
+        auto handler = [weakInstance](xaml::IXamlRoot* sender, xaml::IXamlRootChangedEventArgs* args) mutable
         {
-            // In designer mode the dialog is displayed in-place.  Do nothing special
-            // to display the popup, but only worry about the contents
-            m_isShowing = true;
-            m_placementMode = PlacementMode::InPlace;
-
-            IFC_RETURN(PrepareContent());
-        }
-        else if (m_templateVersion < TemplateVersion::Redstone3 &&
-            m_placementMode == PlacementMode::Undetermined || m_placementMode == PlacementMode::TransplantedRootInPopup)
-        {
-            m_placementMode = PlacementMode::TransplantedRootInPopup;
-
-            // HostDialogWithinPopup is called here to catch the case when
-            // this is part of the visual tree, at which point we
-            // will create the Popup and pull the contents out of
-            // the template.
-            IFC_RETURN(HostDialogWithinPopup(false /*wasSmokeLayerFoundAsTemplatePart*/));
-
-            // At this point either a popup will have been created because
-            // the call above and ContentDialog is in the visual tree, or a ShowAsync
-            // call has happened and we're in LayoutMode_EntireControl mode.
-            ASSERT(m_tpPopup);
-        }
-
-        // For dialogs that were shown when not in the visual tree, since we couldn't prepare
-        // their content during the ShowAsync() call, do it now that it's loaded.
-        if (m_placementMode == PlacementMode::EntireControlInPopup)
-        {
-            IFC_RETURN(PrepareContent());
-        }
-
-        // On non-PhoneBlue templates, it is possible to resize the app, in which case we would like to reposition the
-        // ContentDialog. FullSize behavior also needs to be checked as the window height might become smaller than
-        // the MaxHeight, in which case positioning behavior changes.
-        auto xamlRoot = XamlRoot::GetForElementStatic(this);
-        if (m_templateVersion > TemplateVersion::PhoneBlue && xamlRoot)
-        {
-            ctl::WeakRefPtr weakInstance;
-            IFC_RETURN(ctl::AsWeak(this, &weakInstance));
-
-            auto handler = [weakInstance](xaml::IXamlRoot* sender, xaml::IXamlRootChangedEventArgs* args) mutable
+            if (auto instance = weakInstance.AsOrNull<IContentDialog>())
             {
-                if (auto instance = weakInstance.AsOrNull<IContentDialog>())
-                {
-                    IFC_RETURN(instance.Cast<ContentDialog>()->OnXamlRootChanged(sender, args));
-                }
-                return S_OK;
-            };
+                IFC_RETURN(instance.Cast<ContentDialog>()->OnXamlRootChanged(sender, args));
+            }
+            return S_OK;
+        };
 
-            IFC_RETURN(m_xamlRootChangedEventHandler.AttachEventHandler(xamlRoot.Get(), handler));
-        }
+        IFC_RETURN(m_xamlRootChangedEventHandler.AttachEventHandler(xamlRoot.Get(), handler));
+    }
 
+    if (m_tpLayoutRootPart)
+    {
         IFC_RETURN(m_epLayoutRootLoadedHandler.AttachEventHandler(
             m_tpLayoutRootPart.AsOrNull<IFrameworkElement>().Get(),
             std::bind(&ContentDialog::OnLayoutRootLoaded, this, _1, _2)));
@@ -341,24 +246,24 @@ IFACEMETHODIMP ContentDialog::OnApplyTemplate()
         IFC_RETURN(m_epLayoutRootProcessKeyboardAcceleratorsHandler.AttachEventHandler(
             m_tpLayoutRootPart.AsOrNull<IUIElement>().Get(),
             std::bind(&ContentDialog::OnLayoutRootProcessKeyboardAccelerators, this, _1, _2)));
+    }
 
+    if (m_tpBackgroundElementPart)
+    {
         IFC_RETURN(m_dialogSizeChangedHandler.AttachEventHandler(
             m_tpBackgroundElementPart.AsOrNull<IFrameworkElement>().Get(),
             std::bind(&ContentDialog::OnDialogSizeChanged, this, _1, _2)));
     }
 
-    if (m_templateVersion >= TemplateVersion::Redstone2)
-    {
-        IFC_RETURN(AttachButtonEvents());
+    IFC_RETURN(AttachButtonEvents());
 
-        // In case the commands were set before the template was applied, we won't have responded to the property-change event.
-        // We should set the button properties from the commands at this point to ensure they're set properly.
-        // If they've already been set before, this will be a no-op, since we check to make sure that the properties
-        // are unset before we set them.
-        IFC_RETURN(SetButtonPropertiesFromCommand(xaml_controls::ContentDialogButton_Primary));
-        IFC_RETURN(SetButtonPropertiesFromCommand(xaml_controls::ContentDialogButton_Secondary));
-        IFC_RETURN(SetButtonPropertiesFromCommand(xaml_controls::ContentDialogButton_Close));
-    }
+    // In case the commands were set before the template was applied, we won't have responded to the property-change event.
+    // We should set the button properties from the commands at this point to ensure they're set properly.
+    // If they've already been set before, this will be a no-op, since we check to make sure that the properties
+    // are unset before we set them.
+    IFC_RETURN(SetButtonPropertiesFromCommand(xaml_controls::ContentDialogButton_Primary));
+    IFC_RETURN(SetButtonPropertiesFromCommand(xaml_controls::ContentDialogButton_Secondary));
+    IFC_RETURN(SetButtonPropertiesFromCommand(xaml_controls::ContentDialogButton_Close));
 
     // If the template changes while the dialog is showing, we need to re-attached to the
     // dialog showing states changed event so that we can fire the hiding event at the
@@ -373,32 +278,7 @@ IFACEMETHODIMP ContentDialog::OnApplyTemplate()
             SetPtrValue(m_tpDialogShowingStates, dialogShowingStates);
         }
     }
-
-    // Lookup value of ContentDialogMinHeight, which is used when adjusting the dialog's layout
-    // in response to a visible input pane.
-    {
-        ctl::ComPtr<xaml::IResourceDictionary> resourceDictionary;
-        IFC_RETURN(get_Resources(&resourceDictionary));
-
-        ctl::ComPtr<wfc::IMap<IInspectable*, IInspectable*>> resourceMap;
-        IFC_RETURN(resourceDictionary.As(&resourceMap));
-
-        ctl::ComPtr<IInspectable> resourceKey;
-        IFC_RETURN(PropertyValue::CreateFromString(wrl_wrappers::HStringReference(L"ContentDialogMinHeight").Get(), &resourceKey));
-
-        BOOLEAN hasKey = FALSE;
-        IFC_RETURN(resourceMap->HasKey(resourceKey.Get(), &hasKey));
-
-        if (hasKey)
-        {
-            ctl::ComPtr<IInspectable> resource;
-            IFC_RETURN(resourceMap->Lookup(resourceKey.Get(), &resource));
-
-            auto doubleReference = ctl::query_interface_cast<wf::IReference<double>>(resource.Get());
-            IFC_RETURN(doubleReference->get_Value(&m_dialogMinHeight));
-        }
-    }
-
+     
     // Attempt to set the m_tpSmokeLayer field as a FrameworkElement template part, in Popup placement.
     if (m_tpLayoutRootPart)
     {
@@ -464,7 +344,7 @@ _Check_return_ HRESULT ContentDialog::ChangeVisualState(_In_ bool useTransitions
 {
     IFC_RETURN(__super::ChangeVisualState(useTransitions));
 
-    if (m_templateVersion == TemplateVersion::Unsupported)
+    if (!m_isTemplateApplied)
     {
         return S_OK;
     }
@@ -472,247 +352,134 @@ _Check_return_ HRESULT ContentDialog::ChangeVisualState(_In_ bool useTransitions
     BOOLEAN fullSizeDesired = FALSE;
     IFC_RETURN(get_FullSizeDesired(&fullSizeDesired));
 
-    // Orientation
-    if (m_templateVersion == TemplateVersion::PhoneBlue)
+    // ButtonsVisibilityStates
     {
-        ctl::ComPtr<wgrd::IDisplayInformationStatics> spDisplayInformationStatics;
-        IFC_RETURN(ctl::GetActivationFactory(wrl_wrappers::HStringReference(
-            RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(),
-            &spDisplayInformationStatics));
+        wrl_wrappers::HString primaryText;
+        IFC_RETURN(get_PrimaryButtonText(primaryText.ReleaseAndGetAddressOf()));
 
-        ctl::ComPtr<wgrd::IDisplayInformation> spDisplayInformation;
-        IFC_RETURN(spDisplayInformationStatics->GetForCurrentView(&spDisplayInformation));
+        wrl_wrappers::HString secondaryText;
+        IFC_RETURN(get_SecondaryButtonText(secondaryText.ReleaseAndGetAddressOf()));
 
-        auto orientation = wgrd::DisplayOrientations_None;
-        IFC_RETURN(spDisplayInformation->get_CurrentOrientation(&orientation));
+        wrl_wrappers::HString closeText;
+        IFC_RETURN(get_CloseButtonText(closeText.ReleaseAndGetAddressOf()));
 
-        // Note: When ContentDialog supports desktop windows, we may want to take the
-        // width/height of the application window into account. For phone we only need
-        // to consider device orientation.
+        bool hasPrimary = !primaryText.IsEmpty();
+        bool hasSecondary = !secondaryText.IsEmpty();
+        bool hasClose = !closeText.IsEmpty();
 
-        const wchar_t* newStateName = nullptr;
-        switch (orientation)
+        const wchar_t* buttonVisibilityState = L"NoneVisible";
+        if (hasPrimary && hasSecondary && hasClose)
         {
-        case wgrd::DisplayOrientations_Landscape:
-        case wgrd::DisplayOrientations_LandscapeFlipped:
-            newStateName = L"Landscape";
-            break;
-        case wgrd::DisplayOrientations_Portrait:
-        case wgrd::DisplayOrientations_PortraitFlipped:
-            newStateName = L"Portrait";
-            break;
-        default:
-            ASSERT(FALSE);
-            break;
+            buttonVisibilityState = L"AllVisible";
+        }
+        else if (hasPrimary && hasSecondary)
+        {
+            buttonVisibilityState = L"PrimaryAndSecondaryVisible";
+        }
+        else if (hasPrimary && hasClose)
+        {
+            buttonVisibilityState = L"PrimaryAndCloseVisible";
+        }
+        else if (hasSecondary && hasClose)
+        {
+            buttonVisibilityState = L"SecondaryAndCloseVisible";
+        }
+        else if (hasPrimary)
+        {
+            buttonVisibilityState = L"PrimaryVisible";
+        }
+        else if (hasSecondary)
+        {
+            buttonVisibilityState = L"SecondaryVisible";
+        }
+        else if (hasClose)
+        {
+            buttonVisibilityState = L"CloseVisible";
         }
 
         BOOLEAN ignored = FALSE;
-        IFC_RETURN(GoToState(useTransitions, newStateName, &ignored));
+        IFC_RETURN(GoToState(useTransitions, buttonVisibilityState, &ignored));
     }
 
-    if (m_templateVersion >= TemplateVersion::Redstone2)
+    // DefaultButtonStates
     {
-        // ButtonsVisibilityStates
+        const wchar_t* defaultButtonState = L"NoDefaultButton";
+
+        auto defaultButton = xaml_controls::ContentDialogButton_None;
+        IFC_RETURN(get_DefaultButton(&defaultButton));
+
+        if (defaultButton != xaml_controls::ContentDialogButton_None)
         {
-            wrl_wrappers::HString primaryText;
-            IFC_RETURN(get_PrimaryButtonText(primaryText.ReleaseAndGetAddressOf()));
+            ctl::ComPtr<DependencyObject> focusedElement;
+            IFC_RETURN(GetFocusedElement(&focusedElement));
 
-            wrl_wrappers::HString secondaryText;
-            IFC_RETURN(get_SecondaryButtonText(secondaryText.ReleaseAndGetAddressOf()));
+            BOOLEAN isFocusInCommandArea = FALSE;
+            IFC_RETURN(m_tpCommandSpacePart.Cast<Grid>()->IsAncestorOf(focusedElement.Get(), &isFocusInCommandArea));
 
-            wrl_wrappers::HString closeText;
-            IFC_RETURN(get_CloseButtonText(closeText.ReleaseAndGetAddressOf()));
-
-            bool hasPrimary = !primaryText.IsEmpty();
-            bool hasSecondary = !secondaryText.IsEmpty();
-            bool hasClose = !closeText.IsEmpty();
-
-            const wchar_t* buttonVisibilityState = L"NoneVisible";
-            if (hasPrimary && hasSecondary && hasClose)
+            // If focus is not in the command area, set the default button visualization just based on the property value.
+            // If focus is in the command area, set the default button visualization only if it has focus.
+            if (defaultButton == xaml_controls::ContentDialogButton_Primary)
             {
-                buttonVisibilityState = L"AllVisible";
+                if (!isFocusInCommandArea || ctl::are_equal(m_tpPrimaryButtonPart.Get(), focusedElement.Get()))
+                {
+                    defaultButtonState = L"PrimaryAsDefaultButton";
+                }
             }
-            else if (hasPrimary && hasSecondary)
+            else if (defaultButton == xaml_controls::ContentDialogButton_Secondary)
             {
-                buttonVisibilityState = L"PrimaryAndSecondaryVisible";
+                if (!isFocusInCommandArea || ctl::are_equal(m_tpSecondaryButtonPart.Get(), focusedElement.Get()))
+                {
+                    defaultButtonState = L"SecondaryAsDefaultButton";
+                }
             }
-            else if (hasPrimary && hasClose)
+            else if (defaultButton == xaml_controls::ContentDialogButton_Close)
             {
-                buttonVisibilityState = L"PrimaryAndCloseVisible";
+                if (!isFocusInCommandArea || ctl::are_equal(m_tpCloseButtonPart.Get(), focusedElement.Get()))
+                {
+                    defaultButtonState = L"CloseAsDefaultButton";
+                }
             }
-            else if (hasSecondary && hasClose)
-            {
-                buttonVisibilityState = L"SecondaryAndCloseVisible";
-            }
-            else if (hasPrimary)
-            {
-                buttonVisibilityState = L"PrimaryVisible";
-            }
-            else if (hasSecondary)
-            {
-                buttonVisibilityState = L"SecondaryVisible";
-            }
-            else if (hasClose)
-            {
-                buttonVisibilityState = L"CloseVisible";
-            }
-
-            BOOLEAN ignored = FALSE;
-            IFC_RETURN(GoToState(useTransitions, buttonVisibilityState, &ignored));
         }
 
-        // DefaultButtonStates
-        {
-            const wchar_t* defaultButtonState = L"NoDefaultButton";
-
-            auto defaultButton = xaml_controls::ContentDialogButton_None;
-            IFC_RETURN(get_DefaultButton(&defaultButton));
-
-            if (defaultButton != xaml_controls::ContentDialogButton_None)
-            {
-                ctl::ComPtr<DependencyObject> focusedElement;
-                IFC_RETURN(GetFocusedElement(&focusedElement));
-
-                BOOLEAN isFocusInCommandArea = FALSE;
-                IFC_RETURN(m_tpCommandSpacePart.Cast<Grid>()->IsAncestorOf(focusedElement.Get(), &isFocusInCommandArea));
-
-                // If focus is not in the command area, set the default button visualization just based on the property value.
-                // If focus is in the command area, set the default button visualization only if it has focus.
-                if (defaultButton == xaml_controls::ContentDialogButton_Primary)
-                {
-                    if (!isFocusInCommandArea || ctl::are_equal(m_tpPrimaryButtonPart.Get(), focusedElement.Get()))
-                    {
-                        defaultButtonState = L"PrimaryAsDefaultButton";
-                    }
-                }
-                else if (defaultButton == xaml_controls::ContentDialogButton_Secondary)
-                {
-                    if (!isFocusInCommandArea || ctl::are_equal(m_tpSecondaryButtonPart.Get(), focusedElement.Get()))
-                    {
-                        defaultButtonState = L"SecondaryAsDefaultButton";
-                    }
-                }
-                else if (defaultButton == xaml_controls::ContentDialogButton_Close)
-                {
-                    if (!isFocusInCommandArea || ctl::are_equal(m_tpCloseButtonPart.Get(), focusedElement.Get()))
-                    {
-                        defaultButtonState = L"CloseAsDefaultButton";
-                    }
-                }
-            }
-
-            BOOLEAN ignored = FALSE;
-            IFC_RETURN(GoToState(useTransitions, defaultButtonState, &ignored));
-        }
+        BOOLEAN ignored = FALSE;
+        IFC_RETURN(GoToState(useTransitions, defaultButtonState, &ignored));
     }
 
-    if (m_templateVersion >= TemplateVersion::Redstone3)
+    // DialogShowingStates
+    if (m_placementMode == PlacementMode::InPlace)
     {
-        // DialogShowingStates
-        if (m_placementMode == PlacementMode::InPlace)
+        if (m_tpDialogShowingStates)
         {
             BOOLEAN ignored = FALSE;
             IFC_RETURN(GoToState(true, m_isShowing && !m_hideInProgress ? L"DialogShowing" : L"DialogHidden", &ignored));
         }
-        else if (m_placementMode != PlacementMode::Undetermined)
+        else if (m_tpLayoutRootPart)
         {
-            // For ContentDialog's shown in the popup, set the state to always showing since the opened
-            // state of the popup effectively controls whether its showing it not.
-            BOOLEAN ignored = FALSE;
-            IFC_RETURN(GoToState(false, L"DialogShowingWithoutSmokeLayer", &ignored));
-        }
-
-        // DialogSizingStates
-        {
-            BOOLEAN ignored = FALSE;
-            IFC_RETURN(GoToState(useTransitions, fullSizeDesired ? L"FullDialogSizing" : L"DefaultDialogSizing", &ignored));
-        }
-
-        // DialogBorderStates
-        {
-            BOOLEAN ignored = FALSE;
-            IFC_RETURN(GoToState(useTransitions, L"NoBorder", &ignored));
+            // We don't have a state transition defined so brute force it.
+            IFC_RETURN(m_tpLayoutRootPart.AsOrNull<IUIElement>()->put_Visibility(m_isShowing && !m_hideInProgress ? xaml::Visibility_Visible : xaml::Visibility_Collapsed));
         }
     }
-
-    // On PhoneBlue, the dialog did not move out of the way of the input pane.
-    if (m_templateVersion > TemplateVersion::PhoneBlue)
+    else if (m_placementMode != PlacementMode::Undetermined)
     {
-        IFC_RETURN(AdjustVisualStateForInputPane());
+        // For ContentDialog's shown in the popup, set the state to always showing since the opened
+        // state of the popup effectively controls whether its showing it not.
+        BOOLEAN ignored = FALSE;
+        IFC_RETURN(GoToState(false, L"DialogShowingWithoutSmokeLayer", &ignored));
+    }
+
+    // DialogSizingStates
+    {
+        BOOLEAN ignored = FALSE;
+        IFC_RETURN(GoToState(useTransitions, fullSizeDesired ? L"FullDialogSizing" : L"DefaultDialogSizing", &ignored));
+    }
+
+    // DialogBorderStates
+    {
+        BOOLEAN ignored = FALSE;
+        IFC_RETURN(GoToState(useTransitions, L"NoBorder", &ignored));
     }
 
     return S_OK;
-}
-
-void ContentDialog::DetermineTemplateVersion()
-{
-    if (m_tpButton1HostPart &&
-        m_tpButton2HostPart &&
-        m_tpLayoutRootPart &&
-        m_tpContainerPart &&
-        m_tpContentPanelPart &&
-        m_tpContentPart &&
-        m_tpTitlePart &&
-        m_tpBackgroundElementPart &&
-        !m_tpCommandSpacePart &&
-        !m_tpDialogSpacePart &&
-        !m_tpContentScrollViewerPart &&
-        !m_tpPrimaryButtonPart &&
-        !m_tpSecondaryButtonPart &&
-        !m_tpCloseButtonPart &&
-        !m_tpScaleTransformPart)
-    {
-        m_templateVersion = TemplateVersion::PhoneBlue;
-    }
-    else if (m_tpButton1HostPart &&
-        m_tpButton2HostPart &&
-        m_tpLayoutRootPart &&
-        m_tpContainerPart &&
-        m_tpContentPart &&
-        m_tpTitlePart &&
-        m_tpBackgroundElementPart &&
-        m_tpCommandSpacePart &&
-        m_tpDialogSpacePart &&
-        m_tpContentScrollViewerPart &&
-        !m_tpPrimaryButtonPart &&
-        !m_tpSecondaryButtonPart &&
-        !m_tpCloseButtonPart &&
-        !m_tpScaleTransformPart)
-    {
-        m_templateVersion = TemplateVersion::Threshold;
-    }
-    else if (m_tpContainerPart &&
-        m_tpLayoutRootPart &&
-        m_tpBackgroundElementPart &&
-        m_tpContentScrollViewerPart &&
-        m_tpTitlePart &&
-        m_tpContentPart &&
-        m_tpCommandSpacePart &&
-        m_tpPrimaryButtonPart &&
-        m_tpSecondaryButtonPart &&
-        m_tpCloseButtonPart &&
-        !m_tpButton1HostPart &&
-        !m_tpButton2HostPart &&
-        !m_tpScaleTransformPart)
-    {
-        m_templateVersion = TemplateVersion::Redstone2;
-    }
-    else if (m_tpContainerPart &&
-        m_tpLayoutRootPart &&
-        m_tpBackgroundElementPart &&
-        m_tpContentScrollViewerPart &&
-        m_tpTitlePart &&
-        m_tpContentPart &&
-        m_tpCommandSpacePart &&
-        m_tpPrimaryButtonPart &&
-        m_tpSecondaryButtonPart &&
-        m_tpCloseButtonPart &&
-        m_tpScaleTransformPart &&
-        !m_tpButton1HostPart &&
-        !m_tpButton2HostPart)
-    {
-        m_templateVersion = TemplateVersion::Redstone3;
-    }
 }
 
 _Check_return_ HRESULT
@@ -919,13 +686,20 @@ ContentDialog::ShowAsyncWithPlacementImpl(
 
         if (IsInLiveTree())
         {
-            // Make sure the template has been applied so that m_templateVersion is accurate.
+            // Ensure the template is applied so that we can get to the parts.
             BOOLEAN ignore = FALSE;
             IFC_RETURN(ApplyTemplate(&ignore));
 
-            m_placementMode =
-                (placement == xaml_controls::ContentDialogPlacement_InPlace && m_templateVersion >= TemplateVersion::Redstone3 ?
-                    PlacementMode::InPlace : PlacementMode::TransplantedRootInPopup);
+            m_placementMode = placement == xaml_controls::ContentDialogPlacement_InPlace ? PlacementMode::InPlace : PlacementMode::TransplantedRootInPopup;
+        
+            // In order to actually move to a popup we need the container and layout root parts.  There is no current
+            // check for this (using version) and we will crash if you attempt to host a content dialog in a popup with
+            // one of these parts missing.  This continues that behavior, but we will fail here instead of at some random
+            // point in the future when we attempt to use one of those parts.  
+            //
+            // Alternately, we could forcibly switch to inplace mode if one of the parts are missing or we could try to 
+            // to use the dialogs content as the LayoutRoot and the Dialog itself as the Container.
+            IFCCHECK_RETURN(m_placementMode == PlacementMode::InPlace || (m_tpContainerPart && m_tpLayoutRootPart));
         }
     }
 
@@ -939,7 +713,6 @@ ContentDialog::ShowAsyncWithPlacementImpl(
     {
         IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_UNEXPECTED, ERROR_POPUP_XAMLROOT_NOT_SET));
     }
-
 
     // See if there is already an open dialog and return an error if that is the case.
     // For InPlace dialogs, multiple can be shown at the same time, provided that they
@@ -982,9 +755,6 @@ ContentDialog::ShowAsyncWithPlacementImpl(
 
     if (m_placementMode == PlacementMode::InPlace)
     {
-        // Support for inline dialogs depends on visual states added in RS3.
-        ASSERT(m_templateVersion >= TemplateVersion::Redstone3);
-
         // If the dialog had previously been open, then this should have been cleared after
         // it finished closing.
         ASSERT(!m_dialogShowingStateChangedEventHandler);
@@ -1011,14 +781,10 @@ ContentDialog::ShowAsyncWithPlacementImpl(
         // in their entirety), wait until they are loaded before preparing their content.
         // Template version is determined in OnApplyTemplate, so we can test against that
         // to see whether the control has been loaded before ShowAsync() was called.
-        if (m_templateVersion != TemplateVersion::Unsupported)
+        if (m_isTemplateApplied)
         {
             IFC_RETURN(PrepareContent());
         }
-
-        // Make sure the template has been applied so that m_tpSmokeLayer can potentially be found in the control template.
-        BOOLEAN ignore = FALSE;
-        IFC_RETURN(ApplyTemplate(&ignore))
 
         IFC_RETURN(HostDialogWithinPopup(false /*wasSmokeLayerFoundAsTemplatePart*/));
 
@@ -1125,7 +891,7 @@ Cleanup:
 
 _Check_return_ HRESULT ContentDialog::ResetAndPrepareContent()
 {
-    if (m_templateVersion != TemplateVersion::Unsupported && m_tpCurrentAsyncOperation && m_hasPreparedContent)
+    if (m_isTemplateApplied && m_tpCurrentAsyncOperation && m_hasPreparedContent)
     {
         m_hasPreparedContent = false;
         IFC_RETURN(PrepareContent());
@@ -1360,8 +1126,6 @@ _Check_return_ HRESULT ContentDialog::DeferredOpenPopup()
 _Check_return_ HRESULT
 ContentDialog::PrepareContent()
 {
-    ASSERT(m_templateVersion != TemplateVersion::Unsupported);
-
     if (!m_hasPreparedContent)
     {
         if (m_placementMode == PlacementMode::TransplantedRootInPopup)
@@ -1384,14 +1148,6 @@ ContentDialog::PrepareContent()
             m_isLayoutRootTransplanted = false;
         }
 
-        // For Pre-Redstone2 templates, we need to build the buttons in code
-        // behind because they don't exist as template parts.
-        if (m_templateVersion < TemplateVersion::Redstone2)
-        {
-            IFC_RETURN(BuildAndConfigureButtons());
-            IFC_RETURN(AttachButtonEvents());
-        }
-
         IFC_RETURN(UpdateVisualState());
         IFC_RETURN(UpdateTitleSpaceVisibility());
 
@@ -1400,15 +1156,18 @@ ContentDialog::PrepareContent()
             IFC_RETURN(SizeAndPositionContentInPopup());
         }
 
-        // Cast a shadow
-        if (CThemeShadow::IsDropShadowMode())
+        // Cast a shadow if we have a background part
+        if (m_tpBackgroundElementPart)
         {
-            // Under drop shadows, ContentDialog has a larger shadow than normal
-            IFC_RETURN(ApplyElevationEffect(m_tpBackgroundElementPart.AsOrNull<IUIElement>().Get(), 0 /* depth */, 128 /* baseElevation */));
-        }
-        else
-        {
-            IFC_RETURN(ApplyElevationEffect(m_tpBackgroundElementPart.AsOrNull<IUIElement>().Get()));
+            if (CThemeShadow::IsDropShadowMode())
+            {
+                // Under drop shadows, ContentDialog has a larger shadow than normal
+                IFC_RETURN(ApplyElevationEffect(m_tpBackgroundElementPart.AsOrNull<IUIElement>().Get(), 0 /* depth */, 128 /* baseElevation */));
+            }
+            else
+            {
+                IFC_RETURN(ApplyElevationEffect(m_tpBackgroundElementPart.AsOrNull<IUIElement>().Get()));
+            }
         }
 
         m_hasPreparedContent = true;
@@ -1420,7 +1179,15 @@ ContentDialog::PrepareContent()
 _Check_return_ HRESULT
 ContentDialog::SizeAndPositionContentInPopup()
 {
-    if (!m_tpPopup || m_templateVersion == TemplateVersion::Unsupported)
+    if (!m_tpPopup)
+    {
+        return S_OK;
+    }
+
+    // Eventually, I think we want to center the popup, rather than make the popup full window size and then
+    // center the content.  For now, to handle invalid templates, we just won't position if we don't have
+    // the right parts.
+    if (!m_tpBackgroundElementPart || !m_tpLayoutRootPart)
     {
         return S_OK;
     }
@@ -1462,37 +1229,6 @@ ContentDialog::SizeAndPositionContentInPopup()
     double popupHeight = 0;
     IFC_RETURN(spBackgroundAsFE->get_ActualHeight(&popupHeight));
 
-    if (m_templateVersion < TemplateVersion::Redstone3 &&
-        m_templateVersion > TemplateVersion::PhoneBlue &&
-        !m_layoutAdjustmentsForInputPaneStoryboard)
-    {
-        IFC_RETURN(spBackgroundAsFE->put_VerticalAlignment(fullSizeDesired ?
-            xaml::VerticalAlignment::VerticalAlignment_Stretch :
-            xaml::VerticalAlignment::VerticalAlignment_Top));
-    }
-
-    if (m_templateVersion == TemplateVersion::PhoneBlue)
-    {
-        ctl::ComPtr<wfc::IVector<xaml_controls::RowDefinition*>> spRowDefs;
-        IFC_RETURN(m_tpLayoutRootPart->get_RowDefinitions(&spRowDefs));
-
-        ctl::ComPtr<IRowDefinition> spContentRow;
-        IFC_RETURN(spRowDefs->GetAt(0, &spContentRow));
-
-        // Collapse and expand parts of the grid
-        // depending on mode.
-        if (fullSizeDesired)
-        {
-            xaml::GridLength starGridLength = { 1.0, xaml::GridUnitType_Star };
-            IFC_RETURN(spContentRow->put_Height(starGridLength));
-        }
-        else
-        {
-            xaml::GridLength autoGridLength = { 1.0, xaml::GridUnitType_Auto };
-            IFC_RETURN(spContentRow->put_Height(autoGridLength));
-        }
-    }
-
     // Here we shamelessly contour ourselves to the Layout system and the whims of
     // the implementers of Popup. The following truths must be known to understand
     // this code:
@@ -1516,7 +1252,7 @@ ContentDialog::SizeAndPositionContentInPopup()
     // - When a parented Popup is in RTL mode its position is determined by its right edge and not the left edge.
     // - The Arrange pass is busted for RTL mode in Popup so don't expect any autosizing
     //   to work correctly. We force feed Popup its Width and Height instead of using Stretch.
-    if (m_templateVersion >= TemplateVersion::Redstone3 && m_placementMode == PlacementMode::EntireControlInPopup)
+    if (m_placementMode == PlacementMode::EntireControlInPopup)
     {
         IFC_RETURN(put_Height(windowBounds.Height));
         IFC_RETURN(put_Width(windowBounds.Width));
@@ -1527,103 +1263,7 @@ ContentDialog::SizeAndPositionContentInPopup()
         IFC_RETURN(m_tpLayoutRootPart.AsOrNull<IFrameworkElement>()->put_Width(windowBounds.Width));
     }
 
-    if (m_templateVersion > TemplateVersion::PhoneBlue)
-    {
-        // Apply the available width/height with the layout width/height
-        double availableWidth = adjustedLayoutBounds.Width;
-        double availableHeight = adjustedLayoutBounds.Height;
-
-        if (m_templateVersion >= TemplateVersion::Redstone3)
-        {
-            xOffset = (flowDirection == xaml::FlowDirection_LeftToRight ? 0 : availableWidth);
-
-            // Set inner margin based on display regions
-            xaml::Thickness layoutInnerMargin = {};
-            IFC_RETURN(GetDialogInnerMargin(adjustedLayoutBounds, &layoutInnerMargin));
-            auto layoutRoot = m_tpLayoutRootPart.Get();
-            if (layoutRoot)
-            {
-                IFC_RETURN(layoutRoot->put_Padding(layoutInnerMargin));
-            }
-        }
-        else
-        {
-            // Center the popup horizontally and vertically
-            double dialogMinHeight = 0;
-            double commandSpaceHeight = 0;
-            double nonContentSpaceHeight = 0;
-            double pageTop = 0;
-            xaml::Thickness borderThickness = {};
-            xaml::Thickness contentScrollViewerMargin = {};
-            xaml::Thickness dialogSpacePadding = {};
-
-            ctl::ComPtr<IFrameworkElement> spContentScrollViewerAsFE;
-            ctl::ComPtr<IFrameworkElement> spCommandSpaceAsFE;
-
-            IFC_RETURN(m_tpBackgroundElementPart->get_BorderThickness(&borderThickness));
-            IFC_RETURN(m_tpCommandSpacePart.As(&spCommandSpaceAsFE));
-            IFC_RETURN(m_tpContentScrollViewerPart.As(&spContentScrollViewerAsFE));
-
-            if (m_templateVersion == TemplateVersion::Redstone2)
-            {
-                // In RS2, we set MinHeight on the background template part
-                // instead of the ContentDialog itself.
-                IFC_RETURN(spBackgroundAsFE->get_MinHeight(&dialogMinHeight));
-            }
-            else
-            {
-                IFC_RETURN(get_MinHeight(&dialogMinHeight));
-            }
-
-            // Initialize the ContentDialog horizontal and vertical position.
-            // The window and layout bounds base on the screen coordinate which is the same
-            // on the desktop, but phone can be different because the layout bound left/top
-            // is applying the system tray's width/height in case of opaque status.
-            xOffset = std::max(0.0f, adjustedLayoutBounds.X - windowBounds.X);
-            yOffset = std::max(0.0f, adjustedLayoutBounds.Y - windowBounds.Y);
-
-            // Set the page top position that excludes the system tray
-            pageTop = yOffset;
-
-            // Set the ContentDialog horizontal position at the center from the available width
-            xOffset +=
-                flowDirection == xaml::FlowDirection_LeftToRight ?
-                static_cast<FLOAT>((availableWidth - popupWidth) / 2) :
-                adjustedLayoutBounds.Width - static_cast<FLOAT>((availableWidth - popupWidth) / 2);
-
-            if (popupWidth > availableWidth)
-            {
-                IFC_RETURN(spBackgroundAsFE->put_Width(availableWidth));
-                popupWidth = availableWidth;
-            }
-
-            // Limit the scroll viewer max height in order to prevent it being on top of CommandSpace.
-            IFC_RETURN(spCommandSpaceAsFE->get_ActualHeight(&commandSpaceHeight));
-
-            IFC_RETURN(spContentScrollViewerAsFE->get_Margin(&contentScrollViewerMargin));
-
-            IFC_RETURN(m_tpDialogSpacePart.Get()->get_Padding(&dialogSpacePadding));
-
-            // Calculate the height that is excluded from the content space height.
-            nonContentSpaceHeight =
-                commandSpaceHeight +
-                borderThickness.Top + borderThickness.Bottom +
-                contentScrollViewerMargin.Top + contentScrollViewerMargin.Bottom +
-                dialogSpacePadding.Top + dialogSpacePadding.Bottom;
-
-            if (fullSizeDesired)
-            {
-                IFC_RETURN(spContentScrollViewerAsFE->put_Height(std::max(0.0, std::min(dialogMaxHeight, static_cast<DOUBLE>(availableHeight)) - nonContentSpaceHeight)));
-            }
-            else
-            {
-                IFC_RETURN(spContentScrollViewerAsFE->put_MaxHeight(std::max(0.0, std::min(dialogMaxHeight, static_cast<DOUBLE>(availableHeight)) - nonContentSpaceHeight)));
-            }
-
-            // Align the dialog to the center.
-            yOffset += static_cast<FLOAT>((availableHeight - popupHeight) / 2);
-        }
-    }
+    xOffset = (flowDirection == xaml::FlowDirection_LeftToRight ? 0 : adjustedLayoutBounds.Width);
 
     // When the ContentDialog is in the visual tree, the popup offset has added
     // to it the top-left point of where layout measured and arranged it to.
@@ -1638,81 +1278,17 @@ ContentDialog::SizeAndPositionContentInPopup()
         IFC_RETURN(m_tpPopup.Cast<Popup>()->TransformToVisual(nullptr, &transformToRoot));
         IFC_RETURN(transformToRoot->TransformPoint({ 0, 0 }, &offsetFromRoot));
 
-        if (m_templateVersion == TemplateVersion::PhoneBlue && flowDirection == xaml::FlowDirection_RightToLeft)
-        {
-            xOffset -= windowBounds.Width - offsetFromRoot.X;
-        }
-        else
-        {
-            xOffset =
-                flowDirection == xaml::FlowDirection_LeftToRight ?
-                (xOffset - offsetFromRoot.X) :
-                (xOffset - offsetFromRoot.X) * -1;
-        }
+        xOffset =
+            flowDirection == xaml::FlowDirection_LeftToRight ?
+            (xOffset - offsetFromRoot.X) :
+            (xOffset - offsetFromRoot.X) * -1;
 
         yOffset = yOffset - offsetFromRoot.Y + smokeLayerYOffset;
     }
-    // The V1 template, and only the V1 template, requires us to
-    // add on the window bounds to position things correctly in RTL.
-    else if (m_templateVersion == TemplateVersion::PhoneBlue && flowDirection == xaml::FlowDirection_RightToLeft)
-    {
-        xOffset += windowBounds.Width;
-    }
-
-
+ 
     // Set the ContentDialog left and top position.
     IFC_RETURN(m_tpPopup->put_HorizontalOffset(xOffset));
     IFC_RETURN(m_tpPopup->put_VerticalOffset(yOffset));
-
-    return S_OK;
-}
-
-_Check_return_ HRESULT
-ContentDialog::GetDialogInnerMargin(
-    _In_ wf::Rect adjustedLayoutBounds,
-    _Out_ xaml::Thickness* innerMargin)
-{
-    *innerMargin = { 0, 0, 0, 0 };
-
-    if (m_simulateRegions)
-    {
-        // Get the position of the focused element to determine which region it's in
-        wf::Point focusedPosition = {};
-        IFC_RETURN(GetFocusedElementPosition(&focusedPosition));
-
-        if (adjustedLayoutBounds.Width > adjustedLayoutBounds.Height)
-        {
-            // Regions are split left/right
-            float offsetWidth = adjustedLayoutBounds.Width / 2;
-
-            if (focusedPosition.X < offsetWidth)
-            {
-                // Dialog should be positioned on the left
-                innerMargin->Right = offsetWidth;
-            }
-            else
-            {
-                // Dialog should be positioned on the right
-                innerMargin->Left = offsetWidth;
-            }
-        }
-        else
-        {
-            // Regions are split top/bottom
-            float offsetHeight = adjustedLayoutBounds.Height / 2;
-
-            if (focusedPosition.Y < offsetHeight)
-            {
-                // Dialog should be positioned at the top
-                innerMargin->Bottom = offsetHeight;
-            }
-            else
-            {
-                // Dialog should be positioned on the bottom
-                innerMargin->Top = offsetHeight;
-            }
-        }
-    }
 
     return S_OK;
 }
@@ -1774,7 +1350,6 @@ _In_ IInspectable* /*pArgs*/)
     if (status != wf::AsyncStatus::Canceled)
     {
         IFC_RETURN(UpdateVisualState());
-        IFC_RETURN(AttachEventHandlersForOpenDialog());
 
         // Now that the popup is opened, allow an app to cancel the hiding the dialog.
         m_skipClosingEventOnHide = false;
@@ -1835,25 +1410,6 @@ ContentDialog::OnBackButtonPressedImpl(_Out_ BOOLEAN* handled)
     return S_OK;
 }
 
-_Check_return_ HRESULT
-ContentDialog::OnWindowActivated(
-    _In_ IInspectable* /*sender*/,
-    _In_ xaml::IWindowActivatedEventArgs* args)
-{
-    ASSERT(m_templateVersion == TemplateVersion::PhoneBlue);
-
-    auto state = xaml::WindowActivationState_CodeActivated;
-    IFC_RETURN(args->get_WindowActivationState(&state));
-
-    if (state == xaml::WindowActivationState_Deactivated)
-    {
-        m_skipClosingEventOnHide = true;
-        IFC_RETURN(HideInternal(xaml_controls::ContentDialogResult_None));
-    }
-
-    return S_OK;
-}
-
 _Check_return_ HRESULT ContentDialog::OnFinishedClosing()
 {
     auto asyncOperationNoRef = m_tpCurrentAsyncOperation.Cast<ContentDialogShowAsyncOperation>();
@@ -1873,8 +1429,6 @@ _Check_return_ HRESULT ContentDialog::OnFinishedClosing()
         // Break circular reference with ContentDialog.
         IFC_RETURN(m_tpPopup->put_Child(nullptr));
     }
-
-    IFC_RETURN(DetachEventHandlersForOpenDialog());
 
     auto result = xaml_controls::ContentDialogResult_None;
     IFC_RETURN(asyncOperationNoRef->GetResults(&result));
@@ -1924,11 +1478,9 @@ _Check_return_ HRESULT ContentDialog::OnFinishedClosing()
 
 _Check_return_ HRESULT ContentDialog::AttachButtonEvents()
 {
-    ctl::ComPtr<xaml_primitives::IButtonBase> primaryButton;
-    IFC_RETURN(GetButtonHelper(xaml_controls::ContentDialogButton_Primary, primaryButton.GetAddressOf()));
-    if (primaryButton && !m_epPrimaryButtonClickHandler)
+    if (m_tpPrimaryButtonPart && !m_epPrimaryButtonClickHandler)
     {
-        IFC_RETURN(m_epPrimaryButtonClickHandler.AttachEventHandler(primaryButton.Get(),
+        IFC_RETURN(m_epPrimaryButtonClickHandler.AttachEventHandler(m_tpPrimaryButtonPart.Get(),
             [this](IInspectable* pSender, IRoutedEventArgs* pArgs)
             {
                 CommandClickEventSourceType* eventSource = nullptr;
@@ -1946,11 +1498,9 @@ _Check_return_ HRESULT ContentDialog::AttachButtonEvents()
             }));
     }
 
-    ctl::ComPtr<xaml_primitives::IButtonBase> secondaryButton;
-    IFC_RETURN(GetButtonHelper(xaml_controls::ContentDialogButton_Secondary, secondaryButton.GetAddressOf()));
-    if (secondaryButton && !m_epSecondaryButtonClickHandler)
+    if (m_tpSecondaryButtonPart && !m_epSecondaryButtonClickHandler)
     {
-        IFC_RETURN(m_epSecondaryButtonClickHandler.AttachEventHandler(secondaryButton.Get(),
+        IFC_RETURN(m_epSecondaryButtonClickHandler.AttachEventHandler(m_tpSecondaryButtonPart.Get(),
             [this](IInspectable* pSender, IRoutedEventArgs* pArgs)
             {
                 CommandClickEventSourceType* eventSource = nullptr;
@@ -1968,11 +1518,9 @@ _Check_return_ HRESULT ContentDialog::AttachButtonEvents()
             }));
     }
 
-    ctl::ComPtr<xaml_primitives::IButtonBase> closeButton;
-    IFC_RETURN(GetButtonHelper(xaml_controls::ContentDialogButton_Close, closeButton.GetAddressOf()));
-    if (closeButton && !m_epCloseButtonClickHandler)
+    if (m_tpCloseButtonPart && !m_epCloseButtonClickHandler)
     {
-        IFC_RETURN(m_epCloseButtonClickHandler.AttachEventHandler(closeButton.Get(),
+        IFC_RETURN(m_epCloseButtonClickHandler.AttachEventHandler(m_tpCloseButtonPart.Get(),
             [this](IInspectable* pSender, IRoutedEventArgs* pArgs)
             {
                 CommandClickEventSourceType* eventSource = nullptr;
@@ -1995,51 +1543,21 @@ _Check_return_ HRESULT ContentDialog::AttachButtonEvents()
 
 _Check_return_ HRESULT ContentDialog::GetButtonHelper(xaml_controls::ContentDialogButton buttonType, _Outptr_ xaml_primitives::IButtonBase** button)
 {
-    ASSERT(m_templateVersion != TemplateVersion::Unsupported);
-
     *button = nullptr;
 
-    if (m_templateVersion < TemplateVersion::Redstone2 && buttonType != xaml_controls::ContentDialogButton_Close)
+    switch (buttonType)
     {
-        // For Pre-Redstone2 templates, the buttons are constructed in code-behind as needed
-        // and hosted within borders, so query our border parts to find the actual buttons.
-        ctl::ComPtr<xaml::IUIElement> child;
+    case xaml_controls::ContentDialogButton_Primary:
+        IFC_RETURN(m_tpPrimaryButtonPart.CopyTo(button));
+        break;
 
-        wrl_wrappers::HString primaryText;
-        IFC_RETURN(get_PrimaryButtonText(primaryText.ReleaseAndGetAddressOf()));
+    case xaml_controls::ContentDialogButton_Secondary:
+        IFC_RETURN(m_tpSecondaryButtonPart.CopyTo(button));
+        break;
 
-        wrl_wrappers::HString secondaryText;
-        IFC_RETURN(get_SecondaryButtonText(secondaryText.ReleaseAndGetAddressOf()));
-
-        if (!primaryText.IsEmpty() && !secondaryText.IsEmpty())
-        {
-            auto& buttonHost = (buttonType == xaml_controls::ContentDialogButton_Primary ? m_tpButton1HostPart : m_tpButton2HostPart);
-            IFC_RETURN(buttonHost->get_Child(&child));
-            IFC_RETURN(child.CopyTo(button));
-        }
-        else if ((!primaryText.IsEmpty() && buttonType == xaml_controls::ContentDialogButton_Primary) || (!secondaryText.IsEmpty() && buttonType == xaml_controls::ContentDialogButton_Secondary))
-        {
-            IFC_RETURN(m_tpButton2HostPart->get_Child(&child));
-            IFC_RETURN(child.CopyTo(button));
-        }
-    }
-    else
-    {
-        // For Redstone2+ templates, the buttons are simply template parts, so just return those.
-        switch (buttonType)
-        {
-        case xaml_controls::ContentDialogButton_Primary:
-            IFC_RETURN(m_tpPrimaryButtonPart.CopyTo(button));
-            break;
-
-        case xaml_controls::ContentDialogButton_Secondary:
-            IFC_RETURN(m_tpSecondaryButtonPart.CopyTo(button));
-            break;
-
-        case xaml_controls::ContentDialogButton_Close:
-            IFC_RETURN(m_tpCloseButtonPart.CopyTo(button));
-            break;
-        }
+    case xaml_controls::ContentDialogButton_Close:
+        IFC_RETURN(m_tpCloseButtonPart.CopyTo(button));
+        break;
     }
 
     return S_OK;
@@ -2047,172 +1565,12 @@ _Check_return_ HRESULT ContentDialog::GetButtonHelper(xaml_controls::ContentDial
 
 _Check_return_ HRESULT ContentDialog::GetDefaultButtonHelper(_Outptr_ xaml_primitives::IButtonBase** button)
 {
-    ASSERT(m_templateVersion >= TemplateVersion::Redstone2);
-
     *button = nullptr;
 
     auto defaultButton = xaml_controls::ContentDialogButton_None;
     IFC_RETURN(get_DefaultButton(&defaultButton));
 
     IFC_RETURN(GetButtonHelper(defaultButton, button));
-
-    return S_OK;
-}
-
-_Check_return_ HRESULT ContentDialog::BuildAndConfigureButtons() noexcept
-{
-    ASSERT(m_templateVersion < TemplateVersion::Redstone2);
-
-    bool hasVisibleButtons = false;
-
-    ctl::ComPtr<xaml_primitives::IButtonBase> primaryButton;
-    ctl::ComPtr<xaml_primitives::IButtonBase> secondaryButton;
-
-    IFC_RETURN(DetachButtonEvents());
-
-    ctl::ComPtr<xaml_controls::IBorder> hostThatContainedFocusedButton;
-
-    // Determine which button, if any, has focus
-    {
-        ctl::ComPtr<DependencyObject> previouslyFocusedObject;
-        IFC_RETURN(GetFocusedElement(&previouslyFocusedObject));
-
-        if (previouslyFocusedObject)
-        {
-            ctl::ComPtr<IUIElement> elementInFirstHost;
-            ctl::ComPtr<IUIElement> elementInSecondHost;
-
-            IFC_RETURN(m_tpButton1HostPart->get_Child(&elementInFirstHost));
-            IFC_RETURN(m_tpButton2HostPart->get_Child(&elementInSecondHost));
-
-            if (ctl::are_equal(previouslyFocusedObject.Get(), elementInFirstHost.Get()))
-            {
-                hostThatContainedFocusedButton = m_tpButton1HostPart.Get();
-            }
-            else if (ctl::are_equal(previouslyFocusedObject.Get(), elementInSecondHost.Get()))
-            {
-                hostThatContainedFocusedButton = m_tpButton2HostPart.Get();
-            }
-        }
-    }
-
-    // Clear our button containers
-    {
-        IFC_RETURN(m_tpButton1HostPart->put_Child(nullptr));
-        IFC_RETURN(m_tpButton2HostPart->put_Child(nullptr));
-    }
-
-    // Build our buttons
-    {
-        wrl_wrappers::HString primaryText;
-        IFC_RETURN(get_PrimaryButtonText(primaryText.ReleaseAndGetAddressOf()));
-        if (!primaryText.IsEmpty())
-        {
-            IFC_RETURN(CreateButton(primaryText.Get(), &primaryButton));
-
-            BOOLEAN isEnabled = FALSE;
-            IFC_RETURN(get_IsPrimaryButtonEnabled(&isEnabled));
-            IFC_RETURN(primaryButton.AsOrNull<xaml_controls::IControl>()->put_IsEnabled(isEnabled));
-
-            if (m_templateVersion > TemplateVersion::PhoneBlue)
-            {
-                IFC_RETURN(primaryButton.AsOrNull<xaml::IFrameworkElement>()->put_HorizontalAlignment(xaml::HorizontalAlignment_Stretch));
-                IFC_RETURN(primaryButton.AsOrNull<xaml::IFrameworkElement>()->put_VerticalAlignment(xaml::VerticalAlignment_Stretch));
-            }
-
-            IFC_RETURN(primaryButton.AsOrNull<xaml_controls::IControl>()->put_ElementSoundMode(xaml::ElementSoundMode_FocusOnly));
-        }
-
-        wrl_wrappers::HString secondaryText;
-        IFC_RETURN(get_SecondaryButtonText(secondaryText.ReleaseAndGetAddressOf()));
-        if (!secondaryText.IsEmpty())
-        {
-            IFC_RETURN(CreateButton(secondaryText.Get(), &secondaryButton));
-
-            BOOLEAN isEnabled = FALSE;
-            IFC_RETURN(get_IsSecondaryButtonEnabled(&isEnabled));
-            IFC_RETURN(secondaryButton.AsOrNull<xaml_controls::IControl>()->put_IsEnabled(isEnabled));
-
-            if (m_templateVersion > TemplateVersion::PhoneBlue)
-            {
-                IFC_RETURN(secondaryButton.AsOrNull<xaml::IFrameworkElement>()->put_HorizontalAlignment(xaml::HorizontalAlignment_Stretch));
-                IFC_RETURN(secondaryButton.AsOrNull<xaml::IFrameworkElement>()->put_VerticalAlignment(xaml::VerticalAlignment_Stretch));
-            }
-
-            IFC_RETURN(secondaryButton.AsOrNull<xaml_controls::IControl>()->put_ElementSoundMode(xaml::ElementSoundMode_FocusOnly));
-        }
-    }
-
-    IFC_RETURN(PopulateButtonContainer(primaryButton.Get(), secondaryButton.Get()));
-
-    hasVisibleButtons = (primaryButton || secondaryButton);
-
-    // Update the CommandSpace visibility
-    {
-        auto visiblity = (hasVisibleButtons ? xaml::Visibility_Visible : xaml::Visibility_Collapsed);
-
-        IFC_RETURN(m_tpButton1HostPart.AsOrNull<IUIElement>()->put_Visibility(visiblity));
-        IFC_RETURN(m_tpButton2HostPart.AsOrNull<IUIElement>()->put_Visibility(visiblity))
-    }
-
-    // Set the focus back to where it was, if needed
-    if (hostThatContainedFocusedButton)
-    {
-        ctl::ComPtr<IUIElement> buttonToFocusAsUIE;
-        IFC_RETURN(hostThatContainedFocusedButton->get_Child(&buttonToFocusAsUIE));
-        if (buttonToFocusAsUIE)
-        {
-            BOOLEAN focusUpdatedUnused;
-            IFC_RETURN(buttonToFocusAsUIE->Focus(xaml::FocusState_Programmatic, &focusUpdatedUnused));
-        }
-    }
-
-    return S_OK;
-}
-
-_Check_return_ HRESULT
-ContentDialog::CreateButton(
-    _In_ HSTRING text,
-    _Outptr_ xaml_primitives::IButtonBase** ppButton) const
-{
-    ASSERT(m_templateVersion < TemplateVersion::Redstone2);
-
-    *ppButton = nullptr;
-
-    ctl::ComPtr<Button> button;
-    IFC_RETURN(ctl::make(&button));
-
-    ctl::ComPtr<IInspectable> textAsInspectable;
-    IFC_RETURN(PropertyValue::CreateFromString(text, &textAsInspectable));
-
-    IFC_RETURN(button->put_Content(textAsInspectable.Get()));
-    IFC_RETURN(button->put_HorizontalAlignment(xaml::HorizontalAlignment_Stretch));
-    IFC_RETURN(button.CopyTo(ppButton));
-
-    return S_OK;
-}
-
-_Check_return_ HRESULT
-ContentDialog::PopulateButtonContainer(
-    _In_ const ctl::ComPtr<xaml_primitives::IButtonBase>& primaryButton,
-    _In_ const ctl::ComPtr<xaml_primitives::IButtonBase>& secondaryButton
-    )
-{
-    ASSERT(m_templateVersion < TemplateVersion::Redstone2);
-
-    if (secondaryButton && primaryButton)
-    {
-        IFC_RETURN(m_tpButton2HostPart->put_Child(secondaryButton.AsOrNull<IUIElement>().Get()));
-        IFC_RETURN(m_tpButton1HostPart->put_Child(primaryButton.AsOrNull<IUIElement>().Get()));
-    }
-    else if (secondaryButton)
-    {
-        IFC_RETURN(m_tpButton2HostPart->put_Child(secondaryButton.AsOrNull<IUIElement>().Get()));
-    }
-    else if (primaryButton)
-    {
-        IFC_RETURN(m_tpButton2HostPart->put_Child(primaryButton.AsOrNull<IUIElement>().Get()));
-    }
 
     return S_OK;
 }
@@ -2359,65 +1717,6 @@ Cleanup:
 }
 
 _Check_return_ HRESULT
-ContentDialog::AttachEventHandlersForOpenDialog()
-{
-    ctl::ComPtr<wgrd::IDisplayInformationStatics> displayInformationStatics;
-    IFC_RETURN(ctl::GetActivationFactory(wrl_wrappers::HStringReference(
-        RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(),
-        &displayInformationStatics));
-
-    if (m_templateVersion == TemplateVersion::PhoneBlue)
-    {
-        ctl::ComPtr<wgrd::IDisplayInformation> displayInformation;
-        IFC_RETURN(displayInformationStatics->GetForCurrentView(&displayInformation));
-        if (displayInformation)
-        {
-            IFC_RETURN(m_epOrientationChangedHandler.AttachEventHandler(
-                displayInformation.Get(),
-                [this](wgrd::IDisplayInformation* pSender, IInspectable* pArgs)
-                {
-                    if (!m_hideInProgress)
-                    {
-                        IFC_RETURN(UpdateVisualState());
-                        IFC_RETURN(ResetAndPrepareContent());
-                    }
-
-                    return S_OK;
-                }));
-        }
-    }
-
-    // Only support dismissing the dialog when the window is deactivated for dialogs using the phone-blue template
-    // for backwards compatability.
-    if (m_templateVersion == TemplateVersion::PhoneBlue)
-    {
-        Window* currentWindowNoRef = nullptr;
-        IFC_RETURN(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, &currentWindowNoRef));
-        if (currentWindowNoRef)
-        {
-            // Note: The weak ref protection shouldn't be needed here. Keeping it for now to avoid
-            // risky changes late in the ship cycle.
-            ctl::WeakRefPtr weakInstance;
-            IFC_RETURN(ctl::AsWeak(this, &weakInstance));
-
-            IFC_RETURN(m_windowActivatedHandler.AttachEventHandler(
-                currentWindowNoRef,
-                [weakInstance](IInspectable *sender, xaml::IWindowActivatedEventArgs *args) mutable
-            {
-                auto instance= weakInstance.AsOrNull<IContentDialog>();
-                if (instance)
-                {
-                    IFC_RETURN(instance.Cast<ContentDialog>()->OnWindowActivated(sender, args));
-                }
-                return S_OK;
-            }));
-        }
-    }
-
-    return S_OK;
-}
-
-_Check_return_ HRESULT
 ContentDialog::OnLayoutRootKeyDown(
     _In_ IInspectable* sender,
     _In_ xaml_input::IKeyRoutedEventArgs* args)
@@ -2438,49 +1737,46 @@ ContentDialog::ProcessLayoutRootKey(
     bool isKeyDown,
     _In_ xaml_input::IKeyRoutedEventArgs* args)
 {
-    if (m_templateVersion > TemplateVersion::PhoneBlue)
+    auto key = wsy::VirtualKey_None;
+
+    IFCPTR_RETURN(args);
+    IFC_RETURN(args->get_Key(&key));
+
+    switch (key)
     {
-        auto key = wsy::VirtualKey_None;
-
-        IFCPTR_RETURN(args);
-        IFC_RETURN(args->get_Key(&key));
-
-        switch (key)
+        case wsy::VirtualKey_Escape:
         {
-            case wsy::VirtualKey_Escape:
+            auto originalKey = wsy::VirtualKey_None;
+
+            IFC_RETURN(static_cast<KeyRoutedEventArgs*>(args)->get_OriginalKey(&originalKey));
+
+            if ((!isKeyDown && originalKey == wsy::VirtualKey_GamepadB) ||
+                (isKeyDown && originalKey == wsy::VirtualKey_Escape))
             {
-                auto originalKey = wsy::VirtualKey_None;
-
-                IFC_RETURN(static_cast<KeyRoutedEventArgs*>(args)->get_OriginalKey(&originalKey));
-
-                if ((!isKeyDown && originalKey == wsy::VirtualKey_GamepadB) ||
-                    (isKeyDown && originalKey == wsy::VirtualKey_Escape))
-                {
-                    IFC_RETURN(ExecuteCloseAction());
-                    IFC_RETURN(args->put_Handled(TRUE));
-                }
-                break;
+                IFC_RETURN(ExecuteCloseAction());
+                IFC_RETURN(args->put_Handled(TRUE));
             }
-            case wsy::VirtualKey_Enter:
+            break;
+        }
+        case wsy::VirtualKey_Enter:
+        {
+            if (isKeyDown)
             {
-                if (isKeyDown && m_templateVersion >= TemplateVersion::Redstone2)
-                {
-                    ctl::ComPtr<xaml_primitives::IButtonBase> defaultButton;
-                    IFC_RETURN(GetDefaultButtonHelper(defaultButton.GetAddressOf()));
+                ctl::ComPtr<xaml_primitives::IButtonBase> defaultButton;
+                IFC_RETURN(GetDefaultButtonHelper(defaultButton.GetAddressOf()));
 
-                    if (defaultButton)
+                if (defaultButton)
+                {
+                    BOOLEAN isDefaultButtonEnabled = FALSE;
+                    IFC_RETURN(defaultButton.Cast<ButtonBase>()->get_IsEnabled(&isDefaultButtonEnabled));
+                    if (isDefaultButtonEnabled)
                     {
-                        BOOLEAN isDefaultButtonEnabled = FALSE;
-                        IFC_RETURN(defaultButton.Cast<ButtonBase>()->get_IsEnabled(&isDefaultButtonEnabled));
-                        if (isDefaultButtonEnabled)
-                        {
-                            IFC_RETURN(defaultButton.Cast<ButtonBase>()->ProgrammaticClick());
-                            IFC_RETURN(args->put_Handled(TRUE));
-                        }
+                        IFC_RETURN(defaultButton.Cast<ButtonBase>()->ProgrammaticClick());
+                        IFC_RETURN(args->put_Handled(TRUE));
                     }
                 }
-                break;
             }
+            break;
         }
     }
 
@@ -2543,42 +1839,6 @@ _Check_return_ HRESULT ContentDialog::DetachEventHandlers()
     return S_OK;
 }
 
-_Check_return_ HRESULT
-ContentDialog::DetachEventHandlersForOpenDialog()
-{
-    if (m_epOrientationChangedHandler)
-    {
-        ctl::ComPtr<wgrd::IDisplayInformationStatics> displayInformationStatics;
-
-        IFC_RETURN(ctl::GetActivationFactory(wrl_wrappers::HStringReference(
-        RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(),
-            &displayInformationStatics));
-
-        if (displayInformationStatics)
-        {
-            ctl::ComPtr<wgrd::IDisplayInformation> displayInformation;
-
-            IFC_RETURN(displayInformationStatics->GetForCurrentView(&displayInformation));
-
-            if (displayInformation)
-            {
-                IFC_RETURN(m_epOrientationChangedHandler.DetachEventHandler(displayInformation.Get()));
-            }
-        }
-    }
-
-    if (DXamlCore* dxamlCore = DXamlCore::GetCurrent())
-    {
-        Window* currentWindowNoRef = nullptr;
-        IFC_RETURN(dxamlCore->GetAssociatedWindowNoRef(this, &currentWindowNoRef));
-        if (m_windowActivatedHandler && currentWindowNoRef)
-        {
-            IFC_RETURN(m_windowActivatedHandler.DetachEventHandler(ctl::iinspectable_cast(currentWindowNoRef)));
-        }
-    }
-    return S_OK;
-}
-
 _Check_return_ HRESULT ContentDialog::OnXamlRootChanged(
     _In_ xaml::IXamlRoot* /*sender*/,
     _In_ xaml::IXamlRootChangedEventArgs* args)
@@ -2601,7 +1861,6 @@ _Check_return_ HRESULT ContentDialog::OnXamlRootChanged(
 
     if (m_placementMode != PlacementMode::InPlace)
     {
-        IFC_RETURN(ResetContentProperties());
         IFC_RETURN(SizeAndPositionContentInPopup());
     }
 
@@ -2622,16 +1881,7 @@ ContentDialog::OnDialogSizeChanged(
 
     IFC_RETURN(UpdateVisualState());
 
-    // In case of PhoneBlue template, ensures the button position whether it stays on the content or
-    // CommandBar by resetting the content.
-    // In case of non-PhoneBlue template, do not reset the content by changing the size since the clicked
-    // button lost PointerCapture that couldn't raise the Click event on the button. The size
-    // changing can be triggered by showing or hiding the SIP status change in non-PhoneBlue template.
-    // For example, Sip hiding on the MoneyPenny's landscape mode.
-    if (m_templateVersion >= TemplateVersion::PhoneBlue)
-    {
-        IFC_RETURN(ResetAndPrepareContent());
-    }
+    IFC_RETURN(ResetAndPrepareContent());
 
     if (m_placementMode != PlacementMode::InPlace)
     {
@@ -2693,50 +1943,6 @@ ContentDialog::GetPlainText(
 }
 
 _Check_return_ HRESULT
-ContentDialog::NotifyInputPaneStateChange(
-    _In_ InputPaneState inputPaneState,
-    _In_ XRECTF inputPaneBounds)
-{
-    if (m_templateVersion >= TemplateVersion::Threshold)
-    {
-        IFC_RETURN(UpdateVisualState());
-    }
-
-    if (m_placementMode != PlacementMode::InPlace)
-    {
-        IFC_RETURN(ResetContentProperties());
-        IFC_RETURN(SizeAndPositionContentInPopup());
-    }
-
-    return S_OK;
-}
-
-_Check_return_ HRESULT
-ContentDialog::ResetContentProperties()
-{
-    if (m_templateVersion < TemplateVersion::Redstone3)
-    {
-        // Reset the content properties to recalculate the new width and height
-        // position with the original border thickness.
-        if (m_tpContentScrollViewerPart)
-        {
-            IFC_RETURN(m_tpContentScrollViewerPart.Cast<ScrollViewer>()->put_Height(DoubleUtil::NaN));
-        }
-
-        if (m_tpBackgroundElementPart)
-        {
-            IFC_RETURN(m_tpBackgroundElementPart.Cast<Border>()->put_Width(DoubleUtil::NaN));
-        }
-
-        // We need to Update the Layout after we reset the values, this ensures that we will use the correct values to adjust
-        // the ContentDialog size and position.
-        IFC_RETURN(UpdateLayout());
-    }
-
-    return S_OK;
-}
-
-_Check_return_ HRESULT
 ContentDialog::SetPopupAutomationProperties()
 {
     // Bug 15664046: m_tpPopup is expected to be null in some scenarios, like if the dialog is InPlace.
@@ -2771,21 +1977,25 @@ _Check_return_ HRESULT ContentDialog::SetInitialFocusElement()
 {
     BOOLEAN wasFocusSet = FALSE;
 
-    if (m_templateVersion > TemplateVersion::PhoneBlue)
-    {
-        // Save the focused element in order to give focus back to that once the ContentDialog dismisses.
-        ctl::ComPtr<DependencyObject> previouslyFocusedObject;
-        IFC_RETURN(GetFocusedElement(&previouslyFocusedObject));
+    // Save the focused element in order to give focus back to that once the ContentDialog dismisses.
+    ctl::ComPtr<DependencyObject> previouslyFocusedObject;
+    IFC_RETURN(GetFocusedElement(&previouslyFocusedObject));
 
-        if (previouslyFocusedObject)
-        {
-            IFC_RETURN(previouslyFocusedObject.AsWeak(&m_spFocusedElementBeforeContentDialogShows));
-        }
+    if (previouslyFocusedObject)
+    {
+        IFC_RETURN(previouslyFocusedObject.AsWeak(&m_spFocusedElementBeforeContentDialogShows));
     }
 
     // Try to set focus to the first focusable element in the content area.
     if (m_tpContentPart)
     {
+        // We need to make sure all the nested templates of the ScrollViewer are expanded because that is where
+        // we will find focusable fields within the dialogs content.
+        if (m_tpContentScrollViewerPart)
+        {
+            m_tpContentScrollViewerPart.Cast<ScrollViewer>()->UpdateLayout();
+        }
+
         ctl::ComPtr<IDependencyObject> searchRoot;
         IFC_RETURN(m_tpContentPart.As(&searchRoot));
 
@@ -2807,7 +2017,7 @@ _Check_return_ HRESULT ContentDialog::SetInitialFocusElement()
     }
 
     // If not set, try to focus the default button.
-    if (!wasFocusSet && m_templateVersion >= TemplateVersion::Redstone2)
+    if (!wasFocusSet)
     {
         ctl::ComPtr<xaml_primitives::IButtonBase> defaultButton;
         IFC_RETURN(GetDefaultButtonHelper(defaultButton.GetAddressOf()));
@@ -2853,15 +2063,13 @@ _Check_return_ HRESULT ContentDialog::ExecuteCloseAction()
     // return a result of None.
     if (!closeButtonText.IsEmpty())
     {
-        ctl::ComPtr<xaml_primitives::IButtonBase> closeButton;
-        IFC_RETURN(GetButtonHelper(xaml_controls::ContentDialogButton_Close, closeButton.GetAddressOf()));
-        if (closeButton)
+        if (m_tpCloseButtonPart)
         {
             BOOLEAN isCloseButtonEnabled = FALSE;
             IFC_RETURN(m_tpCloseButtonPart.Cast<ButtonBase>()->get_IsEnabled(&isCloseButtonEnabled));
             if (isCloseButtonEnabled)
             {
-                IFC_RETURN(closeButton.Cast<ButtonBase>()->ProgrammaticClick());
+                IFC_RETURN(m_tpCloseButtonPart.Cast<ButtonBase>()->ProgrammaticClick());
                 didInvokeClose = true;
             }
         }
@@ -2872,200 +2080,6 @@ _Check_return_ HRESULT ContentDialog::ExecuteCloseAction()
     {
         IFC_RETURN(HideInternal(xaml_controls::ContentDialogResult_None));
     }
-
-    return S_OK;
-}
-
-_Check_return_ HRESULT ContentDialog::AdjustVisualStateForInputPane()
-{
-    ASSERT(m_templateVersion > TemplateVersion::PhoneBlue);
-    ASSERT(m_tpLayoutRootPart);
-    ASSERT(m_tpBackgroundElementPart);
-    ASSERT(m_tpContentScrollViewerPart);
-
-    if (XamlOneCoreTransforms::IsEnabled())
-    {
-        // TODO: 12179953 : XAML agrees on coordinate space with input pane
-        // For now we disable input rect occlusion in strict mode
-        return S_OK;
-    }
-
-    wf::Rect inputPaneRect = {};
-    IFC_RETURN(DXamlCore::GetCurrent()->GetInputPaneOccludeRect(this, &inputPaneRect));
-
-    if (m_isShowing && inputPaneRect.Height > 0)
-    {
-        // The rect we get is in screen coordinates, so translate it into client
-        // coordinates by subtracting our window's origin point (itself translated
-        // into screen coords) from it.
-        {
-            wf::Point point = { 0, 0 };
-            DXamlCore::GetCurrent()->ClientToScreen(&point);
-
-            inputPaneRect.X -= point.X;
-            inputPaneRect.Y -= point.Y;
-        }
-
-        auto getElementBounds = [](FrameworkElement* element, wf::Rect& bounds)
-        {
-            ctl::ComPtr<IGeneralTransform> transform;
-            IFC_RETURN(element->TransformToVisual(nullptr, &transform));
-
-            double width = 0;
-            IFC_RETURN(element->get_ActualWidth(&width));
-
-            double height = 0;
-            IFC_RETURN(element->get_ActualHeight(&height));
-
-            IFC_RETURN(transform->TransformBounds({ 0, 0, static_cast<float>(width), static_cast<float>(height) }, &bounds));
-
-            return S_OK;
-        };
-
-        wf::Rect layoutRootBounds = {};
-        IFC_RETURN(getElementBounds(m_tpLayoutRootPart.Cast<Grid>(), layoutRootBounds));
-
-        wf::Rect dialogBounds = {};
-        IFC_RETURN(getElementBounds(m_tpBackgroundElementPart.Cast<Border>(), dialogBounds));
-
-        // If the input pane overlaps the dialog (including a 12px bottom margin), the dialog will get translated
-        // up so that is not occluded, while also preserving a 12px margin between the bottom of the dialog
-        // and the top of the input pane (see redlines).
-        // We achieve this by aligning the dialog to the bottom of its parent panel, if not full-size, and
-        // then setting a bottom padding on the parent panel creating a reserved area that corresponds to the
-        // intersection of the parent panel's bounds and the input pane's bounds.
-        if (inputPaneRect.Y < (dialogBounds.Y + dialogBounds.Height + ContentDialog_SIP_Bottom_Margin))
-        {
-            xaml::Thickness layoutRootPadding = {};
-            auto contentVerticalScrollBarVisibility = xaml_controls::ScrollBarVisibility_Auto;
-            bool setDialogVisibility = false;
-            auto dialogVerticalAlignment = xaml::VerticalAlignment_Center;
-
-            layoutRootPadding = { 0, 0, 0, layoutRootBounds.Height - std::max(inputPaneRect.Y - layoutRootBounds.Y, static_cast<float>(m_dialogMinHeight)) + ContentDialog_SIP_Bottom_Margin };
-
-            BOOLEAN fullSizeDesired = FALSE;
-            IFC_RETURN(get_FullSizeDesired(&fullSizeDesired));
-            if (!fullSizeDesired)
-            {
-                dialogVerticalAlignment = xaml::VerticalAlignment_Bottom;
-                setDialogVisibility = true;
-            }
-
-            // Apply our layout adjustments using a storyboard so that we don't stomp over template or user
-            // provided values.  When we stop the storyboard, it will restore the previous values.
-            ctl::ComPtr<xaml_animation::IStoryboard> storyboard;
-            IFC_RETURN(CreateStoryboardForLayoutAdjustmentsForInputPane(layoutRootPadding, contentVerticalScrollBarVisibility, setDialogVisibility, dialogVerticalAlignment, &storyboard));
-
-            IFC_RETURN(storyboard->Begin());
-            IFC_RETURN(storyboard->SkipToFill());
-            IFC_RETURN(SetPtrValueWithQI(m_layoutAdjustmentsForInputPaneStoryboard, storyboard.Get()));
-        }
-    }
-    else if (m_layoutAdjustmentsForInputPaneStoryboard)
-    {
-        IFC_RETURN(m_layoutAdjustmentsForInputPaneStoryboard->Stop());
-        m_layoutAdjustmentsForInputPaneStoryboard.Clear();
-    }
-
-    return S_OK;
-}
-
-_Check_return_ HRESULT ContentDialog::CreateStoryboardForLayoutAdjustmentsForInputPane(
-    xaml::Thickness layoutRootPadding,
-    xaml_controls::ScrollBarVisibility contentVerticalScrollBarVisiblity,
-    bool setDialogVerticalAlignment,
-    xaml::VerticalAlignment dialogVerticalAlignment,
-    _Out_ xaml_animation::IStoryboard** storyboard)
-{
-    ctl::ComPtr<Storyboard> storyboardLocal;
-    IFC_RETURN(ctl::make(&storyboardLocal));
-
-    ctl::ComPtr<wfc::IVector<xaml_animation::Timeline*>> storyboardChildren;
-    IFC_RETURN(storyboardLocal->get_Children(&storyboardChildren));
-
-    // LayoutRoot Padding
-    {
-        ctl::ComPtr<ObjectAnimationUsingKeyFrames> objectAnimation;
-        IFC_RETURN(ctl::make(&objectAnimation));
-
-        IFC_RETURN(CoreImports::Storyboard_SetTarget(static_cast<CTimeline*>(objectAnimation->GetHandle()), m_tpBackgroundElementPart.Cast<Border>()->GetHandle()));
-        IFC_RETURN(StoryboardFactory::SetTargetPropertyStatic(objectAnimation.Get(), wrl_wrappers::HStringReference(L"Margin").Get()));
-
-        ctl::ComPtr<wfc::IVector<xaml_animation::ObjectKeyFrame*>> objectKeyFrames;
-        IFC_RETURN(objectAnimation->get_KeyFrames(&objectKeyFrames));
-
-        ctl::ComPtr<DiscreteObjectKeyFrame> discreteObjectKeyFrame;
-        IFC_RETURN(ctl::make(&discreteObjectKeyFrame));
-
-        xaml_animation::KeyTime keyTime = {};
-        keyTime.TimeSpan.Duration = 0;
-
-        ctl::ComPtr<IInspectable> value;
-        IFC_RETURN(IValueBoxer::BoxValue(&value, layoutRootPadding));
-
-        IFC_RETURN(discreteObjectKeyFrame->put_KeyTime(keyTime));
-        IFC_RETURN(discreteObjectKeyFrame->put_Value(value.Get()));
-
-        IFC_RETURN(objectKeyFrames->Append(discreteObjectKeyFrame.Cast<DiscreteObjectKeyFrame>()));
-        IFC_RETURN(storyboardChildren->Append(objectAnimation.Cast<ObjectAnimationUsingKeyFrames>()));
-    }
-
-    // ContentScrollViewer VerticalScrollBarVisibility
-    {
-        ctl::ComPtr<ObjectAnimationUsingKeyFrames> objectAnimation;
-        IFC_RETURN(ctl::make(&objectAnimation));
-
-        IFC_RETURN(CoreImports::Storyboard_SetTarget(static_cast<CTimeline*>(objectAnimation->GetHandle()), m_tpContentScrollViewerPart.Cast<ScrollViewer>()->GetHandle()));
-        IFC_RETURN(StoryboardFactory::SetTargetPropertyStatic(objectAnimation.Get(), wrl_wrappers::HStringReference(L"VerticalScrollBarVisibility").Get()));
-
-        ctl::ComPtr<wfc::IVector<xaml_animation::ObjectKeyFrame*>> objectKeyFrames;
-        IFC_RETURN(objectAnimation->get_KeyFrames(&objectKeyFrames));
-
-        ctl::ComPtr<DiscreteObjectKeyFrame> discreteObjectKeyFrame;
-        IFC_RETURN(ctl::make(&discreteObjectKeyFrame));
-
-        xaml_animation::KeyTime keyTime = {};
-        keyTime.TimeSpan.Duration = 0;
-
-        ctl::ComPtr<IInspectable> value;
-        IFC_RETURN(IValueBoxer::BoxValue(&value, contentVerticalScrollBarVisiblity));
-
-        IFC_RETURN(discreteObjectKeyFrame->put_KeyTime(keyTime));
-        IFC_RETURN(discreteObjectKeyFrame->put_Value(value.Get()));
-
-        IFC_RETURN(objectKeyFrames->Append(discreteObjectKeyFrame.Cast<DiscreteObjectKeyFrame>()));
-        IFC_RETURN(storyboardChildren->Append(objectAnimation.Cast<ObjectAnimationUsingKeyFrames>()));
-    }
-
-    // BackgroundElement VerticalAlignment
-    if (setDialogVerticalAlignment)
-    {
-        ctl::ComPtr<ObjectAnimationUsingKeyFrames> objectAnimation;
-        IFC_RETURN(ctl::make(&objectAnimation));
-
-        IFC_RETURN(CoreImports::Storyboard_SetTarget(static_cast<CTimeline*>(objectAnimation->GetHandle()), m_tpBackgroundElementPart.Cast<Border>()->GetHandle()));
-        IFC_RETURN(StoryboardFactory::SetTargetPropertyStatic(objectAnimation.Get(), wrl_wrappers::HStringReference(L"VerticalAlignment").Get()));
-
-        ctl::ComPtr<wfc::IVector<xaml_animation::ObjectKeyFrame*>> objectKeyFrames;
-        IFC_RETURN(objectAnimation->get_KeyFrames(&objectKeyFrames));
-
-        ctl::ComPtr<DiscreteObjectKeyFrame> discreteObjectKeyFrame;
-        IFC_RETURN(ctl::make(&discreteObjectKeyFrame));
-
-        xaml_animation::KeyTime keyTime = {};
-        keyTime.TimeSpan.Duration = 0;
-
-        ctl::ComPtr<IInspectable> value;
-        IFC_RETURN(IValueBoxer::BoxValue(&value, dialogVerticalAlignment));
-
-        IFC_RETURN(discreteObjectKeyFrame->put_KeyTime(keyTime));
-        IFC_RETURN(discreteObjectKeyFrame->put_Value(value.Get()));
-
-        IFC_RETURN(objectKeyFrames->Append(discreteObjectKeyFrame.Cast<DiscreteObjectKeyFrame>()));
-        IFC_RETURN(storyboardChildren->Append(objectAnimation.Cast<ObjectAnimationUsingKeyFrames>()));
-    }
-
-    *storyboard = storyboardLocal.Detach();
 
     return S_OK;
 }
@@ -3095,13 +2109,6 @@ _Check_return_ HRESULT ContentDialog::RaiseClosedEvent(xaml_controls::ContentDia
     IFC_RETURN(eventSource->Raise(this, args.Get()));
 
     return S_OK;
-}
-
-// For testing purposes only. Invoked by IXamlTestHooks::SimulateRegionsForContentDialog implementation.
-void ContentDialog::SimulateRegionsForContentDialog()
-{
-    m_simulateRegions = true;
-    SizeAndPositionContentInPopup();
 }
 
 _Check_return_ HRESULT ContentDialog::SetButtonPropertiesFromCommand(xaml_controls::ContentDialogButton buttonType, _In_opt_ ICommand* oldCommand)

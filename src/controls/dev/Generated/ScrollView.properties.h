@@ -135,6 +135,8 @@ public:
     void StateChanged(winrt::event_token const& token);
     winrt::event_token ViewChanged(winrt::TypedEventHandler<winrt::ScrollView, winrt::IInspectable> const& value);
     void ViewChanged(winrt::event_token const& token);
+    winrt::event_token ViewChanging(winrt::TypedEventHandler<winrt::ScrollView, winrt::ScrollingViewChangingEventArgs> const& value);
+    void ViewChanging(winrt::event_token const& token);
     winrt::event_token ZoomAnimationStarting(winrt::TypedEventHandler<winrt::ScrollView, winrt::ScrollingZoomAnimationStartingEventArgs> const& value);
     void ZoomAnimationStarting(winrt::event_token const& token);
     winrt::event_token ZoomCompleted(winrt::TypedEventHandler<winrt::ScrollView, winrt::ScrollingZoomCompletedEventArgs> const& value);
@@ -147,6 +149,7 @@ public:
     event_source<winrt::TypedEventHandler<winrt::ScrollView, winrt::ScrollingScrollCompletedEventArgs>> m_scrollCompletedEventSource;
     event_source<winrt::TypedEventHandler<winrt::ScrollView, winrt::IInspectable>> m_stateChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::ScrollView, winrt::IInspectable>> m_viewChangedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::ScrollView, winrt::ScrollingViewChangingEventArgs>> m_viewChangingEventSource;
     event_source<winrt::TypedEventHandler<winrt::ScrollView, winrt::ScrollingZoomAnimationStartingEventArgs>> m_zoomAnimationStartingEventSource;
     event_source<winrt::TypedEventHandler<winrt::ScrollView, winrt::ScrollingZoomCompletedEventArgs>> m_zoomCompletedEventSource;
 

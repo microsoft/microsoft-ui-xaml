@@ -27,7 +27,7 @@ namespace DirectUI
         IFACEMETHOD_(void, GetDCompDevice)(_Outptr_ IDCompositionDesktopDevicePartner **ppDCompDevice) const override;
 
         IFACEMETHOD(MarkDeviceInstanceLost)() const override;
-        IFACEMETHOD(GetD3D11GraphicsDeviceAddress)(_Outptr_ INT64* ppCD3D11Device) const override;
+        IFACEMETHOD(GetD3D11GraphicsDeviceAddress)(_Out_ INT64* ppCD3D11Device) const override;
 
         IFACEMETHOD(SetWindowSizeOverride)(
             _In_ const wf::Size& size,
@@ -78,6 +78,7 @@ namespace DirectUI
         IFACEMETHOD(RemoveThemingOverrides)() override;
 
         IFACEMETHOD(SetSystemFontCollectionOverride)(_In_opt_ IDWriteFontCollection* pFontCollection) override;
+        IFACEMETHOD(ShouldUseTypographicFontModel)(_Out_ bool* useDWriteTypographicModel) override;
 
         IFACEMETHOD(GetGripperData)(_In_ IInspectable* textControl, _Inout_ JupiterGripperData* returnValue) override;
 
@@ -206,8 +207,6 @@ namespace DirectUI
         IFACEMETHOD_(void, GetAnimatedCenterPoint)(_In_ xaml::IUIElement* element, _Out_ wfn::Vector3* centerPoint) override;
         IFACEMETHOD_(void, ScheduleWaitForAnimatedFacadePropertyChanges)(int count) override;
 
-        IFACEMETHOD(SimulateRegionsForContentDialog)(_In_ xaml_controls::IContentDialog* dialog) override;
-
         IFACEMETHOD_(BOOLEAN, IsTrackingEffectiveVisibility)(_In_ xaml::IUIElement* element) override;
         IFACEMETHOD_(BOOLEAN, IsKeepingVisible)(_In_ xaml::IUIElement* element) override;
         IFACEMETHOD(RequestKeepAlive)(_In_ xaml::IUIElement* element) override;
@@ -225,7 +224,7 @@ namespace DirectUI
 
         IFACEMETHOD_(bool, IsStoryboardActive)(_In_ xaml_animation::IStoryboard* storyboard) override;
 
-        IFACEMETHOD(GetElementInputWindow)(_In_ xaml::IUIElement* element, _Out_ HWND* hwnd) override;
+        IFACEMETHOD(GetElementInputWindow)(_In_ xaml::IUIElement* element, _Out_ HWND* inputHwnd) override;
 
         IFACEMETHOD_(void, SetSuspendOffThreadDecoding)(bool isOffThreadDecodingSuspended) override;
 

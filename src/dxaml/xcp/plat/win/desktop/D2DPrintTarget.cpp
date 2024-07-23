@@ -78,7 +78,7 @@ Cleanup:
 //      Print thread function. Listens for print messages on thread-safe queue.
 //
 //------------------------------------------------------------------------
-XINT32 CD2DPrintTarget::PrintThreadFn(_In_reads_bytes_(sizeof(IPALQueue*)) XUINT8* pData)
+XINT32 CD2DPrintTarget::PrintThreadFn(_In_ XUINT8* pData)
 {
     HRESULT hr = S_OK;
     IPALQueue* pPrintQueue = reinterpret_cast<IPALQueue*>(pData);

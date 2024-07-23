@@ -71,6 +71,7 @@
         <ClCompile Include="compositor\CompositorDirectManipulationViewport.cpp"/>
         <ClCompile Include="compositor\UIThreadScheduler.cpp"/>
         <ClCompile Include="compositor\RefreshAlignedClock.cpp"/>
+        <ClCompile Include="compositor\RefreshRateInfo.cpp"/>
 
         <ClCompile Include="dll\eventmgr.cpp"/>
         <ClCompile Include="dll\focusmgr.cpp"/>

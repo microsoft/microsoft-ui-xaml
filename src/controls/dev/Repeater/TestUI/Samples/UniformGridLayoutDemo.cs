@@ -17,11 +17,32 @@ namespace MUXControlsTestApp.Samples
             collection = Enumerable.Range(0, 40);
             this.InitializeComponent();
             imageAspectRatioTestRepeater.ItemsSource = Enumerable.Range(0, 30);
+
+            Loaded += UniformGridLayoutDemo_Loaded;
+        }
+
+        ~UniformGridLayoutDemo()
+        {
+        }
+
+        private void UniformGridLayoutDemo_Loaded(object sender, RoutedEventArgs e)
+        {
+            GetUniformGridLayoutMaximumRowsOrColumnsButtonClick(null, null);
         }
 
         public void GetRepeaterActualHeightButtonClick(object sender, RoutedEventArgs e)
         {
             RepeaterActualHeightLabel.Text = UniformGridRepeater.ActualHeight.ToString();
+        }
+
+        private void GetUniformGridLayoutMaximumRowsOrColumnsButtonClick(object sender, RoutedEventArgs e)
+        {
+            UniformGridLayoutMaximumRowsOrColumns.Text = (UniformGridRepeater.Layout as UniformGridLayout).MaximumRowsOrColumns.ToString();
+        }
+
+        private void SetUniformGridLayoutMaximumRowsOrColumnsButtonClick(object sender, RoutedEventArgs e)
+        {
+            LayoutHelper.SetMaxRowsOrColumns(UniformGridRepeater.Layout, int.Parse(UniformGridLayoutMaximumRowsOrColumns.Text));
         }
 
         private void GetUniformGridLayoutMinColumnSpacingButtonClick(object sender, RoutedEventArgs e)

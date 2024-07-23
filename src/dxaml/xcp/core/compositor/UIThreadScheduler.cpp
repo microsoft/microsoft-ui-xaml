@@ -5,6 +5,7 @@
 #include "UIThreadScheduler.h"
 #include <PALTypes.h>
 #include <CompositorScheduler.h>
+#include "GraphicsTelemetry.h"
 
 //------------------------------------------------------------------------------
 //
@@ -79,27 +80,40 @@ UIThreadScheduler::~UIThreadScheduler()
 //------------------------------------------------------------------------------
 _Check_return_ HRESULT
 UIThreadScheduler::RequestAdditionalFrame(
-    XUINT32 nextTickInterval,
+    XUINT32 nextTickIntervalInMilliseconds,
     RequestFrameReason reason)
 {
     {
         // TODO: TICK: Could probably use interlocked exchange for all m_currentState/m_nextTickIntervalInMilliseconds usage if necessary
         auto guard = m_NextTickLock.lock();
 
-        // All future tick requests OUTSIDE of tick processing will be treated as immediate
-        // because they lack a frame of reference to compare against (the last tick and next tick
-        // cannot be reliably determined).
         //
-        // It's expected that if the requestor still needs to be scheduled for a future time, that
-        // request would be made again while processing that 'immediate' tick, since as noted above
-        // tick requests do not persist tick-over-tick.
+        // Within a frame, all requests for additional frames are relative to the same time, so that multiple requests
+        // for the same interval all target the same time. We use the m_lastTickTimeInSeconds, snapped at the beginning
+        // of the frame, as the point of reference. The assumption is that a frame (at least in steady-state) is quick
+        // enough that the passage of time during the tick can be ignored.
         //
-        // Note that, even if there's a tick queued, we need to handle this case. It's possible that this tick
-        // was posted as low-priority, but some input processing that was re-prioritized is now pushing the
-        // deferred tick to high priority.
-        if (m_currentState != UITSS_Ticking)
+        // But m_lastTickTimeInSeconds is meaningless outside a frame. We may have been idle for a long time, so the
+        // actual time has progressed significantly since the frame started. If we just use m_lastTickTimeInSeconds as
+        // the point of reference, we'll have a target time that's much sooner than intended. For example, if it's been
+        // 500ms since m_lastTickTimeInSeconds, and a request comes in for 2000ms from now, then that's actually 2500ms
+        // since m_lastTickTimeInSeconds. We need to account for the difference.
+        //
+        if (nextTickIntervalInMilliseconds > 0 && m_currentState != UITSS_Ticking)
         {
-            nextTickInterval = 0;
+            uint64_t currentTimeInMilliseconds = static_cast<uint64_t>(m_pIClock->GetNextTickTimeInSeconds() * 1000);
+            uint64_t lastTickTimeInMilliseconds = static_cast<uint64_t>(m_lastTickTimeInSeconds * 1000);
+            uint32_t originalIntervalInMilliseconds = nextTickIntervalInMilliseconds;
+            nextTickIntervalInMilliseconds = originalIntervalInMilliseconds + static_cast<uint32_t>(currentTimeInMilliseconds - lastTickTimeInMilliseconds);
+
+            TraceLoggingProviderWrite(
+                GraphicsTelemetry, "Scheduling_RequestAdditionalFrameOutsideTick",
+                TraceLoggingUInt32(originalIntervalInMilliseconds, "OriginalIntervalInMilliseconds"),
+                TraceLoggingUInt64(currentTimeInMilliseconds, "CurrentTimeInMilliseconds"),
+                TraceLoggingUInt64(lastTickTimeInMilliseconds, "LastTickTimeInMilliseconds"),
+                TraceLoggingUInt32(nextTickIntervalInMilliseconds, "NextTickIntervalInMilliseconds"),
+                TraceLoggingUInt32(static_cast<uint32_t>(reason), "RequestFrameReason"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
             // Tick requests OUTSIDE of tick processing will be treated as high-priority.
             // This includes changing layout, rendering, or animation state directly from input events or
@@ -113,13 +127,16 @@ UIThreadScheduler::RequestAdditionalFrame(
             m_isHighPriority = TRUE;
         }
 
+        bool wasNextTickIntervalInMillisecondsUpdated = false;
+
         // If there's already a tick queued, this schedule request can be otherwise ignored.
         // The work is going to be picked up or scheduled again anyway when the tick is processed.
         if (m_currentState != UITSS_TickQueued)
         {
-            if (nextTickInterval < m_nextTickIntervalInMilliseconds)
+            if (nextTickIntervalInMilliseconds < m_nextTickIntervalInMilliseconds)
             {
-                m_nextTickIntervalInMilliseconds = nextTickInterval;
+                m_nextTickIntervalInMilliseconds = nextTickIntervalInMilliseconds;
+                wasNextTickIntervalInMillisecondsUpdated = true;
 
                 // If the request came when no other work was scheduled, ensure the render thread
                 // is awake to process it and queue another tick.
@@ -133,13 +150,13 @@ UIThreadScheduler::RequestAdditionalFrame(
             }
         }
 
-        // Log the reason if it's new
-        if ((m_requestFrameReasons & reason) == 0)
+        // Log the reason if it's new or if we asked for a sooner tick.
+        if (wasNextTickIntervalInMillisecondsUpdated || ((m_requestFrameReasons & reason) == 0))
         {
             m_requestFrameReasons = static_cast<RequestFrameReason>(m_requestFrameReasons | reason);
 
             TraceRequestFrameReasonInfo(
-                nextTickInterval,
+                nextTickIntervalInMilliseconds,
                 m_nextTickIntervalInMilliseconds,
                 reason,
                 m_requestFrameReasons);
@@ -199,20 +216,20 @@ UIThreadScheduler::EndTick()
         // If there was a frame scheduled during ticking, ensure another UI thread frame will be scheduled.
         if (m_nextTickIntervalInMilliseconds < XINFINITE)
         {
-            // If the render thread's clock has progressed since this tick started, the UI thread is running behind.
-            // Go ahead and queue the next tick immediately to keep the UI thread pipeline as full as possible,
-            // while still throttling to the render thread's execution rate (the refresh rate).
-            if (m_lastTickTimeInSeconds < m_pIClock->GetLastTickTimeInSeconds())
+            double lastClockTimeInSeconds = m_pIClock->GetLastTickTimeInSeconds();
+            if (m_lastTickTimeInSeconds < lastClockTimeInSeconds)
             {
-                IFC_RETURN(QueueTick());
+                TraceLoggingProviderWrite(
+                    GraphicsTelemetry, "Scheduling_ClockAdvancedDuringTick",
+                    TraceLoggingUInt64(reinterpret_cast<uint64_t>(m_pIClock), "ClockPointer"),
+                    TraceLoggingUInt64(static_cast<uint64_t>(lastClockTimeInSeconds * 1000000), "LastClockTimeInMilliseconds"),
+                    TraceLoggingUInt64(static_cast<uint64_t>(m_lastTickTimeInSeconds * 1000000), "LastTickTimeInMilliseconds"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
             }
-            // Otherwise, ensure the render thread is awake to queue the tick next time it runs.
-            // It will have ignored the UI thread during the 'ticking' state, but will process it now that we're
-            // back in the 'waiting' state.
-            else
-            {
-                IFC_RETURN(m_pCompositorScheduler->WakeCompositionThread());
-            }
+
+            // Wake the scheduling thread and have it queue a tick. This ensures we get throttled properly to the frame
+            // rate, if needed.
+            IFC_RETURN(m_pCompositorScheduler->WakeCompositionThread());
         }
 
         // Reset the priority now that the tick is finished.
@@ -280,6 +297,11 @@ UIThreadScheduler::QueueTick()
             ASSERT(m_currentState == UITSS_TickQueued);
         }
     }
+
+    TraceLoggingProviderWrite(
+        GraphicsTelemetry, "Scheduling_QueueTick",
+        TraceLoggingBoolean(shouldQueueTick, "WasTickQueued"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     if (shouldQueueTick)
     {

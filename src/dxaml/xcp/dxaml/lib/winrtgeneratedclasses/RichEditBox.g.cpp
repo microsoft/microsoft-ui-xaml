@@ -113,6 +113,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_Document(_Outptr_result_maybe
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<RichEditBox*>(this)->get_DocumentImpl(ppValue));
 Cleanup:
@@ -279,6 +280,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_TextDocument(_Outptr_result_m
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<RichEditBox*>(this)->get_TextDocumentImpl(ppValue));
 Cleanup:
@@ -974,6 +976,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::GetLinguisticAlternativesAsync(_O
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "RichEditBox_GetLinguisticAlternativesAsync", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<RichEditBox*>(this)->GetLinguisticAlternativesAsyncImpl(ppReturnValue));
@@ -992,7 +995,7 @@ _Check_return_ HRESULT DirectUI::RichEditBoxGenerated::EventAddHandlerByIndex(_I
     case KnownEventIndex::RichEditBox_TextChanging:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::RichEditBox*, ABI::Microsoft::UI::Xaml::Controls::RichEditBoxTextChangingEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1021,7 +1024,7 @@ _Check_return_ HRESULT DirectUI::RichEditBoxGenerated::EventRemoveHandlerByIndex
     case KnownEventIndex::RichEditBox_TextChanging:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::RichEditBox*, ABI::Microsoft::UI::Xaml::Controls::RichEditBoxTextChangingEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

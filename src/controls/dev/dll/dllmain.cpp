@@ -12,9 +12,8 @@
 
 using namespace Microsoft::WRL;
 
-#ifndef MUX_EXPERIMENTAL
 #include "MuxcTraceLogging.h"
-#endif
+
 
 HINSTANCE g_hInstance = nullptr;
 
@@ -29,18 +28,13 @@ STDAPI_(BOOL) DllMain(_In_ HINSTANCE hInstance, _In_ DWORD reason, _In_opt_ void
     {
         g_hInstance = hInstance;
         DisableThreadLibraryCalls(hInstance);
-#ifndef MUX_EXPERIMENTAL
         RegisterTraceLogging();
-#endif
-
         _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
     }
     else if (DLL_PROCESS_DETACH == reason)
     {
-#ifndef MUX_EXPERIMENTAL
         SendTelemetryOnSuspend();
         UnRegisterTraceLogging();
-#endif
     }
 
     return TRUE;

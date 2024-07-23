@@ -754,7 +754,7 @@ void CConnectedAnimation::ComputeAnimationOffset(_In_ ConnectedAnimationElementI
     offset.Y += (m_baseAnimation->m_source.clippedRect.Height - m_baseAnimation->m_destination.clippedRect.Height) / 2;
 }
 
-_Check_return_ void CConnectedAnimation::GetBaseAnimationSourceInfo()
+void CConnectedAnimation::GetBaseAnimationSourceInfo()
 {
     // Coordinated connected animations don't have a souce snapshot, so we create a rectangle for the source
     // that is basically, "compute where a source element would be if it had the same layout relationship to

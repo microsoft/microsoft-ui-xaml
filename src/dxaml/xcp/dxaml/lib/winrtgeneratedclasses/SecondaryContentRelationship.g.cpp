@@ -279,6 +279,7 @@ IFACEMETHODIMP DirectUI::SecondaryContentRelationshipFactory::CreateStickyHeader
     ARG_NOTNULL(pPanelTransform, "panelTransform");
     ARG_NOTNULL(pHeaderTransform, "headerTransform");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckActivationAllowed());
     IFC(CreateStickyHeaderRelationshipImpl(pScrollViewer, pPanelObject, pPanelTransform, pHeaderTransform, groupTopY, groupBottomY, headerHeight, ppResult));
 Cleanup:
@@ -299,6 +300,7 @@ IFACEMETHODIMP DirectUI::SecondaryContentRelationshipFactory::CreateClipTransfor
     ARG_NOTNULL(pClipOwner, "clipOwner");
     ARG_NOTNULL(pClipTransform, "clipTransform");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckActivationAllowed());
     IFC(CreateClipTransformRelationshipImpl(pScrollViewer, pClipOwner, pClipTransform, listExtentHeight, listViewportHeight, ppResult));
 Cleanup:
@@ -319,6 +321,7 @@ IFACEMETHODIMP DirectUI::SecondaryContentRelationshipFactory::CreateParallaxRela
     ARG_NOTNULL(pHeaderObject, "headerObject");
     ARG_NOTNULL(pHeaderTransform, "headerTransform");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckActivationAllowed());
     IFC(CreateParallaxRelationshipImpl(pScrollViewer, pHeaderObject, pHeaderTransform, primaryOffsetsCount, primaryOffsets, secondaryOffsetsCount, secondaryOffsets, ppResult));
 Cleanup:
@@ -339,6 +342,7 @@ IFACEMETHODIMP DirectUI::SecondaryContentRelationshipFactory::CreateStaticElemen
     ARG_NOTNULL(pStaticElement, "staticElement");
     ARG_NOTNULL(pElementTransform, "elementTransform");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckActivationAllowed());
     IFC(CreateStaticElementRelationshipImpl(pScrollViewer, pStaticElement, pElementTransform, isHorizontallyStatic, isInverted, ppResult));
 Cleanup:

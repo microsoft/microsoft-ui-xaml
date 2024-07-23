@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::AddPagesEventArgsGenerated::get_PrintTaskOptions(_Outpt
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<AddPagesEventArgs*>(this)->get_PrintTaskOptionsImpl(ppValue));
 Cleanup:

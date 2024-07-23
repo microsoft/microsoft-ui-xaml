@@ -22,6 +22,6 @@ HRESULT <#= type.CoreDefaultConstructor #>(_Outptr_ CDependencyObject **ppObject
 namespace <#= OMContext.DefaultImplementationNamespace #>
 {
 <# foreach (var type in Model.GetAllClasses().Where(c => c.IsAEventArgs && c.IsActivatable)) { #>
-    HRESULT <#= type.EventArgsFrameworkDefaultConstructor #>(_In_ CEventArgs* pCoreArgs, _Out_ IInspectable** ppNewInstance);
+    _Check_return_ HRESULT <#= type.EventArgsFrameworkDefaultConstructor #>(_In_ CEventArgs* pCoreArgs, _Out_ IInspectable** ppNewInstance);
 <# } #>
 }

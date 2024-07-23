@@ -64,7 +64,7 @@ namespace Diagnostics
         auto style = do_pointer_cast<CStyle>(m_owner.lock_noref());
         if (style && m_wasSealed)
         {
-            style->Seal();
+            VERIFYHR(style->Seal());
         }
     }
 

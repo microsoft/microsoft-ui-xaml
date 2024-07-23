@@ -415,7 +415,9 @@ _Check_return_ HRESULT FocusManagerFactory::TryFocusAsyncImpl(
         spFocusAsyncOperation->StartOperation();
     }
 
-    focusManager->SetFocusedElement(movement);
+    // We ignore the result here because CFocusManager::UpdateFocus will take care of completing the async operation
+    // and propagating the result.
+    const auto ignored = focusManager->SetFocusedElement(movement);    
 
     // Async operation is not guaranteed to be released synchronously.
     // Therefore, we let UpdateFocus to handle the responsibility of releasing it.
@@ -1075,7 +1077,7 @@ FocusManagerFactory::FindNextElementWithOptionsImpl(
 }
 
 _Check_return_ HRESULT
-FocusManagerFactory::GetFocusedElementWithRootImpl(_In_ xaml::IXamlRoot* pXamlRoot, _Outptr_ IInspectable** ppReturnValue)
+FocusManagerFactory::GetFocusedElementWithRootImpl(_In_ xaml::IXamlRoot* pXamlRoot, _Outptr_result_maybenull_ IInspectable** ppReturnValue)
 {
     *ppReturnValue = nullptr;
 

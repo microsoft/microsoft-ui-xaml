@@ -34,6 +34,7 @@ struct MsgPacket
 
     ixp::IPointerPoint* m_pPointerPointNoRef;
     ixp::IPointerEventArgs* m_pPointerEventArgsNoRef;
+    bool m_isNonClientPointerMessage{ false };
 
     //Ctor
     MsgPacket()
@@ -549,7 +550,7 @@ protected:
     HANDLE   m_handle;          // An event (only used when queue is empty)
     _Guarded_by_(m_cs) QPACKET *m_pHead;           // First item in the queue
     _Guarded_by_(m_cs) QPACKET *m_pTail;           // Final item in the queue
-    CRITICAL_SECTION m_cs;      // Synchronization object
+    CRITICAL_SECTION m_cs{};      // Synchronization object
 };
 
 #if XCP_MONITOR
@@ -984,7 +985,7 @@ private:
 
     IXcpRenderCounters *m_pRenderCounters;
 
-    IValueStore*    pHostProps;
+    IValueStore*    pHostProps{};
 
     bool m_isDirectManipulationSupported;
     bool m_hasCheckedForDirectManipulationSupport;

@@ -73,14 +73,14 @@ PARTIAL_CLASS(ListViewBaseItemPresenter), private ListViewBaseItemAnimationComma
         // Private state
         AnimationState m_pointerPressedAnimation;
         AnimationState m_reorderHintAnimation;
-        EventRegistrationToken m_reorderHintBackCompletedToken;
+        EventRegistrationToken m_reorderHintBackCompletedToken{};
         AnimationState m_dragDropAnimation;
         AnimationState m_multiSelectAnimation;
-        EventRegistrationToken m_multiSelectCompletedToken;
+        EventRegistrationToken m_multiSelectCompletedToken{};
         AnimationState m_indicatorSelectAnimation;
-        EventRegistrationToken m_indicatorSelectCompletedToken;
+        EventRegistrationToken m_indicatorSelectCompletedToken{};
         AnimationState m_selectionIndicatorAnimation;
-        EventRegistrationToken m_selectionIndicatorCompletedToken;
+        EventRegistrationToken m_selectionIndicatorCompletedToken{};
 };
 
 }

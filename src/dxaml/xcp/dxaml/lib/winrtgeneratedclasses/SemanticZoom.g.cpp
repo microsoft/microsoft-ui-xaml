@@ -212,6 +212,7 @@ IFACEMETHODIMP DirectUI::SemanticZoomGenerated::OnBackButtonPressed(_Out_ BOOLEA
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "SemanticZoom_OnBackButtonPressed", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<SemanticZoom*>(this)->OnBackButtonPressedImpl(pResult));
@@ -248,7 +249,7 @@ _Check_return_ HRESULT DirectUI::SemanticZoomGenerated::EventAddHandlerByIndex(_
     case KnownEventIndex::SemanticZoom_ViewChangeCompleted:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomViewChangedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -265,7 +266,7 @@ _Check_return_ HRESULT DirectUI::SemanticZoomGenerated::EventAddHandlerByIndex(_
     case KnownEventIndex::SemanticZoom_ViewChangeStarted:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomViewChangedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -294,7 +295,7 @@ _Check_return_ HRESULT DirectUI::SemanticZoomGenerated::EventRemoveHandlerByInde
     case KnownEventIndex::SemanticZoom_ViewChangeCompleted:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomViewChangedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

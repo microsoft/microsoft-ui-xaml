@@ -131,8 +131,8 @@
 // so the comma operator is not valid.
 #if defined(_PREFAST_)
 #define VERIFY(cond, ...) (_Analysis_assume_(!!cond), ((cond) ? TRUE : FALSE))
-#define VERIFYHR(hr, ...) (_Analysis_assume_(SUCCEEDED(hr)), ((hr) ? TRUE : FALSE))
-#define ASSERT(cond, ...) _Analysis_assume_(!!(cond))
+#define VERIFYHR(hr, ...) (_Analysis_assume_(SUCCEEDED(hr)), (SUCCEEDED(hr) ? TRUE : FALSE))
+#define ASSERT(cond, ...) (_Analysis_assume_(!!(cond)))
 #else
 #define VERIFY(cond, ...) (!!(cond) ? TRUE : FALSE)
 #define VERIFYHR(hr, ...) (SUCCEEDED(hr) ? TRUE : FALSE)

@@ -82,7 +82,7 @@ namespace DirectUI
         
         TrackerPtr<xaml::IUIElement> m_userTitleBar;
         ctl::EventPtr<FrameworkElementSizeChangedEventCallback> m_titlebarSizeChangedEventHandler;
-
+        ctl::EventPtr<FrameworkElementLoadedEventCallback> m_LoadedEventHandler;
         
         // ref to desktop window for calling its helper functions
         // instantiated when windowchrome object is created, set to null when DesktopWindow is closing

@@ -50,7 +50,7 @@ namespace DirectUI
         wrl_wrappers::HString id;
         wrl_wrappers::HString subtype;
         wrl_wrappers::HString channelCount;
-        int trackIndex;
+        int trackIndex{};
 
         TrackFields() { }
         TrackFields(const TrackFields& fields)
@@ -897,7 +897,7 @@ namespace DirectUI
         EventRegistrationToken m_mediaBreakCurrentStateChangeToken;
         EventRegistrationToken m_mediaBreakPositionChangeToken;
         EventRegistrationToken m_mediaBreakDownloadProgressChangeToken;
-        EventRegistrationToken m_mediaPlayerIsLoopingEnabledToken;
+        EventRegistrationToken m_mediaPlayerIsLoopingEnabledToken{};
         ctl::ComPtr<wmp::IMediaPlayer> m_spMediaPlayer;
         ctl::ComPtr<wmp::IMediaPlaybackList> m_spMediaPlaybackList;
         ctl::ComPtr<wmp::IMediaPlaybackList> m_spMediaBreakPlaybackList;

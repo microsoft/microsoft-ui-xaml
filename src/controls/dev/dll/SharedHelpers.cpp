@@ -9,6 +9,11 @@
 #include <appmodel.h>
 #include <roapi.h>
 
+// This needs to be here instead of in CppWinRTIncludes.h because it includes Microsoft.UI.h,
+// which contains definitions of a few types like WindowId that conflict with their definitions
+// in Microsoft.UI.Content.h.
+#include <winrt\Microsoft.UI.Interop.h>
+
 // Package constants copied from AppModel.h. These values were only defined for Vb and later;
 // when passed as flags to ::GetCurrentPackageInfo() on pre-Vb, they are simply ignored.
 #define PACKAGE_PROPERTY_STATIC             0x00080000
@@ -266,6 +271,25 @@ void SharedHelpers::QueueCallbackForCompositionRendering(std::function<void()> c
 }
 
 // Rect helpers
+
+bool SharedHelpers::DoesRectContainPoint(
+    const winrt::Rect& rect,
+    const winrt::Point& point)
+{
+    return winrt::RectHelper::Contains(rect, point);
+}
+
+bool SharedHelpers::DoesRectContainPoint(
+    const winrt::RectInt32& rect,
+    const winrt::PointInt32& point)
+{
+    const auto doesContain =
+        rect.X <= point.X &&
+        rect.X + rect.Width >= point.X &&
+        rect.Y <= point.Y &&
+        rect.Y + rect.Height >= point.Y;
+    return doesContain;
+}
 
 // Returns TRUE if either rect is empty or the rects
 // have an empty intersection.

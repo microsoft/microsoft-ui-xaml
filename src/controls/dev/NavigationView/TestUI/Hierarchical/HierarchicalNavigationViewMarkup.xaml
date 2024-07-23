@@ -21,7 +21,10 @@
             PaneClosed="NavView_PaneClosed"
             PaneOpened="NavView_PaneOpened">
             <muxcontrols:NavigationView.MenuItems>
-                <muxcontrols:NavigationViewItem Content="Menu Item 1" x:Name="MI1" SelectsOnInvoked="False"  Icon="Home">
+                <muxcontrols:NavigationViewItem Content="Menu Item 1" x:Name="MI1" Icon="Home" IsSelected="True">
+                <muxcontrols:NavigationViewItem.Resources>
+                    <SolidColorBrush x:Key="NavigationViewItemIconBackground" Color="Red" />
+                </muxcontrols:NavigationViewItem.Resources>
                     <muxcontrols:NavigationViewItem.MenuItems>
                         <muxcontrols:NavigationViewItem Content="Menu Item 2" x:Name="MI2" SelectsOnInvoked="False" Icon="Save">
                             <muxcontrols:NavigationViewItem.MenuItems>

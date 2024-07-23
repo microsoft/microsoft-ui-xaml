@@ -49,6 +49,7 @@ IFACEMETHODIMP DirectUI::ToggleMenuFlyoutItemAutomationPeerGenerated::get_Toggle
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ToggleMenuFlyoutItemAutomationPeer*>(this)->get_ToggleStateImpl(pValue));
 Cleanup:

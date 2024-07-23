@@ -14,7 +14,6 @@
 #include <ComUtils.h>
 #include <corerror.h>
 #include <mindebug.h>
-#define XNOTHROW __declspec(nothrow)
 
 namespace ctl
 {
@@ -76,16 +75,16 @@ namespace ctl
         };
 
         template<class T>
-        XNOTHROW inline typename RemoveReference<T>::Type&& Move(
-            _Inout_ T&& arg)
+        inline typename RemoveReference<T>::Type&& Move(
+            _Inout_ T&& arg) noexcept
         {
             return ((typename RemoveReference<T>::Type&&)arg);
         }
 
         template<class T>
-        XNOTHROW inline void Swap(
+        inline void Swap(
             _Inout_ T& left,
-            _Inout_ T& right)
+            _Inout_ T& right) noexcept
         {
             T tmp = Move(left);
             left = Move(right);
@@ -242,7 +241,7 @@ namespace ctl
             InterfaceType *ptr_;
             template<class U> friend class ComPtr;
 
-            XNOTHROW void InternalAddRef()
+            void InternalAddRef() noexcept
             {
                 if (ptr_ != nullptr)
                 {
@@ -250,7 +249,7 @@ namespace ctl
                 }
             }
 
-            XNOTHROW void InternalRelease()
+            void InternalRelease() noexcept
             {
                 T* temp = ptr_;
                 if (temp != nullptr)
@@ -261,30 +260,30 @@ namespace ctl
             }
 
         public:
-            XNOTHROW ComPtr()
+            ComPtr() noexcept
                 : ptr_(nullptr)
             {
                 XCP_STRONG(&ptr_);
             }
 
-            XNOTHROW ComPtr(
-                decltype(__nullptr))
+            ComPtr(
+                decltype(__nullptr)) noexcept
                 : ptr_(nullptr)
             {
                 XCP_STRONG(&ptr_);
             }
 
             template<class U>
-            XNOTHROW ComPtr(
-                _In_opt_ U *other)
+            ComPtr(
+                _In_opt_ U *other) noexcept
                 : ptr_(other)
             {
                 XCP_STRONG(&ptr_);
                 InternalAddRef();
             }
 
-            XNOTHROW ComPtr(
-                const ComPtr& other)
+            ComPtr(
+                const ComPtr& other) noexcept
                 : ptr_(other.ptr_)
             {
                 XCP_STRONG(&ptr_);
@@ -294,17 +293,17 @@ namespace ctl
             // Copy ctor that allows to instanatiate class when U* is
             // convertible to T*
             template<class U>
-            XNOTHROW ComPtr(
+            ComPtr(
                 const ComPtr<U> &other,
-                typename Internal::EnableIf<__is_convertible_to(U*, T*), void *>::type * = 0)
+                typename Internal::EnableIf<__is_convertible_to(U*, T*), void *>::type * = 0) noexcept
                 : ptr_(other.ptr_)
             {
                 XCP_STRONG(&ptr_);
                 InternalAddRef();
             }
 
-            XNOTHROW ComPtr(
-                _Inout_ ComPtr &&other)
+            ComPtr(
+                _Inout_ ComPtr &&other) noexcept
                 : ptr_(nullptr)
             {
                 XCP_STRONG(&ptr_);
@@ -316,29 +315,29 @@ namespace ctl
 
             // Move ctor that allows instantiation of a class when U* is convertible to T*
             template<class U>
-            XNOTHROW ComPtr(
+            ComPtr(
                 _Inout_ ComPtr<U>&& other,
-                typename Internal::EnableIf<__is_convertible_to(U*, T*), void *>::type * = 0)
+                typename Internal::EnableIf<__is_convertible_to(U*, T*), void *>::type * = 0) noexcept
                 : ptr_(other.ptr_)
             {
                 XCP_STRONG(&ptr_);
                 other.ptr_ = nullptr;
             }
 
-            XNOTHROW ~ComPtr()
+            ~ComPtr() noexcept
             {
                 InternalRelease();
             }
 
-            XNOTHROW ComPtr& operator=(
-                decltype(__nullptr))
+            ComPtr& operator=(
+                decltype(__nullptr)) noexcept
             {
                 InternalRelease();
                 return *this;
             }
 
-            XNOTHROW ComPtr& operator=(
-                _In_opt_ T *other)
+            ComPtr& operator=(
+                _In_opt_ T *other) noexcept
             {
                 if (ptr_ != other)
                 {
@@ -348,15 +347,15 @@ namespace ctl
             }
 
             template <typename U>
-            XNOTHROW ComPtr& operator=(
-                _In_opt_ U *other)
+            ComPtr& operator=(
+                _In_opt_ U *other) noexcept
             {
                 ComPtr(other).Swap(*this);
                 return *this;
             }
 
-            XNOTHROW ComPtr& operator=(
-                const ComPtr &other)
+            ComPtr& operator=(
+                const ComPtr &other) noexcept
             {
                 if (ptr_ != other.ptr_)
                 {
@@ -366,52 +365,52 @@ namespace ctl
             }
 
             template<class U>
-            XNOTHROW ComPtr& operator=(
-                const ComPtr<U>& other)
+            ComPtr& operator=(
+                const ComPtr<U>& other) noexcept
             {
                 ComPtr(other).Swap(*this);
                 return *this;
             }
 
-            XNOTHROW ComPtr& operator=(
-                _Inout_ ComPtr &&other)
+            ComPtr& operator=(
+                _Inout_ ComPtr &&other) noexcept
             {
                 ComPtr(static_cast<ComPtr&&>(other)).Swap(*this);
                 return *this;
             }
 
             template<class U>
-            XNOTHROW ComPtr& operator=(
-                _Inout_ ComPtr<U>&& other)
+            ComPtr& operator=(
+                _Inout_ ComPtr<U>&& other) noexcept
             {
                 ComPtr(static_cast<ComPtr<U>&&>(other)).Swap(*this);
                 return *this;
             }
 
-            XNOTHROW void Swap(
-                _Inout_ ComPtr&& r)
+            void Swap(
+                _Inout_ ComPtr&& r) noexcept
             {
                 T* tmp = ptr_;
                 ptr_ = r.ptr_;
                 r.ptr_ = tmp;
             }
 
-            XNOTHROW void Swap(
-                _Inout_ ComPtr& r)
+            void Swap(
+                _Inout_ ComPtr& r) noexcept
             {
                 T* tmp = ptr_;
                 ptr_ = r.ptr_;
                 r.ptr_ = tmp;
             }
 
-            XNOTHROW operator Internal::BoolType() const
+            operator Internal::BoolType() const noexcept
             {
                 return Get() != nullptr ?
                     &Internal::BoolStruct::Member :
                     nullptr;
             }
 
-            XNOTHROW T* Get() const
+            T* Get() const noexcept
             {
                 static_assert(!ctl::IsEventPtrCompatible<T>::value, "ComPtr cannot be used to keep references to event handlers, use EventPtr");
                 static_assert(!ctl::IsWeakEventPtrCompatible<T>::value, "ComPtr cannot be used to keep references to weak event handlers, use WeakEventPtr");
@@ -419,18 +418,18 @@ namespace ctl
             }
 
             template<typename U>
-            XNOTHROW U* Cast() const
+            U* Cast() const noexcept
             {
                 return static_cast<U*>(Get());
             }
 
             template <typename U>
-            XNOTHROW void CastTo(U** casted) const
+            void CastTo(U** casted) const noexcept
             {
                 *casted = static_cast<U *>(Get());
             }
 
-            XNOTHROW typename Internal::RemoveIUnknown<InterfaceType>::ReturnType* operator->() const
+            typename Internal::RemoveIUnknown<InterfaceType>::ReturnType* operator->() const noexcept
             {
                 return static_cast<typename Internal::RemoveIUnknown<InterfaceType>::ReturnType*>(ptr_);
             }
@@ -450,31 +449,31 @@ namespace ctl
                 return Internal::ComPtrRef<const ComPtr<T>>(this);
             }
 
-            XNOTHROW T* const* GetAddressOf() const
+            T* const* GetAddressOf() const noexcept
             {
                 return &ptr_;
             }
 
-            XNOTHROW T** GetAddressOf()
+            T** GetAddressOf() noexcept
             {
                 return &ptr_;
             }
 
-            XNOTHROW T** ReleaseAndGetAddressOf()
+            T** ReleaseAndGetAddressOf() noexcept
             {
                 InternalRelease();
                 return &ptr_;
             }
 
-            XNOTHROW T* Detach()
+            T* Detach() noexcept
             {
                 T* ptr = ptr_;
                 ptr_ = nullptr;
                 return ptr;
             }
 
-            XNOTHROW void Attach(
-                _In_opt_ InterfaceType* other)
+            void Attach(
+                _In_opt_ InterfaceType* other) noexcept
             {
                 if (ptr_ != other)
                 {
@@ -483,15 +482,15 @@ namespace ctl
                 }
             }
 
-            XNOTHROW void Reset()
+            void Reset() noexcept
             {
                 InternalRelease();
             }
 
             // Copy to pointer of same type as this - simple addref and copy
             template<typename U>
-            XNOTHROW _Check_return_ typename std::enable_if<std::is_same<T, U>::value, HRESULT>::type
-                CopyTo(_Outptr_ U** ptr)
+            _Check_return_ typename std::enable_if<std::is_same<T, U>::value, HRESULT>::type
+                CopyTo(_Outptr_ U** ptr) noexcept
             {
                 InternalAddRef();
                 *ptr = ptr_;
@@ -500,8 +499,8 @@ namespace ctl
 
             // Move to pointer of same type as this - simple copy and detach
             template<typename U>
-            XNOTHROW _Check_return_ typename std::enable_if<std::is_same<T, U>::value, HRESULT>::type
-                MoveTo(_Outptr_ U** ptr)
+            _Check_return_ typename std::enable_if<std::is_same<T, U>::value, HRESULT>::type
+                MoveTo(_Outptr_ U** ptr) noexcept
             {
                 *ptr = Detach();
                 return S_OK;
@@ -509,8 +508,8 @@ namespace ctl
 
             // Copy to pointer to IInspectable - simple addref and copy with a cast to IInspectable (to disambiguate diamond inheritance)
             template<typename U>
-            XNOTHROW _Check_return_ typename std::enable_if<!std::is_same<T, U>::value && std::is_same<IInspectable, U>::value, HRESULT>::type
-                CopyTo(_Outptr_ U** ptr)
+            _Check_return_ typename std::enable_if<!std::is_same<T, U>::value && std::is_same<IInspectable, U>::value, HRESULT>::type
+                CopyTo(_Outptr_ U** ptr) noexcept
             {
                 InternalAddRef();
                 *ptr = iinspectable_cast(ptr_);
@@ -519,8 +518,8 @@ namespace ctl
 
             // Move to pointer to IInspectable - simple copy and detach with a cast to IInspectable (to disambiguate diamond inheritance)
             template<typename U>
-            XNOTHROW _Check_return_ typename std::enable_if<!std::is_same<T, U>::value && std::is_same<IInspectable, U>::value, HRESULT>::type
-                MoveTo(_Outptr_ U** ptr)
+            _Check_return_ typename std::enable_if<!std::is_same<T, U>::value && std::is_same<IInspectable, U>::value, HRESULT>::type
+                MoveTo(_Outptr_ U** ptr) noexcept
             {
                 *ptr = iinspectable_cast(Detach());
                 return S_OK;
@@ -528,8 +527,8 @@ namespace ctl
 
             // Copy to pointer of parent (implicitly convertible) type - simple addref and copy
             template<typename U>
-            XNOTHROW _Check_return_ typename std::enable_if<!std::is_same<T, U>::value && !std::is_same<IInspectable, U>::value && __is_convertible_to(T*, U*), HRESULT>::type
-                CopyTo(_Outptr_ U** ptr)
+            _Check_return_ typename std::enable_if<!std::is_same<T, U>::value && !std::is_same<IInspectable, U>::value && __is_convertible_to(T*, U*), HRESULT>::type
+                CopyTo(_Outptr_ U** ptr) noexcept
             {
                 InternalAddRef();
                 *ptr = ptr_;
@@ -538,8 +537,8 @@ namespace ctl
 
             // Move to pointer of parent (implicitly convertible) type - simple copy and detach
             template<typename U>
-            XNOTHROW _Check_return_ typename std::enable_if<!std::is_same<T, U>::value && !std::is_same<IInspectable, U>::value && __is_convertible_to(T*, U*), HRESULT>::type
-                MoveTo(_Outptr_ U** ptr)
+            _Check_return_ typename std::enable_if<!std::is_same<T, U>::value && !std::is_same<IInspectable, U>::value && __is_convertible_to(T*, U*), HRESULT>::type
+                MoveTo(_Outptr_ U** ptr) noexcept
             {
                 *ptr = Detach();
                 return S_OK;
@@ -547,8 +546,8 @@ namespace ctl
 
             // Copy to other, possibly incompatible type - perform QI
             template<typename U>
-            XNOTHROW _Check_return_ typename std::enable_if<!std::is_same<T, U>::value && !std::is_same<IInspectable, U>::value && !__is_convertible_to(T*, U*), HRESULT>::type
-                CopyTo(_Outptr_ U** ptr) const
+            _Check_return_ typename std::enable_if<!std::is_same<T, U>::value && !std::is_same<IInspectable, U>::value && !__is_convertible_to(T*, U*), HRESULT>::type
+                CopyTo(_Outptr_ U** ptr) const noexcept
             {
                 return ctl::do_query_interface(*ptr, iunknown_cast(ptr_));
             }
@@ -556,22 +555,22 @@ namespace ctl
             // Move to other, possibly incompatible type - perform QI
             // DELIBERATELY UNSUPPORTED!
             template<typename U>
-            XNOTHROW _Check_return_ typename std::enable_if<!std::is_same<T, U>::value && !std::is_same<IInspectable, U>::value && !__is_convertible_to(T*, U*), HRESULT>::type
-                MoveTo(_Outptr_ U** ptr)
+            _Check_return_ typename std::enable_if<!std::is_same<T, U>::value && !std::is_same<IInspectable, U>::value && !__is_convertible_to(T*, U*), HRESULT>::type
+                MoveTo(_Outptr_ U** ptr) noexcept
             {
                 static_assert_false("ComPtr::MoveTo() is not supported when QueryInterface is required. Use CopyTo() instead.");
             }
 
-            _Check_return_ HRESULT CopyTo(REFIID riid, _Outptr_result_nullonfailure_ void** ptr) const throw()
+            _Check_return_ HRESULT CopyTo(REFIID riid, _Outptr_result_nullonfailure_ void** ptr) const noexcept
             {
                 return iunknown_cast(ptr_)->QueryInterface(riid, ptr);
             }
 
             // query for U interface
             template<typename U>
-            XNOTHROW _Check_return_ HRESULT As(
+            _Check_return_ HRESULT As(
                 Internal::ComPtrRef<ComPtr<U>> p)
-                const
+                const noexcept
             {
                 U **ppInterface = p.ReleaseAndGetAddressOf();
 
@@ -580,25 +579,25 @@ namespace ctl
 
             // query for U interface
             template<typename U>
-            XNOTHROW _Check_return_ HRESULT As(
+            _Check_return_ HRESULT As(
                 _Out_ ComPtr<U>* p)
-                const
+                const noexcept
             {
                 return ctl::do_query_interface<U>(*p->ReleaseAndGetAddressOf(), iunknown_cast(ptr_));
             }
 
             // query for U interface
             template<typename U>
-            XNOTHROW ComPtr<U> AsOrNull()
-                const
+            ComPtr<U> AsOrNull()
+                const noexcept
             {
                 ComPtr<U> result = nullptr;
                 IGNOREHR(As(&result));
                 return result;
             }
 
-            XNOTHROW _Check_return_ HRESULT AsWeak(
-                _Out_ WeakRefPtr* pWeakRef)
+            _Check_return_ HRESULT AsWeak(
+                _Out_ WeakRefPtr* pWeakRef) noexcept
             {
                 return ctl::AsWeak(ptr_, pWeakRef);
             }
@@ -610,7 +609,7 @@ namespace ctl
         protected:
             _Check_return_ HRESULT InternalResolve(
                 _In_ REFIID riid,
-                _Outptr_ IInspectable** inspectable)
+                _Outptr_result_maybenull_ IInspectable** inspectable)
             {
                 HRESULT hr = S_OK;
                 *inspectable = nullptr;
@@ -624,8 +623,10 @@ namespace ctl
                 // Resolve weak reference.
                 // CLR WeakReference's Resolve currently fails with COR_E_INVALIDCOMOBJECT
                 // if the weak reference target has been deleted, so handle that failure
+                // E_NOINTERFACE can also be returned if we're in the process of shutting down
+                // and have cleared our type table.
                 hr = ptr_->Resolve(riid, inspectable);
-                ASSERT(SUCCEEDED(hr) || hr == COR_E_INVALIDCOMOBJECT);
+                ASSERT(SUCCEEDED(hr) || hr == COR_E_INVALIDCOMOBJECT || hr == E_NOINTERFACE);
                 if (FAILED(hr) || *inspectable == nullptr)
                 {
                     // Release weak reference because it will not succeed ever
@@ -647,60 +648,60 @@ namespace ctl
                 return Internal::ComPtrRef<const WeakRefPtr>(this);
             }
 
-            XNOTHROW WeakRefPtr()
+            WeakRefPtr() noexcept
+                : ComPtr(nullptr) 
+            {
+            }
+
+            WeakRefPtr(
+                decltype(__nullptr)) noexcept
                 : ComPtr(nullptr)
             {
             }
 
-            XNOTHROW WeakRefPtr(
-                decltype(__nullptr))
-                : ComPtr(nullptr)
-            {
-            }
-
-            XNOTHROW WeakRefPtr(
-                _In_opt_ IWeakReference* ptr)
+            WeakRefPtr(
+                _In_opt_ IWeakReference* ptr) noexcept
                 : ComPtr(ptr)
             {
             }
 
-            XNOTHROW WeakRefPtr(
-                const ComPtr<IWeakReference>& ptr)
+            WeakRefPtr(
+                const ComPtr<IWeakReference>& ptr) noexcept
                 : ComPtr(ptr)
             {
             }
 
-            XNOTHROW WeakRefPtr(
-                const WeakRefPtr& ptr)
+            WeakRefPtr(
+                const WeakRefPtr& ptr) noexcept
                 : ComPtr(ptr)
             {
             }
 
-            XNOTHROW WeakRefPtr(
-                _Inout_ WeakRefPtr&& ptr)
+            WeakRefPtr(
+                _Inout_ WeakRefPtr&& ptr) noexcept
                 : ComPtr(static_cast<ComPtr<IWeakReference>&&>(ptr))
             {
             }
 
-            XNOTHROW WeakRefPtr &operator=(const WeakRefPtr&) = default;
+            WeakRefPtr &operator=(const WeakRefPtr&) noexcept = default;
 
 #if _MSC_VER >= 1900
-            XNOTHROW WeakRefPtr &operator=(_Inout_ WeakRefPtr&&) = default;
+            WeakRefPtr &operator=(_Inout_ WeakRefPtr&&) noexcept = default;
 #endif
 
-            XNOTHROW ~WeakRefPtr()
+            ~WeakRefPtr() noexcept
             {
             }
 
-            XNOTHROW Internal::WeakReferenceInterface<InterfaceType>* operator->() const
+            Internal::WeakReferenceInterface<InterfaceType>* operator->() const noexcept
             {
                 return reinterpret_cast<Internal::WeakReferenceInterface<InterfaceType>*>(ptr_);
             }
 
             // resolve U interface
             template<typename U>
-            XNOTHROW _Check_return_ HRESULT As(
-                Internal::ComPtrRef<ComPtr<U>> ptr)
+            _Check_return_ HRESULT As(
+                Internal::ComPtrRef<ComPtr<U>> ptr) noexcept
             {
                 static_assert(!Internal::IsSame<IWeakReference, U>::value, "IWeakReference cannot resolve IWeakReference object.");
                 static_assert(__is_base_of(IInspectable, U), "WeakRefPtr::As() can only be used on types derived from IInspectable");
@@ -709,8 +710,8 @@ namespace ctl
             }
 
             template<typename U>
-            XNOTHROW _Check_return_ HRESULT As(
-                _Out_ ComPtr<U>* ptr)
+            _Check_return_ HRESULT As(
+                _Out_ ComPtr<U>* ptr) noexcept
             {
                 static_assert(!Internal::IsSame<IWeakReference, U>::value, "IWeakReference cannot resolve IWeakReference object.");
                 static_assert(__is_base_of(IInspectable, U), "WeakRefPtr::As() can only be used on types derived from IInspectable");
@@ -719,25 +720,25 @@ namespace ctl
             }
 
             template<typename U>
-            XNOTHROW ComPtr<U> AsOrNull()
+            ComPtr<U> AsOrNull() noexcept
             {
                 ctl::ComPtr<U> result;
                 IGNOREHR(As(&result));
                 return result;
             }
 
-            XNOTHROW _Check_return_ HRESULT AsIID(
+            _Check_return_ HRESULT AsIID(
                 _In_ REFIID riid,
-                _Out_ ComPtr<IInspectable>* ptr)
+                _Out_ ComPtr<IInspectable>* ptr) noexcept
             {
                 ASSERT(riid != __uuidof(IWeakReference));
 
                 return InternalResolve(riid, ptr->ReleaseAndGetAddressOf());
             }
 
-            XNOTHROW _Check_return_ HRESULT CopyTo(
+            _Check_return_ HRESULT CopyTo(
                 _In_ REFIID riid,
-                _Outptr_ IInspectable** ptr)
+                _Outptr_ IInspectable** ptr) noexcept
             {
                 ASSERT(riid != __uuidof(IWeakReference));
 
@@ -745,15 +746,15 @@ namespace ctl
             }
 
             template<typename U>
-            XNOTHROW _Check_return_ HRESULT CopyTo(
-                _Outptr_ U** ptr)
+            _Check_return_ HRESULT CopyTo(
+                _Outptr_ U** ptr) noexcept
             {
                 static_assert(__is_base_of(IInspectable, U), "WeakRefPtr::CopyTo() can only be used on types derived from IInspectable");
                 return InternalResolve(__uuidof(U), reinterpret_cast<IInspectable**>(ptr));
             }
 
-            XNOTHROW _Check_return_ HRESULT CopyTo(
-                _Outptr_ IWeakReference** ptr)
+            _Check_return_ HRESULT CopyTo(
+                _Outptr_ IWeakReference** ptr) noexcept
             {
                 InternalAddRef();
                 *ptr = ptr_;
@@ -803,10 +804,10 @@ namespace ctl
     // If pointer types are convertible, let the compiler calculate the correct offsets
     // This is really just a general case of identical types, but it's easier to read this way
     template<class T, class U>
-    XNOTHROW typename std::enable_if<std::is_convertible<T*, U*>::value || std::is_convertible<U*, T*>::value, bool>::type
+    typename std::enable_if<std::is_convertible<T*, U*>::value || std::is_convertible<U*, T*>::value, bool>::type
         operator==(
         const ComPtr<T>& a,
-        const ComPtr<U>& b)
+        const ComPtr<U>& b) noexcept
     {
         return a.Get() == b.Get();
     }
@@ -814,10 +815,10 @@ namespace ctl
     // If they're not convertible, then either somebody is comparing interface pointers (use ctl::are_equal),
     // or comparing unrelated pointer types (let the compiler complain)
     template<class T, class U>
-    XNOTHROW typename std::enable_if<!std::is_convertible<T*, U*>::value && !std::is_convertible<U*, T*>::value, bool>::type
+    typename std::enable_if<!std::is_convertible<T*, U*>::value && !std::is_convertible<U*, T*>::value, bool>::type
         operator==(
         const ComPtr<T>& a,
-        const ComPtr<U>& b)
+        const ComPtr<U>& b) noexcept
     {
         bool result = false;
         IGNOREHR(ctl::are_equal(a.Get(), b.Get(), &result));
@@ -825,42 +826,42 @@ namespace ctl
     }
 
     template<class T>
-    XNOTHROW bool operator==(
+    bool operator==(
         const ComPtr<T>& a,
-        decltype(__nullptr))
+        decltype(__nullptr)) noexcept
     {
         return a.Get() == nullptr;
     }
 
     template<class T>
-    XNOTHROW bool operator==(
+    bool operator==(
         decltype(__nullptr),
-        const ComPtr<T>& a)
+        const ComPtr<T>& a) noexcept
     {
         return a.Get() == nullptr;
     }
 
     // Just define this in terms of operator== and let this funnel into the correct operator== overload
     template<class T, class U>
-    inline XNOTHROW bool operator!=(
+    inline bool operator!=(
         const ComPtr<T>& a,
-        const ComPtr<U>& b)
+        const ComPtr<U>& b) noexcept
     {
         return !(a == b);
     }
 
     template<class T>
-    XNOTHROW bool operator!=(
+    bool operator!=(
         const ComPtr<T>& a,
-        decltype(__nullptr))
+        decltype(__nullptr)) noexcept
     {
         return a.Get() != nullptr;
     }
 
     template<class T>
-    XNOTHROW bool operator!=(
+    bool operator!=(
         decltype(__nullptr),
-        const ComPtr<T>& a)
+        const ComPtr<T>& a) noexcept
     {
         return a.Get() != nullptr;
     }
@@ -868,9 +869,9 @@ namespace ctl
     // If pointer types are convertible, let the compiler calculate the correct offsets
     // This is really just a general case of identical types, but it's easier to read this way
     template<class T, class U>
-    XNOTHROW bool operator<(
+    bool operator<(
         const ComPtr<T>& a,
-        const ComPtr<U>& b)
+        const ComPtr<U>& b) noexcept
     {
         static_assert(std::is_convertible<T*, U*>::value || std::is_convertible<U*, T*>::value, "'T' and 'U' pointers must be comparable");
         return a.Get() < b.Get();
@@ -880,91 +881,91 @@ namespace ctl
 
     // Don't bother with QI-ing to IInspectable on these. Just assert on convertibility of pointer types
     template<class T, class U>
-    XNOTHROW bool operator==(
+    bool operator==(
         const Internal::ComPtrRef<ComPtr<T>>& a,
-        const Internal::ComPtrRef<ComPtr<U>>& b)
+        const Internal::ComPtrRef<ComPtr<U>>& b) noexcept
     {
         static_assert(std::is_convertible<T*, U*>::value || std::is_convertible<U*, T*>::value, "'T' and 'U' pointers must be comparable");
         return a.GetAddressOf() == b.GetAddressOf();
     }
 
     template<class T>
-    XNOTHROW bool operator==(
+    bool operator==(
         const Internal::ComPtrRef<ComPtr<T>>& a,
-        decltype(__nullptr))
+        decltype(__nullptr)) noexcept
     {
         return a.GetAddressOf() == nullptr;
     }
 
     template<class T>
-    XNOTHROW bool operator==(
+    bool operator==(
         decltype(__nullptr),
-        const Internal::ComPtrRef<ComPtr<T>>& a)
+        const Internal::ComPtrRef<ComPtr<T>>& a) noexcept
     {
         return a.GetAddressOf() == nullptr;
     }
 
     template<class T>
-    XNOTHROW bool operator==(
+    bool operator==(
         const Internal::ComPtrRef<ComPtr<T>>& a,
-        void* b)
+        void* b) noexcept
     {
         return a.GetAddressOf() == b;
     }
 
     template<class T>
-    XNOTHROW bool operator==(
+    bool operator==(
         void* b,
-        const Internal::ComPtrRef<ComPtr<T>>& a)
+        const Internal::ComPtrRef<ComPtr<T>>& a) noexcept
     {
         return a.GetAddressOf() == b;
     }
 
     template<class T, class U>
-    XNOTHROW bool operator!=(
+    bool operator!=(
         const Internal::ComPtrRef<ComPtr<T>>& a,
-        const Internal::ComPtrRef<ComPtr<U>>& b)
+        const Internal::ComPtrRef<ComPtr<U>>& b) noexcept
     {
         return !(a == b);
     }
 
     template<class T>
-    XNOTHROW bool operator!=(
+    bool operator!=(
         const Internal::ComPtrRef<ComPtr<T>>& a,
-        decltype(__nullptr))
+        decltype(__nullptr)) noexcept
     {
         return a.GetAddressOf() != nullptr;
     }
 
     template<class T>
-    XNOTHROW bool operator!=(
+    bool operator!=(
         decltype(__nullptr),
-        const Internal::ComPtrRef<ComPtr<T>>& a)
+        const Internal::ComPtrRef<ComPtr<T>>& a) noexcept
     {
         return a.GetAddressOf() != nullptr;
     }
 
     template<class T>
-    XNOTHROW bool operator!=(
+    bool operator!=(
         const Internal::ComPtrRef<ComPtr<T>>& a,
-        void* b)
+        void* b) noexcept
     {
         return a.GetAddressOf() != b;
     }
 
     template<class T>
-    XNOTHROW bool operator!=(
+    bool operator!=(
         void* b,
-        const Internal::ComPtrRef<ComPtr<T>>& a)
+        const Internal::ComPtrRef<ComPtr<T>>& a) noexcept
     {
         return a.GetAddressOf() != b;
     }
 
     // Don't bother with QI-ing to IInspectable on these. Just assert on convertibility of pointer types
     template<class T, class U>
-    XNOTHROW bool operator<(
+    bool operator<(
         const Internal::ComPtrRef<ComPtr<T>>& a,
-        const Internal::ComPtrRef<ComPtr<U>>& b)
+        const Internal::ComPtrRef<ComPtr<U>>& b) noexcept
     {
         static_assert(std::is_convertible<T*, U*>::value || std::is_convertible<U*, T*>::value, "'T' and 'U' pointers must be comparable");
         return a.GetAddressOf() < b.GetAddressOf();

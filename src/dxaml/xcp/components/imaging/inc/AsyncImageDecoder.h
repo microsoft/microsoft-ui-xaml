@@ -75,7 +75,7 @@ private:
         std::shared_ptr<EncodedImageData> m_spEncodedImageData;
         xref_ptr<ImageDecodeParams> m_spDecodeParams;
         xref::weakref_ptr<IImageDecodeCallback> m_imageDecodeCallback;
-        uint64_t m_requestId;
+        uint64_t m_requestId{};
 
         std::unique_ptr<IImageDecoder> m_spImageDecoder;
         wrl::ComPtr<wsyt::IThreadPoolTimer> m_spPresentTimer;

@@ -12,6 +12,8 @@ namespace Focus {
     struct XYFocusOptions;
     class FocusMovementResult;
 
+    GUID CreateCorrelationId();
+
     class FocusMovement
     {
     public:

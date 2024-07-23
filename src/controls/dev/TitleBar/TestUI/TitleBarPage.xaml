@@ -12,12 +12,12 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <StackPanel Orientation="Vertical">
-            <CheckBox x:Name="IsBackButtonVisibleCheckBox" Content="Back Button Visible" Checked="IsBackButtonVisibleCheckBox_CheckedChanged" Unchecked="IsBackButtonVisibleCheckBox_CheckedChanged"/>
-            <CheckBox x:Name="IsBackEnabledCheckBox" Content="Back Button Enabled" Checked="IsBackEnabledCheckBox_CheckedChanged" Unchecked="IsBackEnabledCheckBox_CheckedChanged"/>
-            <TextBlock x:Name="BackRequestedTextBox"/>
-            <CheckBox x:Name="SetIconCheckBox" IsChecked="True" Content="Set Icon" Checked="SetIconCheckBox_CheckedChanged" Unchecked="SetIconCheckBox_CheckedChanged"/>
-            <CheckBox x:Name="SetTitleCheckBox" IsChecked="True" Content="Set Title" Checked="SetTitleCheckBox_CheckedChanged" Unchecked="SetTitleCheckBox_CheckedChanged"/>
-            <CheckBox x:Name="CustomContentCheckBox" Content="CustomContent" Checked="CustomContentCheckBox_CheckedChanged" Unchecked="CustomContentCheckBox_CheckedChanged"/>
+            <TitleBar x:Name="WindowingTitleBar" Title="Windowing TitleBar">
+                <TitleBar.IconSource>
+                    <SymbolIconSource Symbol="Home"/>
+                </TitleBar.IconSource>
+            </TitleBar>
+            <Button Content="New Window with Custom TitleBar" Click="TitleBarWindowingButton_Click"/>
         </StackPanel>
     </Grid>
 </local:TestPage>

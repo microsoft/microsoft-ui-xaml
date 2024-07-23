@@ -5,10 +5,12 @@ struct IXcpDispatcher;
 class UIThreadScheduler;
 class RefreshAlignedClock;
 struct ISchedulerCommand;
+class RefreshRateInfo;
 
 #pragma once
 
 class WindowsGraphicsDeviceManager;
+#include "Scheduler.h"
 
 class CompositorScheduler
     final : public CXcpObjectBase<IObject>
@@ -36,7 +38,7 @@ public:
 
     void RegisterUIThreadScheduler(
         _In_ UIThreadScheduler *pScheduler,
-        _Outptr_ IPALTickableClock **ppIClock
+        _Outptr_ RefreshAlignedClock **ppIClock
         );
 
     void UnregisterUIThreadScheduler(
@@ -76,9 +78,8 @@ private:
 
     void RenderThreadFrame();
 
-    _Check_return_ HRESULT EnsureRefreshRateInfo();
-
 private:
+    wrl::ComPtr<Scheduler> m_scheduler;
     RefreshAlignedClock *m_pClock;
 
     _Notnull_ xref_ptr<WindowsGraphicsDeviceManager> m_graphicsDeviceManager;
@@ -98,8 +99,6 @@ private:
     wil::critical_section m_pDrawListsLock;
 
     UIThreadScheduler *m_pUIThreadSchedulerNoRef;
-
-    IPALRefreshRateInfo *m_pRefreshRateInfo;
 
     LONG m_waitingForWork;
 

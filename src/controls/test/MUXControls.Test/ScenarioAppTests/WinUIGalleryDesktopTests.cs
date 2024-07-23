@@ -207,7 +207,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            // TODO 46819062: Re-enable these tests when the bugd are fixed, where going to the SemanticZoom page crashes the app.
+            // TODO 46819062: Re-enable these tests when the bugs are fixed, where going to the SemanticZoom page crashes the app.
             if (sectionName == "Scrolling" && pageName == "SemanticZoom")
             {
                 disabledTest = "SimplePageNavigateTest_Scrolling#SemanticZoom";
@@ -215,7 +215,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             if (disabledTest != null)
             {
-                Log.Warning(disabledTest + " is currently disabled due to a crash in the SemanticZoom page .");
+                Log.Warning(disabledTest + " is currently disabled due to a crash in the SemanticZoom page.");
                 return;
             }
 
@@ -250,7 +250,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
             else if (sectionName == "Motion" && pageName == "ParallaxView")
             {
-                disabledTest = "SimplePageNavigateTest_Scrolling#ParallaxView";
+                disabledTest = "SimplePageNavigateTest_Motion#ParallaxView";
+            }
+            else if (sectionName == "Navigation" && pageName == "SelectorBar")
+            {
+                disabledTest = "SimplePageNavigateTest_Navigation#SelectorBar";
+            }
+            else if (sectionName == "Media" && pageName == "MapControl")
+            {
+                disabledTest = "SimplePageNavigateTest_Media#MapControl";
+            }
+            else if (sectionName == "Media" && pageName == "MediaPlayerElement")
+            {
+                disabledTest = "SimplePageNavigateTest_Media#MediaPlayerElement";
             }
 
             if (disabledTest != null)

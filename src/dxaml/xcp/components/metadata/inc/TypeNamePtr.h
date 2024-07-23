@@ -44,7 +44,7 @@ public:
         return *this;
     }
 
-    TypeNamePtr& operator=(TypeNamePtr&& other)
+    TypeNamePtr& operator=(TypeNamePtr&& other) noexcept
     {
         if (this != &other)
         {

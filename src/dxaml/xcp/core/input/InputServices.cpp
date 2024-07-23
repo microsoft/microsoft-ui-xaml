@@ -57,7 +57,6 @@ using namespace Focus;
 
 // Define as 1 (i.e. XCP_TRACE_OUTPUT_MSG) to get DirectManipulation debug outputs, and 0 otherwise
 #define DMIM_DBG 0
-//#define DM_DEBUG
 
 // Define as 1 (i.e. XCP_TRACE_OUTPUT_MSG) to get DirectManipulation verbose debug outputs, and 0 otherwise
 #define DMIMv_DBG 0
@@ -497,7 +496,6 @@ CInputServices::ProcessPointerExitedEventByPointerEnteredElementStateChange(
     CUIElement*  pNewPointerEnteredUIE = NULL;
     CUIElement*  pElementUIE = NULL;
     CPointerExitedState* pPointerExitedState = NULL;
-    XHANDLE hWindow = NULL;
     CPointer *pPointer = NULL;
     CPointerEventArgs *pPointerArgs = NULL;
     XUINT32 pointerId = 0;
@@ -573,10 +571,8 @@ CInputServices::ProcessPointerExitedEventByPointerEnteredElementStateChange(
     {
         ASSERT(pPointerEnteredDO && pointerState && pointerId);
 
-        // The use of hWindow and onCorrectThread is a hold over from previous versions where we could get pointer events for different threads.
-        // This doesn't seem to be currently possible, so we end up always being on the correct thread.  However, there still seems to be some
-        // additional changes to lifted input coming where this might be needed again.
-        const bool onCorrectThread = (!hWindow || ::GetWindowThreadProcessId(static_cast<HWND>(hWindow), nullptr /*dwProcessId*/) == ::GetCurrentThreadId());
+        // Note: If at some future point lifted input can come from a non-UI thread, we'll need an actual check here.
+        const bool onCorrectThread = true;
 
         bool isPointerInfoValid = false;
         PointerInfo pointerInfo = {};
@@ -2035,9 +2031,14 @@ CInputServices::ProcessPointerMessagesWithInteractionEngine(
     gps->DebugOutputSzNoEndl(L"[InputPointer:IM]: ProcessInteraction: XcpMsg=%d PointerId=%d Element=0x%p \r\n", pMsg->m_msgID, pointerId, pInteractionElement);
 #endif // POINTER_TRACING
 
-    // Feed the pointer messages into the interaction engine.
-    // WARNING: This function may delete its own "this" pointer.
-    IFC_RETURN(pInteractionContext->ProcessPointerMessage(*pMsg));
+    // Non-client pointer messages don't have the pointer point information that the
+    // interaction engine requires to properly detect gestures.
+    if (!pMsg->m_isNonClientPointerMessage)
+    {
+        // Feed the pointer messages into the interaction engine.
+        // WARNING: This function may delete its own "this" pointer.
+        IFC_RETURN(pInteractionContext->ProcessPointerMessage(*pMsg));
+    }
 
     return S_OK;
 }
@@ -3080,8 +3081,7 @@ CInputServices::IsTextEditableControl(_In_ const CDependencyObject* const pObjec
 }
 
 // static
-HWND
-CInputServices::GetUnderlyingInputHwndFromIslandInputSite(_In_opt_ ixp::IIslandInputSitePartner* pIslandInputSite)
+HWND CInputServices::GetUnderlyingInputHwndFromIslandInputSite(_In_opt_ ixp::IIslandInputSitePartner* pIslandInputSite)
 {
     if (nullptr != pIslandInputSite)
     {
@@ -6260,7 +6260,7 @@ CInputServices::EnableViewport(
     if (!pViewport->HasValidBounds())
     {
         // If we enable the viewport before setting the viewport bounds, DManip will use the bounds of the
-        // HWND.  This isn't valid when in XamlOneCoreTransforms mode.  To avoid this, we set the bounds first
+        // input hwnd.  This isn't valid when in XamlOneCoreTransforms mode.  To avoid this, we set the bounds first
         // to the empty bounds.
         IFC_RETURN(SetViewportBounds(pDirectManipulationService, pViewport, {} /* empty bounds */));
     }

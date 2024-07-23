@@ -56,7 +56,7 @@ public:
     std::shared_ptr<XamlNamespace> Clone() const override;
 
 private:
-    XamlSpecialXmlNamespaceKind m_eSpecialXmlNamespaceKind;
+    XamlSpecialXmlNamespaceKind m_eSpecialXmlNamespaceKind{};
     containers::vector_map<xstring_ptr, std::shared_ptr<DirectiveProperty>> m_mapDirectiveProperties;
 };
 

@@ -14,6 +14,9 @@
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
+// Uncomment to output ItemsUpdatingScrollMode debugging information
+//#define IUSM_DEBUG
+
 namespace DirectUI
 {
     interface IContainerRecyclingContext;
@@ -248,7 +251,13 @@ namespace DirectUI
         // GroupHeaderStrategy and update the layout strategy
         _Check_return_ HRESULT SetGroupHeaderPlacement(_In_ xaml_primitives::GroupHeaderPlacement placement);
 
-        // Only ISP supports the maintain viewport behavior.
+        // Returns the thickess size in the virtualizing direction.
+        double SizeFromThicknessInVirtualizingDirection(xaml::Thickness thickness) const;
+
+        // Returns the size of the potential GroupPadding in the virtualizing direction.
+        virtual _Check_return_ HRESULT GroupPaddingSizeInVirtualizingDirection(_Out_ double* groupPadding) { *groupPadding = 0.0; return S_OK; }
+
+        // Only ItemsStackPanel and CalendarPanel support the maintain viewport behavior.
         virtual ItemsUpdatingScrollMode GetItemsUpdatingScrollMode() const { return ItemsUpdatingScrollMode::KeepScrollOffset; }
         bool IsMaintainViewportSupportedAndEnabled() const { return GetItemsUpdatingScrollMode() != ItemsUpdatingScrollMode::KeepScrollOffset; }
 
@@ -276,8 +285,16 @@ namespace DirectUI
         // provide a default implementation that does nothing.
         virtual _Check_return_ HRESULT SetGroupHeaderStrategy(_In_ GroupHeaderStrategy strategy) { UNREFERENCED_PARAMETER(strategy); return S_OK; }
 
+        // Used to estimate tracked element reposition during items source updates. These should have been part of the 
+        // Microsoft.UI.Xaml.Controls.ILayoutStrategy interface.
+        virtual _Check_return_ HRESULT GetAverageHeaderSize(_Out_ float* averageHeaderSize) { *averageHeaderSize = -1.0f; return S_OK; };
+        virtual _Check_return_ HRESULT GetAverageContainerSize(_Out_ float* averageContainerSize) { *averageContainerSize = -1.0f; return S_OK; };
+
     // core virtualization helper methods
     private:
+        // Returns the group header strategy enum value based on virtualization direction and group header placement.
+        _Check_return_ HRESULT GetGroupHeaderStrategy(_Out_ GroupHeaderStrategy* headerStrategy);
+
         // Makes sure that whatever container we think is focused is still focused.
         // Otherwise, recycle it.
         _Check_return_ HRESULT VerifyStoredFocusedContainer();
@@ -319,7 +336,7 @@ namespace DirectUI
             // nested struct describing our grouping cache
             struct GroupCache
             {
-                GroupCache();
+                GroupCache() noexcept;
                 INT32 startItemIndex;
                 INT32 endItemIndex;
                 INT32 indexOfGroup;
@@ -476,7 +493,7 @@ namespace DirectUI
             // When grouped, the vector of groups
             ctl::ComPtr<wfc::IVector<IInspectable*>> m_strongCollectionGroupsAsV;
             // Index of the cached group
-            INT m_cachedGroupIndex;
+            INT m_cachedGroupIndex{};
             // cached group strong reference
             ctl::ComPtr<xaml_data::ICollectionViewGroup> m_strongCurrentGroup;
             // When grouped, the vector containing items of the current group, when not group, the items themselves
@@ -776,13 +793,6 @@ namespace DirectUI
             // Keep only the pinned containers that are approved by the given filter function.
             // The function takes the index and container as arguments, and should return TRUE for pinned containers to keep.
             _Check_return_ HRESULT FilterPinnedContainers(_In_ std::function<HRESULT (INT, xaml::IUIElement*, BOOLEAN*)> filterFunction);
-
-            // Our API here has a wart around the focused container. The focused container acts as if it is pinned, but when that focused element is cleared,
-            // we don't preserve its pinned state. This only really matters for special containers, so this method is here to force the container to be really pinned
-            // regardless of whether or not it's the focused element.
-            // TODO: This method will likely become superfluous if we move focus code into the GeneratorHost.
-            // See ModernCollectionBasePanel::EnsureRecycleContainerCandidate for more details.
-            _Check_return_ HRESULT EnsureContainerPinned(_In_ INT index, _In_ const ctl::ComPtr<xaml::IUIElement>& spContainer);
 
             // Is the given container pinned?
             // Is the given header pinned?
@@ -1612,7 +1622,7 @@ namespace DirectUI
             bool validWindowCalculation;
 
             // Flag indicating we are done building up our cache
-            bool cachePotentialReached;
+            bool cachePotentialReached{};
 
             // Apply a correction to our window states
             void ApplyAdjustment(_In_ const wf::Point& correction);
@@ -1682,6 +1692,9 @@ namespace DirectUI
             ViewportBehaviorInfo()
             {
                 Reset();
+#ifdef IUSM_DEBUG
+                ResetLastTracedDbg();
+#endif
             }
 
             // Cancels tracking.
@@ -1702,6 +1715,92 @@ namespace DirectUI
                 viewportOffsetDelta = 0.0f;
             }
 
+#ifdef IUSM_DEBUG
+            void ResetLastTracedDbg()
+            {
+                lastTracedIsTrackingDbg = false;
+                lastTracedIsTrackingExtentEndDbg = false;
+                lastTracedIsOffsetRelativeToSecondEdgeDbg = false;
+                lastTracedIndexDbg = -1;
+                lastTracedElementOffsetDbg = 0.0f;
+                lastTracedTrackedElementShiftDbg = 0.0f;
+                lastTracedViewportOffsetDeltaDbg = 0.0f;
+            }
+
+            void TraceChangesDbg(_In_z_ const wchar_t* context)
+            {
+                const bool isTrackingChanged = static_cast<bool>(isTracking) != lastTracedIsTrackingDbg;
+                const bool isTrackingExtentEndChanged = static_cast<bool>(isTrackingExtentEnd) != lastTracedIsTrackingExtentEndDbg;
+                const bool isOffsetRelativeToSecondEdgeChanged = static_cast<bool>(isOffsetRelativeToSecondEdge) != lastTracedIsOffsetRelativeToSecondEdgeDbg;
+                const bool indexChanged = index != lastTracedIndexDbg;
+                const bool elementOffsetChanged = elementOffset != lastTracedElementOffsetDbg;
+                const bool trackedElementShiftChanged = trackedElementShift != lastTracedTrackedElementShiftDbg;
+                const bool viewportOffsetDeltaChanged = viewportOffsetDelta != lastTracedViewportOffsetDeltaDbg;
+
+                if (isTrackingChanged ||
+                    isTrackingExtentEndChanged ||
+                    isOffsetRelativeToSecondEdgeChanged ||
+                    indexChanged ||
+                    elementOffsetChanged ||
+                    trackedElementShiftChanged ||
+                    viewportOffsetDeltaChanged)
+                {
+                    IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG,
+                        L"IUSM_DEBUG[0x%p]: ViewportBehaviorInfo::TraceDeltaDbg. %s", this, context));
+
+                    if (isTrackingChanged)
+                    {
+                        IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG, L" -isTracking: %d", isTracking));
+                        lastTracedIsTrackingDbg = isTracking;
+                    }
+
+                    if (isTrackingExtentEndChanged)
+                    {
+                        IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG, L" -isTrackingExtentEnd: %d", isTrackingExtentEnd));
+                        lastTracedIsTrackingExtentEndDbg = isTrackingExtentEnd;
+                    }
+
+                    if (isOffsetRelativeToSecondEdgeChanged)
+                    {
+                        IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG, L" -isOffsetRelativeToSecondEdge: %d", isOffsetRelativeToSecondEdge));
+                        lastTracedIsOffsetRelativeToSecondEdgeDbg = isOffsetRelativeToSecondEdge;
+                    }
+
+                    if (indexChanged)
+                    {
+                        IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG, L" -index: %d", index));
+                        lastTracedIndexDbg = index;
+                    }
+
+                    if (elementOffsetChanged)
+                    {
+                        IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG, L" -elementOffset: %f", elementOffset));
+                        lastTracedElementOffsetDbg = elementOffset;
+                    }
+
+                    if (trackedElementShiftChanged)
+                    {
+                        IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG, L" -trackedElementShift: %f", trackedElementShift));
+                        lastTracedTrackedElementShiftDbg = trackedElementShift;
+                    }
+
+                    if (viewportOffsetDeltaChanged)
+                    {
+                        IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG, L" -viewportOffsetDelta: %f", viewportOffsetDelta));
+                        lastTracedViewportOffsetDeltaDbg = viewportOffsetDelta;
+                    }
+                }
+            }
+
+            bool lastTracedIsTrackingDbg;
+            bool lastTracedIsTrackingExtentEndDbg;
+            bool lastTracedIsOffsetRelativeToSecondEdgeDbg;
+            int lastTracedIndexDbg;
+            float lastTracedElementOffsetDbg;
+            float lastTracedTrackedElementShiftDbg;
+            float lastTracedViewportOffsetDeltaDbg;
+#endif
+
             // True when we are tracking a container or a header.
             BOOLEAN isTracking;
 
@@ -1716,7 +1815,7 @@ namespace DirectUI
             float currentExtent;
 
             // Bounds of the tracked element.
-            // They get updated when there are changes before it (e.g. element inserted before).
+            // They get updated when there are changes before it, e.g. element (header or container) inserted before.
             wf::Rect elementBounds;
             // Is the tracked element a header or a container?
             xaml_controls::ElementType type;
@@ -1725,10 +1824,13 @@ namespace DirectUI
             // Offset of the viewport's top/left or bottom/right when the tracking started.
             FLOAT initialViewportEdge;
             // Offset between the viewport and the tracked element.
+            // Example:
+            // isOffsetRelativeToSecondEdge==False, ScrollViewer.VerticalOffset==1000,
+            // tracked element position in ScrollViewer.Content==900, implies elementOffset==100.
             FLOAT elementOffset;
             // Is the offset calculated based on the first or second edge?
             BOOLEAN isOffsetRelativeToSecondEdge;
-            // During the Generate phase (which take place during the measure pass),
+            // During the Generate phase (which takes place during the measure pass),
             // we shift all the elements by the amount the tracked element moved.
             // We need to store that delta in case we need to elect a new tracked
             // element during Generate. This happens only when we track a group header
@@ -1745,7 +1847,7 @@ namespace DirectUI
 
         // When called the first time, this method starts tracking the first
         // visible element. Otherwise, it does nothing.
-        _Check_return_ HRESULT BeginTrackingFirstVisibleElement();
+        _Check_return_ HRESULT BeginTrackingFirstVisibleElement(bool ignoreIsTrackingExtentEnd = false);
 
         // Starts tracking the first visible element if it's not already the case.
         // If we already tracking something, it updates the tracked element so
@@ -1835,7 +1937,7 @@ namespace DirectUI
         // Returns where should the viewport move to 'follow' the tracked element.
         // The edge is relative to whether we are tracking the first element (top/left)
         // or the last element (bottom/right).
-        FLOAT GetNewViewportEdge();
+        FLOAT GetNewViewportEdge() const;
 
         _Check_return_ HRESULT IsBottomOrRightAligned(
             _In_ xaml::IFrameworkElement* element,

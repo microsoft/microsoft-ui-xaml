@@ -129,11 +129,11 @@ namespace MUXControlsTestApp
                 {
                     switch (cmbListViewBaseItemsPanelType.SelectedIndex)
                     {
-                        case 0: // Use the wrapGridItemsPanelTemplate resource
+                        case 0: // Use the itemsWrapGridItemsPanelTemplate resource
                             _listViewBase.ItemsPanel = Resources["itemsWrapGridItemsPanelTemplate"] as ItemsPanelTemplate;
                             UpdateItemsWrapGridUIVisibility(Visibility.Visible);
                             break;
-                        case 1: // Use the stackPanelItemsPanelTemplate resource
+                        case 1: // Use the itemsStackPanelItemsPanelTemplate resource
                             _listViewBase.ItemsPanel = Resources["itemsStackPanelItemsPanelTemplate"] as ItemsPanelTemplate;
                             UpdateItemsWrapGridUIVisibility(Visibility.Collapsed);
                             break;
@@ -161,7 +161,7 @@ namespace MUXControlsTestApp
             UpdateItemsPanelMargin();
             UpdateItemsPanelGroupPadding();
             UpdateItemsPanelAreStickyGroupHeadersEnabled();
-            UpdateItemsWrapGridCacheLength();
+            UpdateItemsPanelCacheLength();
             UpdateItemsWrapGridItemWidth();
             UpdateItemsWrapGridItemHeight();
 
@@ -379,17 +379,26 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void UpdateItemsWrapGridCacheLength()
+        private void UpdateItemsPanelCacheLength()
         {
             try
             {
-                if (_listViewBase != null && txtItemsWrapGridCacheLength != null)
+                if (_listViewBase != null && txtItemsPanelCacheLength != null)
                 {
                     ItemsWrapGrid itemsWrapGrid = _listViewBase.ItemsPanelRoot as ItemsWrapGrid;
 
                     if (itemsWrapGrid != null)
                     {
-                        txtItemsWrapGridCacheLength.Text = itemsWrapGrid.CacheLength.ToString();
+                        txtItemsPanelCacheLength.Text = itemsWrapGrid.CacheLength.ToString();
+                    }
+                    else
+                    {
+                        ItemsStackPanel itemsStackPanel = _listViewBase.ItemsPanelRoot as ItemsStackPanel;
+
+                        if (itemsStackPanel != null)
+                        {
+                            txtItemsPanelCacheLength.Text = itemsStackPanel.CacheLength.ToString();
+                        }
                     }
                 }
             }
@@ -1002,22 +1011,31 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnGetItemsWrapGridCacheLength_Click(object sender, RoutedEventArgs e)
+        private void BtnGetItemsPanelCacheLength_Click(object sender, RoutedEventArgs e)
         {
-            UpdateItemsWrapGridCacheLength();
+            UpdateItemsPanelCacheLength();
         }
 
-        private void BtnSetItemsWrapGridCacheLength_Click(object sender, RoutedEventArgs e)
+        private void BtnSetItemsPanelCacheLength_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (_listViewBase != null && txtItemsWrapGridCacheLength != null)
+                if (_listViewBase != null && txtItemsPanelCacheLength != null)
                 {
                     ItemsWrapGrid itemsWrapGrid = _listViewBase.ItemsPanelRoot as ItemsWrapGrid;
 
                     if (itemsWrapGrid != null)
                     {
-                        itemsWrapGrid.CacheLength = double.Parse(txtItemsWrapGridCacheLength.Text);
+                        itemsWrapGrid.CacheLength = double.Parse(txtItemsPanelCacheLength.Text);
+                    }
+                    else
+                    {
+                        ItemsStackPanel itemsStackPanel = _listViewBase.ItemsPanelRoot as ItemsStackPanel;
+
+                        if (itemsStackPanel != null)
+                        {
+                            itemsStackPanel.CacheLength = double.Parse(txtItemsPanelCacheLength.Text);
+                        }
                     }
                 }
             }
@@ -1080,6 +1098,25 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void BtnScrollIntoView_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_listViewBase != null && _listViewBase.ItemsSource != null &&
+                    _groupedListViewBaseViewModel != null && 
+                    txtMethodsItemIndex != null && cmbScrollIntoViewAlignment != null)
+                {
+                    object item = GetDataSourceItemFromIndex(int.Parse(txtMethodsItemIndex.Text));
+                    _listViewBase.ScrollIntoView(item, (ScrollIntoViewAlignment)cmbScrollIntoViewAlignment.SelectedIndex); ;
+                }
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                AppendEventMessage(ex.ToString());
+            }
+        }
+
         private void BtnResetItemsSource_Click(object sender, RoutedEventArgs e)
         {
             if (_listViewBase != null && _listViewBase.ItemsSource != null)
@@ -1093,6 +1130,62 @@ namespace MUXControlsTestApp
             if (_listViewBase != null && _listViewBase.ItemsSource != _cvs.View)
             {
                 _listViewBase.ItemsSource = _cvs.View;
+            }
+        }
+
+        private void BtnGetCollectionViewCurrentItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (txtCollectionViewCurrentItem != null && _cvs != null && _cvs.View != null)
+            {
+                string currentItemAsStr = _cvs.View.CurrentItem == null ? "null" : _cvs.View.CurrentItem.ToString();
+                txtCollectionViewCurrentItem.Text = currentItemAsStr.Length > 60 ? currentItemAsStr.Substring(0, 59) : currentItemAsStr;
+            }
+        }
+
+        private void BtnGetCollectionViewCurrentPosition_Click(object sender, RoutedEventArgs e)
+        {
+            if (txtCollectionViewCurrentPosition != null && _cvs != null && _cvs.View != null)
+            {
+                txtCollectionViewCurrentPosition.Text = _cvs.View.CurrentPosition.ToString();
+            }
+        }
+
+        private void BtnCollectionViewMoveCurrentToPosition_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (txtCollectionViewMovePosition != null && _cvs != null && _cvs.View != null)
+                {
+                    bool result = _cvs.View.MoveCurrentToPosition(int.Parse(txtCollectionViewMovePosition.Text));
+                    AppendEventMessage("ICollectionView.MoveCurrentToPosition result: " + result);
+                }
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                AppendEventMessage(ex.ToString());
+            }
+        }
+
+        private async void BtnFocusManagerCollectionViewCurrentItemProgrammaticFocus_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_listViewBase != null && _cvs != null && _cvs.View != null && _cvs.View.CurrentItem != null)
+                {
+                    DependencyObject container = _listViewBase.ContainerFromItem(_cvs.View.CurrentItem);
+
+                    if (container != null)
+                    {
+                        FocusMovementResult result = await FocusManager.TryFocusAsync(container, FocusState.Programmatic);
+                        AppendEventMessage("FocusManager.TryFocusAsync FocusMovementResult.Succeeded: " + result.Succeeded);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                AppendEventMessage(ex.ToString());
             }
         }
 
@@ -1249,6 +1342,18 @@ namespace MUXControlsTestApp
                 svProperties.Visibility = Visibility.Collapsed;
         }
 
+        private void ChkMethods_Checked(object sender, RoutedEventArgs e)
+        {
+            if (svMethods != null)
+                svMethods.Visibility = Visibility.Visible;
+        }
+
+        private void ChkMethods_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (svMethods != null)
+                svMethods.Visibility = Visibility.Collapsed;
+        }
+
         private void ChkDataSource_Checked(object sender, RoutedEventArgs e)
         {
             if (svDataSource != null)
@@ -1297,6 +1402,55 @@ namespace MUXControlsTestApp
             else
                 return new Thickness(
                     Convert.ToDouble(lengths[0]), Convert.ToDouble(lengths[1]), Convert.ToDouble(lengths[2]), Convert.ToDouble(lengths[3]));
+        }
+
+        private object GetDataSourceItemFromIndex(int itemIndex)
+        {
+            // itemIndex:0 means the first group GroupedListViewBaseGroupItem
+            // itemIndex:1 means the first item GroupedListViewBaseItem in the first group GroupedListViewBaseGroupItem
+            if (itemIndex < 0 || _groupedListViewBaseViewModel.Items.Count == 0) return null;
+
+            int groupCount = _groupedListViewBaseViewModel.Items.Count;
+            int groupIndex = 0;
+            object item = null;
+
+            while (itemIndex >= 0 && groupIndex < groupCount)
+            {
+                GroupedListViewBaseGroupItem groupedListViewBaseGroupItem = _groupedListViewBaseViewModel.Items[groupIndex];
+                item = groupedListViewBaseGroupItem;
+
+                if (itemIndex == 0)
+                {
+                    return item;
+                }
+                else
+                {
+                    itemIndex--;
+
+                    int groupItemCount = groupedListViewBaseGroupItem.Items.Count;
+                    int groupItemIndex = 0;
+
+                    while (itemIndex >= 0 && groupItemIndex < groupItemCount)
+                    {
+                        GroupedListViewBaseItem groupedListViewBaseItem = groupedListViewBaseGroupItem.Items[groupItemIndex];
+                        item = groupedListViewBaseItem;
+
+                        if (itemIndex == 0)
+                        {
+                            return item;
+                        }
+                        else
+                        {
+                            itemIndex--;
+                            groupItemIndex++;
+                        }
+                    }
+
+                    groupIndex++;
+                }
+            }
+
+            return null;
         }
 
         private static T FindElementOfTypeInSubtree<T>(DependencyObject element) where T : DependencyObject

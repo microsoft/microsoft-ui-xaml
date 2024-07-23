@@ -86,6 +86,7 @@ IFACEMETHODIMP DirectUI::TransitionGenerated::ParticipatesInTransition(_In_ ABI:
     }
     ARG_NOTNULL(pElement, "element");
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Transition*>(this)->ParticipatesInTransitionImpl(pElement, transitonTrigger, pResult));
@@ -137,6 +138,7 @@ IFACEMETHODIMP DirectUI::TransitionFactory::CreateInstance(_In_ IInspectable* pO
     ARG_NOTNULL(pOuter, "outer");
     ARG_NOTNULL(ppInner, "inner");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckActivationAllowed());
     IFC(CreateInstanceImpl(pOuter, ppInner, ppResult));
 Cleanup:

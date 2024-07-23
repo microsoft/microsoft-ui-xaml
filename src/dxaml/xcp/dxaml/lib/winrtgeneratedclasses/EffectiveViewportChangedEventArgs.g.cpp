@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::EffectiveViewportChangedEventArgs::get_EffectiveViewpor
     ABI::Windows::Foundation::Rect valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CEffectiveViewportChangedEventArgs*>(pCoreEventArgsNoRef)->get_EffectiveViewport(&valueCore));
@@ -70,6 +71,7 @@ IFACEMETHODIMP DirectUI::EffectiveViewportChangedEventArgs::get_MaxViewport(_Out
     ABI::Windows::Foundation::Rect valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CEffectiveViewportChangedEventArgs*>(pCoreEventArgsNoRef)->get_MaxViewport(&valueCore));
@@ -87,6 +89,7 @@ IFACEMETHODIMP DirectUI::EffectiveViewportChangedEventArgs::get_BringIntoViewDis
     DOUBLE valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CEffectiveViewportChangedEventArgs*>(pCoreEventArgsNoRef)->get_BringIntoViewDistanceX(&valueCore));
@@ -104,6 +107,7 @@ IFACEMETHODIMP DirectUI::EffectiveViewportChangedEventArgs::get_BringIntoViewDis
     DOUBLE valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CEffectiveViewportChangedEventArgs*>(pCoreEventArgsNoRef)->get_BringIntoViewDistanceY(&valueCore));

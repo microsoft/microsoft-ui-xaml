@@ -80,7 +80,7 @@
         Margin=12,5,0,7
         Name=ContentPresenter
         Padding=0,0,0,0
-        RenderSize=20,19
+        RenderSize=20,17
         Visibility=Visible
       [Microsoft.UI.Xaml.Controls.TextBlock]
           FocusVisualPrimaryBrush=#E4000000
@@ -91,7 +91,7 @@
           Margin=0,0,0,0
           Name=PlaceholderTextBlock
           Padding=0,0,0,0
-          RenderSize=20,19
+          RenderSize=20,17
           Visibility=Visible
     [Microsoft.UI.Xaml.Controls.TextBox]
         Background=#B3FFFFFF

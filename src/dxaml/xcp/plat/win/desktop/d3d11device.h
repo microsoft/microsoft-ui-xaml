@@ -71,9 +71,6 @@ public:
         _Out_ UINT32 *puTextureMemoryUsageNPOT
         );
 
-    _Check_return_ HRESULT GetRefreshRateInfo(
-        _Outptr_ IPALRefreshRateInfo **ppRefreshRateInfo
-        );
     //
     // CD3D11Device methods
     //

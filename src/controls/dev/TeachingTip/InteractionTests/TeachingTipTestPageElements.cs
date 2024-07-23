@@ -206,6 +206,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private Button removeTargetButton;
 
+        public Button GetSwitchTargetButton()
+        {
+            return GetElement(ref SwitchTargetButton, "SwitchTargetButton");
+        }
+        private Button SwitchTargetButton;
+
         public ComboBox GetIsLightDismissEnabledComboBox()
         {
             return GetElement(ref isLightDismissEnabledComboBox, "IsLightDismissEnabledComboBox");

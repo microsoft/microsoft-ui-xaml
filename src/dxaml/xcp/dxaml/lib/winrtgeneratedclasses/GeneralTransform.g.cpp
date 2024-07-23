@@ -111,6 +111,7 @@ IFACEMETHODIMP DirectUI::GeneralTransform::TransformPoint(_In_ ABI::Windows::Fou
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "GeneralTransform_TransformPoint", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<GeneralTransform*>(this)->TransformPointImpl(point, pReturnValue));
@@ -129,6 +130,7 @@ _Check_return_ HRESULT DirectUI::GeneralTransform::TransformXY(_In_ DOUBLE x, _I
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "GeneralTransform_TransformXY", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
 Cleanup:

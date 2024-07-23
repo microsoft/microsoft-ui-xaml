@@ -123,7 +123,7 @@ public:
     STDMETHODIMP GetRectArray(_Out_ UINT32* /* length */, _Outptr_result_maybenull_ wf::Rect ** /* value */) { return E_NOTIMPL; }
 
 private:
-    T m_val;
+    T m_val{};
 
 }; // class Reference
 

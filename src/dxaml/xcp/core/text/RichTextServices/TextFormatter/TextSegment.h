@@ -43,7 +43,7 @@ namespace RichTextServices
                 uint32_t textPosition,
                 _Out_ wchar_t const** textString,
                 _Out_ uint32_t* textLength
-                ) throw() override
+                ) noexcept override
             {
                 *textString = &textString_[textPosition];
                 *textLength = textLength_ - textPosition;
@@ -55,7 +55,7 @@ namespace RichTextServices
                 uint32_t textPosition,
                 _Out_ wchar_t const** textString,
                 _Out_ uint32_t* textLength
-                ) throw() override
+                ) noexcept override
             {
                 *textString = &textString_[0];
                 *textLength = textPosition - 0; // text length is valid from current position backward
@@ -63,7 +63,7 @@ namespace RichTextServices
             }
 
 
-            DWRITE_READING_DIRECTION STDMETHODCALLTYPE GetParagraphReadingDirection() throw() override
+            DWRITE_READING_DIRECTION STDMETHODCALLTYPE GetParagraphReadingDirection() noexcept override
             {
                 return readingDirection_;
             }
@@ -73,7 +73,7 @@ namespace RichTextServices
                 uint32_t textPosition,
                 _Out_ uint32_t* textLength,
                 _Out_ wchar_t const** localeName
-                ) throw() override
+                ) noexcept override
             {
                 // The pointer returned should remain valid until the next call,
                 // or until analysis ends. Since only one locale name is supported,
@@ -91,7 +91,7 @@ namespace RichTextServices
                 uint32_t textPosition,
                 _Out_ uint32_t* textLength,
                 _COM_Outptr_ IDWriteNumberSubstitution** numberSubstitution
-                ) throw() override
+                ) noexcept override
             {
                 if (numberSubstitution_ != nullptr)
                     numberSubstitution_->AddRef();
@@ -111,23 +111,23 @@ namespace RichTextServices
                 uint32_t textPosition,
                 _Out_ uint32_t* textLength,
                 _Out_ wchar_t const** localeName
-                ) throw() override
+                ) noexcept override
             {
                 return E_NOTIMPL;
             }
 
             // This class is a stack local variable, so the count can only be one.
-            unsigned long STDMETHODCALLTYPE AddRef() throw() override
+            unsigned long STDMETHODCALLTYPE AddRef() noexcept override
             {
                 return 1;
             }
 
-            unsigned long STDMETHODCALLTYPE Release() throw() override
+            unsigned long STDMETHODCALLTYPE Release() noexcept override
             {
                 return 1;
             }
 
-            HRESULT STDMETHODCALLTYPE QueryInterface(IID const& iid, _Out_ void** object) throw() override
+            HRESULT STDMETHODCALLTYPE QueryInterface(IID const& iid, _Out_ void** object) noexcept override
             {
                 if (iid == __uuidof(IUnknown)
                 ||  iid == __uuidof(IDWriteTextAnalysisSource)

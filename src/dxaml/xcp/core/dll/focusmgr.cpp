@@ -21,10 +21,6 @@
 
 #include "InitialFocusSIPSuspender.h"
 #include "FocusLockOverrideGuard.h"
-#include <FrameworkUdk/Containment.h>
-
-// Bug 51401727: [1.5 Servicing][WASDK] [GitHub] Webview2: Window blur and focus events always fire when clicking the WebView
-#define WINAPPSDK_CHANGEID_51401727 51401727
 
 #define E_FOCUS_ASYNCOP_INPROGRESS 64L
 
@@ -112,7 +108,7 @@ CFocusManager::GetFocusedElementNoRef() const
     return m_pFocusedElement;
 }
 
-const FocusMovementResult
+_Check_return_ const FocusMovementResult
 CFocusManager::SetFocusedElement(_In_ const FocusMovement& movement)
 {
     CDependencyObject* pFocusedElement = movement.GetTarget();
@@ -237,7 +233,7 @@ CFocusManager::GetFirstFocusableElementFromRoot(_In_ bool bReverse)
 //------------------------------------------------------------------------
 
 CDependencyObject*
-CFocusManager::GetFirstFocusableElement(_In_ CDependencyObject* pSearchStart, _In_ CDependencyObject *pFirstFocus)
+CFocusManager::GetFirstFocusableElement(_In_ CDependencyObject* pSearchStart, _In_opt_ CDependencyObject *pFirstFocus)
 {
 
     pFirstFocus = GetFirstFocusableElementInternal(pSearchStart, pFirstFocus);
@@ -268,7 +264,7 @@ CFocusManager::GetFirstFocusableElement(_In_ CDependencyObject* pSearchStart, _I
 CDependencyObject*
 CFocusManager::GetFirstFocusableElementInternal(
     _In_ CDependencyObject* pSearchStart,
-    _In_ CDependencyObject *pFirstFocus)
+    _In_opt_ CDependencyObject *pFirstFocus)
 {
     CDependencyObject *pFirstFocusableFromCallback = NULL;
     bool useFirstFocusableFromCallback = false;
@@ -336,7 +332,7 @@ CFocusManager::GetFirstFocusableElementInternal(
 //------------------------------------------------------------------------
 
 CDependencyObject*
-CFocusManager::GetLastFocusableElement(_In_ CDependencyObject* pSearchStart, _In_ CDependencyObject *pLastFocus)
+CFocusManager::GetLastFocusableElement(_In_ CDependencyObject* pSearchStart, _In_opt_ CDependencyObject *pLastFocus)
 {
     pLastFocus = GetLastFocusableElementInternal(pSearchStart, pLastFocus);
 
@@ -364,7 +360,7 @@ CFocusManager::GetLastFocusableElement(_In_ CDependencyObject* pSearchStart, _In
 CDependencyObject*
 CFocusManager::GetLastFocusableElementInternal(
     _In_ CDependencyObject* pSearchStart,
-    _In_ CDependencyObject *pLastFocus)
+    _In_opt_ CDependencyObject *pLastFocus)
 {
     CDependencyObject *pLastFocusableFromCallback = NULL;
     bool useLastFocusableFromCallback = false;
@@ -707,9 +703,7 @@ CFocusManager::ProcessTabStop(_In_ bool bPressedShift, _Out_ bool* bHandled)
     }
     else
     {
-        GUID correlationId = {};
-        UuidCreate(&correlationId);
-        IFC_RETURN(m_focusObserver->DepartFocus(navigationDirection, correlationId, bHandled));
+        IFC_RETURN(m_focusObserver->DepartFocus(navigationDirection, Focus::CreateCorrelationId(), bHandled));
     }
 
     return S_OK;
@@ -1786,22 +1780,19 @@ bool CFocusManager::ShouldSetWindowFocus(const FocusMovement& movement) const
         return false;
     }
 
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_51401727>())
+    // If focused element is hwnd-based component hosted inside the Xaml island (aka WebView2), don't set focus to the hwnd,
+    // to avoid Xaml stealing focus back after the user interacts with the component hwnd, and focus is already there.
+    if (m_pFocusedElement && m_pFocusedElement->GetTypeIndex() == KnownTypeIndex::Panel)
     {
-        // If focused element is hwnd-based component hosted inside the Xaml island (aka WebView2), don't set focus to the hwnd,
-        // to avoid Xaml stealing focus back after the user interacts with the component hwnd, and focus is already there.
-        if (m_pFocusedElement && m_pFocusedElement->GetTypeIndex() == KnownTypeIndex::Panel)
+        HWND componentHwnd = DXamlServices::GetComponentHwndForPeer(m_pFocusedElement);
+        if(componentHwnd)
         {
-            HWND componentHwnd = DXamlServices::GetComponentHwndForPeer(m_pFocusedElement);
-            if(componentHwnd)
+            HWND focusedHwnd = ::GetFocus();
+            // Check if the componendHwnd has focus or its child has
+            // https://task.ms/49085931 -  [API Gap] InputFocusController needs some sort of ContainsFocus API to detect when Focus is in nested Content (eg XAML and a WebView2)
+            if (componentHwnd == focusedHwnd || ::IsChild(componentHwnd, focusedHwnd))
             {
-                HWND focusedHwnd = ::GetFocus();
-                // Check if the componendHwnd has focus or its child has
-                // https://task.ms/49085931 -  [API Gap] InputFocusController needs some sort of ContainsFocus API to detect when Focus is in nested Content (eg XAML and a WebView2)
-                if (componentHwnd == focusedHwnd || ::IsChild(componentHwnd, focusedHwnd))
-                {
-                    return false;
-                }
+                return false;
             }
         }
     }
@@ -2527,7 +2518,7 @@ CFocusManager::FindAndSetNextFocus(
     return result.WasMoved();
 }
 
-FocusMovementResult
+_Check_return_ FocusMovementResult
 CFocusManager::FindAndSetNextFocus(_In_ const FocusMovement& movement)
 {
     HRESULT hr = S_OK;
@@ -2901,7 +2892,7 @@ bool CFocusManager::RaiseChangingFocusEvent(
     _In_ DirectUI::FocusNavigationDirection navigationDirection,
     _In_ KnownEventIndex index,
     _In_ GUID correlationId,
-    _Outptr_ CDependencyObject** pFinalGettingFocusElement)
+    _Outptr_result_maybenull_ CDependencyObject** pFinalGettingFocusElement)
 {
     auto scopeGuard = wil::scope_exit([&]
     {
@@ -3132,10 +3123,8 @@ void CFocusManager::RaiseNoFocusCandidateFoundEvent(
         noFocusCandidateFoundTarget = focusedElementAsTextElement->GetContainingFrameworkElement();
     }
 
-    GUID correlationId = {};
-    UuidCreate(&correlationId);
     bool bHandled = false;
-    IFCFAILFAST(m_focusObserver->DepartFocus(navigationDirection, correlationId, &bHandled));
+    IFCFAILFAST(m_focusObserver->DepartFocus(navigationDirection, Focus::CreateCorrelationId(), &bHandled));
 
     //We should never raise on a NULL source
     if (noFocusCandidateFoundTarget)
@@ -3267,8 +3256,7 @@ _Check_return_ HRESULT CFocusManager::SetWindowFocus(
 {
     xref_ptr<CRoutedEventArgs> args;
 
-    GUID correlationId = {};
-    UuidCreate(&correlationId);
+    const GUID correlationId {Focus::CreateCorrelationId()};
 
     SetPluginFocusStatus(isFocused);
 
@@ -3450,7 +3438,7 @@ _Check_return_ HRESULT CFocusManager::SetWindowFocus(
                 DirectUI::FocusState focusedState = focusedElementAsControl->GetFocusState();
                 focusedElementAsControl->UpdateFocusState(DirectUI::FocusState::Unfocused);
 
-                FxCallbacks::Control_UpdateVisualState(focusedElement, true /*fUseTransitions*/);
+                IFC_RETURN(FxCallbacks::Control_UpdateVisualState(focusedElement, true /*fUseTransitions*/));
 
                 //Restore the original focus state. We lie and say that the focused state is unfocused, although that isn't
                 //the case. This is done so that if this element is being inspected before a window activated has been received,

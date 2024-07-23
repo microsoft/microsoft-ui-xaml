@@ -25,7 +25,7 @@ _Check_return_ HRESULT WindowChromeFactory::CreateInstanceImpl(
 {
     ctl::ComPtr<xaml::IWindow> parentIWindow(parent);
     ctl::ComPtr<Window> parentWindow;
-    parentIWindow.As(&parentWindow);
+    IFC_RETURN(parentIWindow.As(&parentWindow));
     HWND parentHwnd = nullptr;
     IFC_RETURN(parentWindow->get_WindowHandle(&parentHwnd));
 
@@ -39,6 +39,14 @@ _Check_return_ HRESULT WindowChrome::Initialize(_In_ HWND parentWindow)
 {
     const auto chrome = static_cast<CWindowChrome*>(GetHandle());
     IFC_RETURN(chrome->Initialize(parentWindow));
+    auto hr = m_LoadedEventHandler.AttachEventHandler(this,
+        [this](auto&&... /*unused*/)
+        {
+            auto chrome = static_cast<CWindowChrome*>(GetHandle());
+            IFC_RETURN(chrome->SetFocusIfNeeded());
+            return S_OK;
+        });
+    IFC_RETURN(hr);
     return S_OK;
 }
 
@@ -71,6 +79,7 @@ void WindowChrome::MoveContainer(WPARAM wParam, LPARAM lParam)
 }
 _Check_return_ HRESULT WindowChrome::SetTitleBar(_In_opt_ xaml::IUIElement* titleBar)
 {
+
     auto pCoreWindowChrome = static_cast<CWindowChrome*>(GetHandle());
     ASSERT(pCoreWindowChrome != nullptr);
     
@@ -84,6 +93,14 @@ _Check_return_ HRESULT WindowChrome::SetTitleBar(_In_opt_ xaml::IUIElement* titl
         mu::WindowId windowId;
         ctl::ComPtr<ixp::IAppWindow> appWindow;
         IFC_RETURN(GetDesktopWindowNoRef()->get_AppWindowImpl(&appWindow));
+        
+        if (!appWindow)
+        {
+             // custom titlebar code is being run in a scenario where appwindow is null and thus
+             // it cannot continue to run. it is running in an unsupported scenario.
+             // one such scenario is where a top level window is reparented to become a child window of another window
+            IFCFAILFAST(E_NOTSUPPORTED);
+        }
         IFC_RETURN(appWindow->get_Id(&windowId));
         
         IFC_RETURN(inputNonClientPtrSrcStatics->GetForWindowId(windowId, &m_inputNonClientPtrSrc));
@@ -154,6 +171,10 @@ ctl::ComPtr<ixp::IAppWindow> WindowChrome::GetAppWindow() const
 {
     ctl::ComPtr<ixp::IAppWindow> appWindow;
     IFCFAILFAST(m_desktopWindow->get_AppWindowImpl(&appWindow));
+    if(!appWindow)
+    {
+        IFCFAILFAST(E_NOTSUPPORTED);
+    }
     return appWindow;
 }
 

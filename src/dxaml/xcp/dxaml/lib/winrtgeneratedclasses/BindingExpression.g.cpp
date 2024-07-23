@@ -46,6 +46,7 @@ IFACEMETHODIMP DirectUI::BindingExpressionGenerated::get_DataItem(_Outptr_result
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<BindingExpression*>(this)->get_DataItemImpl(ppValue));
 Cleanup:
@@ -55,6 +56,7 @@ IFACEMETHODIMP DirectUI::BindingExpressionGenerated::get_ParentBinding(_Outptr_r
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<BindingExpression*>(this)->get_ParentBindingImpl(ppValue));
 Cleanup:

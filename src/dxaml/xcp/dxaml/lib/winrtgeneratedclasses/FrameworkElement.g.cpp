@@ -89,6 +89,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementGenerated::get_BaseUri(_Outptr_result_m
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<FrameworkElement*>(this)->get_BaseUriImpl(ppValue));
 Cleanup:
@@ -149,6 +150,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementGenerated::get_FocusVisualPrimaryBrush(
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<FrameworkElement*>(this)->get_FocusVisualPrimaryBrushImpl(ppValue));
 Cleanup:
@@ -177,6 +179,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementGenerated::get_FocusVisualSecondaryBrus
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<FrameworkElement*>(this)->get_FocusVisualSecondaryBrushImpl(ppValue));
 Cleanup:
@@ -223,6 +226,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementGenerated::get_IsLoaded(_Out_ BOOLEAN* 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<FrameworkElement*>(this)->get_IsLoadedImpl(pValue));
 Cleanup:
@@ -875,6 +879,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementGenerated::ArrangeOverride(_In_ ABI::Wi
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "FrameworkElement_ArrangeOverride", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<FrameworkElement*>(this)->ArrangeOverrideImpl(finalSize, pReturnValue));
@@ -916,6 +921,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementGenerated::FindName(_In_ HSTRING name, 
     }
     ARG_NOTNULL(name, "name");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<FrameworkElement*>(this)->FindNameImpl(name, ppReturnValue));
@@ -935,6 +941,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementGenerated::GetBindingExpression(_In_ AB
     }
     ARG_NOTNULL(pDp, "dp");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<FrameworkElement*>(this)->GetBindingExpressionImpl(pDp, ppReturnValue));
@@ -954,6 +961,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementGenerated::GoToElementStateCore(_In_ HS
     }
     ARG_NOTNULL(stateName, "stateName");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<FrameworkElement*>(this)->GoToElementStateCoreImpl(stateName, useTransitions, pReturnValue));
@@ -1015,6 +1023,7 @@ _Check_return_ HRESULT DirectUI::FrameworkElementGenerated::InvokeApplyTemplate(
     BOOLEAN returnValueCore;
 
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
 
     IFC(CheckThread());
 
@@ -1041,6 +1050,7 @@ _Check_return_ HRESULT DirectUI::FrameworkElementGenerated::InvokeFocus(_In_ ABI
     BOOLEAN returnValueCore;
 
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
 
     IFC(CheckThread());
 
@@ -1063,6 +1073,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementGenerated::MeasureOverride(_In_ ABI::Wi
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "FrameworkElement_MeasureOverride", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<FrameworkElement*>(this)->MeasureOverrideImpl(availableSize, pReturnValue));
@@ -1168,7 +1179,7 @@ _Check_return_ HRESULT DirectUI::FrameworkElementGenerated::EventAddHandlerByInd
     case KnownEventIndex::FrameworkElement_DataContextChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::FrameworkElement*, ABI::Microsoft::UI::Xaml::DataContextChangedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1185,7 +1196,7 @@ _Check_return_ HRESULT DirectUI::FrameworkElementGenerated::EventAddHandlerByInd
     case KnownEventIndex::FrameworkElement_LayoutUpdated:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1202,7 +1213,7 @@ _Check_return_ HRESULT DirectUI::FrameworkElementGenerated::EventAddHandlerByInd
     case KnownEventIndex::FrameworkElement_SizeChanged:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::ISizeChangedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

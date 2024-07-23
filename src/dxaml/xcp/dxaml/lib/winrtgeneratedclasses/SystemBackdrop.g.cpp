@@ -60,6 +60,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SystemBackdropGenerated::GetD
     ARG_NOTNULL(pTarget, "target");
     ARG_NOTNULL(pXamlRoot, "xamlRoot");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<SystemBackdrop*>(this)->GetDefaultSystemBackdropConfigurationImpl(pTarget, pXamlRoot, ppResult));

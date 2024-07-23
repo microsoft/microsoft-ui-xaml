@@ -25,14 +25,19 @@ bool VirtualizationInfo::IsHeldByLayout() const
     return m_owner == ElementOwner::Layout;
 }
 
-bool VirtualizationInfo::IsRealized() const
+bool VirtualizationInfo::IsInPinnedPool() const
 {
-    return IsHeldByLayout() || m_owner == ElementOwner::PinnedPool;
+    return m_owner == ElementOwner::PinnedPool;
 }
 
 bool VirtualizationInfo::IsInUniqueIdResetPool() const
 {
     return m_owner == ElementOwner::UniqueIdResetPool;
+}
+
+bool VirtualizationInfo::IsRealized() const
+{
+    return IsHeldByLayout() || IsInPinnedPool();
 }
 
 void VirtualizationInfo::UpdatePhasingInfo(int phase, const winrt::IInspectable& data, const winrt::IDataTemplateComponent& component)
@@ -98,7 +103,7 @@ void VirtualizationInfo::MoveOwnershipToLayoutFromPinnedPool()
 void VirtualizationInfo::MoveOwnershipToElementFactory()
 {
 #ifdef DBG
-    if (m_index == s_logItemIndexDbg)
+    if (m_index == s_logItemIndexDbg && !(m_owner == ElementOwner::Animator && m_index == -1))
     {
         ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, s_logItemIndexDbg);
         MUX_ASSERT(s_logItemIndexDbg != -1);

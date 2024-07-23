@@ -122,17 +122,18 @@ namespace Microsoft.UI.Xaml.CustomAttributes
 // as long as we want.
 //
 
-#define MUX_PUBLIC contract(Microsoft.UI.Xaml.XamlContract, 1)
-#define MUX_PUBLIC_V2 contract(Microsoft.UI.Xaml.XamlContract, 2)
-#define MUX_PUBLIC_V3 contract(Microsoft.UI.Xaml.XamlContract, 3)
-#define MUX_PUBLIC_V4 contract(Microsoft.UI.Xaml.XamlContract, 4)
-#define MUX_PUBLIC_V5 contract(Microsoft.UI.Xaml.XamlContract, 5)
-#define MUX_PUBLIC_V6 contract(Microsoft.UI.Xaml.XamlContract, 6)
+#define MUX_PUBLIC contract(Microsoft.UI.Xaml.XamlContract, 1)      // WinAppSDK 1.0
+#define MUX_PUBLIC_V2 contract(Microsoft.UI.Xaml.XamlContract, 2)   // WinAppSDK 1.1
+#define MUX_PUBLIC_V3 contract(Microsoft.UI.Xaml.XamlContract, 3)   // WinAppSDK 1.2
+#define MUX_PUBLIC_V4 contract(Microsoft.UI.Xaml.XamlContract, 4)   // WinAppSDK 1.3
+#define MUX_PUBLIC_V5 contract(Microsoft.UI.Xaml.XamlContract, 5)   // WinAppSDK 1.4
+#define MUX_PUBLIC_V6 contract(Microsoft.UI.Xaml.XamlContract, 6)   // WinAppSDK 1.5
+#define MUX_PUBLIC_V7 contract(Microsoft.UI.Xaml.XamlContract, 7)   // WinAppSDK 1.6
 
 // Note: It's expected that these are the same version because we require internal be in a different namespace,
 // and we split out the public vs internal metadata by namespace as well as feature attributes.
-#define MUX_PREVIEW contract(Microsoft.UI.Xaml.XamlContract, 6), feature(Feature_Experimental)
-#define MUX_INTERNAL contract(Microsoft.UI.Xaml.XamlContract, 6), feature(Feature_Experimental)
+#define MUX_PREVIEW contract(Microsoft.UI.Xaml.XamlContract, 7), feature(Feature_Experimental)
+#define MUX_INTERNAL contract(Microsoft.UI.Xaml.XamlContract, 7), feature(Feature_Experimental)
 
 // If this is specified then codegen will not create or register a default activation factory.
 #define MUX_HAS_CUSTOM_FACTORY Microsoft.UI.Xaml.CustomAttributes.MUXHasCustomActivationFactory

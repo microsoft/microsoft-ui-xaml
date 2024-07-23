@@ -2925,7 +2925,7 @@ ListViewBase::OnGettingFocus(_In_ xaml::IUIElement* sender, _In_ xaml_input::IGe
             BOOLEAN isFocusable = FALSE;
 
             IFC_RETURN(GetItemContainerMapping(&itemMapping));
-            IFC_RETURN(IsItemFocusable(itemMapping.Get(), focusIndex, &isFocusable));
+            IFC_RETURN(IsItemFocusable(itemMapping.Get(), focusIndex, true /*unrealizedItemsAssumedFocusable*/, &isFocusable));
 
             if (isFocusable)
             {

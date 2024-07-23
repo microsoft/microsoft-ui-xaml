@@ -1447,7 +1447,7 @@ HRESULT CManagedTextRangeProvider::FindAttribute(
     Automation::CValue retVal;
     Automation::CValue params[3];
     params[0].SetSigned(attributeId);
-    params[1].ConvertFrom(attributeValue);
+    IFC_RETURN(params[1].ConvertFrom(attributeValue));
     params[2].SetSigned(backward);
     IFC_RETURN(FxCallbacks::AutomationPeer_UIATextRangeInvoke(m_pInteropObject, 5/*FindAttribute*/, 3/*cParams*/, params, &retVal));
     *pRetVal = m_pAP->GetTextRangePattern(retVal.m_pdoValue);

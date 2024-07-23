@@ -3803,7 +3803,7 @@ void TextSelectionManager::CaretOnKeyDown(
             else if (startOffset != endOffset && !pKeyEventArgs->IsShiftPressed())
             {
                 textPosition = CTextPosition(plainTextPosition);
-                m_pTextSelection->GetStartTextPosition(&textPosition);
+                IFCFAILFAST(m_pTextSelection->GetStartTextPosition(&textPosition));
                 plainTextPosition = textPosition.GetPlainPosition();
             }
             else

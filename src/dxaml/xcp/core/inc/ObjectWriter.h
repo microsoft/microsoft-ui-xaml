@@ -55,7 +55,7 @@ private:
     std::shared_ptr<ObjectWriterCommonRuntime> m_spRuntime;
     std::shared_ptr<ObjectWriterErrorService> m_spErrorService;
 
-    bool m_bCheckDuplicateProperty;
+    bool m_bCheckDuplicateProperty{};
     bool m_bIsEncoding;
     bool m_allowCustomWriter;
     bool m_skipCustomWriterProcessingOfStartObject;

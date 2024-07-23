@@ -51,13 +51,11 @@
 //  Fast lookup of a cached glyph:
 //
 //      The class CFontTypeface is instantiated by the TextBreaker to
-//      correspond to a combination of font family, weight, style, stretch
-//      and locale.
+//      correspond to a combination of font face criteria and locale.
 //
 //      The CFontTypeface also contains a pointer to the CFontFamily that
-//      represents the clients FontFamily property, and the values of
-//      weight, style, stretch and locale to use when calling the fontfamily
-//      lookup.
+//      represents the clients FontFamily property, font face criteria
+//      and locale to use when calling the fontfamily lookup.
 //
 //      CFontTypeface exposes its functionality through its LookupGlyph
 //      method.
@@ -94,8 +92,8 @@
 //      needs to know what GlyphTypeface to use for each character.
 //
 //      TextBreaker calls CFontFamily::GetFontTypeface once for each
-//      change of family, weight, style, stretch or locale to obtain a
-//      CFontTypeface corresponding to a Family, weight, style, stretch
+//      change of family, font face criteria or locale to obtain a
+//      CFontTypeface corresponding to a Family, set of font face criteria
 //      and langauge. CFontFamily caches CFontTypefaces as they contain
 //      the expensively constructed codepoint to glyph/typeface map.
 //
@@ -212,7 +210,7 @@ private:
     XUINT32                   m_cFontLookups;
     SpanBase<IFssFontFamily*>*m_pFontLookups;
     CSharedName              *m_pFontFamilyName;
-    std::unordered_map<CWeightStyleStretch, xref_ptr<CFontTypeface>> m_fontTypefaces;
+    std::unordered_map<CFontFaceCriteria, xref_ptr<CFontTypeface>> m_fontTypefaces;
     XINT32                    m_cReferences;
     XFLOAT                    m_eBaseline;
     XFLOAT                    m_eLineSpacing;
@@ -278,19 +276,19 @@ public:
         _In_z_ const WCHAR *pLocaleName,
         _In_z_ const WCHAR *pLocaleNameList,
         _In_opt_ const NumberSubstitutionData* pNumberSubstitutionData,
-        CWeightStyleStretch weightStyleStretch,
+        CFontFaceCriteria fontFaceCriteria,
         _Outptr_ IFssFontFace **ppMappedFontFace,
         _Out_ XUINT32 *pMappedLength,
         _Out_ XFLOAT *pMappedScale
     );
 
     _Check_return_ HRESULT LookupNominalFontFace(
-        _In_        CWeightStyleStretch weightStyleStretch,
+        _In_        CFontFaceCriteria fontFaceCriteria,
         _Outptr_ IFssFontFace      **ppFontFace
     );
 
     const xref_ptr<CFontTypeface>& GetFontTypeface(
-        _In_            CWeightStyleStretch   weightStyleStretch
+        _In_            CFontFaceCriteria   fontFaceCriteria
     );
 
     _Check_return_ HRESULT GetLineMetrics(

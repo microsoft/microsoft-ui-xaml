@@ -455,7 +455,7 @@ void KeyTipManager::RemoveNullKeyTips()
 
 
 // Called on UI thread, this is where we actually create the KeyTip visuals and place them
-HRESULT KeyTipManager::Execute()
+_Check_return_ HRESULT KeyTipManager::Execute()
 {
     if (m_state == State::WaitingToUpdateKeyTips)
     {

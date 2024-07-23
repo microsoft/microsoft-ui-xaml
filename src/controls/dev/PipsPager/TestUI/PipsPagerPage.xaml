@@ -12,7 +12,7 @@
 
     <Grid Background="Transparent">
         <Grid.RowDefinitions>
-            <RowDefinition Height="300"/>
+            <RowDefinition Height="400"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -39,8 +39,9 @@
                 <ComboBoxItem x:Name="VisibleOnPointerOverNextButton" AutomationProperties.Name="VisibleOnPointerOverNextButton">VisibleOnPointerOver</ComboBoxItem>
                 <ComboBoxItem x:Name="CollapsedNextButton" AutomationProperties.Name="CollapsedNextButton">Collapsed</ComboBoxItem>
             </ComboBox>
-            <ComboBox x:Name="TestPipsPagerNumberOfPagesComboBox" Header="Number of pages" SelectedIndex="4">
+            <ComboBox x:Name="TestPipsPagerNumberOfPagesComboBox" Header="Number of pages" SelectedIndex="5">
                 <ComboBoxItem x:Name="ZeroNumberOfPages" AutomationProperties.Name="ZeroNumberOfPages">0 Pages</ComboBoxItem>
+                <ComboBoxItem x:Name="OneNumberOfPages" AutomationProperties.Name="OneNumberOfPages">1 Page</ComboBoxItem>
                 <ComboBoxItem x:Name="FiveNumberOfPages" AutomationProperties.Name="FiveNumberOfPages">5 Pages</ComboBoxItem>
                 <ComboBoxItem x:Name="TenNumberOfPages" AutomationProperties.Name="TenNumberOfPages">10 Pages</ComboBoxItem>
                 <ComboBoxItem x:Name="TwentyNumberOfPages" AutomationProperties.Name="TwentyNumberOfPages">20 Pages</ComboBoxItem>
@@ -55,6 +56,10 @@
             <ComboBox x:Name="TestPipsPagerOrientationComboBox" Header="Orentation" SelectedIndex="1">
                 <ComboBoxItem x:Name="VerticalOrientation" AutomationProperties.Name="VerticalOrientation">Vertical</ComboBoxItem>
                 <ComboBoxItem x:Name="HorizontalOrientation" AutomationProperties.Name="HorizontalOrientation">Horizontal</ComboBoxItem>
+            </ComboBox>
+            <ComboBox x:Name="TestPipsPagerWrapModeComboBox" Header="WrapMode" SelectedIndex="0">
+                <ComboBoxItem x:Name="None" AutomationProperties.Name="None">None</ComboBoxItem>
+                <ComboBoxItem x:Name="Wrap" AutomationProperties.Name="Wrap">Wrap</ComboBoxItem>
             </ComboBox>
         </StackPanel>
         <StackPanel Orientation="Vertical" Grid.Column="2" Margin="100, 0, 0, 0">
@@ -81,6 +86,10 @@
             <TextBlock x:Name="CurrentMaxVisiblePipsTextBlock"/>
             <TextBlock x:Name="FocusedPageIndexTextBlock" Text="Current focused page index: "/>
             <TextBlock x:Name="CurrentOrientationTextBlock"/>
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Skip To Last Page" Click="SkipToLastPage"/>
+                <Button Content="Skip To First Page" Click="SkipToFirstPage"/>
+            </StackPanel>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Vertical">

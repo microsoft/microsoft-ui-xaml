@@ -893,7 +893,7 @@ _Check_return_ HRESULT CTextBox::SetTextServicesBuffer(
         // If NULL, removes all content.
     )
 {
-    CTextBoxBase::SetTextServicesBuffer(strText);
+    IFC_RETURN(CTextBoxBase::SetTextServicesBuffer(strText));
 
 
     // TextBox in the XAML layer needs to be notified when pText is changed so it can

@@ -41,5 +41,5 @@ public:
         _In_ IXcpInputPaneHandler* pInputPaneHandler);
 
 private:
-    IXcpInputPaneHandler* m_pInputPaneHandler;
+    IXcpInputPaneHandler* m_pInputPaneHandler{};
 };

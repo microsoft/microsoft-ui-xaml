@@ -8,6 +8,9 @@
 #include <WindowsGraphicsDeviceManager.h>
 #include <DependencyLocator.h>
 #include <D3D11Device.h>
+#include "RefreshRateInfo.h"
+#include "Scheduler.h"
+#include "GraphicsTelemetry.h"
 
 XUINT32 g_csPreviousBatchCount = 0;
 XUINT32 g_csMaxBatchCount = 0;
@@ -29,7 +32,6 @@ CompositorScheduler::CompositorScheduler(
     , m_fShutdownThread(FALSE)
     , m_pCompositorWait(NULL)
     , m_pUIThreadSchedulerNoRef(NULL)
-    , m_pRefreshRateInfo(NULL)
     , m_waitingForWork(FALSE)
     , m_renderThreadId(0)
     , m_renderThreadHR(S_OK)
@@ -64,7 +66,6 @@ CompositorScheduler::~CompositorScheduler()
     }
 
     ReleaseInterface(m_pClock);
-    ReleaseInterface(m_pRefreshRateInfo);
 
     delete m_pRenderStateChangedCommand;
     m_pRenderStateChangedCommand = nullptr;
@@ -102,6 +103,8 @@ _Check_return_ HRESULT
 CompositorScheduler::Initialize()
 {
     IFC_RETURN(RefreshAlignedClock::Create(&m_pClock));
+
+    m_scheduler.Attach(new Scheduler(m_graphicsDeviceManager->GetRefreshRateInfo(), m_pClock));
 
     return S_OK;
 }
@@ -197,7 +200,7 @@ CompositorScheduler::WakeCompositionThread()
 void
 CompositorScheduler::RegisterUIThreadScheduler(
     _In_ UIThreadScheduler *pScheduler,
-    _Outptr_ IPALTickableClock **ppIClock
+    _Outptr_ RefreshAlignedClock **ppIClock
     )
 {
     auto guard = m_UIThreadSchedulerLock.lock();
@@ -285,14 +288,19 @@ CompositorScheduler::RenderThreadMain()
     return 0;
 }
 
-//------------------------------------------------------------------------
 //
-//  Synopsis:
-//     The method comprising everything the render thread does in a single frame.
+// Figures out when to wake the UI thread, and wakes it up as appropriate.
 //
-//------------------------------------------------------------------------
-void
-CompositorScheduler::RenderThreadFrame()
+// We have a UIThreadScheduler object that's shared with the UI thread. The UI thread calls RequestAdditionalFrame with
+// a time and a reason whenever it finds we need another frame. This could be from the tree being dirty or a
+// DispatcherTimer elapsing or many other reasons. Internally the UIThreadScheduler keeps track of the next time we need
+// a frame. For example, if a DispatcherTimer elapses in 2 seconds, then the tree is dirtied immediately, then we need a
+// frame immediately.
+//
+// Here we get the next frame time from the UIThreadScheduler. If it's in the future, then we can just wait until then.
+// If it's immediately, then we wake the UI thread while putting a max limit on how many frames we can have per second.
+//
+void CompositorScheduler::RenderThreadFrame()
 {
     HRESULT hr = S_OK;
 
@@ -300,12 +308,7 @@ CompositorScheduler::RenderThreadFrame()
     // but it never runs faster than the refresh rate of the primary display.
     XUINT32 timeToNextWorkInMilliseconds = XINFINITE;
 
-    TraceRenderThreadFrameBegin();
-
     {
-        // Scope the lock to update independent property values.
-        // Both animations and manipulations can be ticked on the UI thread and this thread.
-
         auto lock = m_pDrawListsLock.lock();
 
         TraceCompositorLockBegin();
@@ -313,8 +316,8 @@ CompositorScheduler::RenderThreadFrame()
         // Move the clock forward.
         const XDOUBLE frameTickTime = m_pClock->Tick();
 
-        // Now that the animation clock and DM have been ticked, queue a tick to the UI thread.
-        // It is important that this happens after ticking the clock and DM so that the UI thread sees up-to-date
+        // Now that the animation clock has been ticked, queue a tick to the UI thread.
+        // It is important that this happens after ticking the clock so that the UI thread sees up-to-date
         // values. In virtualization scenarios, if the UI thread sees an "old" value, then it may choose to sleep until
         // the next vsync rather than generating new content.
         {
@@ -325,13 +328,22 @@ CompositorScheduler::RenderThreadFrame()
             if (m_pUIThreadSchedulerNoRef != NULL)
             {
                 const XUINT32 uiThreadRequest = m_pUIThreadSchedulerNoRef->GetScheduledIntervalInMilliseconds(frameTickTime);
+
+                TraceLoggingProviderWrite(
+                    GraphicsTelemetry, "Scheduling_UIThreadRequest",
+                    TraceLoggingUInt32(uiThreadRequest, "TimeInMilliseconds"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
                 if (uiThreadRequest > 0)
                 {
                     // Schedule the future tick.
-                    timeToNextWorkInMilliseconds = MIN(timeToNextWorkInMilliseconds, uiThreadRequest);
+                    timeToNextWorkInMilliseconds = uiThreadRequest;
                 }
                 else
                 {
+                    // Handles throttling to the refresh rate if needed
+                    IFC(m_scheduler->OnImmediateUIThreadFrame());
+
                     // Queue the requested tick now.
                     IFC(m_pUIThreadSchedulerNoRef->QueueTick());
                 }
@@ -349,71 +361,10 @@ CompositorScheduler::RenderThreadFrame()
             }
         }
 
-        if (m_isRenderEnabled && SUCCEEDED(GetRenderThreadHR()))
-        {
-            SuspendFailFastOnStowedException suspender;
-
-            IFC(EnsureRefreshRateInfo());
-        }
-
         TraceCompositorLockEnd();
     } /* DrawListsLock*/
 
-    //
-    // Determine how long to wait for work and/or the next scheduled frame. The next scheduled frame should have come
-    // from the UI thread scheduler.
-    //
-    if (timeToNextWorkInMilliseconds != XINFINITE && m_pRefreshRateInfo != NULL)
-    {
-        XFLOAT refreshInterval = m_pRefreshRateInfo->GetRefreshIntervalInMilliseconds();
-
-        XUINT32 roundedRefreshInterval = XcpCeiling(refreshInterval);
-        // The vBlank interrupt will fire for at least vBlankTimeout times after our last Present (from observation, it's currently ~10).
-        // Sleeping using a timer for any period of time less than this number of vBlanks gains nothing for battery life, since
-        // the interrupt continues to fire anyway.  Also, doing so loses out on predictability of updates since timers don't fire
-        // accurately compared to the hardware interrupt.  So, if the time-to-next-frame is less than 5 vBlanks, continue to
-        // block on vBlanks instead of sleeping on a timer.
-        // Beyond this timeout period, it's better for power consumption to sleep on a timer, which gives the system the
-        // opportunity to go idle, at the cost of some variability in when the thread wakes up.  We'll always wait for
-        // vBlank at least one time, though to ensure we don't tick more frequently than the refresh rate in on-demand mode.
-        // TODO: TICK: Variability in timer wake-up could be reduced by waking up earlier by the timer resolution error, and then using vBlank(s) again for the remaining time.
-        // TODO: TICK: Should switch to using a coalescable timer (SetWaitableTimerEx)
-        const XUINT32 vBlankTimeout = 5;
-
-        if (timeToNextWorkInMilliseconds <= vBlankTimeout * roundedRefreshInterval)
-        {
-            timeToNextWorkInMilliseconds = 0;
-        }
-        else
-        {
-            ASSERT(timeToNextWorkInMilliseconds > roundedRefreshInterval);
-
-            // We're going to wait for vBlank and then a timer.
-            // Reduce the timer interval by the max wait time (the refresh interval) to make sure we don't wake up too late.
-            timeToNextWorkInMilliseconds -= roundedRefreshInterval;
-        }
-    }
-
-    TraceRenderThreadLogTimeToNextWorkInfo(timeToNextWorkInMilliseconds);
-
-    TraceRenderThreadFrameEnd();
-
-    //
-    // If we're scheduled immediately but we shouldn't produce another frame immediately,
-    // wait for the next display refresh before proceeding.  Generally, there's no reason to
-    // tick or render faster than the screen can display the results.
-    //
-    if (m_pRefreshRateInfo != NULL)
-    {
-        IFC(m_pRefreshRateInfo->WaitForRefreshInterval());
-    }
-    else
-    {
-        // We skip waiting for the vblank if there are no device resources available yet. We go idle and
-        // wait for the UI thread to take action instead (by initializing resources). This only typically
-        // happens during start-up.
-        timeToNextWorkInMilliseconds = XINFINITE;
-    }
+    ASSERT(timeToNextWorkInMilliseconds > 0);
 
 Cleanup:
     // All render thread failures are treated as recoverable by notifying the UI thread.
@@ -446,10 +397,11 @@ Cleanup:
             );
     }
 
-    if (timeToNextWorkInMilliseconds > 0)
-    {
-        TraceRenderThreadWaitForWorkBegin();
-    }
+    TraceLoggingProviderWrite(
+        GraphicsTelemetry, "Scheduling_RenderThreadWaitForWork",
+        TraceLoggingUInt32(1, "IsStart"),
+        TraceLoggingUInt32(timeToNextWorkInMilliseconds, "TimeInMilliseconds"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // If the call to WaitForObjects has no timeout
     // then the render thread is only going to wake up
@@ -457,10 +409,7 @@ Cleanup:
     // Save this state so the UI thread can query it
     if (timeToNextWorkInMilliseconds == XINFINITE)
     {
-        InterlockedExchange(
-            &m_waitingForWork,
-            TRUE
-            );
+        InterlockedExchange(&m_waitingForWork, TRUE);
     }
 
     // If we weren't scheduled immediately, this will let the render thread go idle until the scheduled time,
@@ -473,57 +422,17 @@ Cleanup:
         timeToNextWorkInMilliseconds
         ));
 
-    // Restore the m_waitingForWork state back to it's original value
+    // Restore the m_waitingForWork state back to its original value
     if (timeToNextWorkInMilliseconds == XINFINITE)
     {
-        InterlockedExchange(
-            &m_waitingForWork,
-            FALSE
-            );
+        InterlockedExchange(&m_waitingForWork, FALSE);
     }
 
-    if (timeToNextWorkInMilliseconds > 0)
-    {
-        TraceRenderThreadWaitForWorkEnd();
-    }
-}
-
-//------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Ensures that a refresh rate info object exists. Re-creates the
-//      object if it's no longer valid.
-//
-//------------------------------------------------------------------------
-_Check_return_ HRESULT CompositorScheduler::EnsureRefreshRateInfo()
-{
-    const auto& device = m_graphicsDeviceManager->GetGraphicsDevice();
-
-    // If the IDXGIOutput inside the refresh rate info is no longer valid, then release it and create a new one.
-    if (m_pRefreshRateInfo != NULL && !m_pRefreshRateInfo->IsValid())
-    {
-        ReleaseInterface(m_pRefreshRateInfo);
-        m_pClock->SetRefreshRateInfo(NULL);
-    }
-
-    // Get the object for querying for the refresh rate and waiting for vblank.
-    //
-    // It's possible that either the graphics device or the refresh-rate info it returns are NULL, but only for
-    // the period before device resources have been fully initialized.
-    //
-    // Whenever the UI thread submits a frame these objects will be available again because the UI thread blocks
-    // waiting for them to exist. It's not a good idea for the render thread to block on resource initialization for two
-    // reasons - first, it's not necessary, and second, the render thread is higher priority than the UI thread, and
-    // blocking causes the resource initialization background thread also to increase in priority and c-switch out the
-    // UI thread during start-up.
-    if (m_pRefreshRateInfo == NULL
-        && device != nullptr)
-    {
-        IFC_RETURN(device->GetRefreshRateInfo(&m_pRefreshRateInfo));
-        m_pClock->SetRefreshRateInfo(m_pRefreshRateInfo);
-    }
-
-    return S_OK;
+    TraceLoggingProviderWrite(
+        GraphicsTelemetry, "Scheduling_RenderThreadWaitForWork",
+        TraceLoggingUInt32(0, "IsStart"),
+        TraceLoggingUInt32(timeToNextWorkInMilliseconds, "TimeInMilliseconds"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 }
 
 //------------------------------------------------------------------------

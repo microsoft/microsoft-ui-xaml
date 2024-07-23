@@ -69,6 +69,10 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
                     }
                 }
             }
+
+            TryConnectSystemBackdrop();
+            // If we have a SystemBackdrop, it should be connected by now.
+            MUX_ASSERT(m_registeredWithSystemBackdrop || !m_systemBackdrop);
         }
     });
 
@@ -150,10 +154,13 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
 CommandBarFlyoutCommandBar::~CommandBarFlyoutCommandBar()
 {
     // The SystemBackdrop DP has already been cleared out. Use our cached field.
-    if (auto systemBackdrop = m_systemBackdrop.get())
+    if (m_registeredWithSystemBackdrop)
     {
-        systemBackdrop.OnTargetDisconnected(m_backdropLink);
-        systemBackdrop.OnTargetDisconnected(m_overflowPopupBackdropLink);
+        if (auto systemBackdrop = m_systemBackdrop.get())
+        {
+            systemBackdrop.OnTargetDisconnected(m_backdropLink);
+            systemBackdrop.OnTargetDisconnected(m_overflowPopupBackdropLink);
+        }
     }
 }
 
@@ -211,7 +218,7 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
         // Hard-code a large size for the placement visual. The size and position of this lifted visual controls the
         // size and position of the system visual with the backdrop. This visual is parented in a windowed popup, so it
         // should use the popup's coordinate space, but we're seeing it use the main island's coordinate space instead.
-        // We don't easily have the popup hwnd's offset from outside MUX.dll, so just size the placement visual to a
+        // We don't easily have the popup island's offset from outside MUX.dll, so just size the placement visual to a
         // large number to cover everything. We'll apply a clip to this placement visual later to size it to the
         // CommandBarFlyoutCommandBar's contents.
         placementVisual.Size({10000, 10000});
@@ -607,7 +614,7 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
                 const auto overflowPopupSize = m_secondaryItemsRoot.get().DesiredSize();
 
                 shouldExpandUp =
-                    controlBounds.Y + controlBounds.Height + overflowPopupSize.Height > availableHeight &&
+                    static_cast<double>(controlBounds.Y) + controlBounds.Height + overflowPopupSize.Height > availableHeight &&
                     controlBounds.Y - overflowPopupSize.Height >= 0;
             }
         }
@@ -1503,6 +1510,7 @@ void CommandBarFlyoutCommandBar::OnPropertyChanged(const winrt::DependencyProper
             {
                 oldSystemBackdrop.OnTargetDisconnected(m_backdropLink);
                 oldSystemBackdrop.OnTargetDisconnected(m_overflowPopupBackdropLink);
+                m_registeredWithSystemBackdrop = false;
             }
 
             m_systemBackdrop = newSystemBackdrop;
@@ -1517,13 +1525,33 @@ void CommandBarFlyoutCommandBar::OnPropertyChanged(const winrt::DependencyProper
                     m_overflowPopupBackdropLink = winrt::ContentExternalBackdropLink::Create(compositor);
                 }
 
-                newSystemBackdrop.OnTargetConnected(m_backdropLink, XamlRoot());
-                newSystemBackdrop.OnTargetConnected(m_overflowPopupBackdropLink, XamlRoot());
+                TryConnectSystemBackdrop();
             }
             else
             {
                 m_backdropLink = nullptr;
                 m_overflowPopupBackdropLink = nullptr;
+            }
+        }
+    }
+}
+
+void CommandBarFlyoutCommandBar::TryConnectSystemBackdrop()
+{
+    if (!m_registeredWithSystemBackdrop)
+    {
+        if (auto systemBackdrop = m_systemBackdrop.get())
+        {
+            MUX_ASSERT(m_backdropLink);
+            MUX_ASSERT(m_overflowPopupBackdropLink);
+
+            auto xamlRoot = XamlRoot();
+
+            if (xamlRoot)
+            {
+                systemBackdrop.OnTargetConnected(m_backdropLink, XamlRoot());
+                systemBackdrop.OnTargetConnected(m_overflowPopupBackdropLink, XamlRoot());
+                m_registeredWithSystemBackdrop = true;
             }
         }
     }

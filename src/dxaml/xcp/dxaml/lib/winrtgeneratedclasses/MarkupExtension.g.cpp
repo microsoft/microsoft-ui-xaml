@@ -57,6 +57,7 @@ IFACEMETHODIMP DirectUI::MarkupExtension::ProvideValue(_Outptr_ IInspectable** p
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "MarkupExtension_ProvideValue", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<MarkupExtension*>(this)->ProvideValueImpl(ppReturnValue));
 Cleanup:
@@ -97,6 +98,7 @@ IFACEMETHODIMP DirectUI::MarkupExtension::ProvideValueWithIXamlServiceProvider(_
     }
     ARG_NOTNULL(pServiceProvider, "serviceProvider");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<MarkupExtension*>(this)->ProvideValueWithIXamlServiceProviderImpl(pServiceProvider, ppReturnValue));
 Cleanup:

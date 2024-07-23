@@ -310,7 +310,7 @@
                               Foreground=#E4000000
                               Margin=0,0,0,0
                               Padding=0,0,0,0
-                              RenderSize=42,19
+                              RenderSize=42,17
                               Visibility=Visible
                 [Microsoft.UI.Xaml.Controls.ContentControl]
                     Background=[NULL]

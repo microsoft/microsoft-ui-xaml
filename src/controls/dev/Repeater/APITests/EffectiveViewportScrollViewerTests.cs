@@ -450,7 +450,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             Verify.AreEqual(1, viewChangedOffsets.Count);
             viewChangedOffsets.Clear();
 
-            ValidateRealizedRange(repeater, 99, 106);
+            ValidateRealizedRange(repeater, 99, 107);
 
             RunOnUIThread.Execute(() =>
             {
@@ -483,7 +483,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             Verify.IsTrue(viewChangeCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             IdleSynchronizer.Wait();
             viewChangedOffsets.Clear();
-            ValidateRealizedRange(repeater, 0, 6);
+            ValidateRealizedRange(repeater, 0, 7);
 
             RunOnUIThread.Execute(() =>
             {
@@ -500,7 +500,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             Verify.IsTrue(viewChangeCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             IdleSynchronizer.Wait();
-            ValidateRealizedRange(repeater, 19, 26); 
+            ValidateRealizedRange(repeater, 19, 27); 
         }
 
         private void ValidateRealizedRange(

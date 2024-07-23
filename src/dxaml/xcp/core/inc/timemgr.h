@@ -17,7 +17,7 @@ class CStoryboard;
 class CTimeline;
 class CAnimation;
 class CCoreServices;
-struct IPALTickableClock;
+class RefreshAlignedClock;
 struct IFrameScheduler;
 struct IDCompositionDesktopDevicePartner3;
 class CTranslateTransform;
@@ -110,7 +110,7 @@ class CTimeManager final : public CDependencyObject
 public:
     static _Check_return_ HRESULT Create(
         _In_ CCoreServices *pCore,
-        _In_ IPALTickableClock *pIClock,
+        _In_ RefreshAlignedClock* pIClock,
         _Outptr_ CTimeManager **ppObject
         );
 
@@ -245,7 +245,7 @@ public:
     static bool ShouldFailFast();
 
 private:
-    CTimeManager(_In_ CCoreServices *pCore, _In_ IPALTickableClock *pClock);
+    CTimeManager(_In_ CCoreServices *pCore, _In_ RefreshAlignedClock* pClock);
     ~CTimeManager() override;
 
     struct HashKey
@@ -359,7 +359,7 @@ private:
     bool m_hadActiveFiniteAnimations : 1;
 
     // Our clock
-    IPALTickableClock *m_pIClock;
+    RefreshAlignedClock* m_pIClock;
 
     // The time on the clock the first time the time manager ticked.
     XDOUBLE m_rTimeStarted;

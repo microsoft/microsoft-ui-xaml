@@ -18,10 +18,6 @@ DWriteFontFace::DWriteFontFace(
 {
     VERIFYHR(pDWriteFontFace->QueryInterface(__uuidof(IDWriteFontFace4), reinterpret_cast<void **>(&m_pDWriteFontFace)));
     AddRefInterface(m_pDWriteFontFamily);
-    if (m_pDWriteFontFamily)
-    {
-        m_canOptimizeShaping = !!m_pDWriteFontFamily->CanOptimizeShaping();
-    }
 }
 
 
@@ -264,7 +260,7 @@ HRESULT DWriteFontFace::GetKerningPairAdjustments(
     IFC(m_pDWriteFontFace->GetKerningPairAdjustments(glyphCount, pGlyphIndices, pGlyphAdvanceAdjustments));
 
 Cleanup:
-    return hr;    
+    return hr;
 }
 
 //---------------------------------------------------------------------------
@@ -276,17 +272,6 @@ bool DWriteFontFace::HasKerningPairs()
 {
     return !!m_pDWriteFontFace->HasKerningPairs();
 }
-
-//---------------------------------------------------------------------------
-//
-//  Returns whether we can bypass full shaping.
-//
-//---------------------------------------------------------------------------
-bool DWriteFontFace::CanOptimizeShaping()
-{
-    return m_canOptimizeShaping;
-}
-
 
 //---------------------------------------------------------------------------
 //

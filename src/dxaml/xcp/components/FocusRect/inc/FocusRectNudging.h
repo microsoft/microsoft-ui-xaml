@@ -388,7 +388,7 @@ _Check_return_ HRESULT GetFocusRectWithNudging(
 
     const XRECTF focusRectBounds = ShrinkRectByThickness(elementBounds, focusRectMargin);
 
-    element->TransformToVisual(nullptr, &elementToClientTransform);
+    IFC_RETURN(element->TransformToVisual(nullptr, &elementToClientTransform));
 
     XRECTF elementBoundsInClientSpace = {};
     IFC_RETURN(elementToClientTransform->TransformRect(elementBounds, &elementBoundsInClientSpace));

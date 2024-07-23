@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::FocusManagerLostFocusEventArgs::get_OldFocusedElement(_
     CDependencyObject* pValueCore = nullptr;
 
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CFocusManagerLostFocusEventArgs*>(pCoreEventArgsNoRef)->get_OldFocusedElement(&pValueCore));
@@ -70,6 +71,7 @@ IFACEMETHODIMP DirectUI::FocusManagerLostFocusEventArgs::get_CorrelationId(_Out_
     GUID valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CFocusManagerLostFocusEventArgs*>(pCoreEventArgsNoRef)->get_CorrelationId(&valueCore));

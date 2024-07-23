@@ -149,7 +149,7 @@ public:
     {
     }
 
-    ObjectWriterFrame& operator=(ObjectWriterFrame&& other)
+    ObjectWriterFrame& operator=(ObjectWriterFrame&& other) noexcept
     {
         if (this != &other) {
             m_spType = std::move(other.m_spType);

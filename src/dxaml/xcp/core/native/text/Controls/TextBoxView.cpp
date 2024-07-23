@@ -3307,7 +3307,9 @@ _Check_return_ HRESULT CTextBoxView::GetFontFaceRun(
     _Out_ XUINT32 *pRunCount
     )
 {
-    CWeightStyleStretch weightStyleStretch(weight, style, stretch);
+    // The use of zero for the optical size will cause the MapCharacters to fall
+    // back to legacy versions (non optical).
+    CFontFaceCriteria fontFaceCriteria(weight, style, stretch, 0.0f);
     DWriteFontFace *pDWriteFontFace;
     const TextFormatting* pTextFormatting = NULL;
     XFLOAT mappedScale;
@@ -3321,7 +3323,7 @@ _Check_return_ HRESULT CTextBoxView::GetFontFaceRun(
         pTextFormatting->GetResolvedLanguageStringNoRef().GetBuffer(),
         pTextFormatting->GetResolvedLanguageListStringNoRef().GetBuffer(),
         NULL,
-        weightStyleStretch,
+        fontFaceCriteria,
         &pFontFace,
         pRunCount,
         &mappedScale));

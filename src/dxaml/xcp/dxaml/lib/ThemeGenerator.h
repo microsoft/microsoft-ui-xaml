@@ -96,7 +96,7 @@ namespace DirectUI
         wf::Point m_startOffset;
         wf::Point m_destinationOffset;
 
-        IActivationFactory* m_pActivationFactory;
+        IActivationFactory* m_pActivationFactory{};
         xaml_animation::IStoryboardStatics* m_pStoryboardStatics;
 
         wrl_wrappers::HString m_strTranslateXPropertyName;

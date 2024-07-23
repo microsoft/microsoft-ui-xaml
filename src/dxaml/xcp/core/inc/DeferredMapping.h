@@ -104,7 +104,7 @@ private:
             : m_enteredScope(nullptr)
         {}
 
-        DeferredInfo(DeferredInfo&& other)
+        DeferredInfo(DeferredInfo&& other) noexcept
             : m_declaringScope(std::move(other.m_declaringScope))
             , m_enteredScope(other.m_enteredScope)
             , m_declaringScopeDeferredStorage(std::move(other.m_declaringScopeDeferredStorage))

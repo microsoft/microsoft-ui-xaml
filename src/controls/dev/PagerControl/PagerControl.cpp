@@ -136,7 +136,7 @@ void PagerControl::OnApplyTemplate()
         m_numberBox.set(numberBox);
         if (numberBox)
         {
-            numberBox.Value(SelectedPageIndex() + 1);
+            numberBox.Value(static_cast<double>(SelectedPageIndex()) + 1);
             winrt::AutomationProperties::SetName(numberBox, ResourceAccessor::GetLocalizedStringResource(SR_PagerControlPageTextName));
             m_numberBoxValueChangedRevoker = numberBox.ValueChanged(winrt::auto_revoke, { this,&PagerControl::NumberBoxValueChanged });
         }
@@ -335,7 +335,7 @@ void PagerControl::OnSelectedPageIndexChange(const int oldValue)
     }
     if (const auto numBox = m_numberBox.get())
     {
-        numBox.Value(SelectedPageIndex() + 1);
+        numBox.Value(static_cast<double>(SelectedPageIndex()) + 1);
     }
 
     UpdateOnEdgeButtonVisualStates();

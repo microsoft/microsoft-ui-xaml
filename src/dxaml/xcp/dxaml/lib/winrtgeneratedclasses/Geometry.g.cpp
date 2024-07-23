@@ -96,6 +96,7 @@ IFACEMETHODIMP DirectUI::GeometryFactory::get_Empty(_Outptr_result_maybenull_ AB
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckActivationAllowed());
     IFC(get_EmptyImpl(ppValue));
 Cleanup:
@@ -105,6 +106,7 @@ IFACEMETHODIMP DirectUI::GeometryFactory::get_StandardFlatteningTolerance(_Out_ 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckActivationAllowed());
     IFC(get_StandardFlatteningToleranceImpl(pValue));
 Cleanup:

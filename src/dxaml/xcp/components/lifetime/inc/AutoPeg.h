@@ -19,19 +19,19 @@ namespace ctl
         bool m_fPeggedIfNull;
 
     public:
-        XNOTHROW AutoPeg(_In_opt_ T* ptr)
+        AutoPeg(_In_opt_ T* ptr) noexcept
             : m_fPeggedIfNull(FALSE)
         {
             Init(ptr);
         }
 
-        XNOTHROW AutoPeg(_In_opt_ T* ptr, _In_opt_ bool fPeggedIfNull )
+        AutoPeg(_In_opt_ T* ptr, _In_opt_ bool fPeggedIfNull ) noexcept
             : m_fPeggedIfNull(fPeggedIfNull)
         {
             Init(ptr);
         }
 
-        XNOTHROW AutoPeg(AutoPeg&& other)
+        AutoPeg(AutoPeg&& other) noexcept
             : m_ptr(nullptr), m_fPegged(FALSE), m_fPeggedIfNull(FALSE)
         {
             m_ptr = other.m_ptr;
@@ -57,7 +57,7 @@ namespace ctl
                 || (m_ptr == NULL) && m_fPeggedIfNull;
         }
 
-        XNOTHROW ~AutoPeg()
+        ~AutoPeg() noexcept
         {
             if (m_fPegged)
             {

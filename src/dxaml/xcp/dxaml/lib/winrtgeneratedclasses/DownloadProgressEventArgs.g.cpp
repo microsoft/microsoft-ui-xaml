@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::DownloadProgressEventArgs::get_Progress(_Out_ INT* pVal
     INT valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CDownloadProgressEventArgs*>(pCoreEventArgsNoRef)->get_Progress(&valueCore));

@@ -1823,7 +1823,7 @@ _Check_return_ HRESULT FlipView::FixOffset(
     {
         // If we are in the middle of a manipulation (during the animation from one selected item to another) we
         // don't want to modify the offset. Postpone the fix via timer.
-        SetFixOffsetTimer();
+        IFC_RETURN(SetFixOffsetTimer());
     }
 
     return S_OK;

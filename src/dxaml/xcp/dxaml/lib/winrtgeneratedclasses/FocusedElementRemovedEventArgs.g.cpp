@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::FocusedElementRemovedEventArgs::get_OldFocusedElement(_
     CDependencyObject* pValueCore = nullptr;
 
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CFocusedElementRemovedEventArgs*>(pCoreEventArgsNoRef)->get_OldFocusedElement(&pValueCore));
@@ -70,6 +71,7 @@ IFACEMETHODIMP DirectUI::FocusedElementRemovedEventArgs::get_NewFocusedElement(_
     CDependencyObject* pValueCore = nullptr;
 
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CFocusedElementRemovedEventArgs*>(pCoreEventArgsNoRef)->get_NewFocusedElement(&pValueCore));

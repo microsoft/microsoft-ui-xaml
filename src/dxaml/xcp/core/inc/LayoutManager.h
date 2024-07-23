@@ -124,15 +124,17 @@ public:
     _Check_return_ HRESULT RealizeRegisteredLayoutTransitions();
     // start a transition walk (similar to measure and arrange)
     _Check_return_ HRESULT TransitionLayout();
-    
+
     XCP_FORCEINLINE XUINT16 GetLayoutCounter() { return m_layoutCounter; }
     XCP_FORCEINLINE XUINT16 GetNextLayoutCounter() { return m_layoutCounter == XUINT16_MAX ? 2 : m_layoutCounter + 1;}  // using 2 so we have room to always subtract one for setting enter to have already happened (virtualization)
     void IncrementLayoutCounter();
 
     // This whole flag 'allow transitions to run' is currently just used by virtualizing panels.
-    // It should be interpreted as 'we are correcting layout after a manipulation'. 
+    // It should be interpreted as 'we are correcting layout after a manipulation'.
     XCP_FORCEINLINE bool GetAllowTransitionsToRunUnderCurrentSubtree() { return m_allowTransitionsToRun; }
     XCP_FORCEINLINE void SetAllowTransitionsToRunUnderCurrentSubtree(bool bAllow) { m_allowTransitionsToRun = bAllow; }
+
+    bool IsLayoutClean();
 
 #ifdef DEBUG
     // These are diagnostic methods for inspecting the layout properties of the tree.
@@ -169,7 +171,7 @@ private:
     CCoreServices*  m_pCoreServices;
     VisualTree*     m_pVisualTree;
     CUIElement*     m_pTransitioningElement; // weak ref; needed during transition phase
-    CUIElement*     m_pLastExceptionElement; 
+    CUIElement*     m_pLastExceptionElement;
 
     XINT32          m_cArrangesOnStack;
     XINT32          m_cMeasuresOnStack;

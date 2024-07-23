@@ -127,7 +127,7 @@ DCompSurfaceFactoryManager::SurfaceFactoryMap* DCompSurfaceFactoryManager::GetSu
 //      is called in DCompTreeHost to acquire all secondary SFs
 //-------------------------------------------------------------------------
 void DCompSurfaceFactoryManager::GetSurfaceFactoriesForCurrentThread(
-    _Outptr_ std::vector<IDCompositionSurfaceFactoryPartner3*>* surfaceFactoryVector
+    _Inout_ std::vector<IDCompositionSurfaceFactoryPartner3*>* surfaceFactoryVector
 )
 {
     auto guard = m_Lock.lock();

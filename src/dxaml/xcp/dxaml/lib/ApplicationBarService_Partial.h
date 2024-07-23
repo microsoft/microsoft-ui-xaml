@@ -66,7 +66,7 @@ namespace DirectUI
             EventRegistrationToken m_DismissLayerRightTapToken;
 
             // Keyboard event token
-            EventRegistrationToken m_KeyPressedEventToken;
+            EventRegistrationToken m_KeyPressedEventToken{};
 
             // activation token
             EventRegistrationToken m_activationToken;

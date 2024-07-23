@@ -111,6 +111,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_AccessKeyScopeOwner(_Outptr_res
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_AccessKeyScopeOwnerImpl(ppValue));
 Cleanup:
@@ -130,6 +131,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_ActualOffset(_Out_ ABI::Windows
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_ActualOffsetImpl(pValue));
 Cleanup:
@@ -139,6 +141,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_ActualSize(_Out_ ABI::Windows::
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_ActualSizeImpl(pValue));
 Cleanup:
@@ -157,6 +160,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::get_AnimatedCenterPoint(_Ou
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_AnimatedCenterPointImpl(pValue));
 Cleanup:
@@ -175,6 +179,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::get_AnimatedRotation(_Out_ 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_AnimatedRotationImpl(pValue));
 Cleanup:
@@ -193,6 +198,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::get_AnimatedRotationAxis(_O
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_AnimatedRotationAxisImpl(pValue));
 Cleanup:
@@ -211,6 +217,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::get_AnimatedScale(_Out_ ABI
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_AnimatedScaleImpl(pValue));
 Cleanup:
@@ -229,6 +236,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::get_AnimatedTransformMatrix
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_AnimatedTransformMatrixImpl(pValue));
 Cleanup:
@@ -247,6 +255,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::get_AnimatedTranslation(_Ou
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_AnimatedTranslationImpl(pValue));
 Cleanup:
@@ -300,6 +309,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_CenterPoint(_Out_ ABI::Windows:
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_CenterPointImpl(pValue));
 Cleanup:
@@ -354,6 +364,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_DesiredSize(_Out_ ABI::Windows:
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_DesiredSizeImpl(pValue));
 Cleanup:
@@ -425,6 +436,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::UIElementGenerated::get_Inter
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_InteractionsImpl(ppValue));
 Cleanup:
@@ -505,6 +517,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::get_KeepAliveCount(_Out_ IN
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_KeepAliveCountImpl(pValue));
 Cleanup:
@@ -581,6 +594,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_Lights(_Outptr_result_maybenull
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_LightsImpl(ppValue));
 Cleanup:
@@ -676,6 +690,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_RasterizationScale(_Out_ DOUBLE
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_RasterizationScaleImpl(pValue));
 Cleanup:
@@ -717,6 +732,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_Rotation(_Out_ FLOAT* pValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_RotationImpl(pValue));
 Cleanup:
@@ -736,6 +752,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_RotationAxis(_Out_ ABI::Windows
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_RotationAxisImpl(pValue));
 Cleanup:
@@ -764,6 +781,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_Scale(_Out_ ABI::Windows::Found
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_ScaleImpl(pValue));
 Cleanup:
@@ -838,6 +856,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_TransformMatrix(_Out_ ABI::Wind
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_TransformMatrixImpl(pValue));
 Cleanup:
@@ -874,6 +893,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_Translation(_Out_ ABI::Windows:
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_TranslationImpl(pValue));
 Cleanup:
@@ -929,6 +949,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_XamlRoot(_Outptr_result_maybenu
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<UIElement*>(this)->get_XamlRootImpl(ppValue));
 Cleanup:
@@ -4154,6 +4175,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::CancelDirectManipulations(_Out_ BOO
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "UIElement_CancelDirectManipulations", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<UIElement*>(this)->CancelDirectManipulationsImpl(pReturnValue));
@@ -4172,6 +4194,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::CaptureMouse(_Out_ BOOLEAN*
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "UIElement_CaptureMouse", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
 Cleanup:
@@ -4190,6 +4213,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::CapturePointer(_In_ ABI::Microsoft:
     }
     ARG_NOTNULL(pValue, "value");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<UIElement*>(this)->CapturePointerImpl(pValue, pReturnValue));
@@ -4208,6 +4232,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::FindSubElementsForTouchTargeting(_I
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "UIElement_FindSubElementsForTouchTargeting", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<UIElement*>(this)->FindSubElementsForTouchTargetingImpl(point, boundingRect, ppReturnValue));
@@ -4248,6 +4273,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::Focus(_In_ ABI::Microsoft::UI::Xaml
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "UIElement_Focus", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<UIElement*>(this)->FocusImpl(value, pReturnValue));
@@ -4285,6 +4311,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::GetChildrenInTabFocusOrder(_Outptr_
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "UIElement_GetChildrenInTabFocusOrder", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<UIElement*>(this)->GetChildrenInTabFocusOrderImpl(ppReturnValue));
@@ -4365,6 +4392,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::LayoutRound(_In_ FLOAT valu
     FLOAT returnValueCore;
 
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
 
     IFC(CheckThread());
 
@@ -4445,6 +4473,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::OnCreateAutomationPeer(_Outptr_ ABI
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "UIElement_OnCreateAutomationPeer", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<UIElement*>(this)->OnCreateAutomationPeerImpl(ppReturnValue));
@@ -4809,6 +4838,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::StartDragAsync(_In_ ABI::Microsoft:
     }
     ARG_NOTNULL(pPointerPoint, "pointerPoint");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<UIElement*>(this)->StartDragAsyncImpl(pPointerPoint, ppReturnValue));
@@ -4845,6 +4875,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::TransformToVisual(_In_opt_ ABI::Mic
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "UIElement_TransformToVisual", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<UIElement*>(this)->TransformToVisualImpl(pVisual, ppReturnValue));
@@ -4905,7 +4936,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_BringIntoViewRequested:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::BringIntoViewRequestedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -4922,7 +4953,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_CharacterReceived:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::CharacterReceivedRoutedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -4939,7 +4970,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_ContextCanceled:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::RoutedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -4956,7 +4987,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_ContextRequested:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::ContextRequestedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -4973,7 +5004,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_DoubleTapped:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IDoubleTappedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -4990,7 +5021,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_DragEnter:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IDragEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5007,7 +5038,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_DragLeave:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IDragEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5024,7 +5055,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_DragOver:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IDragEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5041,7 +5072,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_DragStarting:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::DragStartingEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5058,7 +5089,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_Drop:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IDragEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5075,7 +5106,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_DropCompleted:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::DropCompletedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5092,7 +5123,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_GettingFocus:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::GettingFocusEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5109,7 +5140,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_GotFocus:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IRoutedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5126,7 +5157,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_Holding:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IHoldingEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5143,7 +5174,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_KeyDown:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IKeyEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5160,7 +5191,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_KeyUp:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IKeyEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5177,7 +5208,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_LosingFocus:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::LosingFocusEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5194,7 +5225,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_LostFocus:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IRoutedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5211,7 +5242,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_ManipulationCompleted:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IManipulationCompletedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5228,7 +5259,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_ManipulationDelta:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IManipulationDeltaEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5245,7 +5276,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_ManipulationInertiaStarting:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IManipulationInertiaStartingEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5262,7 +5293,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_ManipulationStarted:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IManipulationStartedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5279,7 +5310,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_ManipulationStarting:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IManipulationStartingEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5296,7 +5327,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_NoFocusCandidateFound:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::NoFocusCandidateFoundEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5313,7 +5344,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_PointerCanceled:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5330,7 +5361,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_PointerCaptureLost:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5347,7 +5378,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_PointerEntered:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5364,7 +5395,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_PointerExited:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5381,7 +5412,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_PointerMoved:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5398,7 +5429,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_PointerPressed:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5415,7 +5446,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_PointerReleased:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5432,7 +5463,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_PointerWheelChanged:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5449,7 +5480,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_PreviewKeyDown:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IKeyEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5466,7 +5497,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_PreviewKeyUp:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IKeyEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5483,7 +5514,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_ProcessKeyboardAccelerators:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::ProcessKeyboardAcceleratorEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5500,7 +5531,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_RightTapped:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IRightTappedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5517,7 +5548,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::UIElement_Tapped:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::ITappedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -6433,6 +6464,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_KeyDownEvent(_Outptr_result_maybe
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_KeyDownEventImpl(ppValue));
 Cleanup:
@@ -6442,6 +6474,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_KeyUpEvent(_Outptr_result_maybenu
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_KeyUpEventImpl(ppValue));
 Cleanup:
@@ -6451,6 +6484,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_PointerEnteredEvent(_Outptr_resul
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_PointerEnteredEventImpl(ppValue));
 Cleanup:
@@ -6460,6 +6494,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_PointerPressedEvent(_Outptr_resul
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_PointerPressedEventImpl(ppValue));
 Cleanup:
@@ -6469,6 +6504,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_PointerMovedEvent(_Outptr_result_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_PointerMovedEventImpl(ppValue));
 Cleanup:
@@ -6478,6 +6514,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_PointerReleasedEvent(_Outptr_resu
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_PointerReleasedEventImpl(ppValue));
 Cleanup:
@@ -6487,6 +6524,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_PointerExitedEvent(_Outptr_result
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_PointerExitedEventImpl(ppValue));
 Cleanup:
@@ -6496,6 +6534,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_PointerCaptureLostEvent(_Outptr_r
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_PointerCaptureLostEventImpl(ppValue));
 Cleanup:
@@ -6505,6 +6544,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_PointerCanceledEvent(_Outptr_resu
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_PointerCanceledEventImpl(ppValue));
 Cleanup:
@@ -6514,6 +6554,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_PointerWheelChangedEvent(_Outptr_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_PointerWheelChangedEventImpl(ppValue));
 Cleanup:
@@ -6523,6 +6564,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_TappedEvent(_Outptr_result_mayben
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_TappedEventImpl(ppValue));
 Cleanup:
@@ -6532,6 +6574,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_DoubleTappedEvent(_Outptr_result_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_DoubleTappedEventImpl(ppValue));
 Cleanup:
@@ -6541,6 +6584,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_HoldingEvent(_Outptr_result_maybe
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_HoldingEventImpl(ppValue));
 Cleanup:
@@ -6550,6 +6594,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_RightTappedEvent(_Outptr_result_m
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_RightTappedEventImpl(ppValue));
 Cleanup:
@@ -6559,6 +6604,7 @@ _Check_return_ HRESULT DirectUI::UIElementFactory::get_RightTappedUnhandledEvent
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_RightTappedUnhandledEventImpl(ppValue));
 Cleanup:
@@ -6568,6 +6614,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_ManipulationStartingEvent(_Outptr
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_ManipulationStartingEventImpl(ppValue));
 Cleanup:
@@ -6577,6 +6624,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_ManipulationInertiaStartingEvent(
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_ManipulationInertiaStartingEventImpl(ppValue));
 Cleanup:
@@ -6586,6 +6634,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_ManipulationStartedEvent(_Outptr_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_ManipulationStartedEventImpl(ppValue));
 Cleanup:
@@ -6595,6 +6644,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_ManipulationDeltaEvent(_Outptr_re
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_ManipulationDeltaEventImpl(ppValue));
 Cleanup:
@@ -6604,6 +6654,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_ManipulationCompletedEvent(_Outpt
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_ManipulationCompletedEventImpl(ppValue));
 Cleanup:
@@ -6613,6 +6664,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_DragEnterEvent(_Outptr_result_may
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_DragEnterEventImpl(ppValue));
 Cleanup:
@@ -6622,6 +6674,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_DragLeaveEvent(_Outptr_result_may
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_DragLeaveEventImpl(ppValue));
 Cleanup:
@@ -6631,6 +6684,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_DragOverEvent(_Outptr_result_mayb
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_DragOverEventImpl(ppValue));
 Cleanup:
@@ -6640,6 +6694,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_DropEvent(_Outptr_result_maybenul
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_DropEventImpl(ppValue));
 Cleanup:
@@ -6649,6 +6704,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_GettingFocusEvent(_Outptr_result_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_GettingFocusEventImpl(ppValue));
 Cleanup:
@@ -6658,6 +6714,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_LosingFocusEvent(_Outptr_result_m
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_LosingFocusEventImpl(ppValue));
 Cleanup:
@@ -6667,6 +6724,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_NoFocusCandidateFoundEvent(_Outpt
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_NoFocusCandidateFoundEventImpl(ppValue));
 Cleanup:
@@ -6676,6 +6734,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_PreviewKeyDownEvent(_Outptr_resul
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_PreviewKeyDownEventImpl(ppValue));
 Cleanup:
@@ -6685,6 +6744,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_CharacterReceivedEvent(_Outptr_re
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_CharacterReceivedEventImpl(ppValue));
 Cleanup:
@@ -6694,6 +6754,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_PreviewKeyUpEvent(_Outptr_result_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_PreviewKeyUpEventImpl(ppValue));
 Cleanup:
@@ -6703,6 +6764,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_BringIntoViewRequestedEvent(_Outp
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_BringIntoViewRequestedEventImpl(ppValue));
 Cleanup:
@@ -6712,6 +6774,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::get_ContextRequestedEvent(_Outptr_res
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_ContextRequestedEventImpl(ppValue));
 Cleanup:
@@ -6728,6 +6791,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::TryStartDirectManipulation(_In_ ABI::
     }
     ARG_NOTNULL(pValue, "value");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(TryStartDirectManipulationImpl(pValue, pReturnValue));
 Cleanup:
@@ -6763,6 +6827,7 @@ IFACEMETHODIMP DirectUI::UIElementFactory::InternalGetIsEnabled(_In_ ABI::Micros
     }
     ARG_NOTNULL(pElement, "element");
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckActivationAllowed());
     IFC(InternalGetIsEnabledImpl(pElement, pResult));
 Cleanup:

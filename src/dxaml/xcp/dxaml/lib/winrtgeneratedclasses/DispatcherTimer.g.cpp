@@ -54,6 +54,7 @@ IFACEMETHODIMP DirectUI::DispatcherTimerGenerated::get_IsEnabled(_Out_ BOOLEAN* 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<DispatcherTimer*>(this)->get_IsEnabledImpl(pValue));
 Cleanup:

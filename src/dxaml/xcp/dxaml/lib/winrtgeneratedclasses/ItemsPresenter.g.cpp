@@ -57,6 +57,7 @@ IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::get_AreHorizontalSnapPointsReg
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsPresenter*>(this)->get_AreHorizontalSnapPointsRegularImpl(pValue));
 Cleanup:
@@ -66,6 +67,7 @@ IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::get_AreVerticalSnapPointsRegul
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsPresenter*>(this)->get_AreVerticalSnapPointsRegularImpl(pValue));
 Cleanup:
@@ -75,6 +77,7 @@ IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::get_CanHorizontallyScroll(_Out
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsPresenter*>(this)->get_CanHorizontallyScrollImpl(pValue));
 Cleanup:
@@ -94,6 +97,7 @@ IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::get_CanVerticallyScroll(_Out_ 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsPresenter*>(this)->get_CanVerticallyScrollImpl(pValue));
 Cleanup:
@@ -113,6 +117,7 @@ IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::get_ExtentHeight(_Out_ DOUBLE*
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsPresenter*>(this)->get_ExtentHeightImpl(pValue));
 Cleanup:
@@ -122,6 +127,7 @@ IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::get_ExtentWidth(_Out_ DOUBLE* 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsPresenter*>(this)->get_ExtentWidthImpl(pValue));
 Cleanup:
@@ -185,6 +191,7 @@ IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::get_HorizontalOffset(_Out_ DOU
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsPresenter*>(this)->get_HorizontalOffsetImpl(pValue));
 Cleanup:
@@ -202,6 +209,7 @@ IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::get_MinHorizontalOffset(_Out_ 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsPresenter*>(this)->get_MinHorizontalOffsetImpl(pValue));
 Cleanup:
@@ -211,6 +219,7 @@ IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::get_MinVerticalOffset(_Out_ DO
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsPresenter*>(this)->get_MinVerticalOffsetImpl(pValue));
 Cleanup:
@@ -229,6 +238,7 @@ IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::get_ScrollOwner(_Outptr_result
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsPresenter*>(this)->get_ScrollOwnerImpl(ppValue));
 Cleanup:
@@ -248,6 +258,7 @@ IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::get_VerticalOffset(_Out_ DOUBL
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsPresenter*>(this)->get_VerticalOffsetImpl(pValue));
 Cleanup:
@@ -257,6 +268,7 @@ IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::get_ViewportHeight(_Out_ DOUBL
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsPresenter*>(this)->get_ViewportHeightImpl(pValue));
 Cleanup:
@@ -266,6 +278,7 @@ IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::get_ViewportWidth(_Out_ DOUBLE
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsPresenter*>(this)->get_ViewportWidthImpl(pValue));
 Cleanup:
@@ -393,6 +406,7 @@ IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::GetIrregularSnapPoints(_In_ AB
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ItemsPresenter_GetIrregularSnapPoints", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ItemsPresenter*>(this)->GetIrregularSnapPointsImpl(orientation, alignment, ppReturnValue));
@@ -411,6 +425,7 @@ IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::GetRegularSnapPoints(_In_ ABI:
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ItemsPresenter_GetRegularSnapPoints", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ItemsPresenter*>(this)->GetRegularSnapPointsImpl(orientation, alignment, pOffset, pReturnValue));
@@ -627,7 +642,7 @@ _Check_return_ HRESULT DirectUI::ItemsPresenterGenerated::EventAddHandlerByIndex
     case KnownEventIndex::ItemsPresenter_HorizontalSnapPointsChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -644,7 +659,7 @@ _Check_return_ HRESULT DirectUI::ItemsPresenterGenerated::EventAddHandlerByIndex
     case KnownEventIndex::ItemsPresenter_VerticalSnapPointsChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

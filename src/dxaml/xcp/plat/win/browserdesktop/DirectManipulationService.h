@@ -14,6 +14,9 @@
 #include "XcpDirectManipulationViewportEventHandler.h"
 #include "XcpAutoLock.h"
 
+// Uncomment for DManip debug outputs.
+//#define DM_DEBUG
+
 class WrappingHelper;
 class DirectManipulationServiceSharedState;
 
@@ -292,7 +295,7 @@ private:
         : m_sharedState(std::move(sharedState))
         , m_fManagerActive(FALSE)
         , m_islandInputSite(nullptr)
-        , m_activeHwnd(nullptr)
+        , m_activeInputHwnd(nullptr)
         , m_pViewportEventHandler(NULL)
         , m_pDMManager(NULL)
         , m_pDMUpdateManager(NULL)
@@ -560,6 +563,11 @@ private:
 
     wrl::ComPtr<ixp::IPointerPoint> GetPointerPointFromPointerId(_In_ XUINT32 pointerId);
 
+#ifdef DM_DEBUG
+    bool DMS_TraceDbg() const;
+    bool DMSv_TraceDbg() const;
+#endif // DM_DEBUG
+
 // Private Data
 private:
     std::shared_ptr<DirectManipulationServiceSharedState> m_sharedState;
@@ -573,7 +581,9 @@ private:
     // Cached for teardown scenarios where the m_islandInputSite's hwnd has already been cleared out
     // Potentially removable after this IXP bug is resolved:
     // https://task.ms/47915632 - Should the InputSiteHwnd cache its internal hwnd on Destroy so that it can return something to callers of get_UnderlyingInputHwnd instead of failing
-    HWND m_activeHwnd;
+    // Note that this refers to the IslandInputSite's hidden hwnd, which will always exist even in a world when islands
+    // are no longer backed by hwnds.
+    HWND m_activeInputHwnd;
 
     // Listener used to provide DM feedback to an input manager
     IXcpDirectManipulationViewportEventHandler* m_pViewportEventHandler;

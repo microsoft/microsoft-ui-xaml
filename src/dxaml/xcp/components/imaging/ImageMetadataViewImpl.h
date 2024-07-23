@@ -25,10 +25,10 @@ public:
     void SetMaxRootSize(wf::Size maxRootSize) override;
 
     // ImageViewBase
-    HRESULT GetHR(_In_ const std::shared_ptr<ImagingTelemetry::ImageDecodeActivity>& decodeActivity, uint64_t imageId) const override;
+    HRESULT GetHR(uint64_t imageId) const override;
 
 private:
-    void ParseImageMetadata(_In_opt_ const std::shared_ptr<ImagingTelemetry::ImageDecodeActivity>& decodeActivity, uint64_t imageId) const;
+    void ParseImageMetadata(uint64_t imageId) const;
 
     std::shared_ptr<EncodedImageData> m_encodedImageData;
     float m_downloadProgress = 0;

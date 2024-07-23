@@ -286,8 +286,8 @@ namespace pctl
 
     private:
 
-        IInspectable* m_pControllingUnknown;
-        bool m_isComposed;
+        IInspectable* m_pControllingUnknown{};
+        bool m_isComposed{};
     };
 
 

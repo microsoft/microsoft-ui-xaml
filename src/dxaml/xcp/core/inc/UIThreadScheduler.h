@@ -7,6 +7,7 @@
 
 struct IXcpDispatcher;
 class CompositorScheduler;
+class RefreshAlignedClock;
 
 // A list of reasons why anything can request a UI thread frame. Collected as a set of flags, logged when a new reason
 // comes in, and cleared when we tick the UI thread.
@@ -76,7 +77,7 @@ public:
     _Check_return_ HRESULT EndTick() override;
     bool IsInTick() override;
     bool IsHighPriority() override;
-    IPALTickableClock* GetClock() override { return m_pIClock; }
+    RefreshAlignedClock* GetClock() override { return m_pIClock; }
 
     // Render thread API
     XUINT32 GetScheduledIntervalInMilliseconds(XDOUBLE currentTickTimeInSeconds);
@@ -95,7 +96,7 @@ private:
     IXcpDispatcher *m_pDispatcher;
 
     // The shared clock between the UI and render thread.
-    IPALTickableClock *m_pIClock;
+    RefreshAlignedClock* m_pIClock;
 
     XDOUBLE m_lastTickTimeInSeconds;
 

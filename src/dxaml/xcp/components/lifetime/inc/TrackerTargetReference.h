@@ -67,12 +67,11 @@ namespace DirectUI
     protected:
         TrackerTargetReference();
         TrackerTargetReference(const TrackerTargetReference& other) = delete;
-        TrackerTargetReference(TrackerTargetReference&& other);
+        TrackerTargetReference(TrackerTargetReference&& other) noexcept;
 
         // Note: This method is safe to call under the lock 
         // if this object is empty
-        TrackerTargetReference& Assign(
-            _In_ TrackerTargetReference&& other);
+        TrackerTargetReference& Assign(_In_ TrackerTargetReference&& other) noexcept;
 
         bool operator==(const TrackerTargetReference& other) const;
         bool operator!=(const TrackerTargetReference& other) const;

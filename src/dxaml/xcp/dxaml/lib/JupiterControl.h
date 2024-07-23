@@ -54,6 +54,8 @@ public:
     bool HandleWindowMessage(UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam, _In_ CContentRoot* contentRoot);
 
     LRESULT HandleGetObjectMessage(_In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam);
+    HRESULT CreateUIAHostWindowForHwnd(_In_ HWND hwnd);
+    wrl::ComPtr<CUIAHostWindow> GetUIAHostWindow() { return m_pUIAWindow; }
 
     void OnDisplayChanged();
     static HRESULT NotifyImmersiveColorSetChanged();
@@ -174,6 +176,14 @@ public:
         _In_opt_ ixp::IPointerEventArgs* pointerEventArgs = nullptr
         );
 
+    void HandleNonClientPointerMessage(
+        _In_ UINT uMsg,
+        _In_ UINT32 pointerId,
+        _In_opt_ CContentRoot* contentRoot,
+        bool isGeneratedMessage = false,
+        _In_opt_ ixp::IPointerPoint* pointerPoint = nullptr
+        );
+
     // Test hooks
     void SetHdrOutputOverride(bool isHdrOutputOverride);
 
@@ -188,7 +198,7 @@ private:
     bool HandleUpdateUIStateMessage(_In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam, _In_opt_ CContentRoot* contentRoot);
 
     CJupiterWindow* m_pWindow;
-    CUIAHostWindow* m_pUIAWindow;
+    wrl::ComPtr<CUIAHostWindow> m_pUIAWindow;
 
     bool m_isEnabledMockUIAClientsListening;
 

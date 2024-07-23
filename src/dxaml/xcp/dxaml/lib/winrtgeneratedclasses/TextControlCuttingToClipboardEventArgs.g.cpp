@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::TextControlCuttingToClipboardEventArgs::get_Handled(_Ou
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CTextControlCuttingToClipboardEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));

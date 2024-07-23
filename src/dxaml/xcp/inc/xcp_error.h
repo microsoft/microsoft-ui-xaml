@@ -122,8 +122,3 @@ struct HResultToECodePair
    XUINT32   m_iErrorCode;
 };
 
-struct ECodePair
-{
-    XUINT32  m_iKey;
-    XUINT32  m_iEquivalent;
-};

@@ -89,7 +89,7 @@ protected:
     // Overridden to set default values for font properties
     _Check_return_ HRESULT InitInstance() override;
 
-    _Check_return_ HRESULT ApplyTemplate(_Out_ bool& fAddedVisuals) final;
+    _Check_return_ HRESULT ApplyTemplate(_Inout_ bool& fAddedVisuals) final;
 
 public:
     static _Check_return_ HRESULT Create(
@@ -107,7 +107,7 @@ public:
     void SetFontSize(_In_ XFLOAT fontSize);
 
     DirectUI::Symbol m_nSymbol; // The symbol that this icon will display
-    XFLOAT m_fontSize;
+    XFLOAT m_fontSize{};
 };
 
 
@@ -137,7 +137,7 @@ protected:
     // Inherited property support
     _Check_return_ HRESULT PullInheritedTextFormatting() override;
 
-    _Check_return_ HRESULT ApplyTemplate(_Out_ bool& fAddedVisuals) final;
+    _Check_return_ HRESULT ApplyTemplate(_Inout_ bool& fAddedVisuals) final;
 
 public:
     DECLARE_CREATE(CFontIcon);
@@ -179,7 +179,7 @@ private:
    ~CPathIcon() override;
 
 protected:
-    _Check_return_ HRESULT ApplyTemplate(_Out_ bool& fAddedVisuals) final;
+    _Check_return_ HRESULT ApplyTemplate(_Inout_ bool& fAddedVisuals) final;
 
 public:
     static _Check_return_ HRESULT Create(
@@ -226,7 +226,7 @@ private:
    ~CBitmapIcon() override;
 
 protected:
-    _Check_return_ HRESULT ApplyTemplate(_Out_ bool& fAddedVisuals) final;
+    _Check_return_ HRESULT ApplyTemplate(_Inout_ bool& fAddedVisuals) final;
 
     _Check_return_ HRESULT ReloadSourceImage();
 
@@ -291,7 +291,7 @@ private:
     ~CIconSourceElement() override;
 
 protected:
-    _Check_return_ HRESULT ApplyTemplate(_Out_ bool& fAddedVisuals) final;
+    _Check_return_ HRESULT ApplyTemplate(_Inout_ bool& fAddedVisuals) final;
 
 public:
     DECLARE_CREATE(CIconSourceElement);

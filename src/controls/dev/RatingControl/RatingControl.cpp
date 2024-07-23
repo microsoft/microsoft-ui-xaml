@@ -13,18 +13,18 @@
 
 const float c_horizontalScaleAnimationCenterPoint = 0.5f;
 const float c_verticalScaleAnimationCenterPoint = 0.8f;
-const winrt::Thickness c_focusVisualMargin = { -8, -7, -8, 0 };
-const int c_defaultRatingFontSizeForRendering = 32; // (32 = 2 * [default fontsize] -- because of double size rendering), remove when MSFT #10030063 is done
-const int c_defaultItemSpacing = 8;
+
+const float c_captionTopMarginSlope = 0.3f;
+const float c_captionTopMarginIntercept = -20.4f;
 
 const float c_mouseOverScale = 0.8f;
 const float c_touchOverScale = 1.0f;
 const float c_noPointerOverMagicNumber = -100;
 
-// 22 = 20(compensate for the -20 margin on StackPanel) + 2(magic number makes the text and star center-aligned)
-const float c_defaultCaptionTopMargin = 22;
-
 const int c_noValueSetSentinel = -1;
+
+const wchar_t c_fontSizeForRenderingKey[] = L"RatingControlFontSizeForRendering";
+const wchar_t c_itemSpacingKey[] = L"RatingControlItemSpacing";
 
 RatingControl::RatingControl()
 {
@@ -41,8 +41,10 @@ RatingControl::~RatingControl()
 
 float RatingControl::RenderingRatingFontSize()
 {
+    EnsureResourcesLoaded();
+
     // MSFT #10030063 Replacing with Rating size DPs
-    return (float)(c_defaultRatingFontSizeForRendering * GetUISettings().TextScaleFactor());
+    return (float)(m_fontSizeForRendering * GetUISettings().TextScaleFactor());
 }
 
 float RatingControl::ActualRatingFontSize()
@@ -53,26 +55,36 @@ float RatingControl::ActualRatingFontSize()
 // TODO MSFT #10030063: Convert to itemspacing DP
 double RatingControl::ItemSpacing()
 {
+    EnsureResourcesLoaded();
+
     // Stars are rendered 2x size and we use expression animation to shrink them down to desired size,
     // which will create those spacings (not system margin).
     // Since text scale factor won't affect system margins,
     // when stars get bigger, the spacing will become smaller.
     // Therefore we should include TextScaleFactor when calculating item spacing
     // in order to get correct total width and star center positions.
-    const double defaultFontSize = c_defaultRatingFontSizeForRendering / 2;
-    return c_defaultItemSpacing - (GetUISettings().TextScaleFactor() - 1.0) * defaultFontSize / 2;
+    const double defaultFontSize = m_fontSizeForRendering / 2;
+    return m_itemSpacing - (GetUISettings().TextScaleFactor() - 1.0) * defaultFontSize / 2;
 }
 
 void RatingControl::UpdateCaptionMargins()
 {
     // We manually set margins to caption text to make it center-aligned with the stars
-    // because star vertical center is 0.8 instead of the normal 0.5.
     // When text scale changes we need to update top margin to make the text follow start center.
     if (auto captionTextBlock = m_captionTextBlock.safe_get())
     {
+        double captionStackPanelTopMargin = 0;
+
+        if (auto captionStackPanel = m_captionStackPanel.safe_get())
+        {
+            captionStackPanelTopMargin = captionStackPanel.Margin().Top;
+        }
+
+        EnsureResourcesLoaded();
+
         double textScaleFactor = GetUISettings().TextScaleFactor();
         winrt::Thickness margin = captionTextBlock.Margin();
-        margin.Top = c_defaultCaptionTopMargin - (ActualRatingFontSize() * c_verticalScaleAnimationCenterPoint);
+        margin.Top = static_cast<double>(c_captionTopMarginSlope * RenderingRatingFontSize() + c_captionTopMarginIntercept - captionStackPanelTopMargin);
 
         captionTextBlock.Margin(margin);
     }
@@ -84,6 +96,11 @@ void RatingControl::OnApplyTemplate()
 
     // Retrieve pointers to stable controls 
     winrt::IControlProtected thisAsControlProtected = *this;
+
+    if (auto captionStackPanel = GetTemplateChildT<winrt::StackPanel>(L"CaptionStackPanel", thisAsControlProtected))
+    {
+        m_captionStackPanel.set(captionStackPanel);
+    }
 
     if (auto captionTextBlock = GetTemplateChildT<winrt::TextBlock>(L"Caption", thisAsControlProtected))
     {
@@ -112,14 +129,6 @@ void RatingControl::OnApplyTemplate()
     // using the A button before it actually receives key input from gamepad.
     FocusEngaged({ this, &RatingControl::OnFocusEngaged });
     FocusDisengaged({ this, &RatingControl::OnFocusDisengaged });
-    IsFocusEngagementEnabled(true);
-
-    // I've picked values so that these LOOK like the redlines, but these
-    // values are not actually from the redlines because the redlines don't
-    // consistently pick "distance from glyph"/"distance from edge of textbox"
-    // so it's not possible to actually just have a consistent sizing model
-    // here based on the redlines.
-    FocusVisualMargin(c_focusVisualMargin);
 
     IsEnabledChanged({ this, &RatingControl::OnIsEnabledChanged });
     m_fontFamilyChangedToken.value = RegisterPropertyChangedCallback(
@@ -268,7 +277,7 @@ void RatingControl::UpdateRatingItemsAppearance()
         {
             // Handle clips on stars
             float width = RenderingRatingFontSize();
-            if (i + 1 > value)
+            if (static_cast<double>(i) + 1 > value)
             {
                 if (i < value)
                 {
@@ -317,15 +326,17 @@ void RatingControl::ApplyScaleExpressionAnimation(const winrt::UIElement& uiElem
     uiElementVisual.StartAnimation(L"Scale.X", ea);
     uiElementVisual.StartAnimation(L"Scale.Y", ea);
 
-    // Star size = 16. 0.5 and 0.8 are just arbitrary center point chosen in design spec
-    // 32 = star size * 2 because of the rendering at double size we do
-    uiElementVisual.CenterPoint(winrt::float3(c_defaultRatingFontSizeForRendering * c_horizontalScaleAnimationCenterPoint, c_defaultRatingFontSizeForRendering * c_verticalScaleAnimationCenterPoint, 0.0f));
+    EnsureResourcesLoaded();
+
+    uiElementVisual.CenterPoint(winrt::float3(static_cast<float>(m_fontSizeForRendering * c_horizontalScaleAnimationCenterPoint), static_cast<float>(m_fontSizeForRendering * c_verticalScaleAnimationCenterPoint), 0.0f));
 }
 
 void RatingControl::PopulateStackPanelWithItems(wstring_view templateName, const winrt::StackPanel& stackPanel, RatingControlStates state)
 {
     winrt::IInspectable lookup = winrt::Application::Current().Resources().Lookup(box_value(templateName));
     auto dt = lookup.as<winrt::DataTemplate>();
+
+    EnsureResourcesLoaded();
 
     for (int i = 0; i < MaxRating(); i++)
     {
@@ -334,6 +345,32 @@ void RatingControl::PopulateStackPanelWithItems(wstring_view templateName, const
             CustomizeRatingItem(ui, state);
             stackPanel.Children().Append(ui);
             ApplyScaleExpressionAnimation(ui, i);
+        }
+    }
+
+    // If we have at least one item, we'll use the first item as a representative element to determine some values.
+    if (MaxRating() >= 1)
+    {
+        auto firstItem = stackPanel.Children().GetAt(0).as<winrt::UIElement>();
+        firstItem.Measure({ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() });
+        auto defaultItemSpacing = firstItem.DesiredSize().Width - ActualRatingFontSize();
+
+        // We want the caption to be 12 pixels away from the right-hand side of the last item,
+        // so we'll give it a left margin that accounts for the built-in item spacing.
+        if (auto captionTextBlock = m_captionTextBlock.get())
+        {
+            auto margin = captionTextBlock.Margin();
+            margin.Left = 12 - defaultItemSpacing;
+            captionTextBlock.Margin(margin);
+        }
+
+        // If we have at least two items, we'll need to apply the item spacing.
+        // We'll calculate the default item spacing using the first item, and then
+        // subtract it from the desired item spacing to get the Spacing property
+        // to apply to the stack panel.
+        if (MaxRating() >= 2)
+        {
+            stackPanel.Spacing(ItemSpacing() - defaultItemSpacing);
         }
     }
 }
@@ -346,6 +383,7 @@ void RatingControl::CustomizeRatingItem(const winrt::UIElement& ui, RatingContro
         {
             textBlock.FontFamily(FontFamily());
             textBlock.Text(GetAppropriateGlyph(type));
+            textBlock.FontSize(m_fontSizeForRendering);
         }
     }
     else if (IsItemInfoPresentAndImageInfo())
@@ -362,6 +400,14 @@ void RatingControl::CustomizeRatingItem(const winrt::UIElement& ui, RatingContro
         MUX_FAIL_FAST_MSG("Runtime error, ItemInfo property is null");
     }
 
+    if (auto fe = ui.try_as<winrt::FrameworkElement>())
+    {
+        // The default top margin is -8, but we want to increase or decrease that so that the center of the stars stays in a consistent place.
+        // To do that, we'll add on half of the difference between the actual font size and its default value.
+        auto margin = fe.Margin();
+        margin.Top = -8 + (16 - ActualRatingFontSize());
+        fe.Margin(margin);
+    }
 }
 
 void RatingControl::CustomizeStackPanel(const winrt::StackPanel& stackPanel, RatingControlStates state)
@@ -754,13 +800,16 @@ void RatingControl::OnPointerMovedOverBackgroundStackPanel(const winrt::IInspect
 {
     if (!IsReadOnly())
     {
-        const auto point = args.GetCurrentPoint(m_backgroundStackPanel.get());
-        const float xPosition = point.Position().X;
+        if (auto backgroundStackPanel = m_backgroundStackPanel.get())
+        {
+            const auto point = args.GetCurrentPoint(backgroundStackPanel);
+            const float xPosition = point.Position().X;
 
-        m_mousePercentage = static_cast<double>(xPosition) / CalculateActualRatingWidth();
+            m_mousePercentage = static_cast<double>(xPosition - m_firstItemOffset) / CalculateActualRatingWidth();
 
-        UpdateRatingItemsAppearance();
-        args.Handled(true);
+            UpdateRatingItemsAppearance();
+            args.Handled(true);
+        }
     }
 }
 
@@ -769,6 +818,17 @@ void RatingControl::OnPointerEnteredBackgroundStackPanel(const winrt::IInspectab
     if (!IsReadOnly())
     {
         m_isPointerOver = true;
+
+        if (auto backgroundStackPanel = m_backgroundStackPanel.get())
+        {
+            if (MaxRating() >= 1)
+            {
+                auto firstItem = backgroundStackPanel.Children().GetAt(0).as<winrt::UIElement>();
+                auto firstItemOffsetPoint = firstItem.TransformToVisual(backgroundStackPanel).TransformPoint({ 0, 0 });
+                m_firstItemOffset = firstItemOffsetPoint.X;
+            }
+        }
+
         args.Handled(true);
     }
 }
@@ -871,7 +931,7 @@ double RatingControl::CalculateActualRatingWidth()
     // TODO: replace hardcoding
     // MSFT #10030063
     // (max rating * rating size) + ((max rating - 1) * item spacing)
-    return (MaxRating() * ActualRatingFontSize()) + ((MaxRating() - 1) * ItemSpacing());
+    return (static_cast<double>(MaxRating()) * ActualRatingFontSize()) + ((static_cast<double>(MaxRating()) - 1) * ItemSpacing());
 }
 
 // IControlOverrides
@@ -1147,4 +1207,41 @@ winrt::UISettings RatingControl::GetUISettings()
 {
     static winrt::UISettings uiSettings = winrt::UISettings();
     return uiSettings;
+}
+
+void RatingControl::EnsureResourcesLoaded()
+{
+    if (!m_resourcesLoaded)
+    {
+        auto fontSizeForRenderingKey = box_value(c_fontSizeForRenderingKey);
+        auto itemSpacingKey = box_value(c_itemSpacingKey);
+
+        if (Resources().HasKey(fontSizeForRenderingKey))
+        {
+            m_fontSizeForRendering = unbox_value<double>(Resources().Lookup(fontSizeForRenderingKey));
+        }
+        else if (winrt::Application::Current().Resources().HasKey(fontSizeForRenderingKey))
+        {
+            m_fontSizeForRendering = unbox_value<double>(winrt::Application::Current().Resources().Lookup(fontSizeForRenderingKey));
+        }
+        else
+        {
+            m_fontSizeForRendering = c_defaultFontSizeForRendering;
+        }
+
+        if (Resources().HasKey(itemSpacingKey))
+        {
+            m_itemSpacing = unbox_value<double>(Resources().Lookup(itemSpacingKey));
+        }
+        else if (winrt::Application::Current().Resources().HasKey(itemSpacingKey))
+        {
+            m_itemSpacing = unbox_value<double>(winrt::Application::Current().Resources().Lookup(itemSpacingKey));
+        }
+        else
+        {
+            m_itemSpacing = c_defaultItemSpacing;
+        }
+
+        m_resourcesLoaded = true;
+    }
 }

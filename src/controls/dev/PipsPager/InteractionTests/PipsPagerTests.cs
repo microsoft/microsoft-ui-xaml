@@ -385,5 +385,80 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.LeftClick(elements.GetNextPageButton());
             }
         }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "F")]
+        public void PipsPagerWrapModeNavigation()
+        {
+            using (var setup = new TestSetupHelper("PipsPager Tests"))
+            {
+                elements = new PipsPagerElements();
+                SetPreviousPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
+                SetNextPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
+
+                ChangeNumberOfPages(NumberOfPagesOptions.Twenty);
+                VerifyNumberOfPages("20");
+
+                SetWrapMode(WrapMode.Wrap);
+
+                VerifySelectedPageIndex(0);
+
+                InputHelper.LeftClick(elements.GetPreviousPageButton());
+
+                VerifySelectedPageIndex(19);
+
+                InputHelper.LeftClick(elements.GetNextPageButton());
+
+                VerifySelectedPageIndex(0);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "F")]
+        public void PipsPagerWrapModeNavigationInfinitePages()
+        {
+            using (var setup = new TestSetupHelper("PipsPager Tests"))
+            {
+                elements = new PipsPagerElements();
+                SetPreviousPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
+                SetNextPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
+
+                SetWrapMode(WrapMode.Wrap);
+
+                ChangeNumberOfPages(NumberOfPagesOptions.Infinite);
+                VerifyNumberOfPages("Infinite");
+
+                InputHelper.LeftClick(elements.GetNextPageButton());
+                InputHelper.LeftClick(elements.GetPreviousPageButton());
+
+                VerifySelectedPageIndex(0);
+
+                VerifyPageButtonWithVisibilityModeSet(ButtonType.Previous, ButtonVisibilityMode.Collapsed);
+                VerifyPageButtonWithVisibilityModeSet(ButtonType.Next, ButtonVisibilityMode.Visible);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "F")]
+        public void PipsPagerWrapModeNavigationButtonsHiddenInOnePageScenario()
+        {
+            using (var setup = new TestSetupHelper("PipsPager Tests"))
+            {
+                elements = new PipsPagerElements();
+
+                SetWrapMode(WrapMode.Wrap);
+
+                ChangeNumberOfPages(NumberOfPagesOptions.One);
+                VerifyNumberOfPages("1");
+
+                SetPreviousPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
+                SetNextPageButtonVisibilityMode(ButtonVisibilityMode.Visible);
+
+                VerifySelectedPageIndex(0);
+
+                VerifyPageButtonWithVisibilityModeSet(ButtonType.Previous, ButtonVisibilityMode.Collapsed);
+                VerifyPageButtonWithVisibilityModeSet(ButtonType.Next, ButtonVisibilityMode.Collapsed);
+            }
+        }
     }
 }

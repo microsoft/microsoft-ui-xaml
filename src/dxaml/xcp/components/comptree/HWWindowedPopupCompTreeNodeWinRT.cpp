@@ -36,7 +36,7 @@ bool HWWindowedPopupCompTreeNodeWinRT::GetRedirectionTransformInfo(_In_ Redirect
     // but for parented windowed popups, there could be a transform present which we need to avoid applying.
     // The reason for this is that the windowed popup has its own visual tree which isn't parented to the main tree.
     // We compute this same transform information in CPopup::PositionAndSizeWindowForWindowedPopup and apply this
-    // to the HWND bounds rather than the visuals.
+    // to the island bounds rather than the visuals.
 
     return false;
 }

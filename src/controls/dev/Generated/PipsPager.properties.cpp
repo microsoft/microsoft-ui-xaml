@@ -24,6 +24,7 @@ GlobalDependencyProperty PipsPagerProperties::s_PreviousButtonVisibilityProperty
 GlobalDependencyProperty PipsPagerProperties::s_SelectedPageIndexProperty{ nullptr };
 GlobalDependencyProperty PipsPagerProperties::s_SelectedPipStyleProperty{ nullptr };
 GlobalDependencyProperty PipsPagerProperties::s_TemplateSettingsProperty{ nullptr };
+GlobalDependencyProperty PipsPagerProperties::s_WrapModeProperty{ nullptr };
 
 PipsPagerProperties::PipsPagerProperties()
     : m_selectedIndexChangedEventSource{static_cast<PipsPager*>(this)}
@@ -154,6 +155,17 @@ void PipsPagerProperties::EnsureProperties()
                 ValueHelper<winrt::PipsPagerTemplateSettings>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnTemplateSettingsPropertyChanged));
     }
+    if (!s_WrapModeProperty)
+    {
+        s_WrapModeProperty =
+            InitializeDependencyProperty(
+                L"WrapMode",
+                winrt::name_of<winrt::PipsPagerWrapMode>(),
+                winrt::name_of<winrt::PipsPager>(),
+                false /* isAttached */,
+                ValueHelper<winrt::PipsPagerWrapMode>::BoxValueIfNecessary(winrt::PipsPagerWrapMode::None),
+                winrt::PropertyChangedCallback(&OnWrapModePropertyChanged));
+    }
 }
 
 void PipsPagerProperties::ClearProperties()
@@ -169,6 +181,7 @@ void PipsPagerProperties::ClearProperties()
     s_SelectedPageIndexProperty = nullptr;
     s_SelectedPipStyleProperty = nullptr;
     s_TemplateSettingsProperty = nullptr;
+    s_WrapModeProperty = nullptr;
 }
 
 void PipsPagerProperties::OnMaxVisiblePipsPropertyChanged(
@@ -252,6 +265,14 @@ void PipsPagerProperties::OnSelectedPipStylePropertyChanged(
 }
 
 void PipsPagerProperties::OnTemplateSettingsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::PipsPager>();
+    winrt::get_self<PipsPager>(owner)->OnPropertyChanged(args);
+}
+
+void PipsPagerProperties::OnWrapModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -400,6 +421,19 @@ void PipsPagerProperties::TemplateSettings(winrt::PipsPagerTemplateSettings cons
 winrt::PipsPagerTemplateSettings PipsPagerProperties::TemplateSettings()
 {
     return ValueHelper<winrt::PipsPagerTemplateSettings>::CastOrUnbox(static_cast<PipsPager*>(this)->GetValue(s_TemplateSettingsProperty));
+}
+
+void PipsPagerProperties::WrapMode(winrt::PipsPagerWrapMode const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<PipsPager*>(this)->SetValue(s_WrapModeProperty, ValueHelper<winrt::PipsPagerWrapMode>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::PipsPagerWrapMode PipsPagerProperties::WrapMode()
+{
+    return ValueHelper<winrt::PipsPagerWrapMode>::CastOrUnbox(static_cast<PipsPager*>(this)->GetValue(s_WrapModeProperty));
 }
 
 winrt::event_token PipsPagerProperties::SelectedIndexChanged(winrt::TypedEventHandler<winrt::PipsPager, winrt::PipsPagerSelectedIndexChangedEventArgs> const& value)

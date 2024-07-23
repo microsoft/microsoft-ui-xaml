@@ -98,6 +98,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetAcceleratorKeyCore(_Out_ HS
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetAcceleratorKey", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetAcceleratorKeyCoreImpl(pReturnValue));
@@ -138,6 +139,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetAccessKeyCore(_Out_ HSTRING
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetAccessKey", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetAccessKeyCoreImpl(pReturnValue));
@@ -178,6 +180,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetAnnotationsCore(_Outptr_ AB
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetAnnotations", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetAnnotationsCoreImpl(ppReturnValue));
@@ -218,6 +221,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetAutomationControlTypeCore(_
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetAutomationControlType", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetAutomationControlTypeCoreImpl(pReturnValue));
@@ -258,6 +262,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetAutomationIdCore(_Out_ HSTR
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetAutomationId", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetAutomationIdCoreImpl(pReturnValue));
@@ -298,6 +303,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetBoundingRectangleCore(_Out_
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetBoundingRectangle", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetBoundingRectangleCoreImpl(pReturnValue));
@@ -316,6 +322,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetChildren(_Outptr_ ABI::Wind
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetChildren", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetChildrenImpl(ppReturnValue));
@@ -334,6 +341,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetChildrenCore(_Outptr_ ABI::
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetChildrenCore", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetChildrenCoreImpl(ppReturnValue));
@@ -396,6 +404,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetClassNameCore(_Out_ HSTRING
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetClassName", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetClassNameCoreImpl(pReturnValue));
@@ -436,6 +445,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetClickablePointCore(_Out_ AB
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetClickablePoint", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetClickablePointCoreImpl(pReturnValue));
@@ -454,6 +464,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetControlledPeers(_Outptr_ AB
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetControlledPeers", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetControlledPeersImpl(ppReturnValue));
@@ -472,6 +483,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetControlledPeersCore(_Outptr
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetControlledPeersCore", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetControlledPeersCoreImpl(ppReturnValue));
@@ -534,6 +546,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetCultureCore(_Out_ INT* pRet
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetCulture", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetCultureCoreImpl(pReturnValue));
@@ -552,6 +565,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetDescribedByCore(_Outptr_ AB
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetDescribedByCore", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetDescribedByCoreImpl(ppReturnValue));
@@ -614,6 +628,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetElementFromPointCore(_In_ A
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetElementFromPoint", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetElementFromPointCoreImpl(pointInWindowCoordinates, ppReturnValue));
@@ -632,6 +647,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetFlowsFromCore(_Outptr_ ABI:
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetFlowsFromCore", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetFlowsFromCoreImpl(ppReturnValue));
@@ -672,6 +688,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetFlowsToCore(_Outptr_ ABI::W
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetFlowsToCore", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetFlowsToCoreImpl(ppReturnValue));
@@ -734,6 +751,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetFocusedElementCore(_Outptr_
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetFocusedElement", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetFocusedElementCoreImpl(ppReturnValue));
@@ -774,6 +792,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetFullDescriptionCore(_Out_ H
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetFullDescription", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetFullDescriptionCoreImpl(pReturnValue));
@@ -814,6 +833,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetHeadingLevelCore(_Out_ ABI:
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetHeadingLevel", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetHeadingLevelCoreImpl(pReturnValue));
@@ -854,6 +874,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetHelpTextCore(_Out_ HSTRING*
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetHelpText", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetHelpTextCoreImpl(pReturnValue));
@@ -894,6 +915,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetItemStatusCore(_Out_ HSTRIN
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetItemStatus", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetItemStatusCoreImpl(pReturnValue));
@@ -934,6 +956,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetItemTypeCore(_Out_ HSTRING*
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetItemType", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetItemTypeCoreImpl(pReturnValue));
@@ -974,6 +997,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetLabeledByCore(_Outptr_ ABI:
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetLabeledBy", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetLabeledByCoreImpl(ppReturnValue));
@@ -1014,6 +1038,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetLandmarkTypeCore(_Out_ ABI:
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetLandmarkType", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetLandmarkTypeCoreImpl(pReturnValue));
@@ -1054,6 +1079,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetLevelCore(_Out_ INT* pRetur
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetLevel", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetLevelCoreImpl(pReturnValue));
@@ -1094,6 +1120,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetLiveSettingCore(_Out_ ABI::
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetLiveSetting", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetLiveSettingCoreImpl(pReturnValue));
@@ -1134,6 +1161,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetLocalizedControlTypeCore(_O
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetLocalizedControlType", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetLocalizedControlTypeCoreImpl(pReturnValue));
@@ -1174,6 +1202,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetLocalizedLandmarkTypeCore(_
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetLocalizedLandmarkType", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetLocalizedLandmarkTypeCoreImpl(pReturnValue));
@@ -1214,6 +1243,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetNameCore(_Out_ HSTRING* pRe
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetName", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetNameCoreImpl(pReturnValue));
@@ -1254,6 +1284,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetOrientationCore(_Out_ ABI::
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetOrientation", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetOrientationCoreImpl(pReturnValue));
@@ -1272,6 +1303,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetParent(_Outptr_ ABI::Micros
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetParent", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetParentImpl(ppReturnValue));
@@ -1312,6 +1344,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetPatternCore(_In_ ABI::Micro
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetPattern", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetPatternCoreImpl(patternInterface, ppReturnValue));
@@ -1330,6 +1363,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetPeerFromPoint(_In_ ABI::Win
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetPeerFromPoint", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetPeerFromPointImpl(point, ppReturnValue));
@@ -1348,6 +1382,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetPeerFromPointCore(_In_ ABI:
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetPeerFromPointCore", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetPeerFromPointCoreImpl(point, ppReturnValue));
@@ -1410,6 +1445,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetPositionInSetCore(_Out_ INT
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetPositionInSet", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetPositionInSetCoreImpl(pReturnValue));
@@ -1450,6 +1486,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetSizeOfSetCore(_Out_ INT* pR
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_GetSizeOfSet", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->GetSizeOfSetCoreImpl(pReturnValue));
@@ -1490,6 +1527,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::HasKeyboardFocusCore(_Out_ BOO
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_HasKeyboardFocus", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->HasKeyboardFocusCoreImpl(pReturnValue));
@@ -1548,6 +1586,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::IsContentElementCore(_Out_ BOO
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_IsContentElement", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->IsContentElementCoreImpl(pReturnValue));
@@ -1588,6 +1627,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::IsControlElementCore(_Out_ BOO
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_IsControlElement", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->IsControlElementCoreImpl(pReturnValue));
@@ -1628,6 +1668,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::IsDataValidForFormCore(_Out_ B
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_IsDataValidForForm", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->IsDataValidForFormCoreImpl(pReturnValue));
@@ -1668,6 +1709,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::IsDialogCore(_Out_ BOOLEAN* pR
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_IsDialog", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->IsDialogCoreImpl(pReturnValue));
@@ -1708,6 +1750,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::IsEnabledCore(_Out_ BOOLEAN* p
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_IsEnabled", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->IsEnabledCoreImpl(pReturnValue));
@@ -1748,6 +1791,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::IsKeyboardFocusableCore(_Out_ 
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_IsKeyboardFocusable", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->IsKeyboardFocusableCoreImpl(pReturnValue));
@@ -1788,6 +1832,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::IsOffscreenCore(_Out_ BOOLEAN*
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_IsOffscreen", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->IsOffscreenCoreImpl(pReturnValue));
@@ -1828,6 +1873,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::IsPasswordCore(_Out_ BOOLEAN* 
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_IsPassword", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->IsPasswordCoreImpl(pReturnValue));
@@ -1868,6 +1914,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::IsPeripheralCore(_Out_ BOOLEAN
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_IsPeripheral", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->IsPeripheralCoreImpl(pReturnValue));
@@ -1908,6 +1955,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::IsRequiredForFormCore(_Out_ BO
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_IsRequiredForForm", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->IsRequiredForFormCoreImpl(pReturnValue));
@@ -1948,6 +1996,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::NavigateCore(_In_ ABI::Microso
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutomationPeer_Navigate", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->NavigateCoreImpl(direction, ppReturnValue));
@@ -1967,6 +2016,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::PeerFromProvider(_In_ ABI::Mic
     }
     ARG_NOTNULL(pProvider, "provider");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->PeerFromProviderImpl(pProvider, ppReturnValue));
@@ -1986,6 +2036,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerGenerated::ProviderFromPeer(_In_ ABI::Mic
     }
     ARG_NOTNULL(pPeer, "peer");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutomationPeer*>(this)->ProviderFromPeerImpl(pPeer, ppReturnValue));
@@ -2284,6 +2335,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerFactory::ListenerExists(_In_ ABI::Microso
         XamlTelemetry::PublicApiCall(true, 0, "AutomationPeer_ListenerExists", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(ListenerExistsImpl(eventId, pReturnValue));
 Cleanup:
@@ -2301,6 +2353,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerFactory::GenerateRawElementProviderRuntim
         XamlTelemetry::PublicApiCall(true, 0, "AutomationPeer_GenerateRawElementProviderRuntimeId", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(GenerateRawElementProviderRuntimeIdImpl(pReturnValue));
 Cleanup:

@@ -54,6 +54,7 @@ IFACEMETHODIMP DirectUI::IsTypePresentGenerated::Evaluate(_In_ ABI::Windows::Fou
     }
     ARG_NOTNULL(pArguments, "arguments");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<IsTypePresent*>(this)->EvaluateImpl(pArguments, pReturnValue));

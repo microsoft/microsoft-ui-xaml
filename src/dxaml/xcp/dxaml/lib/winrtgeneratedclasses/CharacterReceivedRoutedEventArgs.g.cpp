@@ -49,6 +49,7 @@ IFACEMETHODIMP DirectUI::CharacterReceivedRoutedEventArgs::get_Character(_Out_ W
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CharacterReceivedRoutedEventArgs*>(this)->get_CharacterImpl(pValue));
 Cleanup:
@@ -58,6 +59,7 @@ IFACEMETHODIMP DirectUI::CharacterReceivedRoutedEventArgs::get_KeyStatus(_Out_ A
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CharacterReceivedRoutedEventArgs*>(this)->get_KeyStatusImpl(pValue));
 Cleanup:
@@ -71,6 +73,7 @@ IFACEMETHODIMP DirectUI::CharacterReceivedRoutedEventArgs::get_Handled(_Out_ BOO
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CCharacterReceivedRoutedEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));

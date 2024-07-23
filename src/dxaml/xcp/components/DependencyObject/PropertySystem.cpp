@@ -94,7 +94,7 @@ struct UpdateValueInfo
     KnownPropertyIndex m_propertyIndex  = KnownPropertyIndex::UnknownType_UnknownProperty;
     uint16_t m_threadId                 = 0;
     CDependencyObject* m_target         = nullptr;
-    uint8_t m_untypedEffectiveValue[sizeof(CValue)];
+    uint8_t m_untypedEffectiveValue[sizeof(CValue)]{};
 };
 
 static CircularMemoryLogger<8, UpdateValueInfo> s_failedUpdates;

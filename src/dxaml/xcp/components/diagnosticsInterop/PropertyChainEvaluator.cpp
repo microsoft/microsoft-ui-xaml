@@ -613,7 +613,7 @@ namespace Diagnostics {
                     // The only case we shouldn't get a peer is if depObj is really a CApplication object.
                     ASSERT((depObj->OfTypeByIndex<KnownTypeIndex::Application>()));
                     CValue cVal;
-                    depObj->GetValue(depProp, &cVal);
+                    IFC_RETURN(depObj->GetValue(depProp, &cVal));
                     IFC_RETURN(CValueBoxer::UnboxObjectValue(&cVal, depProp->GetPropertyType(), &value));
                 }
             }

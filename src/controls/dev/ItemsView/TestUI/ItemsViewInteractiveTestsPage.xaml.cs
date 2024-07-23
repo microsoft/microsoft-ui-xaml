@@ -30,6 +30,7 @@ namespace MUXControlsTestApp
         private StackLayout _stackLayout = null;
         private UniformGridLayout _uniformGridLayout = null;
         private UIElement _oldFocusedElement = null;
+        private LinedFlowLayoutItemCollectionTransitionProvider _linedFlowLayoutItemCollectionTransitionProvider = null;
 
         public ItemsViewInteractiveTestsPage()
         {
@@ -49,6 +50,7 @@ namespace MUXControlsTestApp
             UpdateItemsViewIsItemInvokedEnabled();
             UpdateItemsViewSelectionMode();
             UpdateItemsInfoRequestedCheckBoxes();
+            UpdateAppAnimatorCheckBox();
 
             ScrollView scrollView = ItemsViewTestHooks.GetScrollViewPart(this.itemsView);
 
@@ -89,6 +91,11 @@ namespace MUXControlsTestApp
         private void ChkUseFastPath_IsCheckedChanged(object sender, RoutedEventArgs args)
         {
             UpdateItemsInfoRequestedHandler();
+        }
+
+        private void ChkUseAppAnimator_IsCheckedChanged(object sender, RoutedEventArgs args)
+        {
+            UpdateAppAnimator();
         }
 
         private void ChkLogItemsRepeaterMessages_Checked(object sender, RoutedEventArgs e)
@@ -310,6 +317,7 @@ namespace MUXControlsTestApp
 
                     UpdateLinedFlowLayoutLineHeight();
                     UpdateItemsInfoRequestedCheckBoxes();
+                    UpdateAppAnimatorCheckBox();
                 }
             }
             catch (Exception ex)
@@ -508,6 +516,151 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void BtnInsertItems_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (txtItemsSourceIndexes != null && txtStatus != null)
+                {
+                    txtStatus.Text = "InsertItems ...";
+
+                    string[] indexes = txtItemsSourceIndexes.Text.Split(',');
+
+                    foreach (string index in indexes)
+                    {
+                        InsertItem(int.Parse(index));
+                    }
+
+                    txtStatus.Text = "InsertItems. Done.";
+
+                    if (_oldFocusedElement != null)
+                    {
+                        _oldFocusedElement.Focus(FocusState.Programmatic);
+                        _oldFocusedElement = null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _fullLogs.Add(ex.ToString());
+            }
+        }
+
+        private void BtnRemoveItems_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (txtItemsSourceIndexes != null && txtStatus != null)
+                {
+                    txtStatus.Text = "RemoveItems ...";
+
+                    string[] indexes = txtItemsSourceIndexes.Text.Split(',');
+
+                    foreach (string index in indexes)
+                    {
+                        RemoveItem(int.Parse(index));
+                    }
+
+                    txtStatus.Text = "RemoveItems. Done.";
+                }
+            }
+            catch (Exception ex)
+            {
+                _fullLogs.Add(ex.ToString());
+            }
+        }
+
+        private void InsertItem(int index)
+        {
+            try
+            {
+                if (itemsView != null && cmbItemsSource != null)
+                {
+                    switch (cmbItemsSource.SelectedIndex)
+                    {
+                        case 1:                            
+                            if (_lstRecipes != null)
+                            {
+                                int rank = _lstRecipes.Count;
+                                Recipe recipe = new Recipe
+                                {
+                                    ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", rank % 8 + 1)),
+                                    Description = rank + " - " + _lorem.Substring(0, rank)
+                                };
+
+                                _lstRecipes.Insert(index, recipe);
+                            }
+                            break;
+                        case 2:
+                            if (_lstLargeRecipes != null)
+                            {
+                                int rank = _lstLargeRecipes.Count;
+                                Recipe recipe = new Recipe
+                                {
+                                    ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", rank % 8 + 1)),
+                                    Description = rank + " - " + _lorem.Substring(0, rank % 50 + 1)
+                                };
+
+                                _lstLargeRecipes.Insert(index, recipe);
+                            }
+                            break;
+                        case 3:
+                            if (_colRecipes != null)
+                            {
+                                int rank = _colRecipes.Count;
+                                Recipe recipe = new Recipe
+                                {
+                                    ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", rank % 8 + 1)),
+                                    Description = rank + " - " + _lorem.Substring(0, 2 * rank)
+                                };
+
+                                _colRecipes.Insert(index, recipe);
+                            }
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _fullLogs.Add(ex.ToString());
+            }
+        }
+
+        private void RemoveItem(int index)
+        {
+            try
+            {
+                if (itemsView != null && cmbItemsSource != null)
+                {
+                    switch (cmbItemsSource.SelectedIndex)
+                    {
+                        case 1:
+                            if (_lstRecipes != null)
+                            {
+                                _lstRecipes.RemoveAt(index);
+                            }
+                            break;
+                        case 2:
+                            if (_lstLargeRecipes != null)
+                            {
+                                _lstLargeRecipes.RemoveAt(index);
+                            }
+                            break;
+                        case 3:
+                            if (_colRecipes != null)
+                            {
+                                _colRecipes.RemoveAt(index);
+                            }
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _fullLogs.Add(ex.ToString());
+            }
+        }
+
         private void UpdateItemsInfoRequestedCheckBoxes()
         {
             chkHandleItemsInfoRequested.Visibility = chkUseFastPath.Visibility = cmbLayout.SelectedIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
@@ -515,6 +668,22 @@ namespace MUXControlsTestApp
             if (!chkHandleItemsInfoRequested.IsEnabled)
             {
                 chkHandleItemsInfoRequested.IsChecked = chkUseFastPath.IsEnabled = false;
+            }
+        }
+
+        private void UpdateAppAnimatorCheckBox()
+        {
+            if (cmbLayout.SelectedIndex == 1)
+            {
+                chkUseAppAnimator.Visibility = Visibility.Visible;
+                if (itemsView != null)
+                {
+                    chkUseAppAnimator.IsChecked = itemsView.ItemTransitionProvider != null;
+                }
+            }
+            else
+            {
+                chkUseAppAnimator.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -530,6 +699,32 @@ namespace MUXControlsTestApp
                 }
 
                 _linedFlowLayout.InvalidateItemsInfo();
+            }
+        }
+
+        private void UpdateAppAnimator()
+        {
+            if (itemsView != null && chkUseAppAnimator != null)
+            {
+                if (chkUseAppAnimator.IsChecked == true)
+                {
+                    if (itemsView.ItemTransitionProvider == null)
+                    {
+                        if (_linedFlowLayoutItemCollectionTransitionProvider == null)
+                        {
+                            _linedFlowLayoutItemCollectionTransitionProvider = new LinedFlowLayoutItemCollectionTransitionProvider();
+                        }
+
+                        itemsView.ItemTransitionProvider = _linedFlowLayoutItemCollectionTransitionProvider;
+                    }
+                }
+                else
+                {
+                    if (itemsView.ItemTransitionProvider != null)
+                    {
+                        itemsView.ItemTransitionProvider = null;
+                    }
+                }
             }
         }
 

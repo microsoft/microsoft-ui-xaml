@@ -85,6 +85,7 @@ public:
     HRESULT ConfigureNumberSubstitution();
 
     _Check_return_ HRESULT SetSystemFontCollectionOverride(_In_opt_ IDWriteFontCollection* pFontCollection);
+    _Check_return_ HRESULT ShouldUseTypographicFontModel(_Out_ bool* useTypographicModel);
 
 private:
     // Private ctor.

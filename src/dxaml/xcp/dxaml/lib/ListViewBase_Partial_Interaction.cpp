@@ -1164,7 +1164,7 @@ IFACEMETHODIMP ListViewBase::OnKeyDown(
         if (spCurrentAsLVBI)
         {
             BOOLEAN hasFocus = FALSE;
-            spCurrentAsLVBI->HasFocus(&hasFocus);
+            IFC_RETURN(spCurrentAsLVBI->HasFocus(&hasFocus));
 
             if (!hasFocus || focusMoved)
             {
@@ -1867,7 +1867,7 @@ _Check_return_ HRESULT ListViewBase::OnKeyboardNavigation(
                         }
                         else
                         {
-                            IFC(ListViewBase::IsItemFocusable(spMapping.Get(), panelStartIndexInCollection + index, pIsFocusable));
+                            IFC(ListViewBase::IsItemFocusable(spMapping.Get(), panelStartIndexInCollection + index, true /*unrealizedItemsAssumedFocusable*/, pIsFocusable));
                         }
 
                     Cleanup:
@@ -2227,7 +2227,7 @@ _Check_return_ HRESULT ListViewBase::GetClosestIndexToItemInGroupPanel(
                 targetIndexInCollection = targetElementInfoInTargetPanel.m_childIndex + targetGroupStartIndex;
 
                 // See if the target is selectable.
-                IFC(ListViewBase::IsItemFocusable(spMapping.Get(), targetIndexInCollection, &isTargetFocusable))
+                IFC(ListViewBase::IsItemFocusable(spMapping.Get(), targetIndexInCollection, true /*unrealizedItemsAssumedFocusable*/, &isTargetFocusable))
 
                 if (isTargetFocusable)
                 {
@@ -2362,7 +2362,7 @@ _Check_return_ HRESULT ListViewBase::FindFirstSelectableItemInGroup(
                 IFC(GetItemContainerMapping(&spMapping));
             }
 
-            IFC(ListViewBase::IsItemFocusable(spMapping.Get(), currentItemIndex, &isFocusable));
+            IFC(ListViewBase::IsItemFocusable(spMapping.Get(), currentItemIndex, true /*unrealizedItemsAssumedFocusable*/, &isFocusable));
             if (isFocusable)
             {
                 *pFoundSelectableItem = TRUE;
@@ -3262,24 +3262,33 @@ Cleanup:
 }
 
 // Checks whether the item container returned for the given index
-// by pGenerator is Selectable.
+// by pGenerator is focusable.
 _Check_return_ HRESULT ListViewBase::IsItemFocusable(
     _In_ IItemContainerMapping* pMapping,
     _In_ UINT itemIndex,
+    _In_ bool unrealizedItemsAssumedFocusable,
     _Out_ BOOLEAN* pIsFocusable)
 {
     HRESULT hr = S_OK;
     ctl::ComPtr<xaml::IDependencyObject> spContainerAsIDO;
-    ctl::ComPtr<IInspectable> spContainerAsI;
-    BOOLEAN isFocusable = FALSE;
 
     *pIsFocusable = FALSE;
 
     IFC(pMapping->ContainerFromIndex(itemIndex, &spContainerAsIDO));
 
-    spContainerAsI = spContainerAsIDO.AsOrNull<IInspectable>();
-    IFC(ItemsControl::IsFocusableHelper(spContainerAsI.Get(), isFocusable));
-    *pIsFocusable = isFocusable;
+    if (spContainerAsIDO)
+    {
+        ctl::ComPtr<IInspectable> spContainerAsI;
+        BOOLEAN isFocusable = FALSE;
+
+        spContainerAsI = spContainerAsIDO.AsOrNull<IInspectable>();
+        IFC(ItemsControl::IsFocusableHelper(spContainerAsI.Get(), isFocusable));
+        *pIsFocusable = isFocusable;
+    }
+    else if (unrealizedItemsAssumedFocusable)
+    {
+        *pIsFocusable = TRUE;
+    }
 
 Cleanup:
     RRETURN(hr);

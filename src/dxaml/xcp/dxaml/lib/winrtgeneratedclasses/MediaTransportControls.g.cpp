@@ -355,6 +355,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "MediaTransportControls_OnBackButtonPressed", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<MediaTransportControls*>(this)->OnBackButtonPressedImpl(pResult));
@@ -391,7 +392,7 @@ _Check_return_ HRESULT DirectUI::MediaTransportControlsGenerated::EventAddHandle
     case KnownEventIndex::MediaTransportControls_ThumbnailRequested:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::MediaTransportControls*, ABI::Microsoft::UI::Xaml::Media::MediaTransportControlsThumbnailRequestedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

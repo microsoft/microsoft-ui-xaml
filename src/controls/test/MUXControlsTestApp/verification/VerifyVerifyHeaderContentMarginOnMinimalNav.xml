@@ -12,7 +12,7 @@
     MinHeight=36
     Name=HeaderContent
     Padding=0,0,0,0
-    RenderSize=344,38
+    RenderSize=344,36
     Visibility=Visible
   [Microsoft.UI.Xaml.Controls.ContentPresenter]
       Background=[NULL]
@@ -26,7 +26,7 @@
       Foreground=#E4000000
       Margin=0,0,0,0
       Padding=0,0,0,0
-      RenderSize=344,38
+      RenderSize=344,36
       Visibility=Visible
     [Microsoft.UI.Xaml.Controls.TextBlock]
         FocusVisualPrimaryBrush=#E4000000
@@ -36,5 +36,5 @@
         Foreground=#E4000000
         Margin=0,0,0,0
         Padding=0,0,0,0
-        RenderSize=107,38
+        RenderSize=107,34
         Visibility=Visible

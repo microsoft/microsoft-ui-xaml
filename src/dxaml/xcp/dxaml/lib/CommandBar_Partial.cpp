@@ -3651,7 +3651,7 @@ CommandBar::GetSizeOfSet(
             if (interactableElementCount != m_automationSizeOfSet)
             {
                 // Set size has changed since the last update.
-                UpdateOverflowButtonAutomationSetNumbers(interactableElementCount /*sizeOfSet*/);
+                IFC_RETURN(UpdateOverflowButtonAutomationSetNumbers(interactableElementCount /*sizeOfSet*/));
             }
         }
 

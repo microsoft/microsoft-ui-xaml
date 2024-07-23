@@ -15,7 +15,7 @@ namespace DirectUI
             ctl::ComPtr<DragDropVisual> m_spDragDropVisual;
 
             // Current drag-drop position, relative to the root visual.
-            wf::Point m_userDragPosition;
+            wf::Point m_userDragPosition{};
 
             // A reference to the UIElement that is the source of the current drag and drop operation. Only valid if m_isDragDropInProgress is true.
             ctl::WeakRefPtr m_wrCurrentDragSourceWeakRef;

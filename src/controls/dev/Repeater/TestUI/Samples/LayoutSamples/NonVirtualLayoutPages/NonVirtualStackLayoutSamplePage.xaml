@@ -5,13 +5,55 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:local="using:MUXControlsTestApp.Samples">
-    <Grid>
-        <ScrollViewer>
-            <controls:ItemsRepeater x:Name="repeater">
-                <controls:ItemsRepeater.Layout>
-                    <local:NonVirtualStackLayout />
-                </controls:ItemsRepeater.Layout>
-            </controls:ItemsRepeater>
-        </ScrollViewer>
+    <Grid ColumnDefinitions="Auto, Auto, Auto, Auto">
+        <StackPanel>
+            <TextBlock Text="itemsRepeater1.ItemsSource is ObservableCollection&lt;int&gt;" Foreground="Red" Margin="4"/>
+
+            <ScrollViewer Margin="4" Width="64">
+                <controls:ItemsRepeater x:Name="itemsRepeater1">
+                    <controls:ItemsRepeater.Layout>
+                        <local:NonVirtualStackLayout/>
+                    </controls:ItemsRepeater.Layout>
+                </controls:ItemsRepeater>
+            </ScrollViewer>
+        </StackPanel>
+        
+        <Grid Margin="4, 4, 12, 4" Grid.Column="1" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto">
+            <TextBlock Text="itemsRepeater1.ItemsSource operations" Grid.ColumnSpan="2" Foreground="Red" Margin="0, 4, 0, 4"/>
+
+            <Button x:Name="btnClear1" Content="Clear" Margin="1" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnClear1_Click"/>
+
+            <TextBlock Text="Child Index:" Grid.Row="2" VerticalAlignment="Center" Margin="0, 4, 0, 0"/>
+            <TextBox x:Name="txtChildIndex1" Text="0" VerticalAlignment="Center" Grid.Row="2" Grid.Column="1" Margin="1"/>
+
+            <Button x:Name="btnReplace1" Content="Replace" Margin="1" Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnReplace1_Click"/>
+            <Button x:Name="btnInsert1" Content="Insert" Margin="1" Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnInsert1_Click"/>
+            <Button x:Name="btnRemoveAt1" Content="RemoveAt" Margin="1" Grid.Row="5" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnRemoveAt1_Click"/>
+        </Grid>
+
+        <StackPanel Grid.Column="2">
+            <TextBlock Text="itemsRepeater2.ItemsSource is ObservableCollection&lt;UIElement&gt;" Foreground="Red" Margin="4"/>
+
+            <ScrollViewer Margin="4" Width="64">
+                <controls:ItemsRepeater x:Name="itemsRepeater2">
+                    <controls:ItemsRepeater.Layout>
+                        <local:NonVirtualStackLayout/>
+                    </controls:ItemsRepeater.Layout>
+                </controls:ItemsRepeater>
+            </ScrollViewer>
+        </StackPanel>
+
+        <Grid Margin="4" Grid.Column="3" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto">
+            <TextBlock Text="itemsRepeater2.ItemsSource operations" Grid.ColumnSpan="2" Foreground="Red" Margin="0, 4, 0, 4"/>
+
+            <Button x:Name="btnClear2" Content="Clear" Margin="1" Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnClear2_Click"/>
+
+            <TextBlock Text="Child Index:" Grid.Row="2" VerticalAlignment="Center" Margin="0, 4, 0, 0"/>
+            <TextBox x:Name="txtChildIndex2" Text="0" VerticalAlignment="Center" Grid.Row="2" Grid.Column="1" Margin="1"/>
+
+            <Button x:Name="btnReplace2" Content="Replace" Margin="1" Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnReplace2_Click"/>
+            <Button x:Name="btnInsert2" Content="Insert" Margin="1" Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnInsert2_Click"/>
+            <Button x:Name="btnRemoveAt2" Content="RemoveAt" Margin="1" Grid.Row="5" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnRemoveAt2_Click"/>
+        </Grid>
     </Grid>
 </Page>

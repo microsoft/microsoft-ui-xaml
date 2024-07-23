@@ -161,8 +161,24 @@ RadioButton::OnGroupNamePropertyChanged(
     IFC(Unregister(strOldValue.Get(), this));
     IFC(Register(strNewValue.Get(), this));
 
+    IFC(UpdateRadioButtonGroup());
+
 Cleanup:
     RRETURN(hr);
+}
+
+_Check_return_ HRESULT RadioButton::EnterImpl(
+    _In_ bool bLive,
+    _In_ bool bSkipNameRegistration,
+    _In_ bool bCoercedIsEnabled,
+    _In_ bool bUseLayoutRounding)
+{
+    IFC_RETURN(__super::EnterImpl(bLive, bSkipNameRegistration, bCoercedIsEnabled, bUseLayoutRounding));
+    if (bLive)
+    {
+        IFC_RETURN(UpdateRadioButtonGroup());
+    }
+    return S_OK;
 }
 
 _Check_return_ HRESULT RadioButton::OnChecked()
@@ -360,23 +376,54 @@ RadioButton::UnregisterFromGroup(std::list<ctl::WeakRefPtr> *groupElements, _In_
 _Check_return_ HRESULT
 RadioButton::UpdateRadioButtonGroup()
 {
-    RadioButton *pRadioButtonNoRef = nullptr;
     BOOLEAN bIsChecked = FALSE;
+    ctl::ComPtr<wf::IReference<bool>> spIsCheckedReference;
+
+    // If we are not checked then we don't have any effect on other buttons
+    IFC_RETURN(get_IsChecked(&spIsCheckedReference));
+    if (spIsCheckedReference)
+    {
+        IFC_RETURN(spIsCheckedReference->get_Value(&bIsChecked));
+        if (!bIsChecked)
+        {
+            return S_OK;
+        }
+    }
+
+    RadioButton *pRadioButtonNoRef = nullptr;
     std::list<ctl::WeakRefPtr> *groupElements = nullptr;
     bool groupNameExists = false;
     xstring_ptr groupName;
-    ctl::ComPtr<xaml::IDependencyObject> spParent;
+    xref_ptr<CDependencyObject> spParent;
 
-    // Accessing the group's parent in this first GetParentForGroup call may propagate a new
+    IFC_RETURN(GetGroupName(&groupNameExists, &groupName));
+    IFC_RETURN(GetParentForGroup(groupNameExists, this, spParent.ReleaseAndGetAddressOf()));
+
+    // If we don't get a parent then don't do anything and let it be handled on enter impl.  Without
+    // a parent we don't know what the scope of a named group item is and for unnamed items, they
+    // will all share the same group preventing different groups from having buttons selected.
+    if (!spParent)
+    {
+        return S_OK;
+    }
+    
+    // We need to make sure the DXaml peer exists for our parent because this can propagate a new
     // DataContext and cause an app FrameworkElement.DataContextChanged event handler to affect
     // the results of GetGroupName, GetParentForGroup and GetRadioButtonGroupsByName.
-    // So the GetGroupName & GetParentForGroup methods are called twice to make sure the resulting
-    // groupNameExists, groupName, spParent, groupsByName and groupElements variables are valid.
-    IFC_RETURN(GetGroupName(&groupNameExists, &groupName));
-    IFC_RETURN(GetParentForGroup(groupNameExists, this, &spParent));
+    // So the GetGroupName & GetParentForGroup methods are called a second time if we need to
+    // create a peer to make sure the resulting groupName, spParent, groupsByName
+    // and groupElements variables are valid.
+    {
+        ctl::ComPtr<DependencyObject> dxamlPeer;
 
-    IFC_RETURN(GetGroupName(&groupNameExists, &groupName));
-    IFC_RETURN(GetParentForGroup(groupNameExists, this, &spParent));
+        IFC_RETURN(DXamlCore::GetCurrent()->TryGetPeer(spParent, dxamlPeer.ReleaseAndGetAddressOf()));
+        if (!dxamlPeer)
+        {
+            IFC_RETURN(DXamlCore::GetCurrent()->GetPeer(spParent, dxamlPeer.ReleaseAndGetAddressOf()));
+            IFC_RETURN(GetGroupName(&groupNameExists, &groupName));
+            IFC_RETURN(GetParentForGroup(groupNameExists, this, spParent.ReleaseAndGetAddressOf()));
+        }
+    }
 
     xchainedmap<xstring_ptr, std::list<ctl::WeakRefPtr>*> *groupsByName;
     IFC_RETURN(DXamlCore::GetCurrent()->GetRadioButtonGroupsByName(FALSE, groupsByName));
@@ -392,8 +439,6 @@ RadioButton::UpdateRadioButtonGroup()
 
                 for (auto vector_it = groupElementsCache.begin(); vector_it != groupElementsCache.end(); ++vector_it)
                 {
-                    ctl::ComPtr<wf::IReference<bool>> spIsCheckedReference;
-
                     // Resolve the weak reference to get an actual IRadioButton
                     ctl::WeakRefPtr pRadioButtonRef = *vector_it;
                     ctl::ComPtr<IRadioButton> radioButton;
@@ -407,7 +452,7 @@ RadioButton::UpdateRadioButtonGroup()
                     // Cast to a class so we can call all the members
                     pRadioButtonNoRef = static_cast<RadioButton*>(radioButton.Get());
 
-                    IFC_RETURN(pRadioButtonNoRef->get_IsChecked(&spIsCheckedReference));
+                    IFC_RETURN(pRadioButtonNoRef->get_IsChecked(spIsCheckedReference.ReleaseAndGetAddressOf()));
                     if (spIsCheckedReference)
                     {
                         IFC_RETURN(spIsCheckedReference->get_Value(&bIsChecked));
@@ -415,8 +460,8 @@ RadioButton::UpdateRadioButtonGroup()
 
                     if (pRadioButtonNoRef != this && (!spIsCheckedReference || bIsChecked))
                     {
-                        ctl::ComPtr<xaml::IDependencyObject> spCurrentParent;
-                        IFC_RETURN(GetParentForGroup(groupNameExists, pRadioButtonNoRef, &spCurrentParent));
+                        xref_ptr<CDependencyObject> spCurrentParent;
+                        IFC_RETURN(GetParentForGroup(groupNameExists, pRadioButtonNoRef, spCurrentParent.ReleaseAndGetAddressOf()));
 
                         if (spParent == spCurrentParent)
                         {
@@ -459,28 +504,26 @@ RadioButton::GetGroupName(_Out_ bool* groupNameExists, _Out_ xstring_ptr* groupN
 }
 
 _Check_return_ HRESULT
-RadioButton::GetParentForGroup(_In_ bool groupNameExists, _In_ RadioButton* radioButton, _Outptr_ xaml::IDependencyObject** parent)
+RadioButton::GetParentForGroup(_In_ bool groupNameExists, _In_ RadioButton* radioButton, _Outptr_ CDependencyObject** parent)
 {
     *parent = nullptr;
-    ctl::ComPtr<xaml::IDependencyObject> radioButtonParent;
 
-    // If there is a groupName, then get the parent of the RadioButton.
-    if (!groupNameExists)
-    {
-        IFC_RETURN(radioButton->get_Parent(&radioButtonParent));
-    }
-    // Otherwise, the RadioButtons are in a "default group" so get the root for the RadioButton, e.g. a Panel.
-    else
-    {
-        IFC_RETURN(VisualTreeHelper::GetRootStatic(radioButton, &radioButtonParent));
-    }
+    // Previously we used to return the DXaml peer but that requires us to be able to get the peer of the parent and
+    // there are scenarios when we are trying to get the parent for an item not in the tree that is the process
+    // of being destructed.  In this case we will try to resurrect the peer and will fail.  In addition, the methods
+    // used to get the DXaml peer always return null if the element is not in the active tree.  This caused us to
+    // improperly group all radio buttons not in the tree into a single group and we end up unchecking the wrong buttons.
+    // So currently we only walk the core side which ensure we always have some kind of a parent AND does not get
+    // the Dxaml peer when it isn't needed.
+    CValue result;
+    IFC_RETURN(CoreImports::DependencyObject_GetVisualRelative(
+        static_cast<CUIElement*>(radioButton->GetHandle()),
+        groupNameExists ? CoreImports::VisualRelativeKind_Root : CoreImports::VisualRelativeKind_Parent,
+        &result));
 
-    if (radioButtonParent)
-    {
-        IFC_RETURN(radioButtonParent.CopyTo(parent));
-    }
+    *parent = result.DetachObject().detach();
 
-    return S_OK;
+     return S_OK;
 }
 
 _Check_return_ HRESULT RadioButton::AutomationRadioButtonOnToggle()
@@ -566,12 +609,12 @@ RadioButton::FocusNextElementInGroup(
     xstring_ptr currentGroupName;
     IFC_RETURN(GetGroupName(&currentGroupNameExists, &currentGroupName));
 
-    ctl::ComPtr<xaml::IDependencyObject> currentParent;
-    IFC_RETURN(GetParentForGroup(currentGroupNameExists, this, &currentParent));
-    CDependencyObject* currentParentDO = nullptr;
-    if (currentParent)
+    ctl::ComPtr<DependencyObject> currentParent;
+    xref_ptr<CDependencyObject> currentParentDO;
+    IFC_RETURN(GetParentForGroup(currentGroupNameExists, this, currentParentDO.ReleaseAndGetAddressOf()));
+    if (currentParentDO)
     {
-        currentParentDO = static_cast<CDependencyObject*>(currentParent.Cast<DependencyObject>()->GetHandle());
+        IFC_RETURN(DXamlCore::GetCurrent()->GetPeer(currentParentDO, &currentParent));
     }
 
     auto pFocusManager = VisualTree::GetFocusManagerForElement(GetHandle());
@@ -622,7 +665,8 @@ RadioButton::FocusNextElementInGroup(
 
                     if (currentGroupName.Equals(nextGroupName))
                     {
-                        pFocusManager->SetFocusedElement(FocusMovement(nextFocusCandidate, navigationDirection, DirectUI::FocusState::Keyboard));
+                        const Focus::FocusMovementResult result = pFocusManager->SetFocusedElement(FocusMovement(nextFocusCandidate, navigationDirection, DirectUI::FocusState::Keyboard));
+                        IFC_RETURN(result.GetHResult());
                         *wasFocused = true;
                         break;
                     }

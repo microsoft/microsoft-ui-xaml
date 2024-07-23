@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::LoadedImageSourceLoadCompletedEventArgs::get_Status(_Ou
     DirectUI::LoadedImageSourceLoadStatus valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CLoadedImageSourceLoadCompletedEventArgs*>(pCoreEventArgsNoRef)->get_Status(&valueCore));

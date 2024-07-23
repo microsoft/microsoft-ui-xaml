@@ -72,6 +72,7 @@ IFACEMETHODIMP DirectUI::MediaTransportControlsThumbnailRequestedEventArgsGenera
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "MediaTransportControlsThumbnailRequestedEventArgs_GetDeferral", 0);
     }
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckThread());
     IFC(static_cast<MediaTransportControlsThumbnailRequestedEventArgs*>(this)->GetDeferralImpl(ppResult));
 Cleanup:

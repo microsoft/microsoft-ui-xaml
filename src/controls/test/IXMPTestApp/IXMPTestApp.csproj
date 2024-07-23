@@ -182,6 +182,25 @@
     <PackageReference Include="Microsoft.Taef" Version="$(TaefNugetPackageVersion)" />
     <PackageReference Include="MUXCustomBuildTasks" Version="$(MuxCustomBuildTasksPackageVersion)" />
   </ItemGroup>
+  <!-- Due to a recent change to include WinMDs when unpacking for WindowsAppSdkSelfContained
+    (https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKAggregator/pullrequest/9751288)
+    The build will fails
+    error APPX1112: Payload contains two or more files with the same destination path 'Microsoft.Foundation.winmd', but they have different content.
+    Source files:
+      [C:\__w\1\s\controls\test\IXMPTestApp\IXMPTestApp.csproj]
+    error APPX1112: C:\__w\1\s\perf\scenarios\packages\microsoft.windowsappsdk\999.0.0-mock-3.0.0-zmain.240214.1-nightly-x64-release\lib\uap10.0.17763\Microsoft.Foundation.winmd
+      [C:\__w\1\s\controls\test\IXMPTestApp\IXMPTestApp.csproj]
+    error APPX1112: C:\__w\1\s\BuildOutput\obj\x86chk\controls\test\IXMPTestApp\MsixContent\Microsoft.Foundation.winmd
+      [C:\__w\1\s\controls\test\IXMPTestApp\IXMPTestApp.csproj]
+    This error originated because the WindowsAppSDK FWP takes 18362 version of the winmd instead of 17763. But the apps targets 17763 hence the difference.
+    But we can use MicrosoftWindowsAppSDKFilesExcluded to exclude all the WinMDs from being unpacked preventing this issue. -->
+  <Target Name="ExcludeMicrosoftWindowsAppSDKPayloadFiles"
+      BeforeTargets="AddMicrosoftWindowsAppSDKPayloadFiles"
+      DependsOnTargets="ExtractMicrosoftWindowsAppSDKMsixFiles" >
+    <ItemGroup>
+      <MicrosoftWindowsAppSDKFilesExcluded Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.winmd"/>
+    </ItemGroup>
+  </Target>
   <Import Project="$(MUXCProjectRoot)dev\CommonManaged\CommonManaged.projitems" Label="Shared" />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '15.0' ">
     <VisualStudioVersion>15.0</VisualStudioVersion>

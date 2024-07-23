@@ -13,10 +13,10 @@ class LayoutTransitionStorage
 {
 public:
     LayoutTransitionStorage()
+        : m_transformStart(true /*initialize*/)
+        , m_transformDestination(true /*initialize*/)
     {
         m_sizeStart.height = m_sizeStart.width = m_currentSize.height = m_currentSize.width = m_sizeDestination.height = m_sizeDestination.width = 0.0f;
-        m_transformStart = CMILMatrix(TRUE);
-        m_transformDestination = CMILMatrix(TRUE);
         m_currentOffset.x = m_currentOffset.y = 0.0f;
         m_arrangeInput.Height = m_arrangeInput.Width = m_arrangeInput.X = m_arrangeInput.Y = 0.0f;
         m_arrangeOutput.Height = m_arrangeOutput.Width = m_arrangeOutput.X = m_arrangeOutput.Y = 0.0f;

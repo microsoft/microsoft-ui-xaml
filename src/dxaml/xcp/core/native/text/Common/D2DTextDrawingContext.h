@@ -233,8 +233,8 @@ private:
     // Stores rendering data for lines
     struct LineData
     {
-        XFLOAT Width;
-        XFLOAT Thickness;
+        XFLOAT Width{};
+        XFLOAT Thickness{};
         CMILMatrix Transform;
         xref::weakref_ptr<CDependencyObject> BrushSource;
         CBrush *Brush;

@@ -1,27 +1,39 @@
 <Project>
   <PropertyGroup>
-    <MemoBuildPackageRoot>$(NugetPackageDirectory)\MemoBuild.$(MemoBuildPackageVersion)</MemoBuildPackageRoot>
-
-    <!-- Off by default -->
-    <MemoBuildEnabled Condition="'$(MemoBuildEnabled)' == ''">false</MemoBuildEnabled>
-
     <!-- For local testing, use a local cache -->
-    <MemoBuildCacheType Condition="'$(TF_BUILD)' == ''">LocalOnly</MemoBuildCacheType>
+    <MSBuildCachePackageName Condition="'$(TF_BUILD)' == ''">Microsoft.MSBuildCache.Local</MSBuildCachePackageName>
 
     <!-- In Azure pipelines, use Pipeline Caching as the cache storage backend -->
-    <MemoBuildCacheType Condition="'$(TF_BUILD)' != ''">AzurePipelines</MemoBuildCacheType>
-    <MemoBuildLocalCacheRootPath Condition="'$(TF_BUILD)' != ''">$(ProjectRoot)\MemoBuildCache</MemoBuildLocalCacheRootPath>
+    <MSBuildCachePackageName Condition="'$(TF_BUILD)' != ''">Microsoft.MSBuildCache.AzurePipelines</MSBuildCachePackageName>
 
-    <!-- vctip.exe is a detached process which outlives the project it's reporting telemetry on. Just ignore these accesses. -->
-    <MemoBuildAllowFileAccessAfterProjectFinish>true</MemoBuildAllowFileAccessAfterProjectFinish>
+    <MSBuildCachePackageRoot>$(NugetPackageDirectory)\$(MSBuildCachePackageName).$(MSBuildCachePackageVersion)</MSBuildCachePackageRoot>
+
+    <!-- Off by default -->
+    <MSBuildCacheEnabled Condition="'$(MSBuildCacheEnabled)' == ''">false</MSBuildCacheEnabled>
+
+    <MSBuildCacheLocalCacheRootPath Condition="'$(TF_BUILD)' != ''">$(ProjectRoot)\MSBuildCache</MSBuildCacheLocalCacheRootPath>
 
     <!-- Change this to bust the cache -->
-    <MemoBuildCacheUniverse>1</MemoBuildCacheUniverse>
+    <MSBuildCacheCacheUniverse>1</MSBuildCacheCacheUniverse>
   </PropertyGroup>
 
-  <Import Project="$(MemoBuildPackageRoot)\build\MemoBuild.props" />
+  <Import Project="$(MSBuildCachePackageRoot)\build\$(MSBuildCachePackageName).props" />
 
   <PropertyGroup>
+    <!--
+      Visual Studio telemetry reads various ApplicationInsights.config files and other files after the project is finished, likely in a detached process.
+      This is acceptable and should not impact cache correctness.
+    -->
+    <MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
+      $(MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns);
+      \**\ApplicationInsights.config;
+      $(LocalAppData)\Microsoft\VSApplicationInsights\**;
+      $(LocalAppData)\Microsoft\Windows\INetCache\**;
+      A:\;
+      E:\;
+      $(WinDir)\**;
+    </MSBuildCacheAllowFileAccessAfterProjectFinishFilePatterns>
+
     <!--
       Double-writes across projects are not good for build performance but allow specific ones to unblock.
 
@@ -30,25 +42,28 @@
         controls\idl\Microsoft.UI.Xaml.Controls.idl.vcxproj copies the file via controls\dev\Materials\Acrylic\AcrylicBrush.vcxitems via a PackageContent item.
         controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj copies the file via a BinplaceItem in controls\dev\dll\Microsoft.UI.Xaml.Common.targets.
       Attempting to remove either of these leads to various downstream issues.
+
+      Note: Not using $(NativeAssemblyPackageLocation) since that value is based on the Platform, and there is some cross-platform eferencing happening.
+      The value is intended to effectively be $(NativeAssemblyPackageLocation)\Microsoft.UI.Xaml\Assets\NoiseAsset_256x256_PNG.png
     -->
-    <MemoBuildIdenticalDuplicateOutputPatterns>$(MemoBuildIdenticalDuplicateOutputPatterns);$(NativeAssemblyPackageLocation)\Microsoft.UI.Xaml\Assets\NoiseAsset_256x256_PNG.png</MemoBuildIdenticalDuplicateOutputPatterns>
+    <MSBuildCacheIdenticalDuplicateOutputPatterns>$(MSBuildCacheIdenticalDuplicateOutputPatterns);$(PackageOutputLocation)\runtimes\win10-*\native\Microsoft.UI.Xaml\Assets\NoiseAsset_256x256_PNG.png</MSBuildCacheIdenticalDuplicateOutputPatterns>
 
     <!--
       Ignore controls\dev\Generated\** even though these files are possibly changed during the build (see controls\dev\dll\Microsoft.UI.Xaml.Common.targets::RunDependencyPropertyCodeGen).
       These files are part of source control and any changes should be committed, so we don't want to consider them cached outputs.
     -->
-    <MemoBuildIgnoredOutputPatterns>$(MemoBuildIgnoredOutputPatterns);controls\dev\Generated\**</MemoBuildIgnoredOutputPatterns>
+    <MSBuildCacheIgnoredOutputPatterns>$(MSBuildCacheIgnoredOutputPatterns);controls\dev\Generated\**</MSBuildCacheIgnoredOutputPatterns>
 
     <!--
       MUXControls.sln does not get the MUXFinalRelease global property, so ignore it to enable cache hits.
       TODO: Consider providing it to MUXControls.sln instead as a more correct solution.
     -->
-    <MemoBuildGlobalPropertiesToIgnore>$(MemoBuildGlobalPropertiesToIgnore);MUXFinalRelease</MemoBuildGlobalPropertiesToIgnore>
+    <MSBuildCacheGlobalPropertiesToIgnore>$(MSBuildCacheGlobalPropertiesToIgnore);MUXFinalRelease</MSBuildCacheGlobalPropertiesToIgnore>
 
     <!--
       The version is passed as a global property and is based on the date, which would bust the cache once a day.
       For actual shipping bits this probably shouldn't be ignored, but is fine for prototyping / CI.
     -->
-    <MemoBuildGlobalPropertiesToIgnore>$(MemoBuildGlobalPropertiesToIgnore);WinUIVersion</MemoBuildGlobalPropertiesToIgnore>
+    <MSBuildCacheGlobalPropertiesToIgnore>$(MSBuildCacheGlobalPropertiesToIgnore);WinUIVersion</MSBuildCacheGlobalPropertiesToIgnore>
   </PropertyGroup>
 </Project>

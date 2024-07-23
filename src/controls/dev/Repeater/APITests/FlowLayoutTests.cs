@@ -174,7 +174,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                             // Ensure width is not 100 before updating.
                             Verify.AreNotEqual(100, layoutBounds.Width);
-                            Verify.AreEqual(32, layoutBounds.Height);
+                            Verify.AreEqual(30, layoutBounds.Height);
                         }
 
                         // modify the first item's width, height, or both
@@ -1373,6 +1373,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        // Make sure the UniformGridLayout handles infinite available measure size
+        // when items are sized and ItemsStretch is other than None.
+        [TestMethod]
+        public void VerifyUnconstrainedUniformGridLayout()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var scrollViewer = XamlReader.Load(
+                    @"<ScrollViewer xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        HorizontalScrollBarVisibility='Auto'>
+                        <LayoutPanel>
+                            <LayoutPanel.Layout>
+                                <UniformGridLayout ItemsStretch='Fill' MinItemWidth='100' MinItemHeight='100'/>
+                            </LayoutPanel.Layout>
+                            <Border/>
+                        </LayoutPanel>
+                    </ScrollViewer>") as ScrollViewer;
+
+                Content = scrollViewer;
+                scrollViewer.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+        }
+
         [TestMethod]
         public void VerifyItemsGetFullSpaceInMajorDirectionWhenSmallerThanLineSize()
         {
@@ -1835,7 +1859,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         // Ensure bounds before updating.
                         Verify.AreNotEqual(100, layoutBounds.Width);
                         widthBeforeUpdate = layoutBounds.Width;
-                        Verify.AreEqual(32 /* itemHeight */, layoutBounds.Height);
+                        Verify.AreEqual(30 /* itemHeight */, layoutBounds.Height);
                     }
 
                     switch (dimension)
@@ -1844,7 +1868,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                             ModifyElementSize(panel, 0 /*index*/, 100 /*itemWidth*/, Double.NaN /*itemHeight*/);
                             Content.InvalidateMeasure(); // Bug 16644056
                             Content.UpdateLayout();
-                            ValidateElementsSizeInGridLayout(panel, 100 /*itemWidth*/, 32 /*itemHeight*/);
+                            ValidateElementsSizeInGridLayout(panel, 100 /*itemWidth*/, 30 /*itemHeight*/);
                             break;
 
                         case DimensionChoice.Height:
@@ -1896,7 +1920,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         // Ensure bounds before updating.
                         Verify.AreNotEqual(100, layoutBounds.Width);
                         widthBeforeUpdate = layoutBounds.Width;
-                        Verify.AreEqual(32 /* itemHeight */, layoutBounds.Height);
+                        Verify.AreEqual(30 /* itemHeight */, layoutBounds.Height);
                     }
 
                     switch (dimension)
@@ -1924,7 +1948,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     switch (dimension)
                     {
                         case DimensionChoice.Width:
-                            ValidateElementsSizeInGridLayout(panel, 100 /*itemWidth*/, 32 /*itemHeight*/);
+                            ValidateElementsSizeInGridLayout(panel, 100 /*itemWidth*/, 30 /*itemHeight*/);
                             break;
 
                         case DimensionChoice.Height:

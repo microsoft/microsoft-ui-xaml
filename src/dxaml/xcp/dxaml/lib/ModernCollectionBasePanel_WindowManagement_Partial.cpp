@@ -11,6 +11,7 @@
 #include "host.h"
 #include "BuildTreeService.g.h"
 #include "BudgetManager.g.h"
+#include "XamlTelemetry.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -64,11 +65,11 @@ _Check_return_ HRESULT ModernCollectionBasePanel::CalculateVisibleWindowFromScro
 
     auto spScrollViewer = m_wrScrollViewer.AsOrNull<IScrollViewer>();
     ASSERT(spScrollViewer);
-    
+
     DOUBLE viewWidth = 0;
     DOUBLE viewHeight = 0;
     wf::Rect scrollViewport = {};
-        
+
     IFC(spScrollViewer->get_ViewportWidth(&viewWidth));
     IFC(spScrollViewer->get_ViewportHeight(&viewHeight));
 
@@ -79,9 +80,9 @@ _Check_return_ HRESULT ModernCollectionBasePanel::CalculateVisibleWindowFromScro
 
     // Build our own visible window
     IFC(CalculateVisibleWindowFromScrollData(scrollViewport, zoomFactor, pVisibleWindow));
-            
+
     m_windowState.validWindowCalculation = true;
-    
+
 Cleanup:
     RRETURN(hr);
 }
@@ -118,21 +119,21 @@ _Check_return_ HRESULT ModernCollectionBasePanel::CalculateVisibleWindowFromScro
         ourVisibleWindow.Height = static_cast<FLOAT>(scrollViewport.Height) / zoomFactor;
         break;
     }
-    
+
     // ItemsPresenter may host a header / lead padding that we need to account for,
     // so in this case we subtract our layout position relative to our visual parent.
     ourVisibleWindow.X -= m_originFromItemsPresenter.X;
     ourVisibleWindow.Y -= m_originFromItemsPresenter.Y;
-    
+
     *pVisibleWindow = ourVisibleWindow;
-        
+
 Cleanup:
     RRETURN(hr);
 }
 
 // Using the current visible window, calculate the realization window (taking into
 // account buffer space, etc).
-// 
+//
 // allowCache should be true during normal measure passes and false otherwise when initially setting the realization window.
 // The allowCache parameter allows us to incrementally build a cache by inflating the realization window during
 // measure passes.  When true, we will increase the realization window by CacheBufferPerSideInflationPixelDelta.
@@ -199,7 +200,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::SetRealizationWindowFromVisibl
 
             // The realization window might change and we might need to correct for estimation errors.
             // In this case, we should also shift the window by the correction amount.
-            m_windowState.allowWindowShiftOnEstimationErrorCorrection = TRUE;    
+            m_windowState.allowWindowShiftOnEstimationErrorCorrection = TRUE;
         }
 
         switch(panningOrientation)
@@ -213,7 +214,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::SetRealizationWindowFromVisibl
             break;
 
         default:
-            ASSERT(FALSE);  
+            ASSERT(FALSE);
             break;
         }
     }
@@ -252,6 +253,16 @@ _Check_return_ HRESULT ModernCollectionBasePanel::SetRealizationWindowFromVisibl
 
     m_windowState.SetRealizationWindow(realizationWindow);
 
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "ModernCollectionBasePanel_RealizationWindow",
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+        TraceLoggingWideString(GetHandle()->m_strName.GetBuffer(), "Name"),
+        TraceLoggingFloat32(realizationWindow.X, "X"),
+        TraceLoggingFloat32(realizationWindow.Y, "Y"),
+        TraceLoggingFloat32(realizationWindow.Width, "Width"),
+        TraceLoggingFloat32(realizationWindow.Height, "Height"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
     // We are finished building the realization window because we are allowing cache
     // and the cache is at its max.
     m_windowState.cachePotentialReached = m_windowState.currentCacheBufferPerSide >= maxCacheBufferPerSide;
@@ -267,13 +278,13 @@ _Check_return_ HRESULT ModernCollectionBasePanel::SetRealizationWindowFromVisibl
         }
         ASSERT(m_isRegisteredForCallbacks);
     }
-    
+
 Cleanup:
     RRETURN(hr);
 }
 
-// infinity looses the piece of information that would allow wrapping controls (like textblock, wrapgrid, image) to properly size. 
-// it does however convey that 'feel free to take as much as you need though'. We have decided to keep the constraint, but 
+// infinity looses the piece of information that would allow wrapping controls (like textblock, wrapgrid, image) to properly size.
+// it does however convey that 'feel free to take as much as you need though'. We have decided to keep the constraint, but
 // have frameworkelement not clip in certain situations.
 BOOLEAN ModernCollectionBasePanel::WantsScrollViewerToObscureAvailableSizeBasedOnScrollBarVisibility(_In_ xaml_controls::Orientation orientation)
 {
@@ -409,12 +420,12 @@ HRESULT ModernCollectionBasePanel::WindowState::CorrectVisibleWindowForMouseLarg
 _Check_return_ HRESULT ModernCollectionBasePanel::DetachPanelComponents()
 {
     HRESULT hr = S_OK;
-    
+
     auto sv = m_wrScrollViewer.AsOrNull<IScrollViewer>();
     if (sv)
     {
         IFC(m_epScrollViewerViewChangingHandler.DetachEventHandler(sv.Get()));
-        IFC(m_epScrollViewerViewChangedHandler.DetachEventHandler(sv.Get()));        
+        IFC(m_epScrollViewerViewChangedHandler.DetachEventHandler(sv.Get()));
         IFC(m_epScrollViewerSizeChangedHandler.DetachEventHandler(sv.Get()));
     }
 
@@ -422,25 +433,25 @@ _Check_return_ HRESULT ModernCollectionBasePanel::DetachPanelComponents()
 
     m_wrScrollViewer.Reset();
     m_wrItemsPresenter.Reset();
-        
+
 Cleanup:
     RRETURN(hr);
 }
 
-// Called when our ScrollViewer's has changed. Update our current visible window.        
+// Called when our ScrollViewer's has changed. Update our current visible window.
 _Check_return_ HRESULT ModernCollectionBasePanel::OnScrollViewChanged(
     _In_ IInspectable* pSender,
     _In_ IScrollViewerViewChangedEventArgs* pArgs)
 {
     HRESULT hr = S_OK;
-    
+
     auto spScrollViewer = m_wrScrollViewer.AsOrNull<IScrollViewer>();
     if (spScrollViewer)
     {
         DOUBLE horizontalOffset = 0.0f;
         DOUBLE verticalOffset = 0.0f;
         FLOAT zoomFactor = m_windowState.m_lastZoomFactor;
-        
+
         IFC(spScrollViewer->get_HorizontalOffset(&horizontalOffset));
         IFC(spScrollViewer->get_VerticalOffset(&verticalOffset));
 
@@ -530,7 +541,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::OnScrollViewChanging(
 
             // capture the scroll direction - forward or backward
             m_windowState.m_lastScrollWasForward = m_windowState.m_lastScrollOffset.Y < verticalOffset;
-            
+
 
             IFC(spIView->get_ZoomFactor(&zoomFactor));
 
@@ -555,27 +566,27 @@ _Check_return_ HRESULT ModernCollectionBasePanel::OnScrollViewChanging(
                 IFC(InvalidateMeasure());
 
                 // What we are trying to identify is that if this view change
-                // was initiated by the user clicking on the vertical scrollbar 
+                // was initiated by the user clicking on the vertical scrollbar
                 // large increase or decrease buttons. We need to do correction to
                 // the visible window in this particular case when using sticky headers.
-                // This is because the sticky header is occluding part of the visible 
-                // window - hence when the user clicks on these buttons we end up 
-                // skipping items if we do not account for the occluded part of the 
+                // This is because the sticky header is occluding part of the visible
+                // window - hence when the user clicks on these buttons we end up
+                // skipping items if we do not account for the occluded part of the
                 // visible window.
-                // Unfortunately - there is no easy way to figure out if it was a 
-                // large increase/decrease which caused the view change without 
-                // tightly coupling with the ScrollViewer's scollbar - instead 
+                // Unfortunately - there is no easy way to figure out if it was a
+                // large increase/decrease which caused the view change without
+                // tightly coupling with the ScrollViewer's scollbar - instead
                 // we use the following check to get the same result.
 
                 // Note: PageUp/Down and ScrollItemIntoView will not come into this
-                // code path since the visible window is already set and shouldInvalidate 
+                // code path since the visible window is already set and shouldInvalidate
                 // will be false causing us to skip this code block.
 
                 // we are using sticky headers (and)
                 // we scrolled by a viewport [large increase/decrease causes that] (and)
                 // we are not in direct manipulation (and)
-                // we are not thumb dragging 
-                if (m_bUseStickyHeaders && 
+                // we are not thumb dragging
+                if (m_bUseStickyHeaders &&
                     scrolledByAViewport &&
                     !spScrollViewer.Cast<ScrollViewer>()->IsInDirectManipulation())
                 {
@@ -585,7 +596,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::OnScrollViewChanging(
                     if (!isThumbDragging)
                     {
                         // we need to adjust the visible window and account
-                        // for the part occluded by the sticky header 
+                        // for the part occluded by the sticky header
                         m_windowState.m_lastScrollWasMouseLargeClick = true;
                     }
                 }
@@ -645,9 +656,9 @@ _Check_return_ HRESULT ModernCollectionBasePanel::AttachPanelComponents()
                 IFC(m_epScrollViewerViewChangingHandler.AttachEventHandler(spNodeScrollViewer.Cast<ScrollViewer>(), std::bind(&ModernCollectionBasePanel::OnScrollViewChanging, this, _1, _2)));
                 IFC(m_epScrollViewerViewChangedHandler.AttachEventHandler(spNodeScrollViewer.Cast<ScrollViewer>(), std::bind(&ModernCollectionBasePanel::OnScrollViewChanged, this, _1, _2)));
                 IFC(m_epScrollViewerSizeChangedHandler.AttachEventHandler(spNodeScrollViewer.Cast<ScrollViewer>(), std::bind(&ModernCollectionBasePanel::OnScrollViewerSizeChanged, this, _1, _2)));
-            
+
                 IFC(spNodeScrollViewer.AsWeak(&m_wrScrollViewer));
-                
+
                 break;
             }
             else if(ctl::is<IItemsPresenter>(spParentAsDO))
@@ -657,7 +668,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::AttachPanelComponents()
         }
         spCurrentAsDO = spParentAsDO;
     }
-    
+
     // At this point we won't have gotten any ViewChanging or ViewChanged events, so we need to get a window ourselves.
     IFC(PrimeVisibleWindow());
     IFC(SetRealizationWindowFromVisibleWindow(FALSE));
@@ -705,20 +716,20 @@ _Check_return_ HRESULT ModernCollectionBasePanel::PrimeVisibleWindow(bool allowT
         DOUBLE horizontalOffset = 0.0;
         DOUBLE verticalOffset = 0.0;
         FLOAT zoomFactor = 1.0f;
-        
+
         IFC_RETURN(spScrollViewer->get_HorizontalOffset(&horizontalOffset));
         IFC_RETURN(spScrollViewer->get_VerticalOffset(&verticalOffset));
         IFC_RETURN(spScrollViewer.Cast<ScrollViewer>()->get_ZoomFactor(&zoomFactor));
-        
+
         m_windowState.m_lastScrollOffset.X = static_cast<FLOAT>(horizontalOffset);
         m_windowState.m_lastScrollOffset.Y = static_cast<FLOAT>(verticalOffset);
         m_windowState.m_lastZoomFactor = zoomFactor;
-        
+
         IFC_RETURN(CalculateVisibleWindowFromScrollPoint(m_windowState.m_lastScrollOffset, zoomFactor, &ourVisibleWindow));
     }
     else
     {
-        
+
         // Haven't yet been attached to ScrollViewers. Should just bail out and use a predetermined window.
         // We'll default to 0 pixels size in the virtualization direction, and give it the panel's available size
         // in the non-virtualizing direction
@@ -743,7 +754,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::PrimeVisibleWindow(bool allowT
             ourVisibleWindow.Height = 0;
             break;
         }
-        
+
         m_windowState.validWindowCalculation = false;
     }
 
@@ -828,7 +839,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::DetectAndHandleDisconnectedVie
             // If we detect such gap, we will call RemoveMeasureLeftOvers to clear it.
             // If we don't, we would break the contiguousness invariant and crash during
             // the Generate run.
-            
+
             const int firstValidContainerItemIndex = m_containerManager.GetItemIndexFromValidIndex(0);
             if (firstValidContainerItemIndex > startItemIndex)
             {
@@ -1038,7 +1049,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::DetectAndHandleDisconnectedVie
                 INT32 itemIndexInGroup;
                 INT32 itemCountInGroup;
                 IFC(m_cacheManager.GetGroupInformationFromItemIndex(disconnectedReferenceItemIndex, &groupIndex, &itemIndexInGroup, &itemCountInGroup));
-            
+
                 const INT validHeaderIndex = m_containerManager.GetValidHeaderIndexFromGroupIndex(groupIndex);
                 ASSERT(m_containerManager.IsValidHeaderIndexWithinBounds(validHeaderIndex));
                 IFC(m_containerManager.GetHeaderAtValidIndex(validHeaderIndex, &spHeader));
@@ -1143,7 +1154,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::DetectAndHandleDisconnectedVie
                     EstimationReference headerRef = CreateDefaultEstimationReference(xaml_controls::ElementType_GroupHeader);
                     headerRef.ElementIndex = m_containerManager.GetGroupIndexFromValidIndex(validHeaderIndex);
                     headerRef.ElementBounds = candidateHeaderBounds;
-                    
+
                     IFC(RecycleAllContainersAndHeaders());
 
                     IFC(GenerateAnchorsForWindow(windowToFill, &headerRef, nullptr));
@@ -1276,15 +1287,15 @@ _Check_return_ HRESULT ModernCollectionBasePanel::GenerateAnchorsForWindow(
             refInfo.RelativeLocation = xaml_controls::ReferenceIdentity_Myself;
             IFC(m_spLayoutStrategy->GetElementBounds(
                 xaml_controls::ElementType_ItemContainer,
-                targetItemIndex, 
-                desiredSize, 
-                refInfo, 
-                windowToFill, 
+                targetItemIndex,
+                desiredSize,
+                refInfo,
+                windowToFill,
                 &containerRect));
 
             // Store its desired position
             SetBoundsForElement(spNewContainer, containerRect);
-            
+
             pHeaderInfo->SetBounds(headerRect);
         }
         else
@@ -1326,7 +1337,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::GenerateAnchorsForWindow(
         // Generate the anchor item
         IFC(m_icg2->GenerateContainerAtIndex(targetItemIndex, &spNewContainer));
         IFC(m_containerManager.PlaceInValidContainers(targetItemIndex, spNewContainer));
-        IFC(PrepareContainerViaItemsHost(targetItemIndex, measureSize, spNewContainer)); 
+        IFC(PrepareContainerViaItemsHost(targetItemIndex, measureSize, spNewContainer));
 
         // Measure it so we can get accurate ideas for placement
         IFC(spNewContainer->Measure(measureSize));
@@ -1337,10 +1348,10 @@ _Check_return_ HRESULT ModernCollectionBasePanel::GenerateAnchorsForWindow(
         refInfo.RelativeLocation = xaml_controls::ReferenceIdentity_Myself;
         IFC(m_spLayoutStrategy->GetElementBounds(
             xaml_controls::ElementType_ItemContainer,
-            targetItemIndex, 
-            desiredSize, 
-            refInfo, 
-            windowToFill, 
+            targetItemIndex,
+            desiredSize,
+            refInfo,
+            windowToFill,
             &containerRect));
 
         // Store its desired position
@@ -1413,7 +1424,7 @@ Cleanup:
 // Given an item index and its references, estimate its position,
 // call into ICG2 to get a container, place the container
 // in the valid containers, and sets the container's bounds to the estimated
-// position.        
+// position.
 _Check_return_ HRESULT ModernCollectionBasePanel::GenerateAnchorForItem(
     _In_ const INT32 itemIndex,
     _In_opt_ const EstimationReference* headerReference,
@@ -1503,7 +1514,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::IsLastElementRealized(
             panelExtent = bounds.*PointFromRectInVirtualizingDirection() + bounds.*SizeFromRectInVirtualizingDirection();
         }
     }
-    
+
     if(checkIfLastContainerIsRealized && m_containerManager.GetValidContainerCount() > 0)
     {
         ctl::ComPtr<IUIElement> spContainer;
@@ -1562,7 +1573,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::EstimatePanelExtent(_Out_ wf::
 
             headerEstimationRef.ElementIndex = m_cacheManager.DataIndexToLayoutIndex(xaml_controls::ElementType_GroupHeader, lastGroupIndex);
             headerEstimationRef.ElementBounds = GetBoundsFromElement(spChild);
-            
+
             if (m_containerManager.GetValidContainerCount() > 0)
             {
                 EstimationReference containerEstimationRef = CreateDefaultEstimationReference(xaml_controls::ElementType_ItemContainer);
@@ -1605,7 +1616,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::EstimatePanelExtent(_Out_ wf::
 
             IFC(m_containerManager.GetContainerAtValidIndex(m_containerManager.GetValidContainerCount()-1, &spChild));
             INT lastContainerItemIndex = m_containerManager.GetItemIndexFromValidIndex(m_containerManager.GetValidContainerCount() -1);
-            
+
             EstimationReference containerEstimationRef = CreateDefaultEstimationReference(xaml_controls::ElementType_ItemContainer);
             containerEstimationRef.ElementIndex = lastContainerItemIndex;
             containerEstimationRef.ElementBounds = GetBoundsFromElement(spChild);
@@ -1665,8 +1676,8 @@ _Check_return_ HRESULT ModernCollectionBasePanel::CorrectForEstimationErrors(boo
                 EstimationReference headerReference = CreateDefaultEstimationReference(xaml_controls::ElementType_GroupHeader);
                 headerReference.ElementIndex = realizedLayoutGroupIndex;
                 headerReference.ElementBounds = firstHeaderRect;
-            
-                EstimationReference containerReference = CreateDefaultEstimationReference(xaml_controls::ElementType_ItemContainer);            
+
+                EstimationReference containerReference = CreateDefaultEstimationReference(xaml_controls::ElementType_ItemContainer);
                 if (m_containerManager.GetValidContainerCount() > 0)
                 {
                     IFC(m_containerManager.GetContainerAtValidIndex(0, &spElement));
@@ -1700,7 +1711,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::CorrectForEstimationErrors(boo
         // We only have containers, so find out where the first one is
         ctl::ComPtr<IUIElement> spContainer;
         INT32 realizedItemIndex = m_containerManager.GetItemIndexFromValidIndex(0);
-        
+
         IFC(m_containerManager.GetContainerAtItemIndex(realizedItemIndex, &spContainer));
         wf::Rect firstContainerRect = GetBoundsFromElement(spContainer);
 
@@ -1713,7 +1724,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::CorrectForEstimationErrors(boo
             wf::Point positionOfFirstElement;
             IFC(m_spLayoutStrategy->GetPositionOfFirstElement(&positionOfFirstElement));
 
-            if (firstContainerRect.*PointFromRectInVirtualizingDirection() < positionOfFirstElement.*PointFromPointInVirtualizingDirection() 
+            if (firstContainerRect.*PointFromRectInVirtualizingDirection() < positionOfFirstElement.*PointFromPointInVirtualizingDirection()
                 || m_windowState.m_estimationCorrectionPending)
             {
                 EstimationReference headerReference = CreateDefaultEstimationReference(xaml_controls::ElementType_GroupHeader);
@@ -1816,7 +1827,7 @@ Cleanup:
 _Check_return_ HRESULT ModernCollectionBasePanel::SetScrollViewerOffsetsTo(_In_ const wf::Rect& targetRect, _In_ bool animate, _Out_ bool* pIssued)
 {
     HRESULT hr = S_OK;
-    
+
     auto spScrollViewer = m_wrScrollViewer.AsOrNull<IScrollViewer>();
 
     *pIssued = false;
@@ -1832,9 +1843,9 @@ _Check_return_ HRESULT ModernCollectionBasePanel::SetScrollViewerOffsetsTo(_In_ 
         ctl::ComPtr<wf::IReference<DOUBLE>> spHorizontalOffsetReference;
         ctl::ComPtr<wf::IReference<DOUBLE>> spVerticalOffsetReference;
         xaml_controls::Orientation orientation;
-        
+
         IFC(m_spLayoutStrategy->GetVirtualizationDirection(&orientation));
-        
+
         // Account for our offset from the ItemsPresenter (i.e. listview.header)
         horizontalOffset += m_originFromItemsPresenter.X;
         verticalOffset += m_originFromItemsPresenter.Y;
@@ -1868,7 +1879,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::SetScrollViewerOffsetsTo(_In_ 
 
         *pIssued = true;
     }
-    
+
 Cleanup:
     RRETURN(hr);
 }
@@ -1884,7 +1895,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::ProcessOrientationChange()
     // it, since it will have no effect (measure will just automatically do the correct thing)
     if (spIHost)
     {
-        // when orientation is changed, we expect the available size to change as well, so 
+        // when orientation is changed, we expect the available size to change as well, so
         // at the beginning of measure we will invalidate the validWindowCalculation probably
         m_windowState.validWindowCalculation = FALSE;
 
@@ -1902,18 +1913,18 @@ _Check_return_ HRESULT ModernCollectionBasePanel::ProcessOrientationChange()
 
             m_windowState.m_command = func;
         }
-    } 
+    }
 
-    // there is magic happening in the layout where some components will change 
+    // there is magic happening in the layout where some components will change
     // dimensions to infinite. But since only we are dirty, in the first pass of layout
     // we will not get that code executed properly, ending up with infinity/infinity.
     // which is a terrible situation to be in for a virtualizing panel (it will de-virtualize everything).
-    // Ultimately this will fix itself because the desiredsize of this panel will change which will change 
+    // Ultimately this will fix itself because the desiredsize of this panel will change which will change
     // the desiredsize of the itemspresenter, which will invalidate the scrollcontentpresenter.
 
     // The solution is to simply be proactive and immediately invalidate the scrollcontentpresenter so that we
     // are assured of a great measure with valid values next time around.
-        
+
 
     if (spIHost)
     {
@@ -1930,7 +1941,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::ProcessOrientationChange()
                 // anything in the tree is going to be a uielement.
 
                 IFC(spParentAsDO.AsOrNull<IUIElement>()->InvalidateMeasure());
-                
+
                 // is this our itemscontrol?
                 if (spParentAsDO == spHostAsDO)
                 {
@@ -1959,7 +1970,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::FlushWindowStateCommand()
 }
 
 _Check_return_ HRESULT ModernCollectionBasePanel::ScrollRectIntoView(
-    _In_ wf::Rect targetRect, 
+    _In_ wf::Rect targetRect,
     _In_ BOOLEAN forceSynchronous)
 {
     HRESULT hr = S_OK;
@@ -1974,7 +1985,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::ScrollRectIntoView(
         {
             // Place the window around the rect
             *pNewVisibleWindow = targetRect;
-            
+
             // Cancels tracking if we were tracking.
             m_viewportBehavior.Reset();
 
@@ -2020,12 +2031,12 @@ _Check_return_ HRESULT ModernCollectionBasePanel::ScrollItemIntoView(
 
             if (IsInLiveTree() &&
                 IsItemsHostRegistered() &&
-                !m_containerManager.HasFocusedContainer() && 
+                !m_containerManager.HasFocusedContainer() &&
                 !m_layoutInProgress)
             {
                 // if nothing is focused, and index is connected, set that as focused container
                 // if not connected, create a container.
-                // we also do not want to do this during layout because we could end up preparing containers while 
+                // we also do not want to do this during layout because we could end up preparing containers while
                 // layout is in the middle of preparing containers.
                 ctl::ComPtr<IUIElement> spContainer;
                 if (m_containerManager.IsItemConnected(index))
@@ -2045,7 +2056,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::ScrollItemIntoView(
                     IFC_RETURN(EnsureRecycleContainerCandidate(index, true /*fromFront*/));
                     if (m_containerManager.HasFocusedContainer())
                     {
-                        // EnsureRecycleContainerCandidate could set the stored focused 
+                        // EnsureRecycleContainerCandidate could set the stored focused
                         // container based on who actually has focus. We don't care what
                         // currently has focus - we want to set focus on the scrolled item.
                         IFC_RETURN(ReleaseStoredFocusedContainer());
@@ -2101,8 +2112,8 @@ _Check_return_ HRESULT ModernCollectionBasePanel::ScrollItemIntoView(
     return S_OK;
 }
 
-// Provide a focus candidate. If a scroll into view happens, the panel will 
-// keep that as a focus candidate. The listview can ask for this candidate 
+// Provide a focus candidate. If a scroll into view happens, the panel will
+// keep that as a focus candidate. The listview can ask for this candidate
 // when it needs to focus.
 _Check_return_ HRESULT ModernCollectionBasePanel::GetFocusCandidate(
     _Out_ INT* index,
@@ -2135,7 +2146,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::ScrollGroupHeaderIntoView(
 {
     // If a command already exists, flush it and force a synchronous layout.
     IFC_RETURN(FlushWindowStateCommand());
-    
+
     // Animations are only supported when moving to a realized group header and all items in between are also realized.
     if (animate && m_containerManager.IsGroupHeaderConnected(index, neighboringItemIndex))
     {
@@ -2161,7 +2172,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::ScrollGroupHeaderIntoView(
                 IFC_RETURN(hr);
 
                 // if nothing is focused, and index is connected, set that as focused container
-                // if not connected, create a container 
+                // if not connected, create a container
                 ctl::ComPtr<IUIElement> spContainer;
                 index = static_cast<UINT>(m_cacheManager.DataIndexToLayoutIndex(xaml_controls::ElementType_GroupHeader, index));
                 index = static_cast<UINT>(m_cacheManager.LayoutIndexToDataIndex(xaml_controls::ElementType_GroupHeader, index));
@@ -2257,8 +2268,8 @@ _Check_return_ HRESULT ModernCollectionBasePanel::DetermineWindowAndAnchors()
             IFC_RETURN(spItemsPresenter.Cast<ItemsPresenter>()->DelayLoadFooter(&futureViewportRect, FALSE /* updateLayout */));
         }
     }
-   
-    IFC_RETURN(SetRealizationWindowFromVisibleWindow(TRUE));    
+
+    IFC_RETURN(SetRealizationWindowFromVisibleWindow(TRUE));
     IFC_RETURN(DetectAndHandleDisconnectedView());
 
     return S_OK;
@@ -2340,7 +2351,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::DoScrollItemIntoView(
             // Nothing to do here, apparently.
             goto Cleanup;
         }
-        
+
         if (!animate)
         {
             // Since the window may change, reset the cache buffers to only show what's going to be visible first.
@@ -2363,7 +2374,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::DoScrollItemIntoView(
             INT32 targetGroupIndex;
             INT32 itemCountInTargetGroup;
             IFC(m_cacheManager.GetGroupInformationFromItemIndex(itemIndex, &targetGroupIndex, &anchorItemIndexInGroup, &itemCountInTargetGroup));
-    
+
             EstimationReference headerEstimationInfo = CreateDefaultEstimationReference(xaml_controls::ElementType_GroupHeader);
             if (m_containerManager.GetValidHeaderCount() > 0)
             {
@@ -2398,7 +2409,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::DoScrollItemIntoView(
             {
                 headerEstimationInfo.ElementIndex = 0;
                 headerEstimationInfo.ElementBounds = {};
-                
+
                 // We re-estimate if there are no valid containers. Even if there is one valid
                 // container we will not re-estimate. If we decide to be more agressive we can move this
                 // outside the else clause.
@@ -2426,7 +2437,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::DoScrollItemIntoView(
                 IFC(m_spLayoutStrategy->GetElementBounds(
                     xaml_controls::ElementType_GroupHeader,
                     m_cacheManager.DataIndexToLayoutIndex(xaml_controls::ElementType_GroupHeader, targetGroupIndex),
-                    desiredSize, 
+                    desiredSize,
                     refInfo,
                     windowToFill,
                     &headerBounds));
@@ -2472,7 +2483,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::DoScrollItemIntoView(
             {
                 containerInfo.ElementIndex = 0;
                 containerInfo.ElementBounds = {};
-                
+
                 // We re-estimate if there are no valid containers. Even if there is one valid
                 // container we will not re-estimate. If we decide to be more agressive we can move this
                 // outside the else clause.
@@ -2480,7 +2491,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::DoScrollItemIntoView(
             }
 
             IFC(RecycleAllContainersAndHeaders());
-            
+
             IFC(GenerateAnchorForItem(itemIndex, nullptr, &containerInfo));
         }
 
@@ -2658,7 +2669,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::DoScrollGroupHeaderIntoView(
         // Get a reference to estimate from and generate an anchor
         ASSERT(0 <= groupIndex && groupIndex < m_cacheManager.GetTotalGroupCount() || m_cacheManager.GetTotalGroupCount() == 0);
         ASSERT(m_cacheManager.IsGrouping());
-        
+
         EstimationReference headerInfo = CreateDefaultEstimationReference(xaml_controls::ElementType_GroupHeader);
         if (m_containerManager.GetValidHeaderCount() > 0)
         {
@@ -2847,9 +2858,9 @@ ModernCollectionBasePanel::RecycleAllContainersAndHeaders()
                     {
                         if (m_containerManager.HasFocusedContainer())
                         {
-                            // this item is focused, but there is a stored focused container. There 
+                            // this item is focused, but there is a stored focused container. There
                             // was a scroll into view which stored the focused container but that was not
-                            // focused, so dump the stored focused container. 
+                            // focused, so dump the stored focused container.
                             IFC(ReleaseStoredFocusedContainer());
                         }
 
@@ -2898,7 +2909,7 @@ Cleanup:
 _Check_return_ HRESULT ModernCollectionBasePanel::CanIncreaseCacheLength(_Out_ BOOLEAN *pCanIncreaseCache)
 {
     HRESULT hr = S_OK;
-    
+
     auto spScrollViewer = m_wrScrollViewer.AsOrNull<IScrollViewer>();
 
     BOOLEAN shouldProcessCache = TRUE;
@@ -2938,7 +2949,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::CanIncreaseCacheLength(_Out_ B
             shouldProcessCache = !registeredForCallbacks;
         }
     }
-        
+
     // 3. Make sure we are not bogged down
     if (shouldProcessCache)
     {
@@ -2962,7 +2973,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::CanIncreaseCacheLength(_Out_ B
             ITickableFrameScheduler *pFrameScheduler = pCore->GetBrowserHost()->GetFrameScheduler();
             if (pFrameScheduler)
             {
-                // building up cache is regarded as a task that we only do when idle. 
+                // building up cache is regarded as a task that we only do when idle.
                 // if this is a high priority frame, it was requested by an invalidation outside of the
                 // regular tick, presumably because input has occurred that has invalidated layout.
                 // In that case, we do not want to build up cache.
@@ -2992,12 +3003,12 @@ _Check_return_ HRESULT ModernCollectionBasePanel::BuildTreeImpl(_Out_ BOOLEAN *p
 
     if (static_cast<CUIElement*>(GetHandle())->GetIsMeasureDirty())
     {
-        // If we are measure dirty, we take ourselves out of the build tree service queue. 
+        // If we are measure dirty, we take ourselves out of the build tree service queue.
         // During the next measure we will re-evaluate and register work if cache needs to be expanded.
-        // Consider the case where the panel is collapsed while having work in the build tree 
+        // Consider the case where the panel is collapsed while having work in the build tree
         // service queue. We will come here repeatedly and say we have work left and invalidate measure
         // but measure will not do anything since we are collapsed, and we keep ticking.
-        // This stops that from happening. 
+        // This stops that from happening.
         *pWorkLeft = false;
     }
     else
@@ -3015,15 +3026,15 @@ _Check_return_ HRESULT ModernCollectionBasePanel::BuildTreeImpl(_Out_ BOOLEAN *p
                 // note how we only do this if we did absolutely no work
                 IFC(InvalidateMeasure());
 
-                // since after buildtree from the core we will call updatelayout, 
-                // the panel will get an opportunity to increase the cache. 
+                // since after buildtree from the core we will call updatelayout,
+                // the panel will get an opportunity to increase the cache.
                 // The panel will have logic to either do the work or not.
                 // Notice how we only did this invalidate if we did not do any other work for this
                 // panel.
             }
         }
 
-        // notice the approach here: 
+        // notice the approach here:
         // We check whether we can build up cache right now
         //   If so: invalidate
         //   If not: do nothing

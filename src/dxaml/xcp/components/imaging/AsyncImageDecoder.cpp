@@ -97,13 +97,8 @@ void AsyncImageDecoder::SharedState::CancelPresent()
 // static
 HRESULT AsyncImageDecoder::SetupDecodeCurrentFrame(std::shared_ptr<SharedState> sharedState)
 {
-    const std::shared_ptr<ImagingTelemetry::ImageDecodeActivity>& decodeActivity = sharedState->m_spDecodeParams->GetDecodeActivity();
-
-    if (decodeActivity)
-    {
-        uint64_t imageSourceId = sharedState->m_spDecodeParams->GetImageId();
-        decodeActivity->QueueOffThreadDecode(imageSourceId);
-    }
+    uint64_t imageSourceId = sharedState->m_spDecodeParams->GetImageId();
+    ImagingTelemetry::QueueOffThreadDecode(imageSourceId);
 
     ASSERT(!sharedState->m_decodeInProgress);
     sharedState->m_decodeInProgress = true;

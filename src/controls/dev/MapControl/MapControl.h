@@ -24,14 +24,13 @@ public:
     void OnApplyTemplate();
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    winrt::fire_and_forget LayerElementsChanged(const winrt::MapElementsLayer& layer, const winrt::IObservableVector<winrt::MapElement>& elements, const winrt::Collections::IVectorChangedEventArgs& args, winrt::hstring elementId);
+    winrt::IAsyncAction LayerElementsChanged(const winrt::MapElementsLayer& layer, winrt::IVector<winrt::MapElement> elements, const winrt::Collections::IVectorChangedEventArgs& args, winrt::hstring elementId);
     winrt::fire_and_forget MapControl::UpdateMapIcon(winrt::Geopoint mapIconPoint, winrt::hstring pointId, winrt::hstring layerId);
 
 private:
- 
+
     tracker_ref<winrt::WebView2> m_webView{ this };
 
-    bool IsValidMapServiceToken();
     winrt::IAsyncOperation<winrt::hstring> InitializeWebMap();
     winrt::fire_and_forget SetUpWebView();
     winrt::fire_and_forget OnLayerAdded(const winrt::MapElementsLayer layer);

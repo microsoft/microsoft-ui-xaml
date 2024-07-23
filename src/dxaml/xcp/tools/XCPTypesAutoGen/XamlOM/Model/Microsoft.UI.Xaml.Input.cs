@@ -140,6 +140,7 @@ namespace Microsoft.UI.Xaml.Input
 
         [DXamlName("GetFocusedElementWithRoot")]
         [DXamlOverloadName("GetFocusedElement")]
+        [OptionalReturnValue]
         public static Windows.Foundation.Object GetFocusedElementWithRoot(Microsoft.UI.Xaml.XamlRoot xamlRoot)
         {
             return default(Windows.Foundation.Object);

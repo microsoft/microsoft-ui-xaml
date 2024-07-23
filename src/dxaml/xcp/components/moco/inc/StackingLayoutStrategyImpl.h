@@ -162,6 +162,10 @@ namespace DirectUI { namespace Components { namespace Moco {
         void RegisterSpecialContainerSize(_In_ int itemIndex, _In_ wf::Size containerDesiredSize);
         void RegisterSpecialHeaderSize(_In_ int groupIndex, _In_ wf::Size headerDesiredSize);
 
+        // Used to estimate tracked element reposition during items source updates.
+        float GetAverageHeaderSize() const;
+        float GetAverageContainerSize() const;
+
     private:
         const float GetDistanceBetweenGroups() const;
 
@@ -170,8 +174,6 @@ namespace DirectUI { namespace Components { namespace Moco {
         float GetAverageVirtualizedExtentOfItems(_In_ float itemCount) const;
 
         void RegisterSize(_In_ int index, _In_ bool isHeader, _In_ float size);
-        float GetAverageHeaderSize() const;
-        float GetAverageContainerSize() const;
 
         // Used by GetElementBounds for each element type.
         wf::Rect GetContainerBounds(

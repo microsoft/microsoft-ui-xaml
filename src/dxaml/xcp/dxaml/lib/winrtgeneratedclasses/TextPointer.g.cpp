@@ -47,6 +47,7 @@ IFACEMETHODIMP DirectUI::TextPointerGenerated::get_LogicalDirection(_Out_ ABI::M
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<TextPointer*>(this)->get_LogicalDirectionImpl(pValue));
 Cleanup:
@@ -56,6 +57,7 @@ IFACEMETHODIMP DirectUI::TextPointerGenerated::get_Offset(_Out_ INT* pValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<TextPointer*>(this)->get_OffsetImpl(pValue));
 Cleanup:
@@ -65,6 +67,7 @@ IFACEMETHODIMP DirectUI::TextPointerGenerated::get_Parent(_Outptr_result_maybenu
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<TextPointer*>(this)->get_ParentImpl(ppValue));
 Cleanup:
@@ -74,6 +77,7 @@ IFACEMETHODIMP DirectUI::TextPointerGenerated::get_VisualParent(_Outptr_result_m
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<TextPointer*>(this)->get_VisualParentImpl(ppValue));
 Cleanup:
@@ -91,6 +95,7 @@ IFACEMETHODIMP DirectUI::TextPointerGenerated::GetCharacterRect(_In_ ABI::Micros
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "TextPointer_GetCharacterRect", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<TextPointer*>(this)->GetCharacterRectImpl(direction, pReturnValue));
 Cleanup:
@@ -108,6 +113,7 @@ IFACEMETHODIMP DirectUI::TextPointerGenerated::GetPositionAtOffset(_In_ INT offs
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "TextPointer_GetPositionAtOffset", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<TextPointer*>(this)->GetPositionAtOffsetImpl(offset, direction, ppReturnValue));
 Cleanup:

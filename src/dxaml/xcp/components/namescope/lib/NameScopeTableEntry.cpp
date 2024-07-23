@@ -188,7 +188,7 @@ namespace Jupiter {
             }
         }
 
-        NameScopeTableEntry& NameScopeTableEntry::operator=(NameScopeTableEntry&& other)
+        NameScopeTableEntry& NameScopeTableEntry::operator=(NameScopeTableEntry&& other) noexcept
         {
             if (this != &other)
             {

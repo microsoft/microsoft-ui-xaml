@@ -262,7 +262,7 @@ _Check_return_ HRESULT DirectUI::ThumbGenerated::EventAddHandlerByIndex(_In_ Kno
     case KnownEventIndex::Thumb_DragCompleted:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragCompletedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -279,7 +279,7 @@ _Check_return_ HRESULT DirectUI::ThumbGenerated::EventAddHandlerByIndex(_In_ Kno
     case KnownEventIndex::Thumb_DragDelta:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragDeltaEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -296,7 +296,7 @@ _Check_return_ HRESULT DirectUI::ThumbGenerated::EventAddHandlerByIndex(_In_ Kno
     case KnownEventIndex::Thumb_DragStarted:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragStartedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

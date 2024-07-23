@@ -57,6 +57,7 @@ IFACEMETHODIMP DirectUI::ManipulationStartedRoutedEventArgs::get_Container(_Outp
     CUIElement* pValueCore = nullptr;
 
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CManipulationStartedEventArgs*>(pCoreEventArgsNoRef)->get_Container(&pValueCore));
@@ -74,6 +75,7 @@ IFACEMETHODIMP DirectUI::ManipulationStartedRoutedEventArgs::get_Position(_Out_ 
     ABI::Windows::Foundation::Point valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CManipulationStartedEventArgs*>(pCoreEventArgsNoRef)->get_Position(&valueCore));
@@ -91,6 +93,7 @@ IFACEMETHODIMP DirectUI::ManipulationStartedRoutedEventArgs::get_Handled(_Out_ B
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CManipulationStartedEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));
@@ -124,6 +127,7 @@ IFACEMETHODIMP DirectUI::ManipulationStartedRoutedEventArgs::get_PointerDeviceTy
     DirectUI::PointerDeviceType valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CManipulationStartedEventArgs*>(pCoreEventArgsNoRef)->get_PointerDeviceType(&valueCore));
@@ -137,6 +141,7 @@ IFACEMETHODIMP DirectUI::ManipulationStartedRoutedEventArgs::get_Cumulative(_Out
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ManipulationStartedRoutedEventArgs*>(this)->get_CumulativeImpl(pValue));
 Cleanup:

@@ -49,6 +49,7 @@ IFACEMETHODIMP DirectUI::ScrollEventArgsGenerated::get_NewValue(_Out_ DOUBLE* pV
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollEventArgs*>(this)->get_NewValueImpl(pValue));
 Cleanup:
@@ -67,6 +68,7 @@ IFACEMETHODIMP DirectUI::ScrollEventArgsGenerated::get_ScrollEventType(_Out_ ABI
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollEventArgs*>(this)->get_ScrollEventTypeImpl(pValue));
 Cleanup:

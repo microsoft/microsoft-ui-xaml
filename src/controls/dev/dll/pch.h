@@ -263,9 +263,7 @@ void constexpr specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Media::RevealBrushState>>();
 #endif
  
-#ifndef MUX_EXPERIMENTAL
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::Foundation::IInspectable, struct winrt::Microsoft::UI::Private::Controls::MUXControlsTestHooksLoggingMessageEventArgs>>();
-#endif
     
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Windows::Foundation::Collections::IKeyValuePair<struct winrt::hstring,struct winrt::Microsoft::UI::Xaml::DataTemplate> >>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Windows::Foundation::IInspectable>>();

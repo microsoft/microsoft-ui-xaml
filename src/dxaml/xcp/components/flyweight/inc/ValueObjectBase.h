@@ -122,19 +122,19 @@ namespace Flyweight
         }
 
         template <typename T>
-        bool equal(_In_ const T&, _In_ const T&)
+        bool equal(const T&, const T&)
         {
             static_assert_false("Specialize equal() for your value object type.");
         }
 
         template <typename T>
-        bool less(_In_ const T&, _In_ const T&)
+        bool less(const T&, const T&)
         {
             static_assert_false("Specialize less() for your value object type.");
         }
 
         template <typename T>
-        std::size_t hash(_In_ const T&)
+        std::size_t hash(const T&)
         {
             static_assert_false("Specialize hash() for your value object type.");
         }

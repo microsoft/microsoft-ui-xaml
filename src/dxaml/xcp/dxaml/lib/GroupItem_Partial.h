@@ -98,8 +98,8 @@ namespace DirectUI
         TrackerPtr<xaml_controls::IItemsControl> m_tpItemsControl;
         ctl::WeakRefPtr m_wrParentListViewBaseWeakRef;
         TrackerPtr<xaml_data::ICollectionViewGroup> m_tpCVG;
-        EventRegistrationToken m_itemsChangedToken;
-        EventRegistrationToken m_headerKeyDownToken;
+        EventRegistrationToken m_itemsChangedToken{};
+        EventRegistrationToken m_headerKeyDownToken{};
         xaml::Visibility m_previousVisibility;
         TrackerPtr<IControl> m_tpHeaderControl;
         BOOLEAN m_bWasHidden;

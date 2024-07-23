@@ -27,6 +27,7 @@ _Check_return_ __ecount_opt(sourceStringLen + 1) WCHAR* CommonPlatformUtilities:
     if (XUINT32_MAX / sizeof(WCHAR) - 1 < sourceStringLen)
         return NULL;
     
+#pragma prefast( suppress: 26451 "PREfast does not know we already checked the size of sourceStringLen above. Abstain from adding casting to complicate the code only to make PREfast happy.")
     theNewString = new WCHAR[sourceStringLen + 1];
     if (theNewString != NULL)
     {

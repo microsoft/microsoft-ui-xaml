@@ -238,7 +238,7 @@ const ImageMetadata& EncodedImageData::GetMetadata() const
 }
 
 _Check_return_ HRESULT EncodedImageData::CreateWicBitmapDecoder(
-    _Outref_ wrl::ComPtr<IWICBitmapDecoder>& spWicBitmapDecoder
+    _Out_ wrl::ComPtr<IWICBitmapDecoder>& spWicBitmapDecoder
     )
 {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -264,7 +264,7 @@ bool EncodedImageData::IsAnimatedImage() const
     return GetMetadata().frameCount > 1;
 }
 
-_Check_return_ HRESULT EncodedImageData::CreateIStream(_Outref_ wrl::ComPtr<IStream>& spIStream)
+_Check_return_ HRESULT EncodedImageData::CreateIStream(_Out_ wrl::ComPtr<IStream>& spIStream)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
 

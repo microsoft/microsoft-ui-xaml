@@ -109,7 +109,7 @@ public:
     {
         other.Clear();
     }
-    XamlQualifiedObject& operator=(XamlQualifiedObject&& other)
+    XamlQualifiedObject& operator=(XamlQualifiedObject&& other) noexcept
     {
         if (this != &other)
         {

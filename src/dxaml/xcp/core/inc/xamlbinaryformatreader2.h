@@ -78,9 +78,9 @@ private:
     std::shared_ptr<XamlBinaryMetadataReader2> m_spXamlBinaryMetadataReader;  
     xvector< PersistedXamlSubStream > m_vecMasterStreamIndex;
     xref_ptr<IPALMemory> m_spXbfMemory;
-    XUINT32 m_cbNodeStreamStartOffset;
-    XUINT32 m_cbNodeStreamSize;
-    XUINT32 m_cbStreamTableSize;
+    XUINT32 m_cbNodeStreamStartOffset{};
+    XUINT32 m_cbNodeStreamSize{};
+    XUINT32 m_cbStreamTableSize{};
 
     // A vector_map of stream offset positions mapped to a tuple containing
     // the stream length of the CustomWriterRuntimeData, stored from the first time

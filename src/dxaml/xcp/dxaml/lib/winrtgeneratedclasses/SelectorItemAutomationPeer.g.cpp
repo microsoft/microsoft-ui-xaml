@@ -50,6 +50,7 @@ IFACEMETHODIMP DirectUI::SelectorItemAutomationPeerGenerated::get_IsSelected(_Ou
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<SelectorItemAutomationPeer*>(this)->get_IsSelectedImpl(pValue));
 Cleanup:
@@ -59,6 +60,7 @@ IFACEMETHODIMP DirectUI::SelectorItemAutomationPeerGenerated::get_SelectionConta
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<SelectorItemAutomationPeer*>(this)->get_SelectionContainerImpl(ppValue));
 Cleanup:

@@ -194,7 +194,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 var width = Convert.ToDouble(testMenuFlyoutItemWidthTextBlock.GetText());
 
-                Verify.AreEqual("32", testMenuFlyoutItemHeightTextBlock.GetText(), "Comparing height of MenuFlyoutItem after Flyout was opened with mouse");
+                Verify.AreEqual("30", testMenuFlyoutItemHeightTextBlock.GetText(), "Comparing height of MenuFlyoutItem after Flyout was opened with mouse");
                 Verify.IsGreaterThan(width, 0.0, "Comparing height of MenuFlyoutItem after Flyout was opened with mouse");
                 Verify.IsLessThan(width, 200.0, "Comparing height of MenuFlyoutItem after Flyout was opened with mouse");
 
@@ -206,7 +206,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 width = Convert.ToDouble(testMenuFlyoutItemWidthTextBlock.GetText());
-                Verify.AreEqual("40", testMenuFlyoutItemHeightTextBlock.GetText(), "Comparing height of MenuFlyoutItem after Flyout was opened with touch");
+                Verify.AreEqual("38", testMenuFlyoutItemHeightTextBlock.GetText(), "Comparing height of MenuFlyoutItem after Flyout was opened with touch");
                 Verify.IsGreaterThan(width, 200.0, "Comparing width of MenuFlyoutItem after Flyout was opened with touch");
             }
         }

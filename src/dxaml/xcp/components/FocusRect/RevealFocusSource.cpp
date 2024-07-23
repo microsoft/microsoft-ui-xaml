@@ -488,7 +488,7 @@ bool RevealFocusSource::IsTravelingFocusEnabled(_In_ DirectUI::FocusNavigationDi
 wf::TimeSpan RevealFocusSource::GetSpotLightDuration(_In_ DirectUI::FocusNavigationDirection direction) const
 {
     const float spotLightSpeed = GetTravelingDistance(direction) / GetDefaultValue(DefaultValue::SpotLightSpeed);
-    return wf::TimeSpan { static_cast<int64_t>(HNS_FROM_SECOND(spotLightSpeed)) };
+    return wf::TimeSpan { HNS_FROM_SECOND(static_cast<int64_t>(spotLightSpeed)) };
 }
 
 float RevealFocusSource::GetTravelingDistance(_In_ DirectUI::FocusNavigationDirection direction) const

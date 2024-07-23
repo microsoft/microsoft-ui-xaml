@@ -98,11 +98,11 @@ namespace Internal
         bool IsEnum()           { return (m_pUserTypeData->iEnumIndex != -1); }
 
     private:
-        Private::XamlTypeInfoProvider* m_pTypeInfoProvider;
+        Private::XamlTypeInfoProvider* m_pTypeInfoProvider{};
 
-        const Private::XamlTypeName* m_pTypeName;
-        const Private::UserTypeInfo* m_pUserTypeData;
-        const INT32* m_piMemberIndices;
+        const Private::XamlTypeName* m_pTypeName{};
+        const Private::UserTypeInfo* m_pUserTypeData{};
+        const INT32* m_piMemberIndices{};
     };
 }
 

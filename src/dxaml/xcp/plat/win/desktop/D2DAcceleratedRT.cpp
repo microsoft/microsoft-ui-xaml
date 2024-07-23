@@ -226,7 +226,7 @@ CD2DRenderTarget<T>::CreateBitmap(
 Cleanup:
     if (bitmapIsLocked)
     {
-        pBitmapSurface->Unlock();
+        VERIFYHR(pBitmapSurface->Unlock());
     }
 
     ReleaseInterface(pD2DBitmap);

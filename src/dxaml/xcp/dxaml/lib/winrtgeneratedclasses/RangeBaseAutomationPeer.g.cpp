@@ -49,6 +49,7 @@ IFACEMETHODIMP DirectUI::RangeBaseAutomationPeerGenerated::get_IsReadOnly(_Out_ 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<RangeBaseAutomationPeer*>(this)->get_IsReadOnlyImpl(pValue));
 Cleanup:
@@ -58,6 +59,7 @@ IFACEMETHODIMP DirectUI::RangeBaseAutomationPeerGenerated::get_LargeChange(_Out_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<RangeBaseAutomationPeer*>(this)->get_LargeChangeImpl(pValue));
 Cleanup:
@@ -67,6 +69,7 @@ IFACEMETHODIMP DirectUI::RangeBaseAutomationPeerGenerated::get_Maximum(_Out_ DOU
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<RangeBaseAutomationPeer*>(this)->get_MaximumImpl(pValue));
 Cleanup:
@@ -76,6 +79,7 @@ IFACEMETHODIMP DirectUI::RangeBaseAutomationPeerGenerated::get_Minimum(_Out_ DOU
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<RangeBaseAutomationPeer*>(this)->get_MinimumImpl(pValue));
 Cleanup:
@@ -85,6 +89,7 @@ IFACEMETHODIMP DirectUI::RangeBaseAutomationPeerGenerated::get_SmallChange(_Out_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<RangeBaseAutomationPeer*>(this)->get_SmallChangeImpl(pValue));
 Cleanup:
@@ -94,6 +99,7 @@ IFACEMETHODIMP DirectUI::RangeBaseAutomationPeerGenerated::get_Value(_Out_ DOUBL
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<RangeBaseAutomationPeer*>(this)->get_ValueImpl(pValue));
 Cleanup:

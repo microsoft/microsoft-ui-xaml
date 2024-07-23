@@ -126,7 +126,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 (c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight) / 2.0,
                 ScrollingAnimationMode.Disabled,
                 ScrollingSnapPointsMode.Ignore,
-                hookViewChanged: true,
+                hookViewChangingAndChanged: true,
                 isAnimationsEnabledOverride: null, 
                 expectedFinalHorizontalOffset: (c_defaultUIScrollPresenterContentWidth - c_defaultUIScrollPresenterWidth) / 2.0, 
                 expectedFinalVerticalOffset: (c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight) / 2.0);
@@ -138,7 +138,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 (c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight) / 4.0,
                 ScrollingAnimationMode.Enabled,
                 ScrollingSnapPointsMode.Ignore,
-                hookViewChanged: false,
+                hookViewChangingAndChanged: false,
                 isAnimationsEnabledOverride: null,
                 expectedFinalHorizontalOffset: (c_defaultUIScrollPresenterContentWidth - c_defaultUIScrollPresenterWidth) / 4.0,
                 expectedFinalVerticalOffset: (c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight) / 4.0);
@@ -151,7 +151,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 0.0f,
                 ScrollingAnimationMode.Disabled,
                 ScrollingSnapPointsMode.Ignore,
-                hookViewChanged: false);
+                hookViewChangingAndChanged: false);
 
             Log.Comment("Animate to zoomFactor 1.5");
             ZoomTo(
@@ -161,7 +161,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 0.0f,
                 ScrollingAnimationMode.Enabled,
                 ScrollingSnapPointsMode.Ignore,
-                hookViewChanged: false);
+                hookViewChangingAndChanged: false);
         }
 
         [TestMethod]
@@ -477,7 +477,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 (c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight) / 2.0,
                 ScrollingAnimationMode.Disabled,
                 ScrollingSnapPointsMode.Ignore,
-                hookViewChanged: true,
+                hookViewChangingAndChanged: true,
                 isAnimationsEnabledOverride: null,
                 expectedFinalHorizontalOffset: (c_defaultUIScrollPresenterContentWidth - c_defaultUIScrollPresenterWidth) / 2.0,
                 expectedFinalVerticalOffset: (c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight) / 2.0);
@@ -489,7 +489,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 (c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight) / 4.0,
                 ScrollingAnimationMode.Enabled,
                 ScrollingSnapPointsMode.Ignore,
-                hookViewChanged: false,
+                hookViewChangingAndChanged: false,
                 isAnimationsEnabledOverride: null,
                 expectedFinalHorizontalOffset: (c_defaultUIScrollPresenterContentWidth - c_defaultUIScrollPresenterWidth) / 4.0,
                 expectedFinalVerticalOffset: (c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight) / 4.0);
@@ -502,7 +502,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 0.0f,
                 ScrollingAnimationMode.Disabled,
                 ScrollingSnapPointsMode.Ignore,
-                hookViewChanged: false);
+                hookViewChangingAndChanged: false);
 
             Log.Comment("Animate to zoomFactor 1.5");
             ZoomTo(
@@ -512,7 +512,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 0.0f,
                 ScrollingAnimationMode.Enabled,
                 ScrollingSnapPointsMode.Ignore,
-                hookViewChanged: false);
+                hookViewChangingAndChanged: false);
         }
 
         [TestMethod]

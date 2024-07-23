@@ -46,6 +46,7 @@ _Check_return_ HRESULT DirectUI::ThemeShadowGenerated::get_Mask(_Outptr_result_m
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ThemeShadow*>(this)->get_MaskImpl(ppValue));
 Cleanup:
@@ -124,6 +125,7 @@ IFACEMETHODIMP DirectUI::ThemeShadowFactory::get_IsDropShadowMode(_Out_ BOOLEAN*
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckActivationAllowed());
     IFC(get_IsDropShadowModeImpl(pValue));
 Cleanup:

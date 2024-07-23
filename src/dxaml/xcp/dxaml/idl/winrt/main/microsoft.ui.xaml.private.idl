@@ -121,6 +121,35 @@ namespace Microsoft.UI.Xaml.Controls
     };
 
     [contract(Microsoft.UI.Xaml.PrivateApiContract, 1)]
+    [feature(Feature_InputValidation)]
+    [webhosthidden]
+    enum InputValidationErrorEventAction
+    {
+        Added,
+        Removed,
+    };
+
+    [contract(Microsoft.UI.Xaml.PrivateApiContract, 1)]
+    [feature(Feature_InputValidation)]
+    [webhosthidden]
+    enum InputValidationKind
+    {
+        Auto,
+        Compact,
+        Inline,
+    };
+
+    [contract(Microsoft.UI.Xaml.PrivateApiContract, 1)]
+    [feature(Feature_InputValidation)]
+    [webhosthidden]
+    enum InputValidationMode
+    {
+        Auto,
+        Default,
+        Disabled,
+    };
+
+    [contract(Microsoft.UI.Xaml.PrivateApiContract, 1)]
     [webhosthidden]
     enum KeyNavigationAction
     {
@@ -194,6 +223,9 @@ namespace Microsoft.UI.Xaml
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.TransitionTrigger>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.ElementType>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.IndexSearchHint>;
+        interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.InputValidationErrorEventAction>;
+        interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.InputValidationKind>;
+        interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.InputValidationMode>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.KeyNavigationAction>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.ReferenceIdentity>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Data.EffectiveSourceType>;
@@ -480,6 +512,21 @@ namespace Microsoft.UI.Xaml.Controls
     [contract(Microsoft.UI.Xaml.PrivateApiContract, 1)]
     [feature(Feature_InputValidation)]
     [webhosthidden]
+    interface IInputValidationControl 
+    {
+        Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Controls.InputValidationError> ValidationErrors{ get; };
+        Boolean HasValidationErrors{ get; };
+        Microsoft.UI.Xaml.Controls.InputValidationContext ValidationContext;
+        Microsoft.UI.Xaml.DataTemplate ErrorTemplate;
+        Microsoft.UI.Xaml.Controls.InputValidationMode InputValidationMode;
+        Microsoft.UI.Xaml.Controls.InputValidationKind InputValidationKind;
+        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.IInputValidationControl,Microsoft.UI.Xaml.Controls.HasValidationErrorsChangedEventArgs> HasValidationErrorsChanged;
+        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.IInputValidationControl,Microsoft.UI.Xaml.Controls.InputValidationErrorEventArgs> ValidationError;
+    };
+
+    [contract(Microsoft.UI.Xaml.PrivateApiContract, 1)]
+    [feature(Feature_InputValidation)]
+    [webhosthidden]
     interface IInputValidationControl2 
     {
         Microsoft.UI.Xaml.Controls.InputValidationCommand ValidationCommand;
@@ -613,6 +660,34 @@ namespace Microsoft.UI.Xaml.Controls
         void Validate(Microsoft.UI.Xaml.Controls.IInputValidationControl validationControl);
         overridable Boolean CanValidateCore(Microsoft.UI.Xaml.Controls.IInputValidationControl validationControl);
         overridable void ValidateCore(Microsoft.UI.Xaml.Controls.IInputValidationControl validationControl);
+    };
+
+    [contract(Microsoft.UI.Xaml.PrivateApiContract, 1)]
+    [feature(Feature_InputValidation)]
+    [webhosthidden]
+    unsealed runtimeclass InputValidationContext
+    {
+        [method_name("CreateInstance")] InputValidationContext(String memberName, Boolean isRequired);
+        Boolean IsInputRequired{ get; };
+        String MemberName{ get; };
+    };
+
+    [contract(Microsoft.UI.Xaml.PrivateApiContract, 1)]
+    [feature(Feature_InputValidation)]
+    [webhosthidden]
+    unsealed runtimeclass InputValidationError
+    {
+        [method_name("CreateInstance")] InputValidationError(String errorMessage);
+        String ErrorMessage{ get; };
+    };
+
+    [contract(Microsoft.UI.Xaml.PrivateApiContract, 1)]
+    [feature(Feature_InputValidation)]
+    [webhosthidden]
+    runtimeclass InputValidationErrorEventArgs
+    {
+        Microsoft.UI.Xaml.Controls.InputValidationErrorEventAction Action{ get; };
+        Microsoft.UI.Xaml.Controls.InputValidationError Error{ get; };
     };
 
 }

@@ -49,6 +49,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerAutomationPeerGenerated::get_HorizontallySc
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewerAutomationPeer*>(this)->get_HorizontallyScrollableImpl(pValue));
 Cleanup:
@@ -58,6 +59,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerAutomationPeerGenerated::get_HorizontalScro
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewerAutomationPeer*>(this)->get_HorizontalScrollPercentImpl(pValue));
 Cleanup:
@@ -67,6 +69,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerAutomationPeerGenerated::get_HorizontalView
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewerAutomationPeer*>(this)->get_HorizontalViewSizeImpl(pValue));
 Cleanup:
@@ -76,6 +79,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerAutomationPeerGenerated::get_VerticallyScro
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewerAutomationPeer*>(this)->get_VerticallyScrollableImpl(pValue));
 Cleanup:
@@ -85,6 +89,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerAutomationPeerGenerated::get_VerticalScroll
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewerAutomationPeer*>(this)->get_VerticalScrollPercentImpl(pValue));
 Cleanup:
@@ -94,6 +99,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerAutomationPeerGenerated::get_VerticalViewSi
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewerAutomationPeer*>(this)->get_VerticalViewSizeImpl(pValue));
 Cleanup:

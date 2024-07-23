@@ -24,10 +24,10 @@ protected:
             _In_ const xstring_ptr& spMessage);
 
 private:
-    CCoreServices* m_pCore;
+    CCoreServices* m_pCore{};
     xstring_ptr m_spMessage;
-    XUINT32 m_uiErrorCode;
-    XUINT32 m_uiLine;
-    XUINT32 m_uiColumn;
+    XUINT32 m_uiErrorCode{};
+    XUINT32 m_uiLine{};
+    XUINT32 m_uiColumn{};
 };
 

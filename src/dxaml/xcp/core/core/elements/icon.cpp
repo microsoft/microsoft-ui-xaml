@@ -307,7 +307,7 @@ CSymbolIcon::InitInstance()
     return S_OK;
 }
 
-_Check_return_ HRESULT CSymbolIcon::ApplyTemplate(_Out_ bool& fAddedVisuals)
+_Check_return_ HRESULT CSymbolIcon::ApplyTemplate(_Inout_ bool& fAddedVisuals)
 {
     HRESULT hr = S_OK;
     CTextBlock* pTextBlock = NULL;
@@ -519,7 +519,7 @@ WCHAR CSymbolIcon::ConvertSymbolValueToGlyph(const UINT32 symbolValue)
     case 0xE1C8: return static_cast<WCHAR>(0xE8E9); // FontSize
     case 0xE111: return static_cast<WCHAR>(0xE72A); // Forward
     case 0xE1E9: return static_cast<WCHAR>(0xE908); // FourBars
-    case 0xE1D9: return static_cast<WCHAR>(0xE8F3); // FullScreen
+    case 0xE1D9: return static_cast<WCHAR>(0xE740); // FullScreen
     case 0xE700: return static_cast<WCHAR>(0xE700); // GlobalNavigationButton
     case 0xE12B: return static_cast<WCHAR>(0xE774); // Globe
     case 0xE143: return static_cast<WCHAR>(0xE8AD); // Go
@@ -746,7 +746,7 @@ _Check_return_ HRESULT CFontIcon::PullInheritedTextFormatting()
     return S_OK;
 }
 
-_Check_return_ HRESULT CFontIcon::ApplyTemplate(_Out_ bool& fAddedVisuals)
+_Check_return_ HRESULT CFontIcon::ApplyTemplate(_Inout_ bool& fAddedVisuals)
 {
     HRESULT hr = S_OK;
     CTextBlock* pTextBlock = NULL;
@@ -922,7 +922,7 @@ Cleanup:
 }
 
 
-_Check_return_ HRESULT CPathIcon::ApplyTemplate(_Out_ bool& fAddedVisuals)
+_Check_return_ HRESULT CPathIcon::ApplyTemplate(_Inout_ bool& fAddedVisuals)
 {
     HRESULT hr = S_OK;
     CPath* pPath = NULL;
@@ -1005,7 +1005,7 @@ CBitmapIcon::~CBitmapIcon()
 }
 
 
-_Check_return_ HRESULT CBitmapIcon::ApplyTemplate(_Out_ bool& fAddedVisuals)
+_Check_return_ HRESULT CBitmapIcon::ApplyTemplate(_Inout_ bool& fAddedVisuals)
 {
     HRESULT hr = S_OK;
     CImage* pImage = NULL;
@@ -1459,7 +1459,7 @@ CIconSourceElement::~CIconSourceElement()
     }
 }
 
-_Check_return_ HRESULT CIconSourceElement::ApplyTemplate(_Out_ bool& fAddedVisuals)
+_Check_return_ HRESULT CIconSourceElement::ApplyTemplate(_Inout_ bool& fAddedVisuals)
 {
     if (!GetChildElementNoRef() && m_iconSource)
     {

@@ -136,6 +136,7 @@ IFACEMETHODIMP DirectUI::XamlRenderingBackgroundTaskFactory::get_Resources(_Outp
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_ResourcesImpl(ppValue));
 Cleanup:

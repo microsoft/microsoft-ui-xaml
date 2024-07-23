@@ -138,6 +138,6 @@ namespace DirectUI
 
         // Holds the last position that its flyout was opened at.
         // Used to reposition the flyout on size changed.
-        wf::Point m_lastFlyoutPosition;
+        wf::Point m_lastFlyoutPosition{};
     };
 }

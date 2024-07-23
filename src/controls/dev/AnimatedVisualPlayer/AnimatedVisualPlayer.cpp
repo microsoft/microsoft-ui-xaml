@@ -428,9 +428,17 @@ void AnimatedVisualPlayer::OnLoaded(winrt::IInspectable const& /*sender*/, winrt
 
 void AnimatedVisualPlayer::OnUnloaded(winrt::IInspectable const& /*sender*/, winrt::RoutedEventArgs const& /*args*/)
 {
-    m_isUnloaded = true;
-    // Remove any content. If we get reloaded the content will get reloaded.
-    UnloadContent();
+   // There is an anomaly in the Loading/Loaded/Unloaded events that can cause an Unloaded event to
+   // fire when the element is in the tree. When this happens, we end up unlaoding our content 
+   // and not displaying it. Unfortunately, we can't fix this until at least version 2.0 so for
+   // for now we will work around it (as we have suggested to customers to do), by checking to see 
+   // if we are actually unloaded before removing our content.
+   if (!IsLoaded())
+    {
+        m_isUnloaded = true;
+        // Remove any content. If we get reloaded the content will get reloaded.
+        UnloadContent();
+    }
 }
 
 void AnimatedVisualPlayer::OnHiding()

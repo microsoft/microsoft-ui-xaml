@@ -12,6 +12,14 @@
 #include "SharedHelpers.h"
 #include <Vector.h>
 #include "velocity.h"
+#include <algorithm>
+#include <Windowsx.h>
+#include <winuser.h>
+
+// This needs to be here instead of in CppWinRTIncludes.h because it includes Microsoft.UI.h,
+// which contains definitions of a few types like WindowId that conflict with their definitions
+// in Microsoft.UI.Content.h.
+#include <winrt\Microsoft.UI.Interop.h>
 
 static constexpr double c_tabMinimumWidth = 48.0;
 static constexpr double c_tabMaximumWidth = 200.0;
@@ -26,6 +34,35 @@ static constexpr double c_scrollAmount = 50.0;
 bool TabViewTrace::s_IsDebugOutputEnabled{ false };
 bool TabViewTrace::s_IsVerboseDebugOutputEnabled{ false };
 
+std::list<winrt::weak_ref<winrt::TabView>> TabView::s_tabViewWithTearOutList;
+HANDLE TabView::s_tabWithTearOutListMutex = ::CreateMutexW(nullptr, FALSE, nullptr);
+
+TabViewTabTearOutWindowRequestedEventArgs::TabViewTabTearOutWindowRequestedEventArgs(winrt::IInspectable const& item, winrt::UIElement const& tab)
+    : m_items({ item })
+    , m_tabs({ tab })
+{
+}
+
+TabViewTabTearOutRequestedEventArgs::TabViewTabTearOutRequestedEventArgs(winrt::IInspectable const& item, winrt::UIElement const& tab)
+    : m_items({ item })
+    , m_tabs({ tab })
+{
+}
+
+TabViewExternalTornOutTabsDroppingEventArgs::TabViewExternalTornOutTabsDroppingEventArgs(winrt::IInspectable const& item, winrt::UIElement const& tab, int dropIndex)
+    : m_items({ item })
+    , m_tabs({ tab })
+    , m_dropIndex(dropIndex)
+{
+}
+
+TabViewExternalTornOutTabsDroppedEventArgs::TabViewExternalTornOutTabsDroppedEventArgs(winrt::IInspectable const& item, winrt::UIElement const& tab, int dropIndex)
+    : m_items({ item })
+    , m_tabs({ tab })
+    , m_dropIndex(dropIndex)
+{
+}
+
 TabView::TabView()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TabView);
@@ -36,6 +73,7 @@ TabView::TabView()
     SetDefaultStyleKey(this);
 
     Loaded({ this, &TabView::OnLoaded });
+    Unloaded({ this, &TabView::OnUnloaded });
 
     winrt::KeyboardAccelerator ctrlf4Accel;
     ctrlf4Accel.Key(winrt::VirtualKey::F4);
@@ -59,6 +97,17 @@ TabView::TabView()
     ctrlShiftTabAccel.Invoked({ this, &TabView::OnCtrlShiftTabInvoked });
     ctrlShiftTabAccel.ScopeOwner(*this);
     KeyboardAccelerators().Append(ctrlShiftTabAccel);
+}
+
+TabView::~TabView()
+{
+    if (m_inputNonClientPointerSource)
+    {
+        m_inputNonClientPointerSource.EnteringMoveSize(m_enteringMoveSizeToken);
+        m_inputNonClientPointerSource.EnteredMoveSize(m_enteredMoveSizeToken);
+        m_inputNonClientPointerSource.WindowRectChanging(m_windowRectChangingToken);
+        m_inputNonClientPointerSource.ExitedMoveSize(m_exitedMoveSizeToken);
+    }
 }
 
 void TabView::OnApplyTemplate()
@@ -92,6 +141,7 @@ void TabView::OnApplyTemplate()
         {
             m_listViewLoadedRevoker = listView.Loaded(winrt::auto_revoke, { this, &TabView::OnListViewLoaded });
             m_listViewSelectionChangedRevoker = listView.SelectionChanged(winrt::auto_revoke, { this, &TabView::OnListViewSelectionChanged });
+            m_listViewSizeChangedRevoker = listView.SizeChanged(winrt::auto_revoke, { this, &TabView::OnListViewSizeChanged });
 
             m_listViewDragItemsStartingRevoker = listView.DragItemsStarting(winrt::auto_revoke, { this, &TabView::OnListViewDragItemsStarting });
             m_listViewDragItemsCompletedRevoker = listView.DragItemsCompleted(winrt::auto_revoke, { this, &TabView::OnListViewDragItemsCompleted });
@@ -376,6 +426,13 @@ void TabView::UpdateListViewItemContainerTransitions()
     }
 }
 
+void TabView::OnCanTearOutTabsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateTabViewWithTearOutList();
+    AttachMoveSizeLoopEvents();
+    UpdateNonClientRegion();
+}
+
 void TabView::UnhookEventsAndClearFields()
 {
     m_listViewLoadedRevoker.revoke();
@@ -468,6 +525,14 @@ winrt::AutomationPeer TabView::OnCreateAutomationPeer()
 void TabView::OnLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     UpdateTabContent();
+    UpdateTabViewWithTearOutList();
+    AttachMoveSizeLoopEvents();
+    UpdateNonClientRegion();
+}
+
+void TabView::OnUnloaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+{
+    UpdateTabViewWithTearOutList();
 }
 
 void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
@@ -541,6 +606,7 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
     }
 
     UpdateBottomBorderLineVisualStates();
+    UpdateNonClientRegion();
 }
 
 void TabView::OnTabStripPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
@@ -770,6 +836,11 @@ void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, cons
     m_selectionChangedEventSource(*this, args);
 }
 
+void TabView::OnListViewSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
+{
+    UpdateNonClientRegion();
+}
+
 winrt::TabViewItem TabView::FindTabViewItemFromDragItem(const winrt::IInspectable& item)
 {
     auto tab = ContainerFromItem(item).try_as<winrt::TabViewItem>();
@@ -915,10 +986,6 @@ void TabView::UpdateTabContent()
                 tabContentPresenter.Content(tvi.Content());
                 tabContentPresenter.ContentTemplate(tvi.ContentTemplate());
                 tabContentPresenter.ContentTemplateSelector(tvi.ContentTemplateSelector());
-
-                // It is not ideal to call UpdateLayout here, but it is necessary to ensure that the ContentPresenter has expanded its content
-                // into the live visual tree.
-                tabContentPresenter.UpdateLayout();
 
                 if (shouldMoveFocusToNewTab)
                 {
@@ -1309,18 +1376,24 @@ winrt::IInspectable TabView::ItemFromContainer(winrt::DependencyObject const& co
 
 int TabView::GetItemCount()
 {
-    if (auto itemssource = TabItemsSource())
+    if (auto itemsSource = TabItemsSource())
     {
-        if (auto iterable = itemssource.try_as<winrt::IIterable<winrt::IInspectable>>())
+        if (auto vector = itemsSource.try_as<winrt::IVector<winrt::IInspectable>>())
         {
-            int i = 1;
-            auto iter = iterable.First();
-            while (iter.MoveNext())
+            return static_cast<int>(vector.Size());
+        }
+        else if (auto iterable = itemsSource.try_as<winrt::IIterable<winrt::IInspectable>>())
+        {
+            int i = 0;
+
+            for (auto const& o : iterable)
             {
                 i++;
             }
+
             return i;
         }
+
         return 0;
     }
     else
@@ -1523,4 +1596,640 @@ void TabView::UpdateIsItemDraggedOver(bool isItemDraggedOver)
         m_isItemDraggedOver = isItemDraggedOver;
         UpdateTabWidths();
     }
+}
+
+void TabView::UpdateTabViewWithTearOutList()
+{
+    auto tabViewWithTearOutList = GetTabViewWithTearOutList();
+
+    winrt::weak_ref<winrt::TabView> thisAsWeak = *this;
+    auto existingIterator = std::find(tabViewWithTearOutList->begin(), tabViewWithTearOutList->end(), thisAsWeak);
+
+    if (CanTearOutTabs() && IsLoaded() && existingIterator == std::end((*tabViewWithTearOutList)))
+    {
+        tabViewWithTearOutList->push_back(*this);
+    }
+    else if ((!CanTearOutTabs() || !IsLoaded()) && existingIterator != std::end((*tabViewWithTearOutList)))
+    {
+        tabViewWithTearOutList->erase(existingIterator);
+    }
+}
+
+void TabView::AttachMoveSizeLoopEvents()
+{
+    if (CanTearOutTabs())
+    {
+        if (IsLoaded() && m_enteringMoveSizeToken.value == 0)
+        {
+            auto& nonClientPointerSource = GetInputNonClientPointerSource();
+
+            m_enteringMoveSizeToken = nonClientPointerSource.EnteringMoveSize({ this, &TabView::OnEnteringMoveSize });
+            m_enteredMoveSizeToken = nonClientPointerSource.EnteredMoveSize({ this, &TabView::OnEnteredMoveSize });
+            m_windowRectChangingToken = nonClientPointerSource.WindowRectChanging({ this, &TabView::OnWindowRectChanging });
+            m_exitedMoveSizeToken = nonClientPointerSource.ExitedMoveSize({ this, &TabView::OnExitedMoveSize });
+        }
+    }
+    else if (m_inputNonClientPointerSource)
+    {
+        m_inputNonClientPointerSource.EnteringMoveSize(m_enteringMoveSizeToken);
+        m_inputNonClientPointerSource.EnteredMoveSize(m_enteredMoveSizeToken);
+        m_inputNonClientPointerSource.WindowRectChanging(m_windowRectChangingToken);
+        m_inputNonClientPointerSource.ExitedMoveSize(m_exitedMoveSizeToken);
+
+        m_enteringMoveSizeToken.value = 0;
+        m_enteredMoveSizeToken.value = 0;
+        m_windowRectChangingToken.value = 0;
+        m_exitedMoveSizeToken.value = 0;
+    }
+}
+
+//
+// We initialize the tab tear-out state machine when we enter the move-size loop. The state machine has two states it can be in:
+// either we're dragging a tab within a tab view, or we're dragging a tab that has been torn out of a tab view.
+//
+// If we start dragging a tab in a tab view with multiple tabs, then we'll start in the former state.  We'll raise the TabTearOutWindowRequested event,
+// which prompts the app to create a new window to host the tab's data object.
+// 
+// If we start dragging a tab in a tab view where that is its only tab, then we'll start in the latter state.  We will *not* raise the TabTearOutWindowRequested event,
+// because in this case, the window being dragged is the one that owns the tab view with a single tab.
+//
+// We update the state machine in the WindowRectChanging event.  See that method for a description of the state machine's functionality.
+//
+
+void TabView::OnEnteringMoveSize(const winrt::InputNonClientPointerSource& sender, const winrt::EnteringMoveSizeEventArgs& args)
+{
+    // We only perform tab tear-out when a move is being performed.
+    if (args.MoveSizeOperation() != winrt::MoveSizeOperation::Move)
+    {
+        return;
+    }
+
+    auto pointInIslandCoords = XamlRoot().CoordinateConverter().ConvertScreenToLocal(args.PointerScreenPoint());
+    auto tab = GetTabAtPoint(pointInIslandCoords);
+
+    // If there was no tab at the point where the user clicked and dragged, then we have nothing to do.
+    if (!tab)
+    {
+        return;
+    }
+
+    auto dataItem = ItemFromContainer(tab);
+
+    m_isInTabTearOutLoop = true;
+    m_tabBeingDragged = tab;
+    m_dataItemBeingDragged = dataItem;
+    m_tabViewContainingTabBeingDragged = *this;
+    m_originalTabBeingDraggedPoint = m_tabBeingDragged.TransformToVisual(nullptr).TransformPoint({ 0, 0 });
+
+    SelectedItem(m_dataItemBeingDragged);
+
+    // We don't want to create a new window for tearing out if every tab is being torn out -
+    // in that case, we just want to drag the window.
+    if (GetItemCount() > 1)
+    {
+        auto windowRequestedArgs = winrt::make<TabViewTabTearOutWindowRequestedEventArgs>(dataItem, tab);
+        m_tabTearOutWindowRequestedEventSource(*this, windowRequestedArgs);
+
+        args.MoveSizeWindowId(windowRequestedArgs.NewWindowId());
+
+        HWND newWindow = winrt::Microsoft::UI::GetWindowFromWindowId(windowRequestedArgs.NewWindowId());
+        m_tabTearOutNewAppWindow = winrt::AppWindow::GetFromWindowId(windowRequestedArgs.NewWindowId());
+        HWND currentWindow = winrt::Microsoft::UI::GetWindowFromWindowId(XamlRoot().ContentIslandEnvironment().AppWindowId());
+
+        WINDOWPLACEMENT wp{};
+        wp.length = sizeof(wp);
+        GetWindowPlacement(currentWindow, &wp);
+
+        // We'll position the new window to be hidden at the same position as the current window and with the restored size of the current window.
+        RECT windowRect;
+        GetWindowRect(currentWindow, &windowRect);
+        SetWindowPos(
+            newWindow,
+            HWND_TOP,
+            windowRect.left,
+            windowRect.top,
+            wp.rcNormalPosition.right - wp.rcNormalPosition.left,
+            wp.rcNormalPosition.bottom - wp.rcNormalPosition.top,
+            SWP_HIDEWINDOW);
+    }
+    else
+    {
+        m_tabTearOutNewAppWindow = winrt::AppWindow::GetFromWindowId(XamlRoot().ContentIslandEnvironment().AppWindowId());
+    }
+}
+
+void TabView::OnEnteredMoveSize(const winrt::InputNonClientPointerSource& sender, const winrt::EnteredMoveSizeEventArgs& args)
+{
+    if (!m_isInTabTearOutLoop)
+    {
+        return;
+    }
+
+    MUX_ASSERT(CanTearOutTabs() && m_tabTearOutDraggingState == TabTearOutDraggingState::Idle);
+    m_tabTearOutDraggingState = GetItemCount() > 1 ? TabTearOutDraggingState::DraggingTabWithinTabView : TabTearOutDraggingState::DraggingTornOutTab;
+    m_tabTearOutInitialPosition = args.PointerScreenPoint();
+    m_dragPositionOffset = {};
+
+    // If we're starting in the state of dragging a torn out tab, let's populate the list of tab views and their bounds now.
+    if (m_tabTearOutDraggingState == TabTearOutDraggingState::DraggingTornOutTab)
+    {
+        PopulateTabViewList();
+    }
+}
+
+//
+// The tab tear-out state machine proceeds as follows.
+// 
+// When dragging a tab within a tab view:
+//   - If the tab is still within the bounds of the tab view, then we'll update its position in the item list based on where the user has dragged it -
+//     e.g., if the user has dragged it more than 1/2 of the way across the width of the tab to the right, then we'll swap the positions of those two tabs
+//     to keep the dragged tab underneath the user's pointer.
+//   - If the tab is no longer within the bounds of the tab view, then we'll transition to the torn-out tab state.  We'll raise the TabTearOutRequested event,
+//     which prompts the app to remove the tab's data object from the item list of the tab view it's being torn out from.  We'll then show the window created
+//     in response to TabTearOutWindowRequested, which will now display the data object that has been torn out.
+//
+// When dragging a torn-out tab:
+//   - If the tab is not over a tab view with CanTearOutTabs set to true, then we won't do anything, which will allow the window to be dragged as normal.
+//   - If the tab is over a tab view with CanTearOutTabs set to true, then we'll raise the ExternalTornOutTabsDropping event, which allows the app
+//     to decide whether it wants to allow the tab to be dropped into the tab view.  If it does, then we'll raise the ExternalTornOutTabsDropped event,
+//     which prompts the app to move the tab's data object to the item list of the tab view in question, then hide the window being dragged,
+//     and finally transition to the dragging within tab view state.
+//
+// The tab tear-out state concludes when the user releases the pointer.
+//
+
+void TabView::OnWindowRectChanging(const winrt::InputNonClientPointerSource& sender, const winrt::WindowRectChangingEventArgs& args)
+{
+    if (!m_isInTabTearOutLoop)
+    {
+        return;
+    }
+
+    switch (m_tabTearOutDraggingState)
+    {
+    case TabTearOutDraggingState::DraggingTabWithinTabView:
+        DragTabWithinTabView(args);
+        break;
+    case TabTearOutDraggingState::DraggingTornOutTab:
+        DragTornOutTab(args);
+        break;
+    }
+
+    auto newWindowRect = args.NewWindowRect();
+    newWindowRect.X -= static_cast<int32_t>(m_dragPositionOffset.X);
+    newWindowRect.X -= static_cast<int32_t>(m_dragPositionOffset.Y);
+    args.NewWindowRect(newWindowRect);
+}
+
+void TabView::DragTabWithinTabView(const winrt::WindowRectChangingEventArgs& args)
+{
+    auto pointInIslandCoords = m_tabViewContainingTabBeingDragged.XamlRoot().CoordinateConverter().ConvertScreenToLocal(args.PointerScreenPoint());
+    auto tabBeingDragged = m_tabViewContainingTabBeingDragged.ContainerFromItem(m_dataItemBeingDragged).try_as<winrt::TabViewItem>();
+
+    if (tabBeingDragged)
+    {
+        // We'll retrieve the bounds of the tab view in which we're dragging the tab, in order to be able to tell whether the tab has been dragged out of it.
+        auto bounds = m_tabViewContainingTabBeingDragged.TransformToVisual(nullptr).TransformBounds({ 0, 0, static_cast<float>(m_tabViewContainingTabBeingDragged.ActualWidth()), static_cast<float>(m_tabViewContainingTabBeingDragged.ActualHeight()) });
+
+        // We'll add a one-pixel margin to the bounds, since otherwise we could run into the situation where we immediately reattach after dragging out of a tab view,
+        // depending on how sub-pixel rounding works out.
+        bounds.X -= 1;
+        bounds.Y -= 1;
+        bounds.Width += 2;
+        bounds.Height += 2;
+
+        if (SharedHelpers::DoesRectContainPoint(bounds, pointInIslandCoords))
+        {
+            // If the tab view bounds contain the pointer point, then we'll update the index of the tab being dragged within its tab view.
+            UpdateTabIndex(tabBeingDragged, pointInIslandCoords);
+        }
+        else
+        {
+            // Otherwise, we'll tear out the tab and show the window created to host the torn-out tab.
+            TearOutTab(tabBeingDragged, pointInIslandCoords);
+        }
+    }
+}
+
+void TabView::UpdateTabIndex(winrt::TabViewItem const& tabBeingDragged, winrt::Point const& pointerPosition)
+{
+    auto tabViewImpl = winrt::get_self<TabView>(m_tabViewContainingTabBeingDragged);
+
+    // We'll first figure out what tab is located at the position in question.  This may return null if, for example,
+    // the user has dragged over the add-tab button, in which case we'll just early-out.
+    if (auto tabAtPoint = tabViewImpl->GetTabAtPoint(pointerPosition))
+    {
+        // Now we'll retrieve the data item associated with that tab.  If it's the data item of the tab we're dragging,
+        // then we know that the tab doesn't need to move - the pointer is still over the tab in question.
+        // If it's *not* the data item of the tab we're dragging, then we'll swap the tab the pointer is over
+        // with the tab we're dragging.
+        auto dataItemAtPoint = tabViewImpl->ItemFromContainer(tabAtPoint);
+
+        if (dataItemAtPoint != m_dataItemBeingDragged)
+        {
+            int newIndex = tabViewImpl->IndexFromContainer(tabAtPoint);
+
+            // If this tab view has an items source set, we'll swap the items in the items source.
+            // Otherwise, we'll swap the tab items themselves.
+            if (auto tabItemsSource = m_tabViewContainingTabBeingDragged.TabItemsSource())
+            {
+                if (auto tabItemsSourceVector = tabItemsSource.try_as<winrt::IVector<IInspectable>>())
+                {
+                    tabItemsSourceVector.RemoveAt(tabViewImpl->IndexFromContainer(tabBeingDragged));
+                    tabItemsSourceVector.InsertAt(newIndex, m_dataItemBeingDragged);
+                }
+            }
+            else
+            {
+                m_tabViewContainingTabBeingDragged.TabItems().RemoveAt(tabViewImpl->IndexFromContainer(tabBeingDragged));
+                m_tabViewContainingTabBeingDragged.TabItems().InsertAt(newIndex, tabBeingDragged);
+            }
+
+            // Finally, we'll re-select the tab being dragged, since it has changed positions.
+            m_tabViewContainingTabBeingDragged.SelectedIndex(newIndex);
+        }
+    }
+}
+
+void TabView::TearOutTab(winrt::TabViewItem const& tabBeingDragged, winrt::Point const& pointerPosition)
+{
+    auto tabViewImpl = winrt::get_self<TabView>(m_tabViewContainingTabBeingDragged);
+
+    // We'll first raise the TabTearOutRequested event, which prompts the app to move the torn-out tab data item from its current tab view to the one in the new window.
+    tabViewImpl->m_tabTearOutRequestedEventSource(m_tabViewContainingTabBeingDragged, winrt::make<TabViewTabTearOutRequestedEventArgs>(m_dataItemBeingDragged, tabBeingDragged));
+
+    // We're now dragging a torn out tab, so let's populate the list of tab views.
+    m_tabTearOutDraggingState = TabTearOutDraggingState::DraggingTornOutTab;
+    PopulateTabViewList();
+
+    // Now we'll show the window.
+    m_tabTearOutNewAppWindow.Show();
+
+    if (m_tabViewContainingTabBeingDragged)
+    {
+        m_tabViewContainingTabBeingDragged.UpdateLayout();
+
+        // We want to keep the tab under the user's pointer, so we'll subtract off the difference from the XAML position of the tab in the original window,
+        // in order to ensure we position the window such that the tab in the new window is in the same position as the tab in the old window.
+        auto containingTabPosition = m_tabViewContainingTabBeingDragged.ContainerFromIndex(m_tabViewContainingTabBeingDragged.SelectedIndex()).as<winrt::TabViewItem>().TransformToVisual(nullptr).TransformPoint({ 0, 0 });
+        m_dragPositionOffset = { containingTabPosition.X - m_originalTabBeingDraggedPoint.X , containingTabPosition.Y - m_originalTabBeingDraggedPoint.Y };
+    }
+    else
+    {
+        m_dragPositionOffset = {};
+    }
+}
+
+void TabView::DragTornOutTab(const winrt::WindowRectChangingEventArgs& args)
+{
+    // When we're dragging a torn-out tab, we want to check, as the window moves, whether the user has dragged the tab over a tab view that will allow it to be dropped into it.
+    // We'll iterate through the list of tab views and their bounds and check each of their screen positions against the screen position of the pointer.
+    for (auto iterator = m_tabViewBoundsTuples.begin(); iterator != m_tabViewBoundsTuples.end(); iterator++)
+    {
+        auto& otherTabViewScreenBounds = std::get<winrt::RectInt32>(*iterator);
+
+        if (SharedHelpers::DoesRectContainPoint(otherTabViewScreenBounds, args.PointerScreenPoint()))
+        {
+            auto& otherTabView = std::get<winrt::TabView>(*iterator);
+
+            // We'll check which index we need to insert the tab at.
+            int insertionIndex = GetTabInsertionIndex(otherTabView, args.PointerScreenPoint());
+
+            // If we got a valid index, we'll begin attempting to merge the tab into this tab view.
+            if (insertionIndex >= 0)
+            {
+                // First, we'll raise the ExternalTornOutTabsDropping event, which asks the app whether this tab view should accept the tab being dropped into it.
+                auto tabsDroppingArgs = winrt::make<TabViewExternalTornOutTabsDroppingEventArgs>(m_dataItemBeingDragged, m_tabBeingDragged, insertionIndex);
+
+                auto otherTabViewImpl = winrt::get_self<TabView>(otherTabView);
+                otherTabViewImpl->m_externalTornOutTabsDroppingEventSource(otherTabView, tabsDroppingArgs);
+
+                // If the response was yes, then we'll raise the ExternalTornOutTabsDropped event, which prompts the app to actually move the tab's data item
+                // to the new tab view; we'll flag the new tab view as the one containing the tab we're dragging; we'll move to the dragging tab within a tab view state;
+                // and finally we'll then hide the torn-out tab window.
+                if (tabsDroppingArgs.AllowDrop())
+                {
+                    // We're about to merge the tab into the other tab view, so we'll retrieve and save off the tab view that currently holds the tab being dragged.
+                    // We'll need to remove it from the list of tab views with CanTearOutTabs set to true if its window is destroyed.
+                    m_tabViewInNewAppWindow = m_tabViewContainingTabBeingDragged;
+
+                    otherTabViewImpl->m_externalTornOutTabsDroppedEventSource(otherTabView, winrt::make<TabViewExternalTornOutTabsDroppedEventArgs>(m_dataItemBeingDragged, m_tabBeingDragged, insertionIndex));
+                    otherTabView.SelectedItem(m_dataItemBeingDragged);
+
+                    // If the other tab view's app window is a different app window than the one being dragged, bring it to the front beneath the one being dragged.
+                    auto otherTabViewAppWindow = winrt::AppWindow::GetFromWindowId(otherTabView.XamlRoot().ContentIslandEnvironment().AppWindowId());
+                    if (otherTabViewAppWindow.Id() != m_tabTearOutNewAppWindow.Id())
+                    {
+                        otherTabViewAppWindow.MoveInZOrderBelow(m_tabTearOutNewAppWindow.Id());
+                    }
+
+                    m_tabViewContainingTabBeingDragged = otherTabView;
+                    m_dragPositionOffset = {};
+                    m_tabTearOutDraggingState = TabTearOutDraggingState::DraggingTabWithinTabView;
+                    m_tabTearOutNewAppWindow.Hide();
+
+                    break;
+                }
+            }
+        }
+    }
+}
+
+int TabView::GetTabInsertionIndex(winrt::TabView const& otherTabView, winrt::PointInt32 const& screenPosition)
+{
+    int index = -1;
+
+    // To get the insertion index, we'll first check what tab (if any) is beneath the screen position.
+    auto otherTabViewImpl = winrt::get_self<TabView>(otherTabView);
+    auto tab = otherTabViewImpl->GetTabAtPoint(otherTabView.XamlRoot().CoordinateConverter().ConvertScreenToLocal(screenPosition));
+
+    if (tab)
+    {
+        // If there was a tab underneath the position, then we'll check whether the screen position is on its left side or its right side.
+        // If it's on the left side, we'll set the insertion position to be before this tab. Otherwise, we'll set it to be after this tab.
+        auto tabIndex = otherTabViewImpl->IndexFromContainer(tab);
+        auto tabRect = otherTabView.XamlRoot().CoordinateConverter().ConvertLocalToScreen(tab.TransformToVisual(nullptr).TransformBounds(winrt::Rect{ 0, 0, static_cast<float>(tab.ActualWidth()), static_cast<float>(tab.ActualHeight()) }));
+
+        if (screenPosition.X < tabRect.X + tabRect.Width / 2)
+        {
+            index = tabIndex;
+        }
+        else
+        {
+            index = tabIndex + 1;
+        }
+    }
+    else if (otherTabViewImpl->GetItemCount() > 0)
+    {
+        // If there was no tab, under the cursor, then that suggests we want to insert the tab either at the very beginning or at the very end.
+        // We'll first check whether the screen position is to the left of the bounds of the first tab.  If so, we'll set the insertion position
+        // to be the start of the item list.
+        auto firstTab = otherTabViewImpl->ContainerFromIndex(0).as<winrt::TabViewItem>();
+
+        if (firstTab)
+        {
+            auto firstTabRect = otherTabView.XamlRoot().CoordinateConverter().ConvertLocalToScreen(firstTab.TransformToVisual(nullptr).TransformBounds(winrt::Rect{ 0, 0, static_cast<float>(firstTab.ActualWidth()), static_cast<float>(firstTab.ActualHeight()) }));
+
+            if (screenPosition.X < firstTabRect.X)
+            {
+                index = 0;
+            }
+        }
+
+        // If that wasn't the case, then next we'll check whether the screen position is to the right of the bounds of the last tab.
+        // If so, we'll set the insertion position to be the end of the item list.
+        if (index < 0)
+        {
+            auto lastTabIndex = otherTabViewImpl->GetItemCount() - 1;
+            auto lastTab = otherTabViewImpl->ContainerFromIndex(lastTabIndex).as<winrt::TabViewItem>();
+
+            if (lastTab)
+            {
+                auto lastTabRect = otherTabView.XamlRoot().CoordinateConverter().ConvertLocalToScreen(lastTab.TransformToVisual(nullptr).TransformBounds(winrt::Rect{ 0, 0, static_cast<float>(lastTab.ActualWidth()), static_cast<float>(lastTab.ActualHeight()) }));
+                if (screenPosition.X > lastTabRect.X + lastTabRect.Width)
+                {
+                    index = otherTabViewImpl->GetItemCount();
+                }
+            }
+        }
+    }
+
+    return index;
+}
+
+// When we exit the move-size loop, we'll reset the tab tear-out state machine to an idle state, and check the status of the window that was created.
+// If the window is currently hidden, then the user has merged the torn out tab with another tab view, and the window is no longer needed.
+// In that case, we'll queue the window for destruction.
+
+void TabView::OnExitedMoveSize(const winrt::InputNonClientPointerSource& sender, const winrt::ExitedMoveSizeEventArgs& args)
+{
+    if (!m_isInTabTearOutLoop)
+    {
+        return;
+    }
+
+    m_tabTearOutDraggingState = TabTearOutDraggingState::Idle;
+
+    if (!m_tabTearOutNewAppWindow.IsVisible())
+    {
+        // We're about to close the window containing the tab view that had been holding the tab view,
+        // so we'll remove it from the list of tab views with CanTearOutTabs set to true
+        // This will ensure that it's immediately removed from the list rather than waiting for the
+        // WM_CLOSE message to be handled.
+        if (m_tabViewInNewAppWindow)
+        {
+            auto tabViewWithTearOutList = GetTabViewWithTearOutList();
+            winrt::weak_ref<winrt::TabView> windowTabViewAsWeak = m_tabViewInNewAppWindow;
+            auto existingIterator = std::find(tabViewWithTearOutList->begin(), tabViewWithTearOutList->end(), windowTabViewAsWeak);
+
+            if (existingIterator != std::end((*tabViewWithTearOutList)))
+            {
+                tabViewWithTearOutList->erase(existingIterator);
+            }
+        }
+
+        PostMessageW(winrt::Microsoft::UI::GetWindowFromWindowId(m_tabTearOutNewAppWindow.Id()), WM_CLOSE, 0, 0);
+    }
+    else if (m_tabViewContainingTabBeingDragged)
+    {
+        // Otherwise, if the window is still open, let's update its tab view's non-client region.
+        winrt::get_self<TabView>(m_tabViewContainingTabBeingDragged)->UpdateNonClientRegion();
+    }
+
+    // We'll also update this tab view's non-client region, now that it's stabilized.
+    UpdateNonClientRegion();
+    m_isInTabTearOutLoop = false;
+}
+
+winrt::TabViewItem TabView::GetTabAtPoint(const winrt::Point& point)
+{
+    // Convert the point to a point in the TabView's coordinate space
+    // and then detect which TabViewItem is at that point.
+    auto tabViewRect = TransformToVisual(nullptr).TransformBounds(winrt::Rect{ 0, 0, static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight()) });
+
+    if (SharedHelpers::DoesRectContainPoint(tabViewRect, point))
+    {
+        auto tabCount = GetItemCount();
+        for (int i = 0; i < tabCount; i++)
+        {
+            auto tab = ContainerFromIndex(i).try_as<winrt::TabViewItem>();
+            if (tab)
+            {
+                auto tabRect = tab.TransformToVisual(nullptr).TransformBounds(winrt::Rect{ 0, 0, static_cast<float>(tab.ActualWidth()), static_cast<float>(tab.ActualHeight()) });
+                if (SharedHelpers::DoesRectContainPoint(tabRect, point))
+                {
+                    return tab;
+                }
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+void TabView::PopulateTabViewList()
+{
+    // When we're dragging a torn-out tab, we want to check, as the window moves, whether the user has dragged the tab over a tab view that will allow it to be dropped into it.
+    // We'll pre-fill a list of tab views and their screen bounds when we start dragging a torn-out tab, on the basis that they are unlikely to move while we're dragging the tab.
+    m_tabViewBoundsTuples.clear();
+
+    // We'll also track which tab view holds the torn-out tab.
+    m_tabViewContainingTabBeingDragged = nullptr;
+
+    auto tabViewWithTearOutList = TabView::GetTabViewWithTearOutList();
+
+    auto iterator = tabViewWithTearOutList->begin();
+    while (iterator != tabViewWithTearOutList->end())
+    {
+        auto otherTabView = (*iterator).get();
+
+        if (!otherTabView)
+        {
+            iterator = tabViewWithTearOutList->erase(iterator);
+        }
+        else
+        {
+            // We only want to populate the tuple list with tab views that don't currently contain the item being dragged,
+            // since this tuple list is used to detect tab views that the item being dragged can be dragged onto.
+            bool otherTabViewContainsTab = false;
+            uint32_t ignored;
+
+            if (auto otherTabItemsSource = otherTabView.TabItemsSource())
+            {
+                if (auto tabItemsSourceVector = otherTabItemsSource.try_as<winrt::IVector<IInspectable>>())
+                {
+                    otherTabViewContainsTab = tabItemsSourceVector.IndexOf(m_dataItemBeingDragged, ignored);
+                }
+            }
+            else
+            {
+                otherTabViewContainsTab = otherTabView.TabItems().IndexOf(m_tabBeingDragged, ignored);
+            }
+
+            if (otherTabViewContainsTab)
+            {
+                m_tabViewContainingTabBeingDragged = otherTabView;
+            }
+            else
+            {
+                auto otherTabViewXamlBounds = otherTabView.TransformToVisual(nullptr).TransformBounds(winrt::Rect(0, 0, static_cast<float>(otherTabView.ActualWidth()), static_cast<float>(otherTabView.ActualHeight())));
+                auto otherTabViewScreenBounds = otherTabView.XamlRoot().CoordinateConverter().ConvertLocalToScreen(otherTabViewXamlBounds);
+
+                m_tabViewBoundsTuples.push_back(std::make_tuple(otherTabViewScreenBounds, otherTabView));
+            }
+
+            iterator++;
+        }
+    }
+}
+
+// At the moment, all TabViews and windows are on the same thread.
+// However, that won't always be the case, so to handle things
+// when it isn't, we'll lock the accessing of the list of TabViews
+// behind a mutex and require its acquisition to interact with the list.
+MutexLockedResource<std::list<winrt::weak_ref<winrt::TabView>>> TabView::GetTabViewWithTearOutList()
+{
+    return MutexLockedResource(s_tabWithTearOutListMutex, &s_tabViewWithTearOutList);
+}
+
+winrt::InputNonClientPointerSource const& TabView::GetInputNonClientPointerSource()
+{
+    auto windowId = GetAppWindowId();
+
+    if (!m_inputNonClientPointerSource && windowId.Value != 0)
+    {
+        m_inputNonClientPointerSource = winrt::InputNonClientPointerSource::GetForWindowId(windowId);
+    }
+
+    return m_inputNonClientPointerSource;
+}
+
+winrt::ContentCoordinateConverter const& TabView::GetAppWindowCoordinateConverter()
+{
+    auto windowId = GetAppWindowId();
+
+    if (!m_appWindowCoordinateConverter && windowId.Value != 0)
+    {
+        m_appWindowCoordinateConverter = winrt::ContentCoordinateConverter::CreateForWindowId(windowId);
+    }
+
+    return m_appWindowCoordinateConverter;
+}
+
+void TabView::UpdateNonClientRegion()
+{
+    if (auto& nonClientPointerSource = GetInputNonClientPointerSource())
+    {
+        auto captionRects = nonClientPointerSource.GetRegionRects(winrt::NonClientRegionKind::Caption);
+
+        // We need to preserve non-client caption regions set by components other than us,
+        // so we'll keep around all caption regions except the one that we set.
+        std::vector<winrt::RectInt32> captionRegions;
+        std::for_each(captionRects.cbegin(), captionRects.cend(), [&](winrt::RectInt32 const& rect)
+            {
+                if (!m_nonClientRegionSet || rect == m_nonClientRegion)
+                {
+                    captionRegions.push_back(rect);
+                }
+            });
+
+        if (CanTearOutTabs() && IsLoaded())
+        {
+            if (auto& listView = m_listView.get())
+            {
+                if (listView.IsLoaded())
+                {
+                    if (auto& appWindowCoordinateConverter = GetAppWindowCoordinateConverter())
+                    {
+                        auto listViewBounds = listView.TransformToVisual(nullptr).TransformBounds(winrt::Rect(0, 0, static_cast<float>(listView.ActualWidth()), static_cast<float>(listView.ActualHeight())));
+
+                        if (listViewBounds.X < 0 || listViewBounds.Y < 0)
+                        {
+                            return;
+                        }
+
+                        // Non-client region rects need to be in the coordinate system of the owning app window, so we'll take our XAML island coordinates,
+                        // convert them to screen coordinates, and then convert from there to app window coordinates.
+                        auto appWindowListViewBounds = appWindowCoordinateConverter.ConvertScreenToLocal(XamlRoot().CoordinateConverter().ConvertLocalToScreen(listViewBounds));
+
+                        m_nonClientRegion = {
+                            static_cast<int32_t>(appWindowListViewBounds.X),
+                            static_cast<int32_t>(appWindowListViewBounds.Y),
+                            static_cast<int32_t>(appWindowListViewBounds.Width),
+                            static_cast<int32_t>(appWindowListViewBounds.Height),
+                        };
+
+                        m_nonClientRegionSet = true;
+
+                        captionRegions.push_back(m_nonClientRegion);
+                    }
+                }
+            }
+        }
+
+        nonClientPointerSource.SetRegionRects(winrt::NonClientRegionKind::Caption, captionRegions);
+    }
+}
+
+winrt::WindowId TabView::GetAppWindowId()
+{
+    winrt::WindowId appWindowId{};
+
+    if (auto xamlRoot = XamlRoot())
+    {
+        if (auto contentIslandEnvironment = xamlRoot.ContentIslandEnvironment())
+        {
+            appWindowId = contentIslandEnvironment.AppWindowId();
+        }
+    }
+
+    if (appWindowId.Value != m_lastAppWindowId.Value)
+    {
+        m_lastAppWindowId = appWindowId;
+
+        m_inputNonClientPointerSource = nullptr;
+        m_appWindowCoordinateConverter = nullptr;
+    }
+
+    return appWindowId;
 }

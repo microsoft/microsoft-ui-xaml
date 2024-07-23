@@ -62,6 +62,7 @@ IFACEMETHODIMP DirectUI::EasingFunctionBaseGenerated::Ease(_In_ DOUBLE normalize
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "EasingFunctionBase_Ease", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<EasingFunctionBase*>(this)->EaseImpl(normalizedTime, pReturnValue));

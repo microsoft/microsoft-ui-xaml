@@ -201,7 +201,7 @@ _Check_return_ HRESULT DirectUI::SelectorGenerated::EventAddHandlerByIndex(_In_ 
     case KnownEventIndex::Selector_SelectionChanged:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::ISelectionChangedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -311,6 +311,7 @@ IFACEMETHODIMP DirectUI::SelectorFactory::GetIsSelectionActive(_In_ ABI::Microso
     }
     ARG_NOTNULL(pElement, "element");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(GetIsSelectionActiveImpl(pElement, pReturnValue));
 Cleanup:

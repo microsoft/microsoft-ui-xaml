@@ -6,7 +6,7 @@
 namespace HStringUtil {
 
     // Below all apis are copied from windowsstringp.h
-    inline bool HasEmbeddedNull(_In_ const HSTRING hString) throw()
+    inline bool HasEmbeddedNull(_In_ const HSTRING hString) noexcept
     {
         BOOL answer{};
         // Not capturing HRESULT
@@ -14,7 +14,7 @@ namespace HStringUtil {
         return !!answer;
     }
 
-    inline HRESULT GetLpcwstr(_In_ const HSTRING hString, _Outptr_ LPCWSTR *ppsz) throw()
+    inline HRESULT GetLpcwstr(_In_ const HSTRING hString, _Outptr_ LPCWSTR *ppsz) noexcept
     {
         if (HasEmbeddedNull(hString))
         {
@@ -25,7 +25,7 @@ namespace HStringUtil {
         return S_OK;
     }
 
-    inline LPCWSTR GetRawBuffer(_In_ const HSTRING hString, _Out_opt_ UINT32 *length) throw()
+    inline LPCWSTR GetRawBuffer(_In_ const HSTRING hString, _Out_opt_ UINT32 *length) noexcept
     {
         return WindowsGetStringRawBuffer(hString, length);
     }

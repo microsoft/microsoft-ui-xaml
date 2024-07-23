@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::CalendarDatePickerAutomationPeerGenerated::get_IsReadOn
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarDatePickerAutomationPeer*>(this)->get_IsReadOnlyImpl(pValue));
 Cleanup:
@@ -62,6 +63,7 @@ IFACEMETHODIMP DirectUI::CalendarDatePickerAutomationPeerGenerated::get_Value(_O
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarDatePickerAutomationPeer*>(this)->get_ValueImpl(pValue));
 Cleanup:

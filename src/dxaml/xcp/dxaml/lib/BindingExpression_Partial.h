@@ -288,7 +288,7 @@ namespace DirectUI
         TrackerPtr<BindingExpressionInheritanceContextChangedHandler> m_tpInheritanceContextChangedHandler;
         TrackerPtr<BindingExpressionTargetLoadedHandler> m_tpTargetLoadedHandler;
         TrackerPtr<BindingExpressionCVSViewChangedHandler> m_tpCVSViewChangedHandler;
-        EventRegistrationToken             m_lostFocusHandlerToken;
+        EventRegistrationToken             m_lostFocusHandlerToken{};
         ctl::WeakRefPtr m_spMentorRef;
         TrackerPtr<IValueConverterInternal> m_tpValueConverter;    // This is the internal value converter
         TrackerPtr<CollectionViewSource> m_tpCVS;

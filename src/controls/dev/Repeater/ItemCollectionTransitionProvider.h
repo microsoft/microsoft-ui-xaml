@@ -16,6 +16,8 @@ class ItemCollectionTransitionProvider :
     public ItemCollectionTransitionProviderProperties
 {    
 public:
+    ~ItemCollectionTransitionProvider();
+
 #pragma region IItemCollectionTransitionProvider
 
     void QueueTransition(winrt::ItemCollectionTransition const& transition);
@@ -33,10 +35,14 @@ public:
     void NotifyTransitionCompleted(winrt::ItemCollectionTransition const& transition);
 
 private:
+    void CleanTransitionsBatch();
+    void OnKeepAliveTimerTick(const winrt::IInspectable& sender, const winrt::IInspectable& args);
     void OnRendering(const winrt::IInspectable& sender, const winrt::IInspectable& args);
-    void ResetState();
+    void StartNewKeepAliveTimer();
 
-    winrt::IVector<winrt::ItemCollectionTransition> m_transitions{ winrt::single_threaded_vector<winrt::ItemCollectionTransition>() };
-    winrt::IVector<winrt::ItemCollectionTransition> m_transitionsWithAnimations{ winrt::single_threaded_vector<winrt::ItemCollectionTransition>() };
+    uint32_t m_transitionsBatch{};
+    std::map<winrt::DispatcherTimer, uint32_t> m_keepAliveTimersMap;
+    std::map<uint32_t, winrt::IVector<winrt::ItemCollectionTransition>> m_transitionsMap;
+    std::map<uint32_t, winrt::IVector<winrt::ItemCollectionTransition>> m_transitionsWithAnimationsMap;
     winrt::CompositionTarget::Rendering_revoker m_rendering{};
 };

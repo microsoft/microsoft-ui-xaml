@@ -20,10 +20,10 @@ namespace containers
         bit_vector();
         bit_vector(bit_count_t bit_count);
         bit_vector(const bit_vector& other);
-        bit_vector(bit_vector&& other);
+        bit_vector(bit_vector&& other) noexcept;
 
         bit_vector& operator=(const bit_vector& other);
-        bit_vector& operator=(bit_vector&& other);
+        bit_vector& operator=(bit_vector&& other) noexcept;
 
         ~bit_vector();
 

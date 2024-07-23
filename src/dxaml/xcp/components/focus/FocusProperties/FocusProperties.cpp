@@ -276,8 +276,10 @@ bool IsGamepadFocusCandidate<CDependencyObject>(_In_ CDependencyObject* const ob
     if (object->OfTypeByIndex<KnownTypeIndex::UIElement>())
     {
         CValue val;
-        object->GetValueByIndex(KnownPropertyIndex::UIElement_IsGamepadFocusCandidate, &val);
-        isGamepadFocusCandidate = (val.AsBool() == TRUE);
+        if (SUCCEEDED(object->GetValueByIndex(KnownPropertyIndex::UIElement_IsGamepadFocusCandidate, &val)))
+        {
+            isGamepadFocusCandidate = (val.AsBool() == TRUE);
+        }
     }
 
     return isGamepadFocusCandidate;

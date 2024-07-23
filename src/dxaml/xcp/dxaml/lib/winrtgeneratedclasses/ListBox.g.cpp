@@ -45,6 +45,7 @@ IFACEMETHODIMP DirectUI::ListBoxGenerated::get_SelectedItems(_Outptr_result_mayb
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ListBox*>(this)->get_SelectedItemsImpl(ppValue));
 Cleanup:

@@ -93,7 +93,7 @@
               Margin=4,0,0,0
               Name=ContentControl
               Padding=0,0,0,0
-              RenderSize=111,47
+              RenderSize=111,45
               Visibility=Visible
             [Microsoft.UI.Xaml.Controls.ContentPresenter]
                 Background=[NULL]
@@ -107,7 +107,7 @@
                 Foreground=#E4000000
                 Margin=0,0,0,0
                 Padding=0,0,0,0
-                RenderSize=111,47
+                RenderSize=111,45
                 Visibility=Visible
               [Microsoft.UI.Xaml.Controls.TextBlock]
                   FocusVisualPrimaryBrush=#E4000000
@@ -117,7 +117,7 @@
                   Foreground=#E4000000
                   Margin=12,14,12,14
                   Padding=0,0,0,0
-                  RenderSize=87,19
+                  RenderSize=87,17
                   Visibility=Visible
           [Microsoft.UI.Xaml.Controls.ItemsControl]
               Background=[NULL]
@@ -321,7 +321,7 @@
                           Margin=2,0,2,8
                           Name=TextLabel
                           Padding=0,0,0,0
-                          RenderSize=64,16
+                          RenderSize=64,15
                           Visibility=Visible
                       [Microsoft.UI.Xaml.Controls.TextBlock]
                           FocusVisualPrimaryBrush=#E4000000
@@ -495,7 +495,7 @@
                           Margin=2,0,2,8
                           Name=TextLabel
                           Padding=0,0,0,0
-                          RenderSize=64,16
+                          RenderSize=64,15
                           Visibility=Visible
                       [Microsoft.UI.Xaml.Controls.TextBlock]
                           FocusVisualPrimaryBrush=#E4000000
@@ -753,7 +753,7 @@
               Margin=4,0,0,0
               Name=ContentControl
               Padding=0,0,0,0
-              RenderSize=111,47
+              RenderSize=111,45
               Visibility=Visible
             [Microsoft.UI.Xaml.Controls.ContentPresenter]
                 Background=[NULL]
@@ -767,7 +767,7 @@
                 Foreground=#E4000000
                 Margin=0,0,0,0
                 Padding=0,0,0,0
-                RenderSize=111,47
+                RenderSize=111,45
                 Visibility=Visible
               [Microsoft.UI.Xaml.Controls.TextBlock]
                   FocusVisualPrimaryBrush=#E4000000
@@ -777,7 +777,7 @@
                   Foreground=#E4000000
                   Margin=12,14,12,14
                   Padding=0,0,0,0
-                  RenderSize=87,19
+                  RenderSize=87,17
                   Visibility=Visible
           [Microsoft.UI.Xaml.Controls.ItemsControl]
               Background=[NULL]

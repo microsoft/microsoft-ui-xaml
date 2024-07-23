@@ -37,7 +37,7 @@ KnownTypeIndex CValueUtil::GetTypeIndex(
             {
                 uint32_t enumValue = 0;
                 KnownTypeIndex enumTypeIndex = KnownTypeIndex::UnknownType;
-                value.GetEnum(enumValue, enumTypeIndex);
+                VERIFYHR(value.GetEnum(enumValue, enumTypeIndex));
                 return enumTypeIndex;
             }
     }

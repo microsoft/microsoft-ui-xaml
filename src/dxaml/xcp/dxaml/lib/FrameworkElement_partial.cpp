@@ -1436,7 +1436,7 @@ IFACEMETHODIMP FrameworkElement::OnCreateAutomationPeer(_Outptr_ xaml_automation
     if (nAutomationPeerFactoryIndex != 0)
     {
         ctl::ComPtr<IInspectable> spInner;
-        ActivationAPI::ActivateAutomationInstance(static_cast<KnownTypeIndex>(nAutomationPeerFactoryIndex), GetHandle(), nullptr, &spInner);
+        IFC_RETURN(ActivationAPI::ActivateAutomationInstance(static_cast<KnownTypeIndex>(nAutomationPeerFactoryIndex), GetHandle(), nullptr, &spInner));
         if (spInner)
         {
             ctl::ComPtr<xaml_automation_peers::IFrameworkElementAutomationPeer> spFEAutomationPeer;

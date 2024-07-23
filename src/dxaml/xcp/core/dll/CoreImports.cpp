@@ -1729,16 +1729,17 @@ _Check_return_ HRESULT DependencyObject_GetVisualRelative(
 
     // Get the parent or children
 
-    if (iRelativeLinkKind == 0)
+    if (iRelativeLinkKind == 0 /* VisualRelativeKind_Child */)
     {
         pObjectNoRef = (CDependencyObject*)pElement->GetChildren();
     }
-    else if (iRelativeLinkKind == 1)
+    else if (iRelativeLinkKind == 1 /* VisualRelativeKind_Parent */)
     {
         pObjectNoRef = (CDependencyObject*)pElement->GetParent();
     }
-    else
+    else // VisualRelativeKind_Root
     {
+        ASSERT(iRelativeLinkKind == 2 /* VisualRelativeKind_Root */);
         pObjectNoRef = (CDependencyObject*)pElement->GetTreeRoot(true);
     }
 

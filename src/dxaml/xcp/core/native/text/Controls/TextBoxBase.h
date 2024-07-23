@@ -61,12 +61,12 @@ public:
 
     public:
         ScopedSuppressChangeNotifications(const ScopedSuppressChangeNotifications&) = delete;
-        ScopedSuppressChangeNotifications(ScopedSuppressChangeNotifications&& move);
+        ScopedSuppressChangeNotifications(ScopedSuppressChangeNotifications&& move) noexcept;
 
         ~ScopedSuppressChangeNotifications();
 
         ScopedSuppressChangeNotifications& operator=(const ScopedSuppressChangeNotifications&) = delete;
-        ScopedSuppressChangeNotifications& operator=(ScopedSuppressChangeNotifications&& move);
+        ScopedSuppressChangeNotifications& operator=(ScopedSuppressChangeNotifications&& move) noexcept;
 
     private:
         ScopedSuppressChangeNotifications(_In_ CTextBoxBase* textBoxBase, _In_ ITextDocument2* document);

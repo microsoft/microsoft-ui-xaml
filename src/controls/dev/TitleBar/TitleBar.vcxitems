@@ -16,15 +16,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)TitleBar.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)TitleBarTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TitleBarAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TitleBarTemplateSettings.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TitleBar.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TitleBarTemplateSettings.properties.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\GeneratedExperimental\TitleBar.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\GeneratedExperimental\TitleBarTemplateSettings.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TitleBar.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TitleBarTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TitleBar.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)TitleBarTemplateSettings.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TitleBarAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TitleBarTemplateSettings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)TitleBar.xaml">

@@ -115,7 +115,7 @@ private:
     void UpdateSourceInternal();
     void FireCoreProcessFailedEvent(const winrt::CoreWebView2ProcessFailedEventArgs& args);
     void FireCoreWebView2Initialized(winrt::hresult exception);
-    void MoveFocusIntoCoreWebView2(winrt::CoreWebView2MoveFocusReason reason);
+
     void UpdateDefaultVisualBackgroundColor();
 
     HWND GetHostHwnd() noexcept;

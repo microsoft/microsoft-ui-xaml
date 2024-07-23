@@ -58,9 +58,9 @@ class HitTestHelper : private CFlatteningSink
             );
 
         CMILMatrix m_transform;
-        XFLOAT m_tolerance;
-        XPOINTF m_currentPoint;
-        XPOINTF m_currentPointUntransformed;
+        XFLOAT m_tolerance{};
+        XPOINTF m_currentPoint{};
+        XPOINTF m_currentPointUntransformed{};
         bool m_encounteredNaN;
 
     private:

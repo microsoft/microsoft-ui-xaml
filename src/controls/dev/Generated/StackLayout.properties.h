@@ -9,8 +9,8 @@ class StackLayoutProperties
 public:
     StackLayoutProperties();
 
-    void DisableVirtualization(bool value);
-    bool DisableVirtualization();
+    void IsVirtualizationEnabled(bool value);
+    bool IsVirtualizationEnabled();
 
     void Orientation(winrt::Orientation const& value);
     winrt::Orientation Orientation();
@@ -18,18 +18,18 @@ public:
     void Spacing(double value);
     double Spacing();
 
-    static winrt::DependencyProperty DisableVirtualizationProperty() { return s_DisableVirtualizationProperty; }
+    static winrt::DependencyProperty IsVirtualizationEnabledProperty() { return s_IsVirtualizationEnabledProperty; }
     static winrt::DependencyProperty OrientationProperty() { return s_OrientationProperty; }
     static winrt::DependencyProperty SpacingProperty() { return s_SpacingProperty; }
 
-    static GlobalDependencyProperty s_DisableVirtualizationProperty;
+    static GlobalDependencyProperty s_IsVirtualizationEnabledProperty;
     static GlobalDependencyProperty s_OrientationProperty;
     static GlobalDependencyProperty s_SpacingProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnDisableVirtualizationPropertyChanged(
+    static void OnIsVirtualizationEnabledPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

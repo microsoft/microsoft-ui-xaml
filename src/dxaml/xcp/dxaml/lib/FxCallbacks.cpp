@@ -867,12 +867,6 @@ namespace FxCallbacks
     _Check_return_ HRESULT Popup_OnClosed(_In_ CDependencyObject* nativePopup)
         { return DirectUI::Popup::OnClosed(nativePopup); }
 
-    _Check_return_ HRESULT Popup_HookupWindowPositionChangedHandler(_In_ CDependencyObject* nativePopup)
-        { return DirectUI::Popup::HookupWindowPositionChangedHandler(nativePopup); }
-
-    void Popup_OnHostWindowPositionChanged(_In_ CDependencyObject* nativePopup)
-        { DirectUI::Popup::OnHostWindowPositionChanged(nativePopup); }
-
     void Popup_OnIslandLostFocus(_In_ CDependencyObject* nativePopup)
         { DirectUI::Popup::OnIslandLostFocus(nativePopup); }
 
@@ -984,9 +978,6 @@ namespace FxCallbacks
     _Check_return_ HRESULT FrameworkCallbacks_IsDXamlCoreShuttingDown(_Out_ bool* pIsDXamlCoreShuttingDown)
         { return AgCoreCallbacks::FrameworkCallbacks_IsDXamlCoreShuttingDown(pIsDXamlCoreShuttingDown); }
 
-    _Check_return_ HRESULT Core_ForwardWindowedPopupMessageToJupiterWindow(_In_ HWND window, _In_ UINT message, _In_ WPARAM wParam, _In_ LPARAM lParam, _In_opt_ CContentRoot* contentRoot, _Out_ LRESULT* pResult)
-        { return DXamlCore::ForwardWindowedPopupMessageToJupiterWindow(window, message, wParam, lParam, contentRoot, pResult); }
-
     _Check_return_ HRESULT XcpImports_ParticipateInTransition(_In_ CDependencyObject* nativeTransition, _In_ CDependencyObject* nativeUIElement, _In_ XINT32 transitionTrigger, _Out_ bool* DoesParticipate)
         { return DirectUI::Transition::ParticipateInTransition(nativeTransition, nativeUIElement, transitionTrigger, DoesParticipate); }
 
@@ -1044,10 +1035,10 @@ namespace FxCallbacks
     _Check_return_ HRESULT AutomationPeer_GetPattern(_In_ CDependencyObject* nativeTarget, _In_ CDependencyObject** nativeInterface, _In_ UIAXcp::APPatternInterface eInterface)
         { return DirectUI::AutomationPeer::GetPattern(nativeTarget, nativeInterface, eInterface); }
 
-    _Check_return_ HRESULT AutomationPeer_UIATextRangeInvoke(_In_ CDependencyObject* nativeTarget, _In_ XINT32 eFunction, _In_ XINT32 cParams, _In_ void* pvParams, _In_ Automation::CValue* pRetVal)
+    _Check_return_ HRESULT AutomationPeer_UIATextRangeInvoke(_In_ CDependencyObject* nativeTarget, _In_ XINT32 eFunction, _In_ XINT32 cParams, _In_opt_ void* pvParams, _In_opt_ Automation::CValue* pRetVal)
         { return DirectUI::AutomationPeer::UIATextRangeInvoke(nativeTarget, eFunction, cParams, pvParams, pRetVal); }
 
-    _Check_return_ HRESULT AutomationPeer_UIAPatternInvoke(_In_ CDependencyObject* nativeTarget, _In_ UIAXcp::APPatternInterface eInterface, _In_ XINT32 eFunction, _In_ XINT32 cParams, _In_ void* pvParams, _In_ Automation::CValue* pRetVal)
+    _Check_return_ HRESULT AutomationPeer_UIAPatternInvoke(_In_ CDependencyObject* nativeTarget, _In_ UIAXcp::APPatternInterface eInterface, _In_ XINT32 eFunction, _In_ XINT32 cParams, _In_opt_ void* pvParams, _In_opt_ Automation::CValue* pRetVal)
         { return DirectUI::AutomationPeer::UIAPatternInvoke(nativeTarget, eInterface, eFunction, cParams, pvParams, pRetVal); }
 
     _Check_return_ HRESULT AutomationPeer_NotifyNoUIAClientObjectForAP(_In_ CDependencyObject* nativeTarget)
@@ -1343,7 +1334,7 @@ namespace FxCallbacks
     {
         ctl::ComPtr<DirectUI::XamlRoot> xamlRoot;
         IGNOREHR(ctl::do_query_interface(xamlRoot, xamlRootInsp));
-        xamlRoot->RaiseChangedEvent();
+        VERIFYHR(xamlRoot->RaiseChangedEvent());
     }
 
     void XamlRoot_RaiseInputActivationChanged(_In_ IInspectable* xamlRootInsp)
@@ -1383,7 +1374,7 @@ namespace FxCallbacks
         return DirectUI::FlyoutPresenter::GetTargetIfOpenedAsTransientStatic(nativeControl, nativeTarget);
     }
 
-    _Check_return_ HRESULT 
+    _Check_return_ HRESULT
     FrameworkApplication_GetResourceManagerOverrideFromApp(_Out_ wrl::ComPtr<mwar::IResourceManager>& resourceManager)
     {
         if (auto frameworkApp = FrameworkApplication::GetCurrentNoRef())

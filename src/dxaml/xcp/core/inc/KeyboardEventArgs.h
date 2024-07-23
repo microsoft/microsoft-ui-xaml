@@ -102,7 +102,7 @@ public:
 
     wsy::VirtualKey  m_platformKeyCode;
     wsy::VirtualKey  m_originalKeyCode;
-    XEDITKEY        m_xEditKey;
+    XEDITKEY        m_xEditKey{};
     xstring_ptr     m_deviceId;
 
     PhysicalKeyStatus m_physicalKeyStatus;

@@ -359,7 +359,7 @@ namespace ext
             }
 
             // does not assign extra bits
-            raw_ptr& operator=(raw_ptr&& other)
+            raw_ptr& operator=(raw_ptr&& other) noexcept
             {
                 if (&other != this)
                 {

@@ -57,6 +57,7 @@ IFACEMETHODIMP DirectUI::AppBarAutomationPeerGenerated::get_ExpandCollapseState(
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<AppBarAutomationPeer*>(this)->get_ExpandCollapseStateImpl(pValue));
 Cleanup:
@@ -66,6 +67,7 @@ IFACEMETHODIMP DirectUI::AppBarAutomationPeerGenerated::get_InteractionState(_Ou
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<AppBarAutomationPeer*>(this)->get_InteractionStateImpl(pValue));
 Cleanup:
@@ -75,6 +77,7 @@ IFACEMETHODIMP DirectUI::AppBarAutomationPeerGenerated::get_IsModal(_Out_ BOOLEA
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<AppBarAutomationPeer*>(this)->get_IsModalImpl(pValue));
 Cleanup:
@@ -84,6 +87,7 @@ IFACEMETHODIMP DirectUI::AppBarAutomationPeerGenerated::get_IsTopmost(_Out_ BOOL
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<AppBarAutomationPeer*>(this)->get_IsTopmostImpl(pValue));
 Cleanup:
@@ -93,6 +97,7 @@ IFACEMETHODIMP DirectUI::AppBarAutomationPeerGenerated::get_Maximizable(_Out_ BO
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<AppBarAutomationPeer*>(this)->get_MaximizableImpl(pValue));
 Cleanup:
@@ -102,6 +107,7 @@ IFACEMETHODIMP DirectUI::AppBarAutomationPeerGenerated::get_Minimizable(_Out_ BO
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<AppBarAutomationPeer*>(this)->get_MinimizableImpl(pValue));
 Cleanup:
@@ -111,6 +117,7 @@ IFACEMETHODIMP DirectUI::AppBarAutomationPeerGenerated::get_ToggleState(_Out_ AB
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<AppBarAutomationPeer*>(this)->get_ToggleStateImpl(pValue));
 Cleanup:
@@ -120,6 +127,7 @@ IFACEMETHODIMP DirectUI::AppBarAutomationPeerGenerated::get_VisualState(_Out_ AB
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<AppBarAutomationPeer*>(this)->get_VisualStateImpl(pValue));
 Cleanup:
@@ -227,6 +235,7 @@ IFACEMETHODIMP DirectUI::AppBarAutomationPeerGenerated::WaitForInputIdle(_In_ IN
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AppBarAutomationPeer_WaitForInputIdle", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AppBarAutomationPeer*>(this)->WaitForInputIdleImpl(milliseconds, pReturnValue));

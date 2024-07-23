@@ -32,6 +32,7 @@ namespace CValueDetails
     static constexpr uint16_t CValueStateBits = TypeBits + 1;
 
     // Mask used to extract CValueCustomData bits from Flags union.
+#pragma warning (suppress : 26450) // Arithmetic overflow: '<<' operation causes overflow at compile time. Use a wider type to store the operands (io.1).
     static constexpr uint32_t CustomDataMask = (0xffffffff) << CValueStateBits;
 }
 
@@ -290,7 +291,7 @@ public:
     // Move assignment operator transfers value and ownership.
     // Difference from old CValue: leaves other in default constructed state (valueAny) as opposed to valueNull.
     CValue& operator=(
-        _Inout_ CValue&& source);
+        _Inout_ CValue&& source) noexcept;
 
     // Equality comparison has the following rules:
     //   If value types are the same:

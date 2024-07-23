@@ -34,8 +34,8 @@ struct ConnectedAnimationElementInfo
     xref_ptr<CUIElement> element;
     Microsoft::WRL::ComPtr<WUComp::IVisual> visual;
     Microsoft::WRL::ComPtr<WUComp::ICompositionBrush> surfaceBrush;
-    XRECTF_WH clippedRect;
-    XRECTF_WH unclippedRect;
+    XRECTF_WH clippedRect{};
+    XRECTF_WH unclippedRect{};
     CMILMatrix transform;
  };
 
@@ -157,7 +157,7 @@ private:
     Microsoft::WRL::ComPtr<WUComp::IVisual> m_hostVisual;
     Microsoft::WRL::ComPtr<WUComp::IInsetClip> m_insetClip;
     wrl::ComPtr<WUComp::ICompositionScopedBatch> m_scopedAnimationBatch;
-    EventRegistrationToken m_scopedAnimationBatchCompletedToken;
+    EventRegistrationToken m_scopedAnimationBatchCompletedToken{};
     xref_ptr<CConnectedAnimation> m_baseAnimation;
     xstring_ptr m_key;
 

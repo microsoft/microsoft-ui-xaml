@@ -58,8 +58,8 @@ namespace Instrumentation {
         LONGLONG m_nTreeWalkStart;
         LONGLONG m_nUIFinalizerStart;
 
-        bool m_bInTreeWalkGCLock;
-        bool m_bInFinalizerLock;
+        bool m_bInTreeWalkGCLock{};
+        bool m_bInFinalizerLock{};
 
         LONGLONG m_nPeriod = 300; //initial period is equal to 5 mins ( 5*60 sec)
         LONGLONG m_nStartPeriod = 60; // at startup log at 1 min ( 60 sec)

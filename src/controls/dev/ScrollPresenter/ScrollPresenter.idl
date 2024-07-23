@@ -167,4 +167,13 @@ runtimeclass ScrollingAnchorRequestedEventArgs
     Microsoft.UI.Xaml.UIElement AnchorElement { get; set; };
 }
 
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass ScrollingViewChangingEventArgs
+{
+    Double HorizontalOffset { get; };
+    Double VerticalOffset { get; };
+    Single ZoomFactor{ get; };
+}
+
 }

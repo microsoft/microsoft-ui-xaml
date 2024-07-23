@@ -55,7 +55,7 @@ private:
         XPOINTD _ptd;
     } m_primitive = {};
 
-    CCoreServices* m_core;
+    CCoreServices* m_core{};
     xref_ptr<CDependencyObject> m_obj;
     xref_ptr<Flyweight::PropertyValueObjectBase> m_vo;
     CValue m_value;

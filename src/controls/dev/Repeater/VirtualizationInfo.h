@@ -38,8 +38,9 @@ public:
     // PinnedPool if it gets cleared by layout.
     bool IsPinned() const;
     bool IsHeldByLayout() const;
-    bool IsRealized() const;
+    bool IsInPinnedPool() const;
     bool IsInUniqueIdResetPool() const;
+    bool IsRealized() const;
 
     // Info for phasing
     void UpdatePhasingInfo(int phase, const winrt::IInspectable& data, const winrt::IDataTemplateComponent& component);

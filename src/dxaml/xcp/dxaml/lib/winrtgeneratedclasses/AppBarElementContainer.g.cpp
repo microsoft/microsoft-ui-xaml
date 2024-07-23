@@ -71,6 +71,7 @@ IFACEMETHODIMP DirectUI::AppBarElementContainerGenerated::get_IsInOverflow(_Out_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<AppBarElementContainer*>(this)->get_IsInOverflowImpl(pValue));
 Cleanup:

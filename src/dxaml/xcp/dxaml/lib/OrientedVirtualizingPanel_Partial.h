@@ -100,7 +100,7 @@ namespace DirectUI
             FLOAT m_upperMarginSnapPointKey;                  // Bottom/right margin dimension used to compute regular and irregular snap points
             FLOAT m_irregularSnapPointKeysOffset;             // Dimension of the unrealized children ahead of the realized children ones
             FLOAT m_regularSnapPointKey;                      // Unique identifier for regular snap points (independent of snap point alignment)
-            INT32 m_cIrregularSnapPointKeys;                  // Number of irregular snap point keys
+            INT32 m_cIrregularSnapPointKeys{};                // Number of irregular snap point keys
 
             // this field will be used later as we finish discovering all scenarios where we need to propagate new zoom factor.
             // IScrollOwner.GetZoomFactor API will go away. And for now we use result from that API with ASSERT comparing with the field.

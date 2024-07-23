@@ -47,6 +47,7 @@ IFACEMETHODIMP DirectUI::XamlReaderFactory::Load(_In_ HSTRING xaml, _Outptr_ IIn
     }
     ARG_NOTNULL(xaml, "xaml");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(LoadImpl(xaml, ppReturnValue));
 Cleanup:
@@ -65,6 +66,7 @@ IFACEMETHODIMP DirectUI::XamlReaderFactory::LoadWithInitialTemplateValidation(_I
     }
     ARG_NOTNULL(xaml, "xaml");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(LoadWithInitialTemplateValidationImpl(xaml, ppReturnValue));
 Cleanup:

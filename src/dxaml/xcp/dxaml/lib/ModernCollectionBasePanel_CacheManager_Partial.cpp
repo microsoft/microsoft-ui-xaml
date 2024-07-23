@@ -39,7 +39,7 @@ ModernCollectionBasePanel::CacheManager::~CacheManager()
 
 }
 
-ModernCollectionBasePanel::CacheManager::GroupCache::GroupCache()
+ModernCollectionBasePanel::CacheManager::GroupCache::GroupCache() noexcept
     : startItemIndex(-1)
     , endItemIndex(-1)
     , indexOfGroup(-1)

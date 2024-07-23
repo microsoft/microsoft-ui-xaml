@@ -191,7 +191,7 @@ void TabViewItem::UpdateSelectedBackgroundPathTranslateTransform()
             // between the selected TabViewItem and its content.
             winrt::TranslateTransform translateTransform;
 
-            translateTransform.Y(roundedSelectedBackgroundPathActualOffsetY - selectedBackgroundPathActualOffset.y);
+            translateTransform.Y(static_cast<double>(roundedSelectedBackgroundPathActualOffsetY) - static_cast<double>(selectedBackgroundPathActualOffset.y));
 
             selectedBackgroundPath.RenderTransform(translateTransform);
         }

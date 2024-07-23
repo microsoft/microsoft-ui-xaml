@@ -56,7 +56,7 @@ private:
         : CCollection(core)
     {}
 
-    static _Check_return_ HRESULT EnsureValue(_In_ const CValue& originalValue, _Outref_ CValue& coercedValue);
+    static _Check_return_ HRESULT EnsureValue(_In_ const CValue& originalValue, _Out_ CValue& coercedValue);
     void OnCollectionChanged();
 
     std::vector<TextRangeData> m_items;

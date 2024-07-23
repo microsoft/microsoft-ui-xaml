@@ -3440,7 +3440,7 @@ CFrameworkElement::NotifyThemeChangedForInheritedProperties(
         // inherited.
         if (pBrushNoRef)
         {
-            pTextFormatting->SetForeground(this, pBrushNoRef);
+            IFC(pTextFormatting->SetForeground(this, pBrushNoRef));
             pTextFormatting->SetFreezeForeground(true);
 
             // Mark inheritance chain as dirty

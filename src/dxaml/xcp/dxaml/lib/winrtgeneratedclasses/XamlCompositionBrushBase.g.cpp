@@ -57,6 +57,7 @@ IFACEMETHODIMP DirectUI::XamlCompositionBrushBaseGenerated::get_CompositionBrush
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<XamlCompositionBrushBase*>(this)->get_CompositionBrushImpl(ppValue));
 Cleanup:
@@ -131,6 +132,7 @@ IFACEMETHODIMP DirectUI::XamlCompositionBrushBaseGenerated::GetBrushForXamlRoot(
     }
     ARG_NOTNULL(pXamlRoot, "xamlRoot");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<XamlCompositionBrushBase*>(this)->GetBrushForXamlRootImpl(pXamlRoot, ppResult));

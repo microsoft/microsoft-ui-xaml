@@ -132,7 +132,7 @@ _Check_return_ HRESULT <#= AsCppType(Model.GeneratedClassFullName) #>::EventAddH
     case <#= ev.IndexName #>:
         {
             ctl::ComPtr<<#= AsCppType(ev.EventHandlerType.AbiFullName) #>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

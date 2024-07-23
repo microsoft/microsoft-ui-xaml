@@ -627,6 +627,7 @@ IFACEMETHODIMP DirectUI::ContentDialogGenerated::OnBackButtonPressed(_Out_ BOOLE
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ContentDialog_OnBackButtonPressed", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ContentDialog*>(this)->OnBackButtonPressedImpl(pResult));
@@ -645,6 +646,7 @@ IFACEMETHODIMP DirectUI::ContentDialogGenerated::ShowAsync(_Outptr_ ABI::Windows
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ContentDialog_ShowAsync", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ContentDialog*>(this)->ShowAsyncImpl(ppReturnValue));
@@ -663,6 +665,7 @@ IFACEMETHODIMP DirectUI::ContentDialogGenerated::ShowAsyncWithPlacement(_In_ ABI
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ContentDialog_ShowAsyncWithPlacement", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ContentDialog*>(this)->ShowAsyncWithPlacementImpl(placement, ppReturnValue));
@@ -681,7 +684,7 @@ _Check_return_ HRESULT DirectUI::ContentDialogGenerated::EventAddHandlerByIndex(
     case KnownEventIndex::ContentDialog_CloseButtonClick:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ContentDialog*, ABI::Microsoft::UI::Xaml::Controls::ContentDialogButtonClickEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -698,7 +701,7 @@ _Check_return_ HRESULT DirectUI::ContentDialogGenerated::EventAddHandlerByIndex(
     case KnownEventIndex::ContentDialog_Closed:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ContentDialog*, ABI::Microsoft::UI::Xaml::Controls::ContentDialogClosedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -715,7 +718,7 @@ _Check_return_ HRESULT DirectUI::ContentDialogGenerated::EventAddHandlerByIndex(
     case KnownEventIndex::ContentDialog_Closing:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ContentDialog*, ABI::Microsoft::UI::Xaml::Controls::ContentDialogClosingEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -732,7 +735,7 @@ _Check_return_ HRESULT DirectUI::ContentDialogGenerated::EventAddHandlerByIndex(
     case KnownEventIndex::ContentDialog_Opened:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ContentDialog*, ABI::Microsoft::UI::Xaml::Controls::ContentDialogOpenedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -749,7 +752,7 @@ _Check_return_ HRESULT DirectUI::ContentDialogGenerated::EventAddHandlerByIndex(
     case KnownEventIndex::ContentDialog_PrimaryButtonClick:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ContentDialog*, ABI::Microsoft::UI::Xaml::Controls::ContentDialogButtonClickEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -766,7 +769,7 @@ _Check_return_ HRESULT DirectUI::ContentDialogGenerated::EventAddHandlerByIndex(
     case KnownEventIndex::ContentDialog_SecondaryButtonClick:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ContentDialog*, ABI::Microsoft::UI::Xaml::Controls::ContentDialogButtonClickEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

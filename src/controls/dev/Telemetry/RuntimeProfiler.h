@@ -66,6 +66,7 @@ namespace RuntimeProfiler
         ProfId_AnnotatedScrollBar,
         ProfId_MapControl,
         ProfId_SelectorBar,
+        ProfId_TitleBar,
         ProfId_Size // ProfId_Size is the last always. 
     } ProfilerClassId;
 

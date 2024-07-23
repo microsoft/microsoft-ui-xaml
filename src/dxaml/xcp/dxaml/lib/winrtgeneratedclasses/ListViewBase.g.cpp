@@ -239,6 +239,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::get_SelectedItems(_Outptr_result
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ListViewBase*>(this)->get_SelectedItemsImpl(ppValue));
 Cleanup:
@@ -248,6 +249,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::get_SelectedRanges(_Outptr_resul
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ListViewBase*>(this)->get_SelectedRangesImpl(ppValue));
 Cleanup:
@@ -631,6 +633,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::BuildTree(_Out_ BOOLEAN* pReturn
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ListViewBase_BuildTree", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ListViewBase*>(this)->BuildTreeImpl(pReturnValue));
@@ -724,6 +727,7 @@ _Check_return_ HRESULT DirectUI::ListViewBaseGenerated::GetRelativeScrollPositio
     }
     ARG_NOTNULL(pItemToKeyProvider, "itemToKeyProvider");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<ListViewBase*>(this)->GetRelativeScrollPositionImpl(pItemToKeyProvider, pReturnValue));
 Cleanup:
@@ -759,6 +763,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::IsBuildTreeSuspended(_Out_ BOOLE
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ListViewBase_IsBuildTreeSuspended", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ListViewBase*>(this)->IsBuildTreeSuspendedImpl(pReturnValue));
@@ -777,6 +782,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::IsDragSource(_Out_ BOOLEAN* pRet
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ListViewBase_IsDragSource", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ListViewBase*>(this)->IsDragSourceImpl(pReturnValue));
@@ -795,6 +801,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::LoadMoreItemsAsync(_Outptr_ ABI:
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ListViewBase_LoadMoreItemsAsync", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ListViewBase*>(this)->LoadMoreItemsAsyncImpl(ppReturnValue));
@@ -831,6 +838,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::OnBackButtonPressed(_Out_ BOOLEA
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ListViewBase_OnBackButtonPressed", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ListViewBase*>(this)->OnBackButtonPressedImpl(pResult));
@@ -852,6 +860,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::PrepareConnectedAnimation(_In_ H
     ARG_NOTNULL(pItem, "item");
     ARG_NOTNULL(elementName, "elementName");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ListViewBase*>(this)->PrepareConnectedAnimationImpl(key, pItem, elementName, ppReturnValue));
@@ -980,6 +989,7 @@ _Check_return_ HRESULT DirectUI::ListViewBaseGenerated::SetRelativeScrollPositio
     ARG_NOTNULL(relativeScrollPosition, "relativeScrollPosition");
     ARG_NOTNULL(pKeyToItemProvider, "keyToItemProvider");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<ListViewBase*>(this)->SetRelativeScrollPositionAsyncImpl(relativeScrollPosition, pKeyToItemProvider, ppReturnValue));
 Cleanup:
@@ -1056,6 +1066,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::TryStartConnectedAnimationAsync(
     ARG_NOTNULL(pItem, "item");
     ARG_NOTNULL(elementName, "elementName");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ListViewBase*>(this)->TryStartConnectedAnimationAsyncImpl(pAnimation, pItem, elementName, ppReturnValue));
@@ -1074,7 +1085,7 @@ _Check_return_ HRESULT DirectUI::ListViewBaseGenerated::EventAddHandlerByIndex(_
     case KnownEventIndex::ListViewBase_ChoosingGroupHeaderContainer:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ListViewBase*, ABI::Microsoft::UI::Xaml::Controls::ChoosingGroupHeaderContainerEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1091,7 +1102,7 @@ _Check_return_ HRESULT DirectUI::ListViewBaseGenerated::EventAddHandlerByIndex(_
     case KnownEventIndex::ListViewBase_ChoosingItemContainer:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ListViewBase*, ABI::Microsoft::UI::Xaml::Controls::ChoosingItemContainerEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1108,7 +1119,7 @@ _Check_return_ HRESULT DirectUI::ListViewBaseGenerated::EventAddHandlerByIndex(_
     case KnownEventIndex::ListViewBase_ContainerContentChanging:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ListViewBase*, ABI::Microsoft::UI::Xaml::Controls::ContainerContentChangingEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1125,7 +1136,7 @@ _Check_return_ HRESULT DirectUI::ListViewBaseGenerated::EventAddHandlerByIndex(_
     case KnownEventIndex::ListViewBase_DragItemsCompleted:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ListViewBase*, ABI::Microsoft::UI::Xaml::Controls::DragItemsCompletedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1142,7 +1153,7 @@ _Check_return_ HRESULT DirectUI::ListViewBaseGenerated::EventAddHandlerByIndex(_
     case KnownEventIndex::ListViewBase_DragItemsStarting:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::IDragItemsStartingEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1159,7 +1170,7 @@ _Check_return_ HRESULT DirectUI::ListViewBaseGenerated::EventAddHandlerByIndex(_
     case KnownEventIndex::ListViewBase_ItemClick:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::IItemClickEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

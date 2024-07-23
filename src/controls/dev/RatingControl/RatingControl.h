@@ -127,7 +127,10 @@ private:
     double ItemSpacing();
     void UpdateCaptionMargins();
 
+    void EnsureResourcesLoaded();
+
     // Private members
+    tracker_ref<winrt::StackPanel> m_captionStackPanel{ this };
     tracker_ref<winrt::TextBlock> m_captionTextBlock{ this };
 
     winrt::CompositionPropertySet m_sharedPointerPropertySet{ nullptr };
@@ -139,6 +142,7 @@ private:
     bool m_isPointerDown{ false };
     bool m_hasPointerCapture{ false };
     double m_mousePercentage{ 0.0 };
+    double m_firstItemOffset{ 0.0 };
 
     RatingInfoType m_infoType{ RatingInfoType::Font };
 
@@ -162,4 +166,11 @@ private:
     static winrt::UISettings GetUISettings();
 
     DispatcherHelper m_dispatcherHelper{ *this };
+
+    const double c_defaultFontSizeForRendering{ 32.0 };
+    const double c_defaultItemSpacing{ 8.0 };
+
+    bool m_resourcesLoaded{ false };
+    double m_fontSizeForRendering{ c_defaultFontSizeForRendering };
+    double m_itemSpacing{ c_defaultItemSpacing };
 };

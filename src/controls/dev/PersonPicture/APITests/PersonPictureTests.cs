@@ -161,7 +161,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 personPicture.IsGroup = false;
                 personPicture.Initials = "JS";
                 Content.UpdateLayout();
-                Verify.AreEqual(initialsTextBlock.FontFamily.Source, "Segoe UI");
+                Verify.AreEqual(initialsTextBlock.FontFamily.Source, "Segoe UI Variable");
                 Verify.AreEqual(initialsTextBlock.Text, "JS");
 
                 personPicture.Initials = "";

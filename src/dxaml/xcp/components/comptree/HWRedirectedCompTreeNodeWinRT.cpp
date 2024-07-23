@@ -112,7 +112,7 @@ void HWRedirectedCompTreeNodeWinRT::SetUsesPlaceholderVisual(bool value)
 }
 
 // Ensure that the placeholder visual has been created and return it.
-// Since Windowed Popups create their own HWND and DComp target, we do something special
+// Since Windowed Popups create their own islands and DComp target, we do something special
 // create the illusion of there being only one DComp visual tree.
 // A picture of the visual tree(s) is helpful here:
 //
@@ -131,7 +131,7 @@ void HWRedirectedCompTreeNodeWinRT::SetUsesPlaceholderVisual(bool value)
 // Popup Placeholder Visual
 //
 // The Popup creates its own Window, target, root visual, and underneath this visual, we put the "normal" visuals for the CompNode
-// (eg the Prepend Visual, Primary Visual, etc).  This is how the Popup content is displayed under another HWND.
+// (eg the Prepend Visual, Primary Visual, etc).  This is how the Popup content is displayed under another window.
 // However we also create a Placeholder visual which goes into the "mainline" visual tree, whose purpose
 // is only to make the CompNode tree updating code happy, it doesn't actually carry any properties or content.
 wrl::ComPtr<ixp::IVisual> HWRedirectedCompTreeNodeWinRT::EnsurePlaceholderVisual(_In_ DCompTreeHost* dcompTreeHost)
@@ -158,7 +158,7 @@ xref_ptr<WUComp::IVisual> HWRedirectedCompTreeNodeWinRT::GetWUCVisualInMainTree(
 
 //
 // This method returns a visual used in incremental rendering. New visuals will be inserted after this reference visual.
-// For a popup using placeholder visuals, most of the content lives in a separate visual tree in a separate hwnd, and we
+// For a popup using placeholder visuals, most of the content lives in a separate visual tree in a separate island, and we
 // insert a placeholder visual into the main visual tree. That placeholder visual should be used when incrementally
 // rendering the main visual tree.
 //

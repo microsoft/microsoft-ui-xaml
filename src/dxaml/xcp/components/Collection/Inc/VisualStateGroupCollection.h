@@ -46,6 +46,11 @@ public:
     _Check_return_ HRESULT
     LeaveImpl(_In_ CDependencyObject* namescopeOwner, _In_ LeaveParams params) override;
 
+    // When this collection is added to the the visual tree we need to ensure that we handle any
+    // state changes that may have occured before we joined.
+    _Check_return_ HRESULT
+        EnterImpl(_In_ CDependencyObject* namescopeOwner, _In_ EnterParams params) override;
+
 #pragma region Optimized Storage and Data Accessors
     _Check_return_ HRESULT SetCustomWriterRuntimeData(std::shared_ptr<CustomWriterRuntimeData> data,
         std::unique_ptr<CustomWriterRuntimeContext> context) override;

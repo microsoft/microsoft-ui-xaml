@@ -53,7 +53,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     return fileInfo;
                 }
 
-                var packageFile = FirstFileWithExtension("appx", "appxbundle", "msix", "msixbundle");
+                var packageFile = FirstFileWithExtension("appx", "appxbundle", "msixbundle",  "msix");
 
                 if (packageFile?.Exists == true)
                 {

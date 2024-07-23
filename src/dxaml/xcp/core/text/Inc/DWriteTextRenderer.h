@@ -25,7 +25,7 @@ public:
         _In_ DWRITE_GLYPH_RUN const* glyphRun,
         _In_ DWRITE_GLYPH_RUN_DESCRIPTION const* glyphRunDescription,
         _In_ IUnknown* clientDrawingEffects
-        ) throw() override;
+        ) noexcept override;
 
     HRESULT STDMETHODCALLTYPE DrawUnderline(
         _In_ void* clientDrawingContext,
@@ -33,7 +33,7 @@ public:
         _In_ float baselineOriginY,
         _In_ DWRITE_UNDERLINE const* underline,
         _In_ IUnknown* clientDrawingEffects
-        ) throw() override;
+        ) noexcept override;
 
     HRESULT STDMETHODCALLTYPE DrawStrikethrough(
         _In_ void* clientDrawingContext,
@@ -41,7 +41,7 @@ public:
         _In_ float baselineOriginY,
         _In_ DWRITE_STRIKETHROUGH const* strikethrough,
         _In_ IUnknown* clientDrawingEffects
-        ) throw() override;
+        ) noexcept override;
 
     HRESULT STDMETHODCALLTYPE DrawInlineObject(
         _In_ void* clientDrawingContext,
@@ -51,24 +51,24 @@ public:
         _In_ BOOL isSideways,
         _In_ BOOL isRightToLeft,
         _In_ IUnknown* clientDrawingEffects
-        ) throw() override;
+        ) noexcept override;
 
     HRESULT STDMETHODCALLTYPE IsPixelSnappingDisabled(
         _In_opt_ void* clientDrawingContext,
         _Out_ BOOL* isDisabled
-        ) throw() override;
+        ) noexcept override;
 
     HRESULT STDMETHODCALLTYPE GetCurrentTransform(
         _In_opt_ void* clientDrawingContext,
         _Out_ DWRITE_MATRIX* transform
-        ) throw() override;
+        ) noexcept override;
 
     HRESULT STDMETHODCALLTYPE GetPixelsPerDip(
         _In_opt_ void* clientDrawingContext,
         _Out_ float* pixelsPerDip
-        ) throw() override;
+        ) noexcept override;
 
-    HRESULT STDMETHODCALLTYPE QueryInterface(IID const& iid, _Out_ void** object) throw() override
+    HRESULT STDMETHODCALLTYPE QueryInterface(IID const& iid, _Out_ void** object) noexcept override
     {
         if (iid == __uuidof(IUnknown)
         ||  iid == __uuidof(IDWriteTextRenderer)
@@ -86,12 +86,12 @@ public:
         return S_OK;
     }
 
-    unsigned long STDMETHODCALLTYPE AddRef() throw() override
+    unsigned long STDMETHODCALLTYPE AddRef() noexcept override
     {
         return 1; // Static stack class
     }
 
-    unsigned long STDMETHODCALLTYPE Release() throw() override
+    unsigned long STDMETHODCALLTYPE Release() noexcept override
     {
         return 1; // Static stack class
     }

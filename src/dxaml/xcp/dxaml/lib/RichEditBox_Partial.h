@@ -95,7 +95,7 @@ namespace DirectUI
         // so we use this as a flag while initializing the object
         BOOLEAN m_isInitializing;
 
-        EventRegistrationToken m_storyboardCompletedToken;
+        EventRegistrationToken m_storyboardCompletedToken{};
 
         BOOLEAN m_isAnimatingHeight;
 

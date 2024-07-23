@@ -242,7 +242,7 @@ _Check_return_ HRESULT CalendarView::OnPropertyChanged2(
     case KnownPropertyIndex::CalendarView_NumberOfWeeksInView:
         {
             int rows = 0;
-            args.m_pNewValue->GetSigned(rows);
+            IFC_RETURN(args.m_pNewValue->GetSigned(rows));
 
             if (rows < s_minNumberOfWeeks || rows > s_maxNumberOfWeeks)
             {

@@ -36,6 +36,6 @@ public:
         RRETURN(S_OK);
     }
 
-    bool    m_fOldValue;             // Old value of IsEnabled property
-    bool    m_fNewValue;             // New value of IsEnabled property
+    bool    m_fOldValue{};             // Old value of IsEnabled property
+    bool    m_fNewValue{};             // New value of IsEnabled property
 };

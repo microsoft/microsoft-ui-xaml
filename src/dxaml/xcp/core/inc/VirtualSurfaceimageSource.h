@@ -24,7 +24,7 @@ struct VirtualSurfaceImageSourceStandbyLists
     xvector<VirtualSurfaceImageSourceStandbyListRecord> list[VSIS_STANDBY_LIST_COUNT];
 
     // The amount of memory (bytes) consumed by all tiles in all lists
-    XUINT64 totalSize;
+    XUINT64 totalSize{};
 };
 
 class IVirtualSurfaceImageSourceCallbacks

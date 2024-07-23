@@ -17,6 +17,7 @@
 #include <winrt\Windows.Devices.Geolocation.h>
 #include <winrt\Windows.Globalization.h>
 #include <winrt\Windows.Globalization.NumberFormatting.h>
+#include <winrt\Windows.Graphics.h>
 #include <winrt\Windows.Graphics.Imaging.h>
 #include <winrt\Windows.Graphics.Display.h>
 #include <winrt\Windows.Graphics.Effects.h>
@@ -37,7 +38,6 @@
 
 #include <winrt\Microsoft.Windows.ApplicationModel.Resources.h>
 #include <winrt\Microsoft.UI.Dispatching.h>
-#include <winrt\Microsoft.UI.h>
 #include <winrt\Microsoft.UI.Composition.h>
 #include <winrt\Microsoft.UI.Composition.Effects.h>
 #include <winrt\Microsoft.UI.Composition.Interactions.h>
@@ -47,6 +47,7 @@
 #include <winrt\Microsoft.UI.Input.h>
 #include <winrt\Microsoft.UI.Input.Experimental.h>
 #include <winrt\Microsoft.UI.Text.h>
+#include <winrt\Microsoft.UI.Windowing.h>
 #include <winrt\Microsoft.UI.Xaml.h>
 #include <winrt\Microsoft.UI.Xaml.Automation.Peers.h>
 #include <winrt\Microsoft.UI.Xaml.Automation.Provider.h>
@@ -86,6 +87,7 @@ namespace winrt
     using namespace ::winrt::Windows::Foundation::Numerics;
     using namespace ::winrt::Windows::Globalization;
     using namespace ::winrt::Windows::Globalization::NumberFormatting;
+    using namespace ::winrt::Windows::Graphics;
     using namespace ::winrt::Windows::Graphics::Display;
     using namespace ::winrt::Windows::Graphics::Imaging;
     using namespace ::winrt::Windows::Graphics::Effects;
@@ -250,6 +252,7 @@ namespace winrt
     using IColorHelperStatics = winrt::Microsoft::UI::IColorHelperStatics;
     using Colors = winrt::Microsoft::UI::Colors;
     using IColorsStatics = winrt::Microsoft::UI::IColorsStatics;
+    using WindowId = winrt::Microsoft::UI::WindowId;
 
     // using namespace winrt::Microsoft::UI::Text
     using FontWeights = winrt::Microsoft::UI::Text::FontWeights;
@@ -259,6 +262,9 @@ namespace winrt
     using TextGetOptions = winrt::Microsoft::UI::Text::TextGetOptions;
     using TextRangeUnit = winrt::Microsoft::UI::Text::TextRangeUnit;
     using UnderlineType = winrt::Microsoft::UI::Text::UnderlineType;
+
+    // using namespace winrt::Microsoft::UI::Windowing
+    using AppWindow = winrt::Microsoft::UI::Windowing::AppWindow;
     
     // using namespace ::winrt::Microsoft::UI::Xaml::Controls;
     using FxZoomMode = winrt::Microsoft::UI::Xaml::Controls::ZoomMode;

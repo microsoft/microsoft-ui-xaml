@@ -873,7 +873,7 @@ XamlDiagnosticsTap::BaseValueSourceToString(
 }
 
 template<typename TDelegateInterface, typename TCallback>
-wrl::ComPtr<TDelegateInterface> MakeAgileCallback(TCallback callback) throw()
+wrl::ComPtr<TDelegateInterface> MakeAgileCallback(TCallback callback) noexcept
 {
     return wrl::Callback<wrl::Implements<wrl::RuntimeClassFlags<::Microsoft::WRL::ClassicCom>, TDelegateInterface, wrl::FtmBase>>(callback);
 }

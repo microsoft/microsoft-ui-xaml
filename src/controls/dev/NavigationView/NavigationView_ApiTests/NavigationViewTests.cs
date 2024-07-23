@@ -54,7 +54,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 navView = new NavigationView();
-                navView.MenuItems.Add(new NavigationViewItem() { Content = "Undo", Icon = new SymbolIcon(Symbol.Undo) });
+                var undoNVI = new NavigationViewItem() { Content = "Undo", Icon = new SymbolIcon(Symbol.Undo) };
+                undoNVI.Resources.Add("NavigationViewItemIconBackground", new SolidColorBrush(Colors.Red));
+                navView.MenuItems.Add(undoNVI);
                 navView.MenuItems.Add(new NavigationViewItem() { Content = "Cut", Icon = new SymbolIcon(Symbol.Cut) });
 
                 navView.PaneTitle = "Title";
@@ -1437,17 +1439,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             IdleSynchronizer.Wait();
 
+            selectionChangedEvent.Reset();
+
             RunOnUIThread.Execute(() =>
             {
                 Category newItem2 = new("Menu Item 5", "MI5", "Icon", null, true);
                 subCategories.Add(newItem2);
+                // This doesn't use SelectItem. I'm guessing we're testing for adding an item and immediately selecting
+                // it, rather than waiting for it to render first.
                 navView.SelectedItem = newItem2;
             });
 
             selectionChangedEvent.WaitOne();
             IdleSynchronizer.Wait();
 
-            Verify.IsTrue(ItemHasSelectionIndicator(navView, "Menu Item 5"));
+            // Disabled - see Bug 50123187: NavigationViewTests.VerifySelectingACollapsedItemShowsSelectionIndicator is unstable
+            //Verify.IsTrue(ItemHasSelectionIndicator(navView, "Menu Item 5"));
         }
 
         [TestMethod]

@@ -484,67 +484,67 @@ bool TeachingTip::PositionTargetedPopup()
         {
         case winrt::TeachingTipPlacementMode::Top:
             popup.VerticalOffset(m_currentTargetBoundsInCoreWindowSpace.Y - tipHeight - offset.Top);
-            popup.HorizontalOffset((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Width - tipWidth) / 2.0f));
+            popup.HorizontalOffset((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0) + m_currentTargetBoundsInCoreWindowSpace.Width - tipWidth) / 2.0));
             break;
 
         case winrt::TeachingTipPlacementMode::Bottom:
-            popup.VerticalOffset(m_currentTargetBoundsInCoreWindowSpace.Y + m_currentTargetBoundsInCoreWindowSpace.Height + static_cast<float>(offset.Bottom));
-            popup.HorizontalOffset((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Width - tipWidth) / 2.0f));
+            popup.VerticalOffset(static_cast<double>(m_currentTargetBoundsInCoreWindowSpace.Y) + m_currentTargetBoundsInCoreWindowSpace.Height + offset.Bottom);
+            popup.HorizontalOffset((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0) + m_currentTargetBoundsInCoreWindowSpace.Width - tipWidth) / 2.0));
             break;
 
         case winrt::TeachingTipPlacementMode::Left:
-            popup.VerticalOffset(((m_currentTargetBoundsInCoreWindowSpace.Y * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Height - tipHeight) / 2.0f);
+            popup.VerticalOffset(((m_currentTargetBoundsInCoreWindowSpace.Y * 2.0) + m_currentTargetBoundsInCoreWindowSpace.Height - tipHeight) / 2.0);
             popup.HorizontalOffset(m_currentTargetBoundsInCoreWindowSpace.X - tipWidth - offset.Left);
             break;
 
         case winrt::TeachingTipPlacementMode::Right:
-            popup.VerticalOffset(((m_currentTargetBoundsInCoreWindowSpace.Y * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Height - tipHeight) / 2.0f);
-            popup.HorizontalOffset(m_currentTargetBoundsInCoreWindowSpace.X + m_currentTargetBoundsInCoreWindowSpace.Width + static_cast<float>(offset.Right));
+            popup.VerticalOffset(((m_currentTargetBoundsInCoreWindowSpace.Y * 2.0) + m_currentTargetBoundsInCoreWindowSpace.Height - tipHeight) / 2.0);
+            popup.HorizontalOffset(static_cast<double>(m_currentTargetBoundsInCoreWindowSpace.X) + m_currentTargetBoundsInCoreWindowSpace.Width + offset.Right);
             break;
 
         case winrt::TeachingTipPlacementMode::TopRight:
             popup.VerticalOffset(m_currentTargetBoundsInCoreWindowSpace.Y - tipHeight - offset.Top);
-            popup.HorizontalOffset(((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Width) / 2.0f) - MinimumTipEdgeToTailCenter()));
+            popup.HorizontalOffset(((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0) + m_currentTargetBoundsInCoreWindowSpace.Width) / 2.0) - MinimumTipEdgeToTailCenter()));
             break;
 
         case winrt::TeachingTipPlacementMode::TopLeft:
             popup.VerticalOffset(m_currentTargetBoundsInCoreWindowSpace.Y - tipHeight - offset.Top);
-            popup.HorizontalOffset(((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Width) / 2.0f) - tipWidth + MinimumTipEdgeToTailCenter()));
+            popup.HorizontalOffset(((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0) + m_currentTargetBoundsInCoreWindowSpace.Width) / 2.0) - tipWidth + MinimumTipEdgeToTailCenter()));
             break;
 
         case winrt::TeachingTipPlacementMode::BottomRight:
-            popup.VerticalOffset(m_currentTargetBoundsInCoreWindowSpace.Y + m_currentTargetBoundsInCoreWindowSpace.Height + static_cast<float>(offset.Bottom));
-            popup.HorizontalOffset(((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Width) / 2.0f) - MinimumTipEdgeToTailCenter()));
+            popup.VerticalOffset(static_cast<double>(m_currentTargetBoundsInCoreWindowSpace.Y) + m_currentTargetBoundsInCoreWindowSpace.Height + offset.Bottom);
+            popup.HorizontalOffset(((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0) + m_currentTargetBoundsInCoreWindowSpace.Width) / 2.0) - MinimumTipEdgeToTailCenter()));
             break;
 
         case winrt::TeachingTipPlacementMode::BottomLeft:
-            popup.VerticalOffset(m_currentTargetBoundsInCoreWindowSpace.Y + m_currentTargetBoundsInCoreWindowSpace.Height + static_cast<float>(offset.Bottom));
-            popup.HorizontalOffset(((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Width) / 2.0f) - tipWidth + MinimumTipEdgeToTailCenter()));
+            popup.VerticalOffset(static_cast<double>(m_currentTargetBoundsInCoreWindowSpace.Y) + m_currentTargetBoundsInCoreWindowSpace.Height + offset.Bottom);
+            popup.HorizontalOffset(((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0) + m_currentTargetBoundsInCoreWindowSpace.Width) / 2.0) - tipWidth + MinimumTipEdgeToTailCenter()));
             break;
 
         case winrt::TeachingTipPlacementMode::LeftTop:
-            popup.VerticalOffset((((m_currentTargetBoundsInCoreWindowSpace.Y * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Height) / 2.0f) - tipHeight + MinimumTipEdgeToTailCenter());
+            popup.VerticalOffset((((m_currentTargetBoundsInCoreWindowSpace.Y * 2.0) + m_currentTargetBoundsInCoreWindowSpace.Height) / 2.0) - tipHeight + MinimumTipEdgeToTailCenter());
             popup.HorizontalOffset(m_currentTargetBoundsInCoreWindowSpace.X - tipWidth - offset.Left);
             break;
 
         case winrt::TeachingTipPlacementMode::LeftBottom:
-            popup.VerticalOffset((((m_currentTargetBoundsInCoreWindowSpace.Y * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Height) / 2.0f) - MinimumTipEdgeToTailCenter());
+            popup.VerticalOffset((((m_currentTargetBoundsInCoreWindowSpace.Y * 2.0) + m_currentTargetBoundsInCoreWindowSpace.Height) / 2.0) - MinimumTipEdgeToTailCenter());
             popup.HorizontalOffset(m_currentTargetBoundsInCoreWindowSpace.X - tipWidth - offset.Left);
             break;
 
         case winrt::TeachingTipPlacementMode::RightTop:
-            popup.VerticalOffset((((m_currentTargetBoundsInCoreWindowSpace.Y * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Height) / 2.0f) - tipHeight + MinimumTipEdgeToTailCenter());
-            popup.HorizontalOffset(m_currentTargetBoundsInCoreWindowSpace.X + m_currentTargetBoundsInCoreWindowSpace.Width + static_cast<float>(offset.Right));
+            popup.VerticalOffset((((m_currentTargetBoundsInCoreWindowSpace.Y * 2.0) + m_currentTargetBoundsInCoreWindowSpace.Height) / 2.0) - tipHeight + MinimumTipEdgeToTailCenter());
+            popup.HorizontalOffset(static_cast<double>(m_currentTargetBoundsInCoreWindowSpace.X) + m_currentTargetBoundsInCoreWindowSpace.Width + offset.Right);
             break;
 
         case winrt::TeachingTipPlacementMode::RightBottom:
-            popup.VerticalOffset((((m_currentTargetBoundsInCoreWindowSpace.Y * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Height) / 2.0f) - MinimumTipEdgeToTailCenter());
-            popup.HorizontalOffset(m_currentTargetBoundsInCoreWindowSpace.X + m_currentTargetBoundsInCoreWindowSpace.Width + static_cast<float>(offset.Right));
+            popup.VerticalOffset((((m_currentTargetBoundsInCoreWindowSpace.Y * 2.0) + m_currentTargetBoundsInCoreWindowSpace.Height) / 2.0) - MinimumTipEdgeToTailCenter());
+            popup.HorizontalOffset(static_cast<double>(m_currentTargetBoundsInCoreWindowSpace.X) + m_currentTargetBoundsInCoreWindowSpace.Width + offset.Right);
             break;
 
         case winrt::TeachingTipPlacementMode::Center:
-            popup.VerticalOffset(m_currentTargetBoundsInCoreWindowSpace.Y + (m_currentTargetBoundsInCoreWindowSpace.Height / 2.0f) - tipHeight - offset.Top);
-            popup.HorizontalOffset((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0f) + m_currentTargetBoundsInCoreWindowSpace.Width - tipWidth) / 2.0f));
+            popup.VerticalOffset(m_currentTargetBoundsInCoreWindowSpace.Y + (m_currentTargetBoundsInCoreWindowSpace.Height / 2.0) - tipHeight - offset.Top);
+            popup.HorizontalOffset((((m_currentTargetBoundsInCoreWindowSpace.X * 2.0) + m_currentTargetBoundsInCoreWindowSpace.Width - tipWidth) / 2.0));
             break;
 
         default:
@@ -1487,14 +1487,20 @@ void TeachingTip::OnTargetChanged()
     auto const target = Target();
     m_target.set(target);
 
+    bool isTargetLoaded = false;
+
     if (target)
     {
+        // We need to check if the target is loaded before registering for its 
+        // loaded event. This is because the act of registering for the loaded event
+        // will cause the target to report that it is not loaded.
+        isTargetLoaded = target.IsLoaded();
         m_targetLoadedRevoker = target.Loaded(winrt::auto_revoke, { this, &TeachingTip::OnTargetLoaded });
     }
 
     if (IsOpen())
     {
-        if (target && target.IsLoaded())
+        if (target && isTargetLoaded)
         {
             m_currentTargetBoundsInCoreWindowSpace = target.TransformToVisual(nullptr).TransformBounds({
                 0.0,
@@ -1506,7 +1512,7 @@ void TeachingTip::OnTargetChanged()
         }
 
         // if we have a target that is not yet loaded, skip positioning the flayout for now, that will happen once the target loads.
-        if (!target || (target && target.IsLoaded()))
+        if (!target || (target && isTargetLoaded))
         {
             PositionPopup();
         }
@@ -2068,13 +2074,13 @@ std::tuple<winrt::Thickness, winrt::Thickness> TeachingTip::DetermineSpaceAround
 
     const winrt::Thickness windowSpaceAroundTarget{
         // Target.Left - Window.Left
-        m_currentTargetBoundsInCoreWindowSpace.X - /* 0 except with test window bounds */ windowBoundsInCoreWindowSpace.X,
+        static_cast<double>(m_currentTargetBoundsInCoreWindowSpace.X) - /* 0 except with test window bounds */ windowBoundsInCoreWindowSpace.X,
         // Target.Top - Window.Top
-        m_currentTargetBoundsInCoreWindowSpace.Y - /* 0 except with test window bounds */ windowBoundsInCoreWindowSpace.Y,
+        static_cast<double>(m_currentTargetBoundsInCoreWindowSpace.Y) - /* 0 except with test window bounds */ windowBoundsInCoreWindowSpace.Y,
         // Window.Right - Target.Right
-        (windowBoundsInCoreWindowSpace.X + windowBoundsInCoreWindowSpace.Width) - (m_currentTargetBoundsInCoreWindowSpace.X + m_currentTargetBoundsInCoreWindowSpace.Width),
+        (static_cast<double>(windowBoundsInCoreWindowSpace.X) + windowBoundsInCoreWindowSpace.Width) - (static_cast<double>(m_currentTargetBoundsInCoreWindowSpace.X) + m_currentTargetBoundsInCoreWindowSpace.Width),
         // Screen.Right - Target.Right
-        (windowBoundsInCoreWindowSpace.Y + windowBoundsInCoreWindowSpace.Height) - (m_currentTargetBoundsInCoreWindowSpace.Y + m_currentTargetBoundsInCoreWindowSpace.Height) };
+        (static_cast<double>(windowBoundsInCoreWindowSpace.Y) + windowBoundsInCoreWindowSpace.Height) - (static_cast<double>(m_currentTargetBoundsInCoreWindowSpace.Y) + m_currentTargetBoundsInCoreWindowSpace.Height) };
 
 
     const winrt::Thickness screenSpaceAroundTarget = [this, screenBoundsInCoreWindowSpace, windowSpaceAroundTarget]()
@@ -2083,13 +2089,13 @@ std::tuple<winrt::Thickness, winrt::Thickness> TeachingTip::DetermineSpaceAround
         {
             return winrt::Thickness{
                 // Target.Left - Screen.Left
-                m_currentTargetBoundsInCoreWindowSpace.X - screenBoundsInCoreWindowSpace.X,
+                static_cast<double>(m_currentTargetBoundsInCoreWindowSpace.X) - screenBoundsInCoreWindowSpace.X,
                 // Target.Top - Screen.Top
-                m_currentTargetBoundsInCoreWindowSpace.Y - screenBoundsInCoreWindowSpace.Y,
+                static_cast<double>(m_currentTargetBoundsInCoreWindowSpace.Y) - screenBoundsInCoreWindowSpace.Y,
                 // Screen.Right - Target.Right
-                (screenBoundsInCoreWindowSpace.X + screenBoundsInCoreWindowSpace.Width) - (m_currentTargetBoundsInCoreWindowSpace.X + m_currentTargetBoundsInCoreWindowSpace.Width),
+                (static_cast<double>(screenBoundsInCoreWindowSpace.X) + screenBoundsInCoreWindowSpace.Width) - (static_cast<double>(m_currentTargetBoundsInCoreWindowSpace.X) + m_currentTargetBoundsInCoreWindowSpace.Width),
                 // Screen.Bottom - Target.Bottom
-                (screenBoundsInCoreWindowSpace.Y + screenBoundsInCoreWindowSpace.Height) - (m_currentTargetBoundsInCoreWindowSpace.Y + m_currentTargetBoundsInCoreWindowSpace.Height) };
+                (static_cast<double>(screenBoundsInCoreWindowSpace.Y) + screenBoundsInCoreWindowSpace.Height) - (static_cast<double>(m_currentTargetBoundsInCoreWindowSpace.Y) + m_currentTargetBoundsInCoreWindowSpace.Height) };
         }
         return windowSpaceAroundTarget;
     }();
@@ -2255,51 +2261,51 @@ void TeachingTip::OnPropertyChanged(
     winrt::get_self<TeachingTip>(sender.as<winrt::TeachingTip>())->OnPropertyChanged(args);
 }
 
-float TeachingTip::TailLongSideActualLength()
+double TeachingTip::TailLongSideActualLength()
 {
     if (auto&& tailPolygon = m_tailPolygon.get())
     {
-        return static_cast<float>(std::max(tailPolygon.ActualHeight(), tailPolygon.ActualWidth()));
+        return std::max(tailPolygon.ActualHeight(), tailPolygon.ActualWidth());
     }
     return 0;
 }
 
-float TeachingTip::TailLongSideLength()
+double TeachingTip::TailLongSideLength()
 {
-    return static_cast<float>(TailLongSideActualLength() - (2 * s_tailOcclusionAmount));
+    return TailLongSideActualLength() - (2 * static_cast<double>(s_tailOcclusionAmount));
 }
 
-float TeachingTip::TailShortSideLength()
+double TeachingTip::TailShortSideLength()
 {
     if (auto&& tailPolygon = m_tailPolygon.get())
     {
-        return static_cast<float>(std::min(tailPolygon.ActualHeight(), tailPolygon.ActualWidth()) - s_tailOcclusionAmount);
+        return std::min(tailPolygon.ActualHeight(), tailPolygon.ActualWidth()) - s_tailOcclusionAmount;
     }
     return 0;
 }
 
-float TeachingTip::MinimumTipEdgeToTailEdgeMargin()
+double TeachingTip::MinimumTipEdgeToTailEdgeMargin()
 {
     if (auto&& tailOcclusionGrid = m_tailOcclusionGrid.get())
     {
         return tailOcclusionGrid.ColumnDefinitions().Size() > 1 ?
-            static_cast<float>(tailOcclusionGrid.ColumnDefinitions().GetAt(1).ActualWidth() + s_tailOcclusionAmount)
-            : 0.0f;
+            tailOcclusionGrid.ColumnDefinitions().GetAt(1).ActualWidth() + s_tailOcclusionAmount
+            : 0.0;
     }
     return 0;
 }
 
-float TeachingTip::MinimumTipEdgeToTailCenter()
+double TeachingTip::MinimumTipEdgeToTailCenter()
 {
     if (auto&& tailOcclusionGrid = m_tailOcclusionGrid.get())
     {
         if (auto&& tailPolygon = m_tailPolygon.get())
         {
             return tailOcclusionGrid.ColumnDefinitions().Size() > 1 ?
-                static_cast<float>(tailOcclusionGrid.ColumnDefinitions().GetAt(0).ActualWidth() +
-                    tailOcclusionGrid.ColumnDefinitions().GetAt(1).ActualWidth() +
-                    (std::max(tailPolygon.ActualHeight(), tailPolygon.ActualWidth()) / 2))
-                : 0.0f;
+                tailOcclusionGrid.ColumnDefinitions().GetAt(0).ActualWidth() +
+                tailOcclusionGrid.ColumnDefinitions().GetAt(1).ActualWidth() +
+                (std::max(tailPolygon.ActualHeight(), tailPolygon.ActualWidth()) / 2)
+                : 0.0;
         }
     }
     return 0;

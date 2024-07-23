@@ -87,6 +87,7 @@ IFACEMETHODIMP DirectUI::WrappingLayoutStrategyGenerated::EstimateElementBounds(
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "WrappingLayoutStrategy_EstimateElementBounds", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<WrappingLayoutStrategy*>(this)->EstimateElementBoundsImpl(elementType, elementIndex, headerReference, containerReference, window, pResult));
 Cleanup:
@@ -104,6 +105,7 @@ IFACEMETHODIMP DirectUI::WrappingLayoutStrategyGenerated::EstimateElementIndex(_
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "WrappingLayoutStrategy_EstimateElementIndex", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<WrappingLayoutStrategy*>(this)->EstimateElementIndexImpl(elementType, headerReference, containerReference, window, pTargetRect, pResult));
 Cleanup:
@@ -138,6 +140,7 @@ IFACEMETHODIMP DirectUI::WrappingLayoutStrategyGenerated::EstimatePanelExtent(_I
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "WrappingLayoutStrategy_EstimatePanelExtent", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<WrappingLayoutStrategy*>(this)->EstimatePanelExtentImpl(lastHeaderReference, lastContainerReference, windowConstraint, pResult));
 Cleanup:
@@ -155,6 +158,7 @@ IFACEMETHODIMP DirectUI::WrappingLayoutStrategyGenerated::GetElementArrangeBound
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "WrappingLayoutStrategy_GetElementArrangeBounds", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<WrappingLayoutStrategy*>(this)->GetElementArrangeBoundsImpl(elementType, elementIndex, containerBounds, windowConstraint, finalSize, pResult));
 Cleanup:
@@ -172,6 +176,7 @@ IFACEMETHODIMP DirectUI::WrappingLayoutStrategyGenerated::GetElementBounds(_In_ 
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "WrappingLayoutStrategy_GetElementBounds", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<WrappingLayoutStrategy*>(this)->GetElementBoundsImpl(elementType, elementIndex, containerDesiredSize, referenceInformation, windowConstraint, pResult));
 Cleanup:
@@ -189,6 +194,7 @@ IFACEMETHODIMP DirectUI::WrappingLayoutStrategyGenerated::GetElementMeasureSize(
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "WrappingLayoutStrategy_GetElementMeasureSize", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<WrappingLayoutStrategy*>(this)->GetElementMeasureSizeImpl(elementType, elementIndex, windowConstraint, pResult));
 Cleanup:
@@ -206,6 +212,7 @@ IFACEMETHODIMP DirectUI::WrappingLayoutStrategyGenerated::GetElementTransitionsB
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "WrappingLayoutStrategy_GetElementTransitionsBounds", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<WrappingLayoutStrategy*>(this)->GetElementTransitionsBoundsImpl(elementType, elementIndex, windowConstraint, pResult));
 Cleanup:
@@ -223,6 +230,7 @@ IFACEMETHODIMP DirectUI::WrappingLayoutStrategyGenerated::GetIsWrappingStrategy(
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "WrappingLayoutStrategy_GetIsWrappingStrategy", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<WrappingLayoutStrategy*>(this)->GetIsWrappingStrategyImpl(pResult));
 Cleanup:
@@ -240,6 +248,7 @@ IFACEMETHODIMP DirectUI::WrappingLayoutStrategyGenerated::GetPositionOfFirstElem
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "WrappingLayoutStrategy_GetPositionOfFirstElement", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<WrappingLayoutStrategy*>(this)->GetPositionOfFirstElementImpl(pResult));
 Cleanup:
@@ -257,6 +266,7 @@ IFACEMETHODIMP DirectUI::WrappingLayoutStrategyGenerated::GetRegularSnapPoints(_
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "WrappingLayoutStrategy_GetRegularSnapPoints", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<WrappingLayoutStrategy*>(this)->GetRegularSnapPointsImpl(pNearOffset, pFarOffset, pSpacing, pResult));
 Cleanup:
@@ -291,6 +301,7 @@ IFACEMETHODIMP DirectUI::WrappingLayoutStrategyGenerated::GetVirtualizationDirec
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "WrappingLayoutStrategy_GetVirtualizationDirection", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<WrappingLayoutStrategy*>(this)->GetVirtualizationDirectionImpl(pResult));
 Cleanup:
@@ -308,6 +319,7 @@ IFACEMETHODIMP DirectUI::WrappingLayoutStrategyGenerated::HasIrregularSnapPoints
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "WrappingLayoutStrategy_HasIrregularSnapPoints", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<WrappingLayoutStrategy*>(this)->HasIrregularSnapPointsImpl(elementType, pResult));
 Cleanup:
@@ -325,6 +337,7 @@ IFACEMETHODIMP DirectUI::WrappingLayoutStrategyGenerated::HasSnapPointOnElement(
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "WrappingLayoutStrategy_HasSnapPointOnElement", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<WrappingLayoutStrategy*>(this)->HasSnapPointOnElementImpl(elementType, elementIndex, pResult));
 Cleanup:
@@ -376,6 +389,7 @@ IFACEMETHODIMP DirectUI::WrappingLayoutStrategyGenerated::ShouldContinueFillingU
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "WrappingLayoutStrategy_ShouldContinueFillingUpSpace", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<WrappingLayoutStrategy*>(this)->ShouldContinueFillingUpSpaceImpl(elementType, elementIndex, referenceInformation, windowToFill, pResult));
 Cleanup:

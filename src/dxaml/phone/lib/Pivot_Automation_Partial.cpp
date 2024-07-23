@@ -420,7 +420,7 @@ Pivot::AutomationFocusSelectedItem()
 
     if (selectedIndex >= 0)
     {
-        AutomationFocusItem(selectedIndex);
+        IFC_RETURN(AutomationFocusItem(selectedIndex));
     }
 
     return S_OK;

@@ -308,7 +308,7 @@ CThemeResourceExtension::GetValue(_Out_ CValue* pValue)
         IFC_RETURN(SetIsValueFromInitialTheme(pTargetDictionaryNoRef));
    }
 
-   pValue->CopyConverted(m_lastResolvedThemeValue);
+   IFC_RETURN(pValue->CopyConverted(m_lastResolvedThemeValue));
 
    return S_OK;
 }

@@ -59,7 +59,7 @@ namespace AccessKeys {
         return S_OK;
     }
 
-    _Check_return_ HRESULT AKOnIsActiveChanged(_In_opt_ CFocusManager* focusManager,_In_ IInspectable* sender, _Out_ IInspectable* args)
+    _Check_return_ HRESULT AKOnIsActiveChanged(_In_opt_ CFocusManager* focusManager,_In_ IInspectable* sender, _In_ IInspectable* args)
     {
         DXamlCore* const dxamlCore = DXamlCore::GetCurrent();
         CCoreServices* const core = dxamlCore->GetHandle();

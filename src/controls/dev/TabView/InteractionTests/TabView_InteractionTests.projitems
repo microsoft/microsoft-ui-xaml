@@ -10,6 +10,7 @@
     <Import_RootNamespace>TabView_InteractionTests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)TabViewTearOutTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TabViewTests.cs" />
   </ItemGroup>
 </Project>

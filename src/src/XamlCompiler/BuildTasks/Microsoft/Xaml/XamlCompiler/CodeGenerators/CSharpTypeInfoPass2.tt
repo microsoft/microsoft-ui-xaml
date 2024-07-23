@@ -9,6 +9,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Diagnostics.CodeAnalysis;
+
 <#  if(!Model.GenerateTypeInfo)  #>
 <#  {                                       #>
 // No local types.
@@ -252,12 +254,19 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 
     <#=GeneratedCodeAttribute#>
     <#=DebuggerNonUserCodeAttribute#>
-    internal class XamlSystemBaseType : <#=Globalize(KnownTypes.IXamlType)#>
+    internal partial class XamlSystemBaseType : <#=Globalize(KnownTypes.IXamlType)#>
     {
         string _fullName;
+<#  if (ProjectInfo.UsingCSWinRT) { #>
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+<#  }#>
         global::System.Type _underlyingType;
 
-        public XamlSystemBaseType(string fullName, global::System.Type underlyingType)
+        public XamlSystemBaseType(string fullName, 
+<#  if (ProjectInfo.UsingCSWinRT) { #>
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+<#  }#>
+            global::System.Type underlyingType)
         {
             _fullName = fullName;
             _underlyingType = underlyingType;
@@ -302,7 +311,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 
     <#=GeneratedCodeAttribute#>
     <#=DebuggerNonUserCodeAttribute#>
-    internal class XamlUserType : <#=Globalize(ProjectInfo.XamlTypeInfoNamespace)#>.XamlSystemBaseType
+    internal partial class XamlUserType : <#=Globalize(ProjectInfo.XamlTypeInfoNamespace)#>.XamlSystemBaseType
         , <#=Globalize(KnownTypes.IXamlType)#>
     {
         <#=Globalize(ProjectInfo.XamlTypeInfoNamespace)#>.XamlTypeInfoProvider _provider;
@@ -320,7 +329,11 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
         global::System.Collections.Generic.Dictionary<string, string> _memberNames;
         global::System.Collections.Generic.Dictionary<string, object> _enumValues;
 
-        public XamlUserType(<#=Globalize(ProjectInfo.XamlTypeInfoNamespace)#>.XamlTypeInfoProvider provider, string fullName, global::System.Type fullType, <#=Globalize(KnownTypes.IXamlType)#> baseType)
+        public XamlUserType(<#=Globalize(ProjectInfo.XamlTypeInfoNamespace)#>.XamlTypeInfoProvider provider, string fullName, 
+<#  if (ProjectInfo.UsingCSWinRT) { #>
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+<#  }#>
+            global::System.Type fullType, <#=Globalize(KnownTypes.IXamlType)#> baseType)
             :base(fullName, fullType)
         {
             _provider = provider;
@@ -384,7 +397,13 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
             CollectionAdd(instance, item);
         }
 
-        override public void RunInitializer() 
+        override public void RunInitializer() => RunInitializerImplementation();
+
+<#  if (ProjectInfo.UsingCSWinRT) { #>
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2059",
+            Justification = "UnderlyingType (and TypeHandle property) protected at assignment")]
+<#  }#>
+        private void RunInitializerImplementation()
         {
             global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(UnderlyingType.TypeHandle);
         }
@@ -445,7 +464,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
                     }
                 }
 
-                return System.Convert.ChangeType(value, System.Enum.GetUnderlyingType(this.UnderlyingType));
+                return global::System.Convert.ChangeType(value, global::System.Enum.GetUnderlyingType(this.UnderlyingType));
             }
             throw new global::System.ArgumentException(input, FullName);
         }
@@ -533,7 +552,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 
     <#=GeneratedCodeAttribute#>
     <#=DebuggerNonUserCodeAttribute#>
-    internal class XamlMember : <#=Globalize(KnownTypes.IXamlMember)#>
+    internal partial class XamlMember : <#=Globalize(KnownTypes.IXamlMember)#>
     {
         <#=Globalize(ProjectInfo.XamlTypeInfoNamespace)#>.XamlTypeInfoProvider _provider;
         string _name;
@@ -683,7 +702,32 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+         private void Output_TypeTables()     #>
 <#+         {                                       #>
         string[] _typeNameTable = null;
-        global::System.Type[] _typeTable = null;
+
+        class TypeTable
+        {
+            global::System.Type[] _types;
+
+            public TypeTable(int typeCount)
+            {
+                _types = new global::System.Type[typeCount];
+            }
+
+<#+  if (ProjectInfo.UsingCSWinRT) { #>
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+<#+  }#>
+            public global::System.Type this[int i]
+            {
+<#+  if (ProjectInfo.UsingCSWinRT) { #>
+                [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2063",
+                    Justification = "TypeTable assignments are protected through setter")]
+<#+  }#>
+                get { return _types[i]; }
+                set { _types[i] = value; }
+            }
+
+            public int Length { get => _types.Length; }
+        }
+        TypeTable _typeTable;
 
         private void InitTypeTables()
         {
@@ -694,7 +738,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
             _typeNameTable[<#=entry.TypeIndex#>] = "<#=entry.StandardName#>";
 <#+         }                                                           #>
 
-            _typeTable = new global::System.Type[<#=SchemaInfo.TypeTableFromAllAssemblies.Count#>];
+            _typeTable = new TypeTable(<#=SchemaInfo.TypeTableFromAllAssemblies.Count#>);
 <#+         for(int i=0; i<SchemaInfo.TypeTable.Count; i++)             #>
 <#+         {                                                           #>
 <#+             InternalTypeEntry entry = SchemaInfo.TypeTable[i];      #>

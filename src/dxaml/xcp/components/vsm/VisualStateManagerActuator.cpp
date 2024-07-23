@@ -246,12 +246,12 @@ _Check_return_ HRESULT VisualStateManagerActuator::ChangeVisualState(_In_ int gr
     // We need to check our cached list of old modified objects / properties
     // against the list of current modified objects/properties and make sure we don't clear anything
     // that was just (or will be) set, whether by setter or storyboard.
-    SelectExistingPropertySettersToRemove(
+    IFC_RETURN(SelectExistingPropertySettersToRemove(
         previouslyActivePropertySetters,
         destinationPropertySetters,
         transition ? transition->m_pStoryboard : nullptr,
         destinationStoryboard.get(),
-        dynamicStoryboard.get());
+        dynamicStoryboard.get()));
     IFC_RETURN(StopAndRemovePropertySetters(groupIndex, previouslyActivePropertySetters));
 
     return S_OK;

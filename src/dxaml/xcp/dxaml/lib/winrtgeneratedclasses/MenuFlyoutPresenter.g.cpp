@@ -64,6 +64,7 @@ IFACEMETHODIMP DirectUI::MenuFlyoutPresenterGenerated::get_Owner(_Outptr_result_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<MenuFlyoutPresenter*>(this)->get_OwnerImpl(ppValue));
 Cleanup:
@@ -83,6 +84,7 @@ IFACEMETHODIMP DirectUI::MenuFlyoutPresenterGenerated::get_OwningMenu(_Outptr_re
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<MenuFlyoutPresenter*>(this)->get_OwningMenuImpl(ppValue));
 Cleanup:
@@ -102,6 +104,7 @@ IFACEMETHODIMP DirectUI::MenuFlyoutPresenterGenerated::get_SubPresenter(_Outptr_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<MenuFlyoutPresenter*>(this)->get_SubPresenterImpl(ppValue));
 Cleanup:

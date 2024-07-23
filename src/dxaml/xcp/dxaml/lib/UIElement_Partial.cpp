@@ -2148,7 +2148,7 @@ UIElementFactory::InternalPutIsEnabledImpl(
     UIElement* pUIElement = static_cast<UIElement*>(pElement);
 
     CUIElement* pCUIElement = static_cast<CUIElement*>(pUIElement->GetHandle());
-    pCUIElement->CoerceIsEnabled(value, TRUE/*bCoerceChildren*/);
+    IFC_RETURN(pCUIElement->CoerceIsEnabled(value, TRUE/*bCoerceChildren*/));
 
     return S_OK;
 }
@@ -2568,7 +2568,7 @@ void UIElement::VirtualizationInformation::SetBounds(_In_ const wf::Rect& bounds
     m_bounds = bounds;
 }
 
-_Check_return_ HRESULT UIElement::VirtualizationInformation::SetItem(_In_ IInspectable* pDataItem)
+_Check_return_ HRESULT UIElement::VirtualizationInformation::SetItem(_In_opt_ IInspectable* pDataItem)
 {
     HRESULT hr = S_OK;
     bool areEqual = false;

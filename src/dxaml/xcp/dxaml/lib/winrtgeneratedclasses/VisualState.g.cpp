@@ -64,6 +64,7 @@ IFACEMETHODIMP DirectUI::VisualState::get_Name(_Out_ HSTRING* pValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<VisualState*>(this)->get_NameImpl(pValue));
 Cleanup:

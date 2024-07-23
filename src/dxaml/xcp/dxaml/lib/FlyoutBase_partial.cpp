@@ -824,6 +824,7 @@ FlyoutBase::~FlyoutBase()
     VERIFYHR(DetachHandler(m_epPresenterUnloadedHandler, m_tpPresenter));
     VERIFYHR(DetachHandler(m_epPopupLostFocusHandler, m_tpPopup));
     VERIFYHR(DetachHandler(m_epPlacementTargetUnloadedHandler, m_tpPlacementTarget));
+    VERIFYHR(DetachHandler(m_epPlacementTargetActualThemeChangedHandler, m_tpPlacementTarget));
 
     if (DXamlCore* core = DXamlCore::GetCurrent())
     {
@@ -932,7 +933,17 @@ _Check_return_ HRESULT FlyoutBase::ShowAtImpl(
     IFC_RETURN(placementTarget.As(&placementTargetAsDO));
 
     IFC_RETURN(EnsureAssociatedXamlRoot(placementTargetAsDO.Get()));
-    IFC_RETURN(ShowAtWithOptions(placementTargetAsDO.Get(), nullptr));
+
+    ctl::ComPtr<FlyoutShowOptions> showOptions;
+    IFC_RETURN(ctl::make(&showOptions));
+
+    xaml_primitives::FlyoutShowMode showMode = xaml_primitives::FlyoutShowMode_Standard;
+    IFC_RETURN(get_ShowMode(&showMode));
+    IFC_RETURN(showOptions->put_ShowMode(showMode));
+
+    ctl::ComPtr<IFlyoutShowOptions> showOptionsAsI;
+    IFC_RETURN(showOptions.As(&showOptionsAsI));
+    IFC_RETURN(ShowAtWithOptions(placementTargetAsDO.Get(), showOptionsAsI.Get()));
 
     return S_OK;
 }
@@ -1514,60 +1525,68 @@ _Check_return_ HRESULT FlyoutBase::ForwardTargetPropertiesToPresenter()
         IFC_RETURN(m_tpPlacementTarget.Cast<FrameworkElement>()->get_AllowFocusWhenDisabled(&allowFocusWhenDisabled));
     }
 
-    IFC_RETURN(spPresenterAsFE.Cast<FrameworkElement>()->put_AllowFocusWhenDisabled(allowFocusWhenDisabled))
+    IFC_RETURN(spPresenterAsFE.Cast<FrameworkElement>()->put_AllowFocusWhenDisabled(allowFocusWhenDisabled));
 
-    // Flyout matches the theme of its placement target.
+    IFC_RETURN(ForwardThemeToPresenter());
+    
+    return S_OK;
+}
+
+_Check_return_ HRESULT FlyoutBase::ForwardThemeToPresenter()
+{
+    ctl::ComPtr<IFrameworkElement> spPresenterAsFE;
+    IFC_RETURN(m_tpPresenter.As(&spPresenterAsFE));
+
+    // Ensure the Flyout matches the theme of its placement target.
+   const CDependencyProperty* requestedThemeProperty = MetadataAPI::GetDependencyPropertyByIndex(KnownPropertyIndex::FrameworkElement_RequestedTheme);
+
+    // We'll only override the requested theme on the presenter if its value hasn't been explicitly set.
+    // Otherwise, we'll abide by its existing value.
+    if (m_tpPresenter.Cast<Control>()->GetHandle()->IsPropertyDefault(requestedThemeProperty) ||
+        m_isFlyoutPresenterRequestedThemeOverridden)
     {
-        const CDependencyProperty* requestedThemeProperty = MetadataAPI::GetDependencyPropertyByIndex(KnownPropertyIndex::FrameworkElement_RequestedTheme);
+        xaml::ElementTheme currentFlyoutPresenterTheme;
+        xaml::ElementTheme requestedTheme = xaml::ElementTheme_Default;
+        ctl::ComPtr<IDependencyObject> spCurrent;
+        ctl::ComPtr<IDependencyObject> spParent;
+        ctl::ComPtr<IFrameworkElement> spCurrentAsFE;
 
-        // We'll only override the requested theme on the presenter if its value hasn't been explicitly set.
-        // Otherwise, we'll abide by its existing value.
-        if (m_tpPresenter.Cast<Control>()->GetHandle()->IsPropertyDefault(requestedThemeProperty) ||
-            m_isFlyoutPresenterRequestedThemeOverridden)
+        IFC_RETURN(spPresenterAsFE->get_RequestedTheme(&currentFlyoutPresenterTheme));
+
+        // Walk up the tree from the placement target until we find an element with a RequestedTheme.
+        IFC_RETURN(m_tpPlacementTarget.As(&spCurrent));
+        while (spCurrent)
         {
-            xaml::ElementTheme currentFlyoutPresenterTheme;
-            xaml::ElementTheme requestedTheme = xaml::ElementTheme_Default;
-            ctl::ComPtr<IDependencyObject> spCurrent;
-            ctl::ComPtr<IDependencyObject> spParent;
-            ctl::ComPtr<IFrameworkElement> spCurrentAsFE;
+            IFC_RETURN(spCurrent.CopyTo(spCurrentAsFE.ReleaseAndGetAddressOf()));
 
-            IFC_RETURN(spPresenterAsFE->get_RequestedTheme(&currentFlyoutPresenterTheme));
+            IFC_RETURN(spCurrentAsFE->get_RequestedTheme(&requestedTheme));
 
-            // Walk up the tree from the placement target until we find an element with a RequestedTheme.
-            IFC_RETURN(m_tpPlacementTarget.As(&spCurrent));
-            while (spCurrent)
+            if (requestedTheme != xaml::ElementTheme_Default)
             {
-                IFC_RETURN(spCurrent.CopyTo(spCurrentAsFE.ReleaseAndGetAddressOf()));
-
-                IFC_RETURN(spCurrentAsFE->get_RequestedTheme(&requestedTheme));
-
-                if (requestedTheme != xaml::ElementTheme_Default)
-                {
-                    break;
-                }
-
-                IFC_RETURN(VisualTreeHelper::GetParentStatic(spCurrent.Get(), spParent.ReleaseAndGetAddressOf()));
-                if (spParent.AsOrNull<DirectUI::PopupRoot>())
-                {
-                    // If the target is in a Popup and the Popup is in the Visual Tree, we want to inherrit the theme
-                    // from that Popup's parent. Otherwise we will get the App's theme, which might not be what
-                    // is expected.
-                    IFC_RETURN(spCurrentAsFE->get_Parent(&spParent));
-                }
-
-                spCurrent = spParent;
+                break;
             }
 
-            if (requestedTheme != currentFlyoutPresenterTheme)
+            IFC_RETURN(VisualTreeHelper::GetParentStatic(spCurrent.Get(), spParent.ReleaseAndGetAddressOf()));
+            if (spParent.AsOrNull<DirectUI::PopupRoot>())
             {
-                IFC_RETURN(spPresenterAsFE->put_RequestedTheme(requestedTheme));
-                m_isFlyoutPresenterRequestedThemeOverridden = true;
+                // If the target is in a Popup and the Popup is in the Visual Tree, we want to inherrit the theme
+                // from that Popup's parent. Otherwise we will get the App's theme, which might not be what
+                // is expected.
+                IFC_RETURN(spCurrentAsFE->get_Parent(&spParent));
             }
 
-            // Also set the popup's theme. If there is a SystemBackdrop on the menu, it'll be watching the theme on the
-            // popup itself rather than the presenter set as the popup's child.
-            IFC_RETURN(m_tpPopup.Cast<DirectUI::PopupGenerated>()->put_RequestedTheme(requestedTheme));
+            spCurrent = spParent;
         }
+
+        if (requestedTheme != currentFlyoutPresenterTheme)
+        {
+            IFC_RETURN(spPresenterAsFE->put_RequestedTheme(requestedTheme));
+            m_isFlyoutPresenterRequestedThemeOverridden = true;
+        }
+
+        // Also set the popup's theme. If there is a SystemBackdrop on the menu, it'll be watching the theme on the
+        // popup itself rather than the presenter set as the popup's child.
+        IFC_RETURN(m_tpPopup.Cast<DirectUI::PopupGenerated>()->put_RequestedTheme(requestedTheme));
     }
 
     return S_OK;
@@ -2950,6 +2969,7 @@ FlyoutBase::SetPlacementTarget(_In_opt_ IFrameworkElement* pPlacementTarget)
     if (m_tpPlacementTarget)
     {
         IFC_RETURN(DetachHandler(m_epPlacementTargetUnloadedHandler, m_tpPlacementTarget));
+        IFC_RETURN(DetachHandler(m_epPlacementTargetActualThemeChangedHandler, m_tpPlacementTarget));
         m_tpPlacementTarget.Clear();
         IFC_RETURN(put_Target(nullptr));
     }
@@ -2967,6 +2987,13 @@ FlyoutBase::SetPlacementTarget(_In_opt_ IFrameworkElement* pPlacementTarget)
             [this](IInspectable* pSender, IRoutedEventArgs* pArgs)
             {
                 RRETURN(Hide());
+            }));
+
+        // Hook up an event handler that will forward any theme changes to the flyout.
+        IFC_RETURN(m_epPlacementTargetActualThemeChangedHandler.AttachEventHandler(m_tpPlacementTarget.Cast<FrameworkElement>(),
+            [this](auto&&, auto&&)
+            {
+                RRETURN(ForwardThemeToPresenter());
             }));
     }
     return S_OK;
@@ -3078,6 +3105,7 @@ _Check_return_ HRESULT FlyoutBase::RemoveRootVisualPointerMovedHandler()
         {
             IFC_RETURN(rootVisual->remove_PointerMoved(m_rootVisualPointerMovedToken));
         }
+        m_rootVisualPointerMovedToken.value = 0;
     }
 
     return S_OK;

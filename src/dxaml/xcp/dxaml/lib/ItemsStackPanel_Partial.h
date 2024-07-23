@@ -18,6 +18,9 @@ namespace DirectUI
         // OnPropertyChanged methods. 
         _Check_return_ HRESULT OnPropertyChanged2(_In_ const PropertyChangedParams& args) override;
         
+        // Returns the size of the potential GroupPadding in the virtualizing direction.
+        _Check_return_ HRESULT GroupPaddingSizeInVirtualizingDirection(_Out_ double* groupPadding) override;
+
         // Only ItemsStackPanel and CalendarPanel support the maintain viewport behavior.
         ItemsUpdatingScrollMode GetItemsUpdatingScrollMode() const override { return static_cast<ItemsUpdatingScrollMode>(m_itemsUpdatingScrollMode); }
 
@@ -33,6 +36,11 @@ namespace DirectUI
 
         // Notify the layout strategy of the new header placement.
         _Check_return_ HRESULT SetGroupHeaderStrategy(_In_ GroupHeaderStrategy strategy) override;
+
+        // Used to estimate tracked element reposition during items source updates. These should have been part of the 
+        // Microsoft.UI.Xaml.Controls.ILayoutStrategy interface.
+        _Check_return_ HRESULT GetAverageHeaderSize(_Out_ float* averageHeaderSize) override;
+        _Check_return_ HRESULT GetAverageContainerSize(_Out_ float* averageContainerSize) override;
 
     public:
         // implementation of IOrientedPanel

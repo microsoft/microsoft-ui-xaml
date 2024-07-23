@@ -71,5 +71,5 @@ class TransformGeometrySink final : public CXcpObjectBase< IPALGeometrySink >
     protected:
         IPALGeometrySink* m_pSink;
         CMILMatrix m_transform;
-        XPOINTF m_lastUntransformedPoint;
+        XPOINTF m_lastUntransformedPoint{};
 };

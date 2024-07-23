@@ -158,7 +158,7 @@ struct HWRenderParamsBase
     // themselves to this, then they are attached to the DComp tree under the root visual with 1.4x scale. The final size
     // of these elements will be 1371.4 * 1.4 = 1920 by 857.1 * 1.4 = 1200.
     //
-    XSIZEF effectiveWindowSize;
+    XSIZEF effectiveWindowSize{};
 
     // A list of lights that are attached to the ancestor chain at any point in the walk. Updated as we visit elements during the
     // render walk. Any UIElement with a XamlLight.TargetId will look in this list for lights with matching target IDs.

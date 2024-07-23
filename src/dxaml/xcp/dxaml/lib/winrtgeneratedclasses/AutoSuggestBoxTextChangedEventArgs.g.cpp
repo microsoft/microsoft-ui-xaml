@@ -62,6 +62,7 @@ IFACEMETHODIMP DirectUI::AutoSuggestBoxTextChangedEventArgsGenerated::CheckCurre
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AutoSuggestBoxTextChangedEventArgs_CheckCurrent", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AutoSuggestBoxTextChangedEventArgs*>(this)->CheckCurrentImpl(pReturnValue));

@@ -35,7 +35,7 @@ public:
     virtual void SetFinalDownloadSize( _In_ XUINT32 cbFinalSize ) = 0 ;
 
 protected:
-    bool m_bSupportsFastSeek;
+    bool m_bSupportsFastSeek{};
 };
 
 class CWinMemoryStreamBuffer final : public CWinDataStreamBuffer

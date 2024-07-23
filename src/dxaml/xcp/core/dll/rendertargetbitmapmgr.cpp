@@ -508,7 +508,7 @@ CRenderTargetBitmapManager::PreCommit(
                     {
                         if (completionEvent != nullptr)
                         {
-                            completionEvent->Close();
+                            VERIFYHR(completionEvent->Close());
                         }
                     });
 

@@ -29,6 +29,7 @@
 #include <Popup.h>
 #include <WindowRenderTarget.h>
 #include <OfferTracker.h>
+#include "RefreshRateInfo.h"
 
 #include <FxCallbacks.h>
 #include "CoreWindowIslandAdapter.h"
@@ -162,6 +163,7 @@ DCompTreeHost::DCompTreeHost(
     EmptyRectF(&m_backgroundRect);
     m_offerTracker = make_xref<OfferTracker>();
     m_projectedShadowManager = std::make_shared<ProjectedShadowManager>(this);
+    m_refreshRateInfo = m_pGraphicsDeviceManagerNoRef->GetRefreshRateInfo();
 }
 
 //----------------------------------------------------------------------------
@@ -317,6 +319,7 @@ DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompostior)
     m_spCompositor6 = nullptr;
     m_spCompositorPrivate = nullptr;
     m_spCompositorInterop = nullptr;
+    m_dcompDevice = nullptr;
 
     m_contentBridgeCW = nullptr;
     m_inprocIslandRootVisual = nullptr;
@@ -1177,9 +1180,42 @@ _Check_return_ HRESULT DCompTreeHost::CommitMainDevice()
         IFC_RETURN(m_spMainDevice->Commit());
 
         TraceCommitMainDeviceEnd();
+
+        UpdateRefreshRate();
     }
 
     return S_OK;
+}
+
+void DCompTreeHost::UpdateRefreshRate()
+{
+    ASSERT(m_refreshRateInfo);
+
+    if (!m_dcompDevice)
+    {
+        // Note: This requires an InteropCompositor.
+        IFCFAILFAST(m_spMainDevice.As(&m_dcompDevice));
+    }
+
+    DCOMPOSITION_FRAME_STATISTICS frameStatistics;
+    HRESULT hr = m_dcompDevice->GetFrameStatistics(&frameStatistics);
+    if (SUCCEEDED(hr))
+    {
+        if (frameStatistics.currentCompositionRate.Numerator != 0)
+        {
+            //
+            // The refresh rate is currentCompositionRate.Numerator/currentCompositionRate.Denominator [refreshes/sec],
+            // so the interval is D/N [seconds/refresh], or 1000D/N [ms/refresh].
+            //
+            float refreshIntervalInMilliseconds =
+                1000.0f * static_cast<float>(frameStatistics.currentCompositionRate.Denominator) / static_cast<float>(frameStatistics.currentCompositionRate.Numerator);
+            m_refreshRateInfo->SetRefreshIntervalInMilliseconds(refreshIntervalInMilliseconds);
+        }
+    }
+    else if (hr != RO_E_CLOSED)
+    {
+        IFCFAILFAST(hr);
+    }
 }
 
 uint32_t DCompTreeHost::GetMaxTextureSize() const
@@ -2729,7 +2765,7 @@ void DCompTreeHost::RemoveXamlIslandTarget(_In_ CXamlIslandRoot* xamlIslandRoot)
     {
         HideUIThreadCounters();
     }
-    
+
     m_islandRenderData.erase(islandData);
 
     if (refreshFrameRateVisual)

@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::AccessKeyDisplayRequestedEventArgs::get_PressedKeys(_Ou
     xstring_ptr valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CAccessKeyDisplayRequestedEventArgs*>(pCoreEventArgsNoRef)->get_PressedKeys(&valueCore));

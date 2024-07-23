@@ -28,7 +28,7 @@ public:
     WUComp::CompositionCompositeMode previousWUCCompositeMode;
     wfn::Matrix4x4 previousWUCTransformMatrix;
     XRECTF_RB previousWUCInsetClip;
-    wfn::Matrix3x2 previousWUCClipTransformMatrix;
+    wfn::Matrix3x2 previousWUCClipTransformMatrix{};
 };
 
 typedef containers::vector_map<CUIElement*, HandOffVisualData> HandOffVisualDataMap;

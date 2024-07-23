@@ -58,7 +58,7 @@ public:
     _Check_return_ HRESULT GetCompositionBrush(_In_opt_ const CUIElement* element, _In_opt_ WUComp::ICompositor* compositor, _Outptr_result_maybenull_ WUComp::ICompositionBrush** compBrush);
     void SetCompositionBrush(_In_opt_ WUComp::ICompositionBrush* compBrush);
 
-    _Out_ WUComp::ICompositionBrush* GetBrushForContentRootNoRef(_In_ CContentRoot* contentRoot);
+    _Ret_maybenull_ WUComp::ICompositionBrush* GetBrushForContentRootNoRef(_In_ CContentRoot* contentRoot);
     void SetBrushForContentRoot(_In_ CContentRoot* contentRoot, _In_ WUComp::ICompositionBrush* brush);
     void ClearCompositionBrushMap();
     void ClearBrushForContentRoot(_In_ CContentRoot* contentRoot, _In_ WUComp::ICompositionBrush* brush);

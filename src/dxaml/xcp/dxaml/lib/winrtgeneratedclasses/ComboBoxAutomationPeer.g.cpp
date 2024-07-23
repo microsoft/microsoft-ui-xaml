@@ -57,6 +57,7 @@ IFACEMETHODIMP DirectUI::ComboBoxAutomationPeerGenerated::get_ExpandCollapseStat
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ComboBoxAutomationPeer*>(this)->get_ExpandCollapseStateImpl(pValue));
 Cleanup:
@@ -66,6 +67,7 @@ IFACEMETHODIMP DirectUI::ComboBoxAutomationPeerGenerated::get_InteractionState(_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ComboBoxAutomationPeer*>(this)->get_InteractionStateImpl(pValue));
 Cleanup:
@@ -75,6 +77,7 @@ IFACEMETHODIMP DirectUI::ComboBoxAutomationPeerGenerated::get_IsModal(_Out_ BOOL
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ComboBoxAutomationPeer*>(this)->get_IsModalImpl(pValue));
 Cleanup:
@@ -84,6 +87,7 @@ IFACEMETHODIMP DirectUI::ComboBoxAutomationPeerGenerated::get_IsReadOnly(_Out_ B
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ComboBoxAutomationPeer*>(this)->get_IsReadOnlyImpl(pValue));
 Cleanup:
@@ -93,6 +97,7 @@ IFACEMETHODIMP DirectUI::ComboBoxAutomationPeerGenerated::get_IsTopmost(_Out_ BO
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ComboBoxAutomationPeer*>(this)->get_IsTopmostImpl(pValue));
 Cleanup:
@@ -102,6 +107,7 @@ IFACEMETHODIMP DirectUI::ComboBoxAutomationPeerGenerated::get_Maximizable(_Out_ 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ComboBoxAutomationPeer*>(this)->get_MaximizableImpl(pValue));
 Cleanup:
@@ -111,6 +117,7 @@ IFACEMETHODIMP DirectUI::ComboBoxAutomationPeerGenerated::get_Minimizable(_Out_ 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ComboBoxAutomationPeer*>(this)->get_MinimizableImpl(pValue));
 Cleanup:
@@ -120,6 +127,7 @@ IFACEMETHODIMP DirectUI::ComboBoxAutomationPeerGenerated::get_Value(_Out_ HSTRIN
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ComboBoxAutomationPeer*>(this)->get_ValueImpl(pValue));
 Cleanup:
@@ -129,6 +137,7 @@ IFACEMETHODIMP DirectUI::ComboBoxAutomationPeerGenerated::get_VisualState(_Out_ 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ComboBoxAutomationPeer*>(this)->get_VisualStateImpl(pValue));
 Cleanup:
@@ -236,6 +245,7 @@ IFACEMETHODIMP DirectUI::ComboBoxAutomationPeerGenerated::WaitForInputIdle(_In_ 
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ComboBoxAutomationPeer_WaitForInputIdle", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ComboBoxAutomationPeer*>(this)->WaitForInputIdleImpl(milliseconds, pReturnValue));

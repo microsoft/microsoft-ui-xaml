@@ -25,6 +25,7 @@
     "Microsoft.VisualStudio.ComponentGroup.UWP.VC.BuildTools",
     "Microsoft.VisualStudio.Workload.MSBuildTools",
     "Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools",
+    "Microsoft.VisualStudio.Workload.Universal",
     "Microsoft.VisualStudio.Workload.UniversalBuildTools",
     "Microsoft.VisualStudio.Workload.VCTools",
     "Microsoft.VisualStudio.Component.VC.Runtimes.ARM64EC.Spectre",

@@ -34,6 +34,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TabViewTearOutWindowWithDataItems.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TabViewTearOutWindowWithoutDataItems.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)MultipleTabViewPage.xaml.cs">
@@ -53,6 +61,12 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)TabViewTabClosingBehaviorPage.xaml.cs">
       <DependentUpon>TabViewTabClosingBehaviorPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)TabViewTearOutWindowWithDataItems.xaml.cs">
+      <DependentUpon>TabViewTearOutWindowWithDataItems.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)TabViewTearOutWindowWithoutDataItems.xaml.cs">
+      <DependentUpon>TabViewTearOutWindowWithoutDataItems.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>

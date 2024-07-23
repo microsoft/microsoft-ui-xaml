@@ -18,7 +18,7 @@ namespace DirectUI
 
         TrackerPtr(const TrackerPtr& other) = delete;
 
-        TrackerPtr(TrackerPtr&& other)
+        TrackerPtr(TrackerPtr&& other) noexcept
         {
             *this = std::move(other);
         }

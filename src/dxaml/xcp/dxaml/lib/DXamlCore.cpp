@@ -95,7 +95,6 @@
 #include "BudgetManager.g.h"
 #include "FlyoutMetadata.h"
 #include "XcpAllocationDebug.h"
-#include "XamlDirect.g.h"
 #include "DebugSettings_Partial.h"
 #include <windowscollections.h>
 #include "RootScale.h"
@@ -898,11 +897,6 @@ _Check_return_ HRESULT DXamlCore::CommonShutdown()
     }
 
     m_spCachedNullKeyedResource.Reset();
-
-    if (m_spDefaultXamlDirectInstance)
-    {
-        m_spDefaultXamlDirectInstance.Reset();
-    }
 
     CCoreServices* coreServices = GetHandle();
 
@@ -4460,6 +4454,17 @@ DXamlCore::SetSystemFontCollectionOverride(_In_opt_ IDWriteFontCollection* pFont
     return S_OK;
 }
 
+_Check_return_ HRESULT
+DXamlCore::ShouldUseTypographicFontModel(_Out_ bool* useDWriteTypographicModel)
+{
+    CCoreServices* pCoreServices = GetHandle();
+    if (pCoreServices != nullptr)
+    {
+        IFC_RETURN(pCoreServices->ShouldUseTypographicFontModel(useDWriteTypographicModel));
+    }
+    return S_OK;
+}
+
 void DXamlCore::SetMockUIAClientsListening(bool isEnabledMockUIAClientsListening)
 {
     m_pControl->SetMockUIAClientsListening(isEnabledMockUIAClientsListening);
@@ -4678,9 +4683,7 @@ _Check_return_ HRESULT DXamlCore::RegistryUpdatedCallback()
 _Check_return_ HRESULT DXamlCore::OnAutoHideScrollbarsChanged()
 {
     DXamlCore::s_dynamicScrollbarsDirty = true;
-    UpdateVisualStateForConsciousScrollbar();
-
-
+    IFC_RETURN(UpdateVisualStateForConsciousScrollbar());
     return S_OK;
 }
 
@@ -4733,16 +4736,6 @@ ctl::ComPtr<DirectUI::NullKeyedResource> DXamlCore::GetCachedNullKeyedResource()
     }
 
     return m_spCachedNullKeyedResource;
-}
-
-DirectUI::XamlDirect* DXamlCore::GetXamlDirectDefaultInstanceNoRef()
-{
-    if (!m_spDefaultXamlDirectInstance)
-    {
-        IFCFAILFAST(ctl::make<DirectUI::XamlDirect>(&m_spDefaultXamlDirectInstance));
-    }
-
-    return m_spDefaultXamlDirectInstance.Get();
 }
 
 bool DXamlCore::IsInBackgroundTask() const

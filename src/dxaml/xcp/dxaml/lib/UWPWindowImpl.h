@@ -123,7 +123,7 @@ namespace DirectUI
         EventRegistrationToken m_tokCoreWindowClosed;
         bool m_coreWindowClosed;
         CFTMEventSource<wf::ITypedEventHandler<IInspectable*, xaml::WindowSizeChangedEventArgs*>, xaml::IWindow, xaml::IWindowSizeChangedEventArgs> m_SizeChangedEventSource;
-        wf::Rect m_layoutBounds;
+        wf::Rect m_layoutBounds{};
 
         ctl::ComPtr<wuv::IApplicationView2> m_spApplicationView2;
         BOOLEAN m_useApplicationView = TRUE;

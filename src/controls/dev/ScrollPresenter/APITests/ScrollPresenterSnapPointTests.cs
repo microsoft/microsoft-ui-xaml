@@ -310,7 +310,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             // Flick with horizontal offset velocity to naturally land around offset 15.
-            AddScrollVelocity(scrollPresenter, horizontalVelocity: -165.0f, verticalVelocity: 0.0f, horizontalInertiaDecayRate: null, verticalInertiaDecayRate: null, hookViewChanged: false);
+            AddScrollVelocity(scrollPresenter, horizontalVelocity: -165.0f, verticalVelocity: 0.0f, horizontalInertiaDecayRate: null, verticalInertiaDecayRate: null, hookViewChangingAndChanged: false);
 
             RunOnUIThread.Execute(() =>
             {
@@ -365,7 +365,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 inertiaDecayRate: 0.6675f,
                 centerPointX: 150.0f,
                 centerPointY: 100.0f,
-                hookViewChanged: false);
+                hookViewChangingAndChanged: false);
 
             RunOnUIThread.Execute(() =>
             {

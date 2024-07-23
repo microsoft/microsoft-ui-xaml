@@ -90,6 +90,7 @@ IFACEMETHODIMP DirectUI::AppBarButtonGenerated::get_IsInOverflow(_Out_ BOOLEAN* 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<AppBarButton*>(this)->get_IsInOverflowImpl(pValue));
 Cleanup:
@@ -99,6 +100,7 @@ IFACEMETHODIMP DirectUI::AppBarButtonGenerated::get_IsSubMenuOpen(_Out_ BOOLEAN*
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<AppBarButton*>(this)->get_IsSubMenuOpenImpl(pValue));
 Cleanup:
@@ -108,6 +110,7 @@ IFACEMETHODIMP DirectUI::AppBarButtonGenerated::get_IsSubMenuPositionedAbsolutel
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<AppBarButton*>(this)->get_IsSubMenuPositionedAbsolutelyImpl(pValue));
 Cleanup:
@@ -117,6 +120,7 @@ IFACEMETHODIMP DirectUI::AppBarButtonGenerated::get_KeyboardAcceleratorTextOverr
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<AppBarButton*>(this)->get_KeyboardAcceleratorTextOverrideImpl(pValue));
 Cleanup:
@@ -154,6 +158,7 @@ IFACEMETHODIMP DirectUI::AppBarButtonGenerated::get_ParentOwner(_Outptr_result_m
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<AppBarButton*>(this)->get_ParentOwnerImpl(ppValue));
 Cleanup:
@@ -289,6 +294,7 @@ IFACEMETHODIMP DirectUI::AppBarButtonGenerated::GetHasBottomLabel(_Out_ BOOLEAN*
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AppBarButton_GetHasBottomLabel", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AppBarButton*>(this)->GetHasBottomLabelImpl(pResult));
@@ -307,6 +313,7 @@ IFACEMETHODIMP DirectUI::AppBarButtonGenerated::GetHasRightLabel(_Out_ BOOLEAN* 
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AppBarButton_GetHasRightLabel", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AppBarButton*>(this)->GetHasRightLabelImpl(pResult));

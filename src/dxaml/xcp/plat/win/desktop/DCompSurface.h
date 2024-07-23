@@ -57,7 +57,7 @@ private:
     struct DCompSurfaceUpdate
     {
         xref_ptr<SystemMemoryBits> spSysMemBits; // for SysMemLock & ReturnSysMemBitsToPool only
-        XRECT region;
+        XRECT region{};
     };
 
 public:

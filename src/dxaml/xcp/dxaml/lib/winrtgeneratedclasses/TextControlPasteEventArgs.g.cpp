@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::TextControlPasteEventArgs::get_Handled(_Out_ BOOLEAN* p
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CTextControlPasteEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));

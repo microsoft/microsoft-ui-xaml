@@ -12,10 +12,10 @@ namespace TouchTextSelection
     public:
         StartingPoint();
         unsigned __int64 timestamp;      
-        POINT pt;                 
+        POINT pt{};                 
         int dyContactCenterAnchor;  // The distance from anchor the contact started at.
-        POINT ptAnchor;
-        POINT ptGripperCenterOffsetFromAnchor; 
+        POINT ptAnchor{};
+        POINT ptGripperCenterOffsetFromAnchor{}; 
         int cGripperDiameter;
         int dyExpandedInitialZone;
     };
@@ -25,7 +25,7 @@ namespace TouchTextSelection
     public:
         LastPoint();
         unsigned __int64 timestamp;      // timestamp the gripper was here
-        POINT pt;                        // the screen location
+        POINT pt{};                      // the screen location
         unsigned int cCurrentLineHeight;
     };
 

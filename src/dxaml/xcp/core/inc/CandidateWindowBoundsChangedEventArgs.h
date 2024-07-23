@@ -30,5 +30,5 @@ public:
         return S_OK;
     }
 
-    XRECTF m_bounds;
+    XRECTF m_bounds{};
 };

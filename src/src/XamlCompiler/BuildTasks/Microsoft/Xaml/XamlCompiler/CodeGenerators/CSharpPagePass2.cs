@@ -663,7 +663,7 @@ this.Write("\r\n        ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(DebuggerNonUserCodeAttribute));
 
-this.Write("\r\n        private class ");
+this.Write("\r\n        private partial class ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.BindingsClassName));
 

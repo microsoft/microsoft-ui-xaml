@@ -547,5 +547,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 Verify.IsFalse(Convert.ToBoolean(thirdItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
             }
         }
+
+        [TestMethod]
+        public void VerifyNVIItemsRepeaterIsLoadedAfterSelectionSetInMarkup()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
+            {
+                Log.Comment("Verifying first item is selected.");
+                var firstItem = FindElement.ById("MI1");
+                Verify.IsTrue(Convert.ToBoolean(firstItem.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
+
+                Log.Comment("Clicking on first item to expand it.");
+                InputHelper.LeftClick(firstItem);
+                Wait.ForIdle();
+
+                Log.Comment("Verifying children are shown.");
+                var secondItem = FindElement.ById("MI2");
+                Verify.IsNotNull(secondItem, "Second item should be visible after expanding parent item.");
+            }
+        }
     }
 }

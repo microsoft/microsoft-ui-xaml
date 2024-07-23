@@ -48,13 +48,13 @@ namespace Private
 
         Private::TrackerPtr<xaml_interop::IBindableVector> _tpItemSourceAsBindable;
         Private::TrackerPtr<xaml_interop::INotifyCollectionChanged> _tpItemsSourceAsNotify;
-        EventRegistrationToken _tokenCollectionChanged;
+        EventRegistrationToken _tokenCollectionChanged{};
 
         Private::TrackerEventSource<wfc::VectorChangedEventHandler<IInspectable*>> _tpEvent;
         wrl::ComPtr<VectorChangedEventArgs> _spVectorChangedArgs;
 
         Private::TrackerPtr<xaml_interop::IBindableObservableVector> _tpObservableVector;
-        EventRegistrationToken _tokenVectorChanged;
+        EventRegistrationToken _tokenVectorChanged{};
     };
 
 }

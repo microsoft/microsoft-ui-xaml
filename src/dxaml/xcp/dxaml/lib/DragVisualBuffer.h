@@ -20,7 +20,7 @@ class DragVisualBuffer : public Microsoft::WRL::RuntimeClass<
         return E_NOTIMPL;
     }
 
-    HRESULT STDMETHODCALLTYPE GetTrustLevel(_Outptr_ TrustLevel *trustLevel) override
+    HRESULT STDMETHODCALLTYPE GetTrustLevel(_Out_ TrustLevel *trustLevel) override
     {    
         if(!trustLevel)
         {
@@ -31,13 +31,13 @@ class DragVisualBuffer : public Microsoft::WRL::RuntimeClass<
         return S_OK;
     }
 
-    HRESULT STDMETHODCALLTYPE get_Capacity(_Outptr_ UINT32 *capacity) override
+    HRESULT STDMETHODCALLTYPE get_Capacity(_Out_ UINT32 *capacity) override
     {
         *capacity = _capacity;
         return S_OK;
     }
 
-    HRESULT STDMETHODCALLTYPE get_Length(_Outptr_ UINT32 *length) override
+    HRESULT STDMETHODCALLTYPE get_Length(_Out_ UINT32 *length) override
     {
         // This is a fixed buffer, so length is capacity.
         *length = _capacity;

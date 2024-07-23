@@ -25,7 +25,7 @@
       Foreground=#E4000000
       Margin=0,0,0,0
       Padding=0,0,0,0
-      RenderSize=296,30
+      RenderSize=296,28
       Visibility=Visible
     [Microsoft.UI.Xaml.Controls.Grid]
         Background=[NULL]
@@ -39,7 +39,7 @@
         Margin=0,0,0,0
         Name=LayoutRoot
         Padding=0,0,0,0
-        RenderSize=296,30
+        RenderSize=296,28
         Visibility=Visible
       [Microsoft.UI.Xaml.Controls.ContentPresenter]
           Background=[NULL]
@@ -72,7 +72,7 @@
           MinWidth=296
           Name=FlyoutButton
           Padding=11,5,11,6
-          RenderSize=296,30
+          RenderSize=296,28
           Visibility=Visible
         [Microsoft.UI.Xaml.Controls.Grid]
             Background=[NULL]
@@ -85,7 +85,7 @@
             FocusVisualSecondaryThickness=1,1,1,1
             Margin=0,0,0,0
             Padding=0,0,0,0
-            RenderSize=296,30
+            RenderSize=296,28
             Visibility=Visible
           [Microsoft.UI.Xaml.Controls.ContentPresenter]
               Background=#B3FFFFFF
@@ -100,7 +100,7 @@
               Margin=0,0,0,0
               Name=ContentPresenter
               Padding=0,0,0,0
-              RenderSize=296,30
+              RenderSize=296,28
               Visibility=Visible
             [Microsoft.UI.Xaml.Controls.Grid]
                 Background=[NULL]
@@ -114,7 +114,7 @@
                 Margin=0,0,0,0
                 Name=FlyoutButtonContentGrid
                 Padding=0,0,0,0
-                RenderSize=294,28
+                RenderSize=294,26
                 Visibility=Visible
               [Microsoft.UI.Xaml.Controls.TextBlock]
                   FocusVisualPrimaryBrush=#E4000000
@@ -125,7 +125,7 @@
                   Margin=0,0,0,0
                   Name=DayTextBlock
                   Padding=0,3,0,6
-                  RenderSize=79,28
+                  RenderSize=79,26
                   Visibility=Visible
               [Microsoft.UI.Xaml.Controls.TextBlock]
                   FocusVisualPrimaryBrush=#E4000000
@@ -136,7 +136,7 @@
                   Margin=1,0,0,0
                   Name=MonthTextBlock
                   Padding=9,3,0,6
-                  RenderSize=133,28
+                  RenderSize=133,26
                   Visibility=Visible
               [Microsoft.UI.Xaml.Controls.TextBlock]
                   FocusVisualPrimaryBrush=#E4000000
@@ -147,7 +147,7 @@
                   Margin=0,0,0,0
                   Name=YearTextBlock
                   Padding=0,3,0,6
-                  RenderSize=79,28
+                  RenderSize=79,26
                   Visibility=Visible
               [Microsoft.UI.Xaml.Shapes.Rectangle]
                   FocusVisualPrimaryBrush=#E4000000
@@ -156,7 +156,7 @@
                   FocusVisualSecondaryThickness=1,1,1,1
                   Margin=0,0,0,0
                   Name=FirstPickerSpacing
-                  RenderSize=1,28
+                  RenderSize=1,26
                   StrokeThickness=1
                   Visibility=Visible
                   Width=1
@@ -167,7 +167,7 @@
                   FocusVisualSecondaryThickness=1,1,1,1
                   Margin=0,0,0,0
                   Name=SecondPickerSpacing
-                  RenderSize=1,28
+                  RenderSize=1,26
                   StrokeThickness=1
                   Visibility=Visible
                   Width=1

@@ -43,8 +43,6 @@ public:
 
     static _Check_return_ HRESULT UpdateErrorCodeFromHResult(_In_ HRESULT hResult, _Out_ XUINT32 *pErrorCode);
 
-    static _Check_return_ HRESULT UnspecifyMediaError(_In_ XUINT32 iSpecificCode, _Out_ XUINT32 *pGenericCode);
-
     _Check_return_ HRESULT GetMessageFromErrorCode(XUINT32 iErrorID, _Out_ xstring_ptr* pstrMessage) override;
 
     static _Check_return_ HRESULT FormatErrorMessage(_In_ const xstring_ptr& strOriginalErrorMessage,

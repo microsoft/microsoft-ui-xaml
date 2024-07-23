@@ -152,7 +152,7 @@
     <!-- These items can't be determined until after the project has fully defined itself.  We will need to figure out a long -->
     <!-- term plan for props vs. targets vs. new custom props/targets                                                         -->
     <PropertyGroup>
-        <!-- 
+        <!--
              Only use /Zc:lambda for non-C++/CX projects due to a bug in Visual Studio 17.3:
              https://developercommunity.visualstudio.com/t/Zc:lambda-causes-unexpected-conversion-/10088738
         -->

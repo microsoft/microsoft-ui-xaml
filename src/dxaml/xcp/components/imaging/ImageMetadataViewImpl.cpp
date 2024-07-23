@@ -36,7 +36,7 @@ const ImageMetadata* ImageMetadataViewImpl::GetImageMetadata() const
     {
         // TODO: image metadata is usually parsed when we call GetHR. GetImageMetadata is called in a lot more places,
         // so to limit code churn it hasn't been updated to trace an event.
-        ParseImageMetadata(nullptr, 0);
+        ParseImageMetadata(0);
         return m_encodedImageData->IsMetadataAvailable() ? &m_encodedImageData->GetMetadata() : nullptr;
     }
 
@@ -73,30 +73,24 @@ void ImageMetadataViewImpl::SetMaxRootSize(wf::Size maxRootSize)
     }
 }
 
-HRESULT ImageMetadataViewImpl::GetHR(_In_ const std::shared_ptr<ImagingTelemetry::ImageDecodeActivity>& decodeActivity, uint64_t imageId) const
+HRESULT ImageMetadataViewImpl::GetHR(uint64_t imageId) const
 {
-    ParseImageMetadata(decodeActivity, imageId);
+    ParseImageMetadata(imageId);
     return m_downloadParseResult;
 }
 
-void ImageMetadataViewImpl::ParseImageMetadata(_In_opt_ const std::shared_ptr<ImagingTelemetry::ImageDecodeActivity>& decodeActivity, uint64_t imageId) const
+void ImageMetadataViewImpl::ParseImageMetadata(uint64_t imageId) const
 {
     if (m_needParse)
     {
         CD3D11Device* graphicsDevice = m_graphicsDevice.lock().get();
-        if (decodeActivity)
-        {
-            decodeActivity->ParseImageMetadataStart(imageId);
-        }
+        ImagingTelemetry::ParseImageMetadataStart(imageId);
 
         // Note: graphicsDevice is allowed to be null if we're not working with a SVG file. LoadedImageSurface doesn't
         // even set a graphics device in this ImageMetadataViewImpl.
         m_downloadParseResult = m_encodedImageData->Parse(graphicsDevice, m_maxRootSize);
         m_needParse = false;
 
-        if (decodeActivity)
-        {
-            decodeActivity->ParseImageMetadataStop(imageId, m_downloadParseResult);
-        }
+        ImagingTelemetry::ParseImageMetadataStop(imageId, m_downloadParseResult);
     }
 }

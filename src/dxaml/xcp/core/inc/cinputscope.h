@@ -41,7 +41,7 @@ public:
 
     // CInputScopeNameValue field
 
-    DirectUI::InputScopeNameValue m_nameValue;
+    DirectUI::InputScopeNameValue m_nameValue{};
 };
 
 //------------------------------------------------------------------------

@@ -86,7 +86,7 @@ private:
     std::unique_ptr<StyleCustomRuntimeData> m_runtimeData;
     std::shared_ptr<XamlSchemaContext> m_context;
     std::shared_ptr<ObjectWriterContext> m_objectWriterContext;
-    CCoreServices* m_core;
+    CCoreServices* m_core{};
     bool m_allowNewCustomWriter;
 
     std::shared_ptr<XamlType> m_targetXamlType;

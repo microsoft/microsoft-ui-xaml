@@ -79,6 +79,7 @@ IFACEMETHODIMP DirectUI::DependencyPropertyChangedEventArgsGenerated::get_Proper
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<DependencyPropertyChangedEventArgs*>(this)->get_PropertyImpl(ppValue));
 Cleanup:

@@ -61,7 +61,7 @@ winrt::Size FlowLayout::MeasureOverride(
         LineSpacing(),
         std::numeric_limits<unsigned int>::max() /* maxItemsPerLine */,
         OrientationBasedMeasures::GetScrollOrientation(),
-        false /* disableVirtualization */,
+        true /* isVirtualizationEnabled */,
         LayoutId());
     return desiredSize;
 }
@@ -141,7 +141,7 @@ winrt::FlowLayoutAnchorInfo FlowLayout::GetAnchorForRealizationRect(
             MajorSize(realizationRect) > 0 &&
             DoesRealizationWindowOverlapExtent(realizationRect, MinorMajorRect(MinorStart(lastExtent), MajorStart(lastExtent), Minor(availableSize), static_cast<float>(extentMajorSize))))
         {
-            const double realizationWindowStartWithinExtent = MajorStart(realizationRect) - MajorStart(lastExtent);
+            const double realizationWindowStartWithinExtent = static_cast<double>(MajorStart(realizationRect)) - static_cast<double>(MajorStart(lastExtent));
             const int lineIndex = std::max(0, (int)(realizationWindowStartWithinExtent / averageLineSize));
             anchorIndex = (int)(lineIndex * averageItemsPerLine);
 
@@ -210,7 +210,7 @@ winrt::Rect FlowLayout::GetExtent(
             MajorStart(extent) = static_cast<float>(extentMajorStart);
             const int remainingItems = itemsCount - lastRealizedItemIndex - 1;
             const int remainingLinesAfterLast = static_cast<int>((remainingItems / averageItemsPerLine));
-            const double extentMajorSize = MajorEnd(lastRealizedLayoutBounds) - MajorStart(extent) + remainingLinesAfterLast * averageLineSize;
+            const double extentMajorSize = static_cast<double>(MajorEnd(lastRealizedLayoutBounds)) - static_cast<double>(MajorStart(extent)) + remainingLinesAfterLast * averageLineSize;
             MajorSize(extent) = static_cast<float>(extentMajorSize);
 
             // If the available size is infinite, we will have realized all the items in one line.

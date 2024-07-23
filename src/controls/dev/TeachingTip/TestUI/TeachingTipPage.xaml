@@ -70,6 +70,7 @@
                             </muxc:TeachingTip>
                         </Button.Resources>
                     </Button>
+                    <Button x:Name="targetButton2" HorizontalAlignment="Center" VerticalAlignment="Center" Height="300">Second Target</Button>
                     <Grid Background="Green" Width="100" Height="10000"/>
                 </StackPanel>
             </ScrollViewer>
@@ -81,6 +82,8 @@
                 <ScrollViewer HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled">
                     <Grid Background="{ThemeResource SystemChromeLowColor}" Margin="5" MinWidth="300" Padding="6">
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -305,6 +308,9 @@
                            Text="{x:Bind BrushToString(CurrentCancelClosesCheckBox.Foreground),Mode=OneWay}" FontSize="8"/>
                             </StackPanel>
                         </StackPanel>
+
+                        <TextBlock Grid.Row="38" Text="Switch TeachingTip Target" Foreground="Red"/>
+                        <Button Grid.Row="39" AutomationProperties.Name="SwitchTargetButton" Click="OnSwitchTargetButtonClicked">Switch Target</Button>
                     </Grid>
                 </ScrollViewer>
 

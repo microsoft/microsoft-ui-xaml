@@ -617,6 +617,7 @@ IFACEMETHODIMP DirectUI::ComboBoxGenerated::OnBackButtonPressed(_Out_ BOOLEAN* p
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ComboBox_OnBackButtonPressed", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ComboBox*>(this)->OnBackButtonPressedImpl(pResult));
@@ -715,7 +716,7 @@ _Check_return_ HRESULT DirectUI::ComboBoxGenerated::EventAddHandlerByIndex(_In_ 
     case KnownEventIndex::ComboBox_DropDownClosed:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -732,7 +733,7 @@ _Check_return_ HRESULT DirectUI::ComboBoxGenerated::EventAddHandlerByIndex(_In_ 
     case KnownEventIndex::ComboBox_DropDownOpened:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -814,12 +815,6 @@ HRESULT DirectUI::ComboBoxFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ 
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IComboBoxStaticsFeature_HeaderPlacement)))
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IComboBoxStaticsFeature_HeaderPlacement*>(this);
-    }
-#endif
-#if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IComboBoxStaticsFeature_InputValidation)))
-    {
-        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IComboBoxStaticsFeature_InputValidation*>(this);
     }
 #endif
     else
@@ -918,18 +913,9 @@ IFACEMETHODIMP DirectUI::ComboBoxFactory::get_HeaderPlacementProperty(_Out_ ABI:
 
 
 
-IFACEMETHODIMP DirectUI::ComboBoxFactory::get_ErrorTemplateProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
-{
-    RRETURN(MetadataAPI::GetIDependencyProperty(KnownPropertyIndex::ComboBox_ErrorTemplate, ppValue));
-}
-IFACEMETHODIMP DirectUI::ComboBoxFactory::get_InputValidationModeProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
-{
-    RRETURN(MetadataAPI::GetIDependencyProperty(KnownPropertyIndex::ComboBox_InputValidationMode, ppValue));
-}
-IFACEMETHODIMP DirectUI::ComboBoxFactory::get_InputValidationKindProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
-{
-    RRETURN(MetadataAPI::GetIDependencyProperty(KnownPropertyIndex::ComboBox_InputValidationKind, ppValue));
-}
+
+
+
 
 
 // Attached properties.
@@ -939,6 +925,7 @@ IFACEMETHODIMP DirectUI::ComboBoxFactory::get_IsEditableProperty(_Outptr_result_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckActivationAllowed());
     IFC(get_IsEditablePropertyImpl(ppValue));
 Cleanup:

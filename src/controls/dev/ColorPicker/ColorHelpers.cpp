@@ -366,7 +366,7 @@ void CreateCheckeredBackgroundAsync(
         return;
     }
 
-    bgraCheckeredPixelData->reserve(static_cast<size_t>(width * height * 4));
+    bgraCheckeredPixelData->reserve(static_cast<size_t>(width) * height * 4);
 
     winrt::WorkItemHandler workItemHandler(
         [width, height, checkerColor, bgraCheckeredPixelData]
@@ -566,7 +566,7 @@ winrt::LoadedImageSurface CreateSurfaceFromPixelData(
 
     for (int y = pixelHeight - 1; y >= 0; y--)
     {
-        memcpy(bmpData.data() + (headerSize + (pixelHeight - 1 - y) * stride), (*bgraPixelData).data() + (y * stride), stride);
+        memcpy(bmpData.data() + (headerSize + (static_cast<size_t>(pixelHeight) - 1 - y) * stride), (*bgraPixelData).data() + (static_cast<size_t>(y) * stride), stride);
     }
 
     winrt::InMemoryRandomAccessStream stream = SharedHelpers::CreateStreamFromBytes(winrt::array_view<const byte>(bmpData));

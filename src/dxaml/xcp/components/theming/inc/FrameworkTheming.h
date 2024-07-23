@@ -68,7 +68,7 @@ public:
     bool IsHighContrastChanging() const { return m_isHighContrastChanging; }
 
 private:
-    _Check_return_ void RebuildColorAndBrushResources();
+    void RebuildColorAndBrushResources();
 
     std::shared_ptr<IThemingInterop> m_spThemingInterop;
     NotifyThemeChangedFunc           m_notifyThemeChangedFunc;

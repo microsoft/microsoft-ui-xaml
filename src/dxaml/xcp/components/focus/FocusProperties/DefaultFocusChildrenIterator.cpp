@@ -94,7 +94,7 @@ unsigned DefaultFocusChildrenIterator::GetCount()
 }
 
 _Check_return_ HRESULT
-DefaultFocusChildrenIterator::GetAt(unsigned index, _Outptr_ xaml::IDependencyObject** value)
+DefaultFocusChildrenIterator::GetAt(_In_ unsigned index, _Outptr_ xaml::IDependencyObject** value)
 {
     auto parent = DependencyObjectAbstractionHelpers::GetHandle(DependencyObjectAbstractionHelpers::IDOtoDO(m_parent.Get()));
     auto children = FocusProperties::GetFocusChildren<CDOCollection>(parent);

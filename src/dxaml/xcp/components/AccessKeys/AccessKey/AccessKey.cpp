@@ -12,7 +12,7 @@ AKAccessKey::AKAccessKey(_In_ const wchar_t accessKey)
     (*this) = accessKey;
 }
 
-AKAccessKey::AKAccessKey(const std::wstring & accessKey)
+AKAccessKey::AKAccessKey(_In_ const std::wstring & accessKey)
 {
     (*this) = accessKey;
 }

@@ -257,10 +257,6 @@ namespace FxCallbacks
 
     _Check_return_ HRESULT Popup_OnClosed(_In_ CDependencyObject* nativePopup);
 
-    _Check_return_ HRESULT Popup_HookupWindowPositionChangedHandler(_In_ CDependencyObject* nativePopup);
-
-    void Popup_OnHostWindowPositionChanged(_In_ CDependencyObject* nativePopup);
-
     void Popup_OnIslandLostFocus(_In_ CDependencyObject* nativePopup);
 
     bool TextBlock_HasDataboundText(_In_ CTextBlock* nativeTextBlock);
@@ -335,8 +331,6 @@ namespace FxCallbacks
 
     _Check_return_ HRESULT FrameworkCallbacks_IsDXamlCoreShuttingDown(_Out_ bool* pIsDXamlCoreShuttingDown);
 
-    _Check_return_ HRESULT Core_ForwardWindowedPopupMessageToJupiterWindow(_In_ HWND window, _In_ UINT message, _In_ WPARAM wParam, _In_ LPARAM lParam, _In_opt_ CContentRoot* contentRoot, _Out_ LRESULT* pResult);
-
     _Check_return_ HRESULT XcpImports_ParticipateInTransition(_In_ CDependencyObject* nativeTransition, _In_ CDependencyObject* nativeUIElement, _In_ XINT32 transitionTrigger, _Out_ bool* DoesParticipate);
 
     _Check_return_ HRESULT XcpImports_CreateStoryboardsForTransition(_In_ CDependencyObject* nativeTransition, _In_ CDependencyObject* nativeUIElement, _In_ XRECTF startBounds, _In_ XRECTF destinationBounds, _In_ XINT32 transitionTrigger, _Out_ XINT32* cStoryboards, _Outptr_result_buffer_(* cStoryboards) CStoryboard*** pppTransitionStoryboard, _Out_ DirectUI::TransitionParent* parentToTransitionEnum);
@@ -375,9 +369,9 @@ namespace FxCallbacks
 
     _Check_return_ HRESULT AutomationPeer_GetPattern(_In_ CDependencyObject* nativeTarget, _In_ CDependencyObject** nativeInterface, _In_ UIAXcp::APPatternInterface eInterface);
 
-    _Check_return_ HRESULT AutomationPeer_UIATextRangeInvoke(_In_ CDependencyObject* nativeTarget, _In_ XINT32 eFunction, _In_ XINT32 cParams, _In_ void* pvParams, _In_ Automation::CValue* pRetVal);
+    _Check_return_ HRESULT AutomationPeer_UIATextRangeInvoke(_In_ CDependencyObject* nativeTarget, _In_ XINT32 eFunction, _In_ XINT32 cParams, _In_opt_ void* pvParams, _In_opt_ Automation::CValue* pRetVal);
 
-    _Check_return_ HRESULT AutomationPeer_UIAPatternInvoke(_In_ CDependencyObject* nativeTarget, _In_ UIAXcp::APPatternInterface eInterface, _In_ XINT32 eFunction, _In_ XINT32 cParams, _In_ void* pvParams, _In_ Automation::CValue* pRetVal);
+    _Check_return_ HRESULT AutomationPeer_UIAPatternInvoke(_In_ CDependencyObject* nativeTarget, _In_ UIAXcp::APPatternInterface eInterface, _In_ XINT32 eFunction, _In_ XINT32 cParams, _In_opt_ void* pvParams, _In_opt_ Automation::CValue* pRetVal);
 
     _Check_return_ HRESULT AutomationPeer_NotifyNoUIAClientObjectForAP(_In_ CDependencyObject* nativeTarget);
 
@@ -585,7 +579,7 @@ namespace FxCallbacks
     void XamlRoot_RaiseInputActivationChanged(_In_ IInspectable* xamlRootInsp);
     void XamlRoot_UpdatePeg(_In_ IInspectable* xamlRootInsp, bool peg);
 
-    _Check_return_ HRESULT FrameworkApplication_GetRequiresPointerMode(_Outptr_ xaml::ApplicationRequiresPointerMode* value);
+    _Check_return_ HRESULT FrameworkApplication_GetRequiresPointerMode(_Out_ xaml::ApplicationRequiresPointerMode* value);
 
     _Check_return_ HRESULT FlyoutPresenter_GetTargetIfOpenedAsTransient(_In_ CDependencyObject* nativeControl, _Outptr_ CDependencyObject** nativeTarget);
 

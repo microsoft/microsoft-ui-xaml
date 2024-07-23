@@ -66,6 +66,7 @@ IFACEMETHODIMP DirectUI::DataTemplateSelectorGenerated::GetElement(_In_ ABI::Mic
     }
     ARG_NOTNULL(pArgs, "args");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<DataTemplateSelector*>(this)->GetElementImpl(pArgs, ppReturnValue));
 Cleanup:
@@ -123,6 +124,7 @@ IFACEMETHODIMP DirectUI::DataTemplateSelectorGenerated::SelectTemplateCore(_In_o
     }
     ARG_NOTNULL(pContainer, "container");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<DataTemplateSelector*>(this)->SelectTemplateCoreImpl(pItem, pContainer, ppReturnValue));
 Cleanup:
@@ -162,6 +164,7 @@ IFACEMETHODIMP DirectUI::DataTemplateSelectorGenerated::SelectTemplateForItemCor
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "DataTemplateSelector_SelectTemplateForItem", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<DataTemplateSelector*>(this)->SelectTemplateForItemCoreImpl(pItem, ppReturnValue));
 Cleanup:

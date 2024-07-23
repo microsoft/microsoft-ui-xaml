@@ -131,6 +131,7 @@ IFACEMETHODIMP DirectUI::ContainerContentChangingEventArgsGenerated::get_ItemCon
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ContainerContentChangingEventArgs*>(this)->get_ItemContainerImpl(ppValue));
 Cleanup:

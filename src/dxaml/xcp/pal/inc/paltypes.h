@@ -632,9 +632,9 @@ enum XEDITKEY
 
 #if defined(__cplusplus) && !defined(NO_XCP_NEW_AND_DELETE) // for example, xcpmon and drtapp set this.
 
-XCP_FORCEINLINE __declspec(allocator) void * __cdecl operator new(size_t cSize);
+_Ret_notnull_ _Post_writable_byte_size_(cSize) XCP_FORCEINLINE __declspec(allocator) void * __cdecl operator new(size_t cSize);
 
-__bcount(cSize) XCP_FORCEINLINE __declspec(allocator) void * __cdecl operator new[](size_t cSize);
+_Ret_notnull_ _Post_writable_byte_size_(cSize) XCP_FORCEINLINE __declspec(allocator) void * __cdecl operator new[](size_t cSize);
 
 #pragma warning(push)
 #pragma warning(disable:26021 28301)
@@ -678,6 +678,8 @@ struct InputMessage
     ixp::IPointerPoint* m_pPointerPointNoRef {nullptr};
 
     ixp::IPointerEventArgs* m_pPointerEventArgsNoRef {nullptr};
+
+    bool m_isNonClientPointerMessage{ false };
 
     bool IsReplayedMessage() const { return m_isReplayedMessage; }
 

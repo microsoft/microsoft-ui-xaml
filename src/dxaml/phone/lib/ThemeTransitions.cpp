@@ -1659,7 +1659,7 @@ Cleanup:
         }
 
         // Ensure sure that the animated pages are not hit test visible while animating.
-        NavigateTransitionHelper::RemoveHitTestVisbility(spStoryboardStatics.Get(), spTimelines.Get(), spAnimationTargetAsDO.Get());
+        IFC_RETURN(NavigateTransitionHelper::RemoveHitTestVisbility(spStoryboardStatics.Get(), spTimelines.Get(), spAnimationTargetAsDO.Get()));
 
         IFC_RETURN(storyboards->Append(spStoryboard.Get()));
 

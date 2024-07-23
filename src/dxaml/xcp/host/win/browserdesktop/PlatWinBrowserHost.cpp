@@ -98,6 +98,7 @@ CXcpBrowserHost::HandlePointerMessage(_In_ XUINT32 uMsg, _In_ MsgPacket *pMsgPac
 
         pMsg->m_pPointerPointNoRef = pMsgPack->m_pPointerPointNoRef;
         pMsg->m_pPointerEventArgsNoRef = pMsgPack->m_pPointerEventArgsNoRef;
+        pMsg->m_isNonClientPointerMessage = pMsgPack->m_isNonClientPointerMessage;
 
         // Set the core window handle to register InputPane handler
         pMsg->m_pointerInfo.m_pCoreWindow = pMsgPack->m_pCoreWindow;

@@ -116,10 +116,6 @@ public:
     // Returns whether or not the font supports pair-kerning.
     bool HasKerningPairs() override;
 
-    // Returns whether we can bypass full shaping.
-    // This currently only applies to Segoe UI.
-    bool CanOptimizeShaping() override;
-
     // Returns true if the font has a COLR table
     bool IsColorFont() override;
 
@@ -139,7 +135,6 @@ private:
 
     // The font family that contains this DWriteFontFace.
     DWriteFontFamily *m_pDWriteFontFamily = nullptr;
-    bool m_canOptimizeShaping = false;
 
     // Release resources associated with the DWriteFontFace.
     ~DWriteFontFace() override;

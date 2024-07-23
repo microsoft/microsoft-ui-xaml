@@ -172,23 +172,31 @@
                             <controls:SymbolIconSource Symbol="Home"/>
                         </controls:TabViewItem.IconSource>
 
-                        <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent" Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
-                            <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8" FontSize="20">Home Button</Button>
-                            <StackPanel>
-                                <Button x:Name="TabViewSizingPageButton" AutomationProperties.Name="TabViewSizingPageButton"
+                        <ScrollViewer>
+                            <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent" Background="{ThemeResource TabViewItemHeaderBackgroundSelected}">
+                                <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8" FontSize="20">Home Button</Button>
+                                <StackPanel>
+                                    <Button x:Name="TabViewSizingPageButton" AutomationProperties.Name="TabViewSizingPageButton"
                                         Margin="4" Click="TabViewSizingPageButton_Click"
                                         FontSize="20">TabView Sizing Page</Button>
-                                <Button x:Name="TabViewTabClosingBehaviorButton" AutomationProperties.Name="TabViewTabClosingBehaviorButton"
+                                    <Button x:Name="TabViewTabClosingBehaviorButton" AutomationProperties.Name="TabViewTabClosingBehaviorButton"
                                         Margin="4" Click="TabViewTabClosingBehaviorButton_Click"
                                         FontSize="20">TabView Tab Closing behavior Page</Button>
-                                <Button x:Name="TabViewTabItemsSourcePageButton" AutomationProperties.Name="TabViewTabItemsSourcePageButton"
+                                    <Button x:Name="TabViewTabItemsSourcePageButton" AutomationProperties.Name="TabViewTabItemsSourcePageButton"
                                         Margin="4" Click="TabViewTabItemsSourcePageButton_Click"
                                         FontSize="20">TabView TabItemsSource Page</Button>
-                                <Button x:Name="MultipleTabViewPageButton" AutomationProperties.Name="MultipleTabViewPageButton"
+                                    <Button x:Name="MultipleTabViewPageButton" AutomationProperties.Name="MultipleTabViewPageButton"
                                         Margin="4" Click="MultipleTabViewPageButton_Click"
                                         FontSize="20">Multiple TabView Page</Button>
+                                    <Button x:Name="TabViewTearOutWindowWithDataItemsButton" AutomationProperties.Name="TabViewTearOutWindowWithDataItemsButton"
+                                        Margin="4" Click="TabViewTearOutWindowWithDataItemsButton_Click"
+                                        FontSize="20">TabView Tear-Out Window (With Data Items)</Button>
+                                    <Button x:Name="TabViewTearOutWindowWithoutDataItemsButton" AutomationProperties.Name="TabViewTearOutWindowWithoutDataItemsButton"
+                                        Margin="4" Click="TabViewTearOutWindowWithoutDataItemsButton_Click"
+                                        FontSize="20">TabView Tear-Out Window (Without Data Items)</Button>
+                                </StackPanel>
                             </StackPanel>
-                        </StackPanel>
+                        </ScrollViewer>
                     </controls:TabViewItem>
 
                     <controls:TabViewItem x:Name="SecondTab" AutomationProperties.Name="SecondTab" Header="SecondTab" IsClosable="True" DragStarting="OnSecondTabDragStarting">

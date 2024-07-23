@@ -24,16 +24,14 @@ namespace OM
             IsWebHostHidden = false;
         }
 
-        public void AddVersion(int version, int xamlDirectVersion)
+        public void AddVersion(int version)
         {
-            if (version <= 0 || xamlDirectVersion < 0) throw new InvalidOperationException("Invalid version or xamlDirectVersion for contract");
+            if (version <= 0) throw new InvalidOperationException("Invalid version for contract");
             while (versions.Count <= version)
             {
                 versions.Add(-1);
             }
-            versions[version] = xamlDirectVersion;
-
-
+            versions[version] = 1; // this can be anything >= 0 (see ContainsVersion)
         }
 
         public int MaxVersion
@@ -47,11 +45,6 @@ namespace OM
         public bool ContainsVersion(int version)
         {
             return version < versions.Count && versions[version] >= 0;
-        }
-
-        public int GetXamlDirectVersion(int version)
-        {
-            return version < versions.Count ? versions[version] : 0;
         }
 
         public override Idl.IdlTypeInfo IdlTypeInfo

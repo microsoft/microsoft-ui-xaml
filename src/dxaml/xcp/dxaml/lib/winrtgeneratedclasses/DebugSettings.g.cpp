@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::DebugSettingsGenerated::get_EnableFrameRateCounter(_Out
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<DebugSettings*>(this)->get_EnableFrameRateCounterImpl(pValue));
 Cleanup:
@@ -71,6 +72,7 @@ IFACEMETHODIMP DirectUI::DebugSettingsGenerated::get_FailFastOnErrors(_Out_ BOOL
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<DebugSettings*>(this)->get_FailFastOnErrorsImpl(pValue));
 Cleanup:
@@ -89,6 +91,7 @@ IFACEMETHODIMP DirectUI::DebugSettingsGenerated::get_IsBindingTracingEnabled(_Ou
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<DebugSettings*>(this)->get_IsBindingTracingEnabledImpl(pValue));
 Cleanup:
@@ -107,6 +110,7 @@ IFACEMETHODIMP DirectUI::DebugSettingsGenerated::get_IsTextPerformanceVisualizat
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<DebugSettings*>(this)->get_IsTextPerformanceVisualizationEnabledImpl(pValue));
 Cleanup:
@@ -125,6 +129,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::get_I
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<DebugSettings*>(this)->get_IsXamlResourceReferenceTracingEnabledImpl(pValue));
 Cleanup:
@@ -143,6 +148,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::get_L
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<DebugSettings*>(this)->get_LayoutCycleDebugBreakLevelImpl(pValue));
 Cleanup:
@@ -161,6 +167,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::get_L
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<DebugSettings*>(this)->get_LayoutCycleTracingLevelImpl(pValue));
 Cleanup:

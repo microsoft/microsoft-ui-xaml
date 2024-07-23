@@ -183,7 +183,7 @@ private:
         int IterationCount = 0;
 
         bool HasStopBehavior = false;
-        WUComp::AnimationStopBehavior StopBehavior;
+        WUComp::AnimationStopBehavior StopBehavior{};
 
     private:
         AnimationBehavior() = default;

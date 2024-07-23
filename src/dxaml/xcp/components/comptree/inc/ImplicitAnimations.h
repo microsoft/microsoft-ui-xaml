@@ -55,7 +55,7 @@ struct ImplicitAnimationInfo
     // the animation target explicitly.
     wrl::ComPtr<WUComp::ICompositionObject2> animationTarget;
 
-    EventRegistrationToken token;                                       // Registration token for scopedBatch.  Only valid while the animation is playing.
+    EventRegistrationToken token{};                                     // Registration token for scopedBatch.  Only valid while the animation is playing.
 
     bool pendingChange = false;                                         // true iff implicit animation is set to a new value while animation is playing.
     wrl::ComPtr<WUComp::ICompositionAnimationBase> pendingAnimation;    // If pendingChange == true, the animation to update to when current animation finishes.

@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "Projection.h"
 #include "HitTestParams.h"
 #include "Transform3D.h"
 

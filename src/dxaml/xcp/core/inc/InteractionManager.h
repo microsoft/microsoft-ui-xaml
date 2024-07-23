@@ -33,7 +33,7 @@ public:
     InteractionMapKey(const InteractionMapKey&) = delete;
     InteractionMapKey& operator=(const InteractionMapKey&) = delete;
     InteractionMapKey(InteractionMapKey&&) = default;
-    InteractionMapKey& operator=(InteractionMapKey&& rhs)
+    InteractionMapKey& operator=(InteractionMapKey&& rhs) noexcept
     {
         if (this != &rhs)
         {

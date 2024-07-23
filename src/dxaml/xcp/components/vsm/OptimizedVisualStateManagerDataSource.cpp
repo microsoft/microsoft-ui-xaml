@@ -231,7 +231,7 @@ _Check_return_ HRESULT OptimizedVisualStateManagerDataSource::GetQualifiersFromS
     ASSERT(onCreated);
     IFC_RETURN(GetQualifiersFromStateTriggerValues(index, onCreated));
     IFC_RETURN(GetQualifiersFromStateTriggerTokens(index, onCreated));
-    GetQualifiersFromStaticResourceTriggerTokens(index, onCreated);
+    IFC_RETURN(GetQualifiersFromStaticResourceTriggerTokens(index, onCreated));
     return S_OK;
 };
 

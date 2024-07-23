@@ -1607,7 +1607,7 @@ CDependencyObject* CDependencyObject::GetTreeRoot(_In_ bool publicParentOnly /* 
     {
         VERIFYHR(core->IsObjectAnActiveRootVisual(pParent, &parentIsRootVisual));
     }
-    while (pParent && (!publicParentOnly || !parentIsRootVisual))
+    while (pParent && (!publicParentOnly || !parentIsRootVisual) && !do_pointer_cast<CXamlIslandRoot>(pParent))
     {
         pBase = pParent;
         pParent = pParent->GetParentInternal(publicParentOnly);

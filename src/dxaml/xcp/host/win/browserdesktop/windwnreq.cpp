@@ -913,6 +913,8 @@ CWindowsDownloadRequest::OnResponse( DWORD dwResponseCode,
         return E_POINTER;
     }
 
+    *pszAdditionalRequestHeaders = NULL;
+
     m_ulHttpStatusCode = dwResponseCode;
 
     IFC(gps->GetPlatformUtilities(&pUtilities));
@@ -921,8 +923,6 @@ CWindowsDownloadRequest::OnResponse( DWORD dwResponseCode,
         const_cast<WCHAR*>(szResponseHeaders),
         xstrlen(szResponseHeaders),
         &m_strHeaders));
-
-    *pszAdditionalRequestHeaders = NULL;
 
 Cleanup:
     return S_OK;
@@ -1113,11 +1113,13 @@ CWindowsDownloadRequest::InitiateRequest (
 
     if (m_cHeaders)
     {
+#pragma prefast( suppress: 26451 "We shouldn't need to worry about casting here, if the following add operation generates an arithmetic overflow, m_cHeaders is likely already bad. Abstain from adding casting to complicate the code only to make PREfast happy.")
         m_pHeaders = new WCHAR[m_cHeaders + 1];
         if (bAddAcceptLanguageHeader)
         {
             //we need to add the accept-language header
-            memcpy(m_pHeaders+offset, ACCEPT_LANGUAGE_HEADER_PREFIX, ACCEPT_LANGUAGE_HEADER_PREFIX_LENGTH * sizeof(WCHAR));
+#pragma prefast( suppress: 6386 "PREfast does not know that whenever bAddAcceptLanguageHeader is set to TRUE above, m_cHeaders is big enough.")
+            memcpy(m_pHeaders, ACCEPT_LANGUAGE_HEADER_PREFIX, ACCEPT_LANGUAGE_HEADER_PREFIX_LENGTH * sizeof(WCHAR));
             offset += ACCEPT_LANGUAGE_HEADER_PREFIX_LENGTH;
             memcpy(m_pHeaders+offset, strAcceptLanguageHeader.GetBuffer(), strAcceptLanguageHeader.GetCount() * sizeof(WCHAR));
             offset += strAcceptLanguageHeader.GetCount();

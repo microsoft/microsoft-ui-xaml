@@ -88,5 +88,5 @@ private:
     wrl::ComPtr<wfc::IObservableVector<IInspectable*>> m_observableVector;
 
     wrl::EventSource<wfc::VectorChangedEventHandler<IInspectable*>> m_eventSource;
-    EventRegistrationToken m_vectorChangedToken;
+    EventRegistrationToken m_vectorChangedToken{};
 };

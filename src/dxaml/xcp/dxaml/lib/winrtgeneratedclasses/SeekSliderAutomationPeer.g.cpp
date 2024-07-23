@@ -45,6 +45,7 @@ IFACEMETHODIMP DirectUI::SeekSliderAutomationPeerGenerated::get_IsReadOnly(_Out_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<SeekSliderAutomationPeer*>(this)->get_IsReadOnlyImpl(pValue));
 Cleanup:
@@ -54,6 +55,7 @@ IFACEMETHODIMP DirectUI::SeekSliderAutomationPeerGenerated::get_Value(_Out_ HSTR
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<SeekSliderAutomationPeer*>(this)->get_ValueImpl(pValue));
 Cleanup:

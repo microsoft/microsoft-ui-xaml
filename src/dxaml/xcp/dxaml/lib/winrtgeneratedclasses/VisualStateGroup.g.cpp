@@ -46,6 +46,7 @@ IFACEMETHODIMP DirectUI::VisualStateGroupGenerated::get_CurrentState(_Outptr_res
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<VisualStateGroup*>(this)->get_CurrentStateImpl(ppValue));
 Cleanup:
@@ -55,6 +56,7 @@ IFACEMETHODIMP DirectUI::VisualStateGroupGenerated::get_Name(_Out_ HSTRING* pVal
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<VisualStateGroup*>(this)->get_NameImpl(pValue));
 Cleanup:

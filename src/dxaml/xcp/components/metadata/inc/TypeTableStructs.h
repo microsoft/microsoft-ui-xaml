@@ -255,6 +255,7 @@ public:
     }
     bool IsPrimitive() const               { return IsSet(MetaDataTypeInfoFlags::IsPrimitive); }
     bool IsPublic() const                  { return IsSet(MetaDataTypeInfoFlags::IsPublic); }
+#pragma warning (suppress : 26813) // Use 'bitwise and' to check if a flag is set.
     bool IsUnknown() const                 { return (m_flags == MetaDataTypeInfoFlags::IsCustomType); }
     bool IsValueType() const               { return IsSet(MetaDataTypeInfoFlags::IsValueType); }
     bool IsWhitespaceSignificant() const   { return IsSet(MetaDataTypeInfoFlags::IsWhitespaceSignificant); }

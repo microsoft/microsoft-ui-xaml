@@ -43,7 +43,7 @@ bool AKParser::IsValidAccessKey(_In_ const std::wstring& accessString)
     return true;
 }
 
-bool AccessKeys::AKParser::ContainsInvalidSubstring(const std::wstring & accessString)
+bool AccessKeys::AKParser::ContainsInvalidSubstring(_In_ const std::wstring & accessString)
 {
     // For each string in invalidStringList, check it's not a substring in accessString
     for (const auto& invalidString : invalidStringList)

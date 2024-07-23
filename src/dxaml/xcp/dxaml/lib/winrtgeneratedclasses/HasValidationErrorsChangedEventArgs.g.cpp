@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::HasValidationErrorsChangedEventArgs::get_NewValue(_Out_
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CHasValidationErrorsChangedEventArgs*>(pCoreEventArgsNoRef)->get_NewValue(&valueCore));

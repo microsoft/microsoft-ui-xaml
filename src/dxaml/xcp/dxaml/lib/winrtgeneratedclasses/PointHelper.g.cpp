@@ -46,6 +46,7 @@ IFACEMETHODIMP DirectUI::PointHelperFactory::FromCoordinates(_In_ FLOAT x, _In_ 
         XamlTelemetry::PublicApiCall(true, 0, "PointHelper_FromCoordinates", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(FromCoordinatesImpl(x, y, pReturnValue));
 Cleanup:

@@ -173,6 +173,7 @@ IFACEMETHODIMP DirectUI::LoadedImageSurfaceFactory::StartLoadFromUriWithSize(_In
     }
     ARG_NOTNULL(pUri, "uri");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(StartLoadFromUriWithSizeImpl(pUri, desiredMaxSize, ppReturnValue));
 Cleanup:
@@ -191,6 +192,7 @@ IFACEMETHODIMP DirectUI::LoadedImageSurfaceFactory::StartLoadFromUri(_In_ ABI::W
     }
     ARG_NOTNULL(pUri, "uri");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(StartLoadFromUriImpl(pUri, ppReturnValue));
 Cleanup:
@@ -209,6 +211,7 @@ IFACEMETHODIMP DirectUI::LoadedImageSurfaceFactory::StartLoadFromStreamWithSize(
     }
     ARG_NOTNULL(pStream, "stream");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(StartLoadFromStreamWithSizeImpl(pStream, desiredMaxSize, ppReturnValue));
 Cleanup:
@@ -227,6 +230,7 @@ IFACEMETHODIMP DirectUI::LoadedImageSurfaceFactory::StartLoadFromStream(_In_ ABI
     }
     ARG_NOTNULL(pStream, "stream");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(StartLoadFromStreamImpl(pStream, ppReturnValue));
 Cleanup:

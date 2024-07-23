@@ -73,7 +73,7 @@ _Check_return_ HRESULT CWindowChrome::ConfigureWindowChrome()
     // Better default setting - Applying Transparent value as the default button bg color for caption buttons
     // This will be applied every time titlebar is enabled - whether first time or other times
     // this is the most common use of titlebar and this default setting makes it easier for customers to use it
-    if (!m_isDefaultCaptionButtonStyleSet)
+    if (m_bIsActive && !m_isDefaultCaptionButtonStyleSet)
     {
         // only do it the first time in the lifetime of WindowChrome
         // so that if customer code changes caption button bg color to something
@@ -87,6 +87,12 @@ _Check_return_ HRESULT CWindowChrome::ConfigureWindowChrome()
 
     }
 
+    IFC_RETURN(SetFocusIfNeeded());
+    return S_OK;
+}
+
+_Check_return_ HRESULT CWindowChrome::SetFocusIfNeeded()
+{
     // WindowActivate for island/ win32 window has already had happened even before content of WindowChrome is loaded.
     // Due to this, SetWindowFocus which gets called on launch while handling WindowActivation has nothing to set focus on
     // and ends up in focusing nothing at all. This leads to launch an app without focus.
@@ -101,6 +107,7 @@ _Check_return_ HRESULT CWindowChrome::ConfigureWindowChrome()
 
     return S_OK;
 }
+
 
 _Check_return_ HRESULT CWindowChrome::SetIsChromeActive(bool isActive)
 {
@@ -138,8 +145,6 @@ bool CWindowChrome::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam, _Out_
     {
         case WM_CREATE:
             return !!OnCreate();
-        case WM_PAINT :
-            return !!OnPaint();
     }
 
     return false;
@@ -185,33 +190,6 @@ int CWindowChrome::GetTopBorderHeight() const noexcept
 bool CWindowChrome::IsTitlebarVisible() const
 {
     return IsChromeActive();
-}
-
-
-LRESULT CWindowChrome::OnPaint()
-{
-    PAINTSTRUCT ps{ 0 };
-    const auto hdc = wil::BeginPaint(m_topLevelWindow, &ps);
-    if (!hdc)
-    {
-        return 0;
-    }
-
-    const auto topBorderHeight = GetTopBorderHeight();
-
-    if (ps.rcPaint.top < topBorderHeight)
-    {
-        RECT rcTopBorder = ps.rcPaint;
-        rcTopBorder.bottom = topBorderHeight;
-
-        // To show the original top border, we have to paint on top of it with
-        // the alpha component set to 0. This page recommends to paint the area
-        // in black using the stock BLACK_BRUSH to do this:
-        // https://docs.microsoft.com/en-us/windows/win32/dwm/customframe#extending-the-client-frame
-        ::FillRect(hdc.get(), &rcTopBorder, GetStockBrush(BLACK_BRUSH));
-    }
-
-    return 0;
 }
 
 void CWindowChrome::UpdateContainerSize(WPARAM wParam, LPARAM lParam)
@@ -288,10 +266,9 @@ _Check_return_ HRESULT CWindowChrome::OnTitleBarSizeChanged()
     if (!IsChromeActive())
     {
         RECT empty = {0, 0, 0, 0};
-        if (!::EqualRect(&m_dragRegionCached, &empty))
+        if (m_enabledDrag != m_enabledDragCached || !::EqualRect(&m_dragRegionCached, &empty))
         {
             didRectChange = true;
-            m_dragRegionCached = empty;
             IFC_RETURN(SetDragRegion(empty));
         }
     }
@@ -309,10 +286,9 @@ _Check_return_ HRESULT CWindowChrome::OnTitleBarSizeChanged()
             }
             
             RECT dragBarRect = WindowHelpers::GetClientAreaLogicalRectForUIElement(userTitlebar);
-            if (!::EqualRect(&m_dragRegionCached, &dragBarRect))
+            if (m_enabledDrag != m_enabledDragCached || !::EqualRect(&m_dragRegionCached, &dragBarRect))
             {
                 didRectChange = true;
-                m_dragRegionCached = dragBarRect;
                 IFC_RETURN(SetDragRegion(dragBarRect));
             }
         }
@@ -369,37 +345,52 @@ void CWindowChrome::UpdateCanDragStatus(bool enabled)
 
 _Check_return_ HRESULT CWindowChrome::SetDragRegion(RECT rf)
 {
+    UINT32 captionRectLength;
+    wil::unique_cotaskmem_ptr<wgr::RectInt32[]> captionRects;
+
+    IFC_RETURN(GetPeer()->GetNonClientInputPtrSrc()->GetRegionRects(mui::NonClientRegionKind_Caption, &captionRectLength, wil::out_param(captionRects)));
+
+    std::vector<wgr::RectInt32> captionRegions{ captionRects.get(), captionRects.get() + captionRectLength };
+
+    // We'll remove the region rect we previously added. We'll add the new one later, if we need to.
+    captionRegions.erase(
+        std::remove_if(
+            captionRegions.begin(),
+            captionRegions.end(),
+            [&](wgr::RectInt32 const& rect)
+            {
+                return rect.X == m_scaledDragRegionCached.X &&
+                    rect.Y == m_scaledDragRegionCached.Y &&
+                    rect.Width == m_scaledDragRegionCached.Width &&
+                    rect.Height == m_scaledDragRegionCached.Height;
+            }),
+        captionRegions.end());
+
     // sometimes dragging needs to be disabled temporarily
     // for example : when content dialog's smoke screen is displayed
-    wgr::RectInt32 rect = { 0, 0, 0, 0 };
-    if (m_enabledDrag)
-    {
-        rect = { rf.left, rf.top, RectHelpers::rectWidth(rf), RectHelpers::rectHeight(rf) };
-    }
-
-    
-    if (rect.Width == 0 || rect.Height == 0)
-    {
-        // clear out every drag region if user titlebar is defined as null
-        // it will result in default case of AppWindowTitlebar being applied where a 
-        // default drag region is covers the entire non client region
-        IFC_RETURN(GetPeer()->GetNonClientInputPtrSrc()->ClearRegionRects(mui::NonClientRegionKind_Caption));
-    }
-    else
+    if (m_enabledDrag && !IsRectEmpty(&rf))
     {
         // Xaml works with logical (dpi-applied) client coordinates
         // InputNonClientPointerSource apis take non-dpi client coordinates
         // physical client coordinates = dpi applied coordinates * dpi scale
         float scale = WindowHelpers::GetCurrentDpiScale(m_topLevelWindow);
-        rect = { 
-            static_cast<int>(std::round(rect.X * scale)),
-            static_cast<int>(std::round(rect.Y * scale)),
-            static_cast<int>(std::round(rect.Width * scale)),
-            static_cast<int>(std::round(rect.Height * scale))
+        m_scaledDragRegionCached = { 
+            static_cast<int>(std::round(rf.left * scale)),
+            static_cast<int>(std::round(rf.top * scale)),
+            static_cast<int>(std::round(RectHelpers::rectWidth(rf) * scale)),
+            static_cast<int>(std::round(RectHelpers::rectHeight(rf)* scale))
         };
-        wgr::RectInt32 rects[]{ rect };
-        IFC_RETURN(GetPeer()->GetNonClientInputPtrSrc()->SetRegionRects(mui::NonClientRegionKind_Caption, 1, rects));
     }
+    else
+    {
+        m_scaledDragRegionCached = { 0, 0, 0, 0 };
+    }
+
+    captionRegions.push_back(m_scaledDragRegionCached);
+
+    IFC_RETURN(GetPeer()->GetNonClientInputPtrSrc()->SetRegionRects(mui::NonClientRegionKind_Caption, captionRegions.size(), captionRegions.data()));
     
+    m_dragRegionCached = rf;
+    m_enabledDragCached = m_enabledDrag;
     return S_OK;
 }

@@ -152,7 +152,7 @@ namespace DirectUI
         bool m_hasAnchorPoint = false;
         bool m_wasDeferred = false;
         wadt::DataPackageOperation m_result = wadt::DataPackageOperation::DataPackageOperation_None;
-        DragDropMessageType m_type;
+        DragDropMessageType m_type{};
         UINT32 m_deferralCount = 0;
         // Used to hold a ref to self while invoking completion handler
         Microsoft::WRL::ComPtr<RaiseDragDropEventAsyncOperation> m_spThis;

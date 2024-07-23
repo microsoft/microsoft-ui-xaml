@@ -12,5 +12,6 @@
         <Button x:Name="navigateToListView" AutomationProperties.Name="navigateToListView" Margin="2" HorizontalAlignment="Stretch">ListView</Button>
         <Button x:Name="navigateToGroupedListView" AutomationProperties.Name="navigateToGroupedListView" Margin="2" HorizontalAlignment="Stretch">Grouped ListView</Button>
         <Button x:Name="navigateToNestedListViews" AutomationProperties.Name="navigateToNestedListViews" Margin="2" HorizontalAlignment="Stretch">Nested ListViews</Button>
+        <Button x:Name="navigateToListViewAnchoring" AutomationProperties.Name="navigateToListViewAnchoring" Margin="2" HorizontalAlignment="Stretch">ListView Anchoring</Button>
     </StackPanel>
 </local:TestPage>

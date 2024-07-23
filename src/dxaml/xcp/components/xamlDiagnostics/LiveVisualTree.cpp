@@ -443,10 +443,8 @@ XamlDiagnostics::PopulateParentRelation(
         if (auto children = runtimeParent->GetChildren())
         {
             size_t childIndex = 0;
-#if DBG
-            bool hasChild =
-#endif
-            children->TryGetIndexOf(runtimeElement, childIndex);
+#pragma warning(suppress: 4189) // C4189: PREFast does not know this local variable is being used at least in the chk build by the TELEMETRY_ASSERT() below.
+            bool hasChild = children->TryGetIndexOf(runtimeElement, childIndex);
             MICROSOFT_TELEMETRY_ASSERT_DISABLED(hasChild);
             relation.ChildIndex = static_cast<unsigned>(childIndex);
         }

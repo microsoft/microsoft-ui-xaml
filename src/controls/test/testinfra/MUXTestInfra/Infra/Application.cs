@@ -121,7 +121,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         #endregion
 
         #region Methods
-        internal bool Initialize(bool doLaunch = false, string deploymentDir = null)
+        internal bool Initialize(bool doLaunch = false, string deploymentDir = null, bool shouldMaximize = true)
         {
             var topWindowCondition = _windowCondition.OrWith(_appFrameWindowCondition);
 
@@ -185,17 +185,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 throw new UIObjectNotFoundException("Could not find application window.");
             }
 
-            // If this is running on desktop (it has an app frame window) then try to
-            // maximize the window.
+            if (shouldMaximize)
+            {
+                // If this is running on desktop (it has an app frame window) then try to
+                // maximize the window.
 
-            if (ApplicationFrameWindow != null)
-            {
-                MaximizeWindow(ApplicationFrameWindow);
-            }
-            else if (!_isUWPApp && CoreWindow != null)
-            {
-                // If we're not a UWP app, then the CoreWindow object we got is a Window that can be maximized.
-                MaximizeWindow(CoreWindow);
+                if (ApplicationFrameWindow != null)
+                {
+                    MaximizeWindow(ApplicationFrameWindow);
+                }
+                else if (!_isUWPApp && CoreWindow != null)
+                {
+                    // If we're not a UWP app, then the CoreWindow object we got is a Window that can be maximized.
+                    MaximizeWindow(CoreWindow);
+                }
             }
 
             Process = Process.GetProcessById(CoreWindow.ProcessId);
@@ -455,19 +458,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             }
             else
             {
-                if (CloseAppWindowWithCloseButton())
+                try
                 {
-                    if (!Process.GetProcessById(appWindowsProcessId).WaitForExit(20 * 1000 /*milliseconds*/))
+                    if (CloseAppWindowWithCloseButton())
                     {
-                        Log.Comment("Invoked the close button, but the process has not exited as expected.");
+                        if (!Process.GetProcessById(appWindowsProcessId).WaitForExit(20 * 1000 /*milliseconds*/))
+                        {
+                            Log.Comment("Invoked the close button, but the process has not exited as expected.");
+                        }
                     }
-                }
-                else
-                {
-                    Log.Comment("Failed to close application window. We will fall back to terminating the app process.");
-                }
+                    else
+                    {
+                        Log.Comment("Failed to close application window. We will fall back to terminating the app process.");
+                    }
 
-                EnsureApplicationProcessHasExited(appWindowsProcessId);
+                    EnsureApplicationProcessHasExited(appWindowsProcessId);
+                }
+                catch (System.ArgumentException)
+                {
+                    // Ignore. GetProcessById throws if the process has already exited.
+                }
             }
 
             if (Process != null)
@@ -510,14 +520,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
             if (appWindowsProcessId != -1)
             {
-                try
-                {
-                    appProcesses.Add(Process.GetProcessById(appWindowsProcessId));
-                }
-                catch (Exception)
-                {
-                    // Ignore. GetProcessById throws if the process has already exited.
-                }
+                appProcesses.Add(Process.GetProcessById(appWindowsProcessId));
             }
 
             if (Process != null)

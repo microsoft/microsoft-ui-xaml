@@ -186,7 +186,7 @@ protected:
 
     XRECTF_RB m_rect;
     XFLOAT m_rRadiusX;
-    XFLOAT m_rRadiusY;
+    XFLOAT m_rRadiusY{};
 };
 
 

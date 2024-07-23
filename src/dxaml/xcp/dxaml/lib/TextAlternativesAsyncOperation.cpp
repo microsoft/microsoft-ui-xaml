@@ -268,7 +268,7 @@ IFACEMETHODIMP TextAlternativesAsyncCompleteHandler::Invoke(
     }
     else
     {
-        m_spTextAlternativesOperation->SetEmptyResults();
+        IFC_RETURN(m_spTextAlternativesOperation->SetEmptyResults());
     }
 
     return S_OK;

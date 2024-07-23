@@ -49,6 +49,7 @@ IFACEMETHODIMP DirectUI::AppBarButtonAutomationPeerGenerated::get_ExpandCollapse
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<AppBarButtonAutomationPeer*>(this)->get_ExpandCollapseStateImpl(pValue));
 Cleanup:

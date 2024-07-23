@@ -87,6 +87,7 @@ IFACEMETHODIMP DirectUI::CalendarLayoutStrategyGenerated::EstimateElementBounds(
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarLayoutStrategy_EstimateElementBounds", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<CalendarLayoutStrategy*>(this)->EstimateElementBoundsImpl(elementType, elementIndex, headerReference, containerReference, window, pResult));
 Cleanup:
@@ -104,6 +105,7 @@ IFACEMETHODIMP DirectUI::CalendarLayoutStrategyGenerated::EstimateElementIndex(_
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarLayoutStrategy_EstimateElementIndex", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<CalendarLayoutStrategy*>(this)->EstimateElementIndexImpl(elementType, headerReference, containerReference, window, pTargetRect, pResult));
 Cleanup:
@@ -138,6 +140,7 @@ IFACEMETHODIMP DirectUI::CalendarLayoutStrategyGenerated::EstimatePanelExtent(_I
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarLayoutStrategy_EstimatePanelExtent", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<CalendarLayoutStrategy*>(this)->EstimatePanelExtentImpl(lastHeaderReference, lastContainerReference, windowConstraint, pResult));
 Cleanup:
@@ -155,6 +158,7 @@ IFACEMETHODIMP DirectUI::CalendarLayoutStrategyGenerated::GetElementArrangeBound
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarLayoutStrategy_GetElementArrangeBounds", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<CalendarLayoutStrategy*>(this)->GetElementArrangeBoundsImpl(elementType, elementIndex, containerBounds, windowConstraint, finalSize, pResult));
 Cleanup:
@@ -172,6 +176,7 @@ IFACEMETHODIMP DirectUI::CalendarLayoutStrategyGenerated::GetElementBounds(_In_ 
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarLayoutStrategy_GetElementBounds", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<CalendarLayoutStrategy*>(this)->GetElementBoundsImpl(elementType, elementIndex, containerDesiredSize, referenceInformation, windowConstraint, pResult));
 Cleanup:
@@ -189,6 +194,7 @@ IFACEMETHODIMP DirectUI::CalendarLayoutStrategyGenerated::GetElementMeasureSize(
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarLayoutStrategy_GetElementMeasureSize", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<CalendarLayoutStrategy*>(this)->GetElementMeasureSizeImpl(elementType, elementIndex, windowConstraint, pResult));
 Cleanup:
@@ -206,6 +212,7 @@ IFACEMETHODIMP DirectUI::CalendarLayoutStrategyGenerated::GetElementTransitionsB
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarLayoutStrategy_GetElementTransitionsBounds", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<CalendarLayoutStrategy*>(this)->GetElementTransitionsBoundsImpl(elementType, elementIndex, windowConstraint, pResult));
 Cleanup:
@@ -223,6 +230,7 @@ IFACEMETHODIMP DirectUI::CalendarLayoutStrategyGenerated::GetIsWrappingStrategy(
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarLayoutStrategy_GetIsWrappingStrategy", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<CalendarLayoutStrategy*>(this)->GetIsWrappingStrategyImpl(pResult));
 Cleanup:
@@ -240,6 +248,7 @@ IFACEMETHODIMP DirectUI::CalendarLayoutStrategyGenerated::GetPositionOfFirstElem
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarLayoutStrategy_GetPositionOfFirstElement", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<CalendarLayoutStrategy*>(this)->GetPositionOfFirstElementImpl(pResult));
 Cleanup:
@@ -257,6 +266,7 @@ IFACEMETHODIMP DirectUI::CalendarLayoutStrategyGenerated::GetRegularSnapPoints(_
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarLayoutStrategy_GetRegularSnapPoints", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<CalendarLayoutStrategy*>(this)->GetRegularSnapPointsImpl(pNearOffset, pFarOffset, pSpacing, pResult));
 Cleanup:
@@ -291,6 +301,7 @@ IFACEMETHODIMP DirectUI::CalendarLayoutStrategyGenerated::GetVirtualizationDirec
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarLayoutStrategy_GetVirtualizationDirection", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<CalendarLayoutStrategy*>(this)->GetVirtualizationDirectionImpl(pResult));
 Cleanup:
@@ -308,6 +319,7 @@ IFACEMETHODIMP DirectUI::CalendarLayoutStrategyGenerated::HasIrregularSnapPoints
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarLayoutStrategy_HasIrregularSnapPoints", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<CalendarLayoutStrategy*>(this)->HasIrregularSnapPointsImpl(elementType, pResult));
 Cleanup:
@@ -325,6 +337,7 @@ IFACEMETHODIMP DirectUI::CalendarLayoutStrategyGenerated::HasSnapPointOnElement(
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarLayoutStrategy_HasSnapPointOnElement", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<CalendarLayoutStrategy*>(this)->HasSnapPointOnElementImpl(elementType, elementIndex, pResult));
 Cleanup:
@@ -376,6 +389,7 @@ IFACEMETHODIMP DirectUI::CalendarLayoutStrategyGenerated::ShouldContinueFillingU
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarLayoutStrategy_ShouldContinueFillingUpSpace", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<CalendarLayoutStrategy*>(this)->ShouldContinueFillingUpSpaceImpl(elementType, elementIndex, referenceInformation, windowToFill, pResult));
 Cleanup:

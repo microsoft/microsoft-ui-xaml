@@ -50,7 +50,7 @@ void CXamlCompositionBrush::SetCompositionBrush(_In_opt_ WUComp::ICompositionBru
     CDependencyObject::NWSetRenderDirty(this, DirtyFlags::Render);
 }
 
-WUComp::ICompositionBrush* CXamlCompositionBrush::GetBrushForContentRootNoRef(_In_ CContentRoot* contentRoot)
+_Ret_maybenull_ WUComp::ICompositionBrush* CXamlCompositionBrush::GetBrushForContentRootNoRef(_In_ CContentRoot* contentRoot)
 {
     auto iter = m_brushMap.find(xref::get_weakref(contentRoot));
     if (iter != m_brushMap.end())

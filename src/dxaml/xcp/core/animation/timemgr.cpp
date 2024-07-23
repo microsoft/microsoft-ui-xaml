@@ -20,7 +20,7 @@
 _Check_return_ HRESULT
 CTimeManager::Create(
     _In_ CCoreServices *pCore,
-    _In_ IPALTickableClock *pIClock,
+    _In_ RefreshAlignedClock* pIClock,
     _Outptr_ CTimeManager **ppObject
     )
 {
@@ -39,7 +39,7 @@ CTimeManager::Create(
 //------------------------------------------------------------------------
 CTimeManager::CTimeManager(
     _In_ CCoreServices *pCore,
-    _In_ IPALTickableClock *pIClock
+    _In_ RefreshAlignedClock* pIClock
     )
     : CDependencyObject(pCore)
     , m_isLoaded(FALSE)

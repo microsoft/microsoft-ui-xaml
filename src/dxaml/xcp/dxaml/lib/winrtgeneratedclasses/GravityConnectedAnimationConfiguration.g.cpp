@@ -45,6 +45,7 @@ IFACEMETHODIMP DirectUI::GravityConnectedAnimationConfigurationGenerated::get_Is
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<GravityConnectedAnimationConfiguration*>(this)->get_IsShadowEnabledImpl(pValue));
 Cleanup:

@@ -24,7 +24,7 @@ private:
     IDownloader* m_pDownloader;
     IPALUri* m_pUriAbsolute;
     IPALDownloadResponseCallback* m_pCallback;
-    XINT32 m_fCrossDomain;
+    XINT32 m_fCrossDomain{};
     XINT32 m_fRemoveHttpsLock;
     CAbortableAsyncDownload* m_pAbortableDownload;
     XUINT32 m_eUnsecureDownloadAction;

@@ -261,6 +261,6 @@ namespace DirectUI
         ctl::ComPtr<wm::Audio::IAudioNode> m_outputNode;
         ctl::ComPtr<wm::Audio::IAudioGraph> m_graph;
         EventRegistrationToken m_audioGraphUnrecoverableErrorOccurredEventToken{};
-        SRWLOCK m_audioLock;
+        SRWLOCK m_audioLock{};
     };
 }

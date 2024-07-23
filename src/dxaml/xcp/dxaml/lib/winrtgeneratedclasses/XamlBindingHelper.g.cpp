@@ -108,6 +108,7 @@ IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::ConvertValue(_In_ AB
     }
     ARG_NOTNULL(pValue, "value");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(ConvertValueImpl(type, pValue, ppReturnValue));
 Cleanup:

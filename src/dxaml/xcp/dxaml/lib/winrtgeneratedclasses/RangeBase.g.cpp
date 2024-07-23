@@ -277,7 +277,7 @@ _Check_return_ HRESULT DirectUI::RangeBaseGenerated::EventAddHandlerByIndex(_In_
     case KnownEventIndex::RangeBase_ValueChanged:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::Primitives::IRangeBaseValueChangedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

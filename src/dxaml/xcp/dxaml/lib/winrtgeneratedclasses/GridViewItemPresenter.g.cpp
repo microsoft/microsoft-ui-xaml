@@ -127,6 +127,7 @@ IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::get_GridViewItemPresent
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<GridViewItemPresenter*>(this)->get_GridViewItemPresenterHorizontalContentAlignmentImpl(pValue));
 Cleanup:
@@ -146,6 +147,7 @@ IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::get_GridViewItemPresent
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<GridViewItemPresenter*>(this)->get_GridViewItemPresenterPaddingImpl(pValue));
 Cleanup:
@@ -165,6 +167,7 @@ IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::get_GridViewItemPresent
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<GridViewItemPresenter*>(this)->get_GridViewItemPresenterVerticalContentAlignmentImpl(pValue));
 Cleanup:

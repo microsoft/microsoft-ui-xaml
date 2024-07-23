@@ -240,12 +240,12 @@ public:
     static void TraceDependencyObjectTextPropertyUsage();
 #endif
 
-    XUINT32 *m_pCoreInheritedPropGenerationCounter;
-    XUINT32  m_cGenerationCounter;
+    XUINT32 *m_pCoreInheritedPropGenerationCounter{};
+    XUINT32  m_cGenerationCounter{};
 
     // An InheritedProperties object may be referenced by a number of dependency
     // objects, but only one may write to it.
-    CDependencyObject *m_pWriter;
+    CDependencyObject *m_pWriter{};
 
     // The constituent properties are public so that the property system can
     // set them from within SetValue.
@@ -255,8 +255,8 @@ public:
 private:
     // Property flags are publically accessible through the SetPropertyFlag and
     // IsPropertyFlagSet methods.
-    XUINT64 m_fIsSetLocally;
-    XUINT64 m_fIsSetByStyle;
+    XUINT64 m_fIsSetLocally{};
+    XUINT64 m_fIsSetByStyle{};
 
     // Clients must use Create and ReleaseInterface.
     InheritedProperties();

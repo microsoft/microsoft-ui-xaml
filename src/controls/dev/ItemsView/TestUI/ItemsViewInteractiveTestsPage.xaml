@@ -149,6 +149,13 @@
 
             <CheckBox x:Name="chkHandleItemsInfoRequested" AutomationProperties.AutomationId="chkHandleItemsInfoRequested" Content="Handle ItemsInfoRequested?" Margin="6,2,2,2" Checked="ChkHandleItemsInfoRequested_IsCheckedChanged" Unchecked="ChkHandleItemsInfoRequested_IsCheckedChanged"/>
             <CheckBox x:Name="chkUseFastPath" AutomationProperties.AutomationId="chkUseFastPath" Content="Use Fast Path?" Margin="2" Checked="ChkUseFastPath_IsCheckedChanged" Unchecked="ChkUseFastPath_IsCheckedChanged"/>
+
+            <CheckBox x:Name="chkUseAppAnimator" AutomationProperties.AutomationId="chkUseAppAnimator" Content="Use App Animator?" Margin="2" Checked="ChkUseAppAnimator_IsCheckedChanged" Unchecked="ChkUseAppAnimator_IsCheckedChanged"/>
+
+            <TextBlock Text="ItemsSource Indexes:" Margin="6,2,2,2" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtItemsSourceIndexes" AutomationProperties.AutomationId="txtItemsSourceIndexes" Text="0" VerticalAlignment="Center" Width="75"/>
+            <Button x:Name="btnInsertItems" AutomationProperties.AutomationId="btnInsertItems" Margin="6,2,2,2" VerticalAlignment="Center" Content="Insert Items" Click="BtnInsertItems_Click"/>
+            <Button x:Name="btnRemoveItems" AutomationProperties.AutomationId="btnRemoveItems" Margin="6,2,2,2" VerticalAlignment="Center" Content="Remove Items" Click="BtnRemoveItems_Click"/>
         </StackPanel>
 
         <StackPanel Orientation="Horizontal">

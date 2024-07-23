@@ -87,7 +87,7 @@ void QualifierContext::CallIfRegistered(_In_ QualifierFlags flags, _In_ std::pai
     { 
         if(v.first)
         {
-            v.first->OnQualifierContextChanged();
+            VERIFYHR(v.first->OnQualifierContextChanged());
         }
     }
 };

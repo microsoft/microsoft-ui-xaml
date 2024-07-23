@@ -37,12 +37,17 @@ namespace DirectUI
 
         _Check_return_ HRESULT SetTransform(
             _In_ xaml_media::IGeneralTransform* pTransform,
-            _In_ wf::Point *pWindowTranslation,
+            _In_opt_ wf::Point *pWindowTranslation,
             _In_ bool isInverse);
 
         _Check_return_ static HRESULT CreatePointerPointTransform(
             _In_opt_ xaml::IUIElement *pRelativeTo,
             _Outptr_ mui::IPointerPointTransform **ppPointerPointTransform);
+
+        _Check_return_ static HRESULT CreatePointerPointTransform(
+            _In_opt_ xaml::IUIElement* pRelativeTo,
+            _In_opt_ wf::Point* pWindowTranslation,
+            _Outptr_ mui::IPointerPointTransform** ppPointerPointTransform);
 
     private :
         // It's not necessary for this to be a TrackerPtr; it's only used to interact with core input.

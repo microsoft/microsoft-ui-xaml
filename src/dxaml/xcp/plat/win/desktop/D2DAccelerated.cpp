@@ -382,7 +382,7 @@ Cleanup:
     {
         ReleaseInterface(ppD2DGeometries[i]);
     }
-
+    ReleaseInterface(pD2DGeometry);
     delete[] ppD2DGeometries;
 
     RRETURN(hr);

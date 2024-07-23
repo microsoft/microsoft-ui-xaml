@@ -54,6 +54,47 @@ runtimeclass TabViewTabDragCompletedEventArgs
     TabViewItem Tab { get; };
 }
 
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TabViewTabTearOutWindowRequestedEventArgs
+{
+    Object[] Items { get; };
+    Microsoft.UI.Xaml.UIElement[] Tabs { get; };
+
+    Microsoft.UI.WindowId NewWindowId;
+};
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TabViewTabTearOutRequestedEventArgs
+{
+    Object[] Items { get; };
+    Microsoft.UI.Xaml.UIElement[] Tabs { get; };
+
+    Microsoft.UI.WindowId NewWindowId { get; };
+};
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TabViewExternalTornOutTabsDroppingEventArgs
+{
+    Object[] Items { get; };
+    Microsoft.UI.Xaml.UIElement[] Tabs { get; };
+
+    Int32 DropIndex { get; };
+    Boolean AllowDrop;
+};
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TabViewExternalTornOutTabsDroppedEventArgs
+{
+    Object[] Items { get; };
+    Microsoft.UI.Xaml.UIElement[] Tabs { get; };
+
+    Int32 DropIndex { get; };
+};
+
 [MUX_PUBLIC]
 [webhosthidden]
 [contentproperty("TabItems")]
@@ -103,6 +144,18 @@ unsealed runtimeclass TabView : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("true")]
     Boolean AllowDropTabs{ get; set; };
 
+    [MUX_PREVIEW]
+    {
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        [MUX_DEFAULT_VALUE("false")]
+        Boolean CanTearOutTabs{ get; set; };
+
+        event Windows.Foundation.TypedEventHandler<TabView, TabViewTabTearOutWindowRequestedEventArgs> TabTearOutWindowRequested;
+        event Windows.Foundation.TypedEventHandler<TabView, TabViewTabTearOutRequestedEventArgs> TabTearOutRequested;
+        event Windows.Foundation.TypedEventHandler<TabView, TabViewExternalTornOutTabsDroppingEventArgs> ExternalTornOutTabsDropping;
+        event Windows.Foundation.TypedEventHandler<TabView, TabViewExternalTornOutTabsDroppedEventArgs> ExternalTornOutTabsDropped;
+    }
+
     [MUX_DEFAULT_VALUE("0")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Int32 SelectedIndex;
@@ -137,6 +190,12 @@ unsealed runtimeclass TabView : Microsoft.UI.Xaml.Controls.Control
     static Microsoft.UI.Xaml.DependencyProperty CanDragTabsProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty CanReorderTabsProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty AllowDropTabsProperty{ get; };
+
+    [MUX_PREVIEW]
+    {
+        static Microsoft.UI.Xaml.DependencyProperty CanTearOutTabsProperty{ get; };
+    }
+
     static Microsoft.UI.Xaml.DependencyProperty SelectedIndexProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty SelectedItemProperty{ get; };
 }

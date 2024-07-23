@@ -81,6 +81,7 @@ IFACEMETHODIMP DirectUI::ItemsControlGenerated::get_GroupStyle(_Outptr_result_ma
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsControl*>(this)->get_GroupStyleImpl(ppValue));
 Cleanup:
@@ -116,6 +117,7 @@ IFACEMETHODIMP DirectUI::ItemsControlGenerated::get_ItemContainerGenerator(_Outp
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsControl*>(this)->get_ItemContainerGeneratorImpl(ppValue));
 Cleanup:
@@ -173,6 +175,7 @@ IFACEMETHODIMP DirectUI::ItemsControlGenerated::get_ItemsPanelRoot(_Outptr_resul
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsControl*>(this)->get_ItemsPanelRootImpl(ppValue));
 Cleanup:
@@ -209,6 +212,7 @@ IFACEMETHODIMP DirectUI::ItemsControlGenerated::get_SelectedContainer(_Outptr_re
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsControl*>(this)->get_SelectedContainerImpl(ppValue));
 Cleanup:
@@ -294,6 +298,7 @@ IFACEMETHODIMP DirectUI::ItemsControlGenerated::ContainerFromIndex(_In_ INT inde
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ItemsControl_ContainerFromIndex", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ItemsControl*>(this)->ContainerFromIndexImpl(index, ppReturnValue));
@@ -312,6 +317,7 @@ IFACEMETHODIMP DirectUI::ItemsControlGenerated::ContainerFromItem(_In_opt_ IInsp
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ItemsControl_ContainerFromItem", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ItemsControl*>(this)->ContainerFromItemImpl(pItem, ppReturnValue));
@@ -330,6 +336,7 @@ IFACEMETHODIMP DirectUI::ItemsControlGenerated::GetContainerForItemOverride(_Out
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ItemsControl_GetContainerForItemOverride", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ItemsControl*>(this)->GetContainerForItemOverrideImpl(ppReturnValue));
@@ -371,6 +378,7 @@ IFACEMETHODIMP DirectUI::ItemsControlGenerated::GroupFromHeader(_In_ ABI::Micros
     }
     ARG_NOTNULL(pHeader, "header");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ItemsControl*>(this)->GroupFromHeaderImpl(pHeader, ppReturnValue));
@@ -390,6 +398,7 @@ IFACEMETHODIMP DirectUI::ItemsControlGenerated::GroupHeaderContainerFromItemCont
     }
     ARG_NOTNULL(pItemContainer, "itemContainer");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ItemsControl*>(this)->GroupHeaderContainerFromItemContainerImpl(pItemContainer, ppReturnValue));
@@ -409,6 +418,7 @@ IFACEMETHODIMP DirectUI::ItemsControlGenerated::HeaderFromGroup(_In_ IInspectabl
     }
     ARG_NOTNULL(pGroup, "group");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ItemsControl*>(this)->HeaderFromGroupImpl(pGroup, ppReturnValue));
@@ -427,6 +437,7 @@ IFACEMETHODIMP DirectUI::ItemsControlGenerated::HeaderFromIndex(_In_ INT index, 
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ItemsControl_HeaderFromIndex", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ItemsControl*>(this)->HeaderFromIndexImpl(index, ppReturnValue));
@@ -446,6 +457,7 @@ IFACEMETHODIMP DirectUI::ItemsControlGenerated::IndexFromContainer(_In_ ABI::Mic
     }
     ARG_NOTNULL(pContainer, "container");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ItemsControl*>(this)->IndexFromContainerImpl(pContainer, pReturnValue));
@@ -465,6 +477,7 @@ IFACEMETHODIMP DirectUI::ItemsControlGenerated::IndexFromHeader(_In_ ABI::Micros
     }
     ARG_NOTNULL(pHeader, "header");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ItemsControl*>(this)->IndexFromHeaderImpl(pHeader, excludeHiddenEmptyGroups, pReturnValue));
@@ -484,6 +497,7 @@ IFACEMETHODIMP DirectUI::ItemsControlGenerated::IsCompatible(_In_ ABI::Microsoft
     }
     ARG_NOTNULL(pCandidate, "candidate");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ItemsControl*>(this)->IsCompatibleImpl(pCandidate, pReturnValue));
@@ -502,6 +516,7 @@ IFACEMETHODIMP DirectUI::ItemsControlGenerated::IsItemItsOwnContainerOverride(_I
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ItemsControl_IsItemItsOwnContainerOverride", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ItemsControl*>(this)->IsItemItsOwnContainerOverrideImpl(pItem, pReturnValue));
@@ -543,6 +558,7 @@ IFACEMETHODIMP DirectUI::ItemsControlGenerated::ItemFromContainer(_In_ ABI::Micr
     }
     ARG_NOTNULL(pContainer, "container");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ItemsControl*>(this)->ItemFromContainerImpl(pContainer, ppReturnValue));
@@ -975,6 +991,7 @@ IFACEMETHODIMP DirectUI::ItemsControlFactory::GetItemsOwner(_In_ ABI::Microsoft:
     }
     ARG_NOTNULL(pElement, "element");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(GetItemsOwnerImpl(pElement, ppReturnValue));
 Cleanup:
@@ -993,6 +1010,7 @@ IFACEMETHODIMP DirectUI::ItemsControlFactory::ItemsControlFromItemContainer(_In_
     }
     ARG_NOTNULL(pContainer, "container");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(ItemsControlFromItemContainerImpl(pContainer, ppReturnValue));
 Cleanup:

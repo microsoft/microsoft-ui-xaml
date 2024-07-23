@@ -384,7 +384,8 @@ _Check_return_ HRESULT AutoSuggestBox::OnPropertyChanged2(_In_ const PropertyCha
             IFC_RETURN(CValueBoxer::UnboxValue(args.m_pNewValue, &isOpen));
 
             // Only proceed if there is at least one island that's still alive. Otherwise we can crash when opening the
-            // windowed popup when it tries to get its island in CPopup::EnsureWindowForWindowedPopup to check hwnds.
+            // windowed popup when it tries to get its island in CPopup::EnsureWindowForWindowedPopup to check that the
+            // popup didn't move between main Xaml islands.
             // Note: Tests running in UWP mode don't need this check, so count them as having islands.
             CCoreServices* core = DXamlCore::GetCurrent()->GetHandle();
             if (core->GetInitializationType() != InitializationType::IslandsOnly || core->HasXamlIslandRoots())

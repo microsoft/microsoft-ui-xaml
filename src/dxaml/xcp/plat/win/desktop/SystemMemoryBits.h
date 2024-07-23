@@ -187,6 +187,6 @@ private:
     {
         void *pData;
         UINT pitch;
-    } m_mappedSubresource;
+    } m_mappedSubresource{};
 };
 

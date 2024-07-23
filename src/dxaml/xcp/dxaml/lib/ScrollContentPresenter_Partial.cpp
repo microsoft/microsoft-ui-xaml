@@ -26,10 +26,35 @@ using namespace DirectUISynonyms;
 
 // Define as 1 (i.e. XCP_TRACE_OUTPUT_MSG) to get DirectManipulation debug outputs, and 0 otherwise
 #define DMSCP_DBG 0
-//#define DM_DEBUG
 
 // Define as 1 (i.e. XCP_TRACE_OUTPUT_MSG) to get DirectManipulation verbose debug outputs, and 0 otherwise
 #define DMSCPv_DBG 0
+
+#ifdef DM_DEBUG
+bool ScrollContentPresenter::DMSCP_TraceDbg() const
+{
+    bool result = gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK;
+
+    if constexpr (DMSCP_DBG)
+    {
+        result = true;
+    }
+
+    return result;
+}
+
+bool ScrollContentPresenter::DMSCPv_TraceDbg() const
+{
+    bool result = gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK;
+
+    if constexpr (DMSCPv_DBG)
+    {
+        result = true;
+    }
+
+    return result;
+}
+#endif // DM_DEBUG
 
 // Initializes a new instance of the ScrollContentPresenter class.
 ScrollContentPresenter::ScrollContentPresenter()
@@ -403,7 +428,7 @@ _Check_return_ HRESULT ScrollContentPresenter::LineUpImpl()
     BOOLEAN isScrollClient = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:LineUpImpl.", this));
     }
@@ -428,7 +453,7 @@ _Check_return_ HRESULT ScrollContentPresenter::LineDownImpl()
     BOOLEAN isScrollClient = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:LineDownImpl.", this));
     }
@@ -453,7 +478,7 @@ _Check_return_ HRESULT ScrollContentPresenter::LineLeftImpl()
     BOOLEAN isScrollClient = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:LineLeftImpl.", this));
     }
@@ -478,7 +503,7 @@ _Check_return_ HRESULT ScrollContentPresenter::LineRightImpl()
     BOOLEAN isScrollClient = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:LineRightImpl.", this));
     }
@@ -503,7 +528,7 @@ _Check_return_ HRESULT ScrollContentPresenter::PageUpImpl()
     BOOLEAN isScrollClient = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:PageUpImpl.", this));
     }
@@ -533,7 +558,7 @@ _Check_return_ HRESULT ScrollContentPresenter::PageDownImpl()
     BOOLEAN isScrollClient = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:PageDownImpl.", this));
     }
@@ -563,7 +588,7 @@ _Check_return_ HRESULT ScrollContentPresenter::PageLeftImpl()
     BOOLEAN isScrollClient = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:PageLeftImpl.", this));
     }
@@ -593,7 +618,7 @@ _Check_return_ HRESULT ScrollContentPresenter::PageRightImpl()
     BOOLEAN isScrollClient = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:PageRightImpl.", this));
     }
@@ -630,7 +655,7 @@ ScrollContentPresenter::MouseWheelUp(_In_ UINT mouseWheelDelta)
     BOOLEAN isScrollClient = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:MouseWheelUp - mouseWheelDelta=%d.",
             this, mouseWheelDelta));
@@ -676,7 +701,7 @@ ScrollContentPresenter::MouseWheelDown(_In_ UINT mouseWheelDelta)
     BOOLEAN isScrollClient = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:MouseWheelDown - mouseWheelDelta=%d.",
             this, mouseWheelDelta));
@@ -722,7 +747,7 @@ ScrollContentPresenter::MouseWheelLeft(_In_ UINT mouseWheelDelta)
     BOOLEAN isScrollClient = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:MouseWheelLeft - mouseWheelDelta=%d.",
             this, mouseWheelDelta));
@@ -758,7 +783,7 @@ ScrollContentPresenter::MouseWheelRight(_In_ UINT mouseWheelDelta)
     BOOLEAN isScrollClient = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:MouseWheelRight - mouseWheelDelta=%d.",
             this, mouseWheelDelta));
@@ -785,7 +810,7 @@ _Check_return_ HRESULT ScrollContentPresenter::SetHorizontalOffsetImpl(
     _In_ DOUBLE offset)
 {
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:SetHorizontalOffsetImpl - offset=%f.",
             this, offset));
@@ -802,7 +827,7 @@ _Check_return_ HRESULT ScrollContentPresenter::SetHorizontalOffsetPrivate(
     BOOLEAN canHorizontallyScroll = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:SetHorizontalOffsetPrivate - offset=%f.",
             this, offset));
@@ -863,7 +888,7 @@ _Check_return_ HRESULT ScrollContentPresenter::SetVerticalOffsetImpl(
     _In_ DOUBLE offset)
 {
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:SetVerticalOffsetImpl - offset=%f.",
             this, offset));
@@ -880,7 +905,7 @@ _Check_return_ HRESULT ScrollContentPresenter::SetVerticalOffsetPrivate(
     BOOLEAN canVerticallyScroll = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:SetVerticalOffsetPrivate - offset=%f.",
             this, offset));
@@ -950,7 +975,7 @@ _Check_return_ HRESULT ScrollContentPresenter::SetOffsetsWithExtents(
     ScrollData* pScrollData = NULL;
 
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:SetOffsetsWithExtents offsetX=%f, offsetY=%f, extentWidth=%f, extentHeight=%f.",
             this, offsetX, offsetY, extentWidth, extentHeight));
@@ -1108,7 +1133,7 @@ _Check_return_ HRESULT ScrollContentPresenter::MakeVisibleImpl(
     ctl::ComPtr<Page> spPageBetween;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
             L"DMSCP[0x%p]: MakeVisibleImpl - rectangle=(%f, %f, %f, %f), useAnimation=%d.",
@@ -1348,7 +1373,7 @@ _Check_return_ HRESULT ScrollContentPresenter::MakeVisibleImpl(
                         IFC_RETURN(spVerticalOffset.As(&spVerticalOffsetReference));
                         // disableAnimation is FALSE by default, which is what we want here.
 #ifdef DM_DEBUG
-                        if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+                        if (DMSCP_TraceDbg())
                         {
                             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
                                 L"                   Calling ChangeView(ho=%f, vo=%f, null).", targetHorizontalOffset, targetVerticalOffset));
@@ -1382,7 +1407,7 @@ _Check_return_ HRESULT ScrollContentPresenter::MakeVisibleImpl(
                         }
                     }
 #ifdef DM_DEBUG
-                    else if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+                    else if (DMSCP_TraceDbg())
                     {
                         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
                             L"                   Skipping request during ongoing manipulation to (ho=%f, vo=%f, zf=%f).",
@@ -1401,7 +1426,7 @@ _Check_return_ HRESULT ScrollContentPresenter::MakeVisibleImpl(
                     if (horizontalOffset != minX)
                     {
 #ifdef DM_DEBUG
-                        if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+                        if (DMSCP_TraceDbg())
                         {
                             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
                                 L"                   Calling SetHorizontalOffsetPrivate(%f).", minX));
@@ -1424,7 +1449,7 @@ _Check_return_ HRESULT ScrollContentPresenter::MakeVisibleImpl(
                     if (verticalOffset != minY)
                     {
 #ifdef DM_DEBUG
-                        if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+                        if (DMSCP_TraceDbg())
                         {
                             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
                                 L"                   Calling SetVerticalOffsetPrivate(%f).", minY));
@@ -1486,7 +1511,7 @@ _Check_return_ HRESULT ScrollContentPresenter::MakeVisibleImpl(
     *resultRectangle = rectangle;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         if (resultRectangle)
         {
@@ -1618,7 +1643,7 @@ IFACEMETHODIMP ScrollContentPresenter::MeasureOverride(
     xaml::VerticalAlignment verticalContentAlignment = xaml::VerticalAlignment_Center;
 
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:MeasureOverride availableSize=%f,%f.",
             this, availableSize.Width, availableSize.Height));
@@ -1906,7 +1931,7 @@ IFACEMETHODIMP ScrollContentPresenter::MeasureOverride(
                         if (!canUseActualSizeAsExtent)
                         {
 #ifdef DM_DEBUG
-                            if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+                            if (DMSCP_TraceDbg())
                             {
                                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
                                     L"DMSCP[0x%p]: MeasureOverride - Stopping use of actual width as extent.", this));
@@ -1938,7 +1963,7 @@ IFACEMETHODIMP ScrollContentPresenter::MeasureOverride(
                         if (!canUseActualSizeAsExtent)
                         {
 #ifdef DM_DEBUG
-                            if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+                            if (DMSCP_TraceDbg())
                             {
                                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
                                     L"DMSCP[0x%p]: MeasureOverride - Stopping use of actual height as extent.", this));
@@ -2036,7 +2061,7 @@ IFACEMETHODIMP ScrollContentPresenter::MeasureOverride(
 
 Cleanup:
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/,
             L"DMSCPv[0x%p]:MeasureOverride desiredSizeZoomed=%f,%f, desiredSize=%f,%f.", this, desiredSizeZoomed.Width, desiredSizeZoomed.Height, pReturnValue->Width, pReturnValue->Height));
@@ -2075,7 +2100,7 @@ IFACEMETHODIMP ScrollContentPresenter::ArrangeOverride(
     HRESULT hr = S_OK;
 
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:ArrangeOverride finalSize=%f,%f.",
             this, finalSize.Width, finalSize.Height));
@@ -2139,7 +2164,7 @@ IFACEMETHODIMP ScrollContentPresenter::ArrangeOverride(
         IFC(IsScrollClient(&isScrollClient));
 
 #ifdef DM_DEBUG
-        if ((DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK) && spScrollViewer != nullptr)
+        if (DMSCPv_TraceDbg() && spScrollViewer != nullptr)
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/,
                 L"                   IsRootSV=%d.", spScrollViewer.Cast<ScrollViewer>()->IsRootScrollViewerDbg()));
@@ -2159,7 +2184,7 @@ IFACEMETHODIMP ScrollContentPresenter::ArrangeOverride(
                     // Use the unpublished desired width which ends up being the final arrangement width.
                     extentSize.Width = m_unpublishedExtentSize.Width;
 #ifdef DM_DEBUG
-                    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+                    if (DMSCP_TraceDbg())
                     {
                         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
                             L"DMSCP[0x%p]: ArrangeOverride - Stopping use of actual width as extent.", this));
@@ -2178,7 +2203,7 @@ IFACEMETHODIMP ScrollContentPresenter::ArrangeOverride(
                     // Use the unpublished desired height which ends up being the final arrangement height.
                     extentSize.Height = m_unpublishedExtentSize.Height;
 #ifdef DM_DEBUG
-                    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+                    if (DMSCP_TraceDbg())
                     {
                         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
                             L"DMSCP[0x%p]: ArrangeOverride - Stopping use of actual height as extent.", this));
@@ -2369,7 +2394,7 @@ IFACEMETHODIMP ScrollContentPresenter::ArrangeOverride(
                                 if (!m_isChildActualWidthUsedAsExtent)
                                 {
 #ifdef DM_DEBUG
-                                    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+                                    if (DMSCP_TraceDbg())
                                     {
                                         IGNOREHR(spChildAsFE->get_ActualHeight(&actualHeight));
                                         actualHeight = DoubleUtil::Max(0.0, actualHeight + margins.Top + margins.Bottom);
@@ -2454,7 +2479,7 @@ IFACEMETHODIMP ScrollContentPresenter::ArrangeOverride(
                                 if (!m_isChildActualHeightUsedAsExtent)
                                 {
 #ifdef DM_DEBUG
-                                    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+                                    if (DMSCP_TraceDbg())
                                     {
                                         IGNOREHR(spChildAsFE->get_ActualWidth(&actualWidth));
                                         actualWidth = DoubleUtil::Max(0.0, actualWidth + margins.Left + margins.Right);
@@ -2567,7 +2592,7 @@ IFACEMETHODIMP ScrollContentPresenter::OnApplyTemplate()
     if (m_isChildActualWidthUsedAsExtent)
     {
 #ifdef DM_DEBUG
-        if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+        if (DMSCP_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
                 L"DMSCP[0x%p]: OnApplyTemplate - Stopping use of actual width as extent.", this));
@@ -2580,7 +2605,7 @@ IFACEMETHODIMP ScrollContentPresenter::OnApplyTemplate()
     if (m_isChildActualHeightUsedAsExtent)
     {
 #ifdef DM_DEBUG
-        if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+        if (DMSCP_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
                 L"DMSCP[0x%p]: OnApplyTemplate - Stopping use of actual height as extent.", this));
@@ -2972,7 +2997,7 @@ _Check_return_ HRESULT ScrollContentPresenter::RefreshUseOfActualSizeAsExtent(
         if (m_isChildActualWidthUsedAsExtent != canUseActualWidthAsExtent || m_isChildActualHeightUsedAsExtent != canUseActualHeightAsExtent)
         {
 #ifdef DM_DEBUG
-            if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+            if (DMSCP_TraceDbg())
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
                     L"DMSCP[0x%p]: RefreshUseOfActualSizeAsExtent - Calling InvalidateMeasure.", this));
@@ -3317,7 +3342,7 @@ _Check_return_ HRESULT ScrollContentPresenter::SetZoomFactor(
     BOOLEAN isScrollClient = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:SetZoomFactor oldZF=%f, newZF=%f.",
             this, m_fZoomFactor, newZoomFactor));
@@ -3367,9 +3392,9 @@ _Check_return_ HRESULT ScrollContentPresenter::put_TopLeftHeader(
     _In_ ScrollViewer* pOwningScrollViewer)
 {
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
-        IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:put_TopLeftHeader spTopLeftHeader=0x%p.", this, spTopLeftHeader));
+        IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:put_TopLeftHeader spTopLeftHeader=0x%p.", this, spTopLeftHeader.Get()));
     }
 #endif // DM_DEBUG
 
@@ -3400,9 +3425,9 @@ _Check_return_ HRESULT ScrollContentPresenter::put_TopHeader(
     _In_ ScrollViewer* pOwningScrollViewer)
 {
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
-        IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:put_TopHeader spTopHeader=0x%p.", this, spTopHeader));
+        IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:put_TopHeader spTopHeader=0x%p.", this, spTopHeader.Get()));
     }
 #endif // DM_DEBUG
 
@@ -3433,9 +3458,9 @@ _Check_return_ HRESULT ScrollContentPresenter::put_LeftHeader(
     _In_ ScrollViewer* pOwningScrollViewer)
 {
 #ifdef DM_DEBUG
-    if (DMSCPv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSCPv_TraceDbg())
     {
-        IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:put_LeftHeader spLeftHeader=0x%p.", this, spLeftHeader));
+        IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | XCP_TRACE_VERBOSE | DMSCPv_DBG) /*traceType*/, L"DMSCPv[0x%p]:put_LeftHeader spLeftHeader=0x%p.", this, spLeftHeader.Get()));
     }
 #endif // DM_DEBUG
 
@@ -3454,7 +3479,7 @@ _Check_return_ HRESULT ScrollContentPresenter::OnUnloaded(
     _In_ xaml::IRoutedEventArgs* pArgs)
 {
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
             L"DMSCP[0x%p]: OnUnloaded.", this));
@@ -3485,7 +3510,7 @@ _Check_return_ HRESULT ScrollContentPresenter::OnTreeParentUpdated(
     HRESULT hr = S_OK;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
             L"DMSCP[0x%p]: OnTreeParentUpdated pNewParent=0x%p, isParentAlive=%d.",
@@ -3533,7 +3558,7 @@ _Check_return_ HRESULT ScrollContentPresenter::OnChildrenCleared()
     ctl::ComPtr<IScrollViewer> spScrollViewer;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/, L"DMSCP[0x%p]: OnChildrenCleared.", this));
     }
@@ -3570,7 +3595,7 @@ _Check_return_ HRESULT ScrollContentPresenter::UnparentHeaders()
     ctl::ComPtr<IScrollViewer> spScrollViewer;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/, L"DMSCP[0x%p]: UnparentHeaders.", this));
     }
@@ -3673,7 +3698,7 @@ _Check_return_ HRESULT ScrollContentPresenter::AddHeader(
     INT childCount = 0;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
             L"DMSCP[0x%p]: AddHeader isTopHeader=%d, isLeftHeader=%d.", this, isTopHeader, isLeftHeader));
@@ -3752,7 +3777,7 @@ _Check_return_ HRESULT ScrollContentPresenter::RemoveTopLeftHeader(
     ctl::ComPtr<IUIElement> spTopLeftHeader;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/, L"DMSCP[0x%p]: RemoveTopLeftHeader. removeFromChildrenCollection=%d", this, removeFromChildrenCollection));
     }
@@ -3802,7 +3827,7 @@ _Check_return_ HRESULT ScrollContentPresenter::RemoveTopHeader(
     ctl::ComPtr<IUIElement> spTopHeader;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/, L"DMSCP[0x%p]: RemoveTopHeader. removeFromChildrenCollection=%d", this, removeFromChildrenCollection));
     }
@@ -3852,7 +3877,7 @@ _Check_return_ HRESULT ScrollContentPresenter::RemoveLeftHeader(
     ctl::ComPtr<IUIElement> spLeftHeader;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/, L"DMSCP[0x%p]: RemoveLeftHeader. removeFromChildrenCollection=%d", this, removeFromChildrenCollection));
     }
@@ -3984,7 +4009,7 @@ _Check_return_ HRESULT ScrollContentPresenter::ProcessTabStopOverride(
     CDependencyObject* pLastFocusableDO = NULL;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
             L"DMSCP[0x%p]: ProcessTabStopOverride pFocusedElement=0x%p, pCandidateTabStopElement=0x%p, isBackward=%d.",
@@ -4438,7 +4463,7 @@ _Check_return_ HRESULT ScrollContentPresenter::ProcessCandidateTabStopOverride(
     CDependencyObject* pLastFocusableDO = NULL;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
             L"DMSCP[0x%p]: ProcessCandidateTabStopOverride pFocusedElement=0x%p, pCandidateTabStopElement=0x%p, isBackward=%d.",
@@ -4641,7 +4666,7 @@ _Check_return_ HRESULT ScrollContentPresenter::GetFirstFocusableElementOverride(
     ctl::ComPtr<IDependencyObject> spFirstFocusable;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
             L"DMSCP[0x%p]: GetFirstFocusableElementOverride - entry.", this));
@@ -4795,7 +4820,7 @@ _Check_return_ HRESULT ScrollContentPresenter::GetLastFocusableElementOverride(
     ctl::ComPtr<IDependencyObject> spLastFocusable;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
             L"DMSCP[0x%p]: GetLastFocusableElementOverride - entry.", this));
@@ -4950,7 +4975,7 @@ _Check_return_ HRESULT ScrollContentPresenter::HasDirectChildWithTabIndexSet(
     ctl::ComPtr<IDependencyObject> spDependencyObject;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
             L"DMSCP[0x%p]: HasDirectChildWithTabIndexSet - entry.", this));
@@ -5047,7 +5072,7 @@ _Check_return_ HRESULT ScrollContentPresenter::ProcessTabStopPrivate(
     ctl::ComPtr<DependencyObject> spLastFocusableDO;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
             L"DMSCP[0x%p]: ProcessTabStopPrivate - entry. pFocusedElement=0x%p, isBackward=%d", this, pFocusedElement, isBackward));
@@ -5196,7 +5221,7 @@ _Check_return_ HRESULT ScrollContentPresenter::GetFirstFocusableElementPrivate(
     ctl::ComPtr<IDependencyObject> spFirstFocusable;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
             L"DMSCP[0x%p]: GetFirstFocusableElementPrivate - entry.", this));
@@ -5311,7 +5336,7 @@ _Check_return_ HRESULT ScrollContentPresenter::GetLastFocusableElementPrivate(
     ctl::ComPtr<IDependencyObject> spLastFocusable;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
             L"DMSCP[0x%p]: GetLastFocusableElementPrivate - entry.", this));
@@ -5433,7 +5458,7 @@ _Check_return_ HRESULT ScrollContentPresenter::GetNextFocusableElementPrivate(
     ctl::ComPtr<IDependencyObject> spFocusedDirectChild;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
             L"DMSCP[0x%p]: GetNextFocusableElementPrivate isFocusedElementInTopLeftHeader=%d, isFocusedElementInTopHeader=%d, isFocusedElementInLeftHeader=%d, isFocusedElementInContent=%d.",
@@ -5585,7 +5610,7 @@ _Check_return_ HRESULT ScrollContentPresenter::GetPreviousFocusableElementPrivat
     ctl::ComPtr<IDependencyObject> spFocusedDirectChild;
 
 #ifdef DM_DEBUG
-    if (DMSCP_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLCONTENTPRESENTER) == S_OK)
+    if (DMSCP_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLCONTENTPRESENTER | DMSCP_DBG) /*traceType*/,
             L"DMSCP[0x%p]: GetPreviousFocusableElementPrivate isFocusedElementInTopLeftHeader=%d, isFocusedElementInTopHeader=%d, isFocusedElementInLeftHeader=%d, isFocusedElementInContent=%d.",

@@ -62,6 +62,7 @@ IFACEMETHODIMP DirectUI::ItemIndexRangeGenerated::get_LastIndex(_Out_ INT* pValu
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<ItemIndexRange*>(this)->get_LastIndexImpl(pValue));
 Cleanup:

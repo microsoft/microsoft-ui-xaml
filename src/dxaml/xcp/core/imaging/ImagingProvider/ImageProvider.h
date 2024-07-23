@@ -42,14 +42,14 @@ public:
         GetImageOptions options,
         _In_ const xref_ptr<IImageAvailableCallback>& spImageAvailableCallback,
         _In_ CCoreServices* pCore,
-        _Outref_ xref_ptr<IAbortableImageOperation>& spAbortableImageOperation
+        _Out_ xref_ptr<IAbortableImageOperation>& spAbortableImageOperation
         );
 
     _Check_return_ HRESULT CopyImage(
         _In_ xref_ptr<ImageCopyParams>& spCopyParams,
         _In_ const xref_ptr<IImageAvailableCallback>& spImageAvailableCallback,
         _In_ CCoreServices* pCore,
-        _Outref_ xref_ptr<IAbortableImageOperation>& spAbortableImageOperation
+        _Out_ xref_ptr<IAbortableImageOperation>& spAbortableImageOperation
         );
 
     _Check_return_ HRESULT CleanupCaches();
@@ -60,13 +60,10 @@ public:
         _In_opt_ IPALUri *pAbsoluteUri,
         bool isSvg,
         GetImageOptions options,
-        _In_ const std::shared_ptr<ImagingTelemetry::ImageDecodeActivity>& decodeActivity,
         uint64_t imageId,
         _Out_ bool *pCacheHit,
         _Outptr_ ImageCache **ppImageCache
         );
-
-    std::shared_ptr<ImagingTelemetry::ImageDecodeActivity>& GetDecodeActivity();
 
 private:
     ImageProvider();
@@ -103,16 +100,8 @@ private:
         _Out_ bool* useCache
         );
 
-    void EnsureDecodeActivity();
-
     CCoreServices* m_pCore;
     IAsyncImageFactory* m_pImageFactory;
     CValueStore* m_pStore;
     ImageTaskDispatcher* m_pDispatcher;
-
-    // For ETW tracing - tracks the entire decode process, from requesting a decode to the decode running (whether
-    // on the UI thread or on a background thread) to the decode completing (whether successfully or not) to the
-    // completion notification being delivered back to the ImageSource on the UI thread. Use one activity for all images
-    // in the entire CCoreServices.
-    std::shared_ptr<ImagingTelemetry::ImageDecodeActivity> m_decodeActivity;
 };

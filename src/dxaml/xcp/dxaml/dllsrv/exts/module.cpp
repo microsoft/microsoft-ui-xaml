@@ -60,6 +60,7 @@ DllGetClassObject(
     return module.GetClassObject(rclsid, riid, ppv);
 }
 
+__control_entrypoint(DllExport)
 STDAPI
 DllCanUnloadNow()
 {

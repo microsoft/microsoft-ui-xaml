@@ -270,7 +270,7 @@ private:
     wrl::ComPtr<WUComp::ICompositor4> m_compositor4;
     wrl::ComPtr<WUComp::ICompositionGraphicsDevice> m_compositionGraphicsDevice;
 
-    SharedTransitionAnimations* m_sharedTransitionAnimationsNoRef;
+    SharedTransitionAnimations* m_sharedTransitionAnimationsNoRef{};
 
     containers::vector_map<DropShadowRecipe, wrl::ComPtr<WUComp::ICompositionBrush>> m_dropShadowBrushCache;
     wrl::ComPtr<ID2D1Factory1> m_dropShadowD2DFactory;

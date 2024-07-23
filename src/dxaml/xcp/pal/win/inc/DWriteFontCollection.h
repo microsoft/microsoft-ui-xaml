@@ -18,7 +18,7 @@ class DWriteFontCollection : public CXcpObjectBase<PALText::IFontCollection, CXc
 public:
 
      static _Check_return_ HRESULT Create(
-         _In_  IDWriteFontCollection *pDWriteFontCollection,
+         _In_  IDWriteFontCollection2 *pDWriteFontCollection,
          _Outptr_ PALText::IFontCollection **ppFontCollection);
 
     // Looks for a physical font in the font collection.
@@ -27,15 +27,21 @@ public:
         _Outptr_result_maybenull_ PALText::IFontFamily **ppPhysicalFontFamily
         ) override;
 
+    static IDWriteFontCollection2* GetInternalCollection(_In_ PALText::IFontCollection* palCollection) {
+        return static_cast<DWriteFontCollection*>(palCollection)->m_dwriteFontCollection.Get();
+    }
+    static bool IsTypographicCollection(_In_ PALText::IFontCollection* palCollection)
+    {
+        return GetInternalCollection(palCollection)->GetFontFamilyModel() == DWRITE_FONT_FAMILY_MODEL_TYPOGRAPHIC;
+    }
+
 private:
-    // TODO: Consider exposing m_pDWriteFontCollection via a public getter.
-    friend class FontFallbackBuilderWrapper;
-    friend class FontFallbackWrapper;
+    // TODO: Consider exposing m_dwriteFontCollection via a public getter.
     friend class DWriteFontAndScriptServices;
     friend class CTextBlock;
 
     // DWrite's peer associated with this object.
-    IDWriteFontCollection *m_pDWriteFontCollection;
+    Microsoft::WRL::ComPtr<IDWriteFontCollection2> m_dwriteFontCollection;
 
     // Index of the Segoe UI font family in the current font collection.
     XUINT32 m_segoeUIFamilyIndex;
@@ -43,13 +49,10 @@ private:
     // This checks whether Segoe UI is available in this font collection.
     // It might not be found if this is a custom font collection
     // (or somebody removed it from the system which is unlikely)
-    bool m_containsSegoeUIFamily;
+    bool m_containsSegoeUIFamily{};
 
     // Initializes a new instance of the DWriteFontCollection class.
     DWriteFontCollection(
-        _In_ IDWriteFontCollection *pDWriteFontCollection
+        _In_ IDWriteFontCollection2 *pDWriteFontCollection
         );
-
-    // Release resources associated with the DWriteFontCollection.
-    ~DWriteFontCollection() override;
 };

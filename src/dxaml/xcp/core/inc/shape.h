@@ -287,7 +287,7 @@ private:
 
     // Natural bounds of the geometry, not including the stretch
     XRECTF_RB m_geometryBounds;
-    XRECTF_RB m_geometryWidenedBounds;
+    XRECTF_RB m_geometryWidenedBounds{};
 
     // Bounds of the fill & stroke, including the stretch. Used to realize brush transforms in PC.
     XRECTF_RB m_innerFillBounds;

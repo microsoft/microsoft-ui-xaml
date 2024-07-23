@@ -109,25 +109,7 @@ Window::Window()
     }
     else
     {
-        // The XAML Application instance is required by UWP and always created in Desktop
-        // by WindowsXamlManager.  There should be no case where Application::Current is NULL.
-        AppPolicyWindowingModel policy = FrameworkApplication::GetCurrentNoRef()->GetAppPolicyWindowingModel();
-
-        // WinUI UWP
-        if (policy != AppPolicyWindowingModel_ClassicDesktop)
-        {
-           ::RoOriginateError(
-                E_FAIL,
-                wrl_wrappers::HStringReference(
-                L"WinUI: Error creating second UWP Window on the current thread. No more than one UWP Window is allowed on a thread."
-                ).Get());
-            XAML_FAIL_FAST();
-        }
-        // WinUI Desktop
-        else
-        {
-            m_spWindowImpl = std::make_shared<DesktopWindowImpl>(this);
-        }
+        m_spWindowImpl = std::make_shared<DesktopWindowImpl>(this);
     }
 }
 
@@ -806,19 +788,6 @@ _Check_return_ HRESULT Window::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void
 {
     if (InlineIsEqualGUID(iid, __uuidof(IWindowNative)))
     {
-        // The XAML Application instance is required by UWP and always created in Desktop
-        // by WindowsXamlManager.  There should be no case where Application::Current is NULL.
-        if (AppPolicyWindowingModel_ClassicDesktop != FrameworkApplication::GetCurrentNoRef()->GetAppPolicyWindowingModel())
-        {
-           ::RoOriginateError(
-                E_NOINTERFACE,
-                wrl_wrappers::HStringReference(
-                L"The IWindowNative interface and support for obtaining the window handle (HWND) is only available on WinUI Desktop, not WinUI UWP."
-                ).Get());
-
-            return E_NOINTERFACE;
-        }
-
         *ppObject = static_cast<IWindowNative*>(this);
 
         return AddRefOuter();

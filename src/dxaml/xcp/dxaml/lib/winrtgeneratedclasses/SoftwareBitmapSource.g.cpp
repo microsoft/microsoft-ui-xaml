@@ -57,6 +57,7 @@ IFACEMETHODIMP DirectUI::SoftwareBitmapSourceGenerated::SetBitmapAsync(_In_opt_ 
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "SoftwareBitmapSource_SetBitmapAsync", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<SoftwareBitmapSource*>(this)->SetBitmapAsyncImpl(pSoftwareBitmap, ppReturnValue));

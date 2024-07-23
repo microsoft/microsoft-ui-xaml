@@ -81,31 +81,6 @@ public:
 
 //------------------------------------------------------------------------
 //
-//  Interface:  IPALTickableClock
-//
-//  Synopsis:
-//      A stateful PAL clock object that supports ticking at a fixed frequency.
-//      Useful to keep time-based operations in sync between threads.
-//
-//------------------------------------------------------------------------
-struct IPALTickableClock : public IObject
-{
-protected:
-    ~IPALTickableClock(){}  // 'delete' not allowed, use 'Release' instead.
-
-public:
-    // Move the clock state forward by one tick.
-    virtual XDOUBLE Tick() = 0;
-
-    // Returns the last time Tick()-ed to.
-    virtual XDOUBLE GetLastTickTimeInSeconds() const = 0;
-
-    // Estimates the next time Tick() will return, but does not change state.
-    virtual XDOUBLE GetNextTickTimeInSeconds() const = 0;
-};
-
-//------------------------------------------------------------------------
-//
 //  Interface:  IPALRegion
 //
 //  Synopsis:
@@ -298,17 +273,17 @@ struct IPALCoreServices
 
 // In checked builds, memory allocation is done through the memory allocator
 // in the PAL debugging service.
-__declspec(allocator) void * __cdecl operator new(size_t cSize);
-__bcount(cSize) __declspec(allocator) void * __cdecl operator new[](size_t cSize);
+_Ret_notnull_ _Post_writable_byte_size_(cSize) __declspec(allocator) void * __cdecl operator new(size_t cSize);
+_Ret_notnull_ _Post_writable_byte_size_(cSize) __declspec(allocator) void * __cdecl operator new[](size_t cSize);
 
 enum NoFailFastAllocationPolicy;
 enum ZeroMemAllocationPolicy;
 
-__declspec(allocator) void * __cdecl operator new(size_t cSize, NoFailFastAllocationPolicy);
-__bcount(cSize) XCP_FORCEINLINE __declspec(allocator) void * __cdecl operator new[](size_t cSize, NoFailFastAllocationPolicy);
+_Ret_notnull_ _Post_writable_byte_size_(cSize) __declspec(allocator) void * __cdecl operator new(size_t cSize, NoFailFastAllocationPolicy);
+_Ret_notnull_ _Post_writable_byte_size_(cSize) XCP_FORCEINLINE __declspec(allocator) void * __cdecl operator new[](size_t cSize, NoFailFastAllocationPolicy);
 
-__declspec(allocator) void * __cdecl operator new(size_t cSize, ZeroMemAllocationPolicy);
-__bcount(cSize) XCP_FORCEINLINE __declspec(allocator) void * __cdecl operator new[](size_t cSize, ZeroMemAllocationPolicy);
+_Ret_notnull_ _Post_writable_byte_size_(cSize) __declspec(allocator) void * __cdecl operator new(size_t cSize, ZeroMemAllocationPolicy);
+_Ret_notnull_ _Post_writable_byte_size_(cSize) XCP_FORCEINLINE __declspec(allocator) void * __cdecl operator new[](size_t cSize, ZeroMemAllocationPolicy);
 
 #pragma warning(push)
 // Some header files have their own definition of this function and don't

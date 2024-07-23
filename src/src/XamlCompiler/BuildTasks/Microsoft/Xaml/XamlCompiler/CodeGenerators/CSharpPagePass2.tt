@@ -366,7 +366,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 
         <#=GeneratedCodeAttribute#>
         <#=DebuggerNonUserCodeAttribute#>
-        private class <#=bindUniverse.BindingsClassName#> :
+        private partial class <#=bindUniverse.BindingsClassName#> :
 <#+             if (bindUniverse.NeedsIDataTemplateExtension) #>
 <#+             {#>
             <#=Globalize(KnownTypes.IDataTemplateExtension)#>,

@@ -53,6 +53,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlShutdownCompletedOnThread
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "XamlShutdownCompletedOnThreadEventArgs_GetDispatcherQueueDeferral", 0);
     }
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckThread());
     IFC(static_cast<XamlShutdownCompletedOnThreadEventArgs*>(this)->GetDispatcherQueueDeferralImpl(ppResult));
 Cleanup:

@@ -4,7 +4,6 @@
 #pragma once
 
 #include "ElementManager.h"
-
 #include "UniformGridLayoutState.g.h"
 #include "FlowLayoutAlgorithm.h"
 
@@ -18,8 +17,8 @@ public:
     void UninitializeForContext(const winrt::VirtualizingLayoutContext& context);
 
     ::FlowLayoutAlgorithm& FlowAlgorithm() { return m_flowAlgorithm; }
-    double EffectiveItemWidth() { return m_effectiveItemWidth; }
-    double EffectiveItemHeight() { return m_effectiveItemHeight; }
+    double EffectiveItemWidth() const { return m_effectiveItemWidth; }
+    double EffectiveItemHeight() const { return m_effectiveItemHeight; }
 
     void EnsureElementSize(
         const winrt::Size availableSize,
@@ -28,31 +27,32 @@ public:
         const double itemHeight,
         const winrt::UniformGridLayoutItemsStretch& stretch,
         const winrt::Orientation& orientation,
-        double minRowSpacing,
-        double minColumnSpacing,
+        const double minRowSpacing,
+        const double minColumnSpacing,
         unsigned int maxItemsPerLine);
     void InvalidateElementSize();
 
 private:
     ::FlowLayoutAlgorithm m_flowAlgorithm{ this };
-    bool m_isEffectiveSizeValid = false;
+    bool m_isEffectiveSizeValid{ false };
     double m_effectiveItemWidth{ 0.0 };
     double m_effectiveItemHeight{ 0.0 };
 
-    winrt::Size CalculateAvailableSize(const winrt::Size availableSize,
+    winrt::Size CalculateAvailableSize(
+        const winrt::Size availableSize,
         const winrt::Orientation orientation,
         const winrt::UniformGridLayoutItemsStretch& stretch,
         const unsigned int maxItemsPerLine,
         const double itemWidth,
         const double itemHeight,
-        double minRowSpacing,
-        double minColumnSpacing);
+        const double minRowSpacing,
+        const double minColumnSpacing) const;
 
-    double CalculateExtraPixelsInLine(unsigned int maxItemsPerLine,
+    double CalculateExtraPixelsInLine(
+        const unsigned int maxItemsPerLine,
         const float availableSizeMinor,
         const double itemSizeMinor,
-        const double minorItemSpacing);
-
+        const double minorItemSpacing) const;
 
     void SetSize(const winrt::Size& desiredItemSize,
         const double itemWidth,
@@ -60,7 +60,7 @@ private:
         const winrt::Size availableSize,
         const winrt::UniformGridLayoutItemsStretch& stretch,
         const winrt::Orientation& orientation,
-        double minRowSpacing,
-        double minColumnSpacing,
+        const double minRowSpacing,
+        const double minColumnSpacing,
         unsigned int maxItemsPerLine);
 };

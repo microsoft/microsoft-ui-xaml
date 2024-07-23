@@ -34,7 +34,7 @@ namespace AccessKeys {
 
         // Collection of characters parsed from the UI element owner's AutomationProperties.AccessKey field.
         // Declaring this with room for a null terminator.
-        wchar_t accessKey[maxAccessKeyLength+1]; 
+        wchar_t accessKey[maxAccessKeyLength+1] {}; 
     };
 }
 

@@ -208,7 +208,6 @@ namespace RuntimeProfiler {
 
     bool g_runtimeProfilerInitialized{ false };
     PTP_TIMER g_pTimer{ nullptr };
-    winrt::Application::Suspending_revoker g_applicationSuspendingRevoker{};
 
     void UninitializeRuntimeProfiler()
     {
@@ -223,11 +222,6 @@ namespace RuntimeProfiler {
             CloseThreadpoolTimer(g_pTimer);
 
             g_pTimer = nullptr;
-        }
-
-        if (g_applicationSuspendingRevoker)
-        {
-            g_applicationSuspendingRevoker.revoke();
         }
 
         g_runtimeProfilerInitialized = false;
@@ -254,23 +248,7 @@ namespace RuntimeProfiler {
             SetThreadpoolTimer(g_pTimer, &ftdueTime, (DWORD)(std::chrono::milliseconds(EventFrequency).count()), 60 * 1000);
         }
 
-        //  Since MUX doesn't piggyback the WUX Extension suspend handler,
-        //  we sign up for suspension notifications.
-        try
-        {
-            g_applicationSuspendingRevoker = winrt::Application::Current().Suspending(winrt::auto_revoke, [](auto&, auto&)
-                {
-                    FireEvent(true);
-                }
-            );
-        }
-        catch (winrt::hresult_error e)
-        {
-            // We might not have an Application instance object in XamlPresenter scenarios
-            // because we don't need it.
-        }
-
-        g_runtimeProfilerInitialized = g_pTimer != nullptr && g_applicationSuspendingRevoker;
+        g_runtimeProfilerInitialized = g_pTimer != nullptr;
     }
 
     void RegisterMethod(ProfileGroup group, UINT16 uTypeIndex, UINT16 uMethodIndex, volatile LONG *pCount) noexcept

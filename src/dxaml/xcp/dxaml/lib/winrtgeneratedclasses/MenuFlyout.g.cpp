@@ -69,6 +69,7 @@ IFACEMETHODIMP DirectUI::MenuFlyoutGenerated::get_ParentMenu(_Outptr_result_mayb
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<MenuFlyout*>(this)->get_ParentMenuImpl(ppValue));
 Cleanup:

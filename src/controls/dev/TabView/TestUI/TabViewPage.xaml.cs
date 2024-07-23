@@ -421,6 +421,20 @@ namespace MUXControlsTestApp
             this.Frame.Navigate(typeof(MultipleTabViewPage));
         }
 
+        private void TabViewTearOutWindowWithDataItemsButton_Click(object sender, RoutedEventArgs e)
+        {
+            TabViewTearOutWindowWithDataItems newWindow = new();
+            newWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(800, 300));
+            newWindow.Activate();
+        }
+
+        private void TabViewTearOutWindowWithoutDataItemsButton_Click(object sender, RoutedEventArgs e)
+        {
+            TabViewTearOutWindowWithoutDataItems newWindow = new();
+            newWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(800, 300));
+            newWindow.Activate();
+        }
+
         private void ShortLongTextButton_Click(object sender, RoutedEventArgs e)
         {
             FirstTab.Header = "s";

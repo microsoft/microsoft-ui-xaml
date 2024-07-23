@@ -81,6 +81,7 @@ IFACEMETHODIMP DirectUI::StyleSelectorGenerated::SelectStyleCore(_In_opt_ IInspe
     }
     ARG_NOTNULL(pContainer, "container");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<StyleSelector*>(this)->SelectStyleCoreImpl(pItem, pContainer, ppReturnValue));
 Cleanup:
