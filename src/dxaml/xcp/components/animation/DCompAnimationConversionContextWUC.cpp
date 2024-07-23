@@ -191,6 +191,9 @@ CompositionAnimationConversionResult CompositionAnimationConversionContext::GetN
     const float keyTime,
     _Out_ float* pNormalizedKeyTime)
 {
+    // Initialize the output parameter to a default value
+    *pNormalizedKeyTime = 0.0f;
+    
     float keyTimeWithSpeedRatio = keyTime / m_speedRatio;
     float normalizedKeyTime = (m_beginTimeInsideAnimation + keyTimeWithSpeedRatio) / GetDurationWithSpeedRatio();
 

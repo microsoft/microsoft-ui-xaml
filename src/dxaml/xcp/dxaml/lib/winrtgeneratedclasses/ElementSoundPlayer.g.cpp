@@ -77,6 +77,7 @@ IFACEMETHODIMP DirectUI::ElementSoundPlayerFactory::get_Volume(_Out_ DOUBLE* pVa
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckActivationAllowed());
     IFC(get_VolumeImpl(pValue));
 Cleanup:
@@ -95,6 +96,7 @@ IFACEMETHODIMP DirectUI::ElementSoundPlayerFactory::get_State(_Out_ ABI::Microso
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckActivationAllowed());
     IFC(get_StateImpl(pValue));
 Cleanup:
@@ -113,6 +115,7 @@ IFACEMETHODIMP DirectUI::ElementSoundPlayerFactory::get_SpatialAudioMode(_Out_ A
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckActivationAllowed());
     IFC(get_SpatialAudioModeImpl(pValue));
 Cleanup:
@@ -172,6 +175,7 @@ IFACEMETHODIMP DirectUI::ElementSoundPlayerFactory::GetEffectiveSoundMode(_In_ A
     }
     ARG_NOTNULL(pElement, "element");
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckActivationAllowed());
     IFC(GetEffectiveSoundModeImpl(pElement, pResult));
 Cleanup:

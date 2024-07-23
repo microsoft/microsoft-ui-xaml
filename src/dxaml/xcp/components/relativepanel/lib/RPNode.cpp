@@ -548,7 +548,7 @@ void RPNode::GetPropertyValue(
 
                 if (index == propertyIndex)
                 {
-                    value->CopyConverted(prop.second);
+                    IFCFAILFAST(value->CopyConverted(prop.second));
                     valueSet = true;
                     break;
                 }

@@ -16,5 +16,5 @@ struct BrushParams
 {
     // Identifies SolidColorBrush usage. Used to pick the correct transitioning brush.
     const CUIElement* m_element = nullptr;
-    ElementBrushProperty m_brushProperty;
+    ElementBrushProperty m_brushProperty{};
 };

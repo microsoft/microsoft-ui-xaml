@@ -502,13 +502,13 @@ _Check_return_ HRESULT ComboBox::SetupElementPopupChildCanvas()
         if (spElementPopupChildCanvasChildren)
         {
             //
-            // In the case of windowed popups, we don't want to put up a giant transparent hwnd over the entire desktop
+            // In the case of windowed popups, we don't want to put up a giant transparent window over the entire desktop
             // holding the light dismiss element, because that will block clicks targeted at the host app (in the case
             // of islands), clicks on other apps, or clicks meant to resize the window.
             //
             // Conveniently, the CComboBoxLightDismiss element is a Canvas, and its MeasureOverride reports 0x0 as the
-            // desired size (see CCanvas::MeasureOverride). Windowed popups look at desired size when sizing the hwnd,
-            // so it will ignore the giant CComboBoxLightDismiss element. We then end up with a small hwnd for the
+            // desired size (see CCanvas::MeasureOverride). Windowed popups look at desired size when sizing the island,
+            // so it will ignore the giant CComboBoxLightDismiss element. We then end up with a small island for the
             // ComboBox popup as desired.
             //
             // When it comes time to hit test, a click over the Xaml island will pass the point through the Xaml tree,
@@ -2260,7 +2260,8 @@ _Check_return_ HRESULT ComboBox::ProcessTabStopOverride(
     const bool isBackward,
     const bool didCycleFocusAtRootVisualScope,
     _Outptr_ DependencyObject** ppNewTabStop,
-    _Out_ BOOLEAN* pIsTabStopOverridden)
+    _Out_ BOOLEAN* pIsTabStopOverridden
+    )
 {
     // An editable ComboBox has special tab behavior. We want to be able to Tab a single time
     // directly into the TextBox and to Shift + Tab a single time to move focus outside to a
@@ -4007,7 +4008,7 @@ _Check_return_ HRESULT ComboBox::ProcessSearch(_In_ WCHAR keyCode)
     return S_OK;
 }
 
-_Check_return_ HRESULT ComboBox::SearchItemSourceIndex(_In_ WCHAR keyCode, _In_ bool startSearchFromCurrentIndex, _In_ bool searchExactMatch, _Outptr_ int& foundIndex)
+_Check_return_ HRESULT ComboBox::SearchItemSourceIndex(_In_ WCHAR keyCode, _In_ bool startSearchFromCurrentIndex, _In_ bool searchExactMatch, _Out_ int& foundIndex)
 {
     // Get all of the ComboBox items; we'll try to convert them to strings later.
     UINT itemCount = 0;
@@ -5299,7 +5300,7 @@ _Check_return_ HRESULT ComboBox::ArrangePopup(
     IFC_RETURN(m_tpElementPopupChild.Get()->get_ActualHeight(&childHeight));
 
     // In ActualBounds mode, the bound size is determined by ActualWidth&ActualHeight of popup child, so we need to explicitly set width&height on canvas here.
-    // If popup border has negative margins, content will be pushed out of HWND bound, so we need to increase the bound size to include the out of scope content.
+    // If popup border has negative margins, content will be pushed out of island bounds, so we need to increase the bound size to include the out of scope content.
     // We don't really need to worry about positive margins since they will be completely transparent and safe to clip.
     xaml::Thickness borderMargin = { 0, 0, 0, 0 };
     m_tpElementPopupChild.Get()->get_Margin(&borderMargin);
@@ -5458,7 +5459,7 @@ _Check_return_ HRESULT ComboBox::ArrangePopup(
         IFC_RETURN(LayoutRound(popupLeft, &popupLeft));
     }
 
-    // In ActualBounds mode, the position of the HWND does not include Popup.Child.Margin, move margin values to popup's offset properties instead.
+    // In ActualBounds mode, the position of the island does not include Popup.Child.Margin, move margin values to popup's offset properties instead.
     DOUBLE verticalOffset = popupTop + borderMargin.Top;
     DOUBLE horizontalOffset = popupLeft + borderMargin.Left;
     IFC_RETURN(m_tpPopupPart.Get()->put_VerticalOffset(verticalOffset));
@@ -5476,7 +5477,7 @@ _Check_return_ HRESULT ComboBox::ArrangePopup(
     IFC_RETURN(translateTransform->put_Y(-verticalOffset - p00t.Y));
     IFC_RETURN(m_tpElementOutsidePopup.Cast<Canvas>()->put_RenderTransform(translateTransform.Get()));
 
-    // PopupBorder has a negative {0,-1,0,-1} margin, that will push the content out of the HWND bound.
+    // PopupBorder has a negative {0,-1,0,-1} margin, that will push the content out of the island bounds.
     // We do an extra check to set opposite values on canvas margin to compensate the negatives.
     if (borderMargin.Top < 0)
     {
@@ -6442,7 +6443,7 @@ _Check_return_ HRESULT ComboBox::CreateEditableContentPresenterTextBlock()
         IFC_RETURN(ActivationAPI::ActivateInstance(pTextBlockTypeInfo, &spTextBlock));
 
         ctl::ComPtr<xaml_controls::ITextBlock> spEditableContentPresenterTextBlockAsI;
-        spTextBlock.As(&spEditableContentPresenterTextBlockAsI);
+        IFC_RETURN(spTextBlock.As(&spEditableContentPresenterTextBlockAsI));
 
         SetPtrValue(m_tpEditableContentPresenterTextBlock, spEditableContentPresenterTextBlockAsI.Get());
     }

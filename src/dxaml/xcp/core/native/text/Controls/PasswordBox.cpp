@@ -633,7 +633,7 @@ bool CPasswordBox::CanInvokeRevealButton()
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CPasswordBox::OnCharacterReceived(_In_ CEventArgs* pEventArgs)
 {
-    CTextBoxBase::OnCharacterReceived(pEventArgs);
+    IFC_RETURN(CTextBoxBase::OnCharacterReceived(pEventArgs));
 
     // TextBox in the XAML layer needs to be notified when pText is changed so it can
     // update Placeholder Text visiblity.
@@ -654,7 +654,7 @@ _Check_return_ HRESULT CPasswordBox::OnCharacterReceived(_In_ CEventArgs* pEvent
 //---------------------------------------------------------------------------
 _Check_return_ HRESULT CPasswordBox::SetTextServicesBuffer(_In_ const xstring_ptr& strText)
 {
-    CTextBoxBase::SetTextServicesBuffer(strText);
+    IFC_RETURN(CTextBoxBase::SetTextServicesBuffer(strText));
 
     // TextBox in the XAML layer needs to be notified when pText is changed so it can
     // update Placeholder Text visiblity.
@@ -738,17 +738,17 @@ _Check_return_ HRESULT CPasswordBox::UpdateIhmSkinToBitLocker(bool skinBitLocker
 {
     if (DesktopUtility::IsOnDesktop())
     {
-        HWND hwnd = CInputServices::GetUnderlyingInputHwndFromIslandInputSite(GetElementIslandInputSite().Get());
-        if (nullptr != hwnd)
+        HWND inputHwnd = CInputServices::GetUnderlyingInputHwndFromIslandInputSite(GetElementIslandInputSite().Get());
+        if (nullptr != inputHwnd)
         {
             if (skinBitLocker)
             {
-                IFC_RETURN(::TextInput_SetKeyboardSkin(::TextInput_KeyboardSkins::Bitlocker, hwnd));
+                IFC_RETURN(::TextInput_SetKeyboardSkin(::TextInput_KeyboardSkins::Bitlocker, inputHwnd));
                 TraceSetIhmKeyboardSkinInfo(static_cast<UINT32>(::TextInput_KeyboardSkins::Bitlocker));
             }
             else
             {
-                IFC_RETURN(::TextInput_SetKeyboardSkin(::TextInput_KeyboardSkins::Default, hwnd));
+                IFC_RETURN(::TextInput_SetKeyboardSkin(::TextInput_KeyboardSkins::Default, inputHwnd));
                 TraceSetIhmKeyboardSkinInfo(static_cast<UINT32>(::TextInput_KeyboardSkins::Default));
             }
         }

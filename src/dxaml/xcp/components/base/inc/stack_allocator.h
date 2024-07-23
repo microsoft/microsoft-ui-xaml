@@ -28,7 +28,7 @@ namespace Jupiter {
     template<std::size_t N, std::size_t alignment = alignof(std::max_align_t)>
     class arena
     {
-        alignas(alignment) char m_buf[N];
+        alignas(alignment) char m_buf[N]{};
         char* m_ptr;
 
         bool pointer_in_buffer(char* p) WI_NOEXCEPT

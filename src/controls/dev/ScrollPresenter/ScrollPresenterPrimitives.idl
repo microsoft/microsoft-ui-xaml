@@ -345,12 +345,16 @@ unsealed runtimeclass ScrollPresenter :
     event Windows.Foundation.TypedEventHandler<ScrollPresenter, Object> ExtentChanged;
     event Windows.Foundation.TypedEventHandler<ScrollPresenter, Object> StateChanged;
     event Windows.Foundation.TypedEventHandler<ScrollPresenter, Object> ViewChanged;
+
     event Windows.Foundation.TypedEventHandler<ScrollPresenter, MU_XC_NAMESPACE.ScrollingScrollAnimationStartingEventArgs> ScrollAnimationStarting;
     event Windows.Foundation.TypedEventHandler<ScrollPresenter, MU_XC_NAMESPACE.ScrollingZoomAnimationStartingEventArgs> ZoomAnimationStarting;
     event Windows.Foundation.TypedEventHandler<ScrollPresenter, MU_XC_NAMESPACE.ScrollingScrollCompletedEventArgs> ScrollCompleted;
     event Windows.Foundation.TypedEventHandler<ScrollPresenter, MU_XC_NAMESPACE.ScrollingZoomCompletedEventArgs> ZoomCompleted;
     event Windows.Foundation.TypedEventHandler<ScrollPresenter, MU_XC_NAMESPACE.ScrollingBringingIntoViewEventArgs> BringingIntoView;
     event Windows.Foundation.TypedEventHandler<ScrollPresenter, MU_XC_NAMESPACE.ScrollingAnchorRequestedEventArgs> AnchorRequested;
+
+    [MUX_PREVIEW]
+    event Windows.Foundation.TypedEventHandler<ScrollPresenter, MU_XC_NAMESPACE.ScrollingViewChangingEventArgs> ViewChanging;
 
     static Microsoft.UI.Xaml.DependencyProperty BackgroundProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty ContentProperty { get; };

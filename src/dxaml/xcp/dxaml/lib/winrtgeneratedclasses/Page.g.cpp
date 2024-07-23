@@ -80,6 +80,7 @@ IFACEMETHODIMP DirectUI::PageGenerated::get_TopAppBar(_Outptr_result_maybenull_ 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<Page*>(this)->get_TopAppBarImpl(ppValue));
 Cleanup:

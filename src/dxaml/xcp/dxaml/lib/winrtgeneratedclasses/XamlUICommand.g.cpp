@@ -272,6 +272,7 @@ IFACEMETHODIMP DirectUI::XamlUICommandGenerated::CanExecute(_In_opt_ IInspectabl
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "XamlUICommand_CanExecute", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<XamlUICommand*>(this)->CanExecuteImpl(pParameter, pReturnValue));

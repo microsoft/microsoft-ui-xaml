@@ -61,6 +61,7 @@ IFACEMETHODIMP DirectUI::DataTemplateGenerated::GetElement(_In_ ABI::Microsoft::
     }
     ARG_NOTNULL(pArgs, "args");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<DataTemplate*>(this)->GetElementImpl(pArgs, ppReturnValue));
@@ -79,6 +80,7 @@ IFACEMETHODIMP DirectUI::DataTemplateGenerated::LoadContent(_Outptr_ ABI::Micros
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "DataTemplate_LoadContent", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<DataTemplate*>(this)->LoadContentImpl(ppReturnValue));

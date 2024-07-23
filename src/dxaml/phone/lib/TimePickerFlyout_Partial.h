@@ -65,7 +65,7 @@ XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { n
         xaml_controls::FlyoutAsyncOperationManager<wf::IReference<wf::TimeSpan>*, TimePickerFlyout, TimePickerFlyoutShowAtAsyncOperationName> _asyncOperationManager;
         EventRegistrationToken _acceptClickToken;
         EventRegistrationToken _dismissClickToken;
-        EventRegistrationToken _keyDownToken;
+        EventRegistrationToken _keyDownToken{};
     };
 
     ActivatableClassWithFactory(TimePickerFlyout, TimePickerFlyoutFactory);

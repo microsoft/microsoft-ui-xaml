@@ -45,6 +45,7 @@ IFACEMETHODIMP DirectUI::AccessKeyManagerFactory::get_IsDisplayModeEnabled(_Out_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckActivationAllowed());
     IFC(get_IsDisplayModeEnabledImpl(pValue));
 Cleanup:
@@ -54,6 +55,7 @@ IFACEMETHODIMP DirectUI::AccessKeyManagerFactory::get_AreKeyTipsEnabled(_Out_ BO
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckActivationAllowed());
     IFC(get_AreKeyTipsEnabledImpl(pValue));
 Cleanup:

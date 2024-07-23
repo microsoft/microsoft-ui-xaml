@@ -142,7 +142,7 @@ private:
     IPropertyAccessHost* m_pOwner;
     const CClassInfo* m_pSourceType;
     
-    const CDependencyProperty* m_pProperty;
+    const CDependencyProperty* m_pProperty{};
     TrackerPtr<IInspectable> m_tpSource;
     
     ctl::EventPtr<PropertyAccessPathStepDPChangedCallback> m_epSyncHandler;

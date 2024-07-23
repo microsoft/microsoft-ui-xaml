@@ -170,6 +170,23 @@ void CVisualStateGroupCollection::UnregisterDeferredStandardNameScopeEntries(_In
     }
 }
 
+
+_Check_return_ HRESULT
+CVisualStateGroupCollection::EnterImpl(_In_ CDependencyObject* namescopeOwner, _In_ EnterParams params)
+{
+    IFC_RETURN(CDOCollection::EnterImpl(namescopeOwner, params));
+
+    if (params.fIsLive && m_vsmActivitySinceLastLeave)
+    {
+        // If a group has been modified while it is outside of the tree, then the setters may not have
+        // the correct themed value, so when we re-enter, if there has been activity refresh the theme
+        // resources.
+        IFC_RETURN(NotifyThemeChanged(GetTheme(), true /* forceRefresh */));
+    }
+    return S_OK;
+}
+
+
 _Check_return_ HRESULT
 CVisualStateGroupCollection::LeaveImpl(_In_ CDependencyObject* namescopeOwner, _In_ LeaveParams params)
 {

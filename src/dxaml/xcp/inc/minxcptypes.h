@@ -383,7 +383,7 @@ struct XGRIDLENGTH
 {
     DirectUI::GridUnitType type;
     char padding[3] { };    // XBF writer will stamp this struct onto disk and compare to the XBF master which has zeros in these 3 bytes
-    XFLOAT value;
+    XFLOAT value{};
 
     static XFLOAT Default()
     {

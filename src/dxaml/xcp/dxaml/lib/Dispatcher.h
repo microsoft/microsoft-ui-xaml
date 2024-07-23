@@ -74,7 +74,7 @@ public:
 
 private:
     DXamlCore* m_pCore;
-    DWORD      m_dwDispatcherThreadId;
+    DWORD      m_dwDispatcherThreadId{};
 
     _Check_return_ HRESULT Connect(_In_ DXamlCore* pCore);
     void Disconnect();

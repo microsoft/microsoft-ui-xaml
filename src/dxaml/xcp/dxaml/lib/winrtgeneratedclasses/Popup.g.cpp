@@ -129,6 +129,7 @@ IFACEMETHODIMP DirectUI::PopupGenerated::get_IsConstrainedToRootBounds(_Out_ BOO
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<Popup*>(this)->get_IsConstrainedToRootBoundsImpl(pValue));
 Cleanup:
@@ -406,6 +407,7 @@ IFACEMETHODIMP DirectUI::PopupGenerated::OnBackButtonPressed(_Out_ BOOLEAN* pRes
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Popup_OnBackButtonPressed", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Popup*>(this)->OnBackButtonPressedImpl(pResult));

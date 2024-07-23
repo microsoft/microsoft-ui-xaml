@@ -69,6 +69,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertyControlNeededEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\TypeConverters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\LoggingContentControl\LoggingContentControl.xaml.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\DataModel\Entity.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\DataModel\EntityGroup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\DataModel\EntityObservableCollection.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildThisFileDirectory)ContentIncludes.props" />
   <ItemGroup>

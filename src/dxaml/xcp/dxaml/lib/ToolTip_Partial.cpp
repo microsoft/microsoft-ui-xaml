@@ -1402,7 +1402,7 @@ _Check_return_ HRESULT ToolTip::PerformPlacementWithWindowedPopup(
         spCurrentPointerPoint = GetCurrentPointFromRootOrCoreWindow(spTarget);
         if (!spCurrentPointerPoint)
         {
-            // We can hit a case where the most recent mouse event went to a hWnd which is now closed
+            // We can hit a case where the most recent mouse event went to a window which is now closed
             // (e.g. a different ToolTip that is now closed). See bug MSFT:2303578 for details.
             // We fall back to a point cached by ToolTipService whenever the CoreWindow/Island doesn't have a cached point.
             lastPointerEnteredPoint = ToolTipService::s_lastPointerEnteredPoint;
@@ -1411,10 +1411,6 @@ _Check_return_ HRESULT ToolTip::PerformPlacementWithWindowedPopup(
         {
             IFC(hr);
             IFC(spCurrentPointerPoint->get_Position(&lastPointerEnteredPoint));
-
-            // Deliverable 21236263: Support windowed popups
-            // When Xaml had windowed popups, we would adjust for the difference between the popup hwnd and the main tree's
-            // hwnd here. That adjustment will be needed again once windowed popups are brought back.
         }
 
         currentPoint = lastPointerEnteredPoint;

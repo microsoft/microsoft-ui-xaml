@@ -383,7 +383,7 @@ ImageSharingEngineHost::Shutdown( )
     }
 
     // Disconnect any casting sessions that are currently running
-    Disconnect();
+    IFCFAILFAST(Disconnect());
 
 }
 

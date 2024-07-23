@@ -53,7 +53,7 @@ public:
     }
 
     _Check_return_ HRESULT GetVelocities(
-        _Out_ CManipulationVelocities** ppVelocities)
+        _Inout_ CManipulationVelocities** ppVelocities)
     {
         IFCPTR_RETURN(ppVelocities);
 

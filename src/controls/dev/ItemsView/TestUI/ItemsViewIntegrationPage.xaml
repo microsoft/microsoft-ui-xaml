@@ -10,7 +10,7 @@
     mc:Ignorable="d">
 
     <local:TestPage.Resources>
-        <DataTemplate x:Key="photoTemplate1" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="photoTemplate1" x:DataType="dataModel:Entity">
             <ItemContainer MinWidth="48" MinHeight="96" Background="Gray" CanDrag="True" DragStarting="ItemContainer_DragStartingLog">
                 <Image x:Name="image" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center" ImageOpened="Image_ImageOpened" ImageFailed="Image_ImageFailed">
                     <Image.Source>
@@ -20,7 +20,7 @@
             </ItemContainer>
         </DataTemplate>
 
-        <DataTemplate x:Key="photoTemplate2" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="photoTemplate2" x:DataType="dataModel:Entity">
             <ItemContainer MinWidth="76" MinHeight="146" Background="Gray">
                 <Image x:Name="image" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center" ImageOpened="Image_ImageOpened" ImageFailed="Image_ImageFailed">
                     <Image.Source>
@@ -30,7 +30,7 @@
             </ItemContainer>
         </DataTemplate>
 
-        <DataTemplate x:Key="photoTemplate3" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="photoTemplate3" x:DataType="dataModel:Entity">
             <ItemContainer MinWidth="72" MinHeight="96" Background="Gray">
                 <Grid x:Name="itemPanel">
                     <Image x:Name="image" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center" ImageOpened="Image_ImageOpened" ImageFailed="Image_ImageFailed">
@@ -43,7 +43,7 @@
             </ItemContainer>
         </DataTemplate>
 
-        <DataTemplate x:Key="photoTemplate4" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="photoTemplate4" x:DataType="dataModel:Entity">
             <ItemContainer MinWidth="96" MinHeight="146" Background="Gray">
                 <Grid x:Name="itemPanel">
                     <Image x:Name="image" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center" ImageOpened="Image_ImageOpened" ImageFailed="Image_ImageFailed">
@@ -56,7 +56,7 @@
             </ItemContainer>
         </DataTemplate>
 
-        <DataTemplate x:Key="photoTemplate5" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="photoTemplate5" x:DataType="dataModel:Entity">
             <ItemContainer MinWidth="146" MinHeight="296" Background="Gray">
                 <Grid x:Name="itemPanel">
                     <Image x:Name="image" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center" ImageOpened="Image_ImageOpened" ImageFailed="Image_ImageFailed">
@@ -69,7 +69,7 @@
             </ItemContainer>
         </DataTemplate>
 
-        <DataTemplate x:Key="photoTemplate6" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="photoTemplate6" x:DataType="dataModel:Entity">
             <ItemContainer>
                 <Grid>
                     <Rectangle MinWidth="72" MinHeight="96" Fill="DarkGray"/>
@@ -78,14 +78,14 @@
             </ItemContainer>
         </DataTemplate>
 
-        <DataTemplate x:Key="photoTemplate7" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="photoTemplate7" x:DataType="dataModel:Entity">
             <Grid>
                 <Rectangle MinWidth="72" MinHeight="96" Fill="DarkGray"/>
                 <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="2" Foreground="White" FontSize="10" MaxWidth="68" MaxHeight="48" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
             </Grid>
         </DataTemplate>
 
-        <DataTemplate x:Key="photoTemplate8" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="photoTemplate8" x:DataType="dataModel:Entity">
             <Grid CornerRadius="4">
                 <Rectangle MinWidth="72" MinHeight="96" Fill="DarkGray"/>
                 <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="2" Foreground="White" FontSize="10" MaxWidth="68" MaxHeight="48" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>

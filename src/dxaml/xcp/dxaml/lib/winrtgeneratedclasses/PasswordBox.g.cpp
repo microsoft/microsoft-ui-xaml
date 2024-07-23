@@ -120,6 +120,7 @@ IFACEMETHODIMP DirectUI::PasswordBoxGenerated::get_InputScope(_Outptr_result_may
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<PasswordBox*>(this)->get_InputScopeImpl(ppValue));
 Cleanup:
@@ -658,12 +659,6 @@ HRESULT DirectUI::PasswordBoxFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outpt
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxStaticsFeature_HeaderPlacement*>(this);
     }
 #endif
-#if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxStaticsFeature_InputValidation)))
-    {
-        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxStaticsFeature_InputValidation*>(this);
-    }
-#endif
     else
     {
         RRETURN(ctl::BetterCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
@@ -744,18 +739,9 @@ IFACEMETHODIMP DirectUI::PasswordBoxFactory::get_HeaderPlacementProperty(_Out_ A
 
 
 
-IFACEMETHODIMP DirectUI::PasswordBoxFactory::get_ErrorTemplateProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
-{
-    RRETURN(MetadataAPI::GetIDependencyProperty(KnownPropertyIndex::PasswordBox_ErrorTemplate, ppValue));
-}
-IFACEMETHODIMP DirectUI::PasswordBoxFactory::get_InputValidationModeProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
-{
-    RRETURN(MetadataAPI::GetIDependencyProperty(KnownPropertyIndex::PasswordBox_InputValidationMode, ppValue));
-}
-IFACEMETHODIMP DirectUI::PasswordBoxFactory::get_InputValidationKindProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
-{
-    RRETURN(MetadataAPI::GetIDependencyProperty(KnownPropertyIndex::PasswordBox_InputValidationKind, ppValue));
-}
+
+
+
 
 
 // Attached properties.

@@ -1390,7 +1390,8 @@ namespace StoryboardHelpers
         double currentTime = storyboard->m_rCurrentTime;
         if (!wasStopped)
         {
-            MICROSOFT_TELEMETRY_ASSERT_HR(storyboard->Stop());
+            const HRESULT hr = storyboard->Stop();
+            MICROSOFT_TELEMETRY_ASSERT_HR(hr);
         }
 
         IFC_RETURN(modifyFunc());
@@ -1410,14 +1411,20 @@ namespace StoryboardHelpers
         }
         xref_ptr<CTimeSpan> time;
         CREATEPARAMETERS cp(storyboard->GetContext());
-        MICROSOFT_TELEMETRY_ASSERT_HR(CTimeSpan::Create(reinterpret_cast<CDependencyObject**>(time.ReleaseAndGetAddressOf()), &cp));
+
+        const HRESULT hrCreate = CTimeSpan::Create(reinterpret_cast<CDependencyObject**>(time.ReleaseAndGetAddressOf()), &cp);
+        MICROSOFT_TELEMETRY_ASSERT_HR(hrCreate);
+
         time->m_rTimeSpan = currentTime;
-        MICROSOFT_TELEMETRY_ASSERT_HR(storyboard->SeekAlignedToLastTick(time.get()));
+
+        const HRESULT hrSeekAlignedToLastTick = storyboard->SeekAlignedToLastTick(time.get());
+        MICROSOFT_TELEMETRY_ASSERT_HR(hrSeekAlignedToLastTick);
 
         // If we were paused, then pause the storyboard again. It was unpaused when we called Begin on it.
         if (wasPaused)
         {
-            MICROSOFT_TELEMETRY_ASSERT_HR(storyboard->Pause());
+            const HRESULT hr = storyboard->Pause();
+            MICROSOFT_TELEMETRY_ASSERT_HR(hr);
         }
         return S_OK;
     }

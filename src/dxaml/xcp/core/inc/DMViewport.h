@@ -57,6 +57,28 @@ public:
     // CDMCViewport Protected Constructor/Destructor
     // ------------------------------------------------------------------------
 protected:
+#ifdef DM_DEBUG
+    bool DM_TraceDbg() const
+    {
+        if constexpr (DMV_DBG)
+        {
+            return true;
+        }
+
+        return gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT);
+    }
+
+    bool DMv_TraceDbg() const
+    {
+        if constexpr (DMVv_DBG)
+        {
+            return true;
+        }
+
+        return gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | XCP_TRACE_VERBOSE));
+    }
+#endif // DM_DEBUG
+
     CDMCViewport(
         _In_ IPALDirectManipulationCompositorService* pDMCompositorService,
         _In_ IObject* pCompositorViewport,
@@ -75,7 +97,7 @@ protected:
         AddRefInterface(pCompositorPrimaryContent);
 
 #ifdef DM_DEBUG
-        if (DMVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | XCP_TRACE_VERBOSE)))
+        if (DMv_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | XCP_TRACE_VERBOSE | DMVv_DBG) /*traceType*/, L"DMVv[0x%p]:  CDMCViewport constructor.", this));
         }
@@ -85,7 +107,7 @@ protected:
     ~CDMCViewport() override
     {
 #ifdef DM_DEBUG
-        if (DMVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | XCP_TRACE_VERBOSE)))
+        if (DMv_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | XCP_TRACE_VERBOSE | DMVv_DBG) /*traceType*/, L"DMVv[0x%p]:  ~CDMCViewport destructor.", this));
         }
@@ -154,6 +176,32 @@ protected:
         m_fIsCrossSlideViewport = fIsCrossSlideViewport;
     }
 
+#ifdef DM_DEBUG
+    bool DM_TraceDbg() const
+    {
+        bool result = gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT);
+            
+        if constexpr (DMV_DBG)
+        {
+            result = true;
+        }
+
+        return result;
+    }
+
+    bool DMv_TraceDbg() const
+    {
+        bool result = gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | XCP_TRACE_VERBOSE));
+
+        if constexpr (DMVv_DBG)
+        {
+            result = true;
+        }
+
+        return result;
+    }
+#endif
+
     // ------------------------------------------------------------------------
     // CDMViewportBase Protected Constructor/Destructor
     // ------------------------------------------------------------------------
@@ -167,7 +215,7 @@ protected:
         SetIsCrossSlideViewport(FALSE);
 
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   CDMViewportBase constructor.", this));
         }
@@ -177,7 +225,7 @@ protected:
     ~CDMViewportBase() override
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   ~CDMViewportBase destructor.", this));
         }
@@ -241,7 +289,7 @@ public:
         }
 
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   DebugStatuses: %I64u.",
                 this, statuses));
@@ -264,7 +312,7 @@ public:
     void SetCompositorViewport(_In_opt_ IObject* pCompositorViewport)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetCompositorViewport - old=0x%p, new=0x%p.",
                 this, m_pCompositorViewport, pCompositorViewport));
@@ -281,7 +329,7 @@ public:
     void SetCompositorPrimaryContent(_In_opt_ IObject* pCompositorPrimaryContent)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetCompositorPrimaryContent - old=0x%p, new=0x%p.",
                 this, m_pCompositorPrimaryContent, pCompositorPrimaryContent));
@@ -312,7 +360,7 @@ public:
     void SetIsPrimaryContentLayoutRefreshedAfterStart(_In_ bool fIsPrimaryContentLayoutRefreshedAfterStart)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetIsPrimaryContentLayoutRefreshedAfterStart - old=%d, new=%d.",
                 this, m_fIsPrimaryContentLayoutRefreshedAfterStart, fIsPrimaryContentLayoutRefreshedAfterStart));
@@ -331,7 +379,7 @@ public:
     void SetIsPrimaryContentLayoutRefreshedAfterCompletion(_In_ bool fIsPrimaryContentLayoutRefreshedAfterCompletion)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetIsPrimaryContentLayoutRefreshedAfterCompletion - old=%d, new=%d.",
                 this, m_fIsPrimaryContentLayoutRefreshedAfterCompletion, fIsPrimaryContentLayoutRefreshedAfterCompletion));
@@ -348,7 +396,7 @@ public:
     void SetIsTouchConfigurationActivated(_In_ bool fIsTouchConfigurationActivated)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetIsTouchConfigurationActivated - old=%d, new=%d.",
                 this, m_fIsTouchConfigurationActivated, fIsTouchConfigurationActivated));
@@ -365,7 +413,7 @@ public:
     void SetIsNonTouchConfigurationActivated(_In_ bool fIsNonTouchConfigurationActivated)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetIsNonTouchConfigurationActivated - old=%d, new=%d.",
                 this, m_fIsNonTouchConfigurationActivated, fIsNonTouchConfigurationActivated));
@@ -387,7 +435,7 @@ public:
     void SetIsTouchInteractionEndExpected(_In_ bool fIsTouchInteractionEndExpected)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetIsTouchInteractionEndExpected - old=%d, new=%d.",
                 this, m_fIsTouchInteractionEndExpected, fIsTouchInteractionEndExpected));
@@ -404,7 +452,7 @@ public:
     void SetIsTouchInteractionStartProcessed(_In_ bool fIsTouchInteractionStartProcessed)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetIsTouchInteractionStartProcessed - old=%d, new=%d.",
                 this, m_fIsTouchInteractionStartProcessed, fIsTouchInteractionStartProcessed));
@@ -421,7 +469,7 @@ public:
     void SetIsProcessingMakeVisibleInertia(_In_ bool fIsProcessingMakeVisibleInertia)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetIsProcessingMakeVisibleInertia - old=%d, new=%d.",
                 this, m_fIsProcessingMakeVisibleInertia, fIsProcessingMakeVisibleInertia));
@@ -448,7 +496,7 @@ public:
     void SetHasNewManipulation(_In_ bool fHasNewManipulation)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetHasNewManipulation - old=%d, new=%d (HasOldManipulation=%d, IsCompositorAware=%d).",
                 this, m_fHasNewManipulation, fHasNewManipulation, m_fHasOldManipulation, m_fIsCompositorAware));
@@ -465,7 +513,7 @@ public:
     void SetHasOldManipulation(_In_ bool fHasOldManipulation)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetHasOldManipulation - old=%d, new=%d.",
                 this, m_fHasOldManipulation, fHasOldManipulation));
@@ -499,7 +547,7 @@ public:
     void SetHasDelayedStatusChangeProcessing(_In_ bool fHasDelayedStatusChangeProcessing)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetHasDelayedStatusChangeProcessing - old=%d, new=%d.",
                 this, m_fHasDelayedStatusChangeProcessing, fHasDelayedStatusChangeProcessing));
@@ -516,7 +564,7 @@ public:
     void SetHasReceivedContactIdInInertia(_In_ bool fHasReceivedContactIdInInertia)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetHasReceivedContactIdInInertia - old=%d, new=%d.",
                 this, m_fHasReceivedContactIdInInertia, fHasReceivedContactIdInInertia));
@@ -533,7 +581,7 @@ public:
     void SetNeedsUnregistration(_In_ bool fNeedsUnregistration)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetNeedsUnregistration - old=%d, new=%d.",
                 this, m_fNeedsUnregistration, fNeedsUnregistration));
@@ -555,7 +603,7 @@ public:
     void IncrementRemovedRunningStatuses()
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   IncrementRemovedRunningStatuses - old=%d, new=%d.",
                 this, m_cRemovedRunningStatuses, m_cRemovedRunningStatuses + 1));
@@ -567,7 +615,7 @@ public:
     void DecrementRemovedRunningStatuses()
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   DecrementRemovedRunningStatuses - old=%d, new=%d.",
                 this, m_cRemovedRunningStatuses, m_cRemovedRunningStatuses - 1));
@@ -595,7 +643,7 @@ public:
     void SetIsCompletedStateSkipped(_In_ bool fIsCompletedStateSkipped)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetIsCompletedStateSkipped - old=%d, new=%d.",
                 this, m_fIsCompletedStateSkipped, fIsCompletedStateSkipped));
@@ -672,7 +720,7 @@ public:
         _In_ XFLOAT initialZoomFactorY)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/,
                 L"DMV[0x%p]:   SetInitialTransformationValues - initialTranslationX=%4.6lf, initialTranslationY=%4.6lf, initialUncompressedZoomFactor=%4.8lf, initialZoomFactorX=%4.8lf, initialZoomFactorY=%4.8lf.",
@@ -711,7 +759,7 @@ public:
         _In_ XFLOAT zoomFactorY)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/,
                 L"DMV[0x%p]:   SetCurrentTransformationValues - translationX=%4.6lf, translationY=%4.6lf, uncompressedZoomFactor=%4.8lf, zoomFactorX=%4.8lf, zoomFactorY=%4.8lf.",
@@ -741,7 +789,7 @@ public:
         _In_ XFLOAT autoScrollYVelocity)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/,
                 L"DMV[0x%p]:   SetCurrentAutoScrollVelocities - autoScrollXVelocity=%4.6lf, autoScrollYVelocity=%4.6lf.",
@@ -767,7 +815,7 @@ public:
         _In_ XFLOAT translationAdjustmentY)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetTranslationAdjustments - translationAdjustmentX=%4.6lf, translationAdjustmentY=%4.6lf.",
                 this, translationAdjustmentX, translationAdjustmentY));
@@ -790,7 +838,7 @@ public:
         _In_ XFLOAT marginY)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetMargins - marginX=%4.6lf, marginY=%4.6lf.",
                 this, marginX, marginY));
@@ -813,7 +861,7 @@ public:
         _In_ XFLOAT initialContentOffsetY)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetInitialContentOffsets - initialContentOffsetX=%4.6lf, initialContentOffsetY=%4.6lf.",
                 this, initialContentOffsetX, initialContentOffsetY));
@@ -836,7 +884,7 @@ public:
         _In_ XFLOAT contentOffsetY)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetContentOffsets - contentOffsetX=%4.6lf, contentOffsetY=%4.6lf.",
                 this, contentOffsetX, contentOffsetY));
@@ -869,7 +917,7 @@ public:
         _In_ float targetTranslationY)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetTargetTranslations - targetTranslationX=%4.6lf, targetTranslationY=%4.6lf.",
                 this, targetTranslationX, targetTranslationY));
@@ -897,7 +945,7 @@ public:
         _In_ XFLOAT zoomFactor)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetCompositorTransformationValues - translationX=%4.6lf, translationY=%4.6lf, zoomFactor=%4.8lf.",
                 this, translationX, translationY, zoomFactor));
@@ -932,7 +980,7 @@ public:
     void IncrementIgnoredRunningStatuses()
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   IncrementIgnoredRunningStatuses - old=%d, new=%d.",
                 this, m_cIgnoredRunningStatuses, m_cIgnoredRunningStatuses + 1));
@@ -944,7 +992,7 @@ public:
     void DecrementIgnoredRunningStatuses()
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   DecrementIgnoredRunningStatuses - old=%d, new=%d.",
                 this, m_cIgnoredRunningStatuses, m_cIgnoredRunningStatuses - 1));
@@ -1045,7 +1093,7 @@ public:
     void SetHasDMHitTestContactId(_In_ bool fHasDMHitTestContactId)
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   SetHasDMHitTestContactId - old=%d, new=%d.",
                 this, m_fHasDMHitTestContactId, fHasDMHitTestContactId));
@@ -1182,7 +1230,7 @@ private:
         AddRefInterface(pManipulatedElement);
 
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   CDMViewport constructor.", this));
         }
@@ -1192,7 +1240,7 @@ private:
     ~CDMViewport() override
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   ~CDMViewport destructor.", this));
         }
@@ -1201,8 +1249,8 @@ private:
         ReleaseInterface(m_pManipulatedElement);
         ReleaseInterface(m_pCompositorViewport);
         ReleaseInterface(m_pCompositorPrimaryContent);
-        ClearContents();
-        ClearClipContents();
+        IFCFAILFAST(ClearContents());
+        IFCFAILFAST(ClearClipContents());
     }
 
 
@@ -1521,7 +1569,7 @@ private:
         SetIsCrossSlideViewport(TRUE);
 
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   CDMCrossSlideViewport constructor.", this));
         }
@@ -1531,7 +1579,7 @@ private:
     ~CDMCrossSlideViewport() override
     {
 #ifdef DM_DEBUG
-        if (DMV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT))
+        if (DM_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER_VIEWPORT | DMV_DBG) /*traceType*/, L"DMV[0x%p]:   ~CDMCrossSlideViewport destructor.", this));
         }

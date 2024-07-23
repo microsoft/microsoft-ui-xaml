@@ -49,6 +49,7 @@ IFACEMETHODIMP DirectUI::DragStartedEventArgsGenerated::get_HorizontalOffset(_Ou
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<DragStartedEventArgs*>(this)->get_HorizontalOffsetImpl(pValue));
 Cleanup:
@@ -67,6 +68,7 @@ IFACEMETHODIMP DirectUI::DragStartedEventArgsGenerated::get_VerticalOffset(_Out_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<DragStartedEventArgs*>(this)->get_VerticalOffsetImpl(pValue));
 Cleanup:

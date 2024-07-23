@@ -129,7 +129,7 @@ namespace Microsoft.UI.Xaml.Controls
         Popup,
         InPlace,
         [feature(Feature_ExperimentalApi)]
-        [contract(Microsoft.UI.Xaml.WinUIContract, 6)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 7)]
         UnconstrainedPopup,
     };
 
@@ -1421,10 +1421,10 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass ItemsWrapGrid
+    unsealed runtimeclass ItemsWrapGrid
         : Microsoft.UI.Xaml.Controls.Panel
     {
-        ItemsWrapGrid();
+        [method_name("CreateInstance")] ItemsWrapGrid();
         Microsoft.UI.Xaml.Thickness GroupPadding;
         Microsoft.UI.Xaml.Controls.Orientation Orientation;
         Int32 MaximumRowsOrColumns;
@@ -1728,9 +1728,6 @@ namespace Microsoft.UI.Xaml.Controls
     [inputproperty("Text")]
     runtimeclass AutoSuggestBox
         : Microsoft.UI.Xaml.Controls.ItemsControl
-        , [feature(Feature_InputValidation)]
-        [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-        Microsoft.UI.Xaml.Controls.IInputValidationControl
     {
         AutoSuggestBox();
         Double MaxSuggestionListHeight;
@@ -1768,15 +1765,6 @@ namespace Microsoft.UI.Xaml.Controls
         {
             Microsoft.UI.Xaml.Controls.ControlHeaderPlacement HeaderPlacement;
             static Microsoft.UI.Xaml.DependencyProperty HeaderPlacementProperty{ get; };
-        }
-    
-        [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-        [feature(Feature_InputValidation)]
-        [static_name("Microsoft.UI.Xaml.Controls.IAutoSuggestBoxStaticsFeature_InputValidation")]
-        {
-            static Microsoft.UI.Xaml.DependencyProperty ErrorTemplateProperty{ get; };
-            static Microsoft.UI.Xaml.DependencyProperty InputValidationModeProperty{ get; };
-            static Microsoft.UI.Xaml.DependencyProperty InputValidationKindProperty{ get; };
         }
     };
 

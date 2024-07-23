@@ -57,6 +57,7 @@ IFACEMETHODIMP DirectUI::ManipulationStartingRoutedEventArgs::get_Mode(_Out_ ABI
     DirectUI::ManipulationModes valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CManipulationStartingEventArgs*>(pCoreEventArgsNoRef)->get_Mode(&valueCore));
@@ -90,6 +91,7 @@ IFACEMETHODIMP DirectUI::ManipulationStartingRoutedEventArgs::get_Container(_Out
     CUIElement* pValueCore = nullptr;
 
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CManipulationStartingEventArgs*>(pCoreEventArgsNoRef)->get_Container(&pValueCore));
@@ -123,6 +125,7 @@ IFACEMETHODIMP DirectUI::ManipulationStartingRoutedEventArgs::get_Pivot(_Outptr_
     CManipulationPivot* pValueCore = nullptr;
 
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CManipulationStartingEventArgs*>(pCoreEventArgsNoRef)->get_Pivot(&pValueCore));
@@ -156,6 +159,7 @@ IFACEMETHODIMP DirectUI::ManipulationStartingRoutedEventArgs::get_Handled(_Out_ 
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CManipulationStartingEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));

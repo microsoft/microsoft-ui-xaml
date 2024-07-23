@@ -63,6 +63,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementAutomationPeerGenerated::GetAutomationP
     }
     ARG_NOTNULL(pElement, "element");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<FrameworkElementAutomationPeer*>(this)->GetAutomationPeersForChildrenOfElementImpl(pElement, ppResult));
@@ -122,6 +123,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementAutomationPeerFactory::FromElement(_In_
     }
     ARG_NOTNULL(pElement, "element");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(FromElementImpl(pElement, ppReturnValue));
 Cleanup:
@@ -140,6 +142,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementAutomationPeerFactory::CreatePeerForEle
     }
     ARG_NOTNULL(pElement, "element");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(CreatePeerForElementImpl(pElement, ppReturnValue));
 Cleanup:

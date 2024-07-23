@@ -363,6 +363,7 @@ namespace Microsoft.UI.Xaml.Hosting
         [Version(2)]
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [TypeTable(IsExcludedFromDXaml = true)]
+        [OptionalReturnValue]
 	    public static WindowsXamlManager GetForCurrentThread()
         {
             return default(WindowsXamlManager);

@@ -335,7 +335,6 @@
                 <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
                 <Setter Property="FontSize" Value="{ThemeResource CalendarViewHeaderNavigationButtonFontSize}" />
                 <Setter Property="FontWeight" Value="{ThemeResource CalendarViewHeaderNavigationFontWeight}" />
-                <Setter Property="Foreground" Value="{ThemeResource CalendarViewHeaderNavigationButtonForeground}" />
                 <Setter Property="Background" Value="{ThemeResource CalendarViewNavigationButtonBackground}" />
                 <Setter Property="Margin" Value="{ThemeResource CalendarViewHeaderNavigationButtonMargin}" />
                 <Setter Property="Padding" Value="{ThemeResource CalendarViewHeaderNavigationButtonPadding}" />
@@ -381,7 +380,6 @@
                 <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
                 <Setter Property="FontSize" Value="{ThemeResource CalendarViewNavigationButtonFontSize}" />
                 <Setter Property="Background" Value="{ThemeResource CalendarViewNavigationButtonBackground}" />
-                <Setter Property="Foreground" Value="{ThemeResource CalendarViewNavigationButtonForeground}" />
                 <Setter Property="Padding" Value="{ThemeResource CalendarViewNavigationButtonPadding}" />
                 <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
                 <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
@@ -680,9 +678,9 @@
                   <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Button x:Name="HeaderButton" Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HeaderText}" IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HasMoreViews}" Style="{StaticResource HeaderNavigationButtonStyle}" HorizontalContentAlignment="Left" />
-                <Button x:Name="PreviousButton" Grid.Column="1" Content="&#xEDDB;" IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HasMoreContentBefore}" Style="{StaticResource NavigationButtonStyle}" Margin="{ThemeResource CalendarViewNavigationPreviousButtonMargin}" HorizontalContentAlignment="Center" />
-                <Button x:Name="NextButton" Grid.Column="2" Content="&#xEDDC;" IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HasMoreContentAfter}" Style="{StaticResource NavigationButtonStyle}" Margin="{ThemeResource CalendarViewNavigationNextButtonMargin}" HorizontalContentAlignment="Center" />
+                <Button x:Name="HeaderButton" Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HeaderText}" IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HasMoreViews}" Style="{StaticResource HeaderNavigationButtonStyle}" Foreground="{TemplateBinding Foreground}" HorizontalContentAlignment="Left" />
+                <Button x:Name="PreviousButton" Grid.Column="1" Content="&#xEDDB;" IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HasMoreContentBefore}" Style="{StaticResource NavigationButtonStyle}" Foreground="{TemplateBinding Foreground}" Margin="{ThemeResource CalendarViewNavigationPreviousButtonMargin}" HorizontalContentAlignment="Center" />
+                <Button x:Name="NextButton" Grid.Column="2" Content="&#xEDDC;" IsEnabled="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.HasMoreContentAfter}" Style="{StaticResource NavigationButtonStyle}" Foreground="{TemplateBinding Foreground}" Margin="{ThemeResource CalendarViewNavigationNextButtonMargin}" HorizontalContentAlignment="Center" />
               </Grid>
               <Border Grid.Row="1" Height="1" Background="{TemplateBinding BorderBrush}" />
               <Grid x:Name="Views" Grid.Row="2">

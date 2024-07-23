@@ -44,11 +44,11 @@ struct KeyTip
     KeyTip(const KeyTip& other) = delete;
     KeyTip& operator=(const KeyTip& other) = delete;
 
-    KeyTip(_Inout_ KeyTip&& other)
+    KeyTip(_Inout_ KeyTip&& other) noexcept
     {
         *this = std::move(other);
     }
-    KeyTip& operator=(_Inout_ KeyTip&& other)
+    KeyTip& operator=(_Inout_ KeyTip&& other) noexcept
     {
         Popup = std::move(other.Popup);
         Object = std::move(other.Object);

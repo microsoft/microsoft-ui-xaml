@@ -244,12 +244,6 @@ XMLLITE_XML_E_INVALID_HEXIDECIMAL     "invalid hexidecimal"
 XMLLITE_XML_E_INVALID_UNICODE         "invalid unicode"
 XMLLITE_XML_E_INVALIDENCODING         "invalid encoding"
 
-AG_E_CAPTURE_DEVICE_IN_USE          "The capture device you are attempting to use is already being used"
-AG_E_CAPTURE_DEVICE_REMOVED         "The capture device was removed"
-AG_E_CAPTURE_DEVICE_ACCESS_DENIED   "Access denied to capture devices"
-AG_E_CAPTURE_SOURCE_NOT_STOPPED     "Capture source is not stopped"
-AG_E_CAPTURE_DEVICE_NOT_AVAILABLE   "Capture device is not available"
-
 AG_E_SWAPCHAINBACKGROUNDPANEL_UNSUPPORTED_ALPHAMODE "SwapChainBackgroundPanel does not support setting a swap chain with premultiplied alpha mode."
 AG_E_SWAPCHAINBACKGROUNDPANEL_UNSUPPORTED_SWAPCHAINTYPE "SwapChainBackgroundPanel only supports setting a swap chain created with CreateSwapChainForComposition()."
 AG_E_SWAPCHAINBACKGROUNDPANEL_ERROR_SETUNSUPPORTEDPROPERTY "Setting '%0' property is not supported on SwapChainBackgroundPanel."

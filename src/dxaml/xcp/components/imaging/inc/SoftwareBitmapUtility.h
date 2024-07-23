@@ -12,7 +12,7 @@ namespace SoftwareBitmapUtility
     static _Check_return_ HRESULT CreateSoftwareBitmap(
         uint32_t width,
         uint32_t height,
-        _Outref_ wrl::ComPtr<wgri::ISoftwareBitmap>& spSoftwareBitmap
+        _Out_ wrl::ComPtr<wgri::ISoftwareBitmap>& spSoftwareBitmap
         );
 
     static _Check_return_ HRESULT CreateSoftwareBitmap(
@@ -20,13 +20,13 @@ namespace SoftwareBitmapUtility
         uint32_t height,
         wgri::BitmapPixelFormat pixelFormat,
         wgri::BitmapAlphaMode alphaMode,
-        _Outref_ wrl::ComPtr<wgri::ISoftwareBitmap>& spSoftwareBitmap
+        _Out_ wrl::ComPtr<wgri::ISoftwareBitmap>& spSoftwareBitmap
         );
 
     static _Check_return_ HRESULT CreateSoftwareBitmap(
         _In_ const wrl::ComPtr<IWICBitmap>& spWicBitmap,
         bool readOnly,
-        _Outref_ wrl::ComPtr<wgri::ISoftwareBitmap>& spSoftwareBitmap
+        _Out_ wrl::ComPtr<wgri::ISoftwareBitmap>& spSoftwareBitmap
         );
 
     // Validates the SoftwareBitmap fulfills the requirements for use in XAML

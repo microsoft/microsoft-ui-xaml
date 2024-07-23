@@ -327,7 +327,7 @@ public:
             _pI->AddRef();
         }
     }
-    RoVariant(RoVariant&& other)
+    RoVariant(RoVariant&& other) noexcept
     {
         _pI = other._pI;
         _hrState = other._hrState;

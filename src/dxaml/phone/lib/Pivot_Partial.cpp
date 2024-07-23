@@ -2802,7 +2802,7 @@ _Check_return_ HRESULT Pivot::OnHeaderFocusVisualPlacementChanged()
             {
                 // For SelectedItemHeader, we use the FocusFollower as the template focus target
                 spIControlStatics->SetIsTemplateFocusTarget(m_tpFocusFollower.Get(), true);
-                UpdateFocusFollower();
+                IFC_RETURN(UpdateFocusFollower());
             }
             else
             {

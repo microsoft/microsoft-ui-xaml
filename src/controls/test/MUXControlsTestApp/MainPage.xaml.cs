@@ -21,6 +21,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using MUXControlsTestApp.Utilities;
 using Common;
 
 using WEX.TestExecution;
@@ -176,6 +177,9 @@ namespace MUXControlsTestApp
             {
                 RasterizationScaleTextBox.Text = XamlRoot.RasterizationScale.ToString();
             }
+
+            var navigateToTestCommand = Resources["NavigateToTestCommand"] as NavigateToTestCommand;
+            navigateToTestCommand.TestFrame = this.FindVisualParentByType<TestFrame>();
         }
 
         public List<TestDeclaration> Tests

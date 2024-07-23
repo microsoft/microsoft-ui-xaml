@@ -228,7 +228,7 @@ _Check_return_ HRESULT DirectUI::ToolTipGenerated::EventAddHandlerByIndex(_In_ K
     case KnownEventIndex::ToolTip_Closed:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IRoutedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -245,7 +245,7 @@ _Check_return_ HRESULT DirectUI::ToolTipGenerated::EventAddHandlerByIndex(_In_ K
     case KnownEventIndex::ToolTip_Opened:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IRoutedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -274,7 +274,7 @@ _Check_return_ HRESULT DirectUI::ToolTipGenerated::EventRemoveHandlerByIndex(_In
     case KnownEventIndex::ToolTip_Closed:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IRoutedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -291,7 +291,7 @@ _Check_return_ HRESULT DirectUI::ToolTipGenerated::EventRemoveHandlerByIndex(_In
     case KnownEventIndex::ToolTip_Opened:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IRoutedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

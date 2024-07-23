@@ -562,30 +562,27 @@ CUIElementCollectionWrapper CUIElement::GetUnsortedChildren()
     return CUIElementCollectionWrapper(GetChildren());
 }
 
-void CUIElement::LockParent()
+wil::details::lambda_call<std::function<void()>> CUIElement::LockParent()
 {
+    xref_ptr<CCollection> pCollection;
     CUIElement* pParent = GetUIElementParentInternal();
     if (pParent)
     {
-        CCollection *pCollection = pParent->GetChildren();
+        pCollection = pParent->GetChildren();
         if (pCollection)
         {
             pCollection->Lock();
         }
     }
-}
 
-void CUIElement::UnlockParent()
-{
-    CUIElement* pParent = GetUIElementParentInternal();
-    if (pParent)
-    {
-        CCollection *pCollection = pParent->GetChildren();
-        if (pCollection)
+    // make sure we unlock when we are done.
+    return wil::scope_exit<std::function<void()>>([pCollection]
         {
-            pCollection->Unlock();
-        }
-    }
+            if (pCollection)
+            {
+                pCollection->Unlock();
+            }
+        });
 }
 
 bool CUIElement::HasDepthLegacy() const
@@ -2180,7 +2177,7 @@ void CUIElement::UpdateHasTranslateZ(const wfn::Vector3& translation)
         // If the Z component of Translation is non-zero, we need to create a CompNode as this element is essentially now in 3D space
         if (!HasTranslateZ())
         {
-            SetRequiresComposition(CompositionRequirement::HasTranslateZ, IndependentAnimationType::None);
+            IFCFAILFAST(SetRequiresComposition(CompositionRequirement::HasTranslateZ, IndependentAnimationType::None));
         }
     }
     else
@@ -2258,7 +2255,7 @@ void CUIElement::UpdateHasNonZeroRotation(float rotation)
         // If the rotation non-zero, we need to create a CompNode as this element no longer axis-aligned
         if (!HasNonZeroRotation())
         {
-            SetRequiresComposition(CompositionRequirement::HasNonZeroRotation, IndependentAnimationType::None);
+            IFCFAILFAST(SetRequiresComposition(CompositionRequirement::HasNonZeroRotation, IndependentAnimationType::None));
         }
     }
     else
@@ -2356,7 +2353,7 @@ void CUIElement::UpdateHasScaleZ(const wfn::Vector3& scale)
         // keep updated so we keep it simple and always back the element with a CompNode in this case.
         if (!HasScaleZ())
         {
-            SetRequiresComposition(CompositionRequirement::HasScaleZ, IndependentAnimationType::None);
+            IFCFAILFAST(SetRequiresComposition(CompositionRequirement::HasScaleZ, IndependentAnimationType::None));
         }
     }
     else
@@ -2423,7 +2420,7 @@ void CUIElement::UpdateHasNonIdentityTransformMatrix(const wfn::Matrix4x4& trans
         // If the transform matrix is not identity, we assume it has some component that requires a CompNode (eg depth)
         if (!HasNonIdentityTransformMatrix())
         {
-            SetRequiresComposition(CompositionRequirement::HasNonIdentityTransformMatrix, IndependentAnimationType::None);
+            IFCFAILFAST(SetRequiresComposition(CompositionRequirement::HasNonIdentityTransformMatrix, IndependentAnimationType::None));
         }
     }
     else
@@ -2466,7 +2463,7 @@ void CUIElement::UpdateHasNonZeroCenterPoint(const wfn::Vector3& centerPoint)
         // If the CenterPoint is not (0,0,0) we assume it interplays with other properties in a way that requires a CompNode
         if (!HasNonZeroCenterPoint())
         {
-            SetRequiresComposition(CompositionRequirement::HasNonZeroCenterPoint, IndependentAnimationType::None);
+            IFCFAILFAST(SetRequiresComposition(CompositionRequirement::HasNonZeroCenterPoint, IndependentAnimationType::None));
         }
     }
     else
@@ -2538,12 +2535,12 @@ double CUIElement::GetRasterizationScaleIncludingAncestors()
     {
         rasterizationScale *= element->GetRasterizationScale();
 
-        // Note: This walks through windowed popups, as well. It's expected that windowed popups are treated the same way as
-        // normal popups as far as RasterizationScale goes - i.e. the child of a popup will inherit all RasterizationScales
-        // above it, regardless of whether the popup is windowed. This means whatever is hosting the windowed popup (hwnd or
-        // an island) should be scaled by the system the same way as whatever is hosting the main tree (CoreWindow or an
-        // island). Otherwise, we end up with inconsistent behavior where the popup's content can be sharp or blurry/grainy
-        // depending on whether that popup is windowed.
+        // Note: This walks through windowed popups, as well. It's expected that windowed popups are treated the same
+        // way as normal popups as far as RasterizationScale goes - i.e. the child of a popup will inherit all
+        // RasterizationScales above it, regardless of whether the popup is windowed. This means the island hosting the
+        // windowed popup should be scaled by the system the same way as whatever is hosting the main tree (an island,
+        // or a CoreWindow for some tests). Otherwise, we end up with inconsistent behavior where the popup's content
+        // can be sharp or blurry/grainy depending on whether that popup is windowed.
         CDependencyObject* elementAncestor = element->GetParentFollowPopups();
         ASSERT(!elementAncestor || elementAncestor->OfTypeByIndex(KnownTypeIndex::UIElement));  // The parent of a UIElement must be a UIElement
         element = static_cast<CUIElement*>(elementAncestor);
@@ -2617,7 +2614,7 @@ void CUIElement::UpdateHasNonDefaultRotationAxis(const wfn::Vector3& rotationAxi
         // If the RotationAxis is not (0,0,1) we assume it interplays with other properties in a way that requires a CompNode
         if (!HasNonDefaultRotationAxis())
         {
-            SetRequiresComposition(CompositionRequirement::HasNonDefaultRotationAxis, IndependentAnimationType::None);
+            IFCFAILFAST(SetRequiresComposition(CompositionRequirement::HasNonDefaultRotationAxis, IndependentAnimationType::None));
         }
     }
     else
@@ -2703,7 +2700,7 @@ _Check_return_ HRESULT CUIElement::StartAnimationImpl(_In_ WUComp::ICompositionA
 
     if (!HasFacadeAnimation())
     {
-        SetRequiresComposition(CompositionRequirement::HasFacadeAnimation, IndependentAnimationType::None);
+        IFCFAILFAST(SetRequiresComposition(CompositionRequirement::HasFacadeAnimation, IndependentAnimationType::None));
     }
 
     DOFacadeAnimationInfo* opacityFacadeAnimation = GetContext()->GetFacadeStorage().TryGetFacadeAnimationInfo(this, KnownPropertyIndex::UIElement_Opacity);
@@ -3618,7 +3615,7 @@ void CUIElement::AddedAsShadowReceiver()
 
     if (usageCount == 1)
     {
-        SetRequiresComposition(CompositionRequirement::ProjectedShadowCustomReceiver, IndependentAnimationType::None);
+        IFCFAILFAST(SetRequiresComposition(CompositionRequirement::ProjectedShadowCustomReceiver, IndependentAnimationType::None));
     }
 }
 

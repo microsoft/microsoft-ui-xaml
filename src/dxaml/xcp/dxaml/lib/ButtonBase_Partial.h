@@ -153,7 +153,7 @@ namespace DirectUI
                 _In_ bool bLive,
                 _In_ bool bSkipNameRegistration,
                 _In_ bool bCoercedIsEnabled,
-                _In_ bool bUseLayoutRounding) final;
+                _In_ bool bUseLayoutRounding) override;
 
             // Called when the element leaves the tree. Detaches event handler from Command.CanExecuteChanged.
             _Check_return_ HRESULT LeaveImpl(

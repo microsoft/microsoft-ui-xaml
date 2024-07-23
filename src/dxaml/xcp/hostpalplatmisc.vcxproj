@@ -78,8 +78,6 @@
     <ClCompile Include="pal\win\DWriteFontCollection.cpp"/>
     <ClCompile Include="pal\win\DWriteFontFamily.cpp"/>
     <ClCompile Include="pal\win\DWriteFontFace.cpp"/>
-    <ClCompile Include="pal\win\DXamlFontFileEnumerator.cpp"/>
-    <ClCompile Include="pal\win\DXamlFontCollectionLoader.cpp"/>
 
     <ClCompile Include="plat\win\common\math.cpp"/>
     <ClCompile Include="plat\win\common\memory.cpp"/>

@@ -39,5 +39,6 @@
         <Button x:Name="navigateToIntegration" AutomationProperties.Name="navigateToIntegration" Margin="2" HorizontalAlignment="Stretch">ItemsView/ItemContainer/AnnotatedScrollBar in integration page</Button>
         <Button x:Name="navigateToBlank" AutomationProperties.Name="navigateToBlank" Margin="2" HorizontalAlignment="Stretch">ItemsView in blank page</Button>
         <Button x:Name="navigateToTransitionProvider" AutomationProperties.Name="navigateToTransitionProvider" Margin="2" HorizontalAlignment="Stretch">Testing ItemsView.ItemCollectionTransitionProvider</Button>
+        <Button x:Name="navigateToPictureLibrary" AutomationProperties.Name="navigateToPictureLibrary" Margin="2" HorizontalAlignment="Stretch">Picture library page</Button>
     </StackPanel>
 </local:TestPage>

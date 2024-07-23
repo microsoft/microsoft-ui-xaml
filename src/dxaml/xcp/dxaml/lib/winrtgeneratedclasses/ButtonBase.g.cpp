@@ -153,7 +153,7 @@ _Check_return_ HRESULT DirectUI::ButtonBaseGenerated::EventAddHandlerByIndex(_In
     case KnownEventIndex::ButtonBase_Click:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IRoutedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -182,7 +182,7 @@ _Check_return_ HRESULT DirectUI::ButtonBaseGenerated::EventRemoveHandlerByIndex(
     case KnownEventIndex::ButtonBase_Click:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IRoutedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

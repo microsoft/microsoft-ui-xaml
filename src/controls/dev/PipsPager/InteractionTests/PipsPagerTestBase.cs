@@ -101,6 +101,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             elements.GetOrientationComboBox().SelectItemByName($"{orientation}Orientation");
         }
+        
+        protected void SetWrapMode(WrapMode wrapMode)
+        {
+            elements.GetWrapModeComboBox().SelectItemByName($"{wrapMode}");
+        }
 
         protected void VerifyOrientationChanged(OrientationType orientation)
         {
@@ -167,6 +172,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         protected int GetSelectedNumberOfPagesAsInt32()
         {
+            var selectedNumberOfPages = GetSelectedNumberOfPages();
+            if (selectedNumberOfPages == "Infinite")
+            {
+                return -1;
+            }
             return Convert.ToInt32(GetSelectedNumberOfPages());
         }
         protected void VerifyNumberOfPages(string numberOfPages)
@@ -196,10 +206,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public enum NumberOfPagesOptions
         {
             Zero,
+            One,
             Five,
             Ten,
             Twenty,
             Infinite
+        }
+
+        public enum WrapMode
+        {
+            None,
+            Wrap
         }
     }
 }

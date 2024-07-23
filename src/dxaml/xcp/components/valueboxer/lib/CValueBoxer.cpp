@@ -2732,7 +2732,7 @@ _Check_return_ HRESULT CValueBoxer::GetTypeInfoFromCValue(
                 uint32_t enumValue = 0;
                 KnownTypeIndex enumTypeIndex = KnownTypeIndex::UnknownType;
 
-                box->GetEnum(enumValue, enumTypeIndex);
+                IGNOREHR(box->GetEnum(enumValue, enumTypeIndex));
 
                 if (enumTypeIndex != KnownTypeIndex::UnknownType)
                 {

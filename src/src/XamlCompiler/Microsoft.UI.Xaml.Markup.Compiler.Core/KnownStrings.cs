@@ -114,6 +114,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public const string InputValidationContext = KnownNamespaces.XamlControls + ".InputValidationContext";
         public const string InputValidationCommand = KnownNamespaces.XamlControls + ".InputValidationCommand";
         public const string InputValidationError = KnownNamespaces.XamlControls + ".InputValidationError";
+        public const string XamlControlsXamlMetaDataProvider = KnownNamespaces.XamlXamlTypeInfo + ".XamlControlsXamlMetaDataProvider";
 
         // Xaml.Controls.Primitives
         public const string ComponentResourceLocation = KnownNamespaces.XamlControlsPrimitives + ".ComponentResourceLocation";

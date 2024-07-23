@@ -23,7 +23,7 @@ namespace DirectUI
             ctl::ComPtr<xaml_animation::IConnectedAnimation> m_animation;
             ctl::ComPtr<IInspectable> m_item;
             ctl::ComPtr<ListViewBase> m_listview;
-            HSTRING m_elementName;
+            HSTRING m_elementName{};
             boolean m_result = false;
 
         public:

@@ -177,8 +177,8 @@ CSvgImageSource::OnDownloadImageAvailableImpl(
 _Check_return_ HRESULT CSvgImageSource::GetID2D1SvgDocument(
     _In_ ID2D1DeviceContext5* d2dDeviceContextNoRef, //Note the ID2D1SvgDocument object needs to be created by the same D2D factory, that's why this ID2D1DeviceContext5 is passed in as a parameter.
     _Out_ wrl::ComPtr<ID2D1SvgDocument>& d2dSvgDocumentOut,
-    _Outptr_ uint32_t* width,
-    _Outptr_ uint32_t* height
+    _Out_ uint32_t* width,
+    _Out_ uint32_t* height
     )
 {
     d2dSvgDocumentOut.Reset();

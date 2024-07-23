@@ -29,7 +29,7 @@ _Check_return_ HRESULT CFontTypeface::MapCharacters(
         pLocaleName,
         pLocaleNameList,
         pNumberSubstitutionData,
-        m_weightStyleStretch,
+        m_fontFaceCriteria,
         ppMappedFontFace,
         pMappedLength,
         pMappedScale

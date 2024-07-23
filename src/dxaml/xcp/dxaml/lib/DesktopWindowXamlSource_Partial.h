@@ -47,7 +47,7 @@ namespace DirectUI
 
         _Check_return_ HRESULT get_HasFocusImpl(_Out_ boolean* pResult);
 
-        _Check_return_ HRESULT get_ShouldConstrainPopupsToWorkAreaImpl(_Outptr_ boolean* pValue);
+        _Check_return_ HRESULT get_ShouldConstrainPopupsToWorkAreaImpl(_Out_ boolean* pValue);
         _Check_return_ HRESULT put_ShouldConstrainPopupsToWorkAreaImpl(_In_opt_ boolean value);
 
         _Check_return_ HRESULT GetGotFocusEventSourceNoRef(_Outptr_ GotFocusEventSourceType** ppEventSource) override;

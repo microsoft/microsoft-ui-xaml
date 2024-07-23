@@ -81,7 +81,7 @@
             Margin=0,0,0,0
             Name=OffContentPresenter
             Padding=0,0,0,0
-            RenderSize=20,19
+            RenderSize=20,17
             Visibility=Visible
           [Microsoft.UI.Xaml.Controls.TextBlock]
               FocusVisualPrimaryBrush=#E4000000
@@ -91,7 +91,7 @@
               Foreground=#E4000000
               Margin=0,0,0,0
               Padding=0,0,0,0
-              RenderSize=20,19
+              RenderSize=20,17
               Visibility=Visible
         [Microsoft.UI.Xaml.Controls.ContentPresenter]
             Background=[NULL]
@@ -106,7 +106,7 @@
             Margin=0,0,0,0
             Name=OnContentPresenter
             Padding=0,0,0,0
-            RenderSize=19,19
+            RenderSize=19,17
             Visibility=Visible
           [Microsoft.UI.Xaml.Controls.TextBlock]
               FocusVisualPrimaryBrush=#E4000000
@@ -116,7 +116,7 @@
               Foreground=#E4000000
               Margin=0,0,0,0
               Padding=0,0,0,0
-              RenderSize=19,19
+              RenderSize=19,17
               Visibility=Visible
         [Microsoft.UI.Xaml.Shapes.Rectangle]
             FocusVisualPrimaryBrush=#E4000000

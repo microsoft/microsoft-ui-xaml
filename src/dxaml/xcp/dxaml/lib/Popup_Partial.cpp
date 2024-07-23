@@ -33,10 +33,9 @@ Popup::~Popup()
         // Clear the caches on the current window
         ClearWindowCaches();
     }
-    
+
     // These handlers don't require a DXamlCore on the thread.
     IGNOREHR(BackButtonIntegration_UnregisterListener(this));
-    IGNOREHR(WindowPositionChanged_UnregisterListener(this));
 }
 
 void Popup::ClearWindowCaches()
@@ -51,40 +50,11 @@ _Check_return_ HRESULT Popup::Initialize()
     return S_OK;
 }
 
-_Check_return_ HRESULT Popup::HookupWindowPositionChangedHandler(_In_ CDependencyObject* nativePopup)
-{
-    ASSERT(nativePopup != nullptr);
-
-    ctl::ComPtr<DependencyObject> spPopupAsDO;
-    IFC_RETURN(DXamlCore::GetCurrent()->GetPeer(nativePopup, &spPopupAsDO));
-
-    ctl::ComPtr<DirectUI::Popup> spPopup;
-    IFC_RETURN(spPopupAsDO.As(&spPopup));
-
-    IFC_RETURN(spPopup->HookupWindowPositionChangedHandlerImpl());
-
-    return S_OK;
-}
-
-// Window position changed events for light dismiss of windowed popups.
-_Check_return_ HRESULT Popup::HookupWindowPositionChangedHandlerImpl()
-{
-    if (CPopup::DoesPlatformSupportWindowedPopup(DXamlCore::GetCurrent()->GetHandle())
-        && DXamlCore::GetCurrent()->GetHandle()->UseWindowPosChanged())
-    {
-        IFC_RETURN(WindowPositionChanged_RegisterListener(this));
-    }
-
-    return S_OK;
-}
-
 _Check_return_ HRESULT Popup::CacheContentPositionInfo()
 {
     // use changes in xaml root size or screen position to detect orientation/size changed for light dismiss.
     wf::Rect currentVisibleContentBounds{};
     IFC_RETURN(DXamlCore::GetCurrent()->GetVisibleContentBoundsForElement(false, true, GetHandle(), &currentVisibleContentBounds));
-    m_previousWindowX = currentVisibleContentBounds.X;
-    m_previousWindowY = currentVisibleContentBounds.Y;
 
     auto xamlRoot = XamlRoot::GetForElementStatic(this);
     if (xamlRoot)
@@ -672,70 +642,6 @@ Popup::OnXamlRootChanged(
     return S_OK;
 }
 
-STDMETHODIMP Popup::OnCoreWindowPositionChanged()
-{
-    if (!IsAssociatedWithXamlIsland())
-    {
-        OnHostWindowPositionChangedImpl();
-    }
-
-    return S_OK;
-}
-
-/*static*/ void Popup::OnHostWindowPositionChanged(_In_ CDependencyObject* nativePopup)
-{
-    ctl::ComPtr<DependencyObject> popupAsDO;
-    IFCFAILFAST(DXamlCore::GetCurrent()->GetPeer(nativePopup, &popupAsDO));
-
-    ctl::ComPtr<DirectUI::Popup> popup;
-    IFCFAILFAST(popupAsDO.As(&popup));
-
-    popup->OnHostWindowPositionChangedImpl();
-}
-
-void Popup::OnHostWindowPositionChangedImpl()
-{
-    CPopup *pPopup = static_cast<CPopup*>(GetHandle());
-    if (pPopup && pPopup->IsWindowed())
-    {
-        auto toolTipOwner = m_wrOwner.AsOrNull<xaml_controls::IToolTip>();
-
-        if (toolTipOwner && !toolTipOwner.Cast<ToolTip>()->IsOpenAsAutomaticToolTip())
-        {
-            toolTipOwner.Cast<ToolTip>()->RepositionPopup();
-        }
-        else
-        {
-            bool shouldClose = true;
-            Window* window = nullptr;
-            IFCFAILFAST(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, &window));
-            if (window && window->HasBounds())
-            {
-                shouldClose = false;
-                wf::Rect currentWindowBounds = { };
-                IFCFAILFAST(DXamlCore::GetCurrent()->GetVisibleContentBoundsForElement(false, true, GetHandle(), &currentWindowBounds));
-                if (currentWindowBounds.X != m_previousWindowX ||
-                    currentWindowBounds.Y != m_previousWindowY)
-                {
-                    shouldClose = true;
-                    m_previousWindowX = currentWindowBounds.X;
-                    m_previousWindowY = currentWindowBounds.Y;
-                }
-            }
-
-            if (shouldClose)
-            {
-                // Keep CPopup alive to prevent CPopup::Close from crashing after releasing itself.
-                // This is a temporary fix to reduce risk near ship date. Ideally CPopupRoot::RemoveFromOpenPopupList
-                // should call UnpegManagedPeer before AsyncRelease, so CPopup is released on the next tick.
-                xref_ptr<CPopup> spPopup(pPopup);
-
-                IFCFAILFAST(Close());
-            }
-        }
-    }
-}
-
 /*static*/ void Popup::OnIslandLostFocus(_In_ CDependencyObject* nativePopup)
 {
     ctl::ComPtr<DependencyObject> popupAsDO;
@@ -1063,21 +969,6 @@ _Check_return_ HRESULT Popup::get_IsConstrainedToRootBoundsImpl(_Out_ BOOLEAN* p
             shouldConstrainToRootBounds;
     }
 
-    return S_OK;
-}
-
-_Check_return_ HRESULT Popup::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
-{
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::Internal::FrameworkUdk::ICoreWindowPositionChangedListener)))
-    {
-        *ppObject = static_cast<ABI::Microsoft::Internal::FrameworkUdk::ICoreWindowPositionChangedListener*>(this);
-    }
-    else
-    {
-        return PopupGenerated::QueryInterfaceImpl(iid, ppObject);
-    }
-
-    AddRefOuter();
     return S_OK;
 }
 

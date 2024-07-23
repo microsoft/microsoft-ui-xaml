@@ -54,10 +54,17 @@
       See https://github.com/microsoft/msbuild/issues/1603 for more discussion about this.
 
       If the BaseIntermediateOutputPath property is supplied, just use that. Our CsWinRT generation creates projects that are already located
-      in the buildoutput, so we don't use the project relative path for that
+      in the buildoutput, so we don't use the project relative path for that.
     -->
+    <BaseOutputPath Condition="'$(BaseOutputPath)'==''">$(XamlBuildOutputRoot)$(ProjectRelativePath)\</BaseOutputPath>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'==''">$(XamlBuildOutputRoot)$(ProjectRelativePath)\</BaseIntermediateOutputPath>
     <BaseIntermediateOutputPath Condition="'$(GenerateProjectSpecificOutputFolder)' == 'true'">$(BaseIntermediateOutputPath)$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <!--
+      Most of our projects don't need to differentiate between intermediates directories and output directories, and just put both directories' files in the same place.
+      However, unpackaged apps need to differentiate between the two in order not to unnecessarily put intermediates files in the unpackaged directory used for testing,
+      so IntermediateOutputPathSubdirectory allows apps to opt-in to placing intermediates in a subdirectory that can be excluded from copy operations.
+    -->
+    <BaseIntermediateOutputPath Condition="'$(IntermediateOutputPathSubdirectory)'!=''">$(BaseIntermediateOutputPath)$(IntermediateOutputPathSubdirectory)\</BaseIntermediateOutputPath>
     <!--Trimming down path length to prevent MAX_PATH -->
     <BaseIntermediateOutputPath>$(BaseIntermediateOutputPath.Replace("src\XamlCompiler\Tests\RegressionProjects\Features\CompiledBinding", "CompilerTests"))</BaseIntermediateOutputPath>
     <GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
@@ -74,7 +81,7 @@
   <PropertyGroup>
     <BaseIntermediateOutputPath Condition="'$(TargetFramework)' != '' and '$(IgnoreTargetFramework)' != 'true'">$(BaseIntermediateOutputPath)$(TargetFramework)\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <OutputPath>$(IntermediateOutputPath)</OutputPath>
+    <OutputPath>$(BaseOutputPath)</OutputPath>
     <OutDir>$(OutputPath)</OutDir>
     <OutDirWasSpecified>true</OutDirWasSpecified>
 

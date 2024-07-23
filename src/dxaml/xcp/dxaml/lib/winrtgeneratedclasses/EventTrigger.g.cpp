@@ -51,6 +51,7 @@ IFACEMETHODIMP DirectUI::EventTriggerGenerated::get_RoutedEvent(_Outptr_result_m
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<EventTrigger*>(this)->get_RoutedEventImpl(ppValue));
 Cleanup:

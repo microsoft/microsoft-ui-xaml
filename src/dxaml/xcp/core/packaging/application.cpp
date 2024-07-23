@@ -712,7 +712,7 @@ void CApplication::CleanupDeviceRelatedResourcesRecursive(bool cleanupDComp)
         {
             // Clear the ResourceDictionary's owner weak ref to avoid a dangling pointer
             m_pResources->SetResourceOwner(nullptr);
-            m_pResources->RemoveParent(this);
+            IFCFAILFAST(m_pResources->RemoveParent(this));
             ReleaseInterface(m_pResources);
         }
     }

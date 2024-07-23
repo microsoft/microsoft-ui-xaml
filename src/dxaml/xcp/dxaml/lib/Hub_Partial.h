@@ -342,7 +342,7 @@ namespace DirectUI
         // a SeZo view change to this Hub.
         xaml::FocusState m_semanticZoomCompletedFocusState;
 
-        EventRegistrationToken m_visibleIndicesUpdatedToken;
+        EventRegistrationToken m_visibleIndicesUpdatedToken{};
 
         // Loaded EventPtr for the m_tpPanel template part.
         ctl::EventPtr<FrameworkElementLoadedEventCallback> m_epPanelLoadedHandler;

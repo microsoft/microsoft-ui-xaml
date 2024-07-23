@@ -235,7 +235,7 @@ TrackerTargetReference::TrackerTargetReference()
     Initialize();
 }
 
-TrackerTargetReference::TrackerTargetReference(TrackerTargetReference&& other)
+TrackerTargetReference::TrackerTargetReference(TrackerTargetReference&& other) noexcept
 {
     XCP_STRONG(&m_value);
     Initialize();
@@ -293,7 +293,7 @@ void TrackerTargetReference::Initialize()
 
 // Note: This method is safe to call under the lock 
 // if this object is empty
-TrackerTargetReference& TrackerTargetReference::Assign(_In_ TrackerTargetReference&& other)
+TrackerTargetReference& TrackerTargetReference::Assign(_In_ TrackerTargetReference&& other) noexcept
 {
     // If this tracker is not empty then we can't call this 
     // method under the lock or we will stop responding

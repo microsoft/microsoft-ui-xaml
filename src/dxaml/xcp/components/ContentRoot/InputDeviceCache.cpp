@@ -73,7 +73,7 @@ void InputDeviceCache::SetLastInputDeviceType(DirectUI::InputDeviceType deviceTy
     {
         if (CControl *pEngagedControl = contentRoot->GetFocusManagerNoRef()->GetEngagedControlNoRef())
         {
-            pEngagedControl->RemoveFocusEngagement();
+            VERIFYHR(pEngagedControl->RemoveFocusEngagement());
         }
     }
 }

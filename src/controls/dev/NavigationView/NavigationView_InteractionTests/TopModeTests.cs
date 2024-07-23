@@ -752,5 +752,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 }
             }
         }
+
+        [TestMethod]
+        public void TopNavigationChevronClickTest()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
+            {
+                Log.Comment("Set PaneDisplayMode to Top");
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                panelDisplayModeComboBox.SelectItemByName("Top");
+                Wait.ForIdle();
+
+                UIObject menuItem1 = FindElement.ByName("Menu Item 1");
+                Verify.IsNotNull(menuItem1);
+
+                UIObject menuItem2 = FindElement.ByName("Menu Item 2");
+                Verify.IsNull(menuItem2, "Menu Item 2 should not be visible.");
+
+                ClickOnNavigationViewItemChevron(menuItem1);
+
+                menuItem2 = FindElement.ByName("Menu Item 2");
+                Verify.IsNotNull(menuItem2, "Menu Item 2 should be visible.");
+
+                ClickOnNavigationViewItemChevron(menuItem1);
+
+                ElementCache.Refresh();
+
+                menuItem2 = FindElement.ByName("Menu Item 2");
+                Verify.IsNull(menuItem2, "Menu Item 2 should not be visible.");
+            }
+        }
+
+        private void ClickOnNavigationViewItemChevron(UIObject nvi)
+        {
+            Log.Comment("Click On NavigationViewItem Chevron");
+            InputHelper.LeftClick(nvi, nvi.BoundingRectangle.Width - 20, nvi.BoundingRectangle.Height / 2 + 10);
+            Wait.ForIdle();
+        }
     }
 }

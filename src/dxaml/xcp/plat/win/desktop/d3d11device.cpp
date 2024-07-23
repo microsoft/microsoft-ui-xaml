@@ -89,20 +89,6 @@ CD3D11Device::~CD3D11Device()
 //------------------------------------------------------------------------------
 //
 //  Synopsis:
-//      Returns an object that deals with the refresh rate.
-//
-//------------------------------------------------------------------------------
-_Check_return_ HRESULT
-CD3D11Device::GetRefreshRateInfo(
-_Outptr_ IPALRefreshRateInfo **ppRefreshRateInfo
-)
-{
-    return m_deviceInstance->GetRefreshRateInfo(ppRefreshRateInfo);
-}
-
-//------------------------------------------------------------------------------
-//
-//  Synopsis:
 //      Ensure the D3D11 device and other state is initialized.
 //
 //------------------------------------------------------------------------------

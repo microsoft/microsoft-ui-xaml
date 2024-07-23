@@ -215,6 +215,48 @@ Cleanup:
     RRETURN(hr);
 }
 
+// Returns the size of the potential GroupPadding in the virtualizing direction.
+_Check_return_ HRESULT ItemsStackPanel::GroupPaddingSizeInVirtualizingDirection(_Out_ double* groupPadding) /*override*/
+{
+    *groupPadding = 0.0;
+
+    xaml::Thickness thickness = {};
+
+    IFC_RETURN(get_GroupPadding(&thickness));
+
+    *groupPadding = SizeFromThicknessInVirtualizingDirection(thickness);
+
+    return S_OK;
+}
+
+// Used to estimate tracked element reposition during items source updates, when a group header is inserted.
+_Check_return_ HRESULT ItemsStackPanel::GetAverageHeaderSize(_Out_ float* averageHeaderSize) /*override*/
+{
+    *averageHeaderSize = -1.0f;
+
+    ctl::ComPtr<xaml_controls::ILayoutStrategy> stackingLayoutStrategy;
+
+    IFC_RETURN(GetLayoutStrategy(&stackingLayoutStrategy));
+    
+    *averageHeaderSize = stackingLayoutStrategy.Cast<StackingLayoutStrategy>()->GetAverageHeaderSize();
+
+    return S_OK;
+}
+
+// Used to estimate tracked element reposition during items source updates, when a container is inserted.
+_Check_return_ HRESULT ItemsStackPanel::GetAverageContainerSize(_Out_ float* averageContainerSize) /*override*/
+{
+    *averageContainerSize = -1.0f;
+
+    ctl::ComPtr<xaml_controls::ILayoutStrategy> stackingLayoutStrategy;
+
+    IFC_RETURN(GetLayoutStrategy(&stackingLayoutStrategy));
+
+    *averageContainerSize = stackingLayoutStrategy.Cast<StackingLayoutStrategy>()->GetAverageContainerSize();
+
+    return S_OK;
+}
+
 // Logical Orientation override
 _Check_return_ HRESULT ItemsStackPanel::get_LogicalOrientation(
     _Out_ xaml_controls::Orientation* pValue) 

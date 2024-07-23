@@ -1479,7 +1479,7 @@ _Check_return_ HRESULT ApplicationBarService::CleanupOpenEventHooks()
         IFC(pRootVisual->remove_KeyDown(m_KeyPressedEventToken));
     }
 
-    CleanupWindowActivatedEventHook();
+    IFC(CleanupWindowActivatedEventHook());
 
 Cleanup:
     ReleaseInterface(pRootVisual);

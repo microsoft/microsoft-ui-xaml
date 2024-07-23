@@ -103,7 +103,6 @@
         <ClCompile Include="..\XamlUICommand_Partial.cpp"/>
         <ClCompile Include="..\StandardUICommand_Partial.cpp"/>
         <ClCompile Include="..\CommandingHelpers.cpp"/>
-        <ClCompile Include="..\XamlDirect_Partial.cpp"/>
         <ClCompile Include="..\ThemeShadow_Partial.cpp"/>
         <ClCompile Include="..\ThemeShadowFactory_Partial.cpp"/>
         <ClCompile Include="..\CommandingContainer_Partial.cpp"/>

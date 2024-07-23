@@ -49,7 +49,7 @@ namespace DirectUI
         ctl::ComPtr<WindowsXamlManager> m_spXamlCore;
         ctl::ComPtr<xaml_hosting::IXamlIslandRoot> m_spXamlIsland;
         XamlIslandRoot * m_xamlIsland;
-        CXamlIslandRoot * m_pXamlIslandCore;
+        CXamlIslandRoot * m_pXamlIslandCore{};
         ctl::ComPtr<ABI::Microsoft::UI::Input::IInputFocusController2> m_inputFocusController2;
         EventRegistrationToken m_focusNavigationRequestedToken = {};
         EventRegistrationToken m_islandConnectedToken = {};

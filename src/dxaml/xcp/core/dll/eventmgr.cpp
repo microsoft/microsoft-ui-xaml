@@ -2233,7 +2233,7 @@ _Check_return_ HRESULT CEventManager::GetParentForRoutedEventBubbling(EventHandl
         {
             CContentControl* pWindowChrome = do_pointer_cast<CContentControl>(parentObjectLocal);
             CValue windowContent;
-            pWindowChrome->Content(pWindowChrome, 0, nullptr, nullptr, &windowContent);
+            IFC_RETURN(pWindowChrome->Content(pWindowChrome, 0, nullptr, nullptr, &windowContent));
             parentObjectLocal = windowContent.AsObject();
         }
     }

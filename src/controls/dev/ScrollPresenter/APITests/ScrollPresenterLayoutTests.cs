@@ -63,7 +63,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 c_defaultUIScrollPresenterContentHeight + 2 * c_Margin - c_defaultUIScrollPresenterHeight + 10.0,
                 ScrollingAnimationMode.Disabled,
                 ScrollingSnapPointsMode.Ignore,
-                hookViewChanged: true,
+                hookViewChangingAndChanged: true,
                 isAnimationsEnabledOverride: null,
                 expectedFinalHorizontalOffset: c_defaultUIScrollPresenterContentWidth + 2 * c_Margin - c_defaultUIScrollPresenterWidth,
                 expectedFinalVerticalOffset: c_defaultUIScrollPresenterContentHeight + 2 * c_Margin - c_defaultUIScrollPresenterHeight);
@@ -83,7 +83,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 c_defaultUIScrollPresenterContentHeight - 2 * c_Margin - c_defaultUIScrollPresenterHeight + 10.0,
                 ScrollingAnimationMode.Disabled,
                 ScrollingSnapPointsMode.Ignore,
-                hookViewChanged: false,
+                hookViewChangingAndChanged: false,
                 isAnimationsEnabledOverride: null,
                 expectedFinalHorizontalOffset: c_defaultUIScrollPresenterContentWidth - 2 * c_Margin - c_defaultUIScrollPresenterWidth,
                 expectedFinalVerticalOffset: c_defaultUIScrollPresenterContentHeight - 2 * c_Margin - c_defaultUIScrollPresenterHeight);
@@ -128,7 +128,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight + 10.0,
                 ScrollingAnimationMode.Disabled,
                 ScrollingSnapPointsMode.Ignore,
-                hookViewChanged: true,
+                hookViewChangingAndChanged: true,
                 isAnimationsEnabledOverride: null,
                 expectedFinalHorizontalOffset: c_defaultUIScrollPresenterContentWidth - c_defaultUIScrollPresenterWidth,
                 expectedFinalVerticalOffset: c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight);
@@ -592,7 +592,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 c_UnnaturalImageHeight - c_defaultUIScrollPresenterHeight + 10.0,
                 ScrollingAnimationMode.Disabled,
                 ScrollingSnapPointsMode.Ignore,
-                hookViewChanged: true,
+                hookViewChangingAndChanged: true,
                 isAnimationsEnabledOverride: null,
                 expectedFinalHorizontalOffset: c_UnnaturalImageWidth - c_defaultUIScrollPresenterWidth,
                 expectedFinalVerticalOffset: c_UnnaturalImageHeight - c_defaultUIScrollPresenterHeight);
@@ -739,7 +739,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedZoomFactor: c_smallZoomFactor);
 
             // Jump to absolute large zoomFactor to make the content larger than the viewport.
-            ZoomTo(scrollPresenter, c_largeZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, hookViewChanged: false);
+            ZoomTo(scrollPresenter, c_largeZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, hookViewChangingAndChanged: false);
 
             ValidateContentWithConstrainedWidth(
                 compositor,
@@ -933,7 +933,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedZoomFactor: c_smallZoomFactor);
 
             // Jump to absolute large zoomFactor to make the content larger than the viewport.
-            ZoomTo(scrollPresenter, c_largeZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, hookViewChanged: false);
+            ZoomTo(scrollPresenter, c_largeZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, hookViewChangingAndChanged: false);
 
             ValidateContentWithConstrainedHeight(
                 compositor,
@@ -1045,7 +1045,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     expectedZoomFactor: c_smallZoomFactor);
 
                 // Jump to absolute large zoomFactor to make the content larger than the viewport.
-                ZoomTo(scrollPresenter, c_largeZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, hookViewChanged: false);
+                ZoomTo(scrollPresenter, c_largeZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, hookViewChangingAndChanged: false);
 
                 ValidateContentWithConstrainedSize(
                     compositor,
@@ -1086,7 +1086,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 17.0,
                 ScrollingAnimationMode.Disabled,
                 ScrollingSnapPointsMode.Ignore,
-                hookViewChanged: true,
+                hookViewChangingAndChanged: true,
                 isAnimationsEnabledOverride: null,
                 expectedFinalHorizontalOffset: 11.0,
                 expectedFinalVerticalOffset: 17.0);
@@ -1099,7 +1099,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 0.0f,
                 ScrollingAnimationMode.Disabled,
                 ScrollingSnapPointsMode.Ignore,
-                hookViewChanged: false);
+                hookViewChangingAndChanged: false);
 
             IdleSynchronizer.Wait();
 
@@ -1133,7 +1133,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 13.0,
                 ScrollingAnimationMode.Disabled,
                 ScrollingSnapPointsMode.Ignore,
-                hookViewChanged: false,
+                hookViewChangingAndChanged: false,
                 isAnimationsEnabledOverride: null,
                 expectedFinalHorizontalOffset: 7.0,
                 expectedFinalVerticalOffset: 13.0);
@@ -1146,7 +1146,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 0.0f,
                 ScrollingAnimationMode.Disabled,
                 ScrollingSnapPointsMode.Ignore,
-                hookViewChanged: false);
+                hookViewChangingAndChanged: false);
 
             IdleSynchronizer.Wait();
 

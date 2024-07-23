@@ -72,7 +72,7 @@ struct RenderData
 
 struct PropertyRenderData : RenderData
 {
-    PrimitiveCompositionPropertyData pc;
+    PrimitiveCompositionPropertyData pc{};
 
     void Reset(RenderWalkType newType)
     {

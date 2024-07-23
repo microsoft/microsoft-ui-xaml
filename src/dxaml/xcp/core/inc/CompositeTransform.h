@@ -26,12 +26,12 @@ private:
         , m_isRotateAnimationDirty(false)
         , m_isTranslateXAnimationDirty(false)
         , m_isTranslateYAnimationDirty(false)
+        , m_compositeMatrix(true /*initialize*/)
     {
         m_fDirty      = FALSE; // Transform starts as identity so it's not dirty
         m_isTransitionClipTransform = FALSE;
         m_hasMarkedParentAsAnimated = FALSE;
         m_hasSimpleExpression = false;
-        m_compositeMatrix.SetToIdentity();
     }
 
 protected:
@@ -47,6 +47,7 @@ protected:
         , m_isTranslateXAnimationDirty(false)
         , m_isTranslateYAnimationDirty(false)
         , m_hasUndoCenterTransformFlip(false)
+        , m_compositeMatrix(original.m_compositeMatrix)
     {
         m_ptCenter.x      = original.m_ptCenter.x;
         m_ptCenter.y      = original.m_ptCenter.y;
@@ -57,7 +58,6 @@ protected:
         m_eRotation       = original.m_eRotation;
         m_eTranslateX     = original.m_eTranslateX;
         m_eTranslateY     = original.m_eTranslateY;
-        m_compositeMatrix = original.m_compositeMatrix;
         m_fDirty          = original.m_fDirty;
         m_isTransitionClipTransform = original.m_isTransitionClipTransform;
         m_hasMarkedParentAsAnimated = original.m_hasMarkedParentAsAnimated;

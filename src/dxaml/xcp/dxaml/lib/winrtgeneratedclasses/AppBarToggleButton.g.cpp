@@ -86,6 +86,7 @@ IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::get_IsInOverflow(_Out_ BOO
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<AppBarToggleButton*>(this)->get_IsInOverflowImpl(pValue));
 Cleanup:
@@ -95,6 +96,7 @@ IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::get_KeyboardAcceleratorTex
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<AppBarToggleButton*>(this)->get_KeyboardAcceleratorTextOverrideImpl(pValue));
 Cleanup:
@@ -158,6 +160,7 @@ IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::GetHasBottomLabel(_Out_ BO
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AppBarToggleButton_GetHasBottomLabel", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AppBarToggleButton*>(this)->GetHasBottomLabelImpl(pResult));
@@ -176,6 +179,7 @@ IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::GetHasRightLabel(_Out_ BOO
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "AppBarToggleButton_GetHasRightLabel", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<AppBarToggleButton*>(this)->GetHasRightLabelImpl(pResult));

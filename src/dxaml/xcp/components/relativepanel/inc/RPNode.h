@@ -152,11 +152,11 @@ public:
     // Represents the space that's available to an element given its set of
     // constraints. The width and height of this rect is used to measure
     // a given element.
-    XRECTF m_measureRect;
+    XRECTF m_measureRect{};
 
     // Represents the exact space within the MeasureRect that will be used 
     // to arrange a given element.
-    XRECTF m_arrangeRect;
+    XRECTF m_arrangeRect{};
 
     RPState m_state;
 

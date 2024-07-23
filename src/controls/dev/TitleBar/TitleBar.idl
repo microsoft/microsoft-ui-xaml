@@ -1,40 +1,55 @@
-﻿namespace MEU_XC_NAMESPACE
+﻿namespace MU_XC_NAMESPACE
 {
 
-[MUX_EXPERIMENTAL]
+[MUX_PREVIEW]
 [webhosthidden]
+[contentproperty("Content")]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass TitleBar : Microsoft.UI.Xaml.Controls.Control
 {
     TitleBar();
 
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    String Title{ get; set; };
+    Object Header{ get; set; };
 
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.Controls.IconSource IconSource{ get; set; };
 
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    String Title{ get; set; };
+
+    String Subtitle{ get; set; };
+
+    Object Content{ get; set; };
+
+    Object Footer{ get; set; };
+
+    [MUX_DEFAULT_VALUE("false")]
     Boolean IsBackButtonVisible{ get; set; };
 
+    [MUX_DEFAULT_VALUE("true")]
     Boolean IsBackEnabled{ get; set; };
 
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Object CustomContent{ get; set; };
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsPaneToggleButtonVisible{ get; set; };
 
     TitleBarTemplateSettings TemplateSettings{ get; };
 
     event Windows.Foundation.TypedEventHandler<TitleBar, Object> BackRequested;
+    event Windows.Foundation.TypedEventHandler<TitleBar, Object> PaneToggleRequested;
 
-    static Microsoft.UI.Xaml.DependencyProperty TitleProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty HeaderProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty IconSourceProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty TitleProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty SubtitleProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty ContentProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty FooterProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty IsBackButtonVisibleProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty IsBackEnabledProperty{ get; };
-    static Microsoft.UI.Xaml.DependencyProperty CustomContentProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsPaneToggleButtonVisibleProperty{ get; };
 
     static Microsoft.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
 }
 
-[MUX_EXPERIMENTAL]
+[MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass TitleBarTemplateSettings : Microsoft.UI.Xaml.DependencyObject
 {
@@ -42,22 +57,14 @@ unsealed runtimeclass TitleBarTemplateSettings : Microsoft.UI.Xaml.DependencyObj
 
     Microsoft.UI.Xaml.Controls.IconElement IconElement;
 
-    [MUX_DEFAULT_VALUE("c_titleColumnGridLengthDefault")]
-    Microsoft.UI.Xaml.GridLength TitleColumnGridLength;
-
-    [MUX_DEFAULT_VALUE("c_customColumnGridLengthDefault")]
-    Microsoft.UI.Xaml.GridLength CustomColumnGridLength;
-
     static Microsoft.UI.Xaml.DependencyProperty IconElementProperty{ get; };
-    static Microsoft.UI.Xaml.DependencyProperty TitleColumnGridLengthProperty{ get; };
-    static Microsoft.UI.Xaml.DependencyProperty CustomColumnGridLengthProperty{ get; };
 }
 
-[MUX_EXPERIMENTAL]
+[MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass TitleBarAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {
-    TitleBarAutomationPeer(MEU_XC_NAMESPACE.TitleBar owner);
+    TitleBarAutomationPeer(MU_XC_NAMESPACE.TitleBar owner);
 }
 
 }

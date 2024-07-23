@@ -614,4 +614,20 @@ HRESULT WinTextCore::SetSystemFontCollectionOverride(_In_opt_ IDWriteFontCollect
     return S_OK;
 }
 
+//------------------------------------------------------------------------
+//
+//  Determines whether we should be using the typographic font model.
+//
+//------------------------------------------------------------------------
+HRESULT WinTextCore::ShouldUseTypographicFontModel(_Out_ bool* shouldUseTypographicModel)
+{
+    CTextCore* pTextCore = nullptr;
+    IFontAndScriptServices* pFontServices = nullptr;
+    DWriteFontAndScriptServices* pDWriteFontServices = nullptr;
 
+    IFC_RETURN(m_pCore->GetTextCore(&pTextCore));
+    IFC_RETURN(pTextCore->GetFontAndScriptServices(&pFontServices));
+
+    *shouldUseTypographicModel = pDWriteFontServices->ShouldUseTypographicFontModel();
+    return S_OK;
+}

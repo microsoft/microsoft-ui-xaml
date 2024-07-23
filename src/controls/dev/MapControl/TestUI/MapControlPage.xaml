@@ -11,15 +11,60 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
-        <StackPanel Orientation="Vertical">
-            <StackPanel Orientation="Horizontal">
-                <PasswordBox Width="300" x:Name="MapServiceToken" PlaceholderText="Map Service Token"/>
-                <Button Content="Go" Click="GoButton_Click" />
+        <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal">
+                    <PasswordBox Width="300" x:Name="MapServiceToken" PlaceholderText="Map Service Token"/>
+                    <Button Content="Go" Click="GoButton_Click" />
+                </StackPanel>
+                <controls:MapControl x:Name="myMap" 
+                                    Width="800" 
+                                    Height="600" 
+                                    InteractiveControlsVisible="False"/>
             </StackPanel>
-            <controls:MapControl x:Name="myMap" 
-                                Width="800" 
-                                Height="600" 
-                                InteractiveControlsVisible="True"/>
+            <StackPanel Orientation="Vertical">
+                <TextBlock>Interactive Controls Visibility</TextBlock>
+                <ToggleSwitch x:Name="controlsSwitch" Toggled="ToggleSwitch_Toggled"/>
+
+                <StackPanel Height="20"/>
+
+                <TextBlock>Zoom</TextBlock>
+                <StackPanel Orientation="Horizontal">
+                    <TextBox x:Name="zoomText" />
+                    <Button Click="SetZoom_Click">Set Zoom</Button>
+                </StackPanel>
+
+                <StackPanel Height="20"/>
+
+                <TextBlock>Center</TextBlock>
+                <StackPanel Orientation="Horizontal">
+                    <TextBox x:Name="latitudeText" PlaceholderText="latitude"/>
+                    <TextBox x:Name="longitudeText" PlaceholderText="longitude"/>
+                </StackPanel>
+                <Button Click="CenterButton_Click">Set center</Button>
+
+                <StackPanel Height="20"/>
+
+                <TextBlock>Layers</TextBlock>
+                <ComboBox x:Name="layersSelection"/>
+                <StackPanel Orientation="Horizontal">
+                    <Button Click="AddLayer_Click">Add Layer</Button>
+                </StackPanel>
+
+                <StackPanel Height="20"/>
+
+                <TextBlock>Pins</TextBlock>
+                <StackPanel Orientation="Horizontal">
+                    <TextBox x:Name="latitudePinText" AutomationProperties.AutomationId="latitudePinText" PlaceholderText="latitude"/>
+                    <TextBox x:Name="longitudePinText" AutomationProperties.AutomationId="longitudePinText" PlaceholderText="longitude"/>
+                </StackPanel>
+                <Button Click="AddPin_Click">Add Pin</Button>
+
+                <StackPanel Height="20"/>
+
+                <TextBlock>Output</TextBlock>
+                <TextBox x:Name="output" AutomationProperties.AutomationId="output" IsReadOnly="true"/>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </local:TestPage>

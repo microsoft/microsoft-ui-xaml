@@ -14,10 +14,17 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TitleBarPageWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)TitleBarPage.xaml.cs">
       <DependentUpon>TitleBarPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)TitleBarPageWindow.xaml.cs">
+      <DependentUpon>TitleBarPageWindow.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>

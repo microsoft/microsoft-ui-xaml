@@ -487,8 +487,9 @@ unsealed runtimeclass StackLayout : VirtualizingLayout
 
     [MUX_PREVIEW]
     {
-        Boolean DisableVirtualization{ get; set; };
-        static Microsoft.UI.Xaml.DependencyProperty DisableVirtualizationProperty{ get; };
+        [MUX_DEFAULT_VALUE("true")]
+        Boolean IsVirtualizationEnabled{ get; set; };
+        static Microsoft.UI.Xaml.DependencyProperty IsVirtualizationEnabledProperty{ get; };
     }
 
    // Removing until we are ready to expose.

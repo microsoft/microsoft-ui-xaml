@@ -41,7 +41,6 @@
         <ClInclude Include="ImageUtils.h"/>
         <ClInclude Include="LockableGraphicsPointer.h"/>
         <ClInclude Include="precomp.h"/>
-        <ClInclude Include="RefreshRateInfo.h"/>
         <ClInclude Include="SystemMemoryBits.h"/>
         <ClInclude Include="windowsgraphicsdevicemanager.h"/>
         <ClInclude Include="windowspresenttarget.h"/>
@@ -65,7 +64,6 @@
         <ClCompile Include="D2DAcceleratedBrushes.cpp"/>
         <ClCompile Include="D2DAcceleratedPrimitives.cpp"/>
         <ClCompile Include="D2DAcceleratedRT.cpp"/>
-        <ClCompile Include="RefreshRateInfo.cpp"/>
         <ClCompile Include="DCompSurfaceFactoryManager.cpp"/>
         <ClCompile Include="ProcessCharacteristics.cpp"/>
         <ClCompile Include="ImageUtils.cpp"/>

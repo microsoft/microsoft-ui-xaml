@@ -32,7 +32,7 @@ public:
     static void Deinitialize();
 
     void GetSurfaceFactoriesForCurrentThread(
-        _Outptr_ std::vector<IDCompositionSurfaceFactoryPartner3*>* surfaceFactoryVector
+        _Inout_ std::vector<IDCompositionSurfaceFactoryPartner3*>* surfaceFactoryVector
     );
 
     _Check_return_ HRESULT ObtainSurfaceFactory(

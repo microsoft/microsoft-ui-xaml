@@ -12,6 +12,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
+using MUXControlsTestApp;
 using MUXControlsTestApp.Utilities;
 
 using WEX.TestExecution;
@@ -1114,16 +1115,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 IdleSynchronizer.Wait();
-              
-                BringItemIntoView(49, itemsView, scrollViewBringingIntoViewEvent, scrollViewScrollCompletedEvent);
+
                 Log.Comment("Scroll to last item.");
+                BringItemIntoView(49, itemsView, scrollViewBringingIntoViewEvent, scrollViewScrollCompletedEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Extracting last ItemContainer.");
                     itemContainer = itemsRepeater.TryGetElement(49) as ItemContainer;
                     Verify.IsNotNull(itemContainer);
-                    Log.Comment("ItemContainer is null as it is out of view and not realized.");
+                    Log.Comment("ItemContainer is non-null as it is in view and realized.");
 
                     Log.Comment("Selecting last ItemContainer");
                     itemContainer.IsSelected = true;
@@ -1143,8 +1144,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment("ItemContainer SelectionContainer returns parent ItemsView.");
                 });
 
-                BringItemIntoView(0, itemsView, scrollViewBringingIntoViewEvent, scrollViewScrollCompletedEvent);
                 Log.Comment("Scroll back to first item.");
+                BringItemIntoView(0, itemsView, scrollViewBringingIntoViewEvent, scrollViewScrollCompletedEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -1208,6 +1209,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         [TestMethod]
         [TestProperty("Description", "Handles the LinedFlowLayout.ItemsInfoRequested event and triggers various exceptions exercising LinedFlowLayoutItemsInfoRequestedEventArgs APIs.")]
+        [TestProperty("TestPass:MinOSVer", WindowsOSVersion._19H1)] // Unstable on RS5. See bug 49647616.
         public void TriggerLinedFlowLayoutItemsInfoRequestedEventArgsExceptions()
         {
             TriggerLinedFlowLayoutItemsInfoRequestedEventArgsException(LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ItemsRangeStartIndexNegative);
@@ -1613,8 +1615,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 "ItemsView",
                 "ScrollView",
-                "ItemsRepeater",
-                "LinedFlowLayout"
+                "ItemsRepeater"
             };
 
             using (PrivateLoggingHelper privateIVLoggingHelper = new PrivateLoggingHelper(types, isLoggingInfoLevel: true, isLoggingVerboseLevel: true))
@@ -2061,7 +2062,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 scrollViewBringingIntoViewEvent.Reset();
                 scrollViewScrollCompletedEvent.Reset();
 
-                Log.Comment("Invoking ItemsView.StartBringItemIntoView(250)");
+                Log.Comment("Invoking ItemsView.StartBringItemIntoView(" + index + ")");
 
                 BringIntoViewOptions bringIntoViewOptions = new BringIntoViewOptions()
                 {

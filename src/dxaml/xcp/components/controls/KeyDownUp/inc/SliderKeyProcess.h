@@ -30,7 +30,7 @@ namespace KeyPress {
                  (key == wsy::VirtualKey_GamepadDPadLeft ||
                   key == wsy::VirtualKey_GamepadLeftThumbstickLeft)))
             {
-                control->Step(true, shouldInvert);
+                IFC_RETURN(control->Step(true, shouldInvert));
                 *pbHandled = true;
             }
             else if (key == wsy::VirtualKey_Right ||
@@ -38,7 +38,7 @@ namespace KeyPress {
                       (key == wsy::VirtualKey_GamepadDPadRight ||
                        key == wsy::VirtualKey_GamepadLeftThumbstickRight)))
             {
-                control->Step(true, !shouldInvert);
+                IFC_RETURN(control->Step(true, !shouldInvert));
                 *pbHandled = true;
             }
             else if (key == wsy::VirtualKey_Up ||
@@ -46,7 +46,7 @@ namespace KeyPress {
                       (key == wsy::VirtualKey_GamepadDPadUp ||
                        key == wsy::VirtualKey_GamepadLeftThumbstickUp)))
             {
-                control->Step(true, !shouldReverse);
+                IFC_RETURN(control->Step(true, !shouldReverse));
                 *pbHandled = true;
             }
             else if (key == wsy::VirtualKey_Down ||
@@ -54,7 +54,7 @@ namespace KeyPress {
                       (key == wsy::VirtualKey_GamepadDPadDown ||
                        key == wsy::VirtualKey_GamepadLeftThumbstickDown)))
             {
-                control->Step(true, shouldReverse);
+                IFC_RETURN(control->Step(true, shouldReverse));
                 *pbHandled = true;
             }
             else if (key == wsy::VirtualKey_Home || key == wsy::VirtualKey_GamepadLeftShoulder)

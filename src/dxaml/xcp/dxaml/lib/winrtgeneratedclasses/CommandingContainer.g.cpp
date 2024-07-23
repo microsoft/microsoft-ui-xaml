@@ -119,7 +119,7 @@ _Check_return_ HRESULT DirectUI::CommandingContainerGenerated::EventAddHandlerBy
     case KnownEventIndex::CommandingContainer_ContextChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CommandingContainer*, ABI::Microsoft::UI::Xaml::Controls::CommandingContextChangedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -148,7 +148,7 @@ _Check_return_ HRESULT DirectUI::CommandingContainerGenerated::EventRemoveHandle
     case KnownEventIndex::CommandingContainer_ContextChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CommandingContainer*, ABI::Microsoft::UI::Xaml::Controls::CommandingContextChangedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

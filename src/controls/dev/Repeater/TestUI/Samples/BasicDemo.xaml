@@ -40,7 +40,7 @@
             <ScrollViewer x:Name="scrollViewer">
                 <controls:ItemsRepeater x:Name="repeater" VerticalCacheLength="0" Background="LightBlue">
                     <controls:ItemsRepeater.Layout>
-                        <controls:StackLayout  DisableVirtualization="True"/>
+                        <controls:StackLayout  IsVirtualizationEnabled="False"/>
                     </controls:ItemsRepeater.Layout>
                 </controls:ItemsRepeater>
             </ScrollViewer>

@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::CandidateWindowBoundsChangedEventArgs::get_Bounds(_Out_
     ABI::Windows::Foundation::Rect valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CCandidateWindowBoundsChangedEventArgs*>(pCoreEventArgsNoRef)->get_Bounds(&valueCore));

@@ -127,7 +127,7 @@ namespace DirectUI
         bool m_isHorizontalOrientation;
         XUINT32 m_currentRowIndex;
         XUINT32 m_currentColumnIndex;
-        wf::Size m_itemSize;
+        wf::Size m_itemSize{};
         OccupancyBlock* m_pOccupancyBlock;
 
         // contains the list of locations (rowIndex,colIndex) for each Element

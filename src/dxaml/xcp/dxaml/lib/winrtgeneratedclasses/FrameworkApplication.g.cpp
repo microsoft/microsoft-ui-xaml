@@ -76,6 +76,7 @@ IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::get_DebugSettings(_Outpt
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(static_cast<FrameworkApplication*>(this)->get_DebugSettingsImpl(ppValue));
 Cleanup:
@@ -85,6 +86,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FrameworkApplicationGenerated
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<FrameworkApplication*>(this)->get_DispatcherShutdownModeImpl(pValue));
 Cleanup:
@@ -103,6 +105,7 @@ IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::get_FocusVisualKind(_Out
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<FrameworkApplication*>(this)->get_FocusVisualKindImpl(pValue));
 Cleanup:
@@ -121,6 +124,7 @@ IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::get_HighContrastAdjustme
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<FrameworkApplication*>(this)->get_HighContrastAdjustmentImpl(pValue));
 Cleanup:
@@ -139,6 +143,7 @@ IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::get_RequestedTheme(_Out_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<FrameworkApplication*>(this)->get_RequestedThemeImpl(pValue));
 Cleanup:
@@ -157,6 +162,7 @@ IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::get_RequiresPointerMode(
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<FrameworkApplication*>(this)->get_RequiresPointerModeImpl(pValue));
 Cleanup:
@@ -175,6 +181,7 @@ IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::get_Resources(_Outptr_re
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(static_cast<FrameworkApplication*>(this)->get_ResourcesImpl(ppValue));
 Cleanup:
@@ -193,6 +200,7 @@ IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::get_ShutdownModel(_Out_ 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<FrameworkApplication*>(this)->get_ShutdownModelImpl(pValue));
 Cleanup:
@@ -211,6 +219,7 @@ IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::get_Windows(_Outptr_resu
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(static_cast<FrameworkApplication*>(this)->get_WindowsImpl(ppValue));
 Cleanup:
@@ -239,6 +248,7 @@ IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::CreateIslandRoot(_Outptr
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "FrameworkApplication_CreateIslandRoot", 0);
     }
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     
     IFC(static_cast<FrameworkApplication*>(this)->CreateIslandRootImpl(ppResult));
 Cleanup:
@@ -257,6 +267,7 @@ IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::CreateIslandRootWithCont
     }
     ARG_NOTNULL(pOwner, "owner");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     
     IFC(static_cast<FrameworkApplication*>(this)->CreateIslandRootWithContentBridgeImpl(pOwner, pContentBridge, ppResult));
 Cleanup:
@@ -812,6 +823,7 @@ IFACEMETHODIMP DirectUI::FrameworkApplicationFactory::get_Current(_Outptr_result
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_CurrentImpl(ppValue));
 Cleanup:

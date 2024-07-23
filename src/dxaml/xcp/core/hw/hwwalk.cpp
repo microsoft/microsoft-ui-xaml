@@ -27,6 +27,7 @@
 #include "XboxUtility.h"
 #include <XamlOneCoreTransforms.h>
 #include <RootScale.h>
+#include "GraphicsTelemetry.h"
 
 using namespace RuntimeFeatureBehavior;
 
@@ -174,7 +175,6 @@ HWWalk::Render(
     )
 {
     HRESULT hr = S_OK;
-    TraceRenderElementBegin((XUINT64)pUIElement);
 
     ASSERT(parentRP.pTransformToRoot != NULL);
     ASSERT(parentRP.pTransformsAndClipsToCompNode != NULL);
@@ -257,6 +257,12 @@ HWWalk::Render(
             bool skipRenderWhileLayoutClippedOut = false;
             bool skipRenderWhileTransformTooSmall = false;
             bool skipRenderWhileParentHasZeroSizedClip = parentRP.pTransformsAndClipsToCompNode->HasZeroSizedClip() && !pUIElement->IsForceNoCulling();
+
+            TraceLoggingProviderWrite(
+                GraphicsTelemetry, "RenderWalk_RenderElement",
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(pUIElement), "ElementPointer"),
+                TraceLoggingWideString(pUIElement->GetClassName().GetBuffer(), "ClassName"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
             // Skip rendering this element subgraph if possible.
             // IMPORTANT: The checks in Cleanup for cleaning specific dirty flags need to reflect the order we check each condition here.
@@ -393,7 +399,6 @@ HWWalk::Render(
     }
 
 Cleanup:
-    TraceRenderElementEnd();
     RRETURN(hr);
 }
 
@@ -2106,7 +2111,9 @@ HWWalk::RenderRootImpl(
     // TODO: HWPC: Could clip to window bounds here to cull the tree walk?  Happens w/ prepend transform in SCBP case
     // Initialize the rendering transform.
     TransformAndClipStack transformsAndClips;
-    transformsAndClips.PushTransformsAndClips(pPrependTransformAndClip);
+
+    // Using VERIFYHR instead of IFC() because the latter breaks the build by skipping initialization of visualContentRenderer below.
+    VERIFYHR(transformsAndClips.PushTransformsAndClips(pPrependTransformAndClip));
     rp.pTransformsAndClipsToCompNode = &transformsAndClips;
 
     rp.m_useDCompAnimations = useDCompAnimations;

@@ -65,6 +65,7 @@ IFACEMETHODIMP DirectUI::ItemsControlAutomationPeerGenerated::CreateItemAutomati
     }
     ARG_NOTNULL(pItem, "item");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ItemsControlAutomationPeer*>(this)->CreateItemAutomationPeerImpl(pItem, ppReturnValue));
@@ -83,6 +84,7 @@ IFACEMETHODIMP DirectUI::ItemsControlAutomationPeerGenerated::FindItemByProperty
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ItemsControlAutomationPeer_FindItemByProperty", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ItemsControlAutomationPeer*>(this)->FindItemByPropertyImpl(pStartAfter, pAutomationProperty, pValue, ppReturnValue));
@@ -102,6 +104,7 @@ IFACEMETHODIMP DirectUI::ItemsControlAutomationPeerGenerated::OnCreateItemAutoma
     }
     ARG_NOTNULL(pItem, "item");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ItemsControlAutomationPeer*>(this)->OnCreateItemAutomationPeerImpl(pItem, ppReturnValue));

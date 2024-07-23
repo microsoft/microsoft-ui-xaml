@@ -87,7 +87,7 @@ namespace RichTextServices
             Ptls6::PLSC m_pLsContext;
                 // Context created by LS. It must be provided as explicit input parameter to all Line Services APIs.
 
-            Ptls6::LSCONTEXTINFO m_lsContextInfo;
+            Ptls6::LSCONTEXTINFO m_lsContextInfo{};
                 // Configuration information required to create LS context.
 
             LsHostContext m_lsHostContext;

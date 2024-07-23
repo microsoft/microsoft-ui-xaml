@@ -39,7 +39,7 @@ namespace DirectUI
             return AsyncBase::GetOnComplete(ppCompletedHandler);
         }
 
-        IFACEMETHOD(GetResults) (_Outptr_result_maybenull_ xaml_imaging::SvgImageSourceLoadStatus *results) override {*results = m_status; return S_OK;}
+        IFACEMETHOD(GetResults) (_Out_ xaml_imaging::SvgImageSourceLoadStatus *results) override {*results = m_status; return S_OK;}
 
         // SvgImageSourceSetSourceAsyncOperation overrides
         // This is the API the our code (Core and DXaml layer) talks to

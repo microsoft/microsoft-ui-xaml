@@ -60,6 +60,11 @@
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)VisualPropertiesPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)CalendarDatePickerPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -97,6 +102,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ListViewBasePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ListViewAnchoringPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -162,6 +171,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)WindowPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)NewWindowRootPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AppBarPage.xaml.cs">
@@ -193,6 +210,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)VisualStatesPage.xaml.cs">
       <DependentUpon>VisualStatesPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)VisualPropertiesPage.xaml.cs">
+      <DependentUpon>VisualPropertiesPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)CalendarDatePickerPage.xaml.cs">
       <DependentUpon>CalendarDatePickerPage.xaml</DependentUpon>
@@ -226,6 +246,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ListViewBasePage.xaml.cs">
       <DependentUpon>ListViewBasePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ListViewAnchoringPage.xaml.cs">
+      <DependentUpon>ListViewAnchoringPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)GroupedItemsControlPage.xaml.cs">
       <DependentUpon>GroupedItemsControlPage.xaml</DependentUpon>
@@ -268,6 +291,12 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)MediaTransportControlsPage.xaml.cs">
       <DependentUpon>MediaTransportControlsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)WindowPage.xaml.cs">
+      <DependentUpon>WindowPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)NewWindowRootPage.xaml.cs">
+      <DependentUpon>NewWindowRootPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

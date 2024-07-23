@@ -49,6 +49,7 @@ IFACEMETHODIMP DirectUI::SectionsInViewChangedEventArgsGenerated::get_AddedSecti
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<SectionsInViewChangedEventArgs*>(this)->get_AddedSectionsImpl(ppValue));
 Cleanup:
@@ -67,6 +68,7 @@ IFACEMETHODIMP DirectUI::SectionsInViewChangedEventArgsGenerated::get_RemovedSec
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<SectionsInViewChangedEventArgs*>(this)->get_RemovedSectionsImpl(ppValue));
 Cleanup:

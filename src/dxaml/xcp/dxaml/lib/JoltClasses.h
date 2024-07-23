@@ -1160,7 +1160,7 @@ namespace DirectUI
     private:
         ctl::ComBase* m_pTarget;
         KnownEventIndex m_hEventId;
-        bool m_bUseEventManager; // Whether the event is an event that uses CEventManager.
+        bool m_bUseEventManager{}; // Whether the event is an event that uses CEventManager.
     };
 
     template<class THANDLER, class TSENDER, class TARGS>

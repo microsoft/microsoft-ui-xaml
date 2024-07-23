@@ -142,4 +142,5 @@ private:
 
     GestureRecognizerAdapter m_gestureRecognizerAdapter;
     GestureOutputMapper* m_gestureOutputMapper;
+    wrl::ComPtr<ixp::IExpPointerPointStatics> m_expPointerPointStatics;
 };

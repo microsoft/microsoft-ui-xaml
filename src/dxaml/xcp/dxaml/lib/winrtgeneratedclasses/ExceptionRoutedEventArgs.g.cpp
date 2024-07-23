@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::ExceptionRoutedEventArgs::get_ErrorMessage(_Out_ HSTRIN
     xstring_ptr valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CExceptionRoutedEventArgs*>(pCoreEventArgsNoRef)->get_ErrorMessage(&valueCore));

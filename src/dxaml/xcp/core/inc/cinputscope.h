@@ -41,7 +41,7 @@ public:
 
     // CInputScopeNameValue field
 
-    DirectUI::InputScopeNameValue m_nameValue;
+    DirectUI::InputScopeNameValue m_nameValue{};
 };
 
 //------------------------------------------------------------------------
@@ -64,7 +64,7 @@ public:
 
     ~CInputScopeNameCollection() override
     {
-        Destroy();
+        VERIFYHR(Destroy());
     }
 
     // Creation method

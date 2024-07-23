@@ -48,7 +48,7 @@ namespace Automation
             (*this) = other;
         }
 
-        CValue(CValue&& other)
+        CValue(CValue&& other) noexcept
         {
             CountTypeAndFlags = other.EncodeCountTypeAndFlags();
             other.ResetCountTypeAndFlags();
@@ -60,7 +60,7 @@ namespace Automation
         ~CValue();
 
         // move assignment operator
-        CValue& operator=(CValue&& other)
+        CValue& operator=(CValue&& other) noexcept
         {
             if (this != &other)
             {
@@ -578,7 +578,7 @@ namespace Automation
 
         wf::TimeSpan AsTimeSpan() const
         {
-            wf::TimeSpan result;
+            wf::TimeSpan result = {};
 
             if (m_type == valueTimeSpan)
             {

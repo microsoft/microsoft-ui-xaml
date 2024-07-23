@@ -335,7 +335,7 @@ _Check_return_ HRESULT VisualStateManager::CustomVSMGoToState(
     pIControlNoRef = spPeer.Cast<Control>();
 
     BOOLEAN succeeded;
-    GoToStateImpl(pIControlNoRef, token, nullptr, groupIndex, bUseTransitions, &succeeded);
+    IFC_RETURN(GoToStateImpl(pIControlNoRef, token, nullptr, groupIndex, bUseTransitions, &succeeded));
     *bSucceeded = !!succeeded;
 
     return S_OK;

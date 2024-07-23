@@ -274,7 +274,7 @@ _Check_return_ HRESULT CContentRoot::Close()
     m_lifetimeState = LifetimeState::Closing;
     bool releasePopupRoot = false;
 
-    ResetCompositionContent();
+    IFC_RETURN(ResetCompositionContent());
 
     IFC_RETURN(m_visualTree.ResetRoots(&releasePopupRoot));
 

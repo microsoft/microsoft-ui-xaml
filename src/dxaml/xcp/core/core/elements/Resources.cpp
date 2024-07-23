@@ -995,7 +995,7 @@ CResourceDictionary::Add(
         // This copy is to avoid modifying the incoming CValue struct
         // which will be needed later for future cleanup
         CDependencyObject *pObj = pValue->AsObject();
-        CDOCollection::Remove(pObj);
+        (void)(CDOCollection::Remove(pObj));
         ReleaseInterface(pObj);
         IFC_RETURN(xr);
     }

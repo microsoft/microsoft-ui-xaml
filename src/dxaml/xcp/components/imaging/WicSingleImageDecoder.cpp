@@ -26,8 +26,8 @@ _Check_return_ HRESULT WicSingleImageDecoder::DecodeFrame(
     _In_ EncodedImageData& encodedImageData,
     _In_ const ImageDecodeParams& decodeParams,
     int frameIndex,
-    _Outref_ wrl::ComPtr<IWICBitmapSource>& bitmapSource,
-    _Outref_ std::chrono::milliseconds& frameDelay
+    _Out_ wrl::ComPtr<IWICBitmapSource>& bitmapSource,
+    _Out_ std::chrono::milliseconds& frameDelay
     )
 {
     bitmapSource.Reset();

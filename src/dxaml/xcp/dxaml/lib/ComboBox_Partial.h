@@ -252,7 +252,7 @@ namespace DirectUI
         // The worker method that does TypeAhead work and overall search.
         _Check_return_ HRESULT ProcessSearch(_In_ WCHAR keyCode);
         // Searches for an item inside the ItemSource.
-        _Check_return_ HRESULT SearchItemSourceIndex(_In_ WCHAR keyCode, _In_ bool startSearchFromCurrentIndex, _In_ bool searchExactMatch, _Outptr_ int& foundIndex);
+        _Check_return_ HRESULT SearchItemSourceIndex(_In_ WCHAR keyCode, _In_ bool startSearchFromCurrentIndex, _In_ bool searchExactMatch, _Out_ int& foundIndex);
 
         _Check_return_ HRESULT CommitRevertEditableSearch(_In_ bool restoreValue);
 
@@ -540,17 +540,17 @@ namespace DirectUI
         TrackerPtr<xaml::IFrameworkElement> m_tpElementPopupChild;
         TrackerPtr<xaml::IFrameworkElement> m_tpElementPopupContent;
         xaml::Thickness popupContentMargin;
-        EventRegistrationToken m_pElementPopupChildKeyDownToken;
-        EventRegistrationToken m_pElementPopupChildKeyUpToken;
-        EventRegistrationToken m_pElementPopupChildGotFocusToken;
-        EventRegistrationToken m_pElementPopupChildLostFocusToken;
-        EventRegistrationToken m_pElementPopupChildPointerEnteredToken;
-        EventRegistrationToken m_pElementPopupChildPointerExitedToken;
-        EventRegistrationToken m_pElementPopupChildISizeChangedToken;
-        EventRegistrationToken m_pElementOutSidePopupPointerPressedToken;
-        EventRegistrationToken m_closedStateStoryboardCompletedToken;
-        EventRegistrationToken m_pElementPopupChildCharacterReceivedToken;
-        EventRegistrationToken m_pElementPopupChildLoadedToken;
+        EventRegistrationToken m_pElementPopupChildKeyDownToken{};
+        EventRegistrationToken m_pElementPopupChildKeyUpToken{};
+        EventRegistrationToken m_pElementPopupChildGotFocusToken{};
+        EventRegistrationToken m_pElementPopupChildLostFocusToken{};
+        EventRegistrationToken m_pElementPopupChildPointerEnteredToken{};
+        EventRegistrationToken m_pElementPopupChildPointerExitedToken{};
+        EventRegistrationToken m_pElementPopupChildISizeChangedToken{};
+        EventRegistrationToken m_pElementOutSidePopupPointerPressedToken{};
+        EventRegistrationToken m_closedStateStoryboardCompletedToken{};
+        EventRegistrationToken m_pElementPopupChildCharacterReceivedToken{};
+        EventRegistrationToken m_pElementPopupChildLoadedToken{};
 
         ctl::ComPtr<xaml_input::IPointerEventHandler> m_spEditableTextPointerPressedEventHandler;
         ctl::ComPtr<xaml_input::ITappedEventHandler> m_spEditableTextTappedEventHandler;

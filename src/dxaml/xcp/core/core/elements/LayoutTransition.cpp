@@ -784,7 +784,7 @@ HRESULT CTransition::OnLayoutChanged(_In_ CUIElement* pTarget)
             // the new location of the UIElement
             if (CTransition::HasActiveTransition(pTarget))
             {
-                pStorage->UpdateBrushes(pStorage->m_arrangeOutput);
+                IFC(pStorage->UpdateBrushes(pStorage->m_arrangeOutput));
             }
             else
             {

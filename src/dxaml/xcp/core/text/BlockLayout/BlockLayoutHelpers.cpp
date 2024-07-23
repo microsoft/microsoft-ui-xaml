@@ -123,11 +123,11 @@ _Check_return_ HRESULT BlockLayoutHelpers::GetParagraphProperties(
 
     IFC(pFormatting->m_pFontFamily->GetFontTypeface(
         pFontContext,
-        CWeightStyleStretch(
+        CFontFaceCriteria(
             static_cast<XUINT32>(pFormatting->m_nFontWeight),
             static_cast<XUINT32>(pFormatting->m_nFontStyle),
-            static_cast<XUINT32>(pFormatting->m_nFontStretch)
-        ),
+            static_cast<XUINT32>(pFormatting->m_nFontStretch),
+            pFormatting->m_eFontSize),
         &pFontTypeface
     ));
 
@@ -210,11 +210,11 @@ _Check_return_ HRESULT BlockLayoutHelpers::CreateCollapsingSymbol(
 
     IFC(pTextFormatting->m_pFontFamily->GetFontTypeface(
         pFontContext,
-        CWeightStyleStretch(
+        CFontFaceCriteria(
             static_cast<XUINT32>(pTextFormatting->m_nFontWeight),
             static_cast<XUINT32>(pTextFormatting->m_nFontStyle),
-            static_cast<XUINT32>(pTextFormatting->m_nFontStretch)
-        ),
+            static_cast<XUINT32>(pTextFormatting->m_nFontStretch),
+            pTextFormatting->m_eFontSize),
         &pFontTypeface
         ));
 

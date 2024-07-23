@@ -356,28 +356,28 @@ void ItemsView::GetDistanceToKeyboardNavigationReferenceOffset(
     const double roundingMargin = roundingScaleFactor <= 1.0 ? 0.5 : 2.0 / roundingScaleFactor;
 
     if (focusNavigationDirection == winrt::FocusNavigationDirection::Up &&
-        elementRect.Y + elementRect.Height > currentElementRect.Y + roundingMargin)
+        static_cast<double>(elementRect.Y) + static_cast<double>(elementRect.Height) > static_cast<double>(currentElementRect.Y) + roundingMargin)
     {
         // This element is disqualified because it is not placed at the top of currentElement.
         return;
     }
 
     if (focusNavigationDirection == winrt::FocusNavigationDirection::Down &&
-        elementRect.Y + roundingMargin < currentElementRect.Y + currentElementRect.Height)
+        static_cast<double>(elementRect.Y) + roundingMargin < static_cast<double>(currentElementRect.Y) + static_cast<double>(currentElementRect.Height))
     {
         // This element is disqualified because it is not placed at the bottom of currentElement.
         return;
     }
 
     if (focusNavigationDirection == winrt::FocusNavigationDirection::Left &&
-        elementRect.X + elementRect.Width > currentElementRect.X + roundingMargin)
+        static_cast<double>(elementRect.X) + static_cast<double>(elementRect.Width) > static_cast<double>(currentElementRect.X) + roundingMargin)
     {
         // This element is disqualified because it is not placed at the left of currentElement.
         return;
     }
 
     if (focusNavigationDirection == winrt::FocusNavigationDirection::Right &&
-        elementRect.X + roundingMargin < currentElementRect.X + currentElementRect.Width)
+        static_cast<double>(elementRect.X) + roundingMargin < static_cast<double>(currentElementRect.X) + static_cast<double>(currentElementRect.Width))
     {
         // This element is disqualified because it is not placed at the right of currentElement.
         return;

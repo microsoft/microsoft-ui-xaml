@@ -67,6 +67,7 @@ AccessKeyExport::~AccessKeyExport() = default;
 
 _Check_return_ HRESULT AccessKeyExport::TryProcessInputForAccessKey(_In_ const InputMessage* const inputMessage, _Out_ bool* keyProcessed) const
 {
+    *keyProcessed = false;
     if (impl->IsValid())
     {
         // We anticipate input messages to arrive with XCP_CHAR only when we are not hosted inside a CoreWindow
@@ -103,6 +104,7 @@ _Check_return_ HRESULT AccessKeyExport::ProcessPointerInput(_In_ const InputMess
 
 _Check_return_ HRESULT AccessKeyExport::TryProcessInputForCharacterReceived(_In_ mui::ICharacterReceivedEventArgs* args, _Out_ bool* keyProcessed) const
 {
+    *keyProcessed = false;
     if (impl->IsValid())
     {
         IFC_RETURN(impl->m_inputInterceptor.TryProcessInputForCharacterReceived(args, keyProcessed));
@@ -187,7 +189,7 @@ _Check_return_ HRESULT AccessKeyExport::CleanupAndExitCurrentScope() const
 _Check_return_ HRESULT AccessKeyExport::ExitAccessKeyMode() const
 {
     IFC_RETURN(CleanupAndExitCurrentScope());
-    impl->m_container.SetIsActive(false);
+    IFC_RETURN(impl->m_container.SetIsActive(false));
     return S_OK;
 }
 
@@ -197,7 +199,7 @@ _Check_return_ HRESULT AccessKeyExport::EnterAccessKeyMode() const
     {
         return S_OK;
     }
-    impl->m_container.SetIsActive(true);
-    impl->m_scopeTree.EnterScope();
+    IFC_RETURN(impl->m_container.SetIsActive(true));
+    IFC_RETURN(impl->m_scopeTree.EnterScope());
     return S_OK;
 }

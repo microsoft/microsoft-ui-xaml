@@ -62,6 +62,7 @@ IFACEMETHODIMP DirectUI::RenderTargetBitmapGenerated::GetPixelsAsync(_Outptr_ AB
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "RenderTargetBitmap_GetPixelsAsync", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<RenderTargetBitmap*>(this)->GetPixelsAsyncImpl(ppReturnValue));
@@ -80,6 +81,7 @@ IFACEMETHODIMP DirectUI::RenderTargetBitmapGenerated::RenderAsync(_In_opt_ ABI::
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "RenderTargetBitmap_RenderAsync", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<RenderTargetBitmap*>(this)->RenderAsyncImpl(pElement, ppReturnValue));
@@ -98,6 +100,7 @@ IFACEMETHODIMP DirectUI::RenderTargetBitmapGenerated::RenderToSizeAsync(_In_opt_
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "RenderTargetBitmap_RenderToSizeAsync", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<RenderTargetBitmap*>(this)->RenderToSizeAsyncImpl(pElement, scaledWidth, scaledHeight, ppReturnValue));

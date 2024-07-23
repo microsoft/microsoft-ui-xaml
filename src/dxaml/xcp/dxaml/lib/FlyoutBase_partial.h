@@ -251,6 +251,7 @@ namespace DirectUI
         // Forwards select property values set on the flyout to the presenter.
         _Check_return_ HRESULT ForwardTargetPropertiesToPresenter();
 
+        _Check_return_ HRESULT ForwardThemeToPresenter();
         _Check_return_ HRESULT ForwardSystemBackdropToPopup();
 
         // Sets offsets on entrance / exit transition to match placement mode.
@@ -316,6 +317,7 @@ namespace DirectUI
         ctl::EventPtr<FrameworkElementUnloadedEventCallback> m_epPresenterUnloadedHandler;
         ctl::EventPtr<UIElementLostFocusEventCallback> m_epPopupLostFocusHandler;
         ctl::EventPtr<FrameworkElementUnloadedEventCallback> m_epPlacementTargetUnloadedHandler;
+        ctl::EventPtr<FrameworkElementActualThemeChangedEventCallback> m_epPlacementTargetActualThemeChangedHandler;
 
         // Cached bounds of placement target. Used in cases where the placement target leaves the visual
         // tree before the flyout is displayed, for example, if the placement target was inside another flyout.
@@ -356,7 +358,7 @@ namespace DirectUI
 
         wf::Point m_targetPoint;
         wf::Rect m_exclusionRect;
-        DirectUI::InputDeviceType m_inputDeviceTypeUsedToOpen;
+        DirectUI::InputDeviceType m_inputDeviceTypeUsedToOpen{};
 
         // Old values of the target position properties to tell whether we should no-op
         // upon being told to re-show a flyout.

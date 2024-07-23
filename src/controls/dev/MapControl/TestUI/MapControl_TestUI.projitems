@@ -19,5 +19,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)MapControlPage.xaml.cs">
       <DependentUpon>MapControlPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)MapControlApiKey.cs"/>
   </ItemGroup>
 </Project>

@@ -62,6 +62,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::get_HorizontalAlignmentR
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<BringIntoViewOptions*>(this)->get_HorizontalAlignmentRatioImpl(pValue));
 Cleanup:
@@ -80,6 +81,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::get_HorizontalOffset(_Ou
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<BringIntoViewOptions*>(this)->get_HorizontalOffsetImpl(pValue));
 Cleanup:
@@ -115,6 +117,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::get_VerticalAlignmentRat
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<BringIntoViewOptions*>(this)->get_VerticalAlignmentRatioImpl(pValue));
 Cleanup:
@@ -133,6 +136,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::get_VerticalOffset(_Out_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<BringIntoViewOptions*>(this)->get_VerticalOffsetImpl(pValue));
 Cleanup:

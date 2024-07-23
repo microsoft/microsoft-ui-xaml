@@ -484,6 +484,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::ApplyTemplate(_Out_ BOOLEAN* pReturnV
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Control_ApplyTemplate", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Control*>(this)->ApplyTemplateImpl(pReturnValue));
@@ -505,6 +506,7 @@ _Check_return_ HRESULT DirectUI::ControlGenerated::GetImplementationRoot(_Outptr
     CUIElement* pReturnValueCore = nullptr;
 
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
 
     IFC(CheckThread());
 
@@ -528,6 +530,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::GetTemplateChild(_In_ HSTRING childNa
     }
     ARG_NOTNULL(childName, "childName");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Control*>(this)->GetTemplateChildImpl(childName, ppReturnValue));
@@ -1684,7 +1687,7 @@ _Check_return_ HRESULT DirectUI::ControlGenerated::EventAddHandlerByIndex(_In_ K
     case KnownEventIndex::Control_FocusDisengaged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::Control*, ABI::Microsoft::UI::Xaml::Controls::FocusDisengagedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1701,7 +1704,7 @@ _Check_return_ HRESULT DirectUI::ControlGenerated::EventAddHandlerByIndex(_In_ K
     case KnownEventIndex::Control_FocusEngaged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::Control*, ABI::Microsoft::UI::Xaml::Controls::FocusEngagedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1730,7 +1733,7 @@ _Check_return_ HRESULT DirectUI::ControlGenerated::EventRemoveHandlerByIndex(_In
     case KnownEventIndex::Control_FocusDisengaged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::Control*, ABI::Microsoft::UI::Xaml::Controls::FocusDisengagedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1747,7 +1750,7 @@ _Check_return_ HRESULT DirectUI::ControlGenerated::EventRemoveHandlerByIndex(_In
     case KnownEventIndex::Control_FocusEngaged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::Control*, ABI::Microsoft::UI::Xaml::Controls::FocusEngagedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

@@ -26,7 +26,7 @@ private:
     ~CInputPaneInteractionHelper();
 
 private:
-    IXcpInputPaneHandler* m_pInputPaneHandler;
+    IXcpInputPaneHandler* m_pInputPaneHandler{};
     Microsoft::WRL::ComPtr<IFrameworkInputPane> m_pInputPane;
     IFrameworkInputPaneHandler* m_pFrameworkInputPaneHandler;
     DWORD m_dwCookie;

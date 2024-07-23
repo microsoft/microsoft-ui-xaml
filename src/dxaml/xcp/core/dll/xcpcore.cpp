@@ -74,6 +74,8 @@
 #include <windows.system.h>
 #include "DXamlServices.h"
 #include "JupiterWindow.h"
+#include "RefreshRateInfo.h"
+#include "GraphicsTelemetry.h"
 
 #if XCP_MONITOR
 #include "XcpAllocationDebug.h"
@@ -563,6 +565,7 @@ CCoreServices::CCoreServices()
     m_pHasDeferredAnimationOperationsEvent = nullptr;
     m_pDeferredAnimationOperationsCompleteEvent = nullptr;
     m_pRootVisualResetEvent = NULL;
+    m_layoutCleanEvent = nullptr;
     m_pImageDecodingIdleEvent = NULL;
     m_pFontDownloadsIdleEvent = nullptr;
     m_pPopupMenuCommandInvokedEvent = nullptr;
@@ -769,6 +772,12 @@ CCoreServices::~CCoreServices() noexcept
     {
         m_pRootVisualResetEvent->Close();
         m_pRootVisualResetEvent = nullptr;
+    }
+
+    if (m_layoutCleanEvent)
+    {
+        m_layoutCleanEvent->Close();
+        m_layoutCleanEvent = nullptr;
     }
 
     if (m_pImageDecodingIdleEvent)
@@ -6278,6 +6287,12 @@ CCoreServices::NWDrawTree(
         // Update the state of elements that change their state asynchronously.
         IFC(UpdateDirtyState());
 
+        if (pLayoutManager)
+        {
+            bool isLayoutClean = pLayoutManager->IsLayoutClean();
+            IFC(SetLayoutCleanSignaledStatus(isLayoutClean));
+        }
+
         // Ensure that device resources have been created before the render walk.
         if (isRenderEnabled)
         {
@@ -6909,9 +6924,6 @@ CCoreServices::SubmitPrimitiveCompositionCommands(
 
     // DComp animations have been committed. Clear the flag for "new independent animations started this frame".
     pTimeManager->ResetIndependentTimelinesChanged();
-
-    // Wake the independent thread since the UI thread submitted work.
-    IFC_RETURN(compositorScheduler->WakeCompositionThread());
 
     // Commit the main device outside the lock. It is possible that the content of the frame and its animations will
     // get out of sync. The render thread can start ticking animations before the content changes are picked up.
@@ -8265,7 +8277,7 @@ _Check_return_ HRESULT CCoreServices::EnsureDeviceLostListener()
             auto core = static_cast<CCoreServices*>(context);
             xref_ptr<DeviceLostDispatcher> deviceLostDispatcher;
             deviceLostDispatcher.init(new DeviceLostDispatcher(core));
-            core->ExecuteOnUIThread(deviceLostDispatcher, ReentrancyBehavior::CrashOnReentrancy);
+            IFCFAILFAST(core->ExecuteOnUIThread(deviceLostDispatcher, ReentrancyBehavior::CrashOnReentrancy));
         }, this, nullptr));
         IFCW32FAILFAST(m_deviceLostWaiter != nullptr);
         SetThreadpoolWait(m_deviceLostWaiter.get(), m_deviceLostEvent.get(), nullptr /*timeout*/);
@@ -8358,7 +8370,7 @@ _Check_return_ HRESULT CCoreServices::RecoverFromDeviceLost()
         if (m_deviceLost != DeviceLostState::HardwareReleased)
         {
             const bool cleanupDComp = m_deviceLost == DeviceLostState::HardwareAndVisuals;
-            CleanupDeviceRelatedResources(cleanupDComp, true /* isDeviceLost */);
+            IFC_RETURN(CleanupDeviceRelatedResources(cleanupDComp, true /* isDeviceLost */));
             m_deviceLost = DeviceLostState::HardwareReleased;
             LogCoreServicesEvent(CoreServicesEvent::HardwareResourcesReleased);
 
@@ -8483,7 +8495,7 @@ _Check_return_ HRESULT CCoreServices::CleanupDeviceRelatedResources(_In_ bool cl
         m_pTextCore->GetWinTextCore()->ReleaseDeviceDependentResources();
     }
 
-    m_pRenderTargetBitmapManager->CleanupDeviceRelatedResources(cleanupDComp);
+    IFC_RETURN(m_pRenderTargetBitmapManager->CleanupDeviceRelatedResources(cleanupDComp));
 
     if (m_pAllSurfaceImageSources != nullptr)
     {
@@ -9330,7 +9342,7 @@ _Check_return_ HRESULT CCoreServices::OnVisibilityChanged(bool isStartingUp, boo
         // proactively to get the first first frame ready as early as possible.
         if (isXamlVisible || !isStartingUp)
         {
-            EnableRender(isXamlVisible);
+            IFC_RETURN(EnableRender(isXamlVisible));
         }
 
         // Start timer to offer resources while the app is running in the background.
@@ -9747,7 +9759,7 @@ CCoreServices::ProcessTrackedImages()
         // run an algorithm to figure out when we can still use DecodeToRenderSize
         // and if so, compute the same bounds that would have been computed in the RenderWalk
         ImageDecodeBoundsFinder boundsFinder(pImageSource);
-        boundsFinder.FindReasonableDecodeBounds();
+        IFC(boundsFinder.FindReasonableDecodeBounds());
 
         if (!boundsFinder.m_skipDecode)
         {
@@ -9757,7 +9769,7 @@ CCoreServices::ProcessTrackedImages()
 
     for (auto& imageSource: m_animatedImages)
     {
-        imageSource->SuspendAnimation();
+        IFC(imageSource->SuspendAnimation());
     }
 
 Cleanup:
@@ -10344,6 +10356,21 @@ CCoreServices::SetSystemFontCollectionOverride(_In_opt_ IDWriteFontCollection* p
     return S_OK;
 }
 
+//------------------------------------------------------------------------------
+//
+//  Synopsis:
+//      Indicates whether the DWrite Typographic model should be used.
+//
+//------------------------------------------------------------------------------
+_Check_return_ HRESULT
+CCoreServices::ShouldUseTypographicFontModel(_Out_ bool* useDWriteTypographicModel)
+{
+    CTextCore* pTextCore = nullptr;
+    IFC_RETURN(GetTextCore(&pTextCore));
+    IFC_RETURN(pTextCore->GetWinTextCore()->ShouldUseTypographicFontModel(useDWriteTypographicModel));
+    return S_OK;
+}
+
 void
 CCoreServices::SetTransparentBackground(bool isTransparent)
 {
@@ -10526,6 +10553,14 @@ CCoreServices::InitWaitForIdleEvents()
         FALSE /* bReturnFailureIfCreationFailed */));
 
     IFC_RETURN(gps->NamedEventCreate(
+        &m_layoutCleanEvent,
+        InitModeOpenOrCreate,
+        TRUE /* bInitialState */,
+        TRUE /* bManualReset */,
+        XSTRING_PTR_EPHEMERAL(L"LayoutClean"),
+        FALSE /* bReturnFailureIfCreationFailed */));
+
+    IFC_RETURN(gps->NamedEventCreate(
         &m_pImageDecodingIdleEvent,
         InitModeOpenOrCreate,
         TRUE /* bInitialState */,
@@ -10688,6 +10723,23 @@ CCoreServices::SetRootVisualResetEventSignaledStatus(_In_ bool bSignaled)
         else
         {
             IFC_RETURN(m_pRootVisualResetEvent->Reset());
+        }
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT CCoreServices::SetLayoutCleanSignaledStatus(_In_ bool bSignaled)
+{
+    if (m_layoutCleanEvent != nullptr)
+    {
+        if (bSignaled)
+        {
+            IFC_RETURN(m_layoutCleanEvent->Set());
+        }
+        else
+        {
+            IFC_RETURN(m_layoutCleanEvent->Reset());
         }
     }
 

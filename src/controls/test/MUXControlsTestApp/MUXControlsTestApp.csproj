@@ -6,8 +6,6 @@
   <Import Project="$(MUXCProjectRoot)FeatureAreas.props" />
 
   <PropertyGroup>
-    <!-- Temporary workaround for CsWinRT 1.3.3 causing corruption of patched DLLs on exception -->
-    <CsWinRTIIDOptimizerOptOut>true</CsWinRTIIDOptimizerOptOut>
     <OutputType>WinExe</OutputType>
     <TargetFramework>$(DotNetCoreTargetFrameworkMoniker)</TargetFramework>
     <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
@@ -300,6 +298,7 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\MapControl\APITests\MapControl_APITests.projitems" Label="Shared" Condition="$(FeatureMapControlEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\SelectorBar\TestUI\SelectorBar_TestUI.projitems" Label="Shared" Condition="$(FeatureSelectorBarEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\SelectorBar\APITests\SelectorBar_APITests.projitems" Label="Shared" Condition="$(FeatureSelectorBarEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\TitleBar\TestUI\TitleBar_TestUI.projitems" Label="Shared" Condition="$(FeatureTitleBarEnabled) == 'true'" />
 
   <!-- For some reason, TAEF binplaces the wrong version of Wex.Logger.Interop.dll - we need to fix that.
        Removing the version from the binaries directory to allow us to use the version from the lib directory is sufficient here.-->

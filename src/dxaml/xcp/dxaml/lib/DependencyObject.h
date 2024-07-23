@@ -245,11 +245,11 @@ namespace DirectUI
         {
             return SetValueCore(SetValueParams(pDP, value));
         }
-        _Check_return_ HRESULT SetValueCore(_In_ const CDependencyProperty* pDP, _In_ IInspectable* pValue)
+        _Check_return_ HRESULT SetValueCore(_In_ const CDependencyProperty* pDP, _In_opt_ IInspectable* pValue)
         {
             return SetValueCore(pDP, pValue, false);
         }
-        _Check_return_ HRESULT SetValueCore(_In_ const CDependencyProperty* dp, _In_ IInspectable* value, _In_ bool setEffectiveValueOnly, _In_ ::BaseValueSource baseValueSource = ::BaseValueSourceUnknown);
+        _Check_return_ HRESULT SetValueCore(_In_ const CDependencyProperty* dp, _In_opt_ IInspectable* value, _In_ bool setEffectiveValueOnly, _In_ ::BaseValueSource baseValueSource = ::BaseValueSourceUnknown);
 
         #pragma region Generated code helpers.
         template<class T>
@@ -327,17 +327,17 @@ namespace DirectUI
         _Check_return_ HRESULT GetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _Out_ HSTRING* pValue);
 
         template<class T>
-        _Check_return_ typename std::enable_if<!ctl::IsComObject<T>::value, HRESULT>::type SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_ T* pValue)
+        _Check_return_ typename std::enable_if<!ctl::IsComObject<T>::value, HRESULT>::type SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_opt_ T* pValue)
         {
             RRETURN(SetValueByKnownIndex(nPropertyIndex, static_cast<IInspectable*>(pValue)));
         }
 
         template<class T>
-        _Check_return_ typename std::enable_if<ctl::IsComObject<T>::value, HRESULT>::type SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_ T* pValue)
+        _Check_return_ typename std::enable_if<ctl::IsComObject<T>::value, HRESULT>::type SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_opt_ T* pValue)
         {
             RRETURN(SetValueByKnownIndex(nPropertyIndex, ctl::iinspectable_cast(pValue)));
         }
-        _Check_return_ HRESULT SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_ IInspectable* ppValue);
+        _Check_return_ HRESULT SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_opt_ IInspectable* ppValue);
 
         template<class T>
         _Check_return_ typename std::enable_if<!std::is_enum<T>::value && NeedsBoxerBuffer<T>::value, HRESULT>::type SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_ T value)
@@ -381,7 +381,7 @@ namespace DirectUI
             return S_OK;
         }
 
-        _Check_return_ HRESULT SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_ HSTRING value);
+        _Check_return_ HRESULT SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_opt_ HSTRING value);
 
         template<class T>
         static _Check_return_ HRESULT GetAttachedValueByKnownIndex(_In_ DependencyObject* pElement, _In_ KnownPropertyIndex nPropertyIndex, _Out_ T* pValue)

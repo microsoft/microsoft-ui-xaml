@@ -78,7 +78,7 @@ Cleanup:
 //      Print thread function. Listens for print messages on thread-safe queue.
 //
 //------------------------------------------------------------------------
-XINT32 CD2DPrintTarget::PrintThreadFn(_In_reads_bytes_(sizeof(IPALQueue*)) XUINT8* pData)
+XINT32 CD2DPrintTarget::PrintThreadFn(_In_ XUINT8* pData)
 {
     HRESULT hr = S_OK;
     IPALQueue* pPrintQueue = reinterpret_cast<IPALQueue*>(pData);
@@ -99,7 +99,7 @@ XINT32 CD2DPrintTarget::PrintThreadFn(_In_reads_bytes_(sizeof(IPALQueue*)) XUINT
         // Signal the notification event if any.
         if (pMessage->pSendMessageEvent)
         {
-            pMessage->pSendMessageEvent->Set();
+            IFC(pMessage->pSendMessageEvent->Set());
         }
         // Exit from the message loop on WM_D2DPRINT_DESTROY message.
         if (pMessage->msg == WM_D2DPRINT_DESTROY)
@@ -111,6 +111,7 @@ XINT32 CD2DPrintTarget::PrintThreadFn(_In_reads_bytes_(sizeof(IPALQueue*)) XUINT
     }
 
 Cleanup:
+    SAFE_DELETE(pMessage);
     if (fShouldCallCoUninitialize)
     {
         CoUninitialize();
@@ -393,7 +394,7 @@ _Check_return_ HRESULT CD2DPrintTarget::BeginPreview(_In_ IPALPrintingData* pPre
     if (m_fPrintStage)
     {
         // If there was a failure on a previous attempt, end printing.
-        EndPrint();
+        IFC_RETURN(EndPrint());
     }
     ReplaceInterface(m_pPreviewData, reinterpret_cast<IPALD2DPrintingData*>(pPreviewData));
     m_fPreviewStage = TRUE;
@@ -506,7 +507,7 @@ _Check_return_ HRESULT CD2DPrintTarget::BeginPrint(_In_ IPALPrintingData* pPD)
     if (m_fPreviewStage && !m_fPrintStage)
     {
         // End preview in case this wasn't done by the caller.
-        EndPreview();
+        IFC(EndPreview());
     }
     IFCEXPECT(!m_fPreviewStage && !m_fPrintStage);
     m_fPrintStage = TRUE;

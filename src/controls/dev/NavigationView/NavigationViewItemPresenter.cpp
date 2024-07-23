@@ -23,12 +23,17 @@ void NavigationViewItemPresenter::UnhookEventsAndClearFields()
 {
     m_expandCollapseChevronPointerPressedRevoker.revoke();
     m_expandCollapseChevronPointerReleasedRevoker.revoke();
+    m_expandCollapseChevronPointerExitedRevoker.revoke();
+    m_expandCollapseChevronPointerCanceledRevoker.revoke();
+    m_expandCollapseChevronPointerCaptureLostRevoker.revoke();
 
     m_contentGrid.set(nullptr);
     m_infoBadgePresenter.set(nullptr);
     m_expandCollapseChevron.set(nullptr);
     m_chevronExpandedStoryboard.set(nullptr);
     m_chevronCollapsedStoryboard.set(nullptr);
+
+    m_isChevronPressed = false;
 }
 
 void NavigationViewItemPresenter::OnApplyTemplate()
@@ -83,15 +88,56 @@ void NavigationViewItemPresenter::LoadChevron()
 
                 m_expandCollapseChevronPointerPressedRevoker = expandCollapseChevron.PointerPressed(winrt::auto_revoke, { this, &NavigationViewItemPresenter::OnExpandCollapseChevronPointerPressed });
                 m_expandCollapseChevronPointerReleasedRevoker = expandCollapseChevron.PointerReleased(winrt::auto_revoke, { this, &NavigationViewItemPresenter::OnExpandCollapseChevronPointerReleased });
+
+                m_expandCollapseChevronPointerCanceledRevoker = AddRoutedEventHandler<RoutedEventType::PointerCanceled>(
+                    *this,
+                    { this, &NavigationViewItemPresenter::OnExpandCollapseChevronPointerCanceled },
+                    true /*handledEventsToo*/);
+                    
+                m_expandCollapseChevronPointerExitedRevoker = AddRoutedEventHandler<RoutedEventType::PointerExited>(
+                    *this,
+                    { this, &NavigationViewItemPresenter::OnExpandCollapseChevronPointerExited },
+                    true /*handledEventsToo*/);
+
+                m_expandCollapseChevronPointerCaptureLostRevoker = AddRoutedEventHandler<RoutedEventType::PointerCaptureLost>(
+                    *this,
+                    { this, &NavigationViewItemPresenter::OnExpandCollapseChevronPointerCaptureLost },
+                    true /*handledEventsToo*/);
             }
         }
     }
 }
 
+
+void NavigationViewItemPresenter::ResetTrackedPointerId()
+{
+    m_trackedPointerId = 0;
+}
+
+// Returns False when the provided pointer Id matches the currently tracked Id.
+// When there is no currently tracked Id, sets the tracked Id to the provided Id and returns False.
+// Returns True when the provided pointer Id does not match the currently tracked Id.
+bool NavigationViewItemPresenter::IgnorePointerId(const winrt::PointerRoutedEventArgs& args)
+{
+    uint32_t pointerId = args.Pointer().PointerId();
+
+    if (m_trackedPointerId == 0)
+    {
+        m_trackedPointerId = pointerId;
+    }
+    else if (m_trackedPointerId != pointerId)
+    {
+        return true;
+    }
+    return false;
+}
+
 void NavigationViewItemPresenter::OnExpandCollapseChevronPointerPressed(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
 {
+    const bool ignorePointerId = IgnorePointerId(args);
     const auto pointerProperties = args.GetCurrentPoint(*this).Properties();
-    if (!pointerProperties.IsLeftButtonPressed() ||
+    if (ignorePointerId ||
+        !pointerProperties.IsLeftButtonPressed() ||
         args.Handled())
     {
         // We are only interested in the primary action of the pointer device 
@@ -100,20 +146,63 @@ void NavigationViewItemPresenter::OnExpandCollapseChevronPointerPressed(const wi
         return;
     }
 
+    m_isChevronPressed = true;
     args.Handled(true);
 }
 
 void NavigationViewItemPresenter::OnExpandCollapseChevronPointerReleased(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
 {
+    if (IgnorePointerId(args))
+    {
+        return;
+    }
+
     const auto navigationViewItem = GetNavigationViewItem();
     const auto pointerProperties = args.GetCurrentPoint(*this).Properties();
     if (!args.Handled() &&
+        m_isChevronPressed &&
         pointerProperties.PointerUpdateKind() == winrt::PointerUpdateKind::LeftButtonReleased &&
         navigationViewItem)
     {
         navigationViewItem->OnExpandCollapseChevronPointerReleased();
         args.Handled(true);
     }
+
+    m_isChevronPressed = false;
+    ResetTrackedPointerId();
+}
+
+void NavigationViewItemPresenter::OnExpandCollapseChevronPointerCanceled(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+{
+    if (IgnorePointerId(args))
+    {
+        return;
+    }
+
+    m_isChevronPressed = false;
+    ResetTrackedPointerId();
+}
+
+void NavigationViewItemPresenter::OnExpandCollapseChevronPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+{
+    if (IgnorePointerId(args))
+    {
+        return;
+    }
+
+    m_isChevronPressed = false;
+    ResetTrackedPointerId();
+}
+
+void NavigationViewItemPresenter::OnExpandCollapseChevronPointerCaptureLost(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+{
+    if (IgnorePointerId(args))
+    {
+        return;
+    }
+
+    m_isChevronPressed = false;
+    ResetTrackedPointerId();
 }
 
 void NavigationViewItemPresenter::RotateExpandCollapseChevron(bool isExpanded)

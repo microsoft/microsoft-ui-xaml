@@ -10,10 +10,6 @@
 #include <uielementcollection.h>
 #include <LayoutManager.h>
 #include "LayoutCycleDebugSettings.h"
-#include <FrameworkUdk/Containment.h>
-
-// Bug 50119529: [1.5 servicing] BreadcrumbBar ellipsis flyout doesn't render all items if the window is small
-#define WINAPPSDK_CHANGEID_50119529 50119529
 
 void ComputeUnidimensionalEffectiveViewport(
     _In_ const std::vector<CUIElement::UnidimensionalViewportInformation>& viewports,
@@ -394,11 +390,7 @@ _Check_return_ HRESULT CUIElement::EffectiveViewportWalk(
     }
 
     // Prevent the tree from changing while we're walking it.
-    LockParent();
-    auto scopeGuard = wil::scope_exit([&]
-    {
-        UnlockParent();
-    });
+    auto scopedParentLock = LockParent();
 
     if (dirtyFound && GetWantsViewport())
     {
@@ -442,23 +434,12 @@ _Check_return_ HRESULT CUIElement::EffectiveViewportWalk(
             if (currentChild->GetIsViewportDirtyOrOnViewportDirtyPath()
                 || (newDirtyFound && currentChild->GetWantsViewportOrContributesToViewport()))
             {
-                if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_50119529>())
-                {
-                    IFC_RETURN(EffectiveViewportWalkToChild(
-                        currentChild,
-                        newDirtyFound,
-                        transformsToViewports,
-                        horizontalViewports,
-                        verticalViewports));
-                }
-                else
-                {
-                    IFC_RETURN(currentChild->EffectiveViewportWalk(
-                        newDirtyFound,
-                        transformsToViewports,
-                        horizontalViewports,
-                        verticalViewports));
-                }
+                IFC_RETURN(EffectiveViewportWalkToChild(
+                    currentChild,
+                    newDirtyFound,
+                    transformsToViewports,
+                    horizontalViewports,
+                    verticalViewports));
             }
 
             // If at least one of the children still has the viewport

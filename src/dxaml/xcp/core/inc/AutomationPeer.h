@@ -33,7 +33,7 @@ public:
 
     virtual /* [propget] */ HRESULT STDMETHODCALLTYPE IsCorrectPeerForHwnd(
                                                  HWND hwnd,
-        /* [retval][out] */ __RPC__deref_out_opt bool * value) = 0;
+        /* [retval][out] */ __RPC__out bool * value) = 0;
 
 };
 

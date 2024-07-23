@@ -54,6 +54,7 @@ IFACEMETHODIMP DirectUI::IsTypeNotPresentGenerated::Evaluate(_In_ ABI::Windows::
     }
     ARG_NOTNULL(pArguments, "arguments");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<IsTypeNotPresent*>(this)->EvaluateImpl(pArguments, pReturnValue));

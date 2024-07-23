@@ -1712,9 +1712,8 @@ CPathGeometry::ParseGeometry(
             }
 
         // Read the boolean or floating point value from the data
-#if DBG
+#pragma warning(suppress: 4189) // C4189: PREFast does not know this local variable is being used at least in the chk build by the ASSERT() below.
             const WCHAR* pPrevious = pRasterizerPath;
-#endif
             const XUINT32 cPrevious = cData;
 
             if (mBoolean & 1)

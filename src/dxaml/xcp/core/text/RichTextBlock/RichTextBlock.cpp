@@ -1454,7 +1454,7 @@ _Check_return_ HRESULT CRichTextBlock::ArrangeOverride(
             IsSelectionEnabled() &&
             m_pSelectionManager->IsSelectionVisible())
         {
-            m_pSelectionManager->GetSelectionHighlightRegion(UseHighContrastSelection(GetContext()), selection);
+            IFC_RETURN(m_pSelectionManager->GetSelectionHighlightRegion(UseHighContrastSelection(GetContext()), selection));
         }
 
         // Set DrawingContext properties to handle foreground color when BackPlate is enabled. This must be set every ArrangeOverride because
@@ -1856,7 +1856,7 @@ void CRichTextBlock::UpdateSelectionHighlightColor()
         {
             selectionHighlightColor = GetDefaultSelectionHighlightColor();
         }
-        m_pSelectionManager->SetSelectionHighlightColor(selectionHighlightColor);
+        IFCFAILFAST(m_pSelectionManager->SetSelectionHighlightColor(selectionHighlightColor));
         InvalidateRender();
     }
 }

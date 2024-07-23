@@ -417,7 +417,12 @@ namespace ctl
     }
 
     template <typename TConcrete, typename TInterface>
-    _Check_return_ HRESULT ValidateFactoryCreateInstanceWithAggregableActivationFactory(_In_opt_ IInspectable* const pOuter, _In_ IInspectable** const ppInner, _Inout_ IUnknown** ppInstance, _In_ KnownTypeIndex typeIndex, bool isFreeThreaded)
+    _Check_return_ HRESULT ValidateFactoryCreateInstanceWithAggregableActivationFactory(
+        _In_opt_ IInspectable* const pOuter,
+        _In_ IInspectable** const ppInner,
+        _Outptr_ IUnknown** ppInstance,
+        _In_ KnownTypeIndex typeIndex,
+        bool isFreeThreaded)
     {
         UNREFERENCED_PARAMETER(typeIndex);
         ComPtr<IInspectable> spInner;

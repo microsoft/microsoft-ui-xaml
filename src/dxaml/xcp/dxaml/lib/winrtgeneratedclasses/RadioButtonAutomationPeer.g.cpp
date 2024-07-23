@@ -50,6 +50,7 @@ IFACEMETHODIMP DirectUI::RadioButtonAutomationPeerGenerated::get_IsSelected(_Out
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<RadioButtonAutomationPeer*>(this)->get_IsSelectedImpl(pValue));
 Cleanup:
@@ -59,6 +60,7 @@ IFACEMETHODIMP DirectUI::RadioButtonAutomationPeerGenerated::get_SelectionContai
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<RadioButtonAutomationPeer*>(this)->get_SelectionContainerImpl(ppValue));
 Cleanup:

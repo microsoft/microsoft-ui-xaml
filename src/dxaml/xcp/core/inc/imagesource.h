@@ -491,6 +491,8 @@ public:
         _Out_ uint32_t* height
         )
     {
+        *width = 0;
+        *height = 0;
         d2dSvgDocument = nullptr;
         return S_OK;
     }

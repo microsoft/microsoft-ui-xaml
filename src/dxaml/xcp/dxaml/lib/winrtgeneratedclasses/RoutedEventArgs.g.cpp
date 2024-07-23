@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::RoutedEventArgsGenerated::get_OriginalSource(_Outptr_re
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<RoutedEventArgs*>(this)->get_OriginalSourceImpl(ppValue));
 Cleanup:

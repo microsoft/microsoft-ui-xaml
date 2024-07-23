@@ -112,7 +112,7 @@ namespace DirectUI
 
 private:
         ctl::WeakRefPtr m_wrParentListViewBase;
-        XRECTF_RB m_rectGroupBoundsCache;
+        XRECTF_RB m_rectGroupBoundsCache{};
         BOOL m_invalidateGroupBoundsCache;
 
         bool m_IsPressed;

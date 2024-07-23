@@ -141,13 +141,13 @@ CTextRangeCollection::IndexOf(
 _Check_return_ HRESULT
 CTextRangeCollection::EnsureValue(
     _In_ const CValue& originalValue,
-    _Outref_ CValue& coercedValue)
+    _Out_ CValue& coercedValue)
 {
     ASSERT(&originalValue != &coercedValue);
 
     if (originalValue.GetType() == valueTextRange)
     {
-        coercedValue.CopyConverted(originalValue);
+        IFC_RETURN(coercedValue.CopyConverted(originalValue));
     }
     else
     {

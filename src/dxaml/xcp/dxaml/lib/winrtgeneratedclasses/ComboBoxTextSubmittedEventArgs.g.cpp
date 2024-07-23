@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::ComboBoxTextSubmittedEventArgs::get_Text(_Out_ HSTRING*
     xstring_ptr valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CComboBoxTextSubmittedEventArgs*>(pCoreEventArgsNoRef)->get_Text(&valueCore));
@@ -70,6 +71,7 @@ IFACEMETHODIMP DirectUI::ComboBoxTextSubmittedEventArgs::get_Handled(_Out_ BOOLE
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CComboBoxTextSubmittedEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));

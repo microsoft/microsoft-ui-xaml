@@ -55,6 +55,7 @@ IFACEMETHODIMP DirectUI::InputValidationErrorEventArgs::get_Action(_Out_ ABI::Mi
     DirectUI::InputValidationErrorEventAction valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CInputValidationErrorEventArgs*>(pCoreEventArgsNoRef)->get_Action(&valueCore));
@@ -88,6 +89,7 @@ IFACEMETHODIMP DirectUI::InputValidationErrorEventArgs::get_Error(_Outptr_result
     IUnknown* pValueCore = nullptr;
 
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CInputValidationErrorEventArgs*>(pCoreEventArgsNoRef)->get_Error(&pValueCore));

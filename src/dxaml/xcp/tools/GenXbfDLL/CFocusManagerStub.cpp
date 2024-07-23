@@ -5,7 +5,7 @@
 #include "focusmgr.h"
 #include "contentroot.h"
 
-CFocusManager::CFocusManager(CCoreServices* pCoreService, CContentRoot& contentRoot)
+CFocusManager::CFocusManager(_In_ CCoreServices* pCoreService, _In_ CContentRoot& contentRoot)
     : m_contentRoot(contentRoot)
 {
 }

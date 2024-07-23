@@ -10,6 +10,8 @@
 #include "WindowChrome_Partial.h"
 #include "ContentDialogMetadata.h"
 #include "RootScrollViewer.g.h"
+#include <Microsoft.UI.Content.Private.h>
+#include <windowing.h>
 
 using namespace DirectUI;
 
@@ -50,7 +52,7 @@ XamlRoot::~XamlRoot()
     }
 }
 
-HRESULT XamlRoot::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
+_Check_return_ HRESULT XamlRoot::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
     if (InlineIsEqualGUID(iid, __uuidof(IXamlRootNative)))
     {
@@ -119,13 +121,45 @@ _Check_return_ HRESULT XamlRoot::get_IsInputActiveImpl(_Out_ BOOLEAN* pValue)
 }
 
 _Check_return_ HRESULT XamlRoot::get_ContentIslandEnvironmentImpl(
-    _Outptr_ ixp::IContentIslandEnvironment** value)
+    _Outptr_result_maybenull_ ixp::IContentIslandEnvironment** value)
 {
     *value = nullptr;
     if (CContentRoot* contentRoot = m_visualTree->GetContentRootNoRef())
     {
         *value = contentRoot->GetContentIslandEnvironment().Detach();
     }
+    return S_OK;
+}
+
+_Check_return_ HRESULT STDMETHODCALLTYPE XamlRoot::get_CoordinateConverterImpl(_Outptr_ ixp::IContentCoordinateConverter** coordinateConverter)
+{
+    *coordinateConverter = nullptr;
+
+    if (auto xamlIsland = GetVisualTreeNoRef()->GetContentRootNoRef()->GetXamlIslandRootNoRef())
+    {
+        // Get the partner interface for the ContentIsland.
+        ctl::ComPtr<ixp::IContentIsland> contentIsland = xamlIsland->GetContentIsland();
+        IFC_RETURN(contentIsland->get_CoordinateConverter(coordinateConverter));
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT STDMETHODCALLTYPE XamlRoot::TryGetContentIslandImpl(_Outptr_result_maybenull_ ixp::IContentIsland** contentIsland)
+{
+    *contentIsland = nullptr;
+
+    if (auto xamlIsland = GetVisualTreeNoRef()->GetContentRootNoRef()->GetXamlIslandRootNoRef())
+    {
+        // Get the partner interface for the ContentIsland.
+        ixp::IContentIsland* resultIsland = xamlIsland->GetContentIsland();
+        if (resultIsland)
+        {
+            *contentIsland = resultIsland;
+            (*contentIsland)->AddRef();
+        }
+    }
+
     return S_OK;
 }
 
@@ -238,17 +272,28 @@ _Check_return_ HRESULT XamlRoot::get_HostWindow(_Out_ HWND* pValue)
 
             // Bug https://task.ms/48685229: For now, there are still calls to this method that cannot be
             // easily replaced with a ContentIsland API, specifically in WebView2.cpp. This means that we
-            // have to return a hosting HWND even in the XamlIsland scenario. The InputSite gives us a
-            // way to retrieve this HWND as long as InputSite velocity key 45720437 is disabled. Once
-            // this key is enabled for this repo, this will no longer be the case, as the InputSite will
-            // return an HWND that works for input but not for hosting or positioning. At this point,
-            // we will return null and callers will need to make an equivalent call to the ContentIsland.
-            wrl::ComPtr<ixp::IIslandInputSitePartner> inputSite = 
-            GetVisualTreeNoRef()->GetContentRootNoRef()->GetXamlIslandRootNoRef()->GetIslandInputSite();
-
-            if (inputSite)
+            // have to return a hosting HWND even in the XamlIsland scenario. We've added a temporary
+            // partner interface on the ContentIsland to retrieve this bridge/HWND. This is only a
+            // workaround, and new calls to this method and the partner method on the island should
+            // not be added. Once work is completed to make it so that there is full functionality
+            // without an HWND, this call should be removed.
+    
+            if (auto xamlIsland = GetVisualTreeNoRef()->GetContentRootNoRef()->GetXamlIslandRootNoRef())
             {
-                hwnd = CInputServices::GetUnderlyingInputHwndFromIslandInputSite(inputSite.Get());
+                // Get the partner interface for the ContentIsland.
+                ctl::ComPtr<ixp::IContentIslandPartner> contentIslandPartner;
+                ctl::ComPtr<ixp::IContentIsland> contentIsland = xamlIsland->GetContentIsland();
+                IFCFAILFAST(contentIsland.As(&contentIslandPartner));
+
+                // Use the partner interface to retrieve the DesktopSiteBridge, then use that to get
+                // to the WindowId.
+                ctl::ComPtr<ixp::IDesktopSiteBridge> desktopSiteBridge;
+                IFC_RETURN(contentIslandPartner->get_TEMP_DesktopSiteBridge(&desktopSiteBridge));
+
+                // Translate the WindowId to an HWND.
+                ABI::Microsoft::UI::WindowId windowId;
+                IFC_RETURN(desktopSiteBridge->get_WindowId(&windowId));
+                IFC_RETURN(Windowing_GetWindowFromWindowId(windowId, &hwnd));
             }
         }
 
@@ -302,7 +347,7 @@ LayoutBoundsChangedHelper* XamlRoot::GetLayoutBoundsHelperNoRef()
         IFCFAILFAST(ctl::make(&m_layoutBoundsChangedHelper));
 
         m_layoutBoundsChangedHelper->UpdatePeg(true);
-        m_layoutBoundsChangedHelper->InitializeSizeChangedHandlers(static_cast<xaml::IXamlRoot*>(this));
+        IFCFAILFAST(m_layoutBoundsChangedHelper->InitializeSizeChangedHandlers(static_cast<xaml::IXamlRoot*>(this)));
     }
 
     return m_layoutBoundsChangedHelper.Get();

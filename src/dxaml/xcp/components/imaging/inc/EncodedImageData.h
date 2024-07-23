@@ -38,13 +38,13 @@ public:
     const ImageMetadata& GetMetadata() const;
 
     _Check_return_ HRESULT CreateWicBitmapDecoder(
-        _Outref_ wrl::ComPtr<IWICBitmapDecoder>& spWicBitmapDecoder
+        _Out_ wrl::ComPtr<IWICBitmapDecoder>& spWicBitmapDecoder
         );
     bool IsAnimatedImage() const;
 
     bool IsMetadataAvailable() const { return m_isParsed; }
 
-    _Check_return_ HRESULT CreateIStream(_Outref_ wrl::ComPtr<IStream>& spIStream);
+    _Check_return_ HRESULT CreateIStream(_Out_ wrl::ComPtr<IStream>& spIStream);
 
     std::uint64_t GetRawDataSize() const;
 

@@ -230,7 +230,7 @@ HRESULT FocusController::DepartFocus(
 }
 
 template<typename TDelegateInterface, typename TCallback>
-::Microsoft::WRL::ComPtr<TDelegateInterface> MakeAgileCallback(TCallback callback) throw()
+::Microsoft::WRL::ComPtr<TDelegateInterface> MakeAgileCallback(TCallback callback) noexcept
 {
     return ::Microsoft::WRL::Callback<
         ::Microsoft::WRL::Implements<

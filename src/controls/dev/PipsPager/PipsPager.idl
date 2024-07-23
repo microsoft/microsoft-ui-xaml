@@ -10,6 +10,14 @@ enum PipsPagerButtonVisibility
     Collapsed
 };
 
+[MUX_PUBLIC_V7]
+[webhosthidden]
+enum PipsPagerWrapMode
+{
+    None,
+    Wrap
+};
+
 [MUX_PUBLIC]
 [default_interface]
 [webhosthidden]
@@ -71,6 +79,13 @@ unsealed runtimeclass PipsPager : Microsoft.UI.Xaml.Controls.Control
     static Microsoft.UI.Xaml.DependencyProperty NextButtonStyleProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty SelectedPipStyleProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty NormalPipStyleProperty{ get; };
+
+    [MUX_PUBLIC_V7]
+    {
+        [MUX_DEFAULT_VALUE("winrt::PipsPagerWrapMode::None")]
+        PipsPagerWrapMode WrapMode;
+        static Microsoft.UI.Xaml.DependencyProperty WrapModeProperty{ get; };
+    }
 };
 
 }

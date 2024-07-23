@@ -258,7 +258,7 @@
                   Margin=0,-2,0,0
                   Name=PaneTitleTextBlock
                   Padding=0,0,0,0
-                  RenderSize=20,19
+                  RenderSize=20,17
                   Visibility=Visible
         [Microsoft.UI.Xaml.Controls.Grid]
             Background=[NULL]
@@ -960,7 +960,7 @@
                                                   RenderSize=0,0
                                                   Visibility=Visible
                                                 [Microsoft.UI.Xaml.Controls.ContentPresenter]
-                                                    Background=[NULL]
+                                                    Background=#FFFF0000
                                                     BorderBrush=[NULL]
                                                     BorderThickness=0,0,0,0
                                                     CornerRadius=0,0,0,0
@@ -1197,7 +1197,7 @@
                                                   RenderSize=0,0
                                                   Visibility=Visible
                                                 [Microsoft.UI.Xaml.Controls.ContentPresenter]
-                                                    Background=[NULL]
+                                                    Background=#00FFFFFF
                                                     BorderBrush=[NULL]
                                                     BorderThickness=0,0,0,0
                                                     CornerRadius=0,0,0,0
@@ -1642,7 +1642,7 @@
                                                   RenderSize=0,0
                                                   Visibility=Visible
                                                 [Microsoft.UI.Xaml.Controls.ContentPresenter]
-                                                    Background=[NULL]
+                                                    Background=#00FFFFFF
                                                     BorderBrush=[NULL]
                                                     BorderThickness=0,0,0,0
                                                     CornerRadius=0,0,0,0
@@ -1924,7 +1924,7 @@
                       Foreground=#E4000000
                       Margin=0,0,0,0
                       Padding=0,0,0,0
-                      RenderSize=120,19
+                      RenderSize=120,17
                       Visibility=Visible
             [Microsoft.UI.Xaml.Shapes.Rectangle]
                 FocusVisualPrimaryBrush=#E4000000

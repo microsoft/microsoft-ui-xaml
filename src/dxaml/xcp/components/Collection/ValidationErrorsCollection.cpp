@@ -66,6 +66,9 @@ _Check_return_ HRESULT CValidationErrorsCollection::Neat(bool)
 
 bool CValidationErrorsCollection::TryGetValidationError(_In_ CDependencyObject* obj, _COM_Outptr_ xaml_controls::IInputValidationError** error) const
 {
+    // Initialize the output parameter to nullptr at the start
+    *error = nullptr;
+    
     bool gotObject = false;
     if (auto eor = do_pointer_cast<CManagedObjectReference>(obj))
     {

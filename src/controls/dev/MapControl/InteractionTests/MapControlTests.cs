@@ -37,5 +37,111 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
+        [TestMethod]
+        [TestProperty("TestPass:MinOSVer", WindowsOSVersion._19H1)]
+        public void AddMultipleElementsOnMap()
+        {
+            using (var setup = new TestSetupHelper("MapControl Tests")) 
+            {
+                //Wait for map to load
+                var map = FindElement.ByName("Map Application");
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(
+                    () => { return (map = FindElement.ByName("Map Application")) != null; },
+                    retryTimoutByMilliseconds: 3000
+                );
+
+                // Get map contents
+                var elements = map.Descendants[0].Descendants;
+
+                //Verify that the interactive map is the only element
+                Verify.AreEqual(1, elements.Count);
+
+                // Add a layer
+                var addLayerButton = FindElement.ByName<Button>("Add Layer");
+                addLayerButton.Invoke();
+                Wait.ForIdle();
+
+                // Add a pins
+                var addPinButton = FindElement.ByName<Button>("Add Pin");
+                var latitudeTextBox = FindElement.ById<Edit>("latitudePinText");
+                var longitudeTextBox = FindElement.ById<Edit>("longitudePinText");
+
+                KeyboardHelper.EnterText(latitudeTextBox, "0");
+                KeyboardHelper.EnterText(longitudeTextBox, "0");
+                Wait.ForIdle();
+                addPinButton.Invoke();
+                Wait.ForIdle();
+
+                KeyboardHelper.EnterText(latitudeTextBox, "10");
+                KeyboardHelper.EnterText(longitudeTextBox, "10");
+                Wait.ForIdle();
+                addPinButton.Invoke();
+
+                //Verify that the two pins were added
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(
+                    () => { return (elements.Count) == 5; },
+                    retryTimoutByMilliseconds: 3000
+                );
+                Verify.AreEqual(5, elements.Count); 
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestPass:MinOSVer", WindowsOSVersion._19H1)]
+        public void ValidadePinClickEvent()
+        {
+            using (var setup = new TestSetupHelper("MapControl Tests")) 
+            {
+                //Wait for map to load
+                var map = FindElement.ByName("Map Application");
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(
+                    () => { return (map = FindElement.ByName("Map Application")) != null; },
+                    retryTimoutByMilliseconds: 3000
+                );
+
+                // Get map contents
+                var elements = map.Descendants[0].Descendants;
+
+                // Add a layer
+                var addLayerButton = FindElement.ByName<Button>("Add Layer");
+                addLayerButton.Invoke();
+                Wait.ForIdle();
+
+                // Add a pin
+                var addPinButton = FindElement.ByName<Button>("Add Pin");
+                var latitudeTextBox = FindElement.ById<Edit>("latitudePinText");
+                var longitudeTextBox = FindElement.ById<Edit>("longitudePinText");
+
+                KeyboardHelper.EnterText(latitudeTextBox, "0");
+                KeyboardHelper.EnterText(longitudeTextBox, "0");
+                Wait.ForIdle();
+                addPinButton.Invoke();
+
+                //Check pin was created
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(
+                    () => { return (elements.Count) == 3; },
+                    retryTimoutByMilliseconds: 3000
+                );
+                Verify.AreEqual(3, elements.Count); 
+
+                // Click on the pin
+                var pin = elements[1];
+                InputHelper.LeftClick(pin);
+                Wait.ForIdle();
+
+                //Check pin was deleted
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(
+                    () => { return (elements.Count) == 1; },
+                    retryTimoutByMilliseconds: 3000
+                );
+                Verify.AreEqual(1, elements.Count); 
+
+                //Check if both click events were raised
+                var logBox = new Edit(FindElement.ById("output"));
+                Verify.IsTrue(logBox.GetText().Contains("Layer Clicked"));
+                Verify.IsTrue(logBox.GetText().Contains("Map Clicked"));
+
+            }
+        }
     }
 }

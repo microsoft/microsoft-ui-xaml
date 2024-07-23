@@ -282,6 +282,129 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies the correct items are generated when invoking StartBringIntoView for a disconnected item.")]
+        public void ValidateBringIntoViewOperations()
+        {
+            ValidateBringIntoViewOperations(0.0 /*cacheLengths*/);
+            ValidateBringIntoViewOperations(2.0 /*cacheLengths*/);
+        }
+
+        private void ValidateBringIntoViewOperations(double cacheLengths)
+        {
+            Log.Comment("\r\nValidateBringIntoViewOperations cacheLengths: " + cacheLengths);
+
+            string strRealizedItemsIndices = null;
+            List<int> realizedItemsIndices = null;
+            CustomItemsSource dataSource = null;
+            RunOnUIThread.Execute(() => dataSource = new CustomItemsSource(Enumerable.Range(0, 200).ToList()));
+
+            ItemsRepeater itemsRepeater = SetupRepeater(dataSource: null, itemContent: @"<TextBlock Text='{Binding}' Height='24'/>");
+
+            RunOnUIThread.Execute(() =>
+            {
+                realizedItemsIndices = new List<int>();
+
+                itemsRepeater.ElementPrepared += (sender, args) =>
+                {
+                    realizedItemsIndices.Add(args.Index);
+                };
+
+                itemsRepeater.ElementClearing += (sender, args) =>
+                {
+                    int index = sender.GetElementIndex(args.Element);
+                    realizedItemsIndices.Remove(index);
+                };
+
+                itemsRepeater.HorizontalCacheLength = cacheLengths;
+                itemsRepeater.VerticalCacheLength = cacheLengths;
+                itemsRepeater.ItemsSource = dataSource;
+            });
+
+            // The viewport size being 200px and realization window increase being 40px per measure pass,
+            // make sure there are 2.5 x cacheLengths passes to land on the final realized items.
+            // cacheLengths: number of viewports constituting the pre-fetch buffer, once completely built. 
+            //               Half of it is before the current viewport, and half after.
+            // viewport: 200px
+            // cacheIncrement: 40px (buffer increment per measure pass on each side)
+            // Measure passes needed to fill the pre-fetch buffer: viewport / cacheIncrement / 2 x cacheLengths = 2.5 x cacheLengths
+
+            IdleSynchronizer.Wait();
+            strRealizedItemsIndices = LogRealizedIndices(realizedItemsIndices, (int)(2.5 * cacheLengths + 1));
+            Verify.AreEqual(
+                cacheLengths == 0 ? " 0 1 2 3 4 5 6 7 8 9" : " 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17",
+                strRealizedItemsIndices);
+
+            StartBringIndexIntoView(itemsRepeater, index: 99);
+            strRealizedItemsIndices = LogRealizedIndices(realizedItemsIndices, (int)(2.5 * cacheLengths + 1));
+            Verify.AreEqual(
+                cacheLengths == 0 ? " 99 100 98 97 96 95 94 93 92 91 90" : " 99 100 101 102 103 104 105 106 107 108 109 98 97 96 95 94 93 92 91 90 89 88 87 86 85 84 83 82",
+                strRealizedItemsIndices);
+
+            StartBringIndexIntoView(itemsRepeater, index: 199);
+            strRealizedItemsIndices = LogRealizedIndices(realizedItemsIndices, (int)(2.5 * cacheLengths + 1));
+            Verify.AreEqual(
+                cacheLengths == 0 ? " 199 198 197 196 195 194 193 192 191 190" : " 199 198 197 196 195 194 193 192 191 190 189 188 187 186 185 184 183 182",
+                strRealizedItemsIndices);
+
+            StartBringIndexIntoView(itemsRepeater, index: 49);
+            strRealizedItemsIndices = LogRealizedIndices(realizedItemsIndices, (int)(2.5 * cacheLengths + 1));
+            Verify.AreEqual(
+                cacheLengths == 0 ? " 49 50 51 52 53 54 55 56 57 58 48" : " 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 48 47 46 45 44 43 42 41 40 39",
+                strRealizedItemsIndices);
+
+            StartBringIndexIntoView(itemsRepeater, index: 0);
+            strRealizedItemsIndices = LogRealizedIndices(realizedItemsIndices, (int)(2.5 * cacheLengths + 1));
+            Verify.AreEqual(
+                cacheLengths == 0 ? " 0 1 2 3 4 5 6 7 8 9" : " 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17",
+                strRealizedItemsIndices);
+        }
+
+        private void StartBringIndexIntoView(ItemsRepeater itemsRepeater, int index)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("\r\nItemsRepeater.GetOrCreateElement(" + index + ")");
+                var item = itemsRepeater.GetOrCreateElement(index);
+
+                // Make sure the newly created item is measured so that its size is 
+                // identified and can be used to bring it entirely into view.
+                Log.Comment("UIElement.UpdateLayout()");
+                item.UpdateLayout();
+
+                Log.Comment("UIElement.StartBringIntoView()");
+                item.StartBringIntoView();
+            });
+
+            IdleSynchronizer.Wait();
+        }
+
+        private string LogRealizedIndices(List<int> realizedItemsIndices, int ticks)
+        {
+            string strRealizedItemsIndices = null;
+
+            do
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    strRealizedItemsIndices = string.Empty;
+
+                    foreach (int i in realizedItemsIndices)
+                    {
+                        strRealizedItemsIndices += " " + i;
+                    }
+
+                    Log.Comment("Realized indices:" + strRealizedItemsIndices);
+                });
+
+                ticks--;
+                CompositionPropertySpy.SynchronouslyTickUIThread(1);
+            }
+            while (ticks >= 0);
+
+            return strRealizedItemsIndices;
+        }
+
+        [TestMethod]
         public void ValidateElementEvents()
         {
             CustomItemsSource dataSource = null;
@@ -605,7 +728,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 dataSource = new CustomItemsSource(Enumerable.Range(0, 5).ToList());
             });
 
-            repeater = SetupRepeater(dataSource, "<Button Content='{Binding}' Height='10' />");
+            repeater = SetupRepeater(dataSource, "<Button Content='{Binding}' Height='10'/>");
 
             // dataSource: 0 1 2 3 4 
             // Index 0 deleted, focus should be on the new element which has index 0
@@ -650,7 +773,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 dataSource = new CustomItemsSourceWithUniqueId(Enumerable.Range(0, 5).ToList());
             });
 
-            repeater = SetupRepeater(dataSource, "<Button Content='{Binding}' Height='10' />");
+            repeater = SetupRepeater(dataSource, "<Button Content='{Binding}' Height='10'/>");
 
             // dataSource: 0 1 2 3 4 
             // Index 0 deleted, focus should be on the new element which has index 0
@@ -790,7 +913,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             return layout;
         }
 
-        private ItemsRepeater SetupRepeater(object dataSource, string itemContent= @"<Button Content='{Binding}' Height='100' />")
+        private ItemsRepeater SetupRepeater(object dataSource=null, string itemContent= @"<Button Content='{Binding}' Height='100'/>")
         {
             VirtualizingLayout layout = null;
             RunOnUIThread.Execute(() => layout = new StackLayout());
@@ -800,21 +923,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
         private ItemsRepeater SetupRepeater(object dataSource, VirtualizingLayout layout, out ScrollViewer scrollViewer)
         {
-            return SetupRepeater( dataSource, layout, @"<Button Content='{Binding}' Height='100' />", out scrollViewer);
+            return SetupRepeater( dataSource, layout, @"<Button Content='{Binding}' Height='100'/>", out scrollViewer);
         }
 
         private ItemsRepeater SetupRepeater(object dataSource, VirtualizingLayout layout, string itemContent, out ScrollViewer scrollViewer)
         {
-            ItemsRepeater repeater = null;
+            ItemsRepeater itemsRepeater = null;
             ScrollViewer sv = null;
             RunOnUIThread.Execute(() =>
             {
                 var elementFactory = new RecyclingElementFactory();
                 elementFactory.RecyclePool = new RecyclePool();
-                elementFactory.Templates["Item"] = (DataTemplate)XamlReader.Load(
-                    @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'> " + itemContent + @"</DataTemplate>");
+                elementFactory.Templates["Item"] = XamlReader.Load(@"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" + itemContent + @"</DataTemplate>") as DataTemplate;
 
-                repeater = new ItemsRepeater()
+                itemsRepeater = new ItemsRepeater()
                 {
                     ItemsSource = dataSource,
                     ItemTemplate = elementFactory,
@@ -825,7 +947,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 sv = new ScrollViewer
                 {
-                    Content = repeater
+                    Content = itemsRepeater
                 };
 
                 Content = new ItemsRepeaterScrollHost()
@@ -838,7 +960,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             IdleSynchronizer.Wait();
             scrollViewer = sv;
-            return repeater;
+            return itemsRepeater;
         }
 
         private int DefaultWaitTime = 2000;

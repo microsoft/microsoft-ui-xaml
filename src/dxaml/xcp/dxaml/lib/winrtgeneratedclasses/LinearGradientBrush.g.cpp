@@ -51,6 +51,7 @@ _Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::get_AnimatedCente
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<LinearGradientBrush*>(this)->get_AnimatedCenterPointImpl(pValue));
 Cleanup:
@@ -69,6 +70,7 @@ _Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::get_AnimatedRotat
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<LinearGradientBrush*>(this)->get_AnimatedRotationImpl(pValue));
 Cleanup:
@@ -87,6 +89,7 @@ _Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::get_AnimatedScale
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<LinearGradientBrush*>(this)->get_AnimatedScaleImpl(pValue));
 Cleanup:
@@ -105,6 +108,7 @@ _Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::get_AnimatedTrans
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<LinearGradientBrush*>(this)->get_AnimatedTransformMatrixImpl(pValue));
 Cleanup:
@@ -123,6 +127,7 @@ _Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::get_AnimatedTrans
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<LinearGradientBrush*>(this)->get_AnimatedTranslationImpl(pValue));
 Cleanup:
@@ -141,6 +146,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated:
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<LinearGradientBrush*>(this)->get_CenterPointImpl(pValue));
 Cleanup:
@@ -169,6 +175,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated:
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<LinearGradientBrush*>(this)->get_RotationImpl(pValue));
 Cleanup:
@@ -188,6 +195,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated:
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<LinearGradientBrush*>(this)->get_ScaleImpl(pValue));
 Cleanup:
@@ -216,6 +224,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated:
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<LinearGradientBrush*>(this)->get_TransformMatrixImpl(pValue));
 Cleanup:
@@ -235,6 +244,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated:
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<LinearGradientBrush*>(this)->get_TranslationImpl(pValue));
 Cleanup:

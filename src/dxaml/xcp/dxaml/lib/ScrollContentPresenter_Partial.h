@@ -3,6 +3,9 @@
 
 #pragma once
 
+// Uncomment for DManip debug outputs.
+//#define DM_DEBUG
+
 #include "ScrollContentPresenter.g.h"
 
 namespace DirectUI
@@ -441,6 +444,11 @@ namespace DirectUI
             }
 
         private:
+#ifdef DM_DEBUG
+            bool DMSCP_TraceDbg() const;
+            bool DMSCPv_TraceDbg() const;
+#endif // DM_DEBUG
+
             // Unloaded event handler.
             _Check_return_ HRESULT OnUnloaded(
                 _In_ IInspectable* pSender,

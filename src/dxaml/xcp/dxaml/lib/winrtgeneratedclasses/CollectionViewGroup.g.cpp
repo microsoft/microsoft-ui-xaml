@@ -49,6 +49,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGroupGenerated::get_Group(_Outptr_result_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<CollectionViewGroup*>(this)->get_GroupImpl(ppValue));
 Cleanup:
@@ -58,6 +59,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGroupGenerated::get_GroupItems(_Outptr_re
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<CollectionViewGroup*>(this)->get_GroupItemsImpl(ppValue));
 Cleanup:
@@ -67,6 +69,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGroupGenerated::get_Type(_Out_ ABI::Windo
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CollectionViewGroup*>(this)->get_TypeImpl(pValue));
 Cleanup:
@@ -85,6 +88,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGroupGenerated::GetCustomProperty(_In_ HS
     }
     ARG_NOTNULL(name, "name");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CollectionViewGroup*>(this)->GetCustomPropertyImpl(name, ppReturnValue));
@@ -104,6 +108,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGroupGenerated::GetIndexedProperty(_In_ H
     }
     ARG_NOTNULL(name, "name");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CollectionViewGroup*>(this)->GetIndexedPropertyImpl(name, type, ppReturnValue));
@@ -122,6 +127,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGroupGenerated::GetStringRepresentation(_
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CollectionViewGroup_GetStringRepresentation", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CollectionViewGroup*>(this)->GetStringRepresentationImpl(pReturnValue));

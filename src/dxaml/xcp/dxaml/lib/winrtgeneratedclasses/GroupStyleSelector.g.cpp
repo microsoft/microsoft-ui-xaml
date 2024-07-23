@@ -80,6 +80,7 @@ IFACEMETHODIMP DirectUI::GroupStyleSelectorGenerated::SelectGroupStyleCore(_In_o
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "GroupStyleSelector_SelectGroupStyle", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<GroupStyleSelector*>(this)->SelectGroupStyleCoreImpl(pGroup, level, ppReturnValue));
 Cleanup:

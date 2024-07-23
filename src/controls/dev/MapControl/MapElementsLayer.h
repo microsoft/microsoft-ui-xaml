@@ -25,4 +25,10 @@ public:
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void RaiseMapElementClick(MapElementClickEventArgs const& args);
     void OnMapElementsVectorChanged(const winrt::IObservableVector<winrt::MapElement>&, const winrt::Collections::IVectorChangedEventArgs& args);
+    void SetParentMapControl(const winrt::MapControl& parent);
+
+private:
+    winrt::weak_ref<winrt::MapControl> m_parentMapControl{ nullptr };
+    winrt::fire_and_forget HandleMapElementsChanged(const winrt::IObservableVector<winrt::MapElement>&, const winrt::Collections::IVectorChangedEventArgs& args);
+
 };

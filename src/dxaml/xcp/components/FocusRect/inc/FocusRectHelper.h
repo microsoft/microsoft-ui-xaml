@@ -11,7 +11,7 @@ void
 CallCustomizationFunctionIfExists(
     _In_ CDependencyObject* element,
     _Inout_ FocusRectangleOptions& options,
-    _Out_ bool* shouldDrawFocusRect)
+    _Inout_ bool* shouldDrawFocusRect)
 {
     // Give ListViewBaseItemChrome a chance to tweak the render options if it wants
     if (element->OfTypeByIndex<DependencyObjectTraits<T>::Index>())
@@ -111,7 +111,7 @@ xref_ptr<CBorder> EnsureFocusRectBorderAtPosition(
     hitTestVisible.SetBool(FALSE);
     IFCFAILFAST(newBorder->SetValueByKnownIndex(KnownPropertyIndex::UIElement_IsHitTestVisible, hitTestVisible));
 
-    parent->AddChild(newBorder.get());
+    IFCFAILFAST(parent->AddChild(newBorder.get()));
     return newBorder;
 }
 

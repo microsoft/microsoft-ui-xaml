@@ -122,7 +122,7 @@ namespace ContentRootInput
         // PointerDownThemeAnimation uses PointerAnimationUsingKeyFrames, which gets the position of the pointer. Since
         // input injection isn't reliable, we're going to return a constant provided by the test.
         bool m_hasPrimaryPointerLastPositionOverride = false;
-        XPOINTF m_primaryPointerLastPositionOverride;
+        XPOINTF m_primaryPointerLastPositionOverride{};
 
         // This is only set when the InputMessage is being held by a stack variable, so a raw pointer is OK here.
         InputMessage* m_messageBeingProcessed = nullptr;

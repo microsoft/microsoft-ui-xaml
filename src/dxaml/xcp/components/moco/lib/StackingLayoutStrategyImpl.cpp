@@ -746,7 +746,6 @@ float StackingLayoutStrategyImpl::GetAverageHeaderSize() const
 {
     // if we have just 1 group header and it is collapsed there will be no registered size for it.
     return static_cast<float>(m_headerSizesStoredTotal > 0 ? m_headerSizesTotal / m_headerSizesStoredTotal : 10.0);
-
 }
 
 float StackingLayoutStrategyImpl::GetAverageContainerSize() const
@@ -1006,45 +1005,47 @@ StackingLayoutStrategyImpl::EstimateItemIndexFromWindow(
     int itemDelta = 0;
     switch (relativeReferencePosition)
     {
-    case RelativePosition::Before:
-    {
-        // Take into account a potential inline header
-        virtualizedReferencePoint += headerAdjustment;
-
-        // Gather information about the distance to traverse
-        const float nearWindowEdge = window.*PointFromRectInVirtualizingDirection();
-        const float distance = nearWindowEdge - virtualizedReferencePoint;
-        if (distance > 0)
+        case RelativePosition::Before:
         {
-            itemDelta = static_cast<int>(std::floor(distance / averageContainerSize));
+            // Take into account a potential inline header
+            virtualizedReferencePoint += headerAdjustment;
+
+            // Gather information about the distance to traverse
+            const float nearWindowEdge = window.*PointFromRectInVirtualizingDirection();
+            const float distance = nearWindowEdge - virtualizedReferencePoint;
+            if (distance > 0)
+            {
+                itemDelta = static_cast<int>(std::floor(distance / averageContainerSize));
+            }
+            else
+            {
+                itemDelta = 0;
+            }
+            break;
         }
-        else
+
+        case RelativePosition::After:
+        {
+            // Gather information about the distance to traverse
+            const float nearWindowEdge = window.*PointFromRectInVirtualizingDirection() + window.*SizeFromRectInVirtualizingDirection();
+            const float distance = nearWindowEdge - virtualizedReferencePoint;
+            if (distance < 0 && !referenceIsHeader)
+            {
+                itemDelta = static_cast<int>(std::floor(distance / averageContainerSize));
+            }
+            else
+            {
+                // In case we're going backwards from a header, just pick the first item in the group.
+                itemDelta = 0;
+            }
+            break;
+        }
+
+        default:
         {
             itemDelta = 0;
+            break;
         }
-    }
-        break;
-
-    case RelativePosition::After:
-    {
-        // Gather information about the distance to traverse
-        const float nearWindowEdge = window.*PointFromRectInVirtualizingDirection() + window.*SizeFromRectInVirtualizingDirection();
-        const float distance = nearWindowEdge - virtualizedReferencePoint;
-        if (distance < 0 && !referenceIsHeader)
-        {
-            itemDelta = static_cast<int>(std::floor(distance / averageContainerSize));
-        }
-        else
-        {
-            // In case we're going backwards from a header, just pick the first item in the group.
-            itemDelta = 0;
-        }
-    }
-        break;
-
-    default:
-        itemDelta = 0;
-        break;
     }
 
     // Get the target index, bounds-check it, and calculate the distance moved

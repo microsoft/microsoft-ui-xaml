@@ -76,7 +76,7 @@ DECLARE_INTERFACE_IID_(IXamlTestHooks, IXamlLoggerTestHooks, "43d4bcbd-4f02-4651
         ) const = 0;
 
     IFACEMETHOD(MarkDeviceInstanceLost)() const = 0;
-    IFACEMETHOD(GetD3D11GraphicsDeviceAddress)(_Outptr_ INT64* ppCD3D11Device) const = 0;
+    IFACEMETHOD(GetD3D11GraphicsDeviceAddress)(_Out_ INT64* ppCD3D11Device) const = 0;
 
     IFACEMETHOD(SetWindowSizeOverride)(
         _In_ const wf::Size& size,
@@ -133,6 +133,7 @@ DECLARE_INTERFACE_IID_(IXamlTestHooks, IXamlLoggerTestHooks, "43d4bcbd-4f02-4651
 
     // Clear the system font collection cached by core text services so that it retrieves the recent one after fonts have changed.
     IFACEMETHOD(SetSystemFontCollectionOverride)(_In_ IDWriteFontCollection* pFontCollection) = 0;
+    IFACEMETHOD(ShouldUseTypographicFontModel)(_Out_ bool* useDWriteTypographicModel) = 0;
 
     IFACEMETHOD(GetGripperData)(_In_ IInspectable* textControl, _Inout_ JupiterGripperData* returnValue);
 
@@ -279,11 +280,9 @@ DECLARE_INTERFACE_IID_(IXamlTestHooks, IXamlLoggerTestHooks, "43d4bcbd-4f02-4651
     IFACEMETHOD_(void, GetAnimatedCenterPoint)(_In_ xaml::IUIElement* element, _Out_ wfn::Vector3* centerPoint) = 0;
     IFACEMETHOD_(void, ScheduleWaitForAnimatedFacadePropertyChanges)(int count) = 0;
 
-    IFACEMETHOD(SimulateRegionsForContentDialog)(_In_ xaml_controls::IContentDialog* dialog) = 0;
-
     IFACEMETHOD_(bool, IsStoryboardActive)(_In_ xaml_animation::IStoryboard* storyboard) = 0;
 
-    IFACEMETHOD(GetElementInputWindow)(_In_ xaml::IUIElement* element, _Out_ HWND* hwnd) = 0;
+    IFACEMETHOD(GetElementInputWindow)(_In_ xaml::IUIElement* element, _Out_ HWND* inputHwnd) = 0;
 
     IFACEMETHOD_(void, SetSuspendOffThreadDecoding)(bool isOffThreadDecodingSuspended) = 0;
 

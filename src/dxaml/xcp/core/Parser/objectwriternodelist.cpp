@@ -11,7 +11,7 @@
 #include <CColor.h>
 #include <StringConversions.h>
 
-HRESULT ObjectWriterNodeList::AddNode(_In_ ObjectWriterNode&& node)
+_Check_return_ HRESULT ObjectWriterNodeList::AddNode(_In_ ObjectWriterNode&& node)
 {
     try
     {
@@ -52,7 +52,7 @@ const ObjectWriterNode& ObjectWriterNodeList::PeekTopNode() const
 }
 
 // optimize the nodes by aggregating operations
-HRESULT ObjectWriterNodeList::Optimize()
+_Check_return_ HRESULT ObjectWriterNodeList::Optimize()
 {
     try
     {
@@ -1520,7 +1520,7 @@ std::shared_ptr<XamlSchemaContext> ObjectWriterNodeList::GetSchemaContext()
 
 #if DBG
 
-HRESULT ObjectWriterNodeList::Dump()
+_Check_return_ HRESULT ObjectWriterNodeList::Dump()
 {
     xstring_ptr strIndent = xstring_ptr::EmptyString();
     RRETURN(Dump(GetNodeList(), strIndent));
@@ -1530,7 +1530,7 @@ HRESULT ObjectWriterNodeList::Dump()
 // since this doesn't validate that the node list
 // has been closed, the resulting tree may
 // not be complete
-HRESULT ObjectWriterNodeList::Dump(
+_Check_return_ HRESULT ObjectWriterNodeList::Dump(
     _In_ std::vector<ObjectWriterNode>& nodeList, xstring_ptr& strIndent)
 {
     for (auto& node : nodeList)

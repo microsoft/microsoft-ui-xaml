@@ -45,6 +45,7 @@ IFACEMETHODIMP DirectUI::SplitViewPaneAutomationPeerGenerated::get_InteractionSt
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<SplitViewPaneAutomationPeer*>(this)->get_InteractionStateImpl(pValue));
 Cleanup:
@@ -54,6 +55,7 @@ IFACEMETHODIMP DirectUI::SplitViewPaneAutomationPeerGenerated::get_IsModal(_Out_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<SplitViewPaneAutomationPeer*>(this)->get_IsModalImpl(pValue));
 Cleanup:
@@ -63,6 +65,7 @@ IFACEMETHODIMP DirectUI::SplitViewPaneAutomationPeerGenerated::get_IsTopmost(_Ou
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<SplitViewPaneAutomationPeer*>(this)->get_IsTopmostImpl(pValue));
 Cleanup:
@@ -72,6 +75,7 @@ IFACEMETHODIMP DirectUI::SplitViewPaneAutomationPeerGenerated::get_Maximizable(_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<SplitViewPaneAutomationPeer*>(this)->get_MaximizableImpl(pValue));
 Cleanup:
@@ -81,6 +85,7 @@ IFACEMETHODIMP DirectUI::SplitViewPaneAutomationPeerGenerated::get_Minimizable(_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<SplitViewPaneAutomationPeer*>(this)->get_MinimizableImpl(pValue));
 Cleanup:
@@ -90,6 +95,7 @@ IFACEMETHODIMP DirectUI::SplitViewPaneAutomationPeerGenerated::get_VisualState(_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<SplitViewPaneAutomationPeer*>(this)->get_VisualStateImpl(pValue));
 Cleanup:
@@ -143,6 +149,7 @@ IFACEMETHODIMP DirectUI::SplitViewPaneAutomationPeerGenerated::WaitForInputIdle(
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "SplitViewPaneAutomationPeer_WaitForInputIdle", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<SplitViewPaneAutomationPeer*>(this)->WaitForInputIdleImpl(milliseconds, pReturnValue));

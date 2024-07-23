@@ -49,6 +49,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseAutomationPeerGenerated::get_DropEffect(_Ou
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ListViewBaseAutomationPeer*>(this)->get_DropEffectImpl(pValue));
 Cleanup:
@@ -58,6 +59,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseAutomationPeerGenerated::get_DropEffects(_O
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ListViewBaseAutomationPeer*>(this)->get_DropEffectsImpl(pCount, pValue));
 Cleanup:

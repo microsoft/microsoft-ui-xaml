@@ -308,9 +308,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
             Application = CreateApplication(testAppInfo);
 
+            bool shouldMaximize = true;
+
+            if (TestContext.Properties.Contains("MaximizeWindowAtStart"))
+            {
+                shouldMaximize = (bool)TestContext.Properties["MaximizeWindowAtStart"];
+            }
+
             // Initialize relies on TestEnvironment.Application to be set, so we'll call this method
             // outside of the constructor.
-            if (!Application.Initialize(true, TestContext.TestDeploymentDir))
+            if (!Application.Initialize(true, TestContext.TestDeploymentDir, shouldMaximize))
             {
                 Log.Error("Application failed to initialize.");
             }

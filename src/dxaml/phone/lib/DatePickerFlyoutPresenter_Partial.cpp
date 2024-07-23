@@ -1662,7 +1662,7 @@ DatePickerFlyoutPresenter::UpdateOrderAndLayout()
 
             if (firstHostPopulated)
             {
-                _tpYearPicker.As(&firstPickerAsControl);
+                IFC(_tpYearPicker.As(&firstPickerAsControl));
             }
             break;
         case 1:

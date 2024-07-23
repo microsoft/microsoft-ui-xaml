@@ -13,6 +13,7 @@ class CD2DFactory;
 class WindowsPresentTarget;
 class DCompTreeHost;
 class CompositorScheduler;
+class RefreshRateInfo;
 
 struct ID3D11Device;
 struct ID2D1Device;
@@ -64,6 +65,11 @@ public:
         return m_pDCompTreeHost;
     }
 
+    RefreshRateInfo* GetRefreshRateInfo() const
+    {
+        return m_refreshRateInfo.get();
+    }
+
    _Check_return_ bool CanContinueOnInternalDriverError();
 #if DBG
     _Check_return_ HRESULT CreateFinalReleaseAsserter(
@@ -101,9 +107,10 @@ private:
     wil::critical_section m_InitializeWorkItemLock;
 
     xref_ptr<CD3D11Device> m_cachedD3DDevice;
-
-    DCompTreeHost *m_pDCompTreeHost;
     xref_ptr<CD3D11Device> m_videoGraphicsDevice;
+
+    xref_ptr<RefreshRateInfo> m_refreshRateInfo;
+    DCompTreeHost *m_pDCompTreeHost;
 
     CWindowRenderTarget* m_pRenderTargetNoRef;
     CompositorScheduler *m_pCompositorSchedulerNoRef;

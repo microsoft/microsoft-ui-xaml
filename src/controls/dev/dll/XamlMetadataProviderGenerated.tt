@@ -16,12 +16,7 @@
 
 #include "pch.h"
 #include "common.h"
-
-#ifndef MUX_EXPERIMENTAL
 #include "XamlControlsResources.h"
-#else
-#include "ExperimentalXamlControlsResources.h"
-#endif
 
 namespace {
 

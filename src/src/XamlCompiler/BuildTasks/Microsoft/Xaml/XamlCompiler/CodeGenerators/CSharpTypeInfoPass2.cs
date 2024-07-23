@@ -31,6 +31,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Diagnostics.CodeAnalysis;
+
 ");
   if(!Model.GenerateTypeInfo)  
   {                                       
@@ -270,14 +272,20 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write(this.ToStringHelper.ToStringWithCulture(GeneratedCodeAttribute));
             this.Write("\r\n    ");
             this.Write(this.ToStringHelper.ToStringWithCulture(DebuggerNonUserCodeAttribute));
-            this.Write("\r\n    internal class XamlSystemBaseType : ");
+            this.Write("\r\n    internal partial class XamlSystemBaseType : ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.IXamlType)));
-            this.Write(@"
-    {
-        string _fullName;
-        global::System.Type _underlyingType;
-
-        public XamlSystemBaseType(string fullName, global::System.Type underlyingType)
+            this.Write("\r\n    {\r\n        string _fullName;\r\n");
+  if (ProjectInfo.UsingCSWinRT) { 
+            this.Write("        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstruc" +
+                    "tors)]\r\n");
+  }
+            this.Write("        global::System.Type _underlyingType;\r\n\r\n        public XamlSystemBaseType" +
+                    "(string fullName, \r\n");
+  if (ProjectInfo.UsingCSWinRT) { 
+            this.Write("            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicCons" +
+                    "tructors)]\r\n");
+  }
+            this.Write(@"            global::System.Type underlyingType)
         {
             _fullName = fullName;
             _underlyingType = underlyingType;
@@ -336,7 +344,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write(this.ToStringHelper.ToStringWithCulture(GeneratedCodeAttribute));
             this.Write("\r\n    ");
             this.Write(this.ToStringHelper.ToStringWithCulture(DebuggerNonUserCodeAttribute));
-            this.Write("\r\n    internal class XamlUserType : ");
+            this.Write("\r\n    internal partial class XamlUserType : ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(ProjectInfo.XamlTypeInfoNamespace)));
             this.Write(".XamlSystemBaseType\r\n        , ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.IXamlType)));
@@ -361,7 +369,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 
         public XamlUserType(");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(ProjectInfo.XamlTypeInfoNamespace)));
-            this.Write(".XamlTypeInfoProvider provider, string fullName, global::System.Type fullType, ");
+            this.Write(".XamlTypeInfoProvider provider, string fullName, \r\n");
+  if (ProjectInfo.UsingCSWinRT) { 
+            this.Write("            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicCons" +
+                    "tructors)]\r\n");
+  }
+            this.Write("            global::System.Type fullType, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.IXamlType)));
             this.Write(" baseType)\r\n            :base(fullName, fullType)\r\n        {\r\n            _provid" +
                     "er = provider;\r\n            _baseType = baseType;\r\n        }\r\n\r\n        // --- I" +
@@ -389,66 +402,94 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write(" KeyType\r\n        {\r\n            get { return _provider.GetXamlTypeByName(_keyTyp" +
                     "eName); }\r\n        }\r\n\r\n        override public ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.IXamlMember)));
-            this.Write(" GetMember(string name)\r\n        {\r\n            if (_memberNames == null)\r\n      " +
-                    "      {\r\n                return null;\r\n            }\r\n            string longNam" +
-                    "e;\r\n            if (_memberNames.TryGetValue(name, out longName))\r\n            {" +
-                    "\r\n                return _provider.GetMemberByLongName(longName);\r\n            }" +
-                    "\r\n            return null;\r\n        }\r\n\r\n        override public object Activate" +
-                    "Instance()\r\n        {\r\n            return Activator(); \r\n        }\r\n\r\n        ov" +
-                    "erride public void AddToMap(object instance, object key, object item) \r\n        " +
-                    "{\r\n            DictionaryAdd(instance, key, item);\r\n        }\r\n\r\n        overrid" +
-                    "e public void AddToVector(object instance, object item)\r\n        {\r\n            " +
-                    "CollectionAdd(instance, item);\r\n        }\r\n\r\n        override public void RunIni" +
-                    "tializer() \r\n        {\r\n            global::System.Runtime.CompilerServices.Runt" +
-                    "imeHelpers.RunClassConstructor(UnderlyingType.TypeHandle);\r\n        }\r\n\r\n       " +
-                    " override public object CreateFromString(string input)\r\n        {\r\n            i" +
-                    "f (BoxedType != null)\r\n            {\r\n                return BoxInstance(BoxedTy" +
-                    "pe.CreateFromString(input));\r\n            }\r\n\r\n            if (CreateFromStringM" +
-                    "ethod != null)\r\n            {\r\n                return this.CreateFromStringMetho" +
-                    "d(input);\r\n            }\r\n            else if (_enumValues != null)\r\n           " +
-                    " {\r\n                long value = 0;\r\n\r\n                string[] valueParts = inp" +
-                    "ut.Split(\',\');\r\n\r\n                foreach (string valuePart in valueParts) \r\n   " +
-                    "             {\r\n                    object partValue;\r\n                    long " +
-                    "enumFieldValue = 0;\r\n                    try\r\n                    {\r\n           " +
-                    "             if (_enumValues.TryGetValue(valuePart.Trim(), out partValue))\r\n    " +
-                    "                    {\r\n                            enumFieldValue = global::Syst" +
-                    "em.Convert.ToInt64(partValue);\r\n                        }\r\n                     " +
-                    "   else\r\n                        {\r\n                            try\r\n           " +
-                    "                 {\r\n                                enumFieldValue = global::Sys" +
-                    "tem.Convert.ToInt64(valuePart.Trim());\r\n                            }\r\n         " +
-                    "                   catch( global::System.FormatException )\r\n                    " +
-                    "        {\r\n                                foreach( string key in _enumValues.Ke" +
-                    "ys )\r\n                                {\r\n                                    if(" +
-                    " string.Compare(valuePart.Trim(), key, global::System.StringComparison.OrdinalIg" +
-                    "noreCase) == 0 )\r\n                                    {\r\n                       " +
-                    "                 if( _enumValues.TryGetValue(key.Trim(), out partValue) )\r\n     " +
-                    "                                   {\r\n                                          " +
-                    "  enumFieldValue = global::System.Convert.ToInt64(partValue);\r\n                 " +
-                    "                           break;\r\n                                        }\r\n  " +
-                    "                                  }\r\n                                }\r\n        " +
-                    "                    }\r\n                        }\r\n                        value " +
-                    "|= enumFieldValue; \r\n                    }\r\n                    catch( global::S" +
-                    "ystem.FormatException )\r\n                    {\r\n                        throw ne" +
-                    "w global::System.ArgumentException(input, FullName);\r\n                    }\r\n   " +
-                    "             }\r\n\r\n                return System.Convert.ChangeType(value, System" +
-                    ".Enum.GetUnderlyingType(this.UnderlyingType));\r\n            }\r\n            throw" +
-                    " new global::System.ArgumentException(input, FullName);\r\n        }\r\n\r\n        //" +
-                    " --- End of Interface methods\r\n\r\n        public Activator Activator { get; set; " +
-                    "}\r\n        public AddToCollection CollectionAdd { get; set; }\r\n        public Ad" +
-                    "dToDictionary DictionaryAdd { get; set; }\r\n        public CreateFromStringMethod" +
-                    " CreateFromStringMethod {get; set; }\r\n        public BoxInstanceMethod BoxInstan" +
-                    "ce {get; set; }\r\n\r\n        public void SetContentPropertyName(string contentProp" +
-                    "ertyName)\r\n        {\r\n            _contentPropertyName = contentPropertyName;\r\n " +
-                    "       }\r\n\r\n        public void SetIsArray()\r\n        {\r\n            _isArray = " +
-                    "true; \r\n        }\r\n\r\n        public void SetIsMarkupExtension()\r\n        {\r\n    " +
-                    "        _isMarkupExtension = true;\r\n        }\r\n\r\n        public void SetIsBindab" +
-                    "le()\r\n        {\r\n            _isBindable = true;\r\n        }\r\n\r\n        public vo" +
-                    "id SetIsReturnTypeStub()\r\n        {\r\n            _isReturnTypeStub = true;\r\n    " +
-                    "    }\r\n\r\n        public void SetIsLocalType()\r\n        {\r\n            _isLocalTy" +
-                    "pe = true;\r\n        }\r\n\r\n        public void SetItemTypeName(string itemTypeName" +
-                    ")\r\n        {\r\n            _itemTypeName = itemTypeName;\r\n        }\r\n\r\n        pu" +
-                    "blic void SetKeyTypeName(string keyTypeName)\r\n        {\r\n            _keyTypeNam" +
-                    "e = keyTypeName;\r\n        }\r\n\r\n        public void SetBoxedType(");
+            this.Write(@" GetMember(string name)
+        {
+            if (_memberNames == null)
+            {
+                return null;
+            }
+            string longName;
+            if (_memberNames.TryGetValue(name, out longName))
+            {
+                return _provider.GetMemberByLongName(longName);
+            }
+            return null;
+        }
+
+        override public object ActivateInstance()
+        {
+            return Activator(); 
+        }
+
+        override public void AddToMap(object instance, object key, object item) 
+        {
+            DictionaryAdd(instance, key, item);
+        }
+
+        override public void AddToVector(object instance, object item)
+        {
+            CollectionAdd(instance, item);
+        }
+
+        override public void RunInitializer() => RunInitializerImplementation();
+
+");
+  if (ProjectInfo.UsingCSWinRT) { 
+            this.Write("        [UnconditionalSuppressMessage(\"ReflectionAnalysis\", \"IL2059\",\r\n          " +
+                    "  Justification = \"UnderlyingType (and TypeHandle property) protected at assignm" +
+                    "ent\")]\r\n");
+  }
+            this.Write("        private void RunInitializerImplementation()\r\n        {\r\n            globa" +
+                    "l::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(Underlying" +
+                    "Type.TypeHandle);\r\n        }\r\n\r\n        override public object CreateFromString(" +
+                    "string input)\r\n        {\r\n            if (BoxedType != null)\r\n            {\r\n   " +
+                    "             return BoxInstance(BoxedType.CreateFromString(input));\r\n           " +
+                    " }\r\n\r\n            if (CreateFromStringMethod != null)\r\n            {\r\n          " +
+                    "      return this.CreateFromStringMethod(input);\r\n            }\r\n            els" +
+                    "e if (_enumValues != null)\r\n            {\r\n                long value = 0;\r\n\r\n  " +
+                    "              string[] valueParts = input.Split(\',\');\r\n\r\n                foreach" +
+                    " (string valuePart in valueParts) \r\n                {\r\n                    objec" +
+                    "t partValue;\r\n                    long enumFieldValue = 0;\r\n                    " +
+                    "try\r\n                    {\r\n                        if (_enumValues.TryGetValue(" +
+                    "valuePart.Trim(), out partValue))\r\n                        {\r\n                  " +
+                    "          enumFieldValue = global::System.Convert.ToInt64(partValue);\r\n         " +
+                    "               }\r\n                        else\r\n                        {\r\n     " +
+                    "                       try\r\n                            {\r\n                     " +
+                    "           enumFieldValue = global::System.Convert.ToInt64(valuePart.Trim());\r\n " +
+                    "                           }\r\n                            catch( global::System." +
+                    "FormatException )\r\n                            {\r\n                              " +
+                    "  foreach( string key in _enumValues.Keys )\r\n                                {\r\n" +
+                    "                                    if( string.Compare(valuePart.Trim(), key, gl" +
+                    "obal::System.StringComparison.OrdinalIgnoreCase) == 0 )\r\n                       " +
+                    "             {\r\n                                        if( _enumValues.TryGetVa" +
+                    "lue(key.Trim(), out partValue) )\r\n                                        {\r\n   " +
+                    "                                         enumFieldValue = global::System.Convert" +
+                    ".ToInt64(partValue);\r\n                                            break;\r\n      " +
+                    "                                  }\r\n                                    }\r\n    " +
+                    "                            }\r\n                            }\r\n                  " +
+                    "      }\r\n                        value |= enumFieldValue; \r\n                    " +
+                    "}\r\n                    catch( global::System.FormatException )\r\n                " +
+                    "    {\r\n                        throw new global::System.ArgumentException(input," +
+                    " FullName);\r\n                    }\r\n                }\r\n\r\n                return " +
+                    "global::System.Convert.ChangeType(value, global::System.Enum.GetUnderlyingType(t" +
+                    "his.UnderlyingType));\r\n            }\r\n            throw new global::System.Argum" +
+                    "entException(input, FullName);\r\n        }\r\n\r\n        // --- End of Interface met" +
+                    "hods\r\n\r\n        public Activator Activator { get; set; }\r\n        public AddToCo" +
+                    "llection CollectionAdd { get; set; }\r\n        public AddToDictionary DictionaryA" +
+                    "dd { get; set; }\r\n        public CreateFromStringMethod CreateFromStringMethod {" +
+                    "get; set; }\r\n        public BoxInstanceMethod BoxInstance {get; set; }\r\n\r\n      " +
+                    "  public void SetContentPropertyName(string contentPropertyName)\r\n        {\r\n   " +
+                    "         _contentPropertyName = contentPropertyName;\r\n        }\r\n\r\n        publi" +
+                    "c void SetIsArray()\r\n        {\r\n            _isArray = true; \r\n        }\r\n\r\n    " +
+                    "    public void SetIsMarkupExtension()\r\n        {\r\n            _isMarkupExtensio" +
+                    "n = true;\r\n        }\r\n\r\n        public void SetIsBindable()\r\n        {\r\n        " +
+                    "    _isBindable = true;\r\n        }\r\n\r\n        public void SetIsReturnTypeStub()\r" +
+                    "\n        {\r\n            _isReturnTypeStub = true;\r\n        }\r\n\r\n        public v" +
+                    "oid SetIsLocalType()\r\n        {\r\n            _isLocalType = true;\r\n        }\r\n\r\n" +
+                    "        public void SetItemTypeName(string itemTypeName)\r\n        {\r\n           " +
+                    " _itemTypeName = itemTypeName;\r\n        }\r\n\r\n        public void SetKeyTypeName(" +
+                    "string keyTypeName)\r\n        {\r\n            _keyTypeName = keyTypeName;\r\n       " +
+                    " }\r\n\r\n        public void SetBoxedType(");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.IXamlType)));
             this.Write(@" boxedType)
         {
@@ -487,7 +528,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write(this.ToStringHelper.ToStringWithCulture(GeneratedCodeAttribute));
             this.Write("\r\n    ");
             this.Write(this.ToStringHelper.ToStringWithCulture(DebuggerNonUserCodeAttribute));
-            this.Write("\r\n    internal class XamlMember : ");
+            this.Write("\r\n    internal partial class XamlMember : ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.IXamlMember)));
             this.Write("\r\n    {\r\n        ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(ProjectInfo.XamlTypeInfoNamespace)));
@@ -671,9 +712,43 @@ this.Write(@" xmp in OtherProviders)
          }                               
          private void Output_TypeTables()     
          {                                       
-this.Write("        string[] _typeNameTable = null;\r\n        global::System.Type[] _typeTable" +
-        " = null;\r\n\r\n        private void InitTypeTables()\r\n        {\r\n            _typeN" +
-        "ameTable = new string[");
+this.Write(@"        string[] _typeNameTable = null;
+
+        class TypeTable
+        {
+            global::System.Type[] _types;
+
+            public TypeTable(int typeCount)
+            {
+                _types = new global::System.Type[typeCount];
+            }
+
+");
+
+  if (ProjectInfo.UsingCSWinRT) { 
+this.Write("            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicCons" +
+        "tructors)]\r\n");
+
+  }
+this.Write("            public global::System.Type this[int i]\r\n            {\r\n");
+
+  if (ProjectInfo.UsingCSWinRT) { 
+this.Write("                [UnconditionalSuppressMessage(\"ReflectionAnalysis\", \"IL2063\",\r\n  " +
+        "                  Justification = \"TypeTable assignments are protected through s" +
+        "etter\")]\r\n");
+
+  }
+this.Write(@"                get { return _types[i]; }
+                set { _types[i] = value; }
+            }
+
+            public int Length { get => _types.Length; }
+        }
+        TypeTable _typeTable;
+
+        private void InitTypeTables()
+        {
+            _typeNameTable = new string[");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(SchemaInfo.TypeTableFromAllAssemblies.Count));
 
@@ -693,11 +768,11 @@ this.Write(this.ToStringHelper.ToStringWithCulture(entry.StandardName));
 this.Write("\";\r\n");
 
          }                                                           
-this.Write("\r\n            _typeTable = new global::System.Type[");
+this.Write("\r\n            _typeTable = new TypeTable(");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(SchemaInfo.TypeTableFromAllAssemblies.Count));
 
-this.Write("];\r\n");
+this.Write(");\r\n");
 
          for(int i=0; i<SchemaInfo.TypeTable.Count; i++)             
          {                                                           

@@ -327,11 +327,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(label19);
 
                 Log.Comment("Some intermediate items not removed by collision logic should be visible.");
-                var label4 = ElementCache.TryGetObjectByName("Num 4", false);
-                Verify.IsNotNull(label4);
+                var label3 = ElementCache.TryGetObjectByName("Num 3", false);
+                Verify.IsNotNull(label3);
 
-                var label16 = ElementCache.TryGetObjectByName("Num 16", false);
-                Verify.IsNotNull(label16);
+                var label15 = ElementCache.TryGetObjectByName("Num 15", false);
+                Verify.IsNotNull(label15);
 
                 Log.Comment("Some intermediate items removed by collision logic should not be visible.");
                 var label1 = ElementCache.TryGetObjectByName("Num 1", false);

@@ -44,6 +44,7 @@
         <ClCompile Include="..\ProjectedShadowManager.cpp"/>
         <ClCompile Include="..\EffectPolicyHelper.cpp"/>
         <ClCompile Include="..\SystemBackdrop.cpp"/>
+        <ClCompile Include="..\Scheduler.cpp"/>
     </ItemGroup>
 
     <ItemGroup>

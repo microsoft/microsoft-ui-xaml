@@ -65,6 +65,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGenerated::get_CollectionGroups(_Outptr_r
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<CollectionView*>(this)->get_CollectionGroupsImpl(ppValue));
 Cleanup:
@@ -74,6 +75,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGenerated::get_CurrentItem(_Outptr_result
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<CollectionView*>(this)->get_CurrentItemImpl(ppValue));
 Cleanup:
@@ -83,6 +85,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGenerated::get_CurrentPosition(_Out_ INT*
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CollectionView*>(this)->get_CurrentPositionImpl(pValue));
 Cleanup:
@@ -92,6 +95,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGenerated::get_HasMoreItems(_Out_ BOOLEAN
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CollectionView*>(this)->get_HasMoreItemsImpl(pValue));
 Cleanup:
@@ -101,6 +105,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGenerated::get_IsCurrentAfterLast(_Out_ B
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CollectionView*>(this)->get_IsCurrentAfterLastImpl(pValue));
 Cleanup:
@@ -110,6 +115,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGenerated::get_IsCurrentBeforeFirst(_Out_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CollectionView*>(this)->get_IsCurrentBeforeFirstImpl(pValue));
 Cleanup:
@@ -119,6 +125,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGenerated::get_Type(_Out_ ABI::Windows::U
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CollectionView*>(this)->get_TypeImpl(pValue));
 Cleanup:
@@ -192,6 +199,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGenerated::GetCustomProperty(_In_ HSTRING
     }
     ARG_NOTNULL(name, "name");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CollectionView*>(this)->GetCustomPropertyImpl(name, ppReturnValue));
@@ -211,6 +219,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGenerated::GetIndexedProperty(_In_ HSTRIN
     }
     ARG_NOTNULL(name, "name");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CollectionView*>(this)->GetIndexedPropertyImpl(name, type, ppReturnValue));
@@ -229,6 +238,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGenerated::GetStringRepresentation(_Out_ 
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CollectionView_GetStringRepresentation", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CollectionView*>(this)->GetStringRepresentationImpl(pReturnValue));
@@ -247,6 +257,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGenerated::LoadMoreItemsAsync(_In_ UINT c
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CollectionView_LoadMoreItemsAsync", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CollectionView*>(this)->LoadMoreItemsAsyncImpl(count, ppReturnValue));
@@ -265,6 +276,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGenerated::MoveCurrentTo(_In_opt_ IInspec
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CollectionView_MoveCurrentTo", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CollectionView*>(this)->MoveCurrentToImpl(pItem, pReturnValue));
@@ -283,6 +295,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGenerated::MoveCurrentToFirst(_Out_ BOOLE
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CollectionView_MoveCurrentToFirst", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CollectionView*>(this)->MoveCurrentToFirstImpl(pReturnValue));
@@ -301,6 +314,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGenerated::MoveCurrentToLast(_Out_ BOOLEA
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CollectionView_MoveCurrentToLast", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CollectionView*>(this)->MoveCurrentToLastImpl(pReturnValue));
@@ -319,6 +333,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGenerated::MoveCurrentToNext(_Out_ BOOLEA
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CollectionView_MoveCurrentToNext", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CollectionView*>(this)->MoveCurrentToNextImpl(pReturnValue));
@@ -337,6 +352,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGenerated::MoveCurrentToPosition(_In_ INT
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CollectionView_MoveCurrentToPosition", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CollectionView*>(this)->MoveCurrentToPositionImpl(index, pReturnValue));
@@ -355,6 +371,7 @@ IFACEMETHODIMP DirectUI::CollectionViewGenerated::MoveCurrentToPrevious(_Out_ BO
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CollectionView_MoveCurrentToPrevious", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CollectionView*>(this)->MoveCurrentToPreviousImpl(pReturnValue));

@@ -170,6 +170,9 @@ namespace DirectUI
         // Notify the layout strategy of the new header placement.
         void SetGroupHeaderStrategy(_In_ GroupHeaderStrategy strategy);
         
+        // Used to estimate tracked element reposition during items source updates.
+        float GetAverageHeaderSize() const { return _layoutStrategyImpl.GetAverageHeaderSize(); }
+        float GetAverageContainerSize() const { return _layoutStrategyImpl.GetAverageContainerSize(); }
 
     private:
         // This is where the actual implementation of the layout strategy exists,

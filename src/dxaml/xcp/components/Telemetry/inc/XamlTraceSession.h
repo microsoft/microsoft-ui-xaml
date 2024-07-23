@@ -17,7 +17,7 @@ namespace Instrumentation {
     private:
         std::wstring m_appId;
         std::wstring m_sessionId;
-        DWORD m_processId;
+        DWORD m_processId{};
 
         std::mutex m_mutex;
     };

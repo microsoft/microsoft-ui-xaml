@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::ContextMenuEventArgsGenerated::get_Handled(_Out_ BOOLEA
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CContextMenuEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));
@@ -86,6 +87,7 @@ IFACEMETHODIMP DirectUI::ContextMenuEventArgsGenerated::get_CursorLeft(_Out_ DOU
     DOUBLE valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CContextMenuEventArgs*>(pCoreEventArgsNoRef)->get_CursorLeft(&valueCore));
@@ -119,6 +121,7 @@ IFACEMETHODIMP DirectUI::ContextMenuEventArgsGenerated::get_CursorTop(_Out_ DOUB
     DOUBLE valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CContextMenuEventArgs*>(pCoreEventArgsNoRef)->get_CursorTop(&valueCore));

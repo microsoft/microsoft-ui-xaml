@@ -18,6 +18,7 @@ GlobalDependencyProperty TabViewProperties::s_AddTabButtonCommandParameterProper
 GlobalDependencyProperty TabViewProperties::s_AllowDropTabsProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_CanDragTabsProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_CanReorderTabsProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_CanTearOutTabsProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_CloseButtonOverlayModeProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_IsAddTabButtonVisibleProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_SelectedIndexProperty{ nullptr };
@@ -34,6 +35,8 @@ GlobalDependencyProperty TabViewProperties::s_TabWidthModeProperty{ nullptr };
 
 TabViewProperties::TabViewProperties()
     : m_addTabButtonClickEventSource{static_cast<TabView*>(this)}
+    , m_externalTornOutTabsDroppedEventSource{static_cast<TabView*>(this)}
+    , m_externalTornOutTabsDroppingEventSource{static_cast<TabView*>(this)}
     , m_selectionChangedEventSource{static_cast<TabView*>(this)}
     , m_tabCloseRequestedEventSource{static_cast<TabView*>(this)}
     , m_tabDragCompletedEventSource{static_cast<TabView*>(this)}
@@ -42,6 +45,8 @@ TabViewProperties::TabViewProperties()
     , m_tabItemsChangedEventSource{static_cast<TabView*>(this)}
     , m_tabStripDragOverEventSource{static_cast<TabView*>(this)}
     , m_tabStripDropEventSource{static_cast<TabView*>(this)}
+    , m_tabTearOutRequestedEventSource{static_cast<TabView*>(this)}
+    , m_tabTearOutWindowRequestedEventSource{static_cast<TabView*>(this)}
 {
     EnsureProperties();
 }
@@ -102,6 +107,17 @@ void TabViewProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
                 nullptr);
+    }
+    if (!s_CanTearOutTabsProperty)
+    {
+        s_CanTearOutTabsProperty =
+            InitializeDependencyProperty(
+                L"CanTearOutTabs",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::TabView>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(false),
+                winrt::PropertyChangedCallback(&OnCanTearOutTabsPropertyChanged));
     }
     if (!s_CloseButtonOverlayModeProperty)
     {
@@ -255,6 +271,7 @@ void TabViewProperties::ClearProperties()
     s_AllowDropTabsProperty = nullptr;
     s_CanDragTabsProperty = nullptr;
     s_CanReorderTabsProperty = nullptr;
+    s_CanTearOutTabsProperty = nullptr;
     s_CloseButtonOverlayModeProperty = nullptr;
     s_IsAddTabButtonVisibleProperty = nullptr;
     s_SelectedIndexProperty = nullptr;
@@ -268,6 +285,14 @@ void TabViewProperties::ClearProperties()
     s_TabStripHeaderProperty = nullptr;
     s_TabStripHeaderTemplateProperty = nullptr;
     s_TabWidthModeProperty = nullptr;
+}
+
+void TabViewProperties::OnCanTearOutTabsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TabView>();
+    winrt::get_self<TabView>(owner)->OnCanTearOutTabsPropertyChanged(args);
 }
 
 void TabViewProperties::OnCloseButtonOverlayModePropertyChanged(
@@ -373,6 +398,19 @@ void TabViewProperties::CanReorderTabs(bool value)
 bool TabViewProperties::CanReorderTabs()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_CanReorderTabsProperty));
+}
+
+void TabViewProperties::CanTearOutTabs(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TabView*>(this)->SetValue(s_CanTearOutTabsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool TabViewProperties::CanTearOutTabs()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_CanTearOutTabsProperty));
 }
 
 void TabViewProperties::CloseButtonOverlayMode(winrt::TabViewCloseButtonOverlayMode const& value)
@@ -554,6 +592,26 @@ void TabViewProperties::AddTabButtonClick(winrt::event_token const& token)
     m_addTabButtonClickEventSource.remove(token);
 }
 
+winrt::event_token TabViewProperties::ExternalTornOutTabsDropped(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewExternalTornOutTabsDroppedEventArgs> const& value)
+{
+    return m_externalTornOutTabsDroppedEventSource.add(value);
+}
+
+void TabViewProperties::ExternalTornOutTabsDropped(winrt::event_token const& token)
+{
+    m_externalTornOutTabsDroppedEventSource.remove(token);
+}
+
+winrt::event_token TabViewProperties::ExternalTornOutTabsDropping(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewExternalTornOutTabsDroppingEventArgs> const& value)
+{
+    return m_externalTornOutTabsDroppingEventSource.add(value);
+}
+
+void TabViewProperties::ExternalTornOutTabsDropping(winrt::event_token const& token)
+{
+    m_externalTornOutTabsDroppingEventSource.remove(token);
+}
+
 winrt::event_token TabViewProperties::SelectionChanged(winrt::SelectionChangedEventHandler const& value)
 {
     return m_selectionChangedEventSource.add(value);
@@ -632,4 +690,24 @@ winrt::event_token TabViewProperties::TabStripDrop(winrt::DragEventHandler const
 void TabViewProperties::TabStripDrop(winrt::event_token const& token)
 {
     m_tabStripDropEventSource.remove(token);
+}
+
+winrt::event_token TabViewProperties::TabTearOutRequested(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabTearOutRequestedEventArgs> const& value)
+{
+    return m_tabTearOutRequestedEventSource.add(value);
+}
+
+void TabViewProperties::TabTearOutRequested(winrt::event_token const& token)
+{
+    m_tabTearOutRequestedEventSource.remove(token);
+}
+
+winrt::event_token TabViewProperties::TabTearOutWindowRequested(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabTearOutWindowRequestedEventArgs> const& value)
+{
+    return m_tabTearOutWindowRequestedEventSource.add(value);
+}
+
+void TabViewProperties::TabTearOutWindowRequested(winrt::event_token const& token)
+{
+    m_tabTearOutWindowRequestedEventSource.remove(token);
 }

@@ -66,7 +66,7 @@ private:
     static void CallCustomizationFunction(
         _In_ CDependencyObject* focusTarget,
         _Inout_ FocusRectangleOptions& options,
-        _Out_ bool* shouldDrawFocusRect);
+        _Inout_ bool* shouldDrawFocusRect);
 
     static void DetermineRenderOptions(
         _In_ const Focusable& focusedElement,
@@ -79,7 +79,7 @@ private:
 
     static bool SetLegacyRenderOptions(
         _In_ const Focusable& focusTarget,
-        _Out_ FocusRectangleOptions* options);
+        _Inout_ FocusRectangleOptions* options);
 
     static void GetFocusOptionsForElement(
         _In_ const Focusable& element,
@@ -91,11 +91,11 @@ private:
 
     static void GetDefaultFocusOptions(
         _In_ CCoreServices* core,
-        _Out_ FocusRectangleOptions* options);
+        _Inout_ FocusRectangleOptions* options);
 
     static void GetDefaultFocusOptionsForLink(
         _In_ CCoreServices* core,
-        _Out_ FocusRectangleOptions* options);
+        _Inout_ FocusRectangleOptions* options);
 
     static void AddRevealFocusOptions(
         FocusRectangleOptions& options,

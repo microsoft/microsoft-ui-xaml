@@ -104,7 +104,7 @@ namespace DirectUI
         _Check_return_ HRESULT StopAnimationForWidthAdjustments();
 
         // LabelOnRightStyle doesn't work in AppBarButton/AppBarToggleButton Reveal Style.
-        // Animate the width to NaN if width is not overrided and right-aligned labels and no LabelOnRightStyle. 
+        // Animate the width to NaN if width is not overridden and right-aligned labels and no LabelOnRightStyle. 
         TrackerPtr<xaml_animation::IStoryboard> m_widthAdjustmentsForLabelOnRightStyleStoryboard;
 
         bool m_isWithToggleButtons;
@@ -138,6 +138,6 @@ namespace DirectUI
 
         // Holds the last position that its flyout was opened at.
         // Used to reposition the flyout on size changed.
-        wf::Point m_lastFlyoutPosition;
+        wf::Point m_lastFlyoutPosition{};
     };
 }

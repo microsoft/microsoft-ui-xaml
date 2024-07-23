@@ -9,4 +9,5 @@ ARG_NOTNULL(<#= parameter.ParameterType.AbiArgumentName #>, "<#= parameter.Param
 <# } #>
 <# if (Model.HasReturnType) { #>
 ARG_VALIDRETURNPOINTER(<#= Model.ReturnType.AbiReturnParameterName #>);
+*<#= Model.ReturnType.AbiReturnParameterName #>={};
 <# } #>

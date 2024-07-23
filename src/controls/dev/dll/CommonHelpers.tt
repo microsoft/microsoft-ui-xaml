@@ -428,6 +428,10 @@
                     WriteLine(string.Format("    map.as<{0}>().Insert(unbox_value<{1}>(key), unbox_value<{2}>(value));", winRtType.CppWinRtName, winRtType.MapWinRtTypes[0].CppWinRtName, winRtType.MapWinRtTypes[1].CppWinRtName));
                     WriteLine("});\r\n");
                 }
+                if(winRtType.IsBindable)
+                {
+                    WriteLine("xamlType->SetIsBindable(true);\r\n");
+                }
 
                 WriteLine("return static_cast<winrt::IXamlType>(*xamlType);");
             });

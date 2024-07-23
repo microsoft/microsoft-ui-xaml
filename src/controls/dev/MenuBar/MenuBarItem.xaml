@@ -1,6 +1,7 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <ResourceDictionary xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="using:Microsoft.UI.Xaml.Controls" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
   <Style TargetType="controls:MenuBarItem">
+    <Setter Property="Foreground" Value="{ThemeResource MenuBarItemForeground}" />
     <Setter Property="Background" Value="{ThemeResource MenuBarItemBackground}" />
     <Setter Property="BorderThickness" Value="{ThemeResource MenuBarItemBorderThickness}" />
     <Setter Property="BorderBrush" Value="{ThemeResource MenuBarItemBorderBrush}" />
@@ -52,7 +53,7 @@
               </VisualStateGroup>
             </VisualStateManager.VisualStateGroups>
             <Border x:Name="Background" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" />
-            <Button x:Name="ContentButton" Content="{TemplateBinding Title}" Background="Transparent" BorderThickness="0" VerticalAlignment="Stretch" Padding="{StaticResource MenuBarItemButtonPadding}" IsTabStop="False" AutomationProperties.AccessibilityView="Raw" />
+            <Button x:Name="ContentButton" Content="{TemplateBinding Title}" Foreground="{TemplateBinding Foreground}" Background="Transparent" BorderThickness="0" VerticalAlignment="Stretch" Padding="{StaticResource MenuBarItemButtonPadding}" IsTabStop="False" AutomationProperties.AccessibilityView="Raw" />
           </Grid>
         </ControlTemplate>
       </Setter.Value>

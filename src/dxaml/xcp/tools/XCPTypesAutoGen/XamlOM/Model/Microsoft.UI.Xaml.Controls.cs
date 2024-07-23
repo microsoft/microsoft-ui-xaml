@@ -5280,7 +5280,7 @@ namespace Microsoft.UI.Xaml.Controls
     [ControlPattern]
     [Implements(typeof(Microsoft.UI.Xaml.Controls.IOrientedPanel))]
     [Guids(ClassGuid = "81b3c2e9-dba8-4612-92f8-a3e96e437b0b")]
-    public sealed class ItemsWrapGrid
+    public class ItemsWrapGrid
         : Microsoft.UI.Xaml.Controls.ModernCollectionBasePanel
     {
         [TypeTable(IsExcludedFromCore = true)]
@@ -7687,6 +7687,7 @@ namespace Microsoft.UI.Xaml.Controls
         Upper = 2
     }
 
+    [Platform(typeof(PrivateApiContract), 1)]
     [VelocityFeature("Feature_InputValidation")]
     public enum InputValidationKind
     {
@@ -7695,6 +7696,7 @@ namespace Microsoft.UI.Xaml.Controls
         Inline,
     }
 
+    [Platform(typeof(PrivateApiContract), 1)]
     [VelocityFeature("Feature_InputValidation")]
     public enum InputValidationMode
     {
@@ -7704,6 +7706,7 @@ namespace Microsoft.UI.Xaml.Controls
     }
 
     [Guids(ClassGuid = "95d4d3ce-d079-4901-830a-6994cf15e371")]
+    [Platform(typeof(PrivateApiContract), 1)]
     [VelocityFeature("Feature_InputValidation")]
     public sealed class InputValidationErrorEventArgs : EventArgs
     {
@@ -7764,7 +7767,7 @@ namespace Microsoft.UI.Xaml.Controls
         public virtual void Validate(IInputValidationControl validationControl) { }
     }
 
-    [DXamlIdlGroup("Main")]
+    [Platform(typeof(PrivateApiContract), 1)]
     [VelocityFeature("Feature_InputValidation")]
     public enum InputValidationErrorEventAction
     {
@@ -7775,6 +7778,7 @@ namespace Microsoft.UI.Xaml.Controls
     [Guids(ClassGuid = "2d40157d-ce2d-453a-ad35-afa5ea1997b8")]
     [TypeTable(IsExcludedFromNewTypeTable = true)]
     [TypeFlags(IsCreateableFromXAML = false)]
+    [Platform(typeof(PrivateApiContract), 1)]
     [VelocityFeature("Feature_InputValidation")]
     public class InputValidationError
     {
@@ -7790,6 +7794,7 @@ namespace Microsoft.UI.Xaml.Controls
     }
 
     [Guids(ClassGuid = "9ec15c00-97d1-4125-b0d8-7ac11ae0791e")]
+    [Platform(typeof(PrivateApiContract), 1)]
     [VelocityFeature("Feature_InputValidation")]
     public class InputValidationContext
     {
@@ -7810,6 +7815,7 @@ namespace Microsoft.UI.Xaml.Controls
         }
     }
 
+    [Platform(typeof(PrivateApiContract), 1)]
     [VelocityFeature("Feature_InputValidation")]
     public interface IInputValidationControl
     {

@@ -27,18 +27,19 @@ public:
     winrt::Rect GetLayoutVisibleWindow() const override;
     winrt::Rect GetLayoutRealizationWindow() const override;
 
-    void SetLayoutExtent(winrt::Rect extent) override;
+    void SetLayoutExtent(const winrt::Rect& extent) override;
     winrt::Rect GetLayoutExtent() const override { return m_layoutExtent; }
     winrt::Point GetOrigin() const override{ return winrt::Point(m_layoutExtent.X, m_layoutExtent.Y); }
 
     void OnLayoutChanged(bool isVirtualizing) override;
     void OnElementPrepared(const winrt::UIElement& element) override {}
     void OnElementCleared(const winrt::UIElement& element) override;
-    void OnOwnerMeasuring() override {};
+    void OnOwnerMeasuring() override;
     void OnOwnerArranged() override;
     void OnMakeAnchor(const winrt::UIElement& anchor, const bool isAnchorOutsideRealizedRange) override;
-    void OnBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs args) override;
+    void OnBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs& args) override;
 
+    void ResetLayoutRealizationWindowCacheBuffer() override;
     void ResetScrollers() override;
 
     winrt::UIElement MadeAnchor() const override { return m_makeAnchorElement.get(); }
@@ -55,7 +56,7 @@ private:
     bool HasScrollers() const { return !!m_horizontalScroller || !!m_verticalScroller; }
     bool AddScroller(const winrt::IRepeaterScrollingSurface& scroller);
     void UpdateViewport();
-    void ResetCacheBuffer();
+    void ResetCacheBuffer(bool registerCacheBuildWork = true);
     void ValidateCacheLength(double cacheLength);
     void RegisterCacheBuildWork();
     void TryInvalidateMeasure();
@@ -85,6 +86,7 @@ private:
 
     tracker_ref<winrt::IAsyncAction> m_cacheBuildAction;
 
+    winrt::Rect m_lastLayoutRealizationWindow{};
     winrt::Rect m_visibleWindow{};
     winrt::Rect m_layoutExtent{};
     winrt::Point m_expectedViewportShift{};

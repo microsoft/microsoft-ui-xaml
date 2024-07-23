@@ -113,7 +113,7 @@ namespace DirectUI
 
         // Static methods.
         IFACEMETHOD(InitializeForCurrentThread)(_Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager** ppResult) override;
-        IFACEMETHOD(GetForCurrentThread)(_Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager** ppResult) override;
+        IFACEMETHOD(GetForCurrentThread)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager** ppResult) override;
 
         // Static events.
 
@@ -129,6 +129,6 @@ namespace DirectUI
 
         // Customized static  methods.
          _Check_return_ HRESULT InitializeForCurrentThreadImpl(_Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager** ppResult); 
-         _Check_return_ HRESULT GetForCurrentThreadImpl(_Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager** ppResult); 
+         _Check_return_ HRESULT GetForCurrentThreadImpl(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager** ppResult); 
     };
 }

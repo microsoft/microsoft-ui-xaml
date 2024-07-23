@@ -495,7 +495,7 @@ HRESULT CollectionView::SetCurrentIndexAt(
         IFC(RaisePropertyChanged(STR_LEN_PAIR(L"IsCurrentBeforeFirst")));
     }
 
-    RaiseCurrentChanged();
+    IFC(RaiseCurrentChanged());
 
     if (valid != NULL)
     {

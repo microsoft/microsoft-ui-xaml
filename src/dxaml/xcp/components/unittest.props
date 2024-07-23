@@ -74,7 +74,6 @@
                 onecoreuap.lib;
                 ntdll.lib;
                 dbghelp.lib;
-                $(FrameworkUdkLibPath)\Microsoft.Internal.FrameworkUdk.lib;
             </AdditionalDependencies>
             
             <DelayLoadDLLs>api-ms-win-rtcore-ntuser-private-l1-*.dll;</DelayLoadDLLs>

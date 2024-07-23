@@ -66,6 +66,7 @@ IFACEMETHODIMP DirectUI::VisualStateManagerGenerated::GoToStateCore(_In_opt_ ABI
     }
     ARG_NOTNULL(pTemplateRoot, "templateRoot");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<VisualStateManager*>(this)->GoToStateCoreImpl(pControl, pTemplateRoot, stateName, pGroup, pState, useTransitions, pReturnValue));
@@ -248,6 +249,7 @@ IFACEMETHODIMP DirectUI::VisualStateManagerFactory::GoToState(_In_opt_ ABI::Micr
         XamlTelemetry::PublicApiCall(true, 0, "VisualStateManager_GoToState", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(GoToStateImpl(pControl, stateName, useTransitions, pReturnValue));
 Cleanup:

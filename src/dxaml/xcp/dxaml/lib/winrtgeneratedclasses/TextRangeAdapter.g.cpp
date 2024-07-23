@@ -77,6 +77,7 @@ IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::Clone(_Outptr_ ABI::Microsof
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "TextRangeAdapter_Clone", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextRangeAdapter*>(this)->CloneImpl(ppReturnValue));
@@ -96,6 +97,7 @@ IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::Compare(_In_ ABI::Microsoft:
     }
     ARG_NOTNULL(pTextRangeProvider, "textRangeProvider");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextRangeAdapter*>(this)->CompareImpl(pTextRangeProvider, pReturnValue));
@@ -115,6 +117,7 @@ IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::CompareEndpoints(_In_ ABI::M
     }
     ARG_NOTNULL(pTextRangeProvider, "textRangeProvider");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextRangeAdapter*>(this)->CompareEndpointsImpl(endpoint, pTextRangeProvider, targetEndpoint, pReturnValue));
@@ -152,6 +155,7 @@ IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::FindAttribute(_In_ INT attri
     }
     ARG_NOTNULL(pValue, "value");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextRangeAdapter*>(this)->FindAttributeImpl(attributeId, pValue, backward, ppReturnValue));
@@ -171,6 +175,7 @@ IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::FindText(_In_ HSTRING text, 
     }
     ARG_NOTNULL(text, "text");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextRangeAdapter*>(this)->FindTextImpl(text, backward, ignoreCase, ppReturnValue));
@@ -189,6 +194,7 @@ IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::GetAttributeValue(_In_ INT a
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "TextRangeAdapter_GetAttributeValue", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextRangeAdapter*>(this)->GetAttributeValueImpl(attributeId, ppReturnValue));
@@ -207,6 +213,7 @@ IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::GetBoundingRectangles(_Out_ 
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "TextRangeAdapter_GetBoundingRectangles", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextRangeAdapter*>(this)->GetBoundingRectanglesImpl(pReturnValueCount, ppReturnValue));
@@ -225,6 +232,7 @@ IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::GetChildren(_Out_ UINT* pRet
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "TextRangeAdapter_GetChildren", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextRangeAdapter*>(this)->GetChildrenImpl(pReturnValueCount, ppReturnValue));
@@ -243,6 +251,7 @@ IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::GetEnclosingElement(_Outptr_
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "TextRangeAdapter_GetEnclosingElement", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextRangeAdapter*>(this)->GetEnclosingElementImpl(ppReturnValue));
@@ -261,6 +270,7 @@ IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::GetText(_In_ INT maxLength, 
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "TextRangeAdapter_GetText", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextRangeAdapter*>(this)->GetTextImpl(maxLength, pReturnValue));
@@ -279,6 +289,7 @@ IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::Move(_In_ ABI::Microsoft::UI
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "TextRangeAdapter_Move", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextRangeAdapter*>(this)->MoveImpl(unit, count, pReturnValue));
@@ -315,6 +326,7 @@ IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::MoveEndpointByUnit(_In_ ABI:
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "TextRangeAdapter_MoveEndpointByUnit", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextRangeAdapter*>(this)->MoveEndpointByUnitImpl(endpoint, unit, count, pReturnValue));

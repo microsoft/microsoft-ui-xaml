@@ -49,6 +49,7 @@ IFACEMETHODIMP DirectUI::DragDeltaEventArgsGenerated::get_HorizontalChange(_Out_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<DragDeltaEventArgs*>(this)->get_HorizontalChangeImpl(pValue));
 Cleanup:
@@ -67,6 +68,7 @@ IFACEMETHODIMP DirectUI::DragDeltaEventArgsGenerated::get_VerticalChange(_Out_ D
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<DragDeltaEventArgs*>(this)->get_VerticalChangeImpl(pValue));
 Cleanup:

@@ -83,6 +83,9 @@ _Check_return_ HRESULT CDependencyObject::TryProcessingThemeResourcePropertyValu
     _In_ BaseValueSource baseValueSource,
     _Out_ bool* processed)
 {
+    // Initialize the output parameter to false at the start
+    *processed = false;
+
     xref_ptr<CThemeResource> themeResource;
 
     if (pModifiedValue && pModifiedValue->IsEffectiveValueThemeResource())

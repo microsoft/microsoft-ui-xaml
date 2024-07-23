@@ -25,6 +25,7 @@ namespace MUXControlsTestApp
             navigateToIntegration.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ItemsViewIntegrationPage), 0); };
             navigateToBlank.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ItemsViewBlankPage), 0); };
             navigateToTransitionProvider.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ItemsViewTransitionPage), 0); };
+            navigateToPictureLibrary.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ItemsViewPictureLibraryPage), 0); };
         }
 
         private void CmbItemsViewOutputDebugStringLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)

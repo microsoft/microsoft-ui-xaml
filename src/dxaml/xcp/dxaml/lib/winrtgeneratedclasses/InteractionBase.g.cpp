@@ -67,6 +67,7 @@ IFACEMETHODIMP DirectUI::InteractionBaseGenerated::GetSupportedEvents(_Outptr_ A
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "InteractionBase_GetSupportedEvents", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<InteractionBase*>(this)->GetSupportedEventsImpl(ppReturnValue));
 Cleanup:
@@ -84,6 +85,7 @@ IFACEMETHODIMP DirectUI::InteractionBaseGenerated::GetSupportedEventsCore(_Outpt
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "InteractionBase_GetSupportedEventsCore", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<InteractionBase*>(this)->GetSupportedEventsCoreImpl(ppReturnValue));
 Cleanup:

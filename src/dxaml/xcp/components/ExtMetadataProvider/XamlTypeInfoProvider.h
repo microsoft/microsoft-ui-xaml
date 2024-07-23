@@ -22,7 +22,7 @@ namespace Private
     public:
         XamlTypeInfoProvider(PCWSTR moduleName);
         XamlTypeInfoProvider(const XamlTypeInfoProvider& other) = delete;
-        XamlTypeInfoProvider(const XamlTypeInfoProvider&& other) :
+        XamlTypeInfoProvider(const XamlTypeInfoProvider&& other) noexcept :
             m_cXamlTypeNameTableSize(other.m_cXamlTypeNameTableSize),
             m_cXamlMemberTableSize(other.m_cXamlMemberTableSize),
             m_aspXamlTypeDataCache(std::move(other.m_aspXamlTypeDataCache)),
@@ -120,8 +120,8 @@ namespace Private
             return LoadFromResource<T>(resId, typeId, ppData, &size);
         }
 
-        size_t m_cXamlTypeNameTableSize;
-        size_t m_cXamlMemberTableSize;
+        size_t m_cXamlTypeNameTableSize{};
+        size_t m_cXamlMemberTableSize{};
 
         std::vector<wrl::ComPtr<xaml_markup::IXamlType>> m_aspXamlTypeDataCache;
         std::vector<wrl::ComPtr<xaml_markup::IXamlMember>> m_aspXamlMemberDataCache;

@@ -2570,7 +2570,7 @@ void CFrameworkElement::UpdateRequiresCompNodeForRoundedCorners()
     {
         if (!RequiresCompNodeForRoundedCorners())
         {
-            SetRequiresComposition(CompositionRequirement::HasRoundedCorners, IndependentAnimationType::None);
+            IFCFAILFAST(SetRequiresComposition(CompositionRequirement::HasRoundedCorners, IndependentAnimationType::None));
         }
     }
     else
@@ -3095,7 +3095,7 @@ CFrameworkElement::get_Parent(
 //------------------------------------------------------------------------
 
 _Check_return_ CDependencyObject* CFrameworkElement::GetInheritanceParentInternal(
-    _In_opt_ bool fLogicalParent
+    bool fLogicalParent
 ) const
 {
     CDependencyObject *pdoVisualParent      = CUIElement::GetInheritanceParentInternal();
@@ -3440,7 +3440,7 @@ CFrameworkElement::NotifyThemeChangedForInheritedProperties(
         // inherited.
         if (pBrushNoRef)
         {
-            pTextFormatting->SetForeground(this, pBrushNoRef);
+            IFC(pTextFormatting->SetForeground(this, pBrushNoRef));
             pTextFormatting->SetFreezeForeground(true);
 
             // Mark inheritance chain as dirty

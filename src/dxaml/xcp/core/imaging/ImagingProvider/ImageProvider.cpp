@@ -75,12 +75,6 @@ ImageProvider::~ImageProvider(
 
     ReleaseInterface(m_pImageFactory);
     ReleaseInterface(m_pStore);
-
-    // Note: The dtor will log an error if Stop isn't called first.
-    if (m_decodeActivity && m_decodeActivity->IsRunning())
-    {
-        m_decodeActivity->Stop();
-    }
 }
 
 //------------------------------------------------------------------------
@@ -122,11 +116,9 @@ ImageProvider::GetImage(
     GetImageOptions options,
     _In_ const xref_ptr<IImageAvailableCallback>& spImageAvailableCallback,
     _In_ CCoreServices* pCore,
-    _Outref_ xref_ptr<IAbortableImageOperation>& spAbortableImageOperation
+    _Out_ xref_ptr<IAbortableImageOperation>& spAbortableImageOperation
     )
 {
-    const std::shared_ptr<ImagingTelemetry::ImageDecodeActivity>& decodeActivity = spDecodeParams->GetDecodeActivity();
-
     auto parseHR = spEncodedImageData->Parse(pCore->GetGraphicsDevice(), pCore->GetContentRootMaxSize());
 
     bool isAnimatedImage = SUCCEEDED(parseHR) && spEncodedImageData->IsAnimatedImage();
@@ -199,10 +191,7 @@ ImageProvider::GetImage(
 
             imageCache->SetEncodedImageData(spEncodedImageData);
 
-            if (decodeActivity)
-            {
-                decodeActivity->CreateImageCacheFromExistingEncodedData(spDecodeParams->GetImageId(), spDecodeParams->GetStrSource().GetBuffer());
-            }
+            ImagingTelemetry::CreateImageCacheFromExistingEncodedData(spDecodeParams->GetImageId(), spDecodeParams->GetStrSource().GetBuffer());
 
             IFC_RETURN(imageCache->GetImage(spDecodeParams, spImageAvailableCallback, spAbortableImageOperation));
         }
@@ -415,7 +404,6 @@ ImageProvider::EnsureCacheEntry(
     _In_opt_ IPALUri *pAbsoluteUri,
     bool isSvg,
     GetImageOptions options,
-    _In_ const std::shared_ptr<ImagingTelemetry::ImageDecodeActivity>& decodeActivity,
     uint64_t imageId,
     _Out_ bool *pCacheHit,
     _Outptr_ ImageCache **ppImageCache
@@ -445,10 +433,7 @@ ImageProvider::EnsureCacheEntry(
 
     if (imageCache == nullptr)
     {
-        if (decodeActivity)
-        {
-            decodeActivity->CreateImageCache(imageId, strUri.GetBuffer());
-        }
+        ImagingTelemetry::CreateImageCache(imageId, strUri.GetBuffer());
 
         imageCache = make_xref<ImageCache>(
             strCacheKey,
@@ -469,11 +454,7 @@ ImageProvider::EnsureCacheEntry(
     }
     else
     {
-        if (decodeActivity)
-        {
-            decodeActivity->FoundImageCache(imageId, strUri.GetBuffer());
-        }
-
+        ImagingTelemetry::FoundImageCache(imageId, strUri.GetBuffer());
         *pCacheHit = true;
     }
 

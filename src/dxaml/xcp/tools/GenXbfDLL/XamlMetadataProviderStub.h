@@ -65,7 +65,7 @@ class XamlTypeAdapter: public xaml_markup::IXamlType, public ctl::ComBase
     END_INTERFACE_MAP(XamlTypeAdapter, ctl::ComBase)
 
 private:
-    IXbfType *m_pXamlType;
+    IXbfType *m_pXamlType{};
 
 protected:
     virtual ~XamlTypeAdapter()

@@ -91,6 +91,7 @@ IFACEMETHODIMP DirectUI::StoryboardGenerated::GetCurrentState(_Out_ ABI::Microso
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Storyboard_GetCurrentState", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Storyboard*>(this)->GetCurrentStateImpl(pReturnValue));
@@ -109,6 +110,7 @@ IFACEMETHODIMP DirectUI::StoryboardGenerated::GetCurrentTime(_Out_ ABI::Windows:
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Storyboard_GetCurrentTime", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Storyboard*>(this)->GetCurrentTimeImpl(pReturnValue));

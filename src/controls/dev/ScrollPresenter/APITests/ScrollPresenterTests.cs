@@ -707,7 +707,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 verticalOffset: 150,
                 animationMode: ScrollingAnimationMode.Enabled,
                 snapPointsMode: ScrollingSnapPointsMode.Ignore,
-                hookViewChanged: false);
+                hookViewChangingAndChanged: false);
 
             RunOnUIThread.Execute(() =>
             {

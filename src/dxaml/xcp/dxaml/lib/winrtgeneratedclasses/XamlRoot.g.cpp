@@ -36,6 +36,12 @@ HRESULT DirectUI::XamlRootGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IXamlRoot2>(this);
     }
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlRootFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
+    {
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IXamlRootFeature_ExperimentalApi>(this);
+    }
+#endif
     else
     {
         RRETURN(ctl::WeakReferenceSource::QueryInterfaceImpl(iid, ppObject));
@@ -50,6 +56,7 @@ IFACEMETHODIMP DirectUI::XamlRootGenerated::get_Content(_Outptr_result_maybenull
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<XamlRoot*>(this)->get_ContentImpl(ppValue));
 Cleanup:
@@ -59,8 +66,19 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlRootGenerated::get_Conten
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<XamlRoot*>(this)->get_ContentIslandEnvironmentImpl(ppValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlRootGenerated::get_CoordinateConverter(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IContentCoordinateConverter** ppValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
+    IFC(CheckThread());
+    IFC(static_cast<XamlRoot*>(this)->get_CoordinateConverterImpl(ppValue));
 Cleanup:
     RRETURN(hr);
 }
@@ -68,6 +86,7 @@ IFACEMETHODIMP DirectUI::XamlRootGenerated::get_IsHostVisible(_Out_ BOOLEAN* pVa
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<XamlRoot*>(this)->get_IsHostVisibleImpl(pValue));
 Cleanup:
@@ -77,6 +96,7 @@ _Check_return_ HRESULT DirectUI::XamlRootGenerated::get_IsInputActive(_Out_ BOOL
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<XamlRoot*>(this)->get_IsInputActiveImpl(pValue));
 Cleanup:
@@ -86,6 +106,7 @@ IFACEMETHODIMP DirectUI::XamlRootGenerated::get_RasterizationScale(_Out_ DOUBLE*
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<XamlRoot*>(this)->get_RasterizationScaleImpl(pValue));
 Cleanup:
@@ -95,6 +116,7 @@ IFACEMETHODIMP DirectUI::XamlRootGenerated::get_Size(_Out_ ABI::Windows::Foundat
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<XamlRoot*>(this)->get_SizeImpl(pValue));
 Cleanup:
@@ -175,6 +197,26 @@ Cleanup:
 }
 
 // Methods.
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlRootGenerated::TryGetContentIsland(_Outptr_ ABI::Microsoft::UI::Content::IContentIsland** ppReturnValue)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "XamlRoot_TryGetContentIsland", 0);
+    }
+    ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
+    IFC(CheckThread());
+    IFC(static_cast<XamlRoot*>(this)->TryGetContentIslandImpl(ppReturnValue));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "XamlRoot_TryGetContentIsland", hr);
+    }
+    RRETURN(hr);
+}
+#endif
 
 
 namespace DirectUI

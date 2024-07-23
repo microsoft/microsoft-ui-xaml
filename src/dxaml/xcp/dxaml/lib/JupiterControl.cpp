@@ -158,7 +158,7 @@ void CJupiterControl::DisconnectUIA()
     {
         m_pUIAWindow->UIADisconnectAllProviders();
         m_pUIAWindow->Deinit();
-        ReleaseInterface(m_pUIAWindow);
+        m_pUIAWindow = nullptr;
     }
 }
 
@@ -607,11 +607,30 @@ bool CJupiterControl::HandlePointerMessage(
     return bHandled;
 }
 
+void CJupiterControl::HandleNonClientPointerMessage(
+    _In_ UINT uMsg,
+    _In_ UINT32 pointerId,
+    _In_opt_ CContentRoot* contentRoot,
+    bool isGeneratedMessage,
+    _In_opt_ ixp::IPointerPoint* pointerPoint)
+{
+    if (m_pBH)
+    {
+        MsgPacket msgPack;
+        msgPack.m_wParam = pointerId;
+        msgPack.m_hwnd = m_pWindow->GetWindowHandle();
+        msgPack.m_pPointerPointNoRef = pointerPoint;
+        msgPack.m_isNonClientPointerMessage = true;
+
+        bool bHandled = false;
+        m_pBH->HandleInputMessage(uMsg, &msgPack, contentRoot, isGeneratedMessage, bHandled);
+    }
+}
+
 LRESULT CJupiterControl::HandleGetObjectMessage(_In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam)
 {
     HRESULT hr = S_OK; // WARNING_IGNORES_FAILURES
     LRESULT lResult = 0;
-    ::IRawElementProviderSimple* pProvider = nullptr;
 
     if (m_pBH)
     {
@@ -621,24 +640,30 @@ LRESULT CJupiterControl::HandleGetObjectMessage(_In_ UINT uMsg, _In_ WPARAM wPar
 
         if (m_pUIAWindow == nullptr)
         {
-            IFC(CUIAHostWindow::Create(
-                UIAHostEnvironmentInfo(hWnd, hWnd),
-                this,
-                nullptr,  // pRootVisual
-                &m_pUIAWindow));
+            IFC(CreateUIAHostWindowForHwnd(hWnd));
         }
 
         IFCPTR(m_pUIAWindow);
-        IFC(m_pUIAWindow->QueryInterface(__uuidof(::IRawElementProviderSimple), reinterpret_cast<void**>(&pProvider)));
-        lResult = ::UiaReturnRawElementProvider(hWnd, wParam, lParam, pProvider);
+
+        wrl::ComPtr<::IRawElementProviderSimple> uiaWindowAsRawElementProviderSimple;
+        IFC(m_pUIAWindow.As(&uiaWindowAsRawElementProviderSimple));
+        lResult = ::UiaReturnRawElementProvider(hWnd, wParam, lParam, uiaWindowAsRawElementProviderSimple.Get());
 
         m_pUIAWindow->SetMockUIAClientsListening(m_isEnabledMockUIAClientsListening);
     }
 
 Cleanup:
-    ReleaseInterface(pProvider);
-
     return lResult;
+}
+
+HRESULT CJupiterControl::CreateUIAHostWindowForHwnd(_In_ HWND hwnd)
+{
+    RETURN_IF_FAILED(CUIAHostWindow::Create(
+                        UIAHostEnvironmentInfo(hwnd, hwnd),
+                        this,
+                        nullptr,  // pRootVisual
+                        &m_pUIAWindow));
+    return S_OK;
 }
 
 _Check_return_ HRESULT CJupiterControl::CreateProviderForAP(_In_ CAutomationPeer* pAP, _Outptr_result_maybenull_ CUIAWrapper** ppRet)
@@ -829,13 +854,9 @@ _Check_return_ HRESULT CJupiterControl::GetUIAWindow(
     // Create/Get UI Automation provider object for plugin window
     if (!m_pUIAWindow && !onlyGet)
     {
-        IFC_RETURN(CUIAHostWindow::Create(
-            UIAHostEnvironmentInfo(static_cast<HWND>(hWnd), static_cast<HWND>(hWnd)),
-            this,
-            nullptr,  // pRootVisual
-            &m_pUIAWindow));
+        IFC_RETURN(CreateUIAHostWindowForHwnd(static_cast<HWND>(hWnd)));
     }
-    *uiaWindowNoRef = m_pUIAWindow;
+    *uiaWindowNoRef = m_pUIAWindow.Get();
 
     return S_OK;
 }

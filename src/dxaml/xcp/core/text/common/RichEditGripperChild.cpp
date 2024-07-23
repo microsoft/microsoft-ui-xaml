@@ -705,12 +705,12 @@ _Check_return_ HRESULT CRichEditGripperChild::OnManipulation(
             if (m_pPeerGripperNoAddRef->m_pPopupChild->InActiveDrag()) // this can happen when PointerPressed on peer gripper. In that case, clear active flag and pointer capture
             {
                 CTouchableRectangle *pPeerHitTarget = m_pPeerGripperNoAddRef->GetHitTarget();
-                pPeerHitTarget->ReleaseTouchRectPointerCapture(nullptr,nullptr);
+                IFC_RETURN(pPeerHitTarget->ReleaseTouchRectPointerCapture(nullptr,nullptr));
                 m_pPeerGripperNoAddRef->m_pPopupChild->SetInActiveDrag(FALSE);
             }
             else
             {
-                m_pTextBoxBase->SetGripperBeingManipulated(true);
+                IFC_RETURN(m_pTextBoxBase->SetGripperBeingManipulated(true));
             }
 
             SetInActiveDrag(TRUE);
@@ -745,7 +745,7 @@ _Check_return_ HRESULT CRichEditGripperChild::OnManipulation(
 
     if (end)
     {
-        m_pTextBoxBase->SetGripperBeingManipulated(false);
+        IFC_RETURN(m_pTextBoxBase->SetGripperBeingManipulated(false));
     }
 
     return S_OK;

@@ -31,8 +31,8 @@ public:
         m_fHasValue = FALSE;
     }
 
-    XINT32 m_fHasValue;
-    XDOUBLE m_rValue;
+    XINT32 m_fHasValue{};
+    XDOUBLE m_rValue{};
 };
 
 // Base class for timeline objects

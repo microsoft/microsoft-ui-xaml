@@ -97,10 +97,9 @@ AsyncImageFactory::Shutdown(
     }
     if (m_pWorkItemFactory != NULL)
     {
-       m_pWorkItemFactory->CancelAndCleanupAllWork();
+        IFC_RETURN(m_pWorkItemFactory->CancelAndCleanupAllWork());
     }
     
-
     RRETURN(hr);
 }
 

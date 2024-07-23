@@ -1907,7 +1907,7 @@ WrappingLayoutStrategyImpl::EstimateGroupedExtent(
 
     const int maxStackingLines = (totalItems > 0) ? DetermineMaxStackingLine(windowConstraint) : 1;
 
-    EnsureGroupCache(maxStackingLines);
+    IFC_RETURN(EnsureGroupCache(maxStackingLines));
 
     int itemCountInGroup;
     IFC_RETURN(GetLayoutDataInfoProviderNoRef()->GetGroupInformationFromGroupIndex(

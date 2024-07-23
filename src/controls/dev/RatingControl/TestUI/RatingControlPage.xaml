@@ -213,6 +213,22 @@
                     </muxcontrols:RatingControl>
                     <TextBlock x:Name="PointerOverImageFallbackTextBlock" Text="^" AutomationProperties.AutomationId="PointerOverImageFallbackTextBlock"/>
                 </StackPanel>
+
+                <TextBlock Text="With resource overrides" />
+
+                <muxcontrols:RatingControl Value="3" Caption="RO1">
+                    <muxcontrols:RatingControl.Resources>
+                        <x:Double x:Key="RatingControlFontSizeForRendering">20</x:Double>
+                        <x:Double x:Key="RatingControlItemSpacing">20</x:Double>
+                    </muxcontrols:RatingControl.Resources>
+                </muxcontrols:RatingControl>
+
+                <muxcontrols:RatingControl Value="3" Caption="RO2">
+                    <muxcontrols:RatingControl.Resources>
+                        <x:Double x:Key="RatingControlFontSizeForRendering">48</x:Double>
+                        <x:Double x:Key="RatingControlItemSpacing">2</x:Double>
+                    </muxcontrols:RatingControl.Resources>
+                </muxcontrols:RatingControl>
             </StackPanel>
         </ScrollViewer>
     </StackPanel>

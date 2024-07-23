@@ -25,7 +25,7 @@ public:
     // Initializes a new instance of the DWriteFontFamily class.
     DWriteFontFamily(
         _In_ IDWriteFontFamily *pDWriteFontFamily,
-        _In_ bool isShapingOptimizable
+        _In_ bool useTypographicModel
         );
 
     // For a given physical font typeface determines which glyph typeface to
@@ -40,18 +40,14 @@ public:
     // Gets DWrite's peer associated with this object.
     IDWriteFontFamily* GetFontFamily() const;
 
-    // Returns whether we can bypass full shaping.
-    // This currently only applies to Segoe UI.
-    bool CanOptimizeShaping() const;
-
 private:
 
     // DWrite's peer associated with this object.
     IDWriteFontFamily *m_pDWriteFontFamily;
 
-    // A flag to indicate whether we can bypass full shaping.
-    // This currently only applies to Segoe UI.
-    bool m_canOptimizeShaping;
+    // Indicates whether we are using DWrite's typographic model instead of the
+    // legacy weight/strech/style model.
+    bool m_useTypographicModel;
 
     // Release resources associated with the DWriteFontFamily.
     ~DWriteFontFamily() override;
@@ -61,9 +57,4 @@ private:
 inline IDWriteFontFamily* DWriteFontFamily::GetFontFamily() const
 {
     return m_pDWriteFontFamily;
-}
-
-inline bool DWriteFontFamily::CanOptimizeShaping() const
-{
-    return m_canOptimizeShaping;
 }

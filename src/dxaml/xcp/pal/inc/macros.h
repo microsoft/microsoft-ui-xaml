@@ -19,7 +19,7 @@ __forceinline void ReleaseInterface(T*& p) // defined as a function to avoid mis
 {
     if (p)
     {
-        p->Release();
+        (void)(p->Release());
         p = nullptr;
     }
 }
@@ -29,7 +29,7 @@ __forceinline void ReleaseInterfaceNoNULL(T* const p) // defined as a function t
 {
     if (p)
     {
-        p->Release();
+        (void)(p->Release());
     }
 }
 

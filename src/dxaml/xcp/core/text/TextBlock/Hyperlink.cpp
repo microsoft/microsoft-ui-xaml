@@ -871,7 +871,7 @@ _Check_return_ HRESULT CHyperlink::GetTextContentStart(_Outptr_result_maybenull_
     if (pTempAsIn &&
         pTempAsIn->GetTypeIndex() == KnownTypeIndex::Run)
     {
-        pTempAsIn->GetContentStart(ppTextPointerWrapper);
+        IFC_RETURN(pTempAsIn->GetContentStart(ppTextPointerWrapper));
     }
     return S_OK;
 }
@@ -897,7 +897,7 @@ _Check_return_ HRESULT CHyperlink::GetTextContentEnd(_Outptr_result_maybenull_ C
     if (pTempAsIn &&
         pTempAsIn->GetTypeIndex() == KnownTypeIndex::Run)
     {
-        pTempAsIn->GetContentEnd(ppTextPointerWrapper);
+        IFC_RETURN(pTempAsIn->GetContentEnd(ppTextPointerWrapper));
     }
     return S_OK;
 }

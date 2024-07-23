@@ -52,7 +52,7 @@ _Check_return_ HRESULT XamlManagedRuntime::CreateFromValue(
     XamlQualifiedObject qoLocalRootInstance;
     if (qoRootInstance)
     {
-        qoRootInstance->ConvertForManaged(qoLocalRootInstance);
+        IFC_RETURN(qoRootInstance->ConvertForManaged(qoLocalRootInstance));
     }
 
     IFC_RETURN(FxCallbacks::XamlManagedRuntimeRPInvokes_CreateFromValue(NULL, inTextSyntaxToken, &qoStackValue, inProperty, &qoLocalRootInstance, qo.get()));

@@ -54,20 +54,20 @@ namespace DirectUI
 
             // Event registration tokens for events attached to template parts
             // so the handlers can be removed if we apply a new template.
-            EventRegistrationToken m_ElementHorizontalThumbDragStartedToken;
-            EventRegistrationToken m_ElementHorizontalThumbDragDeltaToken;
-            EventRegistrationToken m_ElementHorizontalThumbDragCompletedToken;
-            EventRegistrationToken m_ElementHorizontalLargeDecreaseClickToken;
-            EventRegistrationToken m_ElementHorizontalLargeIncreaseClickToken;
-            EventRegistrationToken m_ElementHorizontalSmallDecreaseClickToken;
-            EventRegistrationToken m_ElementHorizontalSmallIncreaseClickToken;
-            EventRegistrationToken m_ElementVerticalThumbDragStartedToken;
-            EventRegistrationToken m_ElementVerticalThumbDragDeltaToken;
-            EventRegistrationToken m_ElementVerticalThumbDragCompletedToken;
-            EventRegistrationToken m_ElementVerticalLargeDecreaseClickToken;
-            EventRegistrationToken m_ElementVerticalLargeIncreaseClickToken;
-            EventRegistrationToken m_ElementVerticalSmallDecreaseClickToken;
-            EventRegistrationToken m_ElementVerticalSmallIncreaseClickToken;
+            EventRegistrationToken m_ElementHorizontalThumbDragStartedToken{};
+            EventRegistrationToken m_ElementHorizontalThumbDragDeltaToken{};
+            EventRegistrationToken m_ElementHorizontalThumbDragCompletedToken{};
+            EventRegistrationToken m_ElementHorizontalLargeDecreaseClickToken{};
+            EventRegistrationToken m_ElementHorizontalLargeIncreaseClickToken{};
+            EventRegistrationToken m_ElementHorizontalSmallDecreaseClickToken{};
+            EventRegistrationToken m_ElementHorizontalSmallIncreaseClickToken{};
+            EventRegistrationToken m_ElementVerticalThumbDragStartedToken{};
+            EventRegistrationToken m_ElementVerticalThumbDragDeltaToken{};
+            EventRegistrationToken m_ElementVerticalThumbDragCompletedToken{};
+            EventRegistrationToken m_ElementVerticalLargeDecreaseClickToken{};
+            EventRegistrationToken m_ElementVerticalLargeIncreaseClickToken{};
+            EventRegistrationToken m_ElementVerticalSmallDecreaseClickToken{};
+            EventRegistrationToken m_ElementVerticalSmallIncreaseClickToken{};
             
             // value that indicates that we are currently blocking indicators from showing
             BOOLEAN m_blockIndicators;

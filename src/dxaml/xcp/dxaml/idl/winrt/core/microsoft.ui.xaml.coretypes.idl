@@ -39,9 +39,9 @@ cpp_quote("#undef GetCurrentTime")
 
 namespace Microsoft.UI.Xaml
 {
-    [contractversion(6)]
+    [contractversion(7)]
     apicontract WinUIContract{};
-    [contractversion(6)]
+    [contractversion(7)]
     apicontract XamlContract{};
 }
 
@@ -523,15 +523,6 @@ namespace Microsoft.UI.Xaml.Controls
     {
         Top,
         Left,
-    };
-
-    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-    [feature(Feature_InputValidation)]
-    [webhosthidden]
-    enum InputValidationErrorEventAction
-    {
-        Added,
-        Removed,
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
@@ -1343,7 +1334,6 @@ namespace Microsoft.UI.Xaml
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Automation.Text.TextUnit>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.BackgroundSizing>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.ControlHeaderPlacement>;
-        interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.InputValidationErrorEventAction>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.LightDismissOverlayMode>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.RequiresPointer>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.Primitives.AnimationDirection>;
@@ -1903,12 +1893,12 @@ namespace Microsoft.UI.Xaml
         Microsoft.UI.Xaml.Controls.Control Control;
     };
 
-    [contract(Microsoft.UI.Xaml.WinUIContract, 6)]
+    [contract(Microsoft.UI.Xaml.WinUIContract, 7)]
     [feature(Feature_ExperimentalApi)]
     [webhosthidden]
     unsealed runtimeclass XamlIsland
         : [feature(Feature_ExperimentalApi)]
-        [contract(Microsoft.UI.Xaml.WinUIContract, 6)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 7)]
         Windows.Foundation.IClosable
     {
         [method_name("CreateInstance")] XamlIsland();
@@ -1930,6 +1920,14 @@ namespace Microsoft.UI.Xaml
         [contract(Microsoft.UI.Xaml.WinUIContract, 5)]
         {
             Microsoft.UI.Content.ContentIslandEnvironment ContentIslandEnvironment{ get; };
+        }
+    
+        [contract(Microsoft.UI.Xaml.WinUIContract, 7)]
+        [feature(Feature_ExperimentalApi)]
+        [interface_name("Microsoft.UI.Xaml.IXamlRootFeature_ExperimentalApi")]
+        {
+            Microsoft.UI.Content.ContentCoordinateConverter CoordinateConverter{ get; };
+            Microsoft.UI.Content.ContentIsland TryGetContentIsland();
         }
     };
 

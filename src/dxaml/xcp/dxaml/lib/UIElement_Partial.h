@@ -41,10 +41,6 @@ namespace DirectUI
         friend class VirtualizationInformation;
         friend class AutomaticDragHelper;
 
-        // Grant XamlDirect class friend access so it can call
-        // EventAddHandlerByIndex and EventRemoveHandlerByIndex
-        friend class XamlDirect;
-
         public:
             // Initializes a new instance of the UIElement class.
             UIElement();
@@ -404,6 +400,7 @@ namespace DirectUI
                 _In_ xaml::IRoutedEvent* routedEvent,
                 _In_ IInspectable* pEventHandler);
 
+#pragma warning( suppress : 6101 ) // Out params don't get set, but this copy of the function should never be called.
             // Tab navigation virtual override methods to interact with Focus Manager.
             virtual _Check_return_ HRESULT ProcessTabStopOverride(
                 _In_opt_ DependencyObject* pFocusedElement,
@@ -416,6 +413,7 @@ namespace DirectUI
                 RRETURN(S_OK);
             }
 
+#pragma warning( suppress : 6101 ) // Out params don't get set, but this copy of the function should never be called.
             virtual _Check_return_ HRESULT ProcessCandidateTabStopOverride(
                 _In_opt_ DependencyObject* pFocusedElement,
                 _In_ DependencyObject* pCandidateTabStopElement,
@@ -427,12 +425,14 @@ namespace DirectUI
                 RRETURN(S_OK);
             }
 
+#pragma warning( suppress : 6101 ) // Out params don't get set, but this copy of the function should never be called.
             virtual _Check_return_ HRESULT GetNextTabStopOverride(
                 _Outptr_ DependencyObject** ppNextTabStop)
             {
                 RRETURN(S_OK);
             }
 
+#pragma warning( suppress : 6101 ) // Out params don't get set, but this copy of the function should never be called.
             virtual _Check_return_ HRESULT GetPreviousTabStopOverride(
                 _Outptr_ DependencyObject** ppPreviousTabStop)
             {
@@ -459,12 +459,14 @@ namespace DirectUI
                 m_animateIfBringIntoView = TRUE;
             }
 
+#pragma warning( suppress : 6101 ) // Out params don't get set, but this copy of the function should never be called.
             virtual _Check_return_ HRESULT GetFirstFocusableElementOverride(
                 _Outptr_ DependencyObject** ppFirstFocusable)
             {
                 RRETURN(S_OK);
             }
 
+#pragma warning( suppress : 6101 ) // Out params don't get set, but this copy of the function should never be called.
             virtual _Check_return_ HRESULT GetLastFocusableElementOverride(
                 _Outptr_ DependencyObject** ppLastFocusable)
             {
@@ -830,7 +832,7 @@ namespace DirectUI
                 void SetBounds(_In_ const wf::Rect& bounds);
 
                 ctl::ComPtr<IInspectable> GetItem() const;
-                _Check_return_ HRESULT SetItem(_In_ IInspectable* pDataitem);
+                _Check_return_ HRESULT SetItem(_In_opt_ IInspectable* pDataitem);
 
                 void SetIsRealized(bool isRealized);
                 bool GetIsRealized() const { return m_isRealized; }

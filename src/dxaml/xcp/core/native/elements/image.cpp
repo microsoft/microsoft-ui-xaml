@@ -149,7 +149,7 @@ CImage::Shutdown( )
         ReleaseInterface( m_pImageSharingEngine );
 
         // We've shutdown the sharing engine, so update the casting source object (if exists) to reflect that
-        UpdateCastingSource();
+        IFCFAILFAST(UpdateCastingSource());
     }
 
     CImageBase::Shutdown();

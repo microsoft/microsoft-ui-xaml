@@ -51,6 +51,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_BaselineOffset(_Out_ DOUBLE* pV
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<TextBlock*>(this)->get_BaselineOffsetImpl(pValue));
 Cleanup:
@@ -69,6 +70,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_ContentEnd(_Outptr_result_maybe
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<TextBlock*>(this)->get_ContentEndImpl(ppValue));
 Cleanup:
@@ -78,6 +80,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_ContentStart(_Outptr_result_may
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<TextBlock*>(this)->get_ContentStartImpl(ppValue));
 Cleanup:
@@ -239,6 +242,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_SelectionEnd(_Outptr_result_may
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<TextBlock*>(this)->get_SelectionEndImpl(ppValue));
 Cleanup:
@@ -266,6 +270,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_SelectionStart(_Outptr_result_m
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<TextBlock*>(this)->get_SelectionStartImpl(ppValue));
 Cleanup:
@@ -533,6 +538,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::GetAlphaMask(_Outptr_ ABI::Microsof
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "TextBlock_GetAlphaMask", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextBlock*>(this)->GetAlphaMaskImpl(ppReturnValue));

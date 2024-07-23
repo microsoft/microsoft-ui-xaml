@@ -471,10 +471,8 @@ namespace SimpleProperty
 
         static void DestroyAllProperties();
 
-#if DBG
         // Sanity check to verify NotifyDestroyed has been called.
 
         static bool AreAllCleanedUp(const_objid_t obj);
-#endif
     };
 }

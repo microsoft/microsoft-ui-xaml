@@ -213,7 +213,7 @@ namespace DirectUI
             ReleaseInterface(current);
         }
 
-        TrackerPtr<T_abi_ptrRemoved> m_current;
+        TrackerPtr<T_abi_ptrRemoved> m_current{};
     };
 
     template<>
@@ -234,7 +234,7 @@ namespace DirectUI
         }
 
     private:
-        FLOAT m_current;
+        FLOAT m_current{};
     };
 
     template<>
@@ -255,7 +255,7 @@ namespace DirectUI
         }
 
     private:
-        DOUBLE m_current;
+        DOUBLE m_current{};
     };
 
     template<>
@@ -276,7 +276,7 @@ namespace DirectUI
         }
 
     private:
-        wf::Point m_current;
+        wf::Point m_current{};
     };
 
 
@@ -298,7 +298,7 @@ namespace DirectUI
         }
 
     private:
-        xaml_docs::TextRange m_current;
+        xaml_docs::TextRange m_current{};
     };
 #pragma endregion
 
@@ -744,6 +744,7 @@ namespace DirectUI
             CValue boxedValue;
             XINT32 coreIndex = -1;
             BoxerBuffer buffer;
+            *index = 0;
             DependencyObject* pMOR = NULL;
 
             IFC(this->CheckThread());
@@ -1033,6 +1034,7 @@ namespace DirectUI
             IFCPTR(index);
             IFCPTR(found);
 
+            *index = 0;
             *found = FALSE;
 
             if (value != NULL)
@@ -1201,7 +1203,7 @@ namespace DirectUI
             m_current = current;
         }
 
-        T m_current;
+        T m_current{};
     };
 
     template <typename T>

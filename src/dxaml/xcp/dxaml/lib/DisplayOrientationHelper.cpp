@@ -79,7 +79,7 @@ _Check_return_ HRESULT
 }
 
 _Check_return_ HRESULT 
-    GetIslandDisplayOrientation(_In_ CDependencyObject* dependencyObject, _Out_ ixp::ContentDisplayOrientations rotationValue)
+    GetIslandDisplayOrientation(_In_ CDependencyObject* dependencyObject, _Out_ ixp::ContentDisplayOrientations& rotationValue)
     {
         IFCPTR_RETURN(dependencyObject);
         CXamlIslandRoot* xamlIslandRoot = VisualTree::GetXamlIslandRootForElement(dependencyObject);

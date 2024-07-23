@@ -56,15 +56,15 @@ namespace DirectUI
             static constexpr UINT m_mousePlacementVerticalOffset = 11;  // Mouse placement vertical offset
 
         public:
-            EventRegistrationToken m_ownerPointerEnteredToken;
-            EventRegistrationToken m_ownerPointerExitedToken;
-            EventRegistrationToken m_ownerPointerCaptureLostToken;
-            EventRegistrationToken m_ownerPointerCanceledToken;
-            EventRegistrationToken m_ownerGotFocusToken;
-            EventRegistrationToken m_ownerLostFocusToken;
-            BOOLEAN m_bInputEventsHookedUp;
-            AutomaticToolTipInputMode m_inputMode;
-            BOOLEAN m_isSliderThumbToolTip;
+            EventRegistrationToken m_ownerPointerEnteredToken{};
+            EventRegistrationToken m_ownerPointerExitedToken{};
+            EventRegistrationToken m_ownerPointerCaptureLostToken{};
+            EventRegistrationToken m_ownerPointerCanceledToken{};
+            EventRegistrationToken m_ownerGotFocusToken{};
+            EventRegistrationToken m_ownerLostFocusToken{};
+            BOOLEAN m_bInputEventsHookedUp{};
+            AutomaticToolTipInputMode m_inputMode{};
+            BOOLEAN m_isSliderThumbToolTip{};
 
             // Top - Default PlacementMode for ToolTips in Jupiter.
             static const xaml_primitives::PlacementMode DefaultPlacementMode =

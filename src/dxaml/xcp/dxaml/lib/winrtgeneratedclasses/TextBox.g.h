@@ -272,18 +272,12 @@ namespace DirectUI
 #if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
         , public ABI::Microsoft::UI::Xaml::Controls::ITextBoxStaticsFeature_HeaderPlacement
 #endif
-#if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
-        , public ABI::Microsoft::UI::Xaml::Controls::ITextBoxStaticsFeature_InputValidation
-#endif
     {
         BEGIN_INTERFACE_MAP(TextBoxFactory, ctl::BetterAggregableCoreObjectActivationFactory)
             INTERFACE_ENTRY(TextBoxFactory, ABI::Microsoft::UI::Xaml::Controls::ITextBoxFactory)
             INTERFACE_ENTRY(TextBoxFactory, ABI::Microsoft::UI::Xaml::Controls::ITextBoxStatics)
 #if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
             INTERFACE_ENTRY(TextBoxFactory, ABI::Microsoft::UI::Xaml::Controls::ITextBoxStaticsFeature_HeaderPlacement)
-#endif
-#if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
-            INTERFACE_ENTRY(TextBoxFactory, ABI::Microsoft::UI::Xaml::Controls::ITextBoxStaticsFeature_InputValidation)
 #endif
         END_INTERFACE_MAP(TextBoxFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
@@ -331,9 +325,9 @@ namespace DirectUI
         
         
         
-        IFACEMETHOD(get_ErrorTemplateProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(get_InputValidationModeProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(get_InputValidationKindProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) FEATURE_INPUTVALIDATION_OVERRIDE;
+        
+        
+        
         
 
         // Attached properties.

@@ -59,6 +59,7 @@ IFACEMETHODIMP DirectUI::MenuFlyoutSubItemGenerated::get_IsSubMenuOpen(_Out_ BOO
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<MenuFlyoutSubItem*>(this)->get_IsSubMenuOpenImpl(pValue));
 Cleanup:
@@ -68,6 +69,7 @@ IFACEMETHODIMP DirectUI::MenuFlyoutSubItemGenerated::get_IsSubMenuPositionedAbso
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<MenuFlyoutSubItem*>(this)->get_IsSubMenuPositionedAbsolutelyImpl(pValue));
 Cleanup:
@@ -86,6 +88,7 @@ IFACEMETHODIMP DirectUI::MenuFlyoutSubItemGenerated::get_ParentOwner(_Outptr_res
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<MenuFlyoutSubItem*>(this)->get_ParentOwnerImpl(ppValue));
 Cleanup:

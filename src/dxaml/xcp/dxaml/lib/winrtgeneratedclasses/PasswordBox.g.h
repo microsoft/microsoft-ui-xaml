@@ -186,17 +186,11 @@ namespace DirectUI
 #if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
         , public ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxStaticsFeature_HeaderPlacement
 #endif
-#if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
-        , public ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxStaticsFeature_InputValidation
-#endif
     {
         BEGIN_INTERFACE_MAP(PasswordBoxFactory, ctl::BetterCoreObjectActivationFactory)
             INTERFACE_ENTRY(PasswordBoxFactory, ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxStatics)
 #if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
             INTERFACE_ENTRY(PasswordBoxFactory, ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxStaticsFeature_HeaderPlacement)
-#endif
-#if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
-            INTERFACE_ENTRY(PasswordBoxFactory, ABI::Microsoft::UI::Xaml::Controls::IPasswordBoxStaticsFeature_InputValidation)
 #endif
         END_INTERFACE_MAP(PasswordBoxFactory, ctl::BetterCoreObjectActivationFactory)
 
@@ -225,9 +219,9 @@ namespace DirectUI
         
         
         
-        IFACEMETHOD(get_ErrorTemplateProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(get_InputValidationModeProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(get_InputValidationKindProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) FEATURE_INPUTVALIDATION_OVERRIDE;
+        
+        
+        
         
 
         // Attached properties.

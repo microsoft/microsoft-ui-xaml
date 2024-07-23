@@ -62,6 +62,7 @@ IFACEMETHODIMP DirectUI::SelectorItemGenerated::get_IsSelected(_Out_ BOOLEAN* pV
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<SelectorItem*>(this)->get_IsSelectedImpl(pValue));
 Cleanup:

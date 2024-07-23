@@ -1044,7 +1044,7 @@ MenuFlyoutSubItem::QueueRefreshItemsSource()
 
                 if (thisMenuFlyoutSubItem)
                 {
-                    thisMenuFlyoutSubItem.Cast<MenuFlyoutSubItem>()->RefreshItemsSource();
+                    IFC_RETURN(thisMenuFlyoutSubItem.Cast<MenuFlyoutSubItem>()->RefreshItemsSource());
                 }
 
                 return S_OK;

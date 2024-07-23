@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::get_TargetElement(_Out
     CUIElement* pValueCore = nullptr;
 
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CBringIntoViewRequestedEventArgs*>(pCoreEventArgsNoRef)->get_TargetElement(&pValueCore));
@@ -86,6 +87,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::get_AnimationDesired(_
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CBringIntoViewRequestedEventArgs*>(pCoreEventArgsNoRef)->get_AnimationDesired(&valueCore));
@@ -119,6 +121,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::get_TargetRect(_Out_ A
     ABI::Windows::Foundation::Rect valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CBringIntoViewRequestedEventArgs*>(pCoreEventArgsNoRef)->get_TargetRect(&valueCore));
@@ -152,6 +155,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::get_HorizontalAlignmen
     DOUBLE valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CBringIntoViewRequestedEventArgs*>(pCoreEventArgsNoRef)->get_HorizontalAlignmentRatio(&valueCore));
@@ -169,6 +173,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::get_VerticalAlignmentR
     DOUBLE valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CBringIntoViewRequestedEventArgs*>(pCoreEventArgsNoRef)->get_VerticalAlignmentRatio(&valueCore));
@@ -186,6 +191,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::get_HorizontalOffset(_
     DOUBLE valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CBringIntoViewRequestedEventArgs*>(pCoreEventArgsNoRef)->get_HorizontalOffset(&valueCore));
@@ -219,6 +225,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::get_VerticalOffset(_Ou
     DOUBLE valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CBringIntoViewRequestedEventArgs*>(pCoreEventArgsNoRef)->get_VerticalOffset(&valueCore));
@@ -252,6 +259,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::get_Handled(_Out_ BOOL
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CBringIntoViewRequestedEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));

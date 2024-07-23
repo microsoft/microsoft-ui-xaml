@@ -11,7 +11,7 @@
     MinWidth=160
     Name=OverflowContentRoot
     Padding=0,0,0,0
-    RenderSize=160,170
+    RenderSize=160,164
     Visibility=Visible
   [Microsoft.UI.Xaml.Controls.Grid]
       Background=[NULL]
@@ -25,7 +25,7 @@
       Margin=0,0,0,0
       Name=SecondaryItemsControlShadowWrapper
       Padding=0,0,0,0
-      RenderSize=160,106
+      RenderSize=160,100
       Visibility=Visible
     [Microsoft.UI.Xaml.Controls.CommandBarOverflowPresenter]
         Background=Microsoft.UI.Xaml.Media.AcrylicBrush
@@ -40,7 +40,7 @@
         Margin=0,0,0,0
         Name=SecondaryItemsControl
         Padding=0,0,0,0
-        RenderSize=160,106
+        RenderSize=160,100
         Visibility=Visible
       [Microsoft.UI.Xaml.Controls.Grid]
           Background=Microsoft.UI.Xaml.Media.AcrylicBrush
@@ -54,7 +54,7 @@
           Margin=0,0,0,0
           Name=LayoutRoot
           Padding=0,0,0,0
-          RenderSize=160,106
+          RenderSize=160,100
           Visibility=Visible
         [Microsoft.UI.Xaml.Controls.ScrollViewer]
             Background=#00FFFFFF
@@ -68,7 +68,7 @@
             Foreground=#E4000000
             Margin=0,0,0,0
             Padding=0,0,0,0
-            RenderSize=158,104
+            RenderSize=158,98
             Visibility=Visible
           [Microsoft.UI.Xaml.Controls.Border]
               Background=[NULL]
@@ -82,7 +82,7 @@
               Margin=0,0,0,0
               Name=Root
               Padding=0,0,0,0
-              RenderSize=158,104
+              RenderSize=158,98
               Visibility=Visible
             [Microsoft.UI.Xaml.Controls.Grid]
                 Background=#00FFFFFF
@@ -95,7 +95,7 @@
                 FocusVisualSecondaryThickness=1,1,1,1
                 Margin=0,0,0,0
                 Padding=0,0,0,0
-                RenderSize=158,104
+                RenderSize=158,98
                 Visibility=Visible
               [Microsoft.UI.Xaml.Controls.ScrollContentPresenter]
                   Background=[NULL]
@@ -110,7 +110,7 @@
                   Margin=0,0,0,0
                   Name=ScrollContentPresenter
                   Padding=0,0,0,0
-                  RenderSize=158,104
+                  RenderSize=158,98
                   Visibility=Visible
                 [Microsoft.UI.Xaml.Controls.ItemsPresenter]
                     FocusVisualPrimaryBrush=#E4000000
@@ -120,7 +120,7 @@
                     Margin=0,4,0,4
                     Name=ItemsPresenter
                     Padding=0,0,0,0
-                    RenderSize=158,96
+                    RenderSize=158,90
                     Visibility=Visible
                   [Microsoft.UI.Xaml.Controls.ContentControl]
                       Background=[NULL]
@@ -147,7 +147,7 @@
                       FocusVisualSecondaryThickness=1,1,1,1
                       Margin=0,0,0,0
                       Padding=0,0,0,0
-                      RenderSize=158,96
+                      RenderSize=158,90
                       Visibility=Visible
                     [Microsoft.UI.Xaml.Controls.AppBarButton]
                         Background=#00FFFFFF
@@ -161,7 +161,7 @@
                         Foreground=#E4000000
                         Margin=0,0,0,0
                         Padding=0,0,0,0
-                        RenderSize=158,32
+                        RenderSize=158,30
                         Visibility=Visible
                       [Microsoft.UI.Xaml.Controls.Grid]
                           Background=#00FFFFFF
@@ -175,7 +175,7 @@
                           Margin=0,0,0,0
                           Name=Root
                           Padding=0,0,0,0
-                          RenderSize=158,32
+                          RenderSize=158,30
                           Visibility=Visible
                         [Microsoft.UI.Xaml.Controls.Border]
                             Background=#00FFFFFF
@@ -189,7 +189,7 @@
                             Margin=4,0,4,0
                             Name=AppBarButtonInnerBorder
                             Padding=0,0,0,0
-                            RenderSize=150,32
+                            RenderSize=150,30
                             Visibility=Visible
                         [Microsoft.UI.Xaml.Controls.Grid]
                             Background=[NULL]
@@ -203,7 +203,7 @@
                             Margin=0,0,0,0
                             Name=ContentRoot
                             Padding=0,0,0,0
-                            RenderSize=158,32
+                            RenderSize=158,30
                             Visibility=Visible
                           [Microsoft.UI.Xaml.Controls.Viewbox]
                               FocusVisualPrimaryBrush=#E4000000
@@ -263,7 +263,7 @@
                               Margin=38,0,12,0
                               Name=OverflowTextLabel
                               Padding=0,5,0,8
-                              RenderSize=108,32
+                              RenderSize=108,30
                               Visibility=Visible
                           [Microsoft.UI.Xaml.Controls.TextBlock]
                               FocusVisualPrimaryBrush=#E4000000
@@ -322,7 +322,7 @@
                         Foreground=#E4000000
                         Margin=0,0,0,0
                         Padding=0,0,0,0
-                        RenderSize=158,32
+                        RenderSize=158,30
                         Visibility=Visible
                       [Microsoft.UI.Xaml.Controls.Grid]
                           Background=#00FFFFFF
@@ -336,7 +336,7 @@
                           Margin=0,0,0,0
                           Name=Root
                           Padding=0,0,0,0
-                          RenderSize=158,32
+                          RenderSize=158,30
                           Visibility=Visible
                         [Microsoft.UI.Xaml.Controls.Border]
                             Background=#00FFFFFF
@@ -350,7 +350,7 @@
                             Margin=4,0,4,0
                             Name=AppBarButtonInnerBorder
                             Padding=0,0,0,0
-                            RenderSize=150,32
+                            RenderSize=150,30
                             Visibility=Visible
                         [Microsoft.UI.Xaml.Controls.Grid]
                             Background=[NULL]
@@ -364,7 +364,7 @@
                             Margin=0,0,0,0
                             Name=ContentRoot
                             Padding=0,0,0,0
-                            RenderSize=158,32
+                            RenderSize=158,30
                             Visibility=Visible
                           [Microsoft.UI.Xaml.Controls.Viewbox]
                               FocusVisualPrimaryBrush=#E4000000
@@ -424,7 +424,7 @@
                               Margin=38,0,12,0
                               Name=OverflowTextLabel
                               Padding=0,5,0,8
-                              RenderSize=108,32
+                              RenderSize=108,30
                               Visibility=Visible
                           [Microsoft.UI.Xaml.Controls.TextBlock]
                               FocusVisualPrimaryBrush=#E4000000
@@ -483,7 +483,7 @@
                         Foreground=#E4000000
                         Margin=0,0,0,0
                         Padding=0,0,0,0
-                        RenderSize=158,32
+                        RenderSize=158,30
                         Visibility=Visible
                       [Microsoft.UI.Xaml.Controls.Grid]
                           Background=#00FFFFFF
@@ -497,7 +497,7 @@
                           Margin=0,0,0,0
                           Name=Root
                           Padding=0,0,0,0
-                          RenderSize=158,32
+                          RenderSize=158,30
                           Visibility=Visible
                         [Microsoft.UI.Xaml.Controls.Border]
                             Background=#00FFFFFF
@@ -511,7 +511,7 @@
                             Margin=4,0,4,0
                             Name=AppBarToggleButtonInnerBorder
                             Padding=0,0,0,0
-                            RenderSize=150,32
+                            RenderSize=150,30
                             Visibility=Visible
                         [Microsoft.UI.Xaml.Controls.Grid]
                             Background=[NULL]
@@ -525,7 +525,7 @@
                             Margin=0,0,0,0
                             Name=ContentRoot
                             Padding=0,0,0,0
-                            RenderSize=158,32
+                            RenderSize=158,30
                             Visibility=Visible
                           [Microsoft.UI.Xaml.Controls.TextBlock]
                               FocusVisualPrimaryBrush=#E4000000
@@ -598,7 +598,7 @@
                               Margin=38,0,12,0
                               Name=OverflowTextLabel
                               Padding=0,5,0,8
-                              RenderSize=108,32
+                              RenderSize=108,30
                               Visibility=Visible
                           [Microsoft.UI.Xaml.Controls.TextBlock]
                               FocusVisualPrimaryBrush=#E4000000
@@ -636,7 +636,7 @@
                   FocusVisualSecondaryThickness=1,1,1,1
                   Margin=0,0,0,0
                   Padding=0,0,0,0
-                  RenderSize=158,104
+                  RenderSize=158,98
                   Visibility=Visible
               [Microsoft.UI.Xaml.Controls.Grid]
                   Background=[NULL]

@@ -1,0 +1,272 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.ListViewAnchoringPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <local:TestPage.Resources>
+        <ItemsPanelTemplate x:Key="stackPanelItemsPanelTemplate">
+            <StackPanel
+                x:Name="stackPanel"
+                Orientation="Vertical"/>
+        </ItemsPanelTemplate>
+        <ItemsPanelTemplate x:Key="itemsWrapGridItemsPanelTemplate">
+            <ItemsWrapGrid
+                x:Name="itemsWrapGrid"
+                ItemHeight="150"
+                ItemWidth="350"
+                MaximumRowsOrColumns="2"
+                Orientation="Horizontal"/>
+        </ItemsPanelTemplate>
+    </local:TestPage.Resources>
+    
+    <Grid x:Name="rootGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+        RowDefinitions="*, Auto, Auto, Auto, Auto, Auto, Auto"
+        ColumnDefinitions="*, Auto, Auto">
+        <Grid
+            Margin="4"
+            Grid.RowSpan="6"
+            Background="LightGray">
+            <ListView x:Name="listView"
+                Background="Gray">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsStackPanel
+                            VerticalAlignment="Top"
+                            ItemsUpdatingScrollMode="KeepItemsInView"/>
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <ListView.GroupStyle>
+                    <GroupStyle>
+                        <GroupStyle.HeaderTemplate>
+                            <DataTemplate>
+                                <TextBlock Height="48" FontSize="18" FontWeight="Bold" Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </GroupStyle.HeaderTemplate>
+                    </GroupStyle>
+                </ListView.GroupStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Border
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Top"
+                            Background="White"
+                            BorderThickness="1"
+                            BorderBrush="Black"
+                            CornerRadius="4"
+                            Height="100">
+                            <TextBlock
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Stretch"
+                                Text="{Binding Id}"
+                                FontSize="40"
+                                MaxLines="0"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="Wrap"/>
+                        </Border>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.ItemContainerTransitions>
+                    <TransitionCollection/>
+                </ListView.ItemContainerTransitions>
+            </ListView>
+        </Grid>
+        
+        <Grid
+            Margin="4"
+            Grid.Column="1"
+            VerticalAlignment="Top"
+            RowDefinitions="Auto, Auto"
+            ColumnDefinitions="Auto, Auto, Auto, Auto">
+
+            <TextBlock Text="ItemsStackPanel Properties" Foreground="Red" Grid.ColumnSpan="4"/>
+            
+            <TextBlock Text="ItemsUpdatingScrollMode:" Grid.Row="1" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbItemsStackPanelItemsUpdatingScrollMode" Width="175" Grid.Row="1" Grid.Column="1" Margin="1" VerticalAlignment="Center" SelectedIndex="0">
+                <ComboBoxItem>KeepItemsInView</ComboBoxItem>
+                <ComboBoxItem>KeepScrollOffset</ComboBoxItem>
+                <ComboBoxItem>KeepLastItemInView</ComboBoxItem>
+            </ComboBox>
+            <Button x:Name="btnGetItemsStackPanelItemsUpdatingScrollMode" Content="G" Margin="1" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetItemsStackPanelItemsUpdatingScrollMode_Click"/>
+            <Button x:Name="btnSetItemsStackPanelItemsUpdatingScrollMode" Content="S" Margin="1" Grid.Row="1" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetItemsStackPanelItemsUpdatingScrollMode_Click"/>
+        </Grid>
+
+        <Grid
+            Margin="4"
+            Grid.Column="1"
+            Grid.Row="1"
+            VerticalAlignment="Top"
+            RowDefinitions="Auto, Auto, Auto, Auto, Auto"
+            ColumnDefinitions="Auto, Auto, Auto, Auto">
+
+            <TextBlock Text="ModernCollectionBasePanel Properties" Foreground="Red" Grid.ColumnSpan="4"/>
+
+            <TextBlock Text="GroupPadding:" Grid.Row="1" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtModernCollectionBasePanelGroupPadding" Text="0,0,0,0" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            <Button x:Name="btnGetModernCollectionBasePanelGroupPadding" Content="G" Margin="1" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetModernCollectionBasePanelGroupPadding_Click"/>
+            <Button x:Name="btnSetModernCollectionBasePanelGroupPadding" Content="S" Margin="1" Grid.Row="1" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetModernCollectionBasePanelGroupPadding_Click"/>
+
+            <TextBlock Text="VerticalAlignment:" Grid.Row="2" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbModernCollectionBasePanelVerticalAlignment" Width="175" Grid.Row="2" Grid.Column="1" Margin="1" VerticalAlignment="Center" SelectedIndex="0">
+                <ComboBoxItem>Top</ComboBoxItem>
+                <ComboBoxItem>Center</ComboBoxItem>
+                <ComboBoxItem>Bottom</ComboBoxItem>
+                <ComboBoxItem>Stretch</ComboBoxItem>
+            </ComboBox>
+            <Button x:Name="btnGetModernCollectionBasePanelVerticalAlignment" Content="G" Margin="1" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetModernCollectionBasePanelVerticalAlignment_Click"/>
+            <Button x:Name="btnSetModernCollectionBasePanelVerticalAlignment" Content="S" Margin="1" Grid.Row="2" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetModernCollectionBasePanelVerticalAlignment_Click"/>
+
+            <TextBlock Text="GroupHeaderPlacement:" Grid.Row="3" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbModernCollectionBasePanelGroupHeaderPlacement" Grid.Row="3" Grid.Column="1"
+                HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="0" MinWidth="125">
+                <ComboBoxItem>Top</ComboBoxItem>
+                <ComboBoxItem>Left</ComboBoxItem>
+            </ComboBox>
+            <Button x:Name="btnGetModernCollectionBasePanelGroupHeaderPlacement" Content="G" Margin="1" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetModernCollectionBasePanelGroupHeaderPlacement_Click"/>
+            <Button x:Name="btnSetModernCollectionBasePanelGroupHeaderPlacement" Content="S" Margin="1" Grid.Row="3" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetModernCollectionBasePanelGroupHeaderPlacement_Click"/>
+
+            <TextBlock Text="AreStickyGroupHeadersEnabled:" Grid.Row="4" VerticalAlignment="Center"/>
+            <CheckBox x:Name="chkModernCollectionBasePanelAreStickyGroupHeadersEnabled"
+                Checked="ChkModernCollectionBasePanelAreStickyGroupHeadersEnabled_IsCheckedChanged"
+                Unchecked="ChkModernCollectionBasePanelAreStickyGroupHeadersEnabled_IsCheckedChanged"
+                IsChecked="True"
+                IsThreeState="False"
+                Margin="2,0,0,0"
+                Grid.Row="4"
+                Grid.Column="1"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"/>
+        </Grid>
+
+        <Grid
+            Margin="4"
+            Grid.Column="1"
+            Grid.Row="2"
+            VerticalAlignment="Top"
+            RowDefinitions="Auto, Auto"
+            ColumnDefinitions="Auto, Auto, Auto, Auto">
+
+            <TextBlock Text="StackPanel Properties" Foreground="Red" Grid.ColumnSpan="4"/>
+
+            <TextBlock Text="VerticalAlignment:" Grid.Row="1" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbStackPanelVerticalAlignment" Width="175" Grid.Row="1" Grid.Column="1" Margin="1" VerticalAlignment="Center" SelectedIndex="2">
+                <ComboBoxItem>Top</ComboBoxItem>
+                <ComboBoxItem>Center</ComboBoxItem>
+                <ComboBoxItem>Bottom</ComboBoxItem>
+                <ComboBoxItem>Stretch</ComboBoxItem>
+            </ComboBox>
+            <Button x:Name="btnGetStackPanelVerticalAlignment" Content="G" Margin="1" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetStackPanelVerticalAlignment_Click"/>
+            <Button x:Name="btnSetStackPanelVerticalAlignment" Content="S" Margin="1" Grid.Row="1" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetStackPanelVerticalAlignment_Click"/>
+        </Grid>
+
+        <Grid
+            Margin="4"
+            Grid.Column="1"
+            Grid.Row="3"
+            VerticalAlignment="Top"
+            RowDefinitions="Auto, Auto, Auto, Auto, Auto"
+            ColumnDefinitions="Auto, Auto, Auto, Auto">
+
+            <TextBlock Text="ListView Properties" Foreground="Red" Grid.ColumnSpan="4"/>
+
+            <TextBlock Text="ItemsPanel:" Grid.Row="1" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbListViewItemsPanelType" Width="155" Margin="1" Grid.Row="1" Grid.Column="1"
+                HorizontalAlignment="Left" VerticalAlignment="Center" SelectedIndex="0" SelectionChanged="CmbListViewItemsPanelType_SelectionChanged">
+                <ComboBoxItem>ItemsStackPanel</ComboBoxItem>
+                <ComboBoxItem>ItemsWrapGrid</ComboBoxItem>
+                <ComboBoxItem>StackPanel</ComboBoxItem>
+            </ComboBox>
+
+            <TextBlock Text="ItemsSource:" Grid.Row="2" VerticalAlignment="Center"/>
+            <Button x:Name="btnSetListViewFlatItemsSource" Content="Set Flat" Margin="1" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Click="BtnSetListViewFlatItemsSource_Click"/>
+            <Button x:Name="btnSetListViewGroupedItemsSource" Content="Set Grouped" Margin="1" Grid.Row="2" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetListViewGroupedItemsSource_Click"/>
+            <Button x:Name="btnClearListViewItemsSource" Content="Clear" Margin="1" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center" Click="BtnClearListViewItemsSource_Click"/>
+            <Button x:Name="btnResetListViewItemsSource" Content="Reset" Margin="1" Grid.Row="3" Grid.Column="3" VerticalAlignment="Center" Click="BtnResetListViewItemsSource_Click"/>
+
+            <TextBlock Text="Size:" Grid.Row="4" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtListViewWidth" Width="100" IsReadOnly="True" Grid.Row="4" Grid.Column="1" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtListViewHeight" Width="100" IsReadOnly="True" Grid.Row="4" Grid.Column="2" VerticalAlignment="Center"/>
+            <Button x:Name="btnGetListViewSize" Content="Get" Margin="1" Grid.Row="4" Grid.Column="3" Grid.ColumnSpan="2" VerticalAlignment="Center" Click="BtnGetListViewSize_Click"/>
+        </Grid>
+
+        <Grid
+            Margin="4"
+            Grid.Column="1"
+            Grid.Row="4"
+            VerticalAlignment="Top"
+            RowDefinitions="Auto, Auto, Auto"
+            ColumnDefinitions="Auto, Auto, Auto, Auto">
+
+            <TextBlock Text="ScrollViewer Properties" Foreground="Red" Grid.ColumnSpan="4"/>
+
+            <TextBlock Text="VerticalAnchorRatio:" Grid.Row="1" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtScrollViewerVerticalAnchorRatio" Text="0" Width="100" Margin="1" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center"/>
+            <Button x:Name="btnGetScrollViewerVerticalAnchorRatio" Content="Get" Margin="1" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewerVerticalAnchorRatio_Click"/>
+            <Button x:Name="btnSetScrollViewerVerticalAnchorRatio" Content="Set" Margin="1" Grid.Row="1" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewerVerticalAnchorRatio_Click"/>
+
+            <TextBlock Text="VerticalOffset:" Grid.Row="2" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtScrollViewerVerticalOffset" Text="0" Width="100" Margin="1" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center"/>
+            <Button x:Name="btnGetScrollViewerVerticalOffset" Content="Get" Margin="1" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewerVerticalOffset_Click"/>
+            <Button x:Name="btnSetScrollViewerVerticalOffset" Content="Set" Margin="1" Grid.Row="2" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetScrollViewerVerticalOffset_Click"/>
+        </Grid>
+
+        <Grid
+            Margin="4"
+            Grid.Column="1"
+            Grid.Row="5"
+            VerticalAlignment="Top"
+            RowDefinitions="Auto, Auto, Auto, Auto"
+            ColumnDefinitions="Auto, Auto, Auto, Auto">
+
+            <TextBlock Text="ListViewItem Properties" Foreground="Red" Grid.ColumnSpan="4"/>
+
+            <TextBlock Text="Index:" Grid.Row="1" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtListViewItemIndex" Text="0" Width="100" Margin="1" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center"/>
+
+            <TextBlock Text="ActualHeight:" Grid.Row="2" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtListViewItemActualHeight" Text="0" IsReadOnly="True" Width="100" Margin="1" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center"/>
+            <Button x:Name="btnGetListViewItemActualHeight" Content="Get" Margin="1" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetListViewItemActualHeight_Click"/>
+
+            <TextBlock Text="Height:" Grid.Row="3" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtListViewItemHeight" Text="NaN" Width="100" Margin="1" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center"/>
+            <Button x:Name="btnGetListViewItemHeight" Content="Get" Margin="1" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetListViewItemHeight_Click"/>
+            <Button x:Name="btnSetListViewItemHeight" Content="Set" Margin="1" Grid.Row="3" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetListViewItemHeight_Click"/>
+        </Grid>
+
+        <Grid
+            Margin="4"
+            Grid.Column="2"
+            Grid.RowSpan="6"
+            RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
+            ColumnDefinitions="Auto, Auto, Auto, Auto, Auto">
+
+            <TextBlock Text="Page Operations" Foreground="Red" Grid.ColumnSpan="5"/>
+
+            <TextBlock Text="Size:" Grid.Row="1" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtPageWidth" Width="100" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtPageHeight" Width="100" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center"/>
+            <Button x:Name="btnGetPageSize" Content="Get" Margin="1" Grid.Row="1" Grid.Column="3" VerticalAlignment="Center" Click="BtnGetPageSize_Click"/>
+            <Button x:Name="btnSetPageSize" Content="Set" Margin="1" Grid.Row="1" Grid.Column="4" VerticalAlignment="Center" Click="BtnSetPageSize_Click"/>
+
+            <TextBlock Text="Operation Count:" Grid.Row="2" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtPageOperationCount" Text="10" Width="100" Margin="1" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center"/>
+
+            <Button x:Name="btnPageShrinkSize" Content="Shrink Page Width &amp; Height" Margin="1" Grid.Row="3" Grid.ColumnSpan="2" VerticalAlignment="Center" Click="BtnPageShrinkSize_Click"/>
+            <Button x:Name="btnSourceInsertItem" Content="Insert ItemsSource Item" Margin="1" Grid.Row="4" Grid.ColumnSpan="2" VerticalAlignment="Center" Click="BtnSourceInsertItem_Click"/>
+            <Button x:Name="btnSourceAppendItem" Content="Append ItemsSource Item" Margin="1" Grid.Row="5" Grid.ColumnSpan="2" VerticalAlignment="Center" Click="BtnSourceAppendItem_Click"/>
+            <Button x:Name="btnSourceRemoveFirstItem" Content="Remove First ItemsSource Item" Margin="1" Grid.Row="6" Grid.ColumnSpan="2" VerticalAlignment="Center" Click="BtnSourceRemoveFirstItem_Click"/>
+            <Button x:Name="btnSourceRemoveLastItem" Content="Remove Last ItemsSource Item" Margin="1" Grid.Row="7" Grid.ColumnSpan="2" VerticalAlignment="Center" Click="BtnSourceRemoveLastItem_Click"/>
+        </Grid>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="6" Grid.ColumnSpan="3">
+            <TextBlock Text="Exception Report" VerticalAlignment="Center" Margin="2"/>
+            <Button x:Name="btnClearExceptionReport" Content="Clear Exception Report" Click="BtnClearExceptionReport_Click" Margin="2"/>
+            <TextBox x:Name="txtExceptionReport" IsReadOnly="True" Margin="2"/>
+        </StackPanel>
+    </Grid>
+</local:TestPage>

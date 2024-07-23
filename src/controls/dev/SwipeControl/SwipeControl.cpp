@@ -743,8 +743,8 @@ void SwipeControl::DismissSwipeOnAnExternalTap(winrt::Point const& tapPoint)
 
     // If point is not within the item's bounds, close it.
     if (*this && tapPoint.X < transformedElementOrigin.X || tapPoint.Y < transformedElementOrigin.Y ||
-        (tapPoint.X - transformedElementOrigin.X) > ActualWidth() ||
-        (tapPoint.Y - transformedElementOrigin.Y) > ActualHeight())
+        (static_cast<double>(tapPoint.X) - transformedElementOrigin.X) > ActualWidth() ||
+        (static_cast<double>(tapPoint.Y) - transformedElementOrigin.Y) > ActualHeight())
     {
         CloseIfNotRemainOpenExecuteItem();
     }

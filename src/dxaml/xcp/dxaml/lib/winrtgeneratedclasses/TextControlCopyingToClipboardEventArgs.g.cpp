@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::TextControlCopyingToClipboardEventArgs::get_Handled(_Ou
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CTextControlCopyingToClipboardEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));

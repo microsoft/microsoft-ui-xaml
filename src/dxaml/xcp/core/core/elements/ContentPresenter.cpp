@@ -258,7 +258,7 @@ bool CContentPresenter::ParticipatesInUnloadingContentTransition()
         {
             bool participate = false;
 
-            static_cast<CTransition*>(transition)->ParticipateInTransitions(this, DirectUI::TransitionTrigger::Unload, &participate);
+            IFCFAILFAST(static_cast<CTransition*>(transition)->ParticipateInTransitions(this, DirectUI::TransitionTrigger::Unload, &participate));
 
             if (participate)
             {
@@ -1250,8 +1250,8 @@ bool CContentPresenter::IsMaskDirty(
     const bool renderCollapsedMask,
     bool isFillBrushAnimated,
     bool isStrokeBrushAnimated,
-    _Out_ bool* pIsFillForHitTestOnly,
-    _Out_ bool* pIsStrokeForHitTestOnly
+    _Inout_ bool* pIsFillForHitTestOnly,
+    _Inout_ bool* pIsStrokeForHitTestOnly
     )
 {
     return CFrameworkElement::NWIsContentDirty()

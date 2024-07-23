@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::SvgImageSourceFailedEventArgs::get_Status(_Out_ ABI::Mi
     DirectUI::SvgImageSourceLoadStatus valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CSvgImageSourceFailedEventArgs*>(pCoreEventArgsNoRef)->get_Status(&valueCore));

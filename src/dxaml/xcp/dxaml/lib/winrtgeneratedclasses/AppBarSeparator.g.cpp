@@ -71,6 +71,7 @@ IFACEMETHODIMP DirectUI::AppBarSeparatorGenerated::get_IsInOverflow(_Out_ BOOLEA
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<AppBarSeparator*>(this)->get_IsInOverflowImpl(pValue));
 Cleanup:

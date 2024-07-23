@@ -49,6 +49,7 @@ IFACEMETHODIMP DirectUI::SelectionChangedEventArgsGenerated::get_AddedItems(_Out
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<SelectionChangedEventArgs*>(this)->get_AddedItemsImpl(ppValue));
 Cleanup:
@@ -67,6 +68,7 @@ IFACEMETHODIMP DirectUI::SelectionChangedEventArgsGenerated::get_RemovedItems(_O
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<SelectionChangedEventArgs*>(this)->get_RemovedItemsImpl(ppValue));
 Cleanup:

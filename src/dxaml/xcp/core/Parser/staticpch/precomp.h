@@ -26,7 +26,8 @@
 #include "core.h"
 
 // Data structures and smart pointers
-void* __CRTDECL operator new(size_t _Size, _Writable_bytes_(_Size) void* _Where) noexcept;
+_Ret_notnull_ _Post_writable_byte_size_(_Size) _Post_satisfies_(return == _Where)
+    void* __CRTDECL operator new(size_t _Size, _Writable_bytes_(_Size) void* _Where) noexcept;
 
 #include "DataStructureFunctionProvider.h"
 #include "DataStructureFunctionSpecializations.h"

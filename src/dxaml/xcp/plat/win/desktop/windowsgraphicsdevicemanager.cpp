@@ -8,6 +8,7 @@
 #include <GraphicsUtility.h>
 #include <DCompTreeHost.h>
 #include <RuntimeEnabledFeatures.h>
+#include "RefreshRateInfo.h"
 
 //------------------------------------------------------------------------------
 //
@@ -63,21 +64,11 @@ Cleanup:
     RRETURN(hr);
 }
 
-//------------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Basic initialization
-//
-//------------------------------------------------------------------------------
-_Check_return_ HRESULT
-WindowsGraphicsDeviceManager::Initialize()
+_Check_return_ HRESULT WindowsGraphicsDeviceManager::Initialize()
 {
-    HRESULT hr = S_OK;
-
-    IFC(DCompTreeHost::Create(this, &m_pDCompTreeHost));
-
-Cleanup:
-    RRETURN(hr);
+    IFC_RETURN(RefreshRateInfo::Create(m_refreshRateInfo.ReleaseAndGetAddressOf()));
+    IFC_RETURN(DCompTreeHost::Create(this, &m_pDCompTreeHost));
+    return S_OK;
 }
 
 //------------------------------------------------------------------------------
@@ -143,7 +134,7 @@ void WindowsGraphicsDeviceManager::CleanupCachedDeviceResources(_In_ bool cleanu
     m_cachedD3DDevice.reset();
     if (cleanupDComp)
     {
-        m_pDCompTreeHost->ReleaseResources(true /* shouldDeferClosingInteropCompostior */);
+        IFCFAILFAST(m_pDCompTreeHost->ReleaseResources(true /* shouldDeferClosingInteropCompostior */));
     }
     else
     {
@@ -304,7 +295,7 @@ WindowsGraphicsDeviceManager::DrawDummyText()
 
     Microsoft::WRL::ComPtr<IDWriteTextFormat> textFormat1;
     IFC_RETURN(dwriteFactory->CreateTextFormat(
-        L"Segoe UI",
+        L"Segoe UI",  // This font is arbitrary just to render something.
         nullptr,
         DWRITE_FONT_WEIGHT_NORMAL,
         DWRITE_FONT_STYLE_NORMAL,

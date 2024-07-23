@@ -58,6 +58,7 @@ IFACEMETHODIMP DirectUI::CalendarViewItemAutomationPeerGenerated::GetColumnHeade
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarViewItemAutomationPeer_GetColumnHeaderItems", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CalendarViewItemAutomationPeer*>(this)->GetColumnHeaderItemsImpl(pReturnValueCount, ppReturnValue));
@@ -76,6 +77,7 @@ IFACEMETHODIMP DirectUI::CalendarViewItemAutomationPeerGenerated::GetRowHeaderIt
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarViewItemAutomationPeer_GetRowHeaderItems", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CalendarViewItemAutomationPeer*>(this)->GetRowHeaderItemsImpl(pReturnValueCount, ppReturnValue));

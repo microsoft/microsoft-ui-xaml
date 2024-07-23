@@ -17,7 +17,7 @@ const bool ObjectWriterCommonRuntime::IsValidatorEnabled() const
     return m_isValidatorEnabled;
 }
 
-HRESULT ObjectWriterCommonRuntime::AddNamespacePrefix(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::AddNamespacePrefix(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const xstring_ptr& strNamespacePrefix,
     _In_ const std::shared_ptr<XamlNamespace>& spNamespace)
@@ -28,7 +28,7 @@ HRESULT ObjectWriterCommonRuntime::AddNamespacePrefix(
     return S_OK;
 }
 
-HRESULT ObjectWriterCommonRuntime::PushConstant(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::PushConstant(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spValue)
 {
@@ -38,7 +38,7 @@ HRESULT ObjectWriterCommonRuntime::PushConstant(
     return S_OK;
 }
 
-HRESULT ObjectWriterCommonRuntime::SetDirectiveProperty(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::SetDirectiveProperty(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<DirectiveProperty>& spProperty,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spInstance)
@@ -49,19 +49,19 @@ HRESULT ObjectWriterCommonRuntime::SetDirectiveProperty(
     return S_OK;
 }
 
-HRESULT ObjectWriterCommonRuntime::PushScope(_In_ const XamlLineInfo& lineInfo)
+_Check_return_ HRESULT ObjectWriterCommonRuntime::PushScope(_In_ const XamlLineInfo& lineInfo)
 {
     m_spContext->PushScope();
     return PushScopeImpl(lineInfo);
 }
 
-HRESULT ObjectWriterCommonRuntime::PopScope(_In_ const XamlLineInfo& lineInfo)
+_Check_return_ HRESULT ObjectWriterCommonRuntime::PopScope(_In_ const XamlLineInfo& lineInfo)
 {
     m_spContext->PopScope();
     return PopScopeImpl(lineInfo);
 }
 
-HRESULT ObjectWriterCommonRuntime::CreateType(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::CreateType(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlType>& spType,
     _In_ const std::shared_ptr<ObjectWriterCallbacksDelegate>& spCallback,
@@ -109,7 +109,7 @@ HRESULT ObjectWriterCommonRuntime::CreateType(
     return S_OK;
 }
 
-HRESULT ObjectWriterCommonRuntime::GetValue(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::GetValue(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spInstance,
     _In_ const std::shared_ptr<XamlProperty>& spProperty,
@@ -118,7 +118,7 @@ HRESULT ObjectWriterCommonRuntime::GetValue(
     return GetValueImpl(lineInfo, spInstance, spProperty, spValue);
 }
 
-HRESULT ObjectWriterCommonRuntime::CreateTypeWithInitialValue(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::CreateTypeWithInitialValue(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlType>& spType,
     _In_ const std::shared_ptr<ObjectWriterCallbacksDelegate>& spCallback,
@@ -128,7 +128,7 @@ HRESULT ObjectWriterCommonRuntime::CreateTypeWithInitialValue(
     return CreateTypeWithInitialValueImpl(lineInfo, spType, spCallback, spRootObjectInstance, spInstance);
 }
 
-HRESULT ObjectWriterCommonRuntime::TypeConvertValue(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::TypeConvertValue(
     _In_ const XamlLineInfo& lineInfo,
     _In_ std::shared_ptr<XamlServiceProviderContext> spContext,
     _In_ const std::shared_ptr<XamlType>& spType,
@@ -140,7 +140,7 @@ HRESULT ObjectWriterCommonRuntime::TypeConvertValue(
     return TypeConvertValueImpl(lineInfo, spContext, spType, spTextSyntaxConverter, spValue, fIsPropertyAssignment, spInstance);
 }
 
-HRESULT ObjectWriterCommonRuntime::SetValue(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::SetValue(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlType>& spType,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spInstance,
@@ -150,7 +150,7 @@ HRESULT ObjectWriterCommonRuntime::SetValue(
     return SetValueImpl(lineInfo, spType, spInstance, spProperty, spValue);
 }
 
-HRESULT ObjectWriterCommonRuntime::CheckPeerType(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::CheckPeerType(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spInstance,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spValue)
@@ -158,7 +158,7 @@ HRESULT ObjectWriterCommonRuntime::CheckPeerType(
     return CheckPeerTypeImpl(lineInfo, spInstance, spValue);
 }
 
-HRESULT ObjectWriterCommonRuntime::AddToCollection(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::AddToCollection(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlType>& spParentPropertyType,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spParentCollection,
@@ -168,7 +168,7 @@ HRESULT ObjectWriterCommonRuntime::AddToCollection(
     return AddToCollectionImpl(lineInfo, spParentPropertyType, spParentCollection, spValue, spValueType);
 }
 
-HRESULT ObjectWriterCommonRuntime::AddToDictionary(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::AddToDictionary(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spParentCollection,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spValue,
@@ -178,7 +178,7 @@ HRESULT ObjectWriterCommonRuntime::AddToDictionary(
     return AddToDictionaryImpl(lineInfo, spParentCollection, spValue, spValueType, spKey);
 }
 
-HRESULT ObjectWriterCommonRuntime::SetConnectionId(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::SetConnectionId(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spComponentConnector,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spConnectionId,
@@ -187,7 +187,7 @@ HRESULT ObjectWriterCommonRuntime::SetConnectionId(
     return SetConnectionIdImpl(lineInfo, spComponentConnector, spConnectionId, spTarget);
 }
 
-HRESULT ObjectWriterCommonRuntime::GetXBindConnector(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::GetXBindConnector(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spComponentConnector,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spConnectionId,
@@ -197,7 +197,7 @@ HRESULT ObjectWriterCommonRuntime::GetXBindConnector(
     return GetXBindConnectorImpl(lineInfo, spComponentConnector, spConnectionId, spTarget, spReturnConnector);
 }
 
-HRESULT ObjectWriterCommonRuntime::SetName(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::SetName(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spName,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spInstance,
@@ -206,7 +206,7 @@ HRESULT ObjectWriterCommonRuntime::SetName(
     return SetNameImpl(lineInfo, spName, spInstance, spNamescope);
 }
 
-HRESULT ObjectWriterCommonRuntime::GetResourcePropertyBag(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::GetResourcePropertyBag(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlServiceProviderContext>& spServiceProviderContext,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spKey,
@@ -217,7 +217,7 @@ HRESULT ObjectWriterCommonRuntime::GetResourcePropertyBag(
     return GetResourcePropertyBagImpl(lineInfo, spServiceProviderContext, spKey, spType, spObject, spPropertyBag);
 }
 
-HRESULT ObjectWriterCommonRuntime::ProvideValue(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::ProvideValue(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlServiceProviderContext>& spServiceProviderContext,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spMarkupExtension,
@@ -226,7 +226,7 @@ HRESULT ObjectWriterCommonRuntime::ProvideValue(
     return ProvideValueImpl(lineInfo, spServiceProviderContext, spMarkupExtension, spValue);
 }
 
-HRESULT ObjectWriterCommonRuntime::BeginInit(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::BeginInit(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlType>& spXamlType,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spInstance)
@@ -234,7 +234,7 @@ HRESULT ObjectWriterCommonRuntime::BeginInit(
     return BeginInitImpl(lineInfo, spXamlType, spInstance);
 }
 
-HRESULT ObjectWriterCommonRuntime::EndInit(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::EndInit(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlType>& spXamlType,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spInstance)
@@ -242,7 +242,7 @@ HRESULT ObjectWriterCommonRuntime::EndInit(
     return EndInitImpl(lineInfo, spXamlType, spInstance);
 }
 
-HRESULT ObjectWriterCommonRuntime::SetCustomRuntimeData(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::SetCustomRuntimeData(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlType>& spType,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spInstance,
@@ -263,7 +263,7 @@ HRESULT ObjectWriterCommonRuntime::SetCustomRuntimeData(
         callback);
 }
 
-HRESULT ObjectWriterCommonRuntime::DeferResourceDictionaryItems(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::DeferResourceDictionaryItems(
     _In_ const XamlLineInfo& lineInfo,
     _In_ ObjectWriter* pObjectWriter,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spCollection,
@@ -274,7 +274,7 @@ HRESULT ObjectWriterCommonRuntime::DeferResourceDictionaryItems(
     return DeferResourceDictionaryItemsImpl(lineInfo, pObjectWriter, spCollection, spNodeList, fIsDictionaryWithKeyProperty, hasDeferred);
 }
 
-HRESULT ObjectWriterCommonRuntime::DeferTemplateContent(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::DeferTemplateContent(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlType>& spType,
     _In_ const std::shared_ptr<XamlProperty>& spProperty,
@@ -285,7 +285,7 @@ HRESULT ObjectWriterCommonRuntime::DeferTemplateContent(
     return DeferTemplateContentImpl(lineInfo, spType, spProperty, spInstance, spNodeList, spTemplateContent);
 }
 
-HRESULT ObjectWriterCommonRuntime::GetStreamOffsetToken(
+_Check_return_ HRESULT ObjectWriterCommonRuntime::GetStreamOffsetToken(
     _Out_ UINT32 *pTokenIndex)
 {
     return GetStreamOffsetTokenImpl(pTokenIndex);

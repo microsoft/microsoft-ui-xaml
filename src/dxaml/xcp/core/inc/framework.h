@@ -119,7 +119,7 @@ public:
     }
 
     _Check_return_ CDependencyObject* GetInheritanceParentInternal(
-        _In_opt_ bool fLogicalParent = false
+        bool fLogicalParent = false
     ) const final;
 
 

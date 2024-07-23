@@ -11,10 +11,6 @@
 #include "RevealHoverLight.h"
 #include "ResourceAccessor.h"
 #include "LifetimeHandler.h"
-#include <FrameworkUdk/Containment.h>
-
-// Bug 50308952: [1.5 servicing] Add workaround to WinUI for UISettings RPC_E_WRONG_THREAD issue that is being hit by Photos app
-#define WINAPPSDK_CHANGEID_50308952 50308952
 
 /* static */
 bool MaterialHelperBase::SimulateDisabledByPolicy()
@@ -309,21 +305,8 @@ MaterialHelper::MaterialHelper()
     }
 
     winrt::UISettings uiSettings; // Make an instance to be able to listen for changes.
-                                  // Convert to IUISettings4 because (a) we're only using the APIs off that interface and (b) some platforms don't implement this.
     m_uiSettings = uiSettings.try_as<winrt::IUISettings4>();
-    if (m_uiSettings)
-    {
-        // If we failed to attach to this event then just assume that the running OS (like OneCore) doesn't have this
-        // implemented yet. Can be removed once MSFT#11982393 is fixed.
-        try
-        {
-            m_advancedEffectsEnabledChangedToken = m_uiSettings.AdvancedEffectsEnabledChanged({ this, &MaterialHelper::OnUISettingsChanged });
-        }
-        catch (winrt::hresult_error)
-        {
-            m_uiSettings = nullptr;
-        }
-    }
+    m_advancedEffectsEnabledChangedToken = m_uiSettings.AdvancedEffectsEnabledChanged({ this, &MaterialHelper::OnUISettingsChanged });
 
     UpdatePolicyStatus(true /* onUIThread */);
 }
@@ -427,26 +410,19 @@ void MaterialHelper::UpdatePolicyStatus(bool onUIThread)
         const bool isEnergySaverMode = m_energySaverStatusChangedRevokerValid ? winrt::PowerManager::EnergySaverStatus() == winrt::EnergySaverStatus::On : true;
         const bool areEffectsFast = m_compositionCapabilities ? (m_compositionCapabilities.AreEffectsFast() || m_ignoreAreEffectsFast) : false;
 
+        // We are hitting an issue in Photos where UISettings::AdvancedEffectsEnabled is returning RPC_E_WRONG_THREAD.
+        // We work around this issue by;
+        //   1. Use a fresh instance of UISettings instead of the cached m_uiSettings.
+        //   2. Ignore RPC_E_WRONG_THREAD and use a fallback value.
         bool advancedEffectsEnabled = false;
-        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_50308952>())
+        try
         {
-            // We are hitting an issue in Photos where UISettings::AdvancedEffectsEnabled is returning RPC_E_WRONG_THREAD.
-            // We work around this issue by;
-            //   1. Use a fresh instance of UISettings instead of the cached m_uiSettings.
-            //   2. Ignore RPC_E_WRONG_THREAD and use a fallback value.
-            try
-            {
-                winrt::UISettings uiSettings;
-                advancedEffectsEnabled = uiSettings.AdvancedEffectsEnabled();
-            }
-            catch (winrt::hresult_error e)
-            {
-                if (e.to_abi() != RPC_E_WRONG_THREAD) { throw; }
-            }
+            winrt::UISettings uiSettings;
+            advancedEffectsEnabled = uiSettings.AdvancedEffectsEnabled();
         }
-        else
+        catch (winrt::hresult_error e)
         {
-            advancedEffectsEnabled = m_uiSettings ? m_uiSettings.AdvancedEffectsEnabled() : true;
+            if (e.to_abi() != RPC_E_WRONG_THREAD) { throw; }
         }
 
         bool isDisabledByPolicy = m_simulateDisabledByPolicy || (isEnergySaverMode || !areEffectsFast || !advancedEffectsEnabled);

@@ -232,7 +232,7 @@ private:
 
 protected:
     bool                    m_bInResetVisualTree;
-    bool                    m_fForceRedraw;
+    bool                    m_fForceRedraw{};
 
     // Private methods
 

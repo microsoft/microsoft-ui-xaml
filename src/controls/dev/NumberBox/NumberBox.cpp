@@ -214,10 +214,7 @@ void NumberBox::OnApplyTemplate()
 
     m_isEnabledChangedRevoker = IsEnabledChanged(winrt::auto_revoke, { this,  &NumberBox::OnIsEnabledChanged });
 
-   // printf() defaults to 6 digits. 6 digits are sufficient for most
-    // users under most circumstances, while simultaneously avoiding most
-    // rounding errors for instance during double/float conversion.
-    m_displayRounder.Increment(1e-6);
+    m_displayRounder.SignificantDigits(10);
 
     UpdateSpinButtonPlacement();
     UpdateSpinButtonEnabled();

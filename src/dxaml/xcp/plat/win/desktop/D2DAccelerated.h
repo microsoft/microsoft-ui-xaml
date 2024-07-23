@@ -99,7 +99,7 @@ private:
 
     _Check_return_ HRESULT Initialize();
 
-    ID2D1Factory1 *m_pFactory;
+    ID2D1Factory1 *m_pFactory{};
 
-    HMODULE m_D2DModule;
+    HMODULE m_D2DModule{};
 };

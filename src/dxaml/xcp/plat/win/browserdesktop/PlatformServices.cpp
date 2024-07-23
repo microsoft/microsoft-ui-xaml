@@ -7,8 +7,7 @@
 // Enable graphics device manager creation
 #include "windowsgraphicsdevicemanager.h"
 
-#include <DWrite.h>
-#include <DWrite_2.h>
+#include <DWrite_3.h>
 #include "DWriteTypes.h"
 #include "DWriteFontAndScriptServices.h"
 

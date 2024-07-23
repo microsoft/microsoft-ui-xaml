@@ -224,7 +224,7 @@ namespace DirectUI
             // If asked to scroll too soon, we delay the scroll until the template is applied.
             // This can happen with semantic zoom and list UI deserialization.
             TrackerPtr<IInspectable> m_tpDeferredScrollToItem;
-            xaml_controls::ScrollIntoViewAlignment m_deferredAlignment;
+            xaml_controls::ScrollIntoViewAlignment m_deferredAlignment{};
 
             std::function<HRESULT(IInspectable*)> m_deferredScrollCommand;
 
@@ -1144,6 +1144,7 @@ namespace DirectUI
             static _Check_return_ HRESULT IsItemFocusable(
                 _In_ xaml_controls::IItemContainerMapping* pMapping,
                 _In_ UINT itemIndex,
+                _In_ bool unrealizedItemsAssumedFocusable,
                 _Out_ BOOLEAN* pIsFocusable);
 
         #pragma endregion

@@ -136,7 +136,7 @@ _Check_return_ HRESULT CFontFamily::EnsureCompositeFontFamily(
 
 _Check_return_ HRESULT CFontFamily::GetFontTypeface(
     _In_            CFontContext         *pFontContext,
-    _In_            CWeightStyleStretch   weightStyleStretch,
+    _In_            CFontFaceCriteria         fontFaceCriteria,
     _Outptr_result_maybenull_ CFontTypeface       **ppFontTypeface
 )
 {
@@ -150,7 +150,7 @@ _Check_return_ HRESULT CFontFamily::GetFontTypeface(
 
     // The composite font family will handle the font typeface lookup
     // TODO: Oddly, the callers of this method don't assume an addref
-    *ppFontTypeface = m_pCompositeFontFamily->GetFontTypeface(weightStyleStretch).get();
+    *ppFontTypeface = m_pCompositeFontFamily->GetFontTypeface(fontFaceCriteria).get();
     return S_OK;
 }
 

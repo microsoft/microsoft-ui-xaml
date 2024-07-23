@@ -6,12 +6,7 @@
 
 #include "pch.h"
 #include "common.h"
-
-#ifndef MUX_EXPERIMENTAL
 #include "XamlControlsResources.h"
-#else
-#include "ExperimentalXamlControlsResources.h"
-#endif
 
 namespace {
 
@@ -3057,6 +3052,11 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"SelectedPipStyle", L"Microsoft.UI.Xaml.Style", statics.SelectedPipStyleProperty(), false /* isContent */);
                     }
 
+                    winrt::IPipsPagerStatics2 statics2 = GetFactory<winrt::IPipsPagerStatics2>(L"Microsoft.UI.Xaml.Controls.PipsPager");
+                    {
+                        xamlType.AddDPMember(L"WrapMode", L"Microsoft.UI.Xaml.Controls.PipsPagerWrapMode", statics2.WrapModeProperty(), false /* isContent */);
+                    }
+
                     xamlType.AddMember(
                         L"TemplateSettings", /* propertyName */
                         L"Microsoft.UI.Xaml.Controls.PipsPagerTemplateSettings", /* propertyType */
@@ -3118,6 +3118,26 @@ Entry c_typeEntries[] =
                 });
 
             return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.PipsPagerWrapMode",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make<EnumXamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.PipsPagerWrapMode",
+                /* Arg 2 - CreateFromString func */ 
+                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
+                {
+                    if (fromString == L"None") return box_value(winrt::PipsPagerWrapMode::None);
+                    if (fromString == L"Wrap") return box_value(winrt::PipsPagerWrapMode::Wrap);
+                    throw winrt::hresult_invalid_argument();
+                });
+
+            return xamlType;
         }
     },
     {
@@ -5472,7 +5492,7 @@ Entry c_typeEntries[] =
 
                     winrt::IStackLayoutStatics2 statics2 = GetFactory<winrt::IStackLayoutStatics2>(L"Microsoft.UI.Xaml.Controls.StackLayout");
                     {
-                        xamlType.AddDPMember(L"DisableVirtualization", L"Boolean", statics2.DisableVirtualizationProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"IsVirtualizationEnabled", L"Boolean", statics2.IsVirtualizationEnabledProperty(), false /* isContent */);
                     }
 
                 });
@@ -5669,6 +5689,11 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"TabStripHeader", L"Object", statics.TabStripHeaderProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"TabStripHeaderTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.TabStripHeaderTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"TabWidthMode", L"Microsoft.UI.Xaml.Controls.TabViewWidthMode", statics.TabWidthModeProperty(), false /* isContent */);
+                    }
+
+                    winrt::ITabViewStatics2 statics2 = GetFactory<winrt::ITabViewStatics2>(L"Microsoft.UI.Xaml.Controls.TabView");
+                    {
+                        xamlType.AddDPMember(L"CanTearOutTabs", L"Boolean", statics2.CanTearOutTabsProperty(), false /* isContent */);
                     }
 
                 });
@@ -5970,6 +5995,67 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.TitleBar",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.TitleBar",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Control",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::ITitleBarFactory>(L"Microsoft.UI.Xaml.Controls.TitleBar"); },
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::ITitleBarStatics statics = GetFactory<winrt::ITitleBarStatics>(L"Microsoft.UI.Xaml.Controls.TitleBar");
+                    {
+                        xamlType.AddDPMember(L"Content", L"Object", statics.ContentProperty(), true /* isContent */);
+                        xamlType.AddDPMember(L"Footer", L"Object", statics.FooterProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"Header", L"Object", statics.HeaderProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"IconSource", L"Microsoft.UI.Xaml.Controls.IconSource", statics.IconSourceProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"IsBackButtonVisible", L"Boolean", statics.IsBackButtonVisibleProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"IsBackEnabled", L"Boolean", statics.IsBackEnabledProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"IsPaneToggleButtonVisible", L"Boolean", statics.IsPaneToggleButtonVisibleProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"Subtitle", L"String", statics.SubtitleProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"TemplateSettings", L"Microsoft.UI.Xaml.Controls.TitleBarTemplateSettings", statics.TemplateSettingsProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"Title", L"String", statics.TitleProperty(), false /* isContent */);
+                    }
+
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.TitleBarTemplateSettings",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.TitleBarTemplateSettings",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.DependencyObject",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::ITitleBarTemplateSettingsFactory>(L"Microsoft.UI.Xaml.Controls.TitleBarTemplateSettings"); },
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::ITitleBarTemplateSettingsStatics statics = GetFactory<winrt::ITitleBarTemplateSettingsStatics>(L"Microsoft.UI.Xaml.Controls.TitleBarTemplateSettings");
+                    {
+                        xamlType.AddDPMember(L"IconElement", L"Microsoft.UI.Xaml.Controls.IconElement", statics.IconElementProperty(), false /* isContent */);
+                    }
+
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.ToggleSplitButton",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -6201,6 +6287,8 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                 });
+
+            xamlType->SetIsBindable(true);
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }
@@ -7825,6 +7913,8 @@ hstring c_knownNamespacePrefixes[] =
 #include "TabViewItemTemplateSettings.properties.h"
 #include "TeachingTip.properties.h"
 #include "TeachingTipTemplateSettings.properties.h"
+#include "TitleBar.properties.h"
+#include "TitleBarTemplateSettings.properties.h"
 #include "ToggleSplitButton.properties.h"
 #include "TreeView.properties.h"
 #include "TreeViewItem.properties.h"
@@ -7919,6 +8009,8 @@ void ClearTypeProperties()
     TabViewItemTemplateSettingsProperties::ClearProperties();
     TeachingTipProperties::ClearProperties();
     TeachingTipTemplateSettingsProperties::ClearProperties();
+    TitleBarProperties::ClearProperties();
+    TitleBarTemplateSettingsProperties::ClearProperties();
     ToggleSplitButtonProperties::ClearProperties();
     TreeViewProperties::ClearProperties();
     TreeViewItemProperties::ClearProperties();

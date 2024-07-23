@@ -209,7 +209,7 @@ public:
         other.m_pHandler = nullptr;
     }
 
-    EventPtrBase& operator=(_Inout_ EventPtrBase&& other)
+    EventPtrBase& operator=(_Inout_ EventPtrBase&& other) noexcept
     {
         if (this != &other)
         {

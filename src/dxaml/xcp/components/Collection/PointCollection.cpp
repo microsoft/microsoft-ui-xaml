@@ -384,7 +384,7 @@ CPointCollection::EnsureValue(_In_ const CValue& vOriginal, _Out_ CValue& vCoerc
 
     if (vOriginal.GetType() == valuePoint)
     {
-        vCoerced.CopyConverted(vOriginal);
+        IFC_RETURN(vCoerced.CopyConverted(vOriginal));
     }
     else
     {

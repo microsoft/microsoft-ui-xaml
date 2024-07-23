@@ -258,7 +258,8 @@ namespace xref
                 }
                 else
                 {
-                    auto inc = -1 << flag_width;
+#pragma warning (suppress : 26450) // Arithmetic overflow: '<<' operation causes overflow at compile time. Use a wider type to store the operands (io.1).
+                    constexpr unsigned int inc = ~0u << flag_width;
                     auto temp = ::_InterlockedExchangeAdd(&m_count_and_flag, inc);
                     return (temp >> flag_width) - 1;
                 }
@@ -311,9 +312,9 @@ namespace xref
                 control_block_type* m_control_block;
                 uintptr_t m_ptr_as_int; // For bit-masking trickery
             };
-            static const uintptr_t flag_width = 1;
-            static const uintptr_t flag_mask = (1 << flag_width) - 1;
-            static const uintptr_t count_mask = ~flag_mask;
+            static constexpr uintptr_t flag_width = 1;
+            static constexpr uintptr_t flag_mask = (1 << flag_width) - 1;
+            static constexpr uintptr_t count_mask = ~flag_mask;
             static_assert(std::alignment_of<control_block>::value >= (1 << flag_width), "Violated alignment assumption for safely packing control_block<T>*");
         };
     }

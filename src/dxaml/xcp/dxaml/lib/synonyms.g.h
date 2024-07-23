@@ -122,6 +122,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IXamlResourceReferenceFailedEventArgs IXamlResourceReferenceFailedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::IXamlRoot IXamlRoot;
     typedef ABI::Microsoft::UI::Xaml::IXamlRoot2 IXamlRoot2;
+    typedef ABI::Microsoft::UI::Xaml::IXamlRootFeature_ExperimentalApi IXamlRootFeature_ExperimentalApi;
     typedef ABI::Microsoft::UI::Xaml::IXamlRootChangedEventArgs IXamlRootChangedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Automation::IAnnotationPatternIdentifiers IAnnotationPatternIdentifiers;
     typedef ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation IAutomationAnnotation;
@@ -518,8 +519,6 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Controls::Primitives::IToggleButtonOverrides IToggleButtonOverrides;
     typedef ABI::Microsoft::UI::Xaml::Controls::Primitives::IToggleSwitchTemplateSettings IToggleSwitchTemplateSettings;
     typedef ABI::Microsoft::UI::Xaml::Controls::Primitives::IToolTipTemplateSettings IToolTipTemplateSettings;
-    typedef ABI::Microsoft::UI::Xaml::Core::Direct::IXamlDirectObject IXamlDirectObject;
-    typedef ABI::Microsoft::UI::Xaml::Core::Direct::IXamlDirect IXamlDirect;
     typedef ABI::Microsoft::UI::Xaml::Data::IBinding IBinding;
     typedef ABI::Microsoft::UI::Xaml::Data::IBindingBase IBindingBase;
     typedef ABI::Microsoft::UI::Xaml::Data::IBindingExpression IBindingExpression;

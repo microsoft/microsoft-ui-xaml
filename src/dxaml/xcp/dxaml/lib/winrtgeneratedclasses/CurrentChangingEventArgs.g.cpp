@@ -49,6 +49,7 @@ IFACEMETHODIMP DirectUI::CurrentChangingEventArgsGenerated::get_Cancel(_Out_ BOO
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CurrentChangingEventArgs*>(this)->get_CancelImpl(pValue));
 Cleanup:
@@ -67,6 +68,7 @@ IFACEMETHODIMP DirectUI::CurrentChangingEventArgsGenerated::get_IsCancelable(_Ou
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CurrentChangingEventArgs*>(this)->get_IsCancelableImpl(pValue));
 Cleanup:

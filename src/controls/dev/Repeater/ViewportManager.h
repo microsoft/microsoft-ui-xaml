@@ -14,7 +14,7 @@ public:
     virtual winrt::Rect GetLayoutVisibleWindow() const = 0;
     virtual winrt::Rect GetLayoutRealizationWindow() const = 0;
 
-    virtual void SetLayoutExtent(winrt::Rect extent) = 0;
+    virtual void SetLayoutExtent(const winrt::Rect& layoutExtent) = 0;
     virtual winrt::Rect GetLayoutExtent() const = 0;
     virtual winrt::Point GetOrigin() const = 0;
 
@@ -24,8 +24,9 @@ public:
     virtual void OnOwnerMeasuring() = 0;
     virtual void OnOwnerArranged() = 0;
     virtual void OnMakeAnchor(const winrt::UIElement& anchor, const bool isAnchorOutsideRealizedRange) = 0;
-    virtual void OnBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs args) = 0;
+    virtual void OnBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs& args) = 0;
 
+    virtual void ResetLayoutRealizationWindowCacheBuffer() = 0;
     virtual void ResetScrollers() = 0;
 
     virtual winrt::UIElement MadeAnchor() const = 0;

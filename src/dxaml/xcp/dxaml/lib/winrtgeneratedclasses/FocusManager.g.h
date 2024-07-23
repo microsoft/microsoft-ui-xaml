@@ -54,7 +54,7 @@ namespace DirectUI
         IFACEMETHOD(FindNextFocusableElementWithHint)(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Windows::Foundation::Rect hintRect, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppResult) override;
         IFACEMETHOD(TryMoveFocus)(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Out_ BOOLEAN* pReturnValue) override;
         IFACEMETHOD(GetFocusedElement)(_Outptr_ IInspectable** ppReturnValue) override;
-        IFACEMETHOD(GetFocusedElementWithRoot)(_In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot, _Outptr_ IInspectable** ppReturnValue) override;
+        IFACEMETHOD(GetFocusedElementWithRoot)(_In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot, _Outptr_result_maybenull_ IInspectable** ppReturnValue) override;
         IFACEMETHOD(FindNextFocusWithSearchRootIgnoreEngagement)(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _Outptr_ IInspectable** ppResult) override;
         IFACEMETHOD(FindNextFocusWithSearchRootIgnoreEngagementWithHintRect)(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _In_ ABI::Windows::Foundation::Rect hintRect, _In_ ABI::Windows::Foundation::Rect exclusionRect, _Outptr_ IInspectable** ppResult) override;
         IFACEMETHOD(FindNextFocusWithSearchRootIgnoreEngagementWithClip)(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _In_ BOOLEAN ignoreClipping, _In_ BOOLEAN ignoreCone, _Outptr_ IInspectable** ppResult) override;
@@ -95,7 +95,7 @@ namespace DirectUI
          _Check_return_ HRESULT FindNextFocusableElementWithHintImpl(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Windows::Foundation::Rect hintRect, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppResult); 
          _Check_return_ HRESULT TryMoveFocusImpl(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Out_ BOOLEAN* pReturnValue); 
          _Check_return_ HRESULT GetFocusedElementImpl(_Outptr_ IInspectable** ppReturnValue); 
-         _Check_return_ HRESULT GetFocusedElementWithRootImpl(_In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot, _Outptr_ IInspectable** ppReturnValue); 
+         _Check_return_ HRESULT GetFocusedElementWithRootImpl(_In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot, _Outptr_result_maybenull_ IInspectable** ppReturnValue); 
          _Check_return_ HRESULT FindNextFocusWithSearchRootIgnoreEngagementImpl(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _Outptr_ IInspectable** ppResult); 
          _Check_return_ HRESULT FindNextFocusWithSearchRootIgnoreEngagementWithHintRectImpl(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _In_ ABI::Windows::Foundation::Rect hintRect, _In_ ABI::Windows::Foundation::Rect exclusionRect, _Outptr_ IInspectable** ppResult); 
          _Check_return_ HRESULT FindNextFocusWithSearchRootIgnoreEngagementWithClipImpl(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _In_ BOOLEAN ignoreClipping, _In_ BOOLEAN ignoreCone, _Outptr_ IInspectable** ppResult); 

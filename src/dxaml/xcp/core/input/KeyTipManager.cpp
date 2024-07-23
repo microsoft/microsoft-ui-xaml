@@ -367,7 +367,7 @@ namespace BoundsHelper {
         else if (textElement != nullptr)
         {
             std::vector<XRECTF_RB> boundsList;
-            AddBoundsForTextElement(textElement, boundsList);
+            IFCFAILFAST(AddBoundsForTextElement(textElement, boundsList));
 
             if (boundsList.empty()) { IFCFAILFAST(E_FAIL); } // We should always get the bounds for the textelement
 
@@ -455,7 +455,7 @@ void KeyTipManager::RemoveNullKeyTips()
 
 
 // Called on UI thread, this is where we actually create the KeyTip visuals and place them
-HRESULT KeyTipManager::Execute()
+_Check_return_ HRESULT KeyTipManager::Execute()
 {
     if (m_state == State::WaitingToUpdateKeyTips)
     {

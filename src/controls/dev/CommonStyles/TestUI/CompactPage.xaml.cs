@@ -84,8 +84,8 @@ namespace MUXControlsTestApp
             VerifyChildHeight(simpleVerify, RichEditBox, "BorderElement", 24, "RichEditBox");
             VerifyChildHeight(simpleVerify, ComboBox, "Background", 24, "TextBox");
 
-            VerifyChildHeight(simpleVerify, TimePicker, "FlyoutButton", 24, "TimePicker");
-            VerifyChildHeight(simpleVerify, DatePicker, "FlyoutButton", 24, "DatePicker");
+            VerifyChildHeight(simpleVerify, TimePicker, "FlyoutButton", 22, "TimePicker");
+            VerifyChildHeight(simpleVerify, DatePicker, "FlyoutButton", 22, "DatePicker");
 
             CompactTestResult.Text = simpleVerify.ToString();
         }

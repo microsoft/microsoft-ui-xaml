@@ -34,13 +34,20 @@
 
     <Grid x:Name="rootGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="4"
         RowDefinitions="Auto, *, Auto"
-        ColumnDefinitions="Auto, Auto, *, *">
+        ColumnDefinitions="Auto, Auto, Auto, *, *">
         <StackPanel Orientation="Horizontal" Grid.ColumnSpan="4">
             <TextBlock x:Name="tblGroupedListViewBasePageTitle" FontWeight="Bold" Margin="0,0,2,0" VerticalAlignment="Center"/>
             <CheckBox x:Name="chkProperties" 
                 Content="Properties" 
                 Checked="ChkProperties_Checked" 
                 Unchecked="ChkProperties_Unchecked" 
+                IsChecked="True" 
+                IsThreeState="False"
+                Margin="2,0,0,0"/>
+            <CheckBox x:Name="chkMethods" 
+                Content="Methods" 
+                Checked="ChkMethods_Checked" 
+                Unchecked="ChkMethods_Unchecked" 
                 IsChecked="True" 
                 IsThreeState="False"
                 Margin="2,0,0,0"/>
@@ -195,11 +202,11 @@
                 <Button x:Name="btnGetScrollViewerExtentHeight" Content="G" Margin="1" Grid.Row="18" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewerExtentHeight_Click"/>
 
                 <TextBlock Text="HorizontalOffset:" Grid.Row="19" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtScrollViewerHorizontalOffset" IsReadOnly="True" Grid.Row="19" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtScrollViewerHorizontalOffset" MaxWidth="157" IsReadOnly="True" Grid.Row="19" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
                 <Button x:Name="btnGetScrollViewerHorizontalOffset" Content="G" Margin="1" Grid.Row="19" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewerHorizontalOffset_Click"/>
 
                 <TextBlock Text="VerticalOffset:" Grid.Row="20" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtScrollViewerVerticalOffset" IsReadOnly="True" Grid.Row="20" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtScrollViewerVerticalOffset" MaxWidth="157" IsReadOnly="True" Grid.Row="20" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
                 <Button x:Name="btnGetScrollViewerVerticalOffset" Content="G" Margin="1" Grid.Row="20" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetScrollViewerVerticalOffset_Click"/>
 
                 <TextBlock Text="ItemsPanel Properties" Foreground="Red" Margin="0,4,0,0" Grid.Row="21" Grid.ColumnSpan="4"/>
@@ -268,26 +275,65 @@
                 <Button x:Name="btnGetItemsWrapGridItemHeight" Content="G" Margin="1" Grid.Row="30" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetItemsWrapGridItemHeight_Click"/>
                 <Button x:Name="btnSetItemsWrapGridItemHeight" Content="S" Margin="1" Grid.Row="30" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetItemsWrapGridItemHeight_Click"/>
 
-                <TextBlock x:Name="tblItemsWrapGridCacheLength" Text="CacheLength:" Grid.Row="31" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtItemsWrapGridCacheLength" Grid.Row="31" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                <Button x:Name="btnGetItemsWrapGridCacheLength" Content="G" Margin="1" Grid.Row="31" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetItemsWrapGridCacheLength_Click"/>
-                <Button x:Name="btnSetItemsWrapGridCacheLength" Content="S" Margin="1" Grid.Row="31" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetItemsWrapGridCacheLength_Click"/>
+                <TextBlock x:Name="tblItemsPanelCacheLength" Text="CacheLength:" Grid.Row="31" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtItemsPanelCacheLength" Grid.Row="31" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetItemsPanelCacheLength" Content="G" Margin="1" Grid.Row="31" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetItemsPanelCacheLength_Click"/>
+                <Button x:Name="btnSetItemsPanelCacheLength" Content="S" Margin="1" Grid.Row="31" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetItemsPanelCacheLength_Click"/>
             </Grid>
         </ScrollViewer>
 
-        <ScrollViewer x:Name="svDataSource" Grid.Row="1" Grid.Column="1" Visibility="Collapsed">
+        <ScrollViewer x:Name="svMethods" Grid.Row="1" Grid.Column="1">
             <Grid Margin="4,0,4,0" Padding="6"
                 BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1"
-                RowDefinitions="Auto, Auto, Auto"
-                ColumnDefinitions="Auto">
-                <TextBlock Text="Data Source" Foreground="Red"/>
+                RowDefinitions="Auto, Auto, Auto, Auto"
+                ColumnDefinitions="Auto, Auto">
+                <TextBlock Text="Methods" Foreground="Red"/>
 
-                <Button x:Name="btnResetItemsSource" Content="Reset ItemsSource" Margin="1" Grid.Row="1" VerticalAlignment="Center" Click="BtnResetItemsSource_Click"/>
-                <Button x:Name="btnSetItemsSource" Content="Set ItemsSource" Margin="1" Grid.Row="2" VerticalAlignment="Center" Click="BtnSetItemsSource_Click"/>
+                <TextBlock Text="Item index:" Grid.Row="1" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtMethodsItemIndex" Text="0" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+
+                <TextBlock Text="ScrollIntoViewAlignment:" Grid.Row="2" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbScrollIntoViewAlignment" Grid.Row="2" Grid.Column="1"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="0" MinWidth="125">
+                    <ComboBoxItem>Default</ComboBoxItem>
+                    <ComboBoxItem>Leading</ComboBoxItem>
+                </ComboBox>
+            
+                <Button x:Name="btnScrollIntoView" Content="ScrollIntoView" Margin="1" Grid.Row="3" Grid.ColumnSpan="2" VerticalAlignment="Center" Click="BtnScrollIntoView_Click"/>
             </Grid>
         </ScrollViewer>
 
-        <Grid x:Name="grdLogs" Grid.Row="1" Grid.Column="2" Margin="2"
+        <ScrollViewer x:Name="svDataSource" Grid.Row="1" Grid.Column="2" Visibility="Collapsed">
+            <Grid Background="{ThemeResource SystemListLowColor}" Margin="4,0,4,0" Padding="6"                
+                BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1"
+                RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
+                ColumnDefinitions="Auto, Auto, Auto, Auto">
+                <TextBlock Text="Data Source" Foreground="Red" Grid.ColumnSpan="4"/>
+
+                <Button x:Name="btnResetItemsSource" Content="Reset ItemsSource" Margin="1" Grid.Row="1" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnResetItemsSource_Click"/>
+                <Button x:Name="btnSetItemsSource" Content="Set ItemsSource" Margin="1" Grid.Row="2" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnSetItemsSource_Click"/>
+
+                <TextBlock Text="ICollectionView" Foreground="Red" Margin="0,4,0,0" Grid.Row="3" Grid.ColumnSpan="4"/>
+
+                <TextBlock Text="CurrentItem:" Grid.Row="4" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtCollectionViewCurrentItem" IsReadOnly="True" TextWrapping="Wrap" MaxWidth="160" MaxHeight="320" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetCollectionViewCurrentItem" Content="G" Margin="1" Grid.Row="4" Grid.Column="3" VerticalAlignment="Center" Click="BtnGetCollectionViewCurrentItem_Click"/>
+
+                <TextBlock Text="CurrentPosition:" Grid.Row="5" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtCollectionViewCurrentPosition" IsReadOnly="True" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetCollectionViewCurrentPosition" Content="G" Margin="1" Grid.Row="5" Grid.Column="3" VerticalAlignment="Center" Click="BtnGetCollectionViewCurrentPosition_Click"/>
+
+                <TextBlock Text="MovePosition:" Grid.Row="6" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtCollectionViewMovePosition" Text="0" Grid.Row="6" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnCollectionViewMoveCurrentToPosition" Content="MoveCurrentToPosition" Margin="1" Grid.Row="6" Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Center" Click="BtnCollectionViewMoveCurrentToPosition_Click"/>
+
+                <TextBlock Text="FocusManager" Foreground="Red" Margin="0,4,0,0" Grid.Row="7" Grid.ColumnSpan="4"/>
+
+                <Button x:Name="btnFocusManagerCollectionViewCurrentItemProgrammaticFocus" Content="CurrentItem Programmatic Focus" Margin="1" Grid.Row="8" Grid.ColumnSpan="4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnFocusManagerCollectionViewCurrentItemProgrammaticFocus_Click"/>
+            </Grid>
+        </ScrollViewer>
+
+        <Grid x:Name="grdLogs" Grid.Row="1" Grid.Column="3" Margin="2"
             RowDefinitions="Auto, Auto, *"
             ColumnDefinitions="*">
             <TextBlock Text="Logs" Foreground="Red"/>
@@ -296,7 +342,7 @@
             <ListBox x:Name="lstLogs" Margin="1" Grid.Row="2"/>
         </Grid>
 
-        <GridView x:Name="gridView" Grid.Row="1" Grid.Column="3" Background="Gray"
+        <GridView x:Name="gridView" Grid.Row="1" Grid.Column="4" Background="Gray"
             Visibility="Collapsed"
             ScrollViewer.ZoomMode="Enabled"
             ItemClick="ListViewBase_ItemClick">
@@ -327,7 +373,7 @@
             </GridView.ItemTemplate>
         </GridView>
 
-        <ListView x:Name="listView" Grid.Row="1" Grid.Column="3" Background="Gray"
+        <ListView x:Name="listView" Grid.Row="1" Grid.Column="4" Background="Gray"
             Visibility="Collapsed"
             ScrollViewer.ZoomMode="Enabled"
             ItemClick="ListViewBase_ItemClick">
@@ -358,7 +404,7 @@
             </ListView.ItemTemplate>
         </ListView>
 
-        <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.ColumnSpan="4">
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.ColumnSpan="5">
             <TextBlock Text="Exception Report" VerticalAlignment="Center" Margin="2"/>
             <Button x:Name="btnClearExceptionReport" Content="Clear Exception Report" Click="BtnClearExceptionReport_Click" Margin="2"/>
             <TextBox x:Name="txtExceptionReport" IsReadOnly="True" Margin="2"/>

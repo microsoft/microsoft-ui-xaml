@@ -26,7 +26,7 @@ ObjectWriterRuntimeEncoder::ObjectWriterRuntimeEncoder(
 {
 }
 
-HRESULT ObjectWriterRuntimeEncoder::Initialize()
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::Initialize()
 {
     std::shared_ptr<XamlSchemaContext> spSchemaContext;
 
@@ -37,7 +37,7 @@ HRESULT ObjectWriterRuntimeEncoder::Initialize()
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::AddNamespacePrefixImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::AddNamespacePrefixImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const xstring_ptr& strNamespacePrefix,
     _In_ const std::shared_ptr<XamlNamespace>& spNamespace)
@@ -47,7 +47,7 @@ HRESULT ObjectWriterRuntimeEncoder::AddNamespacePrefixImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::CreateTypeImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::CreateTypeImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlType>& spType,
     _In_ const std::shared_ptr<ObjectWriterCallbacksDelegate>& spCallback,
@@ -63,7 +63,7 @@ HRESULT ObjectWriterRuntimeEncoder::CreateTypeImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::GetValueImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::GetValueImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spInstance,
     _In_ const std::shared_ptr<XamlProperty>& spProperty,
@@ -78,7 +78,7 @@ HRESULT ObjectWriterRuntimeEncoder::GetValueImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::CreateTypeWithInitialValueImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::CreateTypeWithInitialValueImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlType>& spType,
     _In_ const std::shared_ptr<ObjectWriterCallbacksDelegate>& spCallback,
@@ -94,7 +94,7 @@ HRESULT ObjectWriterRuntimeEncoder::CreateTypeWithInitialValueImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::TypeConvertValueImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::TypeConvertValueImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ std::shared_ptr<XamlServiceProviderContext> spContext,
     _In_ const std::shared_ptr<XamlType>& spType,
@@ -169,7 +169,7 @@ HRESULT ObjectWriterRuntimeEncoder::TypeConvertValueImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::SetValueImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::SetValueImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlType>& spType,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spInstance,
@@ -195,7 +195,7 @@ HRESULT ObjectWriterRuntimeEncoder::SetValueImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::PushConstantImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::PushConstantImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spValue)
 {
@@ -213,7 +213,7 @@ HRESULT ObjectWriterRuntimeEncoder::PushConstantImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::CheckPeerTypeImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::CheckPeerTypeImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spInstance,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spValue)
@@ -226,7 +226,7 @@ HRESULT ObjectWriterRuntimeEncoder::CheckPeerTypeImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::AddToCollectionImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::AddToCollectionImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlType>& spParentPropertyType,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spParentCollection,
@@ -238,7 +238,7 @@ HRESULT ObjectWriterRuntimeEncoder::AddToCollectionImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::AddToDictionaryImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::AddToDictionaryImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spParentCollection,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spValue,
@@ -257,7 +257,7 @@ HRESULT ObjectWriterRuntimeEncoder::AddToDictionaryImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::SetConnectionIdImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::SetConnectionIdImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spComponentConnector,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spConnectionId,
@@ -268,7 +268,7 @@ HRESULT ObjectWriterRuntimeEncoder::SetConnectionIdImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::GetXBindConnectorImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::GetXBindConnectorImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spComponentConnector,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spConnectionId,
@@ -278,7 +278,7 @@ HRESULT ObjectWriterRuntimeEncoder::GetXBindConnectorImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::SetNameImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::SetNameImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spName,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spInstance,
@@ -290,7 +290,7 @@ HRESULT ObjectWriterRuntimeEncoder::SetNameImpl(
 }
 
 
-HRESULT ObjectWriterRuntimeEncoder::GetResourcePropertyBagImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::GetResourcePropertyBagImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlServiceProviderContext>& spServiceProviderContext,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spKey,
@@ -303,7 +303,7 @@ HRESULT ObjectWriterRuntimeEncoder::GetResourcePropertyBagImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::SetDirectivePropertyImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::SetDirectivePropertyImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<DirectiveProperty>& spProperty,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spInstance)
@@ -313,7 +313,7 @@ HRESULT ObjectWriterRuntimeEncoder::SetDirectivePropertyImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::ProvideValueImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::ProvideValueImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlServiceProviderContext>& spServiceProviderContext,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spMarkupExtension,
@@ -326,7 +326,7 @@ HRESULT ObjectWriterRuntimeEncoder::ProvideValueImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::BeginInitImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::BeginInitImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlType>& spXamlType,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spInstance)
@@ -336,7 +336,7 @@ HRESULT ObjectWriterRuntimeEncoder::BeginInitImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::EndInitImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::EndInitImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlType>& spXamlType,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spInstance)
@@ -347,7 +347,7 @@ HRESULT ObjectWriterRuntimeEncoder::EndInitImpl(
 
 }
 
-HRESULT ObjectWriterRuntimeEncoder::SetCustomRuntimeDataImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::SetCustomRuntimeDataImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlType>&,
     _In_ const std::shared_ptr<XamlQualifiedObject>&,
@@ -376,7 +376,7 @@ HRESULT ObjectWriterRuntimeEncoder::SetCustomRuntimeDataImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::DeferResourceDictionaryItemsImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::DeferResourceDictionaryItemsImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ ObjectWriter* pObjectWriter,
     _In_ const std::shared_ptr<XamlQualifiedObject>& spCollection,
@@ -390,7 +390,7 @@ HRESULT ObjectWriterRuntimeEncoder::DeferResourceDictionaryItemsImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::DeferTemplateContentImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::DeferTemplateContentImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlType>& spType,
     _In_ const std::shared_ptr<XamlProperty>& spProperty,
@@ -434,7 +434,7 @@ Cleanup:
     return hr;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::GetListOfReferencedResources(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::GetListOfReferencedResources(
     _In_ const std::shared_ptr<XamlOptimizedNodeList>& spNodeList,
     _Out_ std::vector<std::pair<bool,xstring_ptr>>& spResourceList)
 {
@@ -534,7 +534,7 @@ HRESULT ObjectWriterRuntimeEncoder::GetListOfReferencedResources(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::PushScopeImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::PushScopeImpl(
     _In_ const XamlLineInfo& lineInfo)
 {
     IFC_RETURN(m_spNodeList->AddNode(ObjectWriterNode::MakePushScopeNode(lineInfo)));
@@ -542,7 +542,7 @@ HRESULT ObjectWriterRuntimeEncoder::PushScopeImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::PopScopeImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::PopScopeImpl(
     _In_ const XamlLineInfo& lineInfo)
 {
     IFC_RETURN(m_spNodeList->AddNode(ObjectWriterNode::MakePopScopeNode(lineInfo)));
@@ -550,7 +550,7 @@ HRESULT ObjectWriterRuntimeEncoder::PopScopeImpl(
     return S_OK;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::GetStreamOffsetTokenImpl(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::GetStreamOffsetTokenImpl(
     _Out_ UINT32 *pTokenIndex)
 {
     IFC_RETURN(m_spNodeList->AddNode(ObjectWriterNode::MakeStreamOffsetMarker(m_NextStreamOffsetTokenIndex)));
@@ -598,7 +598,7 @@ std::shared_ptr<ObjectWriterNodeList> ObjectWriterRuntimeEncoder::GetNodeList()
     return m_spNodeList;
 }
 
-HRESULT ObjectWriterRuntimeEncoder::GetEmptyXamlQualifiedObject(
+_Check_return_ HRESULT ObjectWriterRuntimeEncoder::GetEmptyXamlQualifiedObject(
     _Out_ std::shared_ptr<XamlQualifiedObject>& spObject)
 {
     CValue emptyObject;

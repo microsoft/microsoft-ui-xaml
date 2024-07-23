@@ -31,7 +31,7 @@ public:
 
 private:  
     // Internals all Windows threadpool specific.  See threadpool docs.
-    TP_CALLBACK_ENVIRON m_threadPoolEnvironment;
+    TP_CALLBACK_ENVIRON m_threadPoolEnvironment{};
     PTP_CLEANUP_GROUP m_pCleanupGroup;
 
 public:

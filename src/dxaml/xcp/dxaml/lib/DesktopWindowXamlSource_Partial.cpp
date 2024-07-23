@@ -365,7 +365,7 @@ _Check_return_ HRESULT DesktopWindowXamlSource::put_SystemBackdropImpl(_In_opt_ 
 
             ctl::ComPtr<DirectUI::SystemBackdrop> systemBackdrop;
             IFC_RETURN(m_systemBackdrop.As(&systemBackdrop));
-            systemBackdrop->InvokeOnTargetConnected(this, xamlRoot.Get());
+            IFC_RETURN(systemBackdrop->InvokeOnTargetConnected(this, xamlRoot.Get()));
         }
     }
 
@@ -592,12 +592,14 @@ _Check_return_ HRESULT DesktopWindowXamlSource::ConnectToHwndIslandSite(_In_ HWN
     pXamlIslandCore->OnPostDesktopWindowContentBridgeInitialized(m_contentBridgeDW.Get());
 
     // Note: This can only happen after we've told the XamlIslandRoot about the bridge.
-    pXamlIslandCore->ForceLTRLayoutDirection();
+    IFC_RETURN(pXamlIslandCore->ForceLTRLayoutDirection());
 
     if (auto interop = Diagnostics::GetDiagnosticsInterop(false))
     {
         interop->SignalRootMutation(ctl::iinspectable_cast(this), VisualMutationType::Add);
     }
+
+    pXamlIslandCore->InitializeNonClientPointerSource(parentWindowId);
 
     ctl::ComPtr<xaml::IUIElement> content;
     IFC_RETURN(get_Content(&content));
@@ -675,7 +677,7 @@ HRESULT DesktopWindowXamlSource::get_HasFocusImpl(_Out_ boolean* pValue)
     return S_OK;
 }
 
-_Check_return_ HRESULT DesktopWindowXamlSource::get_ShouldConstrainPopupsToWorkAreaImpl(_Outptr_ boolean* pValue)
+_Check_return_ HRESULT DesktopWindowXamlSource::get_ShouldConstrainPopupsToWorkAreaImpl(_Out_ boolean* pValue)
 {
     *pValue = true;
 

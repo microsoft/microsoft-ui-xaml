@@ -59,6 +59,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::get_AppWindo
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<Window*>(this)->get_AppWindowImpl(ppValue));
 Cleanup:
@@ -68,6 +69,7 @@ IFACEMETHODIMP DirectUI::WindowGenerated::get_Bounds(_Out_ ABI::Windows::Foundat
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<Window*>(this)->get_BoundsImpl(pValue));
 Cleanup:
@@ -77,6 +79,7 @@ IFACEMETHODIMP DirectUI::WindowGenerated::get_Compositor(_Outptr_result_maybenul
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<Window*>(this)->get_CompositorImpl(ppValue));
 Cleanup:
@@ -86,6 +89,7 @@ IFACEMETHODIMP DirectUI::WindowGenerated::get_Content(_Outptr_result_maybenull_ 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<Window*>(this)->get_ContentImpl(ppValue));
 Cleanup:
@@ -105,6 +109,7 @@ IFACEMETHODIMP DirectUI::WindowGenerated::get_CoreWindow(_Outptr_result_maybenul
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<Window*>(this)->get_CoreWindowImpl(ppValue));
 Cleanup:
@@ -114,6 +119,7 @@ IFACEMETHODIMP DirectUI::WindowGenerated::get_Dispatcher(_Outptr_result_maybenul
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(static_cast<Window*>(this)->get_DispatcherImpl(ppValue));
 Cleanup:
@@ -123,6 +129,7 @@ IFACEMETHODIMP DirectUI::WindowGenerated::get_DispatcherQueue(_Outptr_result_may
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(static_cast<Window*>(this)->get_DispatcherQueueImpl(ppValue));
 Cleanup:
@@ -132,6 +139,7 @@ IFACEMETHODIMP DirectUI::WindowGenerated::get_ExtendsContentIntoTitleBar(_Out_ B
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<Window*>(this)->get_ExtendsContentIntoTitleBarImpl(pValue));
 Cleanup:
@@ -151,6 +159,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::get_SystemBa
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<Window*>(this)->get_SystemBackdropImpl(ppValue));
 Cleanup:
@@ -170,6 +179,7 @@ IFACEMETHODIMP DirectUI::WindowGenerated::get_Title(_Out_ HSTRING* pValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<Window*>(this)->get_TitleImpl(pValue));
 Cleanup:
@@ -189,6 +199,7 @@ IFACEMETHODIMP DirectUI::WindowGenerated::get_TransparentBackground(_Out_ BOOLEA
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<Window*>(this)->get_TransparentBackgroundImpl(pValue));
 Cleanup:
@@ -208,6 +219,7 @@ IFACEMETHODIMP DirectUI::WindowGenerated::get_Visible(_Out_ BOOLEAN* pValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<Window*>(this)->get_VisibleImpl(pValue));
 Cleanup:
@@ -262,6 +274,7 @@ IFACEMETHODIMP DirectUI::WindowGenerated::GetWindowContentBoundsForElement(_In_ 
     }
     ARG_NOTNULL(pElement, "element");
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Window*>(this)->GetWindowContentBoundsForElementImpl(pElement, pResult));
@@ -457,6 +470,7 @@ IFACEMETHODIMP DirectUI::WindowFactory::get_Current(_Outptr_result_maybenull_ AB
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(get_CurrentImpl(ppValue));
 Cleanup:

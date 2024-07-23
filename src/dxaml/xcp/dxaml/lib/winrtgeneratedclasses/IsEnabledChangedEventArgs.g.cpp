@@ -49,6 +49,7 @@ _Check_return_ HRESULT DirectUI::IsEnabledChangedEventArgs::get_OldValue(_Out_ B
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CIsEnabledChangedEventArgs*>(pCoreEventArgsNoRef)->get_OldValue(&valueCore));
@@ -66,6 +67,7 @@ _Check_return_ HRESULT DirectUI::IsEnabledChangedEventArgs::get_NewValue(_Out_ B
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CIsEnabledChangedEventArgs*>(pCoreEventArgsNoRef)->get_NewValue(&valueCore));

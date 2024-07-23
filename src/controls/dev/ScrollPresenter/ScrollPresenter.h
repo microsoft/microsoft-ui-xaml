@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "DoubleUtil.h"
 #include "FloatUtil.h"
 #include "InteractionTrackerAsyncOperation.h"
 #include "ScrollingScrollAnimationStartingEventArgs.h"
@@ -11,6 +12,7 @@
 #include "ScrollingZoomCompletedEventArgs.h"
 #include "ScrollingBringingIntoViewEventArgs.h"
 #include "ScrollingAnchorRequestedEventArgs.h"
+#include "ScrollingViewChangingEventArgs.h"
 #include "SnapPointWrapper.h"
 #include "ScrollPresenterTrace.h"
 #include "ViewChange.h"
@@ -24,7 +26,7 @@
 #include "ScrollPresenter.properties.h"
 
 class ScrollPresenter :
-    public ReferenceTracker<ScrollPresenter, DeriveFromPanelHelper_base, winrt::ScrollPresenter, winrt::Controls::IScrollAnchorProvider, winrt::IRepeaterScrollingSurface>,
+    public ReferenceTracker<ScrollPresenter, DeriveFromPanelHelper_base, winrt::ScrollPresenter, winrt::IScrollPresenter2, winrt::Controls::IScrollAnchorProvider, winrt::IRepeaterScrollingSurface>,
     public ScrollPresenterProperties
 {
 public:
@@ -128,26 +130,26 @@ public:
 #pragma region IScrollPresenter
     winrt::CompositionPropertySet ExpressionAnimationSources();
 
-    double HorizontalOffset();
-    double VerticalOffset();
-    float ZoomFactor();
-    double ExtentWidth();
-    double ExtentHeight();
-    double ViewportWidth();
-    double ViewportHeight();
-    double ScrollableWidth();
-    double ScrollableHeight();
+    double HorizontalOffset() const;
+    double VerticalOffset() const;
+    float ZoomFactor() const;
+    double ExtentWidth() const;
+    double ExtentHeight() const;
+    double ViewportWidth() const;
+    double ViewportHeight() const;
+    double ScrollableWidth() const;
+    double ScrollableHeight() const;
 
-    winrt::IScrollController HorizontalScrollController();
+    winrt::IScrollController HorizontalScrollController() const;
     void HorizontalScrollController(winrt::IScrollController const& value);
 
-    winrt::IScrollController VerticalScrollController();
+    winrt::IScrollController VerticalScrollController() const;
     void VerticalScrollController(winrt::IScrollController const& value);
 
-    winrt::ScrollingInputKinds IgnoredInputKinds();
+    winrt::ScrollingInputKinds IgnoredInputKinds() const;
     void IgnoredInputKinds(winrt::ScrollingInputKinds const& value);
 
-    winrt::ScrollingInteractionState State();
+    winrt::ScrollingInteractionState State() const;
 
     winrt::IVector<winrt::ScrollSnapPointBase> HorizontalSnapPoints();
 
@@ -280,6 +282,12 @@ private:
 #ifdef DBG
     static winrt::hstring DependencyPropertyToString(const winrt::IDependencyProperty& dependencyProperty);
 #endif
+
+    double AnticipatedZoomedHorizontalOffset() const;
+    double AnticipatedZoomedVerticalOffset() const;
+    float AnticipatedZoomFactor() const;
+    double AnticipatedScrollableWidth() const;
+    double AnticipatedScrollableHeight() const;
 
     winrt::Size ArrangeContent(
         const winrt::UIElement& content,
@@ -425,6 +433,8 @@ private:
         double viewportWidth,
         double viewportHeight);
     void UpdateScrollAutomationPatternProperties();
+    void UpdateAnticipatedOffset(ScrollPresenterDimension dimension, double zoomedOffset);
+    void UpdateAnticipatedZoomFactor(float zoomFactor);
     void UpdateOffset(ScrollPresenterDimension dimension, double zoomedOffset);
     void UpdateScrollControllerIsScrollable(ScrollPresenterDimension dimension);
     void UpdateScrollControllerValues(ScrollPresenterDimension dimension);
@@ -485,6 +495,7 @@ private:
         std::shared_ptr<ZoomFactorChangeWithAdditionalVelocity> zoomFactorChangeWithAdditionalVelocity);
     void PostProcessZoomFactorChange(
         std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation);
+    void ResetAnticipatedView();
     void ResetOffsetsInertiaDecayRate();
     void ResetZoomFactorInertiaDecayRate();
     void CompleteViewChange(
@@ -604,6 +615,13 @@ private:
         wstring_view const& propertyName);
     void RaiseExtentChanged();
     void RaiseStateChanged();
+    void RaiseViewChanging(
+#ifdef DBG
+        int32_t viewChangeCorrelationIdDbg,
+#endif // DBG
+        double anticipatedHorizontalOffset,
+        double anticipatedVerticalOffset,
+        float anticipatedZoomFactor);
     void RaiseViewChanged();
     winrt::CompositionAnimation RaiseScrollAnimationStarting(
         const winrt::Vector3KeyFrameAnimation& positionAnimation,
@@ -786,10 +804,13 @@ private:
     float m_animationRestartZoomFactor{ 1.0f };
     float m_endOfInertiaZoomFactor{ 1.0f };
     float m_zoomFactor{ 1.0f };
+    float m_anticipatedZoomFactor{ FloatUtil::NaN };
     float m_contentLayoutOffsetX{ 0.0f };
     float m_contentLayoutOffsetY{ 0.0f };
     double m_zoomedHorizontalOffset{ 0.0 };
     double m_zoomedVerticalOffset{ 0.0 };
+    double m_anticipatedZoomedHorizontalOffset{ DoubleUtil::NaN };
+    double m_anticipatedZoomedVerticalOffset{ DoubleUtil::NaN };
     double m_unzoomedExtentWidth{ 0.0 };
     double m_unzoomedExtentHeight{ 0.0 };
     double m_viewportWidth{ 0.0 };

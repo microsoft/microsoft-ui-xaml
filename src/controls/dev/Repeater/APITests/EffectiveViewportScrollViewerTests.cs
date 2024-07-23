@@ -371,11 +371,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         public void CanBringIntoViewElements()
         {
             ScrollViewer scroller = null;
-            ItemsRepeater repeater = null;
+            ItemsRepeater itemsRepeater = null;
             var rootLoadedEvent = new AutoResetEvent(initialState: false);
-            var effectiveViewChangeCompletedEvent = new AutoResetEvent(initialState: false);
             var viewChangeCompletedEvent = new AutoResetEvent(initialState: false);
-
             var viewChangedOffsets = new List<double>();
 
             RunOnUIThread.Execute(() =>
@@ -384,14 +382,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 var root = (Grid)XamlReader.Load(TestUtilities.ProcessTestXamlForRepo(
                      @"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' xmlns:controls='using:Microsoft.UI.Xaml.Controls'> 
                          <Grid.Resources>
-                           <controls:StackLayout x:Name='VerticalStackLayout' />
+                           <controls:StackLayout x:Name='VerticalStackLayout'/>
                            <controls:RecyclingElementFactory x:Key='ElementFactory'>
                              <controls:RecyclingElementFactory.RecyclePool>
-                               <controls:RecyclePool />
+                               <controls:RecyclePool/>
                              </controls:RecyclingElementFactory.RecyclePool>
                              <DataTemplate x:Key='ItemTemplate'>
-                               <Border Background='LightGray' Margin ='5'>
-                                 <TextBlock Text='{Binding}' TextWrapping='WrapWholeWords' />
+                               <Border Background='LightGray' Margin='5' Height='94'>
+                                 <TextBlock Text='{Binding}' TextWrapping='WrapWholeWords'/>
                                </Border>
                              </DataTemplate>
                            </controls:RecyclingElementFactory>
@@ -402,31 +400,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                              ItemTemplate='{StaticResource ElementFactory}'
                              Layout='{StaticResource VerticalStackLayout}'
                              HorizontalCacheLength='0'
-                             VerticalCacheLength='0' />
+                             VerticalCacheLength='0'/>
                          </ScrollViewer>
                        </Grid>"));
 
                 var elementFactory = (RecyclingElementFactory)root.Resources["ElementFactory"];
                 scroller = (ScrollViewer)root.FindName("Scroller");
-                repeater = (ItemsRepeater)root.FindName("ItemsRepeater");
+                itemsRepeater = (ItemsRepeater)root.FindName("ItemsRepeater");
 
                 var items = Enumerable.Range(0, 400).Select(i => string.Format("{0}: {1}", i, lorem.Substring(0, 250)));
 
-                repeater.ItemsSource = items;
+                itemsRepeater.ItemsSource = items;
 
                 scroller.ViewChanged += (o, e) =>
                 {
-                    Log.Comment("ViewChanged: " + scroller.VerticalOffset);
+                    Log.Comment($"ScrollViewer.ViewChanged - VerticalOffset: {scroller.VerticalOffset}");
                     viewChangedOffsets.Add(scroller.VerticalOffset);
-                    if(!e.IsIntermediate)
+                    if (!e.IsIntermediate)
                     {
                         viewChangeCompletedEvent.Set();
                     }
-                };
-
-                scroller.EffectiveViewportChanged += (o, args) =>
-                {
-                    effectiveViewChangeCompletedEvent.Set();
                 };
 
                 Content = root;
@@ -441,70 +434,90 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             RunOnUIThread.Execute(() =>
             {
-                repeater.GetOrCreateElement(100).StartBringIntoView();
-                repeater.UpdateLayout();
+                Log.Comment("\r\nStartBringIntoView for item index 100, w/ 0.5 vertical alignment.");
+                viewChangeCompletedEvent.Reset();
+                itemsRepeater.GetOrCreateElement(100).StartBringIntoView(new BringIntoViewOptions {
+                    VerticalAlignmentRatio = 0.5
+                });
+                itemsRepeater.UpdateLayout();
             });
 
             Verify.IsTrue(viewChangeCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             IdleSynchronizer.Wait();
+
+            Log.Comment($"ScrollViewer.ViewChanged - Count: {viewChangedOffsets.Count}");
             Verify.AreEqual(1, viewChangedOffsets.Count);
             viewChangedOffsets.Clear();
 
-            ValidateRealizedRange(repeater, 99, 106);
+            ValidateRealizedRange(itemsRepeater, 96, 103);
 
             RunOnUIThread.Execute(() =>
             {
-                Log.Comment("Scroll into view item 105 (already realized) w/ animation.");
-                repeater.TryGetElement(105).StartBringIntoView(new BringIntoViewOptions
+                Log.Comment("\r\nStartBringIntoView for item index 103 (already realized) w/ animation.");
+                viewChangeCompletedEvent.Reset();
+                itemsRepeater.TryGetElement(103).StartBringIntoView(new BringIntoViewOptions
                 {
                     VerticalAlignmentRatio = 0.5,
                     AnimationDesired = true
                 });
-                repeater.UpdateLayout();
+                itemsRepeater.UpdateLayout();
             });
 
             Verify.IsTrue(viewChangeCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             IdleSynchronizer.Wait();
+
+            Log.Comment($"ScrollViewer.ViewChanged - Count: {viewChangedOffsets.Count}");
             Verify.IsLessThanOrEqual(1, viewChangedOffsets.Count);
             viewChangedOffsets.Clear();
-            ValidateRealizedRange(repeater, 101, 109);
+
+            ValidateRealizedRange(itemsRepeater, 99, 107);
 
             RunOnUIThread.Execute(() =>
             {
-                Log.Comment("Scroll item 0 to the top w/ animation and 0.5 vertical alignment.");
-                repeater.GetOrCreateElement(0).StartBringIntoView(new BringIntoViewOptions
+                Log.Comment("\r\nStartBringIntoView for disconnected item index 0, to the top w/ unfulfilled animation and 0.5 vertical alignment.");
+                viewChangeCompletedEvent.Reset();
+                itemsRepeater.GetOrCreateElement(0).StartBringIntoView(new BringIntoViewOptions
                 {
                     VerticalAlignmentRatio = 0.5,
                     AnimationDesired = true
                 });
-                repeater.UpdateLayout();
+                itemsRepeater.UpdateLayout();
             });
 
             Verify.IsTrue(viewChangeCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             IdleSynchronizer.Wait();
+
+            Log.Comment($"ScrollViewer.ViewChanged - Count: {viewChangedOffsets.Count}");
+            Verify.AreEqual(1, viewChangedOffsets.Count);
             viewChangedOffsets.Clear();
-            ValidateRealizedRange(repeater, 0, 6);
+
+            ValidateRealizedRange(itemsRepeater, 0, 6);
 
             RunOnUIThread.Execute(() =>
             {
-                // You can't align the first group in the middle obviously.
+                // You can't align the first item in the middle obviously.
                 Verify.AreEqual(0, scroller.VerticalOffset);
 
-                Log.Comment("Scroll to item 20.");
-                repeater.GetOrCreateElement(20).StartBringIntoView(new BringIntoViewOptions
+                Log.Comment("\r\nStartBringIntoView for item index 20.");
+                viewChangeCompletedEvent.Reset();
+                itemsRepeater.GetOrCreateElement(20).StartBringIntoView(new BringIntoViewOptions
                 {
                     VerticalAlignmentRatio = 0.0
                 });
-                repeater.UpdateLayout();
+                itemsRepeater.UpdateLayout();
             });
 
             Verify.IsTrue(viewChangeCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             IdleSynchronizer.Wait();
-            ValidateRealizedRange(repeater, 19, 26); 
+
+            Log.Comment($"ScrollViewer.ViewChanged - Count: {viewChangedOffsets.Count}");
+            Verify.AreEqual(1, viewChangedOffsets.Count);
+
+            ValidateRealizedRange(itemsRepeater, 19, 26); 
         }
 
         private void ValidateRealizedRange(
-            ItemsRepeater repeater,
+            ItemsRepeater itemsRepeater,
             int expectedFirstItemIndex,
             int expectedLastItemIndex)
         {
@@ -512,12 +525,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             int actualFirstItemIndex = -1;
             int actualLastItemIndex = -1;
             int itemIndex = 0;
+
             RunOnUIThread.Execute(() =>
             {
-                var items = repeater.ItemsSource as IEnumerable<string>;
+                var items = itemsRepeater.ItemsSource as IEnumerable<string>;
+
                 foreach (var item in items)
                 {
-                    var itemElement = repeater.TryGetElement(itemIndex);
+                    var itemElement = itemsRepeater.TryGetElement(itemIndex);
 
                     if (itemElement != null)
                     {
@@ -526,14 +541,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                             itemIndex :
                             actualFirstItemIndex;
                         actualLastItemIndex = itemIndex;
+
+                        Log.Comment($"Realized Index - {itemIndex}");
                     }
 
                     ++itemIndex;
                 }
             });
 
-            Log.Comment(string.Format("FirstItemIndex      - {0}   {1}", expectedFirstItemIndex, actualFirstItemIndex));
-            Log.Comment(string.Format("LastItemIndex       - {0}   {1}", expectedLastItemIndex, actualLastItemIndex));
+            Log.Comment($"FirstItemIndex - {expectedFirstItemIndex}  {actualFirstItemIndex}");
+            Log.Comment($"LastItemIndex  - {expectedLastItemIndex}  {actualLastItemIndex}");
             Verify.AreEqual(expectedFirstItemIndex, actualFirstItemIndex);
             Verify.AreEqual(expectedLastItemIndex, actualLastItemIndex);
         }

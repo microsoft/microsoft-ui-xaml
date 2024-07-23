@@ -50,9 +50,9 @@ public:
     // IPALSurface Implementation
     _Check_return_ HRESULT Lock(
         _Outptr_result_bytebuffer_(*pStride * *pHeight) void** ppAddress,
-        _Outptr_ int32_t* pStride,
-        _Outptr_ uint32_t* pWidth,
-        _Outptr_ uint32_t* pHeight) override;
+        _Out_ int32_t* pStride,
+        _Out_ uint32_t* pWidth,
+        _Out_ uint32_t* pHeight) override;
 
     _Check_return_ HRESULT Unlock() override;
 

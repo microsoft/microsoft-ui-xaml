@@ -52,6 +52,7 @@ IFACEMETHODIMP DirectUI::RichTextBlockGenerated::get_BaselineOffset(_Out_ DOUBLE
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<RichTextBlock*>(this)->get_BaselineOffsetImpl(pValue));
 Cleanup:
@@ -74,6 +75,7 @@ IFACEMETHODIMP DirectUI::RichTextBlockGenerated::get_ContentEnd(_Outptr_result_m
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<RichTextBlock*>(this)->get_ContentEndImpl(ppValue));
 Cleanup:
@@ -83,6 +85,7 @@ IFACEMETHODIMP DirectUI::RichTextBlockGenerated::get_ContentStart(_Outptr_result
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<RichTextBlock*>(this)->get_ContentStartImpl(ppValue));
 Cleanup:
@@ -248,6 +251,7 @@ IFACEMETHODIMP DirectUI::RichTextBlockGenerated::get_SelectionEnd(_Outptr_result
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<RichTextBlock*>(this)->get_SelectionEndImpl(ppValue));
 Cleanup:
@@ -275,6 +279,7 @@ IFACEMETHODIMP DirectUI::RichTextBlockGenerated::get_SelectionStart(_Outptr_resu
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<RichTextBlock*>(this)->get_SelectionStartImpl(ppValue));
 Cleanup:
@@ -542,6 +547,7 @@ IFACEMETHODIMP DirectUI::RichTextBlockGenerated::GetPositionFromPoint(_In_ ABI::
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "RichTextBlock_GetPositionFromPoint", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<RichTextBlock*>(this)->GetPositionFromPointImpl(point, ppReturnValue));

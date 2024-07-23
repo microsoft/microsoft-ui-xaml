@@ -10,7 +10,7 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions) _ATL_STATIC_REGISTRY; _WINDLL;</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies) $(AtlMfcPath)\lib\$(WindowsSDKArch)\atls.lib;</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies) $(ATL_KeyFile)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 </Project>

@@ -44,7 +44,6 @@ using namespace DirectUISynonyms;
 
 // Define as 1 (i.e. XCP_TRACE_OUTPUT_MSG) to get DirectManipulation debug outputs, and 0 otherwise
 #define DMSV_DBG 0
-//#define DM_DEBUG
 
 // Define as 1 (i.e. XCP_TRACE_OUTPUT_MSG) to get DirectManipulation verbose debug outputs, and 0 otherwise
 #define DMSVv_DBG 0
@@ -75,6 +74,32 @@ static bool IsAnimationEnabled()
 
     return isAnimationEnabled;
 }
+
+#ifdef DM_DEBUG
+bool ScrollViewer::DMSV_TraceDbg() const
+{
+    bool result = gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK;
+ 
+    if constexpr (DMSV_DBG)
+    {
+        result = true;
+    }
+
+    return result;
+}
+
+bool ScrollViewer::DMSVv_TraceDbg() const
+{
+    bool result = gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK;
+
+    if constexpr (DMSVv_DBG)
+    {
+        result = true;
+    }
+
+    return result;
+}
+#endif // DM_DEBUG
 
 // Initializes a new instance of the ScrollViewer class.
 ScrollViewer::ScrollViewer()
@@ -485,7 +510,7 @@ _Check_return_ HRESULT ScrollViewer::OnIsEnabledChanged(
     _In_ IsEnabledChangedEventArgs* pArgs)
 {
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         BOOLEAN isEnabledDbg = FALSE;
         IGNOREHR(get_IsEnabled(&isEnabledDbg));
@@ -526,7 +551,7 @@ _Check_return_ HRESULT ScrollViewer::OnTreeParentUpdated(
     _In_ BOOLEAN isParentAlive)
 {
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
             L"DMSV[0x%p]:  OnTreeParentUpdated pNewParent=0x%p, isParentAlive=%d.", this, pNewParent, isParentAlive));
@@ -838,7 +863,7 @@ _Check_return_ HRESULT ScrollViewer::put_HorizontalOffset(
     }
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/, L"DMSVv[0x%p]: put_HorizontalOffset m_xOffset=%f.", this, m_xOffset));
     }
@@ -891,7 +916,7 @@ _Check_return_ HRESULT ScrollViewer::put_ViewportWidth(
     IFC(ScrollViewerGenerated::put_ViewportWidth(value));
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/, L"DMSVv[0x%p]: put_ViewportWidth new viewport width: m_xViewport=%f.", this, m_xViewport));
     }
@@ -967,7 +992,7 @@ _Check_return_ HRESULT ScrollViewer::put_VerticalOffset(
     }
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/, L"DMSVv[0x%p]: put_VerticalOffset m_yOffset=%f.", this, m_yOffset));
     }
@@ -1020,7 +1045,7 @@ _Check_return_ HRESULT ScrollViewer::put_ViewportHeight(
     IFC(ScrollViewerGenerated::put_ViewportHeight(value));
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/, L"DMSVv[0x%p]: put_ViewportHeight new viewport height: m_yViewport=%f.", this, m_yViewport));
     }
@@ -1256,7 +1281,7 @@ IFACEMETHODIMP ScrollViewer::OnApplyTemplate() noexcept
     EventRegistrationToken MouseIndicatorFullStateStoryboardCompletedToken;
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/, L"DMSVv[0x%p]: OnApplyTemplate.", this));
     }
@@ -1765,7 +1790,7 @@ _Check_return_ HRESULT ScrollViewer::ScrollToHorizontalOffsetImpl(
     _In_ DOUBLE offset)
 {
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  ScrollToHorizontalOffsetImpl offset=%f.", this, offset));
     }
@@ -1780,7 +1805,7 @@ _Check_return_ HRESULT ScrollViewer::ScrollToHorizontalOffsetInternal(
     _In_ DOUBLE offset)
 {
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
             L"DMSVv[0x%p]: ScrollToHorizontalOffsetInternal offset=%f.", this, offset));
@@ -1795,7 +1820,7 @@ _Check_return_ HRESULT ScrollViewer::ScrollToVerticalOffsetImpl(
     _In_ DOUBLE offset)
 {
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  ScrollToVerticalOffsetImpl offset=%f.", this, offset));
     }
@@ -1810,7 +1835,7 @@ _Check_return_ HRESULT ScrollViewer::ScrollToVerticalOffsetInternal(
     _In_ DOUBLE offset)
 {
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
             L"DMSVv[0x%p]: ScrollToVerticalOffsetInternal offset=%f.", this, offset));
@@ -2070,7 +2095,7 @@ Cleanup:
     m_inMeasure = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
             L"DMSVv[0x%p]: MeasureOverride availableSize=%f,%f, IsRootSV=%d.", this, availableSize.Width, availableSize.Height, IsRootScrollViewer()));
@@ -2356,7 +2381,7 @@ IFACEMETHODIMP ScrollViewer::OnKeyDown(
     m_preferMouseIndicators = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(pArgs->get_Key(&key));
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  OnKeyDown - entry. key=%d.", this, key));
@@ -2369,7 +2394,7 @@ IFACEMETHODIMP ScrollViewer::OnKeyDown(
     if (handled)
     {
 #ifdef DM_DEBUG
-        if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+        if (DMSV_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"Exits because handled after ScrollViewerGenerated::OnKeyDown."));
         }
@@ -2382,7 +2407,7 @@ IFACEMETHODIMP ScrollViewer::OnKeyDown(
     if (templatedParentHandlesScrolling)
     {
 #ifdef DM_DEBUG
-        if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+        if (DMSV_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"Exits because get_TemplatedParentHandlesScrolling returns true."));
         }
@@ -2425,7 +2450,7 @@ IFACEMETHODIMP ScrollViewer::OnKeyDown(
             IFC(ProcessPureInertiaInputMessage(messageZoomDirection, &handled));
             IFC(pArgs->put_Handled(handled));
 #ifdef DM_DEBUG
-            if (handled && (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK))
+            if (handled && DMSV_TraceDbg())
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"ProcessInputMessage returns true. Setting handled."));
             }
@@ -2516,10 +2541,41 @@ IFACEMETHODIMP ScrollViewer::OnPointerReleased(
             }
             else
             {
-                // Focus now.
-                // Set focus to the ScrollViewer to capture key input for scrolling
-                IFC(Focus(xaml::FocusState_Pointer, &focused));
-                IFC(pArgs->put_Handled(focused));
+                BOOLEAN scrollViewerIsFocusAncestor = FALSE;
+                BOOLEAN scrollViewerIsTabStop = FALSE;
+
+                IFC(get_IsTabStop(&scrollViewerIsTabStop));
+
+                if (CFocusManager* focusManagerNoRef = VisualTree::GetFocusManagerForElement(GetHandle()))
+                {
+                    if (CDependencyObject* coreCurrentFocusedElementNoRef = focusManagerNoRef->GetFocusedElementNoRef())
+                    {
+                        ctl::ComPtr<DependencyObject> currentFocusedElement;
+
+                        IFC(DXamlCore::GetCurrent()->GetPeer(coreCurrentFocusedElementNoRef, &currentFocusedElement));
+
+                        if (currentFocusedElement)
+                        {
+                            IFC(IsAncestorOf(currentFocusedElement.Get(), &scrollViewerIsFocusAncestor));
+                        }
+                    }
+                }
+
+                if (!scrollViewerIsTabStop && scrollViewerIsFocusAncestor)
+                {
+                    // Do not take focus when:
+                    // - ScrollViewer.IsTabStop is False and
+                    // - Currently focused element is within this ScrollViewer.
+                    // In that case, leave the focus as is by marking this event handled.
+                    IFC(pArgs->put_Handled(TRUE));
+                }
+                else
+                {
+                    // Focus now.
+                    // Set focus to the ScrollViewer to capture key input for scrolling
+                    IFC(Focus(xaml::FocusState_Pointer, &focused));
+                    IFC(pArgs->put_Handled(focused));
+                }
             }
         }
     }
@@ -2822,7 +2878,7 @@ _Check_return_ HRESULT ScrollViewer::MakeVisible(
     wf::Point transformedPoint = {};
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
             L"DMSV[0x%p]:  MakeVisible - targetRect=(%f, %f, %f, %f), forceIntoView=%d, useAnimation=%d, skipDuringManipulation=%d.",
@@ -2956,7 +3012,7 @@ _Check_return_ HRESULT ScrollViewer::OnBringIntoViewRequested(
     UIElement* elementNoRef = spTargetObject.Cast<UIElement>();
 
 #ifdef DM_DEBUG
-    if (args && (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK))
+    if (args && DMSV_TraceDbg())
     {
         BOOLEAN forceIntoViewDbg = FALSE;
         BOOLEAN useAnimationDbg = FALSE;
@@ -3057,7 +3113,7 @@ _Check_return_ HRESULT ScrollViewer::HandleVerticalScroll(
     DOUBLE scrollable = 0.0;
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
             L"DMSVv[0x%p]: HandleVerticalScroll - entry. offset=%f.", this, offset));
@@ -3134,7 +3190,7 @@ _Check_return_ HRESULT ScrollViewer::HandleVerticalScroll(
         if (!isDeferring)
         {
 #ifdef DM_DEBUG
-            if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+            if (DMSVv_TraceDbg())
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/, L"DMSVv[0x%p]: HandleVerticalScroll calls SetVerticalOffset with newOffset=%f.", this, newOffset));
             }
@@ -3160,7 +3216,7 @@ _Check_return_ HRESULT ScrollViewer::HandleHorizontalScroll(
     DOUBLE scrollable = 0.0;
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
             L"DMSVv[0x%p]: HandleHorizontalScroll - entry. offset=%f.", this, offset));
@@ -3233,7 +3289,7 @@ _Check_return_ HRESULT ScrollViewer::HandleHorizontalScroll(
         if (!isDeferring)
         {
 #ifdef DM_DEBUG
-            if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+            if (DMSVv_TraceDbg())
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/, L"DMSVv[0x%p]: HandleHorizontalScroll calls SetHorizontalOffset with newOffset=%f.", this, newOffset));
             }
@@ -3264,7 +3320,7 @@ _Check_return_ HRESULT ScrollViewer::ChangeViewImpl(
     _Out_ BOOLEAN* pReturnValue)
 {
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  ChangeViewImpl - entry.", this));
     }
@@ -3304,7 +3360,7 @@ _Check_return_ HRESULT ScrollViewer::ChangeViewWithOptionalAnimationImpl(
     _Out_ BOOLEAN* pReturnValue)
 {
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  ChangeViewWithOptionalAnimationImpl - entry.", this));
     }
@@ -3407,7 +3463,7 @@ _Check_return_ HRESULT ScrollViewer::ChangeViewInternal(
     *pReturnValue = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         DOUBLE targetHorizontalOffsetDbg = 0.0;
         DOUBLE targetVerticalOffsetDbg = 0.0;
@@ -3477,7 +3533,7 @@ _Check_return_ HRESULT ScrollViewer::ChangeViewInternal(
     IFC(get_ZoomFactor(&currentZoomFactor));
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
             L"                   Current HorizontalOffset=%f, VerticalOffset=%f, ZoomFactor=%4.8lf, m_xPixelOffsetRequested=%f, m_yPixelOffsetRequested=%f, m_targetChangeViewHorizontalOffset=%f, m_targetChangeViewVerticalOffset=%f, m_targetChangeViewZoomFactor=%4.8lf.",
@@ -3567,7 +3623,7 @@ _Check_return_ HRESULT ScrollViewer::ChangeViewInternal(
 
         // When operating with a IManipulationDataProvider implementation, we do not support animations. Pretend the flag was set to False.
 #ifdef DM_DEBUG
-        if (!disableAnimation && (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK))
+        if (!disableAnimation && DMSVv_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/, L"                   Ignoring animation request for IManipulationDataProvider implementation."));
         }
@@ -4142,7 +4198,7 @@ _Check_return_ HRESULT ScrollViewer::ChangeViewInternal(
                         {
                             m_xPixelOffsetRequested = currentTargetHorizontalOffset;
 #ifdef DM_DEBUG
-                            if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+                            if (DMSV_TraceDbg())
                             {
                                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                                     L"                   Set m_xPixelOffsetRequested=%f.", m_xPixelOffsetRequested));
@@ -4153,7 +4209,7 @@ _Check_return_ HRESULT ScrollViewer::ChangeViewInternal(
                         {
                             m_yPixelOffsetRequested = currentTargetVerticalOffset;
 #ifdef DM_DEBUG
-                            if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+                            if (DMSV_TraceDbg())
                             {
                                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                                     L"                   Set m_yPixelOffsetRequested=%f.", m_yPixelOffsetRequested));
@@ -4320,7 +4376,7 @@ Cleanup:
     }
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  ChangeViewInternal - exit with returnValue=%d.", this, *pReturnValue));
     }
@@ -4350,7 +4406,7 @@ _Check_return_ HRESULT ScrollViewer::InvalidateScrollInfoImpl() noexcept
     HRESULT tryUpdateResult = S_OK;
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/, L"DMSVv[0x%p]: InvalidateScrollInfoImpl entry.", this));
     }
@@ -4489,7 +4545,7 @@ _Check_return_ HRESULT ScrollViewer::InvalidateScrollInfoImpl() noexcept
                         if (!spProvider || pixelDelta >= ScrollViewerScrollRoundingToleranceForProvider)
                         {
 #ifdef DM_DEBUG
-                            if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+                            if (DMSV_TraceDbg())
                             {
                                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                                     L"DMSV[0x%p]:  InvalidateScrollInfoImpl Unexpected horizontal pixel offset change xOldPixelOffset=%f m_xPixelOffsetRequested=%f m_xPixelOffset=%f.",
@@ -4512,7 +4568,7 @@ _Check_return_ HRESULT ScrollViewer::InvalidateScrollInfoImpl() noexcept
                         if (!spProvider || pixelDelta >= ScrollViewerScrollRoundingToleranceForProvider)
                         {
 #ifdef DM_DEBUG
-                            if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+                            if (DMSV_TraceDbg())
                             {
                                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                                     L"DMSV[0x%p]:  InvalidateScrollInfoImpl Out-of-manip horizontal pixel offset change xOldPixelOffset=%f m_xPixelOffsetRequested=%f m_xPixelOffset=%f.",
@@ -4529,7 +4585,7 @@ _Check_return_ HRESULT ScrollViewer::InvalidateScrollInfoImpl() noexcept
 
             // No more pending request for a horizontal scroll.
 #ifdef DM_DEBUG
-            if ((DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK) && m_xPixelOffsetRequested != -1)
+            if (DMSVv_TraceDbg() && m_xPixelOffsetRequested != -1)
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
                     L"DMSVv[0x%p]: InvalidateScrollInfoImpl resetting m_xPixelOffsetRequested=%f to -1.", this, m_xPixelOffsetRequested));
@@ -4578,7 +4634,7 @@ _Check_return_ HRESULT ScrollViewer::InvalidateScrollInfoImpl() noexcept
                         if (!spProvider || pixelDelta >= ScrollViewerScrollRoundingToleranceForProvider)
                         {
 #ifdef DM_DEBUG
-                            if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+                            if (DMSV_TraceDbg())
                             {
                                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                                     L"DMSV[0x%p]:  InvalidateScrollInfoImpl Unexpected vertical pixel offset change yOldPixelOffset=%f m_yPixelOffsetRequested=%f m_yPixelOffset=%f.",
@@ -4601,7 +4657,7 @@ _Check_return_ HRESULT ScrollViewer::InvalidateScrollInfoImpl() noexcept
                         if (!spProvider || pixelDelta >= ScrollViewerScrollRoundingToleranceForProvider)
                         {
 #ifdef DM_DEBUG
-                            if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+                            if (DMSV_TraceDbg())
                             {
                                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                                     L"DMSV[0x%p]:  InvalidateScrollInfoImpl Out-of-manip vertical pixel offset change yOldPixelOffset=%f m_yPixelOffsetRequested=%f m_yPixelOffset=%f.",
@@ -4617,7 +4673,7 @@ _Check_return_ HRESULT ScrollViewer::InvalidateScrollInfoImpl() noexcept
 
             // No more pending request for a vertical scroll.
 #ifdef DM_DEBUG
-            if ((DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK) && m_yPixelOffsetRequested != -1)
+            if (DMSVv_TraceDbg() && m_yPixelOffsetRequested != -1)
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
                     L"DMSVv[0x%p]: InvalidateScrollInfoImpl resetting m_yPixelOffsetRequested=%f to -1.", this, m_yPixelOffsetRequested));
@@ -4733,7 +4789,7 @@ _Check_return_ HRESULT ScrollViewer::InvalidateScrollInfoImpl() noexcept
             if (!areExtentChangesExpected)
             {
 #ifdef DM_DEBUG
-                if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+                if (DMSV_TraceDbg())
                 {
                     IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  InvalidateScrollInfoImpl Unexpected extent change.", this));
                 }
@@ -4756,7 +4812,7 @@ _Check_return_ HRESULT ScrollViewer::InvalidateScrollInfoImpl() noexcept
                         if (!areScrollOffsetsInSync)
                         {
 #ifdef DM_DEBUG
-                            if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+                            if (DMSV_TraceDbg())
                             {
                                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  InvalidateScrollInfoImpl ScrollContentPresenter's AreScrollOffsetsInSync==FALSE.", this));
                             }
@@ -4796,7 +4852,7 @@ _Check_return_ HRESULT ScrollViewer::InvalidateScrollInfoImpl() noexcept
                     m_trElementScrollContentPresenter.Cast<ScrollContentPresenter>()->IsChildActualWidthUpdated())
                 {
 #ifdef DM_DEBUG
-                    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+                    if (DMSVv_TraceDbg())
                     {
                         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
                             L"DMSVv[0x%p]: InvalidateScrollInfoImpl resetting m_contentWidthRequested=%f to -1.", this, m_contentWidthRequested));
@@ -4810,7 +4866,7 @@ _Check_return_ HRESULT ScrollViewer::InvalidateScrollInfoImpl() noexcept
                     m_trElementScrollContentPresenter.Cast<ScrollContentPresenter>()->IsChildActualHeightUpdated())
                 {
 #ifdef DM_DEBUG
-                    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+                    if (DMSVv_TraceDbg())
                     {
                         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
                             L"DMSVv[0x%p]: InvalidateScrollInfoImpl resetting m_contentHeightRequested=%f to -1.", this, m_contentHeightRequested));
@@ -4859,7 +4915,7 @@ Cleanup:
 
     // Raise any potentially delayed ViewChanged notification
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
             L"DMSVv[0x%p]: InvalidateScrollInfoImpl calling FlushViewChanged.", this));
@@ -4877,7 +4933,7 @@ _Check_return_ HRESULT ScrollViewer::NotifyHorizontalOffsetChanging(
     _In_ DOUBLE targetVerticalOffset)
 {
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
             L"DMSVv[0x%p]: NotifyHorizontalOffsetChanging - TargetHorizontalOffset=%f, TargetVerticalOffset=%f.", this, targetHorizontalOffset, targetVerticalOffset));
@@ -4895,7 +4951,7 @@ _Check_return_ HRESULT ScrollViewer::NotifyVerticalOffsetChanging(
     _In_ DOUBLE targetVerticalOffset)
 {
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
             L"DMSVv[0x%p]: NotifyVerticalOffsetChanging - TargetHorizontalOffset=%f, TargetVerticalOffset=%f.", this, targetHorizontalOffset, targetVerticalOffset));
@@ -4940,7 +4996,7 @@ _Check_return_ HRESULT ScrollViewer::NotifyZoomFactorChanging(
     DOUBLE targetVerticalOffset = 0.0;
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
             L"DMSVv[0x%p]: NotifyZoomFactorChanging - TargetZoomFactor=%f.", this, targetZoomFactor));
@@ -5145,7 +5201,7 @@ _Check_return_ HRESULT ScrollViewer::InvalidateScrollInfo_TryUpdateValues(
             !DoubleUtil::AreClose(m_xPixelOffset, xPixelOffset))
         {
 #ifdef DM_DEBUG
-            if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+            if (DMSVv_TraceDbg())
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
                     L"DMSVv[0x%p]: InvalidateScrollInfo_TryUpdateValues horizontal offset changed: m_xPixelOffset=%f xPixelOffset=%f.",
@@ -5163,7 +5219,7 @@ _Check_return_ HRESULT ScrollViewer::InvalidateScrollInfo_TryUpdateValues(
             !DoubleUtil::AreClose(m_yPixelOffset, yPixelOffset))
         {
 #ifdef DM_DEBUG
-            if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+            if (DMSVv_TraceDbg())
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
                     L"DMSVv[0x%p]: InvalidateScrollInfo_TryUpdateValues vertical offset changed: m_yPixelOffset=%f yPixelOffset=%f.",
@@ -5218,7 +5274,7 @@ _Check_return_ HRESULT ScrollViewer::InvalidateScrollInfo_TryUpdateValues(
         if (!DoubleUtil::AreClose(m_xPixelExtent, xPixelExtent))
         {
 #ifdef DM_DEBUG
-            if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+            if (DMSV_TraceDbg())
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                     L"DMSV[0x%p]:  InvalidateScrollInfo_TryUpdateValues horizontal extent changed: m_xPixelExtent=%f xPixelExtent=%f.",
@@ -5240,7 +5296,7 @@ _Check_return_ HRESULT ScrollViewer::InvalidateScrollInfo_TryUpdateValues(
         if (!DoubleUtil::AreClose(m_yPixelExtent, yPixelExtent))
         {
 #ifdef DM_DEBUG
-            if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+            if (DMSV_TraceDbg())
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                     L"DMSV[0x%p]:  InvalidateScrollInfo_TryUpdateValues vertical extent changed: m_yPixelExtent=%f yPixelExtent=%f.",
@@ -5367,7 +5423,7 @@ _Check_return_ HRESULT ScrollViewer::OnHorizontalScrollBarScroll(
     IFC(pArgs->get_NewValue(&newOffset));
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
             L"DMSVv[0x%p]: OnHorizontalScrollBarScroll - entry. scrollEventType=%d, newOffset=%f.", this, scrollEventType, newOffset));
@@ -5401,7 +5457,7 @@ _Check_return_ HRESULT ScrollViewer::OnVerticalScrollBarScroll(
     IFC(pArgs->get_NewValue(&newOffset));
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
             L"DMSVv[0x%p]: OnVerticalScrollBarScroll - entry. scrollEventType=%d, newOffset=%f.", this, scrollEventType, newOffset));
@@ -6085,7 +6141,7 @@ _Check_return_ HRESULT ScrollViewer::ScrollByPixelDelta(
     DOUBLE newPixelDelta = pixelDelta;
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
             L"DMSVv[0x%p]: ScrollByPixelDelta isForHorizontalOrientation=%d newPixelOffset=%f pixelDelta=%f, isDManipInput=%d",
@@ -6105,7 +6161,7 @@ _Check_return_ HRESULT ScrollViewer::ScrollByPixelDelta(
     {
         IFC(spProvider->ComputeLogicalOffset(isForHorizontalOrientation, newPixelDelta, newOffset));
 #ifdef DM_DEBUG
-        if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+        if (DMSVv_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
                 L"DMSVv[0x%p]: ScrollByPixelDelta ComputeLogicalOffset returns newOffset=%f, newPixelDelta=%f for pixelDelta=%f.",
@@ -6154,7 +6210,7 @@ _Check_return_ HRESULT ScrollViewer::ScrollByPixelDelta(
                 m_xPixelOffsetRequested = DoubleUtil::Min(DoubleUtil::Max(newPixelOffset, 0), pixelScrollable);
             }
 #ifdef DM_DEBUG
-            if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+            if (DMSV_TraceDbg())
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                     L"DMSV[0x%p]:  ScrollByPixelDelta oldOffset=%f newOffset=%f, new m_xPixelOffsetRequested=%f.",
@@ -6168,7 +6224,7 @@ _Check_return_ HRESULT ScrollViewer::ScrollByPixelDelta(
         {
             // Since the current offset is now close to the target, no offset change is expected
 #ifdef DM_DEBUG
-            if ((DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK) && m_xPixelOffsetRequested != -1)
+            if (DMSVv_TraceDbg() && m_xPixelOffsetRequested != -1)
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
                     L"DMSVv[0x%p]: ScrollByPixelDelta resetting m_xPixelOffsetRequested=%f to -1.", this, m_xPixelOffsetRequested));
@@ -6225,7 +6281,7 @@ _Check_return_ HRESULT ScrollViewer::ScrollByPixelDelta(
                 }
             }
 #ifdef DM_DEBUG
-            if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+            if (DMSV_TraceDbg())
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  ScrollByPixelDelta oldOffset=%f newOffset=%f, new m_yPixelOffsetRequested=%f.",
                     this, oldOffset, newOffset, m_yPixelOffsetRequested));
@@ -6238,7 +6294,7 @@ _Check_return_ HRESULT ScrollViewer::ScrollByPixelDelta(
         {
             // Since the current offset is now close to the target, no offset change is expected
 #ifdef DM_DEBUG
-            if ((DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK) && m_yPixelOffsetRequested != -1)
+            if (DMSVv_TraceDbg() && m_yPixelOffsetRequested != -1)
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
                     L"DMSVv[0x%p]: ScrollByPixelDelta resetting m_yPixelOffsetRequested=%f to -1.", this, m_yPixelOffsetRequested));
@@ -6452,7 +6508,7 @@ _Check_return_ HRESULT ScrollViewer::ZoomToFactorImpl(
     _In_ FLOAT value)
 {
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  ZoomToFactorImpl value=%4.8lf.", this, value));
     }
@@ -6477,7 +6533,7 @@ _Check_return_ HRESULT ScrollViewer::ZoomToFactorInternal(
     bool zoomChanged = false;
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/, L"DMSVv[0x%p]: ZoomToFactorInternal value=%4.8lf, delayAndFlushViewChanged=%d.", this, value, delayAndFlushViewChanged));
     }
@@ -8643,7 +8699,7 @@ _Check_return_ HRESULT ScrollViewer::BringIntoViewport(
     _Out_ BOOLEAN* pHandled)
 {
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  BringIntoViewport - bounds=(%f, %f, %f, %f), skipDuringTouchContact=%d, skipAnimationWhileRunning=%d.",
             this, bounds.X, bounds.Y, bounds.Width, bounds.Height, skipDuringTouchContact, skipAnimationWhileRunning));
@@ -8703,7 +8759,7 @@ _Check_return_ HRESULT ScrollViewer::BringIntoViewportInternal(
     bool fHandled = false;
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  BringIntoViewportInternal - bounds=(%f, %f, %f, %f), translateX=%f, translateY=%f, zoomFactor=%f,",
             this, bounds.X, bounds.Y, bounds.Width, bounds.Height, translateX, translateY, zoomFactor));
@@ -8794,7 +8850,7 @@ _Check_return_ HRESULT ScrollViewer::SetDirectManipulationOverridingZoomBoundari
             }
 
 #ifdef DM_DEBUG
-            if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+            if (DMSV_TraceDbg())
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                     L"DMSV[0x%p]:  SetDirectManipulationOverridingZoomBoundaries - Notifying zoom factor boundary change. m_overridingMinZoomFactor=%f m_overridingMaxZoomFactor=%f.",
@@ -8819,7 +8875,7 @@ Cleanup:
 _Check_return_ HRESULT ScrollViewer::ResetDirectManipulationOverridingZoomBoundaries()
 {
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  ResetDirectManipulationOverridingZoomBoundaries - Resetting zoom boundary overrides.", this));
     }
@@ -8844,7 +8900,7 @@ _Check_return_ HRESULT ScrollViewer::SetLayoutSize(
         wf::Size availableSize = { 0.0f, 0.0f };
 
 #ifdef DM_DEBUG
-        if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+        if (DMSV_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  SetLayoutSize - layoutSize=%f, %f.", this, layoutSize.Width, layoutSize.Height));
         }
@@ -8882,7 +8938,7 @@ _Check_return_ HRESULT ScrollViewer::PostDirectManipulationLayoutRefreshed()
 _Check_return_ HRESULT ScrollViewer::NotifyLayoutRefreshed()
 {
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  NotifyLayoutRefreshed.", this));
     }
@@ -9918,7 +9974,7 @@ IFACEMETHODIMP ScrollViewer::OnContentChanged(
 _Check_return_ HRESULT ScrollViewer::OnContentPropertyChanged()
 {
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
             L"DMSV[0x%p]:  OnContentPropertyChanged.", this));
@@ -9972,7 +10028,7 @@ _Check_return_ HRESULT ScrollViewer::OnManipulatabilityAffectingPropertyChanged(
     DMConfigurations bringIntoViewportConfiguration = DMConfigurationNone;
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
             L"DMSV[0x%p]:  OnManipulatabilityAffectingPropertyChanged pIsInLiveTree=%d, isCachedPropertyChanged=%d, isContentChanged=%d, isAffectingConfigurations=%d, isAffectingTouchConfiguration=%d.",
@@ -10186,7 +10242,7 @@ _Check_return_ HRESULT ScrollViewer::OnViewportConfigurationsAffectingPropertyCh
     DMConfigurations bringIntoViewportConfiguration = DMConfigurationNone;
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
             L"DMSV[0x%p]:  OnViewportConfigurationsAffectingPropertyChanged - entry.", this));
@@ -10227,7 +10283,7 @@ _Check_return_ HRESULT ScrollViewer::OnViewportConfigurationsAffectingPropertyCh
                 if (!areConfigurationsUpdated)
                 {
 #ifdef DM_DEBUG
-                    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+                    if (DMSV_TraceDbg())
                     {
                         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                             L"DMSV[0x%p]:  OnViewportConfigurationsAffectingPropertyChanged sets m_areViewportConfigurationsInvalid=True.", this));
@@ -10704,7 +10760,7 @@ _Check_return_ HRESULT ScrollViewer::IsExtentXChangeExpected(
     if (!IsInDirectManipulation() || m_contentWidthRequested == -1)
     {
 #ifdef DM_DEBUG
-        if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+        if (DMSV_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                 L"DMSV[0x%p]:  IsExtentXChangeExpected IsInDirectManipulation=%d m_contentWidthRequested=%f.",
@@ -10721,7 +10777,7 @@ _Check_return_ HRESULT ScrollViewer::IsExtentXChangeExpected(
     if (DoubleUtil::Abs(m_contentWidthRequested - extent) / extent > ScrollViewerZoomExtentRoundingTolerance)
     {
 #ifdef DM_DEBUG
-        if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+        if (DMSV_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                 L"DMSV[0x%p]:  IsExtentXChangeExpected extent=%f m_contentWidthRequested=%f.",
@@ -10759,7 +10815,7 @@ _Check_return_ HRESULT ScrollViewer::IsExtentYChangeExpected(
     if (!IsInDirectManipulation() || m_contentHeightRequested == -1)
     {
 #ifdef DM_DEBUG
-        if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+        if (DMSV_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                 L"DMSV[0x%p]:  IsExtentYChangeExpected IsInDirectManipulation=%d m_contentHeightRequested=%f.",
@@ -10776,7 +10832,7 @@ _Check_return_ HRESULT ScrollViewer::IsExtentYChangeExpected(
     if (DoubleUtil::Abs(m_contentHeightRequested - extent) / extent > ScrollViewerZoomExtentRoundingTolerance)
     {
 #ifdef DM_DEBUG
-        if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+        if (DMSV_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                 L"DMSV[0x%p]:  IsExtentYChangeExpected extent=%f m_contentHeightRequested=%f.",
@@ -10869,7 +10925,7 @@ _Check_return_ HRESULT ScrollViewer::put_ManipulationHandler(
     HRESULT hr = S_OK;
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
             L"DMSV[0x%p]:  put_ManipulationHandler - setting hManipulationHandler=0x%p.", this, hManipulationHandler));
@@ -11406,7 +11462,7 @@ _Check_return_ HRESULT ScrollViewer::GetManipulationSecondaryContent(
     pOffsets->width = pOffsets->height = 0.0f;
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/, L"DMSV[0x%p]:  GetManipulationSecondaryContent - entry. pContentElement=0x%p.",
             this, pContentElement));
@@ -11473,7 +11529,7 @@ _Check_return_ HRESULT ScrollViewer::GetManipulationPrimaryContentTransform(
     xaml_controls::ZoomMode zoomMode;
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
             L"DMSV[0x%p]:  GetManipulationPrimaryContentTransform - entry. inManipulation=%d, forInitialTransformationAdjustment=%d, forMargins=%d.",
@@ -11622,7 +11678,7 @@ _Check_return_ HRESULT ScrollViewer::GetManipulationSecondaryContentTransform(
     FLOAT zoomFactor = 0.0f;
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
             L"DMSV[0x%p]:  GetManipulationSecondaryContentTransform - entry. pContentElement=0x%p.", this, pContentElement));
@@ -12669,7 +12725,7 @@ _Check_return_ HRESULT ScrollViewer::NotifyManipulatabilityAffectingPropertyChan
     _In_ BOOLEAN isInLiveTree)
 {
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
             L"DMSV[0x%p]:  NotifyManipulatabilityAffectingPropertyChanged isInLiveTree=%d.", this, isInLiveTree));
@@ -12726,7 +12782,7 @@ _Check_return_ HRESULT ScrollViewer::NotifyContentAlignmentAffectingPropertyChan
     ctl::ComPtr<xaml::IUIElement> spHeader;
 
 #ifdef DM_DEBUG
-    if ((DMSV_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG)) == S_OK))
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
             L"DMSV[0x%p]:  NotifyContentAlignmentAffectingPropertyChanged - pManipulatedElement=0x%p, isForHorizontalAlignment=%d, isForStretchAlignment=%d, isStretchAlignmentTreatedAsNear=%d.",
@@ -12849,7 +12905,7 @@ _Check_return_ HRESULT ScrollViewer::NotifyManipulationProgress(
     BOOLEAN wasInDirectManipulationZoom = FALSE;
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
             L"DMSV[0x%p]:  NotifyManipulationProgress pManipulatedElement=0x%p, state=%d, xCumulativeTranslation=%f, yCumulativeTranslation=%f, zCumulativeFactor=%4.8lf.",
@@ -13000,7 +13056,7 @@ _Check_return_ HRESULT ScrollViewer::NotifyManipulationStateChanged(
     HRESULT hr = S_OK;
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
             L"DMSV[0x%p]:  NotifyManipulationStateChanged state=%d.", this, state));
@@ -13122,7 +13178,7 @@ _Check_return_ HRESULT ScrollViewer::NotifyBringIntoViewportNeeded(
     HRESULT hr = S_OK;
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
             L"DMSV[0x%p]:  NotifyBringIntoViewportNeeded pManipulatedElement=0x%p, translationX=%f, translationY=%f, zoomFactor=%4.8lf, transformIsValid=%d, transformIsInertiaEnd=%d.",
@@ -13192,7 +13248,7 @@ _Check_return_ HRESULT ScrollViewer::NotifyBringIntoViewportNeeded(
         }
 
 #ifdef DM_DEBUG
-        if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+        if (DMSV_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                 L"                   translationX=%f, translationY=%f, zoomFactor=%4.8lf.",
@@ -13261,7 +13317,7 @@ _Check_return_ HRESULT ScrollViewer::HandleManipulationStarting(
     if (spProvider)
     {
 #ifdef DM_DEBUG
-        if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+        if (DMSV_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                 L"DMSV[0x%p]:  HandleManipulationStarting - calling UpdateInManipulation with isInManipulation=1, isInLiveTree=1, nonVirtualizingOffset=-1.", this));
@@ -13302,7 +13358,7 @@ _Check_return_ HRESULT ScrollViewer::HandleManipulationStarting(
     if (spProvider)
     {
 #ifdef DM_DEBUG
-        if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+        if (DMSV_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                 L"DMSV[0x%p]:  HandleManipulationStarting - calling UpdateInManipulation with isInManipulation=1, isInLiveTree=1, nonVirtualizingOffset=-1.", this));
@@ -13337,7 +13393,7 @@ _Check_return_ HRESULT ScrollViewer::HandleManipulationStarting(
     }
 
 #ifdef DM_DEBUG
-    if (m_areViewportConfigurationsInvalid && (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK))
+    if (m_areViewportConfigurationsInvalid && DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
             L"DMSV[0x%p]:  HandleManipulationStarting m_areViewportConfigurationsInvalid=True, pManipulatedElement=0x%p.",
@@ -13411,7 +13467,7 @@ _Check_return_ HRESULT ScrollViewer::HandleManipulationDelta(
     FLOAT newUncompressedZoomFactorClamped = 1.0f;
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
             L"DMSVv[0x%p]: HandleManipulationDelta xInertiaEndTranslation=%f, yInertiaEndTranslation=%f, zInertiaEndFactor=%4.8lf, isInertiaEndTransformValid=%d, isBringIntoViewportConfigurationActivated=%d, isLastDelta=%d.",
@@ -13449,7 +13505,7 @@ _Check_return_ HRESULT ScrollViewer::HandleManipulationDelta(
     }
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
             L"DMSVv[0x%p]: HandleManipulationDelta hasZoomFactorChanged=%d, m_isDirectManipulationZoomFactorChangeIgnored=%d.",
@@ -13467,7 +13523,7 @@ _Check_return_ HRESULT ScrollViewer::HandleManipulationDelta(
         IFC(get_ZoomFactor(&newUncompressedZoomFactorClamped)); // We restrict value to [MinZoomFactor, MaxZoomFactor].
 
 #ifdef DM_DEBUG
-        if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+        if (DMSVv_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
                 L"DMSVv[0x%p]: HandleManipulationDelta updating old m_contentWidthRequested=%f, m_contentHeightRequested=%f.",
@@ -13501,7 +13557,7 @@ _Check_return_ HRESULT ScrollViewer::HandleManipulationDelta(
             m_contentWidthRequested *= newUncompressedZoomFactorClamped / oldZoomFactor;
         }
 #ifdef DM_DEBUG
-        if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+        if (DMSVv_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
                 L"DMSVv[0x%p]: HandleManipulationDelta new m_contentWidthRequested=%f.", this, m_contentWidthRequested));
@@ -13559,7 +13615,7 @@ _Check_return_ HRESULT ScrollViewer::HandleManipulationDelta(
             m_contentHeightRequested *= newUncompressedZoomFactorClamped / oldZoomFactor;
         }
 #ifdef DM_DEBUG
-        if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+        if (DMSVv_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/,
                 L"DMSVv[0x%p]: HandleManipulationDelta new m_contentHeightRequested=%f.", this, m_contentHeightRequested));
@@ -13616,7 +13672,7 @@ _Check_return_ HRESULT ScrollViewer::HandleManipulationDelta(
             m_isOffsetChangeIgnored = TRUE;
 
 #ifdef DM_DEBUG
-            if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+            if (DMSV_TraceDbg())
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                     L"DMSV[0x%p]:  HandleManipulationDelta before UpdateLayout m_xPixelOffsetRequested=%f m_xPixelOffset=%f translationX=%f.",
@@ -13630,7 +13686,7 @@ _Check_return_ HRESULT ScrollViewer::HandleManipulationDelta(
             m_isOffsetChangeIgnored = FALSE;
 
 #ifdef DM_DEBUG
-            if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+            if (DMSV_TraceDbg())
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                     L"DMSV[0x%p]:  HandleManipulationDelta after UpdateLayout m_xPixelOffsetRequested=%f m_xPixelOffset=%f.",
@@ -13829,7 +13885,7 @@ _Check_return_ HRESULT ScrollViewer::HandleManipulationLastDelta(
     IFC(get_ZoomFactor(&zoomFactor));
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
             L"DMSV[0x%p]:  HandleManipulationLastDelta - entry. xNewOffset=%f, yNewOffset=%f, zoomFactor=%4.8lf.",
@@ -13888,7 +13944,7 @@ _Check_return_ HRESULT ScrollViewer::HandleManipulationLastDelta(
         }
 
 #ifdef DM_DEBUG
-        if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+        if (DMSV_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                 L"DMSV[0x%p]:  HandleManipulationLastDelta - calling BringIntoViewportInternal(X=%f, Y=%f, W=%f, H=%f, transformIsValid=TRUE, skipDuringTouchContact=FALSE, skipAnimationWhileRunning=FALSE, animate=%d, applyAsManip=TRUE, isForMakeVisible=FALSE).",
@@ -13941,7 +13997,7 @@ _Check_return_ HRESULT ScrollViewer::HandleManipulationCompleted(
     DOUBLE virtualizingLogicalOffset = -1.0;
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
             L"DMSV[0x%p]:  HandleManipulationCompleted - entry. wasInDirectManipulationZoom=%d, xCumulativeTranslation=%f, yCumulativeTranslation=%f.",
@@ -13988,7 +14044,7 @@ _Check_return_ HRESULT ScrollViewer::HandleManipulationCompleted(
     if (spProvider)
     {
 #ifdef DM_DEBUG
-        if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+        if (DMSV_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                 L"DMSV[0x%p]:  HandleManipulationCompleted - calling UpdateInManipulation with isInManipulation=%d, isInLiveTree=%d, nonVirtualizingOffset=%f.",
@@ -14087,7 +14143,7 @@ _Check_return_ HRESULT ScrollViewer::HandleManipulationCompleted(
     // The latest ManipulationDelta might trigger a view change later. Only raise the final ViewChanged
     // if there are no pending changes in the offsets.
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
             L"DMSV[0x%p]:  HandleManipulationCompleted - calling LeaveIntermediateViewChangedMode(raiseFinalViewChanged=%d), m_xPixelOffsetRequested=%f, m_yPixelOffsetRequested=%f.",
@@ -14255,7 +14311,7 @@ _Check_return_ HRESULT ScrollViewer::GetDManipView(
     }
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  GetDManipView - horizontalOffset=%f, verticalOffset=%f, zoomFactor=%f.",
             this, *pHorizontalOffset, *pVerticalOffset, *pZoomFactor));
@@ -14299,7 +14355,7 @@ _Check_return_ HRESULT ScrollViewer::GetTargetView(
     }
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  GetTargetView - targetHorizontalOffset=%f, targetVerticalOffset=%f, targetZoomFactor=%f.",
             this, *pTargetHorizontalOffset, *pTargetVerticalOffset, *pTargetZoomFactor));
@@ -14313,7 +14369,7 @@ _Check_return_ HRESULT ScrollViewer::GetTargetView(
 _Check_return_ HRESULT ScrollViewer::StopInertialManipulation()
 {
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  StopInertialManipulation - m_isInertial=%d.", this, m_isInertial));
     }
@@ -14650,7 +14706,7 @@ _In_ FLOAT targetZoomFactor)
     if (m_iViewChangingDelay > 0)
     {
 #ifdef DM_DEBUG
-        if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+        if (DMSV_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                 L"DMSV[0x%p]:  RaiseViewChanging - Delaying ViewChanging(TargetHorizontalOffset=%f, TargetVerticalOffset=%f, TargetZoomFactor=%4.8lf, IsInertial=%d) event.",
@@ -14663,7 +14719,7 @@ _In_ FLOAT targetZoomFactor)
     else
     {
 #ifdef DM_DEBUG
-        if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+        if (DMSV_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/,
                 L"DMSV[0x%p]:  RaiseViewChanging - Raising ViewChanging(TargetHorizontalOffset=%f, TargetVerticalOffset=%f, TargetZoomFactor=%4.8lf",
@@ -14726,7 +14782,7 @@ _In_ BOOLEAN isIntermediate)
     if (m_iViewChangedDelay > 0)
     {
 #ifdef DM_DEBUG
-        if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+        if (DMSV_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  RaiseViewChanged - Delaying ViewChanged(IsIntermediate=%s) event.", this, isIntermediate ? L"True" : L"False"));
         }
@@ -14742,7 +14798,7 @@ _In_ BOOLEAN isIntermediate)
         if (m_isInIntermediateViewChangedMode)
         {
 #ifdef DM_DEBUG
-            if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+            if (DMSV_TraceDbg())
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  RaiseViewChanged - Raising ViewChanged event while in intermediate mode.", this));
             }
@@ -14755,7 +14811,7 @@ _In_ BOOLEAN isIntermediate)
         }
 
 #ifdef DM_DEBUG
-        if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+        if (DMSV_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  RaiseViewChanged - Raising ViewChanged(IsIntermediate=%s) event.", this, isIntermediate ? L"True" : L"False"));
         }
@@ -14809,7 +14865,7 @@ ScrollViewer::FlushViewChanging(
 _In_ HRESULT hr)
 {
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/, L"DMSVv[0x%p]: FlushViewChanging isInertial=%s, can raise=%s, must raise=%s.",
             this, m_isInertial ? L"True" : L"False", m_iViewChangingDelay == 1 ? L"True" : L"False", m_isViewChangingDelayed ? L"True" : L"False"));
@@ -14825,7 +14881,7 @@ _In_ HRESULT hr)
         if (m_iViewChangingDelay == 0 && m_isViewChangingDelayed)
         {
 #ifdef DM_DEBUG
-            if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+            if (DMSV_TraceDbg())
             {
                 IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  FlushViewChanging - Raising delayed ViewChanging.", this));
             }
@@ -14848,7 +14904,7 @@ ScrollViewer::FlushViewChanged(
 _In_ HRESULT hr)
 {
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/, L"DMSVv[0x%p]: FlushViewChanged can raise=%s, must raise=%s.",
             this, m_iViewChangedDelay == 1 ? L"True" : L"False", m_isViewChangedDelayed ? L"True" : L"False"));
@@ -14864,7 +14920,7 @@ _In_ HRESULT hr)
         SUCCEEDED(hr))
     {
 #ifdef DM_DEBUG
-        if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+        if (DMSV_TraceDbg())
         {
             IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  FlushViewChanged - Raising delayed ViewChanged.", this));
         }
@@ -14882,7 +14938,7 @@ _Check_return_ HRESULT
 ScrollViewer::EnterIntermediateViewChangedMode()
 {
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  EnterIntermediateViewChangedMode.", this));
     }
@@ -14906,7 +14962,7 @@ _In_ BOOLEAN raiseFinalViewChanged)
     HRESULT hr = S_OK;
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  LeaveIntermediateViewChangedMode.", this));
     }
@@ -14923,7 +14979,7 @@ _In_ BOOLEAN raiseFinalViewChanged)
             if (raiseFinalViewChanged)
             {
 #ifdef DM_DEBUG
-                if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+                if (DMSV_TraceDbg())
                 {
                     IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  LeaveIntermediateViewChangedMode - Raising final ViewChanged.", this));
                 }
@@ -15176,7 +15232,7 @@ _Check_return_ HRESULT ScrollViewer::OnHeaderPropertyChanged(
     ScrollContentPresenter* pScrollContentPresenter = NULL;
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  OnHeaderPropertyChanged isTopHeader=%d, isLeftHeader=%d.",
             this, isTopHeader, isLeftHeader, isAssociated));
@@ -15351,7 +15407,7 @@ _Check_return_ HRESULT ScrollViewer::NotifyHeadersParented()
     ctl::ComPtr<IUIElement> spHeader;
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/, L"DMSV[0x%p]:  NotifyHeadersParented.", this));
     }
@@ -15509,7 +15565,7 @@ _Check_return_ HRESULT ScrollViewer::SetScrollContentPresenterHeaders()
     ctl::ComPtr<IUIElement> spHeader;
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/, L"DMSVv[0x%p]: SetScrollContentPresenterHeaders.", this));
     }
@@ -15579,7 +15635,7 @@ _Check_return_ HRESULT ScrollViewer::UpdateHeaderAssociatedStatus(
     bool allowsMultipleAssociations = false;
 
 #ifdef DM_DEBUG
-    if (DMSVv_DBG || gps->IsDebugTraceTypeActive(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE)) == S_OK)
+    if (DMSVv_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | XCP_TRACE_VERBOSE | DMSVv_DBG) /*traceType*/, L"DMSVv[0x%p]: UpdateHeaderAssociatedStatus pObject=0x%p, isTopHeader=%d, isLeftHeader=%d, associate=%d.",
             this, pObject, isTopHeader, isLeftHeader, associate));
@@ -15934,7 +15990,7 @@ ScrollViewer::SetOverpanModes(
     const bool verticalOverpanModeChanged = verticalOverpanMode != m_verticalOverpanMode;
 
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  SetOverpanModes - horizontalOverpanMode=%d, verticalOverpanMode=%d, horizontalOverpanModeChanged=%d, verticalOverpanModeChanged=%d.",
             this, horizontalOverpanMode, verticalOverpanMode, horizontalOverpanModeChanged, verticalOverpanModeChanged));
@@ -15965,7 +16021,7 @@ _Check_return_ HRESULT
 ScrollViewer::DisableOverpanImpl()
 {
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  DisableOverpanImpl - entry.", this));
     }
@@ -15979,7 +16035,7 @@ _Check_return_ HRESULT
 ScrollViewer::EnableOverpanImpl()
 {
 #ifdef DM_DEBUG
-    if (DMSV_DBG || gps->IsDebugTraceTypeActive(XCP_TRACE_DM_SCROLLVIEWER) == S_OK)
+    if (DMSV_TraceDbg())
     {
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  EnableOverpanImpl - entry.", this));
     }

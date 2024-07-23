@@ -48,6 +48,7 @@ IFACEMETHODIMP DirectUI::FontFamily::get_Source(_Out_ HSTRING* pValue)
     xstring_ptr valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(CheckThread());
 
@@ -120,6 +121,7 @@ IFACEMETHODIMP DirectUI::FontFamilyFactory::get_XamlAutoFontFamily(_Outptr_resul
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckActivationAllowed());
     IFC(get_XamlAutoFontFamilyImpl(ppValue));
 Cleanup:

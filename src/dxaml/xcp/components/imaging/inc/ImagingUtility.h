@@ -41,33 +41,33 @@ _Check_return_ HRESULT IsHdrSource(
 
 _Check_return_ HRESULT DoesSourceSupportAlpha(
     _In_ const wrl::ComPtr<IWICBitmapSource>& spBitmapSource,
-    _Outref_ bool& supportsAlpha
+    _Out_ bool& supportsAlpha
     );
 
 _Check_return_ HRESULT CreateDefaultScaler(
     uint32_t targetWidth,
     uint32_t targetHeight,
     _In_ const wrl::ComPtr<IWICBitmapSource>& spInputSource,
-    _Outref_ wrl::ComPtr<IWICBitmapScaler>& spBitmapScaler
+    _Out_ wrl::ComPtr<IWICBitmapScaler>& spBitmapScaler
     );
 
 _Check_return_ HRESULT CreateDefaultConverter(
     const WICPixelFormatGUID& targetFormat,
     _In_ const wrl::ComPtr<IWICBitmapSource>& spInputSource,
-    _Outref_ wrl::ComPtr<IWICFormatConverter>& spFormatConverter
+    _Out_ wrl::ComPtr<IWICFormatConverter>& spFormatConverter
     );
 
 _Check_return_ HRESULT CreateDefaultColorTransform(
     _In_ const WICPixelFormatGUID& targetFormat,
     _In_ const wrl::ComPtr<IWICBitmapFrameDecode>& spBitmapFrameDecode,
     _In_ const wrl::ComPtr<IWICBitmapSource>& spInputSource,
-    _Outref_ wrl::ComPtr<IWICColorTransform>& spColorTransform
+    _Out_ wrl::ComPtr<IWICColorTransform>& spColorTransform
     );
 
 _Check_return_ HRESULT CreateDefaultFlipRotator(
     WICBitmapTransformOptions transformOptions,
     _In_ const wrl::ComPtr<IWICBitmapSource>& spInputSource,
-    _Outref_ wrl::ComPtr<IWICBitmapFlipRotator>& spBitmapFlipRotator
+    _Out_ wrl::ComPtr<IWICBitmapFlipRotator>& spBitmapFlipRotator
     );
 
 XSIZE CalculateScaledSize(
@@ -80,7 +80,7 @@ _Check_return_ HRESULT RealizeBitmapSource(
     _In_ const ImageMetadata& imageMetadata,
     _In_ IWICBitmapSource* bitmapSource,
     _In_ const ImageDecodeParams& decodeParams,
-    _Outref_ xref_ptr<OfferableSoftwareBitmap>& spSoftwareBitmap
+    _Out_ xref_ptr<OfferableSoftwareBitmap>& spSoftwareBitmap
     );
 
 _Check_return_ HRESULT ConvertWicPixelFormat(

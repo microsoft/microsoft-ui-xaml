@@ -13,6 +13,7 @@
 #include <DependencyLocator.h>
 #include <FeatureFlags.h>
 #include <DesignMode.h>
+#include "RefreshAlignedClock.h"
 
 bool CTimeManager::s_slowDownAnimations = false;
 bool CTimeManager::s_slowDownAnimationsLoaded = false;

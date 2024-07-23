@@ -62,8 +62,8 @@ _Check_return_ HRESULT WicAnimatedGifDecoder::DecodeFrame(
     _In_ EncodedImageData& encodedImageData,
     _In_ const ImageDecodeParams& decodeParams,
     int frameIndex,
-    _Outref_ wrl::ComPtr<IWICBitmapSource>& bitmapSource,
-    _Outref_ std::chrono::milliseconds& frameDelay
+    _Out_ wrl::ComPtr<IWICBitmapSource>& bitmapSource,
+    _Out_ std::chrono::milliseconds& frameDelay
     )
 {
     bitmapSource.Reset();
@@ -194,8 +194,8 @@ _Check_return_ HRESULT WicAnimatedGifDecoder::DecodeFrame(
 HRESULT WicAnimatedGifDecoder::CreateDeltaFrameSource(
     _In_ const wrl::ComPtr<IWICBitmapDecoder>& spBitmapDecoder,
     int frameIndex,
-    _Outref_ DeltaFrameInfo& deltaFrameInfo,
-    _Outref_ wrl::ComPtr<IWICBitmapSource>& spBitmapSource
+    _Out_ DeltaFrameInfo& deltaFrameInfo,
+    _Out_ wrl::ComPtr<IWICBitmapSource>& spBitmapSource
     )
 {
     wrl::ComPtr<IWICBitmapFrameDecode> spWicBitmapFrameDecode;
@@ -218,7 +218,7 @@ HRESULT WicAnimatedGifDecoder::CreateDeltaFrameSource(
 
 _Check_return_ HRESULT WicAnimatedGifDecoder::GetDeltaFrameInfo(
     _In_ const wrl::ComPtr<IWICBitmapFrameDecode>& spBitmapFrameDecode,
-    _Outref_ DeltaFrameInfo& deltaFrameInfo
+    _Out_ DeltaFrameInfo& deltaFrameInfo
     )
 {
     wrl::ComPtr<IWICMetadataQueryReader> spMetadataQueryReader;

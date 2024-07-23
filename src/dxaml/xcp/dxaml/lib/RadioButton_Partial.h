@@ -36,6 +36,13 @@ namespace DirectUI
             // to snap directly to the new visual state.
             _In_ bool bUseTransitions) override;
 
+        // Called when the element enters the tree. Ensures multiple radio buttons in a group are not checked
+        _Check_return_ HRESULT EnterImpl(
+            _In_ bool bLive,
+            _In_ bool bSkipNameRegistration,
+            _In_ bool bCoercedIsEnabled,
+            _In_ bool bUseLayoutRounding) final;
+
     public:
         // Called by RadioButtonAutomationPeer to Toggle
         _Check_return_ HRESULT AutomationRadioButtonOnToggle();
@@ -62,7 +69,7 @@ namespace DirectUI
         _Check_return_ HRESULT FocusNextElementInGroup(_In_ bool moveForward, _Out_ bool* wasFocused);
 
         _Check_return_ HRESULT GetGroupName(_Out_ bool* groupNameExists, _Out_ xstring_ptr* groupName);
-        _Check_return_ HRESULT GetParentForGroup(_In_ bool groupNameExists, _In_ RadioButton* radioButton, _Outptr_ xaml::IDependencyObject** parent);
+        _Check_return_ HRESULT GetParentForGroup(_In_ bool groupNameExists, _In_ RadioButton* radioButton, _Outptr_ CDependencyObject** parent);
 
         _Check_return_ HRESULT UpdateRadioButtonGroup();
     };

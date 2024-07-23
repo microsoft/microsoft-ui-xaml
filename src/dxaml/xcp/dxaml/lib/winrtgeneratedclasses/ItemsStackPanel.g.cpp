@@ -67,6 +67,7 @@ IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::get_FirstCacheIndex(_Out_ INT
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsStackPanel*>(this)->get_FirstCacheIndexImpl(pValue));
 Cleanup:
@@ -76,6 +77,7 @@ IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::get_FirstVisibleIndex(_Out_ I
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsStackPanel*>(this)->get_FirstVisibleIndexImpl(pValue));
 Cleanup:
@@ -112,6 +114,7 @@ IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::get_LastCacheIndex(_Out_ INT*
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsStackPanel*>(this)->get_LastCacheIndexImpl(pValue));
 Cleanup:
@@ -121,6 +124,7 @@ IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::get_LastVisibleIndex(_Out_ IN
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsStackPanel*>(this)->get_LastVisibleIndexImpl(pValue));
 Cleanup:
@@ -139,6 +143,7 @@ IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::get_ScrollingDirection(_Out_ 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemsStackPanel*>(this)->get_ScrollingDirectionImpl(pValue));
 Cleanup:

@@ -36,7 +36,7 @@ protected:
     {
     }
 
-    XPOINT m_ptGlobLast;
+    XPOINT m_ptGlobLast{};
     XINT32  m_uiCapturePointerId = -1;
     bool m_hasPointerCapture = false;
     CEventArgs* m_pPendingDoubleTapArgs = nullptr;

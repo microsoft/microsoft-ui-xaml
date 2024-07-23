@@ -103,7 +103,7 @@ private:
     xref_ptr<WindowsPresentTarget> m_presentTarget;
 
     _Notnull_ HWWalk *m_pHwWalk;
-    _Maybenull_ CompositorTreeHost *m_pCompositorTreeHost;
+    _Maybenull_ CompositorTreeHost *m_pCompositorTreeHost{};
 
     bool m_isPrimaryWindowTarget : 1;
     // TODO: these need to be tracked per-compositor now that the render target can have many.

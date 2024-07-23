@@ -3,6 +3,7 @@
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Default">
       <StaticResource x:Key="MenuBarBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="MenuBarItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="MenuBarItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
       <StaticResource x:Key="MenuBarItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
       <StaticResource x:Key="MenuBarItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
@@ -15,6 +16,7 @@
     </ResourceDictionary>
     <ResourceDictionary x:Key="Light">
       <StaticResource x:Key="MenuBarBackground" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="MenuBarItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="MenuBarItemBackground" ResourceKey="SubtleFillColorTransparentBrush" />
       <StaticResource x:Key="MenuBarItemBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
       <StaticResource x:Key="MenuBarItemBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
@@ -27,6 +29,7 @@
     </ResourceDictionary>
     <ResourceDictionary x:Key="HighContrast">
       <StaticResource x:Key="MenuBarBackground" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="MenuBarItemForeground" ResourceKey="SystemColorButtonTextColorBrush" />
       <StaticResource x:Key="MenuBarItemBackground" ResourceKey="SystemControlTransparentBrush" />
       <StaticResource x:Key="MenuBarItemBackgroundPointerOver" ResourceKey="SystemControlBackgroundListLowBrush" />
       <StaticResource x:Key="MenuBarItemBackgroundPressed" ResourceKey="SystemControlBackgroundListMediumBrush" />

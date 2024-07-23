@@ -254,7 +254,7 @@ public:
         XPOINTF m_apt[2];
     };
 
-    XPOINTF m_aptCopy[3];   // Need space for geometry builder to play.
+    XPOINTF m_aptCopy[3]{};   // Need space for geometry builder to play.
     XFLOAT  m_eAngle        = 0.0f;
     bool    m_bClockwise    = false;
     bool    m_bLarge        = false;

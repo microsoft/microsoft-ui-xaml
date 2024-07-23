@@ -194,15 +194,18 @@ private:
 class FontFallbackWrapper : public CXcpObjectBase<PALText::IFontFallback, CXcpObjectAddRefPolicy>
 {
 public:
-    FontFallbackWrapper(IDWriteFontFallback *pFontFallback)
+    FontFallbackWrapper(IDWriteFontFallback1 *pFontFallback)
     {
-        m_pFontFallback = pFontFallback;
-        AddRefInterface(m_pFontFallback);
+        Microsoft::WRL::ComPtr<IDWriteFontFallback1> fontFallback(pFontFallback);
+        fontFallback.Swap(m_fontFallback);
     }
 
-    ~FontFallbackWrapper() override
+    static HRESULT Create(IDWriteFontFallback* pFontFallback, IFontFallback** ppFontFallbackWrapper)
     {
-        ReleaseInterface(m_pFontFallback);
+        Microsoft::WRL::ComPtr<IDWriteFontFallback1> fontFallback;
+        IFC_RETURN(pFontFallback->QueryInterface(IID_PPV_ARGS(fontFallback.ReleaseAndGetAddressOf())));
+        *ppFontFallbackWrapper = new FontFallbackWrapper(fontFallback.Get());
+        return S_OK;
     }
 
     HRESULT MapCharacters(
@@ -214,6 +217,7 @@ public:
         XUINT32 baseWeight,
         XUINT32 baseStyle,
         XUINT32 baseStretch,
+        FLOAT opticalSize,
         _Deref_out_range_(0, textLength) UINT32* pMappedLength,
         _COM_Outptr_ PALText::IFontFace** ppMappedFont,
         _Out_ FLOAT* pScale
@@ -222,6 +226,6 @@ public:
 private:
     friend class FontFallbackBuilderWrapper;
     friend class CTextBlock;
-    IDWriteFontFallback *m_pFontFallback;
+    Microsoft::WRL::ComPtr<IDWriteFontFallback1> m_fontFallback;
 };
 

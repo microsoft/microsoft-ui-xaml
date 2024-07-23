@@ -433,8 +433,7 @@ CItemsControl::EnsureItemCollection( _In_ CDependencyObject *pNamescopeOwner, _I
             params.fCheckForResourceOverrides = ShouldCheckForResourceOverrides();
         }
 
-        m_pItemCollection->Enter( GetStandardNameScopeOwner(), params);
-
+        IFC(m_pItemCollection->Enter( GetStandardNameScopeOwner(), params));
     }
 
 Cleanup:

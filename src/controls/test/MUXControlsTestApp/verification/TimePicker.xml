@@ -25,7 +25,7 @@
       Foreground=#E4000000
       Margin=0,0,0,0
       Padding=0,0,0,0
-      RenderSize=242,30
+      RenderSize=242,28
       Visibility=Visible
     [Microsoft.UI.Xaml.Controls.Grid]
         Background=[NULL]
@@ -39,7 +39,7 @@
         Margin=0,0,0,0
         Name=LayoutRoot
         Padding=0,0,0,0
-        RenderSize=242,30
+        RenderSize=242,28
         Visibility=Visible
       [Microsoft.UI.Xaml.Controls.ContentPresenter]
           Background=[NULL]
@@ -72,7 +72,7 @@
           MinWidth=242
           Name=FlyoutButton
           Padding=11,5,11,6
-          RenderSize=242,30
+          RenderSize=242,28
           Visibility=Visible
         [Microsoft.UI.Xaml.Controls.Grid]
             Background=[NULL]
@@ -85,7 +85,7 @@
             FocusVisualSecondaryThickness=1,1,1,1
             Margin=0,0,0,0
             Padding=0,0,0,0
-            RenderSize=242,30
+            RenderSize=242,28
             Visibility=Visible
           [Microsoft.UI.Xaml.Controls.ContentPresenter]
               Background=#B3FFFFFF
@@ -100,7 +100,7 @@
               Margin=0,0,0,0
               Name=ContentPresenter
               Padding=0,0,0,0
-              RenderSize=242,30
+              RenderSize=242,28
               Visibility=Visible
             [Microsoft.UI.Xaml.Controls.Grid]
                 Background=[NULL]
@@ -114,7 +114,7 @@
                 Margin=0,0,0,0
                 Name=FlyoutButtonContentGrid
                 Padding=0,0,0,0
-                RenderSize=240,28
+                RenderSize=240,26
                 Visibility=Visible
               [Microsoft.UI.Xaml.Controls.Border]
                   Background=[NULL]
@@ -128,7 +128,7 @@
                   Margin=0,0,0,0
                   Name=FirstPickerHost
                   Padding=0,0,0,0
-                  RenderSize=79,28
+                  RenderSize=79,26
                   Visibility=Visible
                 [Microsoft.UI.Xaml.Controls.TextBlock]
                     FocusVisualPrimaryBrush=#E4000000
@@ -139,7 +139,7 @@
                     Margin=0,0,0,0
                     Name=HourTextBlock
                     Padding=0,3,0,6
-                    RenderSize=79,28
+                    RenderSize=79,26
                     Visibility=Visible
               [Microsoft.UI.Xaml.Shapes.Rectangle]
                   FocusVisualPrimaryBrush=#E4000000
@@ -148,7 +148,7 @@
                   FocusVisualSecondaryThickness=1,1,1,1
                   Margin=0,0,0,0
                   Name=FirstColumnDivider
-                  RenderSize=1,28
+                  RenderSize=1,26
                   StrokeThickness=1
                   Visibility=Visible
                   Width=1
@@ -164,7 +164,7 @@
                   Margin=0,0,0,0
                   Name=SecondPickerHost
                   Padding=0,0,0,0
-                  RenderSize=80,28
+                  RenderSize=80,26
                   Visibility=Visible
                 [Microsoft.UI.Xaml.Controls.TextBlock]
                     FocusVisualPrimaryBrush=#E4000000
@@ -175,7 +175,7 @@
                     Margin=0,0,0,0
                     Name=MinuteTextBlock
                     Padding=0,3,0,6
-                    RenderSize=80,28
+                    RenderSize=80,26
                     Visibility=Visible
               [Microsoft.UI.Xaml.Shapes.Rectangle]
                   FocusVisualPrimaryBrush=#E4000000
@@ -184,7 +184,7 @@
                   FocusVisualSecondaryThickness=1,1,1,1
                   Margin=0,0,0,0
                   Name=SecondColumnDivider
-                  RenderSize=1,28
+                  RenderSize=1,26
                   StrokeThickness=1
                   Visibility=Visible
                   Width=1
@@ -200,7 +200,7 @@
                   Margin=0,0,0,0
                   Name=ThirdPickerHost
                   Padding=0,0,0,0
-                  RenderSize=79,28
+                  RenderSize=79,26
                   Visibility=Visible
                 [Microsoft.UI.Xaml.Controls.TextBlock]
                     FocusVisualPrimaryBrush=#E4000000
@@ -211,5 +211,5 @@
                     Margin=0,0,0,0
                     Name=PeriodTextBlock
                     Padding=0,3,0,6
-                    RenderSize=79,28
+                    RenderSize=79,26
                     Visibility=Visible

@@ -87,6 +87,7 @@ IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::EstimateElementBounds(
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "StackingLayoutStrategy_EstimateElementBounds", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<StackingLayoutStrategy*>(this)->EstimateElementBoundsImpl(elementType, elementIndex, headerReference, containerReference, window, pResult));
 Cleanup:
@@ -104,6 +105,7 @@ IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::EstimateElementIndex(_
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "StackingLayoutStrategy_EstimateElementIndex", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<StackingLayoutStrategy*>(this)->EstimateElementIndexImpl(elementType, headerReference, containerReference, window, pTargetRect, pResult));
 Cleanup:
@@ -138,6 +140,7 @@ IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::EstimatePanelExtent(_I
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "StackingLayoutStrategy_EstimatePanelExtent", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<StackingLayoutStrategy*>(this)->EstimatePanelExtentImpl(lastHeaderReference, lastContainerReference, windowConstraint, pResult));
 Cleanup:
@@ -155,6 +158,7 @@ IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::GetElementArrangeBound
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "StackingLayoutStrategy_GetElementArrangeBounds", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<StackingLayoutStrategy*>(this)->GetElementArrangeBoundsImpl(elementType, elementIndex, containerBounds, windowConstraint, finalSize, pResult));
 Cleanup:
@@ -172,6 +176,7 @@ IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::GetElementBounds(_In_ 
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "StackingLayoutStrategy_GetElementBounds", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<StackingLayoutStrategy*>(this)->GetElementBoundsImpl(elementType, elementIndex, containerDesiredSize, referenceInformation, windowConstraint, pResult));
 Cleanup:
@@ -189,6 +194,7 @@ IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::GetElementMeasureSize(
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "StackingLayoutStrategy_GetElementMeasureSize", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<StackingLayoutStrategy*>(this)->GetElementMeasureSizeImpl(elementType, elementIndex, windowConstraint, pResult));
 Cleanup:
@@ -206,6 +212,7 @@ IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::GetElementTransitionsB
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "StackingLayoutStrategy_GetElementTransitionsBounds", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<StackingLayoutStrategy*>(this)->GetElementTransitionsBoundsImpl(elementType, elementIndex, windowConstraint, pResult));
 Cleanup:
@@ -223,6 +230,7 @@ IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::GetIsWrappingStrategy(
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "StackingLayoutStrategy_GetIsWrappingStrategy", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<StackingLayoutStrategy*>(this)->GetIsWrappingStrategyImpl(pResult));
 Cleanup:
@@ -240,6 +248,7 @@ IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::GetPositionOfFirstElem
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "StackingLayoutStrategy_GetPositionOfFirstElement", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<StackingLayoutStrategy*>(this)->GetPositionOfFirstElementImpl(pResult));
 Cleanup:
@@ -257,6 +266,7 @@ IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::GetRegularSnapPoints(_
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "StackingLayoutStrategy_GetRegularSnapPoints", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<StackingLayoutStrategy*>(this)->GetRegularSnapPointsImpl(pNearOffset, pFarOffset, pSpacing, pResult));
 Cleanup:
@@ -291,6 +301,7 @@ IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::GetVirtualizationDirec
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "StackingLayoutStrategy_GetVirtualizationDirection", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<StackingLayoutStrategy*>(this)->GetVirtualizationDirectionImpl(pResult));
 Cleanup:
@@ -308,6 +319,7 @@ IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::HasIrregularSnapPoints
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "StackingLayoutStrategy_HasIrregularSnapPoints", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<StackingLayoutStrategy*>(this)->HasIrregularSnapPointsImpl(elementType, pResult));
 Cleanup:
@@ -325,6 +337,7 @@ IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::HasSnapPointOnElement(
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "StackingLayoutStrategy_HasSnapPointOnElement", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<StackingLayoutStrategy*>(this)->HasSnapPointOnElementImpl(elementType, elementIndex, pResult));
 Cleanup:
@@ -376,6 +389,7 @@ IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::ShouldContinueFillingU
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "StackingLayoutStrategy_ShouldContinueFillingUpSpace", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(static_cast<StackingLayoutStrategy*>(this)->ShouldContinueFillingUpSpaceImpl(elementType, elementIndex, referenceInformation, windowToFill, pResult));
 Cleanup:

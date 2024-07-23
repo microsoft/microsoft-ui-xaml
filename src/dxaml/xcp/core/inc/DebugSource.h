@@ -53,7 +53,7 @@ public:
 
     SourceFileInformation m_objectSourceInformation;
     std::map<KnownPropertyIndex, SourceFileInformation> m_propertySourceInformation;
-    unsigned __int64 m_creationTime;
+    unsigned __int64 m_creationTime{};
 };
 
 // This class is used for looking up source information for XAML dependency objects.

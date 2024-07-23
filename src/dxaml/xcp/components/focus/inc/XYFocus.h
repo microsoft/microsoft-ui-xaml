@@ -181,7 +181,7 @@ namespace Focus {
 
         static std::size_t ExploredListHash(
             _In_ DirectUI::FocusNavigationDirection direction,
-            _In_ CDependencyObject* element,
+            _In_opt_ CDependencyObject* element,
             _In_opt_ CDependencyObject* engagedControl,
             _In_ const XYFocusOptions& xyFocusOptions);
 

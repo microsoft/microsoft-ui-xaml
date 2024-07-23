@@ -20,6 +20,9 @@
 #include "TextInputProducerHelper.h"
 #include <Microsoft.UI.Input.Partner.h>
 
+// Uncomment for DManip debug outputs.
+//#define DM_DEBUG
+
 enum MouseCursor : uint8_t;
 
 // Jupiter bug 103446 - change from a UI tick count to a millisecond count.
@@ -100,8 +103,8 @@ private:
     xref_ptr<CEventManager> m_eventManager;
     xref_ptr<IInspectable> m_winRtDragInfo;
     xref_ptr<IInspectable> m_dragDropAsyncOperation;
-    DirectUI::DragDropMessageType m_dragType;
-    DirectUI::DragDropMessageType m_nextDragType;
+    DirectUI::DragDropMessageType m_dragType{};
+    DirectUI::DragDropMessageType m_nextDragType{};
     DirectUI::DataPackageOperation m_acceptedOperation = DirectUI::DataPackageOperation::DataPackageOperation_None;
     BOOLEAN m_handled = FALSE;
     XPOINTF m_dragPoint;
@@ -427,7 +430,8 @@ public:
     // Called when the focus is changed from the focus manager
     static BOOL IsTextEditableControl(_In_ const CDependencyObject* const pObject);
 
-    // Helper method to retrieve the underlying input HWND from an IslandInputSite.
+    // Helper method to retrieve the underlying input HWND from an IslandInputSite. Note that these hwnds will always
+    // exist, even in a world when islands themselves might no longer be backed by hwnds.
     // Solutions that maintain the encapsulation around the input HWND should be preferred.
     // If this function must be used, the use case is potentially a candidate for a better IXP API.
     static HWND GetUnderlyingInputHwndFromIslandInputSite(_In_opt_ ixp::IIslandInputSitePartner* pIslandInputSite);
@@ -1634,7 +1638,7 @@ private:
 
     xref_ptr<KeyTipManager> m_keyTipManager;
 
-    XPOINTF m_ptLastPressedPosition;
+    XPOINTF m_ptLastPressedPosition{};
 
     wrl::ComPtr<mui::IInputSystemCursorStatics> m_inputSystemCursorStatics;
 };

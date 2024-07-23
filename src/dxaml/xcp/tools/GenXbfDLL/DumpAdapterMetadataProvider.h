@@ -12,7 +12,7 @@ class DumpAdapterMember: public xaml_markup::IXamlMember, public ctl::ComBase
     END_INTERFACE_MAP(DumpAdapterMember, ctl::ComBase)
 
 private:
-    HSTRING m_strName;
+    HSTRING m_strName{};
 
 protected:
     HRESULT QueryInterfaceImpl(_In_ REFIID riid, _Outptr_ void **ppObject);

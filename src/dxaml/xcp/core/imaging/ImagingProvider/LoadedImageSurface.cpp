@@ -177,7 +177,6 @@ void CLoadedImageSurface::SetDesiredSize(float width, float height)
 static HRESULT GetImageCache(
     _In_ CCoreServices &core,
     const xstring_ptr &uri,
-    const std::shared_ptr<ImagingTelemetry::ImageDecodeActivity>& decodeActivity,
     uint64_t imageId,
     _Outptr_ ImageCache **imageCache)
 {
@@ -195,7 +194,7 @@ static HRESULT GetImageCache(
 
     // EnsureCacheEntry creates the ImageCache object and doesn't cache it unless there is a valid URI.
     // The returned ImageCache is being used here as a download/decode engine.
-    IFC_RETURN(core.GetImageProvider()->EnsureCacheEntry(uri, absoluteUri.get(), false /* isSvg */, GetImageOptions::None, decodeActivity, imageId, &cacheHit, imageCache));
+    IFC_RETURN(core.GetImageProvider()->EnsureCacheEntry(uri, absoluteUri.get(), false /* isSvg */, GetImageOptions::None, imageId, &cacheHit, imageCache));
 
     return S_OK;
 }
@@ -208,7 +207,7 @@ _Check_return_ HRESULT CLoadedImageSurface::GetImageDescription(ImageCache &imag
         m_imageMetadataView.reset();
     }
 
-    m_imageMetadataView = imageCache.GetMetadataView(GetContext()->GetImageProvider()->GetDecodeActivity(), reinterpret_cast<uint64_t>(this));
+    m_imageMetadataView = imageCache.GetMetadataView(reinterpret_cast<uint64_t>(this));
     m_imageMetadataView->AddImageViewListener(*this);
     if (m_imageMetadataView->GetImageMetadata())
     {
@@ -221,15 +220,10 @@ _Check_return_ HRESULT CLoadedImageSurface::InitFromUri(xstring_ptr uri)
 {
     IFCEXPECTRC_RETURN(!m_closed, RO_E_CLOSED);
 
-    const auto& decodeActivity = GetContext()->GetImageProvider()->GetDecodeActivity();
-
-    if (decodeActivity)
-    {
-        decodeActivity->SetLoadedImageSurfaceUri(reinterpret_cast<uint64_t>(this), uri.GetBuffer());
-    }
+    ImagingTelemetry::SetLoadedImageSurfaceUri(reinterpret_cast<uint64_t>(this), uri.GetBuffer());
 
     auto core = GetContext();
-    IFC_RETURN(GetImageCache(*core, uri, decodeActivity, reinterpret_cast<uint64_t>(this), m_imageCache.ReleaseAndGetAddressOf()));
+    IFC_RETURN(GetImageCache(*core, uri, reinterpret_cast<uint64_t>(this), m_imageCache.ReleaseAndGetAddressOf()));
 
     // Start asynchronous download/decode operation
     IFC_RETURN(GetImageDescription(*m_imageCache));
@@ -250,15 +244,10 @@ _Check_return_ HRESULT CLoadedImageSurface::InitFromMemory(_In_ wistd::unique_pt
 {
     IFCEXPECTRC_RETURN(!m_closed, RO_E_CLOSED);
 
-    const auto& decodeActivity = GetContext()->GetImageProvider()->GetDecodeActivity();
-
-    if (decodeActivity)
-    {
-        decodeActivity->SetLoadedImageSurfaceMemory(reinterpret_cast<uint64_t>(this));
-    }
+    ImagingTelemetry::SetLoadedImageSurfaceMemory(reinterpret_cast<uint64_t>(this));
 
     auto core = GetContext();
-    IFC_RETURN(GetImageCache(*core, xstring_ptr::NullString() /* uri */, decodeActivity, reinterpret_cast<uint64_t>(this), m_imageCache.ReleaseAndGetAddressOf()));
+    IFC_RETURN(GetImageCache(*core, xstring_ptr::NullString() /* uri */, reinterpret_cast<uint64_t>(this), m_imageCache.ReleaseAndGetAddressOf()));
 
     // Set encoded data to skip async downloading
     m_imageCache->SetEncodedImageData(std::make_shared<EncodedImageData>(std::move(rawData)));
@@ -431,7 +420,6 @@ _Check_return_ HRESULT CLoadedImageSurface::StartDecodingHelper()
         false /* isAutoPlay */,
         surfaceUpdateList,
         true /* isLoadedImageSurface */,
-        GetContext()->GetImageProvider()->GetDecodeActivity(),
         reinterpret_cast<XUINT64>(this),
         xstring_ptr::EmptyString());
 
@@ -552,7 +540,7 @@ _Check_return_ HRESULT CLoadedImageSurface::OnScaleChanged()
 
             // TODO: GetImageCache should operate based on fully resolved file path.
             //       Then we could skip downloading for non-MRT resources.
-            IFC_RETURN(GetImageCache(*GetContext(), uri, GetContext()->GetImageProvider()->GetDecodeActivity(), reinterpret_cast<uint64_t>(this), m_imageCache.ReleaseAndGetAddressOf()));
+            IFC_RETURN(GetImageCache(*GetContext(), uri, reinterpret_cast<uint64_t>(this), m_imageCache.ReleaseAndGetAddressOf()));
             IFC_RETURN(GetImageDescription(*m_imageCache));
         }
         else
@@ -621,7 +609,7 @@ void CLoadedImageSurface::OnLowMemory()
 
 _Check_return_ HRESULT CLoadedImageSurface::OnImageViewUpdated(ImageViewBase& sender)
 {
-    HRESULT decodeOrDownloadHR = sender.GetHR(GetContext()->GetImageProvider()->GetDecodeActivity(), reinterpret_cast<uint64_t>(this));
+    HRESULT decodeOrDownloadHR = sender.GetHR(reinterpret_cast<uint64_t>(this));
     if (SUCCEEDED(decodeOrDownloadHR))
     {
         // If we're in the middle of shutting down then don't bother decoding. The device that we'll need is released.

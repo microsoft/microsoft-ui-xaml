@@ -87,6 +87,7 @@ IFACEMETHODIMP DirectUI::DragStartingEventArgsGenerated::get_DragUI(_Outptr_resu
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<DragStartingEventArgs*>(this)->get_DragUIImpl(ppValue));
 Cleanup:
@@ -119,6 +120,7 @@ IFACEMETHODIMP DirectUI::DragStartingEventArgsGenerated::GetDeferral(_Outptr_ AB
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "DragStartingEventArgs_GetDeferral", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<DragStartingEventArgs*>(this)->GetDeferralImpl(ppReturnValue));
 Cleanup:
@@ -136,6 +138,7 @@ IFACEMETHODIMP DirectUI::DragStartingEventArgsGenerated::GetPosition(_In_opt_ AB
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "DragStartingEventArgs_GetPosition", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<DragStartingEventArgs*>(this)->GetPositionImpl(pRelativeTo, pReturnValue));
 Cleanup:

@@ -476,7 +476,7 @@ _Check_return_ HRESULT AppBarButton::UpdateInternalStyles()
     const bool shouldHaveLabelOnRightStyleSet = effectiveLabelPosition == xaml_controls::CommandBarDefaultLabelPosition_Right && !useOverflowStyle;
 
     // Apply/UnApply auto width animation if needed
-    // only play auto width animation when the width is not overrided by local/animation setting
+    // only play auto width animation when the width is not overridden by local/animation setting
     // and when LabelOnRightStyle is not set. LabelOnRightStyle take high priority than animation.
     if (shouldHaveLabelOnRightStyleSet
         && !GetHandle()->HasLocalOrModifierValue(MetadataAPI::GetDependencyPropertyByIndex(KnownPropertyIndex::FrameworkElement_Width)))

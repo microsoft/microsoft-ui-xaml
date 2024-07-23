@@ -46,6 +46,7 @@ IFACEMETHODIMP DirectUI::ColorDisplayNameHelperFactory::ToDisplayName(_In_ ABI::
         XamlTelemetry::PublicApiCall(true, 0, "ColorDisplayNameHelper_ToDisplayName", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     
     IFC(ToDisplayNameImpl(color, pResult));
 Cleanup:

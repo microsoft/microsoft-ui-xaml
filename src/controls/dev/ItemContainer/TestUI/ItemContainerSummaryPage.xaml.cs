@@ -16,7 +16,9 @@ namespace MUXControlsTestApp
 {
     public sealed partial class ItemContainerSummaryPage : TestPage
     {
+#if MUX_PRERELEASE
         private double itemInvoked = 0;
+#endif
 
         public ItemContainerSummaryPage()
         {

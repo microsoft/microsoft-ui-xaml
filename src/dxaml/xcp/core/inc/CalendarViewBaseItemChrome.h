@@ -298,7 +298,7 @@ private:
     static const int s_maxNumberOfDensityBars = 10;
     static std::optional<bool> s_isRoundedCalendarViewBaseItemChromeEnabled;
 
-    std::array<wu::Color, s_maxNumberOfDensityBars> m_densityBarColors;
+    std::array<wu::Color, s_maxNumberOfDensityBars> m_densityBarColors{};
     UINT m_numberOfDensityBar;
 
 protected:

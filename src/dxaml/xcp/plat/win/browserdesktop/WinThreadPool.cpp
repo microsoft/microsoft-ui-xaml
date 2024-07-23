@@ -40,7 +40,7 @@ protected:
     }
     ~CWinWorkItem() override
     {
-        Close();
+        IFCFAILFAST(Close());
         ReleaseInterface(m_pData);
         DECWORKITEMCOUNTER;
     }

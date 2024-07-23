@@ -57,6 +57,7 @@ IFACEMETHODIMP DirectUI::ContextRequestedEventArgs::get_Handled(_Out_ BOOLEAN* p
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CContextRequestedEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));
@@ -92,6 +93,7 @@ IFACEMETHODIMP DirectUI::ContextRequestedEventArgs::TryGetPosition(_In_opt_ ABI:
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ContextRequestedEventArgs_TryGetPosition", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<ContextRequestedEventArgs*>(this)->TryGetPositionImpl(pRelativeTo, pPoint, pReturnValue));
 Cleanup:

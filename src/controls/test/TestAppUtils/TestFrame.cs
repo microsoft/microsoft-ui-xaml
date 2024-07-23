@@ -39,17 +39,10 @@ namespace MUXControlsTestApp
         private CheckBox _keyInputReceived = null;
         public Grid BackupThemeBackground { get; private set; }
 
-        internal static TestFrame Instance
-        {
-            get;
-            private set;
-        }
-
         public TestFrame(Type mainPageType)
         {
             _mainPageType = mainPageType;
             this.DefaultStyleKey = typeof(TestFrame);
-            Instance = this;
 
             AddHandler(FrameworkElement.KeyDownEvent, new KeyEventHandler(TestFrame_KeyDown) , true);
         }

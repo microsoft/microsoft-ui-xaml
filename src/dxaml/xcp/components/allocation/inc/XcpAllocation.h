@@ -15,11 +15,11 @@ enum ZeroMemAllocationPolicy
     ZERO_MEM_FAIL_FAST
 };
 
-__declspec(allocator) void * __cdecl operator new(size_t cSize, NoFailFastAllocationPolicy);
-__bcount(cSize) XCP_FORCEINLINE __declspec(allocator) void * __cdecl operator new[](size_t cSize, NoFailFastAllocationPolicy);
+_Ret_notnull_ _Post_writable_byte_size_(cSize) __declspec(allocator) void * __cdecl operator new(size_t cSize, NoFailFastAllocationPolicy);
+_Ret_notnull_ _Post_writable_byte_size_(cSize) XCP_FORCEINLINE __declspec(allocator) void * __cdecl operator new[](size_t cSize, NoFailFastAllocationPolicy);
 
-__declspec(allocator) void * __cdecl operator new(size_t cSize, ZeroMemAllocationPolicy);
-__bcount(cSize) XCP_FORCEINLINE __declspec(allocator) void * __cdecl operator new[](size_t cSize, ZeroMemAllocationPolicy);
+_Ret_notnull_ _Post_writable_byte_size_(cSize) __declspec(allocator) void * __cdecl operator new(size_t cSize, ZeroMemAllocationPolicy);
+_Ret_notnull_ _Post_writable_byte_size_(cSize) XCP_FORCEINLINE __declspec(allocator) void * __cdecl operator new[](size_t cSize, ZeroMemAllocationPolicy);
 
 namespace XcpAllocation {
     

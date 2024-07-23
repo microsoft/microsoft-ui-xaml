@@ -227,7 +227,7 @@ constexpr const xencoded_string_ptr& xencoded_string_ptr::EmptyString() { return
     public: \
         Ty(Ty&& other) noexcept \
             : xstring_ptr_view(other.ReleaseEncodedStorage()) { } \
-        Ty& operator=(Ty&& other) { \
+        Ty& operator=(Ty&& other) noexcept { \
             if (this != &other) { SetEncodedStorage(other.ReleaseEncodedStorage()); } \
             return (* this); \
         }
@@ -632,7 +632,7 @@ public:
         );
 
 private:
-    xstring_ptr_storage m_ephemeralStorage;
+    xstring_ptr_storage m_ephemeralStorage{};
 };
 
 

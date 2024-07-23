@@ -71,29 +71,6 @@ Cleanup:
     RRETURN(hr);
 }
 
-//------------------------------------------------------------------------
-//
-// Registers for touch hit testing messages directly using the low-level
-// Win32 API.
-//
-// This is used in hosting scenarios when we don't have a CoreWindow. We
-// don't unregister in this case. It's fine to let the window be destroyed
-// without unregistering via the low-level API.
-//
-//------------------------------------------------------------------------
-_Check_return_ HRESULT TouchHitTestingHandler::Register(_In_ HWND hwnd)
-{
-    HRESULT hr = S_OK;
-
-    if (IsRegisterTouchHitTestingWindowPresent())
-    {
-        IFCW32(RegisterTouchHitTestingWindow(hwnd, TOUCH_HIT_TESTING_CLIENT));
-    }
-
-Cleanup:
-    RRETURN(hr);
-}
-
 _Check_return_ HRESULT TouchHitTestingHandler::GetPointList(_In_ wfc::IIterable<wf::Point>* pIterable, _Inout_ std::vector<wf::Point>& list)
 {
     HRESULT hr = S_OK;

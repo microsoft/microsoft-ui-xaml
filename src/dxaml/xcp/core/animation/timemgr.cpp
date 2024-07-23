@@ -20,7 +20,7 @@
 _Check_return_ HRESULT
 CTimeManager::Create(
     _In_ CCoreServices *pCore,
-    _In_ IPALTickableClock *pIClock,
+    _In_ RefreshAlignedClock* pIClock,
     _Outptr_ CTimeManager **ppObject
     )
 {
@@ -39,7 +39,7 @@ CTimeManager::Create(
 //------------------------------------------------------------------------
 CTimeManager::CTimeManager(
     _In_ CCoreServices *pCore,
-    _In_ IPALTickableClock *pIClock
+    _In_ RefreshAlignedClock* pIClock
     )
     : CDependencyObject(pCore)
     , m_isLoaded(FALSE)
@@ -327,7 +327,7 @@ CTimeManager::Tick(
                 // Each timeline in this timing tree has recorded its own conversion result. The parts that failed to
                 // convert will tick dependently during ComputeState. The parts that succeeded will attach them to
                 // animation targets during AttachDCompAnimations.
-                pTimeline->MakeCompositionAnimationsWithProperties(&compContext);
+                (void)pTimeline->MakeCompositionAnimationsWithProperties(&compContext);
             }
 
             IFC(pTimeline->ComputeState(parentParams, &hasNoExternalReferences));

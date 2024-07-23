@@ -123,7 +123,14 @@ PointerPointTransform::TryTransformBounds(
         inRect.Y += m_windowTranslation.Y;
     }
 
-    IFC(m_pTransform->TransformBounds(inRect, pOutRect));
+    if (m_pTransform)
+    {
+        IFC(m_pTransform->TransformBounds(inRect, pOutRect));
+    }
+    else
+    {
+        *pOutRect = inRect;
+    }
 
     // Apply optional inverse translation from Jupiter window to pointer's target window
     if (m_isInverse)
@@ -160,7 +167,7 @@ PointerPointTransform::QueryInterfaceImpl(
 _Check_return_ HRESULT
 PointerPointTransform::SetTransform(
     _In_ IGeneralTransform* pTransform,
-    _In_ wf::Point *pWindowTranslation,
+    _In_opt_ wf::Point *pWindowTranslation,
     _In_ bool isInverse)
 {
     HRESULT hr = S_OK;
@@ -171,7 +178,15 @@ PointerPointTransform::SetTransform(
     m_pTransform = pTransform;
     AddRefInterface(m_pTransform);
 
-    m_windowTranslation = *pWindowTranslation;
+    if (pWindowTranslation)
+    {
+        m_windowTranslation = *pWindowTranslation;
+    }
+    else
+    {
+        m_windowTranslation = {};
+    }
+
     m_isInverse = isInverse;
 
 Cleanup:
@@ -182,6 +197,20 @@ Cleanup:
 _Check_return_ HRESULT
 PointerPointTransform::CreatePointerPointTransform(
     _In_opt_ xaml::IUIElement* relativeTo,
+    _Outptr_ mui::IPointerPointTransform** returnedPointerPointTransform)
+{
+    // Note: use an explicit zero here for the "windowTranslation". We already have a PointerPoint relative to the root
+    // of a Xaml tree. We can transform it down to the specified element just by accounting for offsets applied by Xaml
+    // (e.g. layout offsets, RenderTransforms). The fact that windowed popup hwnds have an offset is an implementation
+    // detail; the same offset is already counted as part of the Xaml Popup.HorizontalOffset/VerticalOffset or a layout
+    // offset.
+    return CreatePointerPointTransform(relativeTo, nullptr, returnedPointerPointTransform);
+}
+
+_Check_return_ HRESULT
+PointerPointTransform::CreatePointerPointTransform(
+    _In_opt_ xaml::IUIElement* relativeTo,
+    _In_opt_ wf::Point* windowTranslation,
     _Outptr_ mui::IPointerPointTransform** returnedPointerPointTransform)
 {
     IFCPTR_RETURN(returnedPointerPointTransform);
@@ -209,15 +238,9 @@ PointerPointTransform::CreatePointerPointTransform(
     IFC_RETURN(ctl::make<PointerPointTransform>(&pointerPointTransform));
 
     // Set the relativeTo transform
-    // Note: use an explicit zero here for the "windowTranslation". We already have a PointerPoint relative to the root
-    // of a Xaml tree. We can transform it down to the specified element just by accounting for offsets applied by Xaml
-    // (e.g. layout offsets, RenderTransforms). The fact that windowed popup hwnds have an offset is an implementation
-    // detail; the same offset is already counted as part of the Xaml Popup.HorizontalOffset/VerticalOffset or a layout
-    // offset.
-    wf::Point zero = {};
     IFC_RETURN(pointerPointTransform->SetTransform(
         transform.Get(),
-        &zero,
+        windowTranslation,
         false /* isInverse */));
     IFC_RETURN(pointerPointTransform.CopyTo(returnedPointerPointTransform));
 

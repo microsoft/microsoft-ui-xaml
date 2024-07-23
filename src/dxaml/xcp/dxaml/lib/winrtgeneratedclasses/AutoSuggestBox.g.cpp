@@ -523,7 +523,7 @@ _Check_return_ HRESULT DirectUI::AutoSuggestBoxGenerated::EventAddHandlerByIndex
     case KnownEventIndex::AutoSuggestBox_QuerySubmitted:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBox*, ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBoxQuerySubmittedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -540,7 +540,7 @@ _Check_return_ HRESULT DirectUI::AutoSuggestBoxGenerated::EventAddHandlerByIndex
     case KnownEventIndex::AutoSuggestBox_SuggestionChosen:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBox*, ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBoxSuggestionChosenEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -557,7 +557,7 @@ _Check_return_ HRESULT DirectUI::AutoSuggestBoxGenerated::EventAddHandlerByIndex
     case KnownEventIndex::AutoSuggestBox_TextChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBox*, ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBoxTextChangedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -586,7 +586,7 @@ _Check_return_ HRESULT DirectUI::AutoSuggestBoxGenerated::EventRemoveHandlerByIn
     case KnownEventIndex::AutoSuggestBox_QuerySubmitted:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBox*, ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBoxQuerySubmittedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -603,7 +603,7 @@ _Check_return_ HRESULT DirectUI::AutoSuggestBoxGenerated::EventRemoveHandlerByIn
     case KnownEventIndex::AutoSuggestBox_SuggestionChosen:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBox*, ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBoxSuggestionChosenEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -620,7 +620,7 @@ _Check_return_ HRESULT DirectUI::AutoSuggestBoxGenerated::EventRemoveHandlerByIn
     case KnownEventIndex::AutoSuggestBox_TextChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBox*, ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBoxTextChangedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -652,12 +652,6 @@ HRESULT DirectUI::AutoSuggestBoxFactory::QueryInterfaceImpl(_In_ REFIID iid, _Ou
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxStaticsFeature_HeaderPlacement)))
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxStaticsFeature_HeaderPlacement*>(this);
-    }
-#endif
-#if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxStaticsFeature_InputValidation)))
-    {
-        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxStaticsFeature_InputValidation*>(this);
     }
 #endif
     else
@@ -728,18 +722,9 @@ IFACEMETHODIMP DirectUI::AutoSuggestBoxFactory::get_HeaderPlacementProperty(_Out
 
 
 
-IFACEMETHODIMP DirectUI::AutoSuggestBoxFactory::get_ErrorTemplateProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
-{
-    RRETURN(MetadataAPI::GetIDependencyProperty(KnownPropertyIndex::AutoSuggestBox_ErrorTemplate, ppValue));
-}
-IFACEMETHODIMP DirectUI::AutoSuggestBoxFactory::get_InputValidationModeProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
-{
-    RRETURN(MetadataAPI::GetIDependencyProperty(KnownPropertyIndex::AutoSuggestBox_InputValidationMode, ppValue));
-}
-IFACEMETHODIMP DirectUI::AutoSuggestBoxFactory::get_InputValidationKindProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
-{
-    RRETURN(MetadataAPI::GetIDependencyProperty(KnownPropertyIndex::AutoSuggestBox_InputValidationKind, ppValue));
-}
+
+
+
 
 
 // Attached properties.

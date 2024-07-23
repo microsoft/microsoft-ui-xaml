@@ -93,7 +93,7 @@ namespace DirectUI
             _In_opt_ IInspectable* pUnused2);
         
         TrackerPtr<xaml::IDispatcherTimer> m_tpFillBuffersTimer;
-        EventRegistrationToken m_ItemsChangedToken;
+        EventRegistrationToken m_ItemsChangedToken{};
         BOOL m_bGeneratorHooked;
         
         INT32 m_itemsHostValidatedTick;

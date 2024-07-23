@@ -687,54 +687,34 @@ Result::Enum TextSegment::AnalyzeComplexity(
                 bool isTextSimple;
                 XUINT32 textLengthRead;  
                 TextRunData *pNextRunData;
-                bool allAscii = false;
 
                 // Complexity Analysis must happen after font fallback
                 ASSERT(pFontFace != NULL);
 
-                if (pFontFace->CanOptimizeShaping())
+                IFC_FROM_HRESULT_RTS(pTextAnalyzer->GetTextComplexity(
+                    pCharacters,
+                    runLength,
+                    pFontFace,
+                    &isTextSimple,
+                    &textLengthRead
+                    ));
+            
+                if (isTextSimple)
                 {
-                    allAscii = TRUE;
-                    for (XUINT32 i = 0; i < runLength; i++)
+                    if(textLengthRead < runLength)
                     {
-                        // We include all the non-digits ASCII range in our "optimizable"
-                        // characters. 
-                        if (!IsAscii(pCharacters[i])
-                            || (IsNumber(pCharacters[i]) && pRunData->m_pNumberSubstitution))
-                        {
-                            allAscii = false;
-                            break;
-                        }
+                        IFCTEXT(pRunData->Split(textLengthRead, &pNextRunData));
+                        pNextRunData->SetGlyphBased(TRUE);
+                        pRunData = pNextRunData;
                     }
-                }
-
-                if (!allAscii)
-                {
-                    IFC_FROM_HRESULT_RTS(pTextAnalyzer->GetTextComplexity(
-                        pCharacters,
-                        runLength,
-                        pFontFace,
-                        &isTextSimple,
-                        &textLengthRead
-                        ));
-                
-                    if (isTextSimple)
-                    {
-                        if(textLengthRead < runLength)
-                        {
-                            IFCTEXT(pRunData->Split(textLengthRead, &pNextRunData));
-                            pNextRunData->SetGlyphBased(TRUE);
-                            pRunData = pNextRunData;
-                        }
-                        if (pRunData->m_pNumberSubstitution)
-                        {
-                            pRunData->SetGlyphBased(TRUE);
-                        }
-                    }
-                    else
+                    if (pRunData->m_pNumberSubstitution)
                     {
                         pRunData->SetGlyphBased(TRUE);
                     }
+                }
+                else
+                {
+                    pRunData->SetGlyphBased(TRUE);
                 }
             }
         }

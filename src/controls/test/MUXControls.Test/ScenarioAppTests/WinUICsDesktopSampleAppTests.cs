@@ -53,7 +53,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestInitialize]
         public static void TestInitialize()
         {
-            ClickSafeElement();
         }
 
         /// <summary>
@@ -93,6 +92,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [Description("Invoke a Button coming from a separate class library.")]
         public void SimpleLaunchTest()
         {
+            ClickSafeElement();
             WinUISampleAppTestsUtils.VerifyText("TestTextBlock", "Loaded");
             WinUISampleAppTestsUtils.InvokeButton("MyButton");
             WinUISampleAppTestsUtils.VerifyText("TestTextBlock", "Clicked");
@@ -103,6 +103,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [Description("Create a second instance of the MainWindow and then close it.")]
         public void CreateSecondMainWindowTest()
         {
+            ClickSafeElement();
             WinUISampleAppTestsUtils.VerifyText("TestTextBlock", null);
             WinUISampleAppTestsUtils.InvokeButton("CreateWindowButton");
             WinUISampleAppTestsUtils.InvokeButton("CloseLastestWindowButton");
@@ -112,6 +113,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [Description("Validate DependencyObject.Dispatcher returns null")]
         public void TestDependencyObjectDispatcher()
         {
+            ClickSafeElement();
             WinUISampleAppTestsUtils.InvokeButton("buttonGetDODispatcher");
             WinUISampleAppTestsUtils.VerifyText("textBlockDODispatcher", "null");
         }
@@ -693,6 +695,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
 
             WinUISampleAppTestsUtils.VerifyText("upTextBlock", "Last key up detected was: Space");
+        }
+
+        [TestMethod]
+        [Description("Test if you launch an app with custom titlebar, the first element automatically gets focus")]
+        public void TestFirstControlHasFocusOnAppLaunch()
+        {
+            // Navigation View pane is the first element
+            // this sample already has custom titlebar set
+            Log.Comment("Testing if navigation view has focus by pressing space key. It should close the pane");
+            KeyboardHelper.PressKey(Key.Space);
+            Wait.ForIdle();
+            WinUISampleAppTestsUtils.VerifyText("NavigationPaneStatusBlk", "Navigation View: Pane Closed");
+            Log.Comment("It worked. Navigation View pane is closed. It did have the focus 🎉🎉");
         }
 
         private void SelectKeyPressUI()

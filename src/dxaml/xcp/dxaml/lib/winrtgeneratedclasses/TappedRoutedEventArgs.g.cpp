@@ -57,6 +57,7 @@ IFACEMETHODIMP DirectUI::TappedRoutedEventArgs::get_PointerDeviceType(_Out_ ABI:
     DirectUI::PointerDeviceType valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CTappedEventArgs*>(pCoreEventArgsNoRef)->get_PointerDeviceType(&valueCore));
@@ -74,6 +75,7 @@ IFACEMETHODIMP DirectUI::TappedRoutedEventArgs::get_Handled(_Out_ BOOLEAN* pValu
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CTappedEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));
@@ -114,6 +116,7 @@ IFACEMETHODIMP DirectUI::TappedRoutedEventArgs::GetPosition(_In_opt_ ABI::Micros
     ABI::Windows::Foundation::Point returnValueCore;
 
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CTappedEventArgs*>(pCoreEventArgsNoRef)->GetPosition(pRelativeToCore, &returnValueCore));

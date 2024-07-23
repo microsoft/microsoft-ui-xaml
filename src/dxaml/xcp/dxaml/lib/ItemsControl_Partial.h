@@ -555,8 +555,8 @@ namespace DirectUI
         DataTemplateSelectorRecyclingContext m_dataSelectorRecyclingContext;
 
         ctl::EventPtr<VectorChangedEventCallback> m_epItemCollectionVectorChangedHandler;
-        EventRegistrationToken m_ItemsChangedToken;
-        EventRegistrationToken m_GroupStyleChangedToken;
+        EventRegistrationToken m_ItemsChangedToken{};
+        EventRegistrationToken m_GroupStyleChangedToken{};
 
         TrackerPtr<DirectUI::ItemCollection> m_tpItems;
         TrackerPtr<xaml_controls::IItemContainerGenerator> m_tpGenerator;

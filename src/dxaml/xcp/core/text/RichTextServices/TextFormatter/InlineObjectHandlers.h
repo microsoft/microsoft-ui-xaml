@@ -72,8 +72,8 @@ namespace RichTextServices
         PLSPARACLIENT plsparaclient;
         BRKCOND breakBefore;
         BRKCOND breakAfter;
-        LONG penPositionX;
-        LONG penPositionY;
+        LONG penPositionX{};
+        LONG penPositionY{};
         bool isPenPositionUsed;
     };
 }

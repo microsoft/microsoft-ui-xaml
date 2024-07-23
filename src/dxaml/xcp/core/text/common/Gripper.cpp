@@ -1161,8 +1161,8 @@ _Check_return_ HRESULT CTextSelectionGripper::UpdateParent()
     if (pCurrentParent != m_pOwner)
     {
         IFC(m_pPopupNoAddRef->PegManagedPeer());
-        pCurrentParent->RemoveChild(m_pPopupNoAddRef);
-        m_pOwner->AddChild(m_pPopupNoAddRef);
+        IFC(pCurrentParent->RemoveChild(m_pPopupNoAddRef));
+        IFC(m_pOwner->AddChild(m_pPopupNoAddRef));
         m_pPopupNoAddRef->UnpegManagedPeer();
 
         IFC(m_pOwner->TransformToRoot(&pTransformerNewParent));

@@ -480,7 +480,7 @@ namespace DirectUI
 
             ItemContainerGenerator* m_pFactory;
             xaml_primitives::GeneratorDirection m_direction;
-            BOOLEAN m_bDone;
+            BOOLEAN m_bDone{};
             GeneratorState m_cachedState;
 
         }* m_pGenerator;

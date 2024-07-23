@@ -57,7 +57,7 @@ void CTransitionRoot::ReEvaluateRequiresCompNode()
     {
         if (!IsTransitionRootWithChildren())
         {
-            SetRequiresComposition(CompositionRequirement::TransitionRootWithChildren, IndependentAnimationType::None);
+            IFCFAILFAST(SetRequiresComposition(CompositionRequirement::TransitionRootWithChildren, IndependentAnimationType::None));
         }
     }
     else

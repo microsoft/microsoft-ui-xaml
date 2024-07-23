@@ -19,7 +19,7 @@ public:
     explicit InteractionMapKey(CUIElement* elem)
         : m_interactionElement(elem)
     {
-        m_interactionElement->PegManagedPeer(/*isShutdownException*/true);
+        IFCFAILFAST(m_interactionElement->PegManagedPeer(/*isShutdownException*/true));
     }
 
     ~InteractionMapKey()
@@ -33,7 +33,7 @@ public:
     InteractionMapKey(const InteractionMapKey&) = delete;
     InteractionMapKey& operator=(const InteractionMapKey&) = delete;
     InteractionMapKey(InteractionMapKey&&) = default;
-    InteractionMapKey& operator=(InteractionMapKey&& rhs)
+    InteractionMapKey& operator=(InteractionMapKey&& rhs) noexcept
     {
         if (this != &rhs)
         {

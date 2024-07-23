@@ -16,7 +16,7 @@
 // TODO: Our allocator can return null. A better SAL annotation for the return
 // value (and the other new operator) is: _Ret_maybenull_ _Post_writable_byte_size_(_Size)
 
-#if DBG && !defined(NO_XCP_NEW_AND_DELETE)
+#if DBG && !defined(NO_XCP_NEW_AND_DELETE) && !defined(_PREFAST_)
 
 #include "XcpAllocationDebug.h"
 

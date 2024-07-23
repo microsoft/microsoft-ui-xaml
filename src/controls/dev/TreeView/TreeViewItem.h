@@ -51,7 +51,7 @@ private:
     com_ptr<TreeView> AncestorTreeView();
     winrt::weak_ref<winrt::TreeView> m_ancestorTreeView{ nullptr };
     tracker_ref<winrt::CheckBox> m_selectionBox{ this };
-    tracker_ref<winrt::DispatcherTimer> m_expandContentTimer{ this };
+    winrt::DispatcherTimer m_expandContentTimer{ nullptr };
     winrt::CheckBox::Checked_revoker m_checkedEventRevoker{};
     winrt::CheckBox::Unchecked_revoker m_uncheckedEventRevoker{};
     bool m_expansionCycled{ false };

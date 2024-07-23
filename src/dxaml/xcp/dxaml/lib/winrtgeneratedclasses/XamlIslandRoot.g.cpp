@@ -46,6 +46,7 @@ IFACEMETHODIMP DirectUI::XamlIslandRootGenerated::get_Content(_Outptr_result_may
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(static_cast<XamlIslandRoot*>(this)->get_ContentImpl(ppValue));
 Cleanup:
@@ -67,6 +68,7 @@ IFACEMETHODIMP DirectUI::XamlIslandRootGenerated::get_FocusController(_Outptr_re
     IUnknown* pValueCore = nullptr;
 
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
 
     
 
@@ -116,6 +118,7 @@ IFACEMETHODIMP DirectUI::XamlIslandRootGenerated::TrySetFocus(_Out_ BOOLEAN* pRe
     BOOLEAN resultCore;
 
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
 
     IFC(DefaultStrictApiCheck(this));
 
@@ -169,6 +172,7 @@ IFACEMETHODIMP DirectUI::XamlIslandRootFactory::GetIslandFromElement(_In_ ABI::M
     }
     ARG_NOTNULL(pElement, "element");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     
     IFC(GetIslandFromElementImpl(pElement, ppResult));
 Cleanup:

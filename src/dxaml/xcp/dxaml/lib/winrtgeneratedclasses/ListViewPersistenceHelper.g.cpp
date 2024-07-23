@@ -49,6 +49,7 @@ IFACEMETHODIMP DirectUI::ListViewPersistenceHelperFactory::GetRelativeScrollPosi
     ARG_NOTNULL(pListViewBase, "listViewBase");
     ARG_NOTNULL(pItemToKeyHandler, "itemToKeyHandler");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(GetRelativeScrollPositionImpl(pListViewBase, pItemToKeyHandler, pReturnValue));
 Cleanup:
@@ -69,6 +70,7 @@ IFACEMETHODIMP DirectUI::ListViewPersistenceHelperFactory::SetRelativeScrollPosi
     ARG_NOTNULL(relativeScrollPosition, "relativeScrollPosition");
     ARG_NOTNULL(pKeyToItemHandler, "keyToItemHandler");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(SetRelativeScrollPositionAsyncImpl(pListViewBase, relativeScrollPosition, pKeyToItemHandler, ppReturnValue));
 Cleanup:

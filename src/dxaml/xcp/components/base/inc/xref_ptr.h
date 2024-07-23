@@ -31,7 +31,7 @@ public:
         : m_ptr(nullptr)
     {}
 
-    template<typename Other> explicit xref_ptr(_In_ Other* ptr)
+    template<typename Other> explicit xref_ptr(_In_opt_ Other* ptr)
         : m_ptr(ptr)
     {
         IncrementRefCount();
@@ -80,7 +80,7 @@ public:
         return *this;
     }
 
-    xref_ptr<Ty>& operator=(_In_ Ty* ptr)
+    xref_ptr<Ty>& operator=(_In_opt_ Ty* ptr)
     {
         if (m_ptr != ptr)
         {
@@ -96,7 +96,7 @@ public:
         return *this;
     }
 
-    xref_ptr<Ty>& operator=(xref_ptr<Ty>&& rhs)
+    xref_ptr<Ty>& operator=(xref_ptr<Ty>&& rhs) noexcept
     {
         if (this != &rhs)
         {
@@ -127,7 +127,7 @@ public:
         this->m_ptr = nullptr;
     }
 
-    template<class Other> HRESULT reset(_In_ Other* ptr)
+    template<class Other> HRESULT reset(_In_opt_ Other* ptr)
     {
         Ty* temp = this->m_ptr;
         this->m_ptr = ptr;
@@ -143,7 +143,7 @@ public:
     // FUTURE: This function is completely pointless now (because failed 'new' operations
     // are going to result in a failfast), so it should be removed and all callsites replaced with
     // attach()
-    template<class Other> HRESULT init(_In_ Other* ptr)
+    template<class Other> HRESULT init(_In_opt_ Other* ptr)
     {
         // This is a special function not on the original interface
         // It's the same as attach, except won't take NULL.

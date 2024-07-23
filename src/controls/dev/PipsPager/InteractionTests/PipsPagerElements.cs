@@ -20,6 +20,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         private ComboBox NumberOfPagesComboBox;
         private ComboBox MaxVisualIndicatorsComboBox;
         private ComboBox OrientationComboBox;
+        private ComboBox WrapModeComboBox;
         private CheckBox PreviousPageButtonIsVisibleCheckBox;
         private CheckBox PreviousPageButtonIsEnabledCheckBox;
         private CheckBox NextPageButtonIsVisibleCheckBox;
@@ -86,6 +87,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public ComboBox GetOrientationComboBox()
         {
             return GetElement(ref OrientationComboBox, "TestPipsPagerOrientationComboBox");
+        }
+        public ComboBox GetWrapModeComboBox()
+        {
+            return GetElement(ref WrapModeComboBox, "TestPipsPagerWrapModeComboBox");
         }
         public TextBlock GetCurrentPageTextBlock()
         {

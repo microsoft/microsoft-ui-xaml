@@ -48,7 +48,7 @@ private:
 //
 CSplitView::~CSplitView()
 {
-    NT_VERIFY(SUCCEEDED(UnregisterEventHandlers()));
+    VERIFYHR(UnregisterEventHandlers());
 
     ReleaseInterface(m_pTemplateSettings);
 }

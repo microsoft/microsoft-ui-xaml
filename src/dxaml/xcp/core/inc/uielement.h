@@ -312,8 +312,8 @@ public:
         const bool renderCollapsedMask,
         bool isFillBrushAnimated,
         bool isStrokeBrushAnimated,
-        _Out_ bool* pIsFillForHitTestOnly,
-        _Out_ bool* pIsStrokeForHitTestOnly
+        _Inout_ bool* pIsFillForHitTestOnly,
+        _Inout_ bool* pIsStrokeForHitTestOnly
         )
     {
         return false;
@@ -814,11 +814,9 @@ public:
     virtual void EvaluateIsRightToLeft();
 
     bool IsRightToLeft() override;
-
-    void LockParent();
-
-    void UnlockParent();
-
+  
+    wil::details::lambda_call<std::function<void()>> LockParent();
+  
     _Check_return_ HRESULT Focus(_In_ DirectUI::FocusState focusState,
         _In_ bool animateIfBringIntoView,
         _Out_ bool* focusChanged,

@@ -70,6 +70,7 @@ IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::get_AreHorizontalSn
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<OrientedVirtualizingPanel*>(this)->get_AreHorizontalSnapPointsRegularImpl(pValue));
 Cleanup:
@@ -79,6 +80,7 @@ IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::get_AreVerticalSnap
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<OrientedVirtualizingPanel*>(this)->get_AreVerticalSnapPointsRegularImpl(pValue));
 Cleanup:
@@ -88,6 +90,7 @@ IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::get_CanHorizontally
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<OrientedVirtualizingPanel*>(this)->get_CanHorizontallyScrollImpl(pValue));
 Cleanup:
@@ -107,6 +110,7 @@ IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::get_CanVerticallySc
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<OrientedVirtualizingPanel*>(this)->get_CanVerticallyScrollImpl(pValue));
 Cleanup:
@@ -126,6 +130,7 @@ IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::get_ExtentHeight(_O
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<OrientedVirtualizingPanel*>(this)->get_ExtentHeightImpl(pValue));
 Cleanup:
@@ -135,6 +140,7 @@ IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::get_ExtentWidth(_Ou
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<OrientedVirtualizingPanel*>(this)->get_ExtentWidthImpl(pValue));
 Cleanup:
@@ -144,6 +150,7 @@ IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::get_HorizontalOffse
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<OrientedVirtualizingPanel*>(this)->get_HorizontalOffsetImpl(pValue));
 Cleanup:
@@ -153,6 +160,7 @@ IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::get_MinHorizontalOf
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<OrientedVirtualizingPanel*>(this)->get_MinHorizontalOffsetImpl(pValue));
 Cleanup:
@@ -162,6 +170,7 @@ IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::get_MinVerticalOffs
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<OrientedVirtualizingPanel*>(this)->get_MinVerticalOffsetImpl(pValue));
 Cleanup:
@@ -171,6 +180,7 @@ IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::get_ScrollOwner(_Ou
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<OrientedVirtualizingPanel*>(this)->get_ScrollOwnerImpl(ppValue));
 Cleanup:
@@ -190,6 +200,7 @@ IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::get_VerticalOffset(
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<OrientedVirtualizingPanel*>(this)->get_VerticalOffsetImpl(pValue));
 Cleanup:
@@ -199,6 +210,7 @@ IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::get_ViewportHeight(
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<OrientedVirtualizingPanel*>(this)->get_ViewportHeightImpl(pValue));
 Cleanup:
@@ -208,6 +220,7 @@ IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::get_ViewportWidth(_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<OrientedVirtualizingPanel*>(this)->get_ViewportWidthImpl(pValue));
 Cleanup:
@@ -353,6 +366,7 @@ IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::GetIrregularSnapPoi
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "OrientedVirtualizingPanel_GetIrregularSnapPoints", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<OrientedVirtualizingPanel*>(this)->GetIrregularSnapPointsImpl(orientation, alignment, ppReturnValue));
@@ -371,6 +385,7 @@ IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::GetRegularSnapPoint
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "OrientedVirtualizingPanel_GetRegularSnapPoints", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<OrientedVirtualizingPanel*>(this)->GetRegularSnapPointsImpl(orientation, alignment, pOffset, pReturnValue));
@@ -462,6 +477,7 @@ IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::MakeVisible(_In_ AB
     }
     ARG_NOTNULL(pVisual, "visual");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<OrientedVirtualizingPanel*>(this)->MakeVisibleImpl(pVisual, rectangle, pReturnValue));
@@ -678,7 +694,7 @@ _Check_return_ HRESULT DirectUI::OrientedVirtualizingPanelGenerated::EventAddHan
     case KnownEventIndex::OrientedVirtualizingPanel_HorizontalSnapPointsChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -695,7 +711,7 @@ _Check_return_ HRESULT DirectUI::OrientedVirtualizingPanelGenerated::EventAddHan
     case KnownEventIndex::OrientedVirtualizingPanel_VerticalSnapPointsChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -724,7 +740,7 @@ _Check_return_ HRESULT DirectUI::OrientedVirtualizingPanelGenerated::EventRemove
     case KnownEventIndex::OrientedVirtualizingPanel_HorizontalSnapPointsChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -741,7 +757,7 @@ _Check_return_ HRESULT DirectUI::OrientedVirtualizingPanelGenerated::EventRemove
     case KnownEventIndex::OrientedVirtualizingPanel_VerticalSnapPointsChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

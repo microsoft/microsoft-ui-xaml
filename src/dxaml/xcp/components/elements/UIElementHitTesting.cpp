@@ -261,12 +261,12 @@ void CUIElement::TransformToOuter(HitTestPolygon& polygon, TransformRetrievalOpt
 
             XRECTF_RB clipBounds = { };
             IFCFAILFAST(rectangleGeometry->GetBounds(&clipBounds));
-            polygon.ClipToRect(ToXRectF(clipBounds));
+            IFCFAILFAST(polygon.ClipToRect(ToXRectF(clipBounds)));
         }
 
         if (HasLayoutClip() && !ShouldApplyLayoutClipAsAncestorClip())
         {
-            polygon.ClipToRect(LayoutClipGeometry->m_rc);
+            IFCFAILFAST(polygon.ClipToRect(LayoutClipGeometry->m_rc));
         }
     }
 
@@ -294,7 +294,7 @@ void CUIElement::TransformToOuter(HitTestPolygon& polygon, TransformRetrievalOpt
 
     if (!ignoreClipping && HasLayoutClip() && ShouldApplyLayoutClipAsAncestorClip())
     {
-        polygon.ClipToRect(LayoutClipGeometry->m_rc);
+        IFCFAILFAST(polygon.ClipToRect(LayoutClipGeometry->m_rc));
     }
 }
 

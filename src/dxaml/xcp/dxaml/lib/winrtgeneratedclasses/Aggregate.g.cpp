@@ -778,4 +778,3 @@ using namespace DirectUI;
 #include "XamlIslandRoot.g.cpp"
 #include "XamlShutdownCompletedOnThreadEventArgs.g.cpp"
 #include "XamlSourceFocusNavigationRequest.g.cpp"
-#include "XamlDirect.g.cpp"

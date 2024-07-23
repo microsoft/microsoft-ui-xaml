@@ -451,7 +451,7 @@ winrt::Size LinedFlowLayout::MeasureOverride(
 #endif
         }
 
-        linesSpacing = (lineCount - 1) * LineSpacing();
+        linesSpacing = (static_cast<double>(lineCount) - 1) * LineSpacing();
 
         if (m_isVirtualizingContext && m_itemsInfoFirstIndex == -1 && m_aspectRatios != nullptr)
         {
@@ -648,7 +648,7 @@ void LinedFlowLayout::ArrangeConstrainedLines(
         float itemSpacing = minItemSpacing;
         const int lineItemsCount = m_lineItemCounts[sizedLineVectorIndex];
         const float lineArrangeWidth = GetItemsRangeArrangeWidth(sizedItemIndex /*beginSizedItemIndex*/, sizedItemIndex + lineItemsCount - 1 /*endSizedItemIndex*/, usesArrangeWidthInfo);
-        const double lineExtraAvailableWidth = m_previousAvailableWidth - lineArrangeWidth - itemSpacing * (lineItemsCount - 1);
+        const double lineExtraAvailableWidth = static_cast<double>(m_previousAvailableWidth) - lineArrangeWidth - itemSpacing * (static_cast<double>(lineItemsCount) - 1);
 
 #ifdef DBG
         float cumulatedWidthDbg = 0.0;
@@ -678,7 +678,7 @@ void LinedFlowLayout::ArrangeConstrainedLines(
 #endif
                     break;
                 case winrt::LinedFlowLayoutItemsJustification::SpaceEvenly:
-                    cumulatedOffset = static_cast<float>(lineExtraAvailableWidth / (lineItemsCount + 1));
+                    cumulatedOffset = static_cast<float>(lineExtraAvailableWidth / (static_cast<double>(lineItemsCount) + 1));
                     itemSpacing += cumulatedOffset;
 #ifdef DBG
                     cumulatedWidthDbg = 2.0f * cumulatedOffset;
@@ -694,7 +694,7 @@ void LinedFlowLayout::ArrangeConstrainedLines(
                 case winrt::LinedFlowLayoutItemsJustification::SpaceBetween:
                     if (lineItemsCount > 1)
                     {
-                        itemSpacing += static_cast<float>(lineExtraAvailableWidth / (lineItemsCount - 1));
+                        itemSpacing += static_cast<float>(lineExtraAvailableWidth / (static_cast<double>(lineItemsCount) - 1));
                     }
                     break;
                 }
@@ -705,7 +705,7 @@ void LinedFlowLayout::ArrangeConstrainedLines(
                 {
                     // Because of pixel snapping based on m_roundingScaleFactor, lineExtraAvailableWidth can be slightly different from 0.0.
                     // In that case we adjust the minItemSpacing by distributing the small delta equally.
-                    itemSpacing += static_cast<float>(lineExtraAvailableWidth / (lineItemsCount - 1));
+                    itemSpacing += static_cast<float>(lineExtraAvailableWidth / (static_cast<double>(lineItemsCount) - 1));
                 }
 #ifdef DBG
                 else
@@ -734,7 +734,7 @@ void LinedFlowLayout::ArrangeConstrainedLines(
                 }
 #endif
 
-                itemSpacing += static_cast<float>(lineExtraAvailableWidth / (lineItemsCount - 1));
+                itemSpacing += static_cast<float>(lineExtraAvailableWidth / (static_cast<double>(lineItemsCount) - 1));
             }
 #ifdef DBG
             else
@@ -761,7 +761,7 @@ void LinedFlowLayout::ArrangeConstrainedLines(
                     {
                         // Use the item info provided by the ItemsInfoRequested handler since the DesiredSize
                         // may be different from the computed arrange width when the item content failed to load properly.
-                        arrangeWidth = m_itemsInfoArrangeWidths[sizedItemIndex - itemsInfoArrangeWidthsOffset];
+                        arrangeWidth = m_itemsInfoArrangeWidths[static_cast<size_t>(sizedItemIndex) - itemsInfoArrangeWidthsOffset];
                     }
                     else
                     {
@@ -1386,11 +1386,11 @@ bool LinedFlowLayout::ComputeFrozenItemsRange(
 
     // Frozen lines before the first displayed line use 80% of a scroll viewport or 40% of the sized area whichever is largest.
     int nearFrozenLinesCount = std::min(static_cast<int>(c_frozenLinesRatio * linesPerScrollViewport) + 1, firstDisplayedLineIndex - m_firstSizedLineIndex);
-    nearFrozenLinesCount = std::max(nearFrozenLinesCount, static_cast<int>(c_frozenLinesRatio / 2.0 * (firstDisplayedLineIndex - m_firstSizedLineIndex)));
+    nearFrozenLinesCount = std::max(nearFrozenLinesCount, static_cast<int>(c_frozenLinesRatio / 2.0 * (static_cast<double>(firstDisplayedLineIndex) - m_firstSizedLineIndex)));
 
     // Frozen lines after the last displayed line use 80% of a scroll viewport or 40% of the sized area whichever is largest.
     int farFrozenLinesCount = std::min(static_cast<int>(c_frozenLinesRatio * linesPerScrollViewport) + 1, m_lastSizedLineIndex - lastDisplayedLineIndex);
-    farFrozenLinesCount = std::max(farFrozenLinesCount, static_cast<int>(c_frozenLinesRatio / 2.0 * (m_lastSizedLineIndex - lastDisplayedLineIndex)));
+    farFrozenLinesCount = std::max(farFrozenLinesCount, static_cast<int>(c_frozenLinesRatio / 2.0 * (static_cast<double>(m_lastSizedLineIndex) - lastDisplayedLineIndex)));
     
     m_firstFrozenLineIndex = firstDisplayedLineIndex - nearFrozenLinesCount;
     m_lastFrozenLineIndex = lastDisplayedLineIndex + farFrozenLinesCount;
@@ -1548,7 +1548,7 @@ void LinedFlowLayout::ComputeItemsLayoutDrawback(
     // The last line does not participate in the grading if it's smaller than the available width, whether ItemsStretch is Fill or not.
     if (!isLastSizedLineStretchEnabled) 
     {
-        const double lineWidthDelta = itemsLayout.m_lineItemWidths[sizedLineCount - 1] - availableWidth;
+        const double lineWidthDelta = itemsLayout.m_lineItemWidths[static_cast<size_t>(sizedLineCount) - 1] - availableWidth;
 
         if (lineWidthDelta > 0.0)
         {
@@ -1602,7 +1602,7 @@ void LinedFlowLayout::ComputeItemsLayoutWithLockedItems(
     {
         MUX_ASSERT(itemsLayout.m_lineItemCounts[lineVectorIndex] > 0);
 
-        m_lineItemCounts[beginLineVectorIndex + lineVectorIndex] = itemsLayout.m_lineItemCounts[lineVectorIndex];
+        m_lineItemCounts[static_cast<size_t>(beginLineVectorIndex) + lineVectorIndex] = itemsLayout.m_lineItemCounts[lineVectorIndex];
     }
 
     const bool itemsAreStretched = ItemsStretch() == winrt::LinedFlowLayoutItemsStretch::Fill;
@@ -1612,7 +1612,7 @@ void LinedFlowLayout::ComputeItemsLayoutWithLockedItems(
     {
         const int lineItemsCount = itemsLayout.m_lineItemCounts[lineVectorIndex];
         const double lineItemsWidth = itemsLayout.m_lineItemWidths[lineVectorIndex];
-        const double minItemSpacings = lineItemsCount > 1 ? (lineItemsCount - 1) * minItemSpacing : 0.0;
+        const double minItemSpacings = lineItemsCount > 1 ? (static_cast<double>(lineItemsCount) - 1) * minItemSpacing : 0.0;
         double scaleFactor = 1.0;
 
         if (lineItemsWidth - minItemSpacings > 0.0)
@@ -1879,9 +1879,9 @@ float LinedFlowLayout::ComputeItemsLayoutFastPath(
                     true /*forward*/,
                     itemIndex - lineItemCount /*sizedItemIndex*/,
                     lineItemCount + 1,
-                    lineWidth + minItemSpacing + arrangeWidth /*lineItemsWidth*/,
+                    static_cast<double>(lineWidth) + minItemSpacing + arrangeWidth /*lineItemsWidth*/,
                     availableWidth,
-                    lineItemCount * minItemSpacing /*minItemSpacings*/,
+                    static_cast<double>(lineItemCount) * minItemSpacing /*minItemSpacings*/,
                     actualLineHeight,
                     averageAspectRatio);
 
@@ -1894,7 +1894,7 @@ float LinedFlowLayout::ComputeItemsLayoutFastPath(
                     lineItemCount,
                     lineWidth /*lineItemsWidth*/,
                     availableWidth,
-                    (lineItemCount - 1) * minItemSpacing /*minItemSpacings*/,
+                    (static_cast<double>(lineItemCount) - 1) * minItemSpacing /*minItemSpacings*/,
                     actualLineHeight,
                     averageAspectRatio);
 
@@ -2044,7 +2044,7 @@ float LinedFlowLayout::ComputeItemsLayoutFastPath(
     }
 #endif
 
-    m_lineItemCounts.resize(lineIndex + 1, 0);
+    m_lineItemCounts.resize(static_cast<size_t>(lineIndex) + 1, 0);
 
 #ifdef DBG
     for (int lineIndexTmp = 0; lineIndexTmp <= lineIndex; lineIndexTmp++)
@@ -2734,21 +2734,21 @@ void LinedFlowLayout::CopyItemsInfo(
 
     for (int index = 0; index < copyCount; index++)
     {
-        SetDesiredAspectRatioFromItemsInfo(m_itemsInfoFirstIndex + newStart + index, oldItemsInfoDesiredAspectRatios[oldStart + index]);
+        SetDesiredAspectRatioFromItemsInfo(m_itemsInfoFirstIndex + newStart + index, oldItemsInfoDesiredAspectRatios[static_cast<size_t>(oldStart) + index]);
 
         MUX_ASSERT(m_itemsInfoDesiredAspectRatiosForRegularPath[newStart + index] == oldItemsInfoDesiredAspectRatios[oldStart + index]);
 
         if (oldItemsInfoMinWidths.size() > 0)
         {
-            m_itemsInfoMinWidthsForRegularPath[newStart + index] = oldItemsInfoMinWidths[oldStart + index];
+            m_itemsInfoMinWidthsForRegularPath[static_cast<size_t>(newStart) + index] = oldItemsInfoMinWidths[static_cast<size_t>(oldStart) + index];
         }
 
         if (oldItemsInfoMaxWidths.size() > 0)
         {
-            m_itemsInfoMaxWidthsForRegularPath[newStart + index] = oldItemsInfoMaxWidths[oldStart + index];
+            m_itemsInfoMaxWidthsForRegularPath[static_cast<size_t>(newStart) + index] = oldItemsInfoMaxWidths[static_cast<size_t>(oldStart) + index];
         }
 
-        SetArrangeWidthFromItemsInfo(m_itemsInfoFirstIndex + newStart + index, oldItemsInfoArrangeWidths[oldStart + index]);
+        SetArrangeWidthFromItemsInfo(m_itemsInfoFirstIndex + newStart + index, oldItemsInfoArrangeWidths[static_cast<size_t>(oldStart) + index]);
 
         MUX_ASSERT(m_itemsInfoArrangeWidths[newStart + index] == oldItemsInfoArrangeWidths[oldStart + index]);
     }
@@ -3579,7 +3579,7 @@ double LinedFlowLayout::GetDesiredAspectRatioFromItemsInfo(
         MUX_ASSERT(m_itemsInfoFirstIndex >= 0);
         MUX_ASSERT(itemIndex - m_itemsInfoFirstIndex < static_cast<int>(m_itemsInfoDesiredAspectRatiosForRegularPath.size()));
 
-        desiredAspectRatio = m_itemsInfoDesiredAspectRatiosForRegularPath[itemIndex - m_itemsInfoFirstIndex];
+        desiredAspectRatio = m_itemsInfoDesiredAspectRatiosForRegularPath[static_cast<size_t>(itemIndex) - m_itemsInfoFirstIndex];
     }
 
     return desiredAspectRatio;
@@ -3688,7 +3688,7 @@ void LinedFlowLayout::GetFirstAndLastDisplayedLineIndexes(
         return;
     }
 
-    const double linesSpacing = lineCount == 0 ? 0.0 : (lineCount - 1) * lineSpacing;
+    const double linesSpacing = lineCount == 0 ? 0.0 : (static_cast<double>(lineCount) - 1) * lineSpacing;
     const double scrollExtent = lineCount * actualLineHeight + linesSpacing;
     const double maxScrollOffset = std::max(0.0, scrollExtent - scrollViewport);
     const double lineSpacingPortion = lineSpacing / lineHeight;
@@ -3718,7 +3718,7 @@ void LinedFlowLayout::GetFirstAndLastDisplayedLineIndexes(
             const double fractionalFirstDisplayedLineIndex = nearDisplayed / lineHeight;
             const int roundedFirstDisplayedLineIndex = static_cast<int>(fractionalFirstDisplayedLineIndex);
 
-            if (roundedFirstDisplayedLineIndex + 1 - fractionalFirstDisplayedLineIndex <= lineSpacingPortion &&
+            if (static_cast<double>(roundedFirstDisplayedLineIndex) + 1 - fractionalFirstDisplayedLineIndex <= lineSpacingPortion &&
                 roundedFirstDisplayedLineIndex + 1 < lineCount)
             {
                 // The portion displayed before the first displayed item is smaller than the line spacing - it can be ignored.
@@ -3988,7 +3988,7 @@ void LinedFlowLayout::GetItemsInfoRequestedRange(
             }
         }
 
-        const double linesSpacing = lineCount == 0 ? 0.0 : (lineCount - 1) * lineSpacing;
+        const double linesSpacing = lineCount == 0 ? 0.0 : (static_cast<double>(lineCount) - 1) * lineSpacing;
         const double linesHeight = lineCount * actualLineHeight + linesSpacing;
         const double scrollViewport = context.VisibleRect().Height;
         const double scrollableSize = std::max(0.0, linesHeight - scrollViewport);
@@ -4196,7 +4196,7 @@ LinedFlowLayout::ItemsLayout LinedFlowLayout::GetItemsLayout(
 
             const double desiredMinWidth = GetMinWidthFromItemsInfo(sizedItemIndex);
             const double desiredMaxWidth = GetMaxWidthFromItemsInfo(sizedItemIndex);
-            double desiredAspectRatio = m_itemsInfoDesiredAspectRatiosForRegularPath[sizedItemIndex - m_itemsInfoFirstIndex];
+            double desiredAspectRatio = m_itemsInfoDesiredAspectRatiosForRegularPath[static_cast<size_t>(sizedItemIndex) - m_itemsInfoFirstIndex];
 
             if (desiredAspectRatio <= 0.0)
             {
@@ -4688,7 +4688,7 @@ float LinedFlowLayout::GetItemsRangeArrangeWidth(
             // Use the item info provided by the ItemsInfoRequested handler since the DesiredSize.Width 
             // may still be the MinWidth because the content is loading.
             // The use of m_itemsInfoArrangeWidths must be consistent with the one in LinedFlowLayout::ArrangeConstrainedLines.
-            cumulatedArrangeWidth += m_itemsInfoArrangeWidths[sizedItemIndex - itemsInfoArrangeWidthsOffset];
+            cumulatedArrangeWidth += m_itemsInfoArrangeWidths[static_cast<size_t>(sizedItemIndex) - itemsInfoArrangeWidthsOffset];
         }
         else if (m_elementManager.IsDataIndexRealized(sizedItemIndex))
         {
@@ -4855,7 +4855,7 @@ float LinedFlowLayout::GetLinesDesiredWidth()
 
     for (int lineIndex = firstLineIndex; lineIndex <= lastLineIndex; lineIndex++)
     {
-        const int lineItemsCount = m_lineItemCounts[lineIndex - m_firstSizedLineIndex];
+        const int lineItemsCount = m_lineItemCounts[static_cast<size_t>(lineIndex) - m_firstSizedLineIndex];
         float lineWidth{};
 
         for (int lineItemIndex = 0; lineItemIndex < lineItemsCount; lineItemIndex++)
@@ -4864,7 +4864,7 @@ float LinedFlowLayout::GetLinesDesiredWidth()
 
             if (usesArrangeWidthInfo)
             {
-                itemWidth = m_itemsInfoArrangeWidths[itemIndex - m_itemsInfoFirstIndex];
+                itemWidth = m_itemsInfoArrangeWidths[static_cast<size_t>(itemIndex) - m_itemsInfoFirstIndex];
             }
             else
             {
@@ -4913,7 +4913,7 @@ double LinedFlowLayout::GetMaxWidthFromItemsInfo(
         if (itemIndex - m_itemsInfoFirstIndex >= 0 &&
             itemIndex - m_itemsInfoFirstIndex < static_cast<int>(m_itemsInfoMaxWidthsForRegularPath.size()))
         {
-            return std::min(m_itemsInfoMaxWidth, m_itemsInfoMaxWidthsForRegularPath[itemIndex - m_itemsInfoFirstIndex]);
+            return std::min(m_itemsInfoMaxWidth, m_itemsInfoMaxWidthsForRegularPath[static_cast<size_t>(itemIndex) - m_itemsInfoFirstIndex]);
         }
     }
 
@@ -4941,7 +4941,7 @@ double LinedFlowLayout::GetMinWidthFromItemsInfo(
         if (itemIndex - m_itemsInfoFirstIndex >= 0 &&
             itemIndex - m_itemsInfoFirstIndex < static_cast<int>(m_itemsInfoMinWidthsForRegularPath.size()))
         {
-            return std::max(m_itemsInfoMinWidth, m_itemsInfoMinWidthsForRegularPath[itemIndex - m_itemsInfoFirstIndex]);
+            return std::max(m_itemsInfoMinWidth, m_itemsInfoMinWidthsForRegularPath[static_cast<size_t>(itemIndex) - m_itemsInfoFirstIndex]);
         }
     }
 
@@ -5170,10 +5170,21 @@ void LinedFlowLayout::InvalidateLayout(
 // Invokes InvalidateLayout asynchronously with only invalidateMeasure == True to trigger a new measure pass.
 void LinedFlowLayout::InvalidateMeasureAsync()
 {
+    auto weakThis = get_weak();
+
     m_dispatcherQueue.TryEnqueue(winrt::DispatcherQueueHandler(
-        [strongThis = get_strong()]()
+        [weakThis]()
     {
-        strongThis->InvalidateLayout(false /*forceRelayout*/, false /*resetItemsInfo*/, true /*invalidateMeasure*/);
+        if (winrt::WindowsXamlManager::GetForCurrentThread() == nullptr)
+        {
+            // Exit early if Xaml core has already shut down.
+            return;
+        }
+
+        if (auto strongThis = weakThis.get())
+        {
+            strongThis->InvalidateLayout(false /*forceRelayout*/, false /*resetItemsInfo*/, true /*invalidateMeasure*/);
+        }
     }));
 }
 
@@ -5190,23 +5201,18 @@ void LinedFlowLayout::InvalidateMeasureTimerStart(
 {
     MUX_ASSERT(!UsesArrangeWidthInfo());
 
-    winrt::DispatcherTimer invalidateMeasureTimer = nullptr;
-
     if (m_invalidateMeasureTimer)
     {
-        invalidateMeasureTimer = m_invalidateMeasureTimer.get();
-
-        if (invalidateMeasureTimer.IsEnabled())
+        if (m_invalidateMeasureTimer.IsEnabled())
         {
-            invalidateMeasureTimer.Stop();
+            m_invalidateMeasureTimer.Stop();
         }
     }
     else
     {
-        invalidateMeasureTimer = winrt::DispatcherTimer();
+        m_invalidateMeasureTimer = winrt::DispatcherTimer();
 
-        invalidateMeasureTimer.Tick({ this, &LinedFlowLayout::InvalidateMeasureTimerTick });
-        m_invalidateMeasureTimer.set(invalidateMeasureTimer);
+        m_invalidateMeasureTimer.Tick({ this, &LinedFlowLayout::InvalidateMeasureTimerTick });
     }
 
     m_invalidateMeasureTimerTickCount = tickCount;
@@ -5220,8 +5226,8 @@ void LinedFlowLayout::InvalidateMeasureTimerStart(
     LINEDFLOWLAYOUT_TRACE_INFO_DBG(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"tickCount", tickCount);
     LINEDFLOWLAYOUT_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"timerInterval", timerInterval);
 
-    invalidateMeasureTimer.Interval(winrt::TimeSpan::duration(timerInterval));
-    invalidateMeasureTimer.Start();
+    m_invalidateMeasureTimer.Interval(winrt::TimeSpan::duration(timerInterval));
+    m_invalidateMeasureTimer.Start();
 }
 
 // Stops the timer used to trigger an asynchronous measure pass when no items info was provided by the ItemsInfoRequested event.
@@ -5236,12 +5242,9 @@ void LinedFlowLayout::InvalidateMeasureTimerStop(bool isForDestructor)
         LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    if (winrt::DispatcherTimer invalidateMeasureTimer = isForDestructor ? m_invalidateMeasureTimer.safe_get() : m_invalidateMeasureTimer.get())
+    if (m_invalidateMeasureTimer && m_invalidateMeasureTimer.IsEnabled())
     {
-        if (invalidateMeasureTimer.IsEnabled())
-        {
-            invalidateMeasureTimer.Stop();
-        }
+        m_invalidateMeasureTimer.Stop();
     }
 }
 
@@ -5867,7 +5870,7 @@ std::tuple<int, float, LinedFlowLayout::ItemsInfo> LinedFlowLayout::MeasureConst
     MUX_ASSERT(lineCount >= 1);
 
     // In the multi-line cases, the last line does not contribute to the average evaluation because it is likely incomplete.
-    const double averageItemsPerLine = (lineCount == 1) ? m_itemCount : (m_itemCount - m_lineItemCounts[lineCount - 1]) / static_cast<double>(lineCount - 1);
+    const double averageItemsPerLine = (lineCount == 1) ? m_itemCount : (static_cast<double>(m_itemCount) - m_lineItemCounts[static_cast<size_t>(lineCount) - 1]) / (static_cast<double>(lineCount) - 1);
 
     SetAverageItemsPerLine(std::pair<double, double>(averageItemsPerLine /*averageItemsPerLineRaw*/, averageItemsPerLine /*averageItemsPerLineSnapped*/), false /*unlockItems*/);
 
@@ -6201,7 +6204,7 @@ int LinedFlowLayout::MeasureConstrainedLinesRegularPath(
                     lineCount = GetLineCount(m_averageItemsPerLine.second);
                     MUX_ASSERT(lineCount != 0);
 
-                    const double linesSpacing = (lineCount - 1) * lineSpacing;
+                    const double linesSpacing = (static_cast<double>(lineCount) - 1) * lineSpacing;
                     const double scrollExtent = lineCount * actualLineHeight + linesSpacing;
                     const double maxScrollOffset = std::max(0.0, scrollExtent - scrollViewport);
                     const double newScrollOffset = std::min(maxScrollOffset, GetRoundedDouble(scrollOffset * oldAverageItemsPerLine.second / newAverageItemsPerLine.second));
@@ -6285,7 +6288,7 @@ int LinedFlowLayout::MeasureConstrainedLines(
     MUX_ASSERT(m_isVirtualizingContext == IsVirtualizingContext(context));
 
     const double lineSpacing = LineSpacing();
-    const double linesSpacing = lineCount == 0 ? 0.0 : (lineCount - 1) * lineSpacing;
+    const double linesSpacing = lineCount == 0 ? 0.0 : (static_cast<double>(lineCount) - 1) * lineSpacing;
     const double linesHeight = lineCount * actualLineHeight + linesSpacing;
     const double clampedFarRealizationRect = std::max(0.0, std::min(linesHeight, static_cast<double>(farRealizationRect)));
     const int unrealizedFarLineCount = static_cast<int>((linesHeight - clampedFarRealizationRect) / (actualLineHeight + lineSpacing));
@@ -6426,7 +6429,7 @@ int LinedFlowLayout::MeasureConstrainedLines(
 
             for (int lineVectorIndex = oldFirstLineVectorIndex; lineVectorIndex <= oldLastLineVectorIndex; lineVectorIndex++)
             {
-                m_lineItemCounts[firstStillSizedLineIndex - m_firstSizedLineIndex + lineVectorIndex - oldFirstLineVectorIndex] =
+                m_lineItemCounts[static_cast<size_t>(firstStillSizedLineIndex) - m_firstSizedLineIndex + lineVectorIndex - oldFirstLineVectorIndex] =
                     oldLineItemCounts[lineVectorIndex];
 
                 lastStillSizedItemIndex += oldLineItemCounts[lineVectorIndex];
@@ -6498,7 +6501,7 @@ int LinedFlowLayout::MeasureConstrainedLines(
                     MUX_ASSERT(m_unsizedNearLineCount + sizedLineCount == lineCount);
 
                     unsizedNearItemCount -=
-                        std::min(unsizedNearItemCount, static_cast<int>(std::round((oldFirstSizedLineIndex - m_firstSizedLineIndex) * m_averageItemsPerLine.second)));
+                        std::min(unsizedNearItemCount, static_cast<int>(std::round((static_cast<double>(oldFirstSizedLineIndex) - m_firstSizedLineIndex) * m_averageItemsPerLine.second)));
                 }
                 else
                 {
@@ -6876,7 +6879,7 @@ void LinedFlowLayout::MeasureItemRange(
         {
             MUX_ASSERT(realizedItemIndex - itemsInfoArrangeWidthsOffset<static_cast<int>(m_itemsInfoArrangeWidths.size()));
 
-            const float arrangeWidth = m_itemsInfoArrangeWidths[realizedItemIndex - itemsInfoArrangeWidthsOffset];
+            const float arrangeWidth = m_itemsInfoArrangeWidths[static_cast<size_t>(realizedItemIndex) - itemsInfoArrangeWidthsOffset];
 
             if (arrangeWidth >= 0.0f)
             {
@@ -7254,14 +7257,14 @@ bool LinedFlowLayout::RequestItemsInfo(
         {
             LINEDFLOWLAYOUT_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"minWidth", m_itemsInfoMinWidthsForFastPath[index]);
 
-            m_itemsInfoMinWidthsForRegularPath[itemsInfoIndexStart + index] = m_itemsInfoMinWidthsForFastPath[index];
+            m_itemsInfoMinWidthsForRegularPath[static_cast<size_t>(itemsInfoIndexStart) + index] = m_itemsInfoMinWidthsForFastPath[index];
         }
 
         if (maxWidthsCount > 0 && index < maxWidthsCount)
         {
             LINEDFLOWLAYOUT_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"maxWidth", m_itemsInfoMaxWidthsForFastPath[index]);
 
-            m_itemsInfoMaxWidthsForRegularPath[itemsInfoIndexStart + index] = m_itemsInfoMaxWidthsForFastPath[index];
+            m_itemsInfoMaxWidthsForRegularPath[static_cast<size_t>(itemsInfoIndexStart) + index] = m_itemsInfoMaxWidthsForFastPath[index];
         }
     }
 
@@ -7389,7 +7392,7 @@ void LinedFlowLayout::SetDesiredAspectRatioFromItemsInfo(
     MUX_ASSERT(itemIndex - m_itemsInfoFirstIndex < static_cast<int>(m_itemsInfoDesiredAspectRatiosForRegularPath.size()));
 #endif
 
-    m_itemsInfoDesiredAspectRatiosForRegularPath[itemIndex - m_itemsInfoFirstIndex] = desiredAspectRatio;
+    m_itemsInfoDesiredAspectRatiosForRegularPath[static_cast<size_t>(itemIndex) - m_itemsInfoFirstIndex] = desiredAspectRatio;
 }
 
 // Returns the total arrange width for the provided index range.

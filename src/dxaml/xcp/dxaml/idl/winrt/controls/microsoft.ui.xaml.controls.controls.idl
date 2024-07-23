@@ -115,26 +115,6 @@ namespace Microsoft.UI.Xaml.Controls
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-    [feature(Feature_InputValidation)]
-    [webhosthidden]
-    enum InputValidationKind
-    {
-        Auto,
-        Compact,
-        Inline,
-    };
-
-    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-    [feature(Feature_InputValidation)]
-    [webhosthidden]
-    enum InputValidationMode
-    {
-        Auto,
-        Default,
-        Disabled,
-    };
-
-    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     enum ItemsUpdatingScrollMode
     {
@@ -419,8 +399,6 @@ namespace Microsoft.UI.Xaml
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.ComboBoxSelectionChangedTrigger>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.DisabledFormattingAccelerators>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.IncrementalLoadingTrigger>;
-        interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.InputValidationKind>;
-        interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.InputValidationMode>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.ItemsUpdatingScrollMode>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.ListViewReorderMode>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Controls.ListViewSelectionMode>;
@@ -988,21 +966,6 @@ namespace Microsoft.UI.Xaml.Documents
 namespace Microsoft.UI.Xaml.Controls
 {
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-    [feature(Feature_InputValidation)]
-    [webhosthidden]
-    interface IInputValidationControl 
-    {
-        Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Controls.InputValidationError> ValidationErrors{ get; };
-        Boolean HasValidationErrors{ get; };
-        Microsoft.UI.Xaml.Controls.InputValidationContext ValidationContext;
-        Microsoft.UI.Xaml.DataTemplate ErrorTemplate;
-        Microsoft.UI.Xaml.Controls.InputValidationMode InputValidationMode;
-        Microsoft.UI.Xaml.Controls.InputValidationKind InputValidationKind;
-        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.IInputValidationControl,Microsoft.UI.Xaml.Controls.HasValidationErrorsChangedEventArgs> HasValidationErrorsChanged;
-        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.IInputValidationControl,Microsoft.UI.Xaml.Controls.InputValidationErrorEventArgs> ValidationError;
-    };
-
-    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     interface IInsertionPanel 
     {
@@ -1172,34 +1135,6 @@ namespace Microsoft.UI.Xaml.Controls
     runtimeclass HasValidationErrorsChangedEventArgs
     {
         Boolean NewValue{ get; };
-    };
-
-    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-    [feature(Feature_InputValidation)]
-    [webhosthidden]
-    unsealed runtimeclass InputValidationContext
-    {
-        [method_name("CreateInstance")] InputValidationContext(String memberName, Boolean isRequired);
-        Boolean IsInputRequired{ get; };
-        String MemberName{ get; };
-    };
-
-    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-    [feature(Feature_InputValidation)]
-    [webhosthidden]
-    unsealed runtimeclass InputValidationError
-    {
-        [method_name("CreateInstance")] InputValidationError(String errorMessage);
-        String ErrorMessage{ get; };
-    };
-
-    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-    [feature(Feature_InputValidation)]
-    [webhosthidden]
-    runtimeclass InputValidationErrorEventArgs
-    {
-        Microsoft.UI.Xaml.Controls.InputValidationErrorEventAction Action{ get; };
-        Microsoft.UI.Xaml.Controls.InputValidationError Error{ get; };
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
@@ -2011,9 +1946,6 @@ namespace Microsoft.UI.Xaml.Controls
     [inputproperty("Password")]
     runtimeclass PasswordBox
         : Microsoft.UI.Xaml.Controls.Control
-        , [feature(Feature_InputValidation)]
-        [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-        Microsoft.UI.Xaml.Controls.IInputValidationControl
     {
         PasswordBox();
         String Password;
@@ -2062,15 +1994,6 @@ namespace Microsoft.UI.Xaml.Controls
         {
             Microsoft.UI.Xaml.Controls.ControlHeaderPlacement HeaderPlacement;
             static Microsoft.UI.Xaml.DependencyProperty HeaderPlacementProperty{ get; };
-        }
-    
-        [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-        [feature(Feature_InputValidation)]
-        [static_name("Microsoft.UI.Xaml.Controls.IPasswordBoxStaticsFeature_InputValidation")]
-        {
-            static Microsoft.UI.Xaml.DependencyProperty ErrorTemplateProperty{ get; };
-            static Microsoft.UI.Xaml.DependencyProperty InputValidationModeProperty{ get; };
-            static Microsoft.UI.Xaml.DependencyProperty InputValidationKindProperty{ get; };
         }
     };
 
@@ -2195,9 +2118,6 @@ namespace Microsoft.UI.Xaml.Controls
     [inputproperty("Text")]
     unsealed runtimeclass TextBox
         : Microsoft.UI.Xaml.Controls.Control
-        , [feature(Feature_InputValidation)]
-        [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-        Microsoft.UI.Xaml.Controls.IInputValidationControl
     {
         [method_name("CreateInstance")] TextBox();
         String Text;
@@ -2288,15 +2208,6 @@ namespace Microsoft.UI.Xaml.Controls
         {
             Microsoft.UI.Xaml.Controls.ControlHeaderPlacement HeaderPlacement;
             static Microsoft.UI.Xaml.DependencyProperty HeaderPlacementProperty{ get; };
-        }
-    
-        [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-        [feature(Feature_InputValidation)]
-        [static_name("Microsoft.UI.Xaml.Controls.ITextBoxStaticsFeature_InputValidation")]
-        {
-            static Microsoft.UI.Xaml.DependencyProperty ErrorTemplateProperty{ get; };
-            static Microsoft.UI.Xaml.DependencyProperty InputValidationModeProperty{ get; };
-            static Microsoft.UI.Xaml.DependencyProperty InputValidationKindProperty{ get; };
         }
     };
 
@@ -2485,9 +2396,6 @@ namespace Microsoft.UI.Xaml.Controls
     [inputproperty("Text")]
     unsealed runtimeclass ComboBox
         : Microsoft.UI.Xaml.Controls.Primitives.Selector
-        , [feature(Feature_InputValidation)]
-        [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-        Microsoft.UI.Xaml.Controls.IInputValidationControl
     {
         [method_name("CreateInstance")] ComboBox();
         Boolean IsDropDownOpen;
@@ -2533,15 +2441,6 @@ namespace Microsoft.UI.Xaml.Controls
         {
             Microsoft.UI.Xaml.Controls.ControlHeaderPlacement HeaderPlacement;
             static Microsoft.UI.Xaml.DependencyProperty HeaderPlacementProperty{ get; };
-        }
-    
-        [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-        [feature(Feature_InputValidation)]
-        [static_name("Microsoft.UI.Xaml.Controls.IComboBoxStaticsFeature_InputValidation")]
-        {
-            static Microsoft.UI.Xaml.DependencyProperty ErrorTemplateProperty{ get; };
-            static Microsoft.UI.Xaml.DependencyProperty InputValidationModeProperty{ get; };
-            static Microsoft.UI.Xaml.DependencyProperty InputValidationKindProperty{ get; };
         }
     };
 

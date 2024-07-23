@@ -104,19 +104,6 @@ struct IPALGraphicsDeviceChangeListener
 // Assume a refresh rate of 60Hz before we can query the system for the actual refresh rate.
 const XFLOAT DefaultRefreshIntervalInMilliseconds = 1000.0f / 60.0f;
 
-//------------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Refresh rate abstraction
-//
-//------------------------------------------------------------------------------
-struct IPALRefreshRateInfo : public IObject
-{
-    virtual XFLOAT GetRefreshIntervalInMilliseconds() = 0;
-    virtual _Check_return_ HRESULT WaitForRefreshInterval() = 0;
-    virtual bool IsValid() = 0;
-};
-
 enum class InterpolationMode
 {
     Gamma_2_2,

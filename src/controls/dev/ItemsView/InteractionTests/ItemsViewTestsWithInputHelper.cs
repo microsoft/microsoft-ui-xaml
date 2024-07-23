@@ -389,7 +389,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Ignore", "True")] // Bug 41224237: ItemsViewTestsWithInputHelper.PanItemsView fails in the lab
         public void PanItemsView()
         {
-            Log.Comment("Selecting ItemsView tests");
+            Log.Comment("Selecting ItemsView interactive tests");
 
             using (var setup = new TestSetupHelper(new[] { "ItemsView Tests", "navigateToInteractiveTests" }))
             {
@@ -401,12 +401,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 ComboBox cmbItemsSource = new ComboBox(FindElement.ById("cmbItemsSource"));
                 Verify.IsNotNull(cmbItemsSource, "Verifying that cmbItemsSource was found");
 
-                Log.Comment("Changing ItemTemplate selection to 'Recipe DataTemplate (Medium StackPanel)'");
-                cmbItemTemplate.SelectItemByName("Recipe DataTemplate (Medium StackPanel)");
+                Log.Comment("Changing ItemTemplate selection to 'Entity DataTemplate (Medium StackPanel)'");
+                cmbItemTemplate.SelectItemByName("Entity DataTemplate (Medium StackPanel)");
                 Log.Comment("Selection is now {0}", cmbItemTemplate.Selection[0].Name);
 
-                Log.Comment("Changing ItemsSource selection to 'List<Recipe>'");
-                cmbItemsSource.SelectItemByName("List<Recipe>");
+                Log.Comment("Changing ItemsSource selection to 'List<Entity>'");
+                cmbItemsSource.SelectItemByName("List<Entity>");
                 Log.Comment("Selection is now {0}", cmbItemsSource.Selection[0].Name);
 
                 // Tapping button before attempting pan operation to guarantee effective touch input
@@ -478,6 +478,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void KeyboardNavigationInItemsViewWithLinedFlowLayout()
         {
             KeyboardNavigationWithLayout(layout: "LinedFlowLayout", useLateralMoves: true);
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("Description", "Exercises the PageDown/PageUp, Home/End, Left/Right/Down/Up keys in an ItemsView with LinedFlowLayout & focusable control inside ItemContainer.")]
+        public void KeyboardNavigationInItemsViewWithLinedFlowLayoutAndInnerFocusableControl()
+        {
+            KeyboardNavigationWithLayout(layout: "LinedFlowLayout", useLateralMoves: true, useFocusableControlInItemContainer: true);
         }
 
         [TestMethod]
@@ -672,8 +680,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsNotNull(cmbItemsSourceUIObject, "Verifying that cmbItemsSource was found");
                     ComboBox itemsSourceComboBox = new ComboBox(cmbItemsSourceUIObject);
 
-                    Log.Comment("Changing cmbItemsSource selection to 'ObservableCollection<Recipe>'");
-                    itemsSourceComboBox.SelectItemByName("ObservableCollection<Recipe>");
+                    Log.Comment("Changing cmbItemsSource selection to 'ObservableCollection<Entity>'");
+                    itemsSourceComboBox.SelectItemByName("ObservableCollection<Entity>");
                     Log.Comment("Selection is now {0}", itemsSourceComboBox.Selection[0].Name);
 
                     Log.Comment("Retrieving & filling txtItemsViewMethodIndex");
@@ -779,7 +787,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Ensures clicking ItemContainer in ItemsView brings it into view.")]
         public void ClickedItemBroughtIntoView()
         {
-            Log.Comment("Selecting ItemsView tests");
+            Log.Comment("Selecting ItemsView interactive tests");
 
             using (var setup = new TestSetupHelper(new[] { "ItemsView Tests", "navigateToInteractiveTests" }))
             {
@@ -791,12 +799,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 ComboBox cmbItemsSource = new ComboBox(FindElement.ById("cmbItemsSource"));
                 Verify.IsNotNull(cmbItemsSource, "Verifying that cmbItemsSource was found");
 
-                Log.Comment("Changing ItemTemplate selection to 'Recipe DataTemplate (Medium ItemContainer)'");
-                cmbItemTemplate.SelectItemByName("Recipe DataTemplate (Medium ItemContainer)");
+                Log.Comment("Changing ItemTemplate selection to 'Entity DataTemplate (Medium ItemContainer)'");
+                cmbItemTemplate.SelectItemByName("Entity DataTemplate (Medium ItemContainer)");
                 Log.Comment("Selection is now {0}", cmbItemTemplate.Selection[0].Name);
 
-                Log.Comment("Changing ItemsSource selection to 'List<Recipe>'");
-                cmbItemsSource.SelectItemByName("List<Recipe>");
+                Log.Comment("Changing ItemsSource selection to 'List<Entity>'");
+                cmbItemsSource.SelectItemByName("List<Entity>");
                 Log.Comment("Selection is now {0}", cmbItemsSource.Selection[0].Name);
 
                 Log.Comment("Retrieving itemsView");
@@ -874,8 +882,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 ComboBox cmbItemsSource = new ComboBox(FindElement.ById("cmbItemsSource"));
                 Verify.IsNotNull(cmbItemsSource, "Verifying that cmbItemsSource was found");
 
-                Log.Comment("Changing cmbItemsSource selection to 'ObservableCollection<Recipe>'");
-                cmbItemsSource.SelectItemByName("ObservableCollection<Recipe>");
+                Log.Comment("Changing cmbItemsSource selection to 'ObservableCollection<Entity>'");
+                cmbItemsSource.SelectItemByName("ObservableCollection<Entity>");
                 Log.Comment("Selection is now {0}", cmbItemsSource.Selection[0].Name);
 
                 Log.Comment("Retrieving and selecting first ItemContainer.");
@@ -1147,8 +1155,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsNotNull(cmbItemsSourceUIObject, "Verifying that cmbItemsSource was found");
                     ComboBox cmbItemsSource = new ComboBox(cmbItemsSourceUIObject);
 
-                    Log.Comment("Changing cmbItemsSource selection to 'ObservableCollection<Recipe>'");
-                    cmbItemsSource.SelectItemByName("ObservableCollection<Recipe>");
+                    Log.Comment("Changing cmbItemsSource selection to 'ObservableCollection<Entity>'");
+                    cmbItemsSource.SelectItemByName("ObservableCollection<Entity>");
                     Log.Comment("Selection is now {0}", cmbItemsSource.Selection[0].Name);
                     Wait.ForIdle();
 
@@ -1183,7 +1191,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
         }
-
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
@@ -1228,8 +1235,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsNotNull(cmbItemsSourceUIObject, "Verifying that cmbItemsSource was found");
                     ComboBox cmbItemsSource = new ComboBox(cmbItemsSourceUIObject);
 
-                    Log.Comment("Changing cmbItemsSource selection to 'ObservableCollection<Recipe>'");
-                    cmbItemsSource.SelectItemByName("ObservableCollection<Recipe>");
+                    Log.Comment("Changing cmbItemsSource selection to 'ObservableCollection<Entity>'");
+                    cmbItemsSource.SelectItemByName("ObservableCollection<Entity>");
                     Log.Comment("Selection is now {0}", cmbItemsSource.Selection[0].Name);
                     Wait.ForIdle();
 
@@ -1270,6 +1277,82 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     ResetItemsView(cmbItemsSource, cmbLayout);
                 }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        [TestProperty("Description", "Tests ItemsSource item insertions and removals, followed by item selections.")]
+        public void InsertAndRemoveItems()
+        {
+            Log.Comment("Selecting ItemsView interactive tests");
+
+            using (var setup = new TestSetupHelper(new[] { "ItemsView Tests", "navigateToInteractiveTests" }))
+            {
+                Log.Comment("Retrieving cmbLayout");
+                ComboBox cmbLayout = new ComboBox(FindElement.ById("cmbLayout"));
+                Verify.IsNotNull(cmbLayout, "Verifying that cmbLayout was found");
+
+                Log.Comment("Retrieving cmbItemTemplate");
+                ComboBox cmbItemTemplate = new ComboBox(FindElement.ById("cmbItemTemplate"));
+                Verify.IsNotNull(cmbItemTemplate, "Verifying that cmbItemTemplate was found");
+
+                Log.Comment("Retrieving cmbItemsSource");
+                ComboBox cmbItemsSource = new ComboBox(FindElement.ById("cmbItemsSource"));
+                Verify.IsNotNull(cmbItemsSource, "Verifying that cmbItemsSource was found");
+
+                Log.Comment("Retrieving txtItemsSourceIndexes");
+                Edit itemsSourceIndexesTextBox = new Edit(FindElement.ById("txtItemsSourceIndexes"));
+                Verify.IsNotNull(itemsSourceIndexesTextBox, "Verifying that itemsSourceIndexesTextBox was found");
+
+                Log.Comment("Retrieving btnInsertItems");
+                Button btnInsertItems = new Button(FindElement.ById("btnInsertItems"));
+                Verify.IsNotNull(btnInsertItems, "Verifying that btnInsertItems was found");
+
+                Log.Comment("Retrieving btnRemoveItems");
+                Button btnRemoveItems = new Button(FindElement.ById("btnRemoveItems"));
+                Verify.IsNotNull(btnRemoveItems, "Verifying that btnRemoveItems was found");
+
+                Log.Comment("Retrieving itemsView");
+                UIObject itemsViewUIObject = FindElement.ByName("itemsView");
+                Verify.IsNotNull(itemsViewUIObject, "Verifying that itemsView was found");
+
+                Log.Comment("Changing cmbLayout selection to 'LinedFlowLayout'");
+                cmbLayout.SelectItemByName("LinedFlowLayout");
+                Log.Comment("Selection is now {0}", cmbLayout.Selection[0].Name);
+
+                Log.Comment("Changing ItemTemplate selection to 'Entity DataTemplate (Medium ItemContainer)'");
+                cmbItemTemplate.SelectItemByName("Entity DataTemplate (Medium ItemContainer)");
+                Log.Comment("Selection is now {0}", cmbItemTemplate.Selection[0].Name);
+
+                Log.Comment("Changing ItemsSource selection to 'ObservableCollection<Entity>'");
+                cmbItemsSource.SelectItemByName("ObservableCollection<Entity>");
+                Log.Comment("Selection is now {0}", cmbItemsSource.Selection[0].Name);
+
+                Log.Comment("Changing txtItemsSourceIndexes text to '0, 0, 0'");
+                itemsSourceIndexesTextBox.SetValueAndWait("0, 0, 0");
+                Wait.ForIdle();
+
+                Log.Comment("Removing the first 3 items");
+                btnRemoveItems.Invoke();
+                Wait.ForIdle();
+
+                Log.Comment("Inserting the first 3 items");
+                btnInsertItems.Invoke();
+                Wait.ForIdle();
+
+                for (int index = 0; index < 4; index++)
+                {
+                    Log.Comment("Clicking on ItemsView item {0} to select it.", index);
+                    itemsViewUIObject.Click(PointerButtons.Primary, 40.0 + (100 * index), 40.0);
+                    Wait.ForIdle();
+                    int currentItemIndex = GetCurrentItemIndex();
+                    Verify.AreEqual(index, currentItemIndex, "Verifying CurrentItemIndex is " + index);
+                }
+
+                ResetItemsView(cmbItemsSource, cmbLayout);
+
+                // Output-debug-string-level "None" is automatically restored when landing back on the ScrollView test page.
             }
         }
 
@@ -1339,8 +1422,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     ComboBox cmbItemsSource = new ComboBox(FindElement.ById("cmbItemsSource"));
                     Verify.IsNotNull(cmbItemsSource, "Verifying that cmbItemsSource was found");
 
-                    Log.Comment("Changing cmbItemsSource selection to 'ObservableCollection<Recipe>'");
-                    cmbItemsSource.SelectItemByName("ObservableCollection<Recipe>");
+                    Log.Comment("Changing cmbItemsSource selection to 'ObservableCollection<Entity>'");
+                    cmbItemsSource.SelectItemByName("ObservableCollection<Entity>");
                     Log.Comment("Selection is now {0}", cmbItemsSource.Selection[0].Name);
 
                     Log.Comment("Setting up ItemsView.StartBringItemIntoView parameters.");
@@ -1802,12 +1885,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 cmbLayout.SelectItemByName("LinedFlowLayout");
                 Log.Comment("Selection is now {0}", cmbLayout.Selection[0].Name);
 
-                Log.Comment("Changing ItemTemplate selection to 'Recipe DataTemplate (Medium ItemContainer)'");
-                cmbItemTemplate.SelectItemByName("Recipe DataTemplate (Medium ItemContainer)");
+                Log.Comment("Changing ItemTemplate selection to 'Entity DataTemplate (Medium ItemContainer)'");
+                cmbItemTemplate.SelectItemByName("Entity DataTemplate (Medium ItemContainer)");
                 Log.Comment("Selection is now {0}", cmbItemTemplate.Selection[0].Name);
 
-                Log.Comment("Changing ItemsSource selection to 'List<Recipe>'");
-                cmbItemsSource.SelectItemByName("List<Recipe>");
+                Log.Comment("Changing ItemsSource selection to 'List<Entity>'");
+                cmbItemsSource.SelectItemByName("List<Entity>");
                 Log.Comment("Selection is now {0}", cmbItemsSource.Selection[0].Name);
 
                 Log.Comment("Changing txtScrollViewHorizontalOffset text to '0'");
@@ -1943,8 +2026,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             ComboBox cmbItemsSource = new ComboBox(FindElement.ById("cmbItemsSource"));
             Verify.IsNotNull(cmbItemsSource, "Verifying that cmbItemsSource was found");
 
-            Log.Comment("Changing cmbItemsSource selection to 'List<Recipe>'");
-            cmbItemsSource.SelectItemByName("List<Recipe>");
+            Log.Comment("Changing cmbItemsSource selection to 'List<Entity>'");
+            cmbItemsSource.SelectItemByName("List<Entity>");
             Log.Comment("Selection is now {0}", cmbItemsSource.Selection[0].Name);
         }
 
@@ -1966,9 +2049,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             return txtSelectedItems.Value;
         }
 
-        private void KeyboardNavigationWithLayout(string layout, bool useLateralMoves)
+        private void KeyboardNavigationWithLayout(string layout, bool useLateralMoves, bool useFocusableControlInItemContainer = false)
         {
-            Log.Comment("Selecting ItemsView tests");
+            Log.Comment("Selecting ItemsView interactive tests");
 
             using (var setup = new TestSetupHelper(new[] { "ItemsView Tests", "navigateToInteractiveTests" }))
             {
@@ -1988,12 +2071,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 cmbLayout.SelectItemByName(layout);
                 Log.Comment("Selection is now {0}", cmbLayout.Selection[0].Name);
 
-                Log.Comment("Changing ItemTemplate selection to 'Recipe DataTemplate (Medium ItemContainer)'");
-                cmbItemTemplate.SelectItemByName("Recipe DataTemplate (Medium ItemContainer)");
+                if (useFocusableControlInItemContainer)
+                {
+                    Log.Comment("Changing ItemTemplate selection to 'Entity DataTemplate (ItemContainer with ToggleButton)'");
+                    cmbItemTemplate.SelectItemByName("Entity DataTemplate (ItemContainer with ToggleButton)");
+                }
+                else
+                {
+                    Log.Comment("Changing ItemTemplate selection to 'Entity DataTemplate (Medium ItemContainer)'");
+                    cmbItemTemplate.SelectItemByName("Entity DataTemplate (Medium ItemContainer)");
+                }
                 Log.Comment("Selection is now {0}", cmbItemTemplate.Selection[0].Name);
 
-                Log.Comment("Changing ItemsSource selection to 'List<Recipe>'");
-                cmbItemsSource.SelectItemByName("List<Recipe>");
+                Log.Comment("Changing ItemsSource selection to 'List<Entity>'");
+                cmbItemsSource.SelectItemByName("List<Entity>");
                 Log.Comment("Selection is now {0}", cmbItemsSource.Selection[0].Name);
 
                 Log.Comment("Retrieving itemsView");
@@ -2098,7 +2189,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void KeyboardNavigationWithFastKeystrokes(string layout, Key key)
         {
-            Log.Comment("Selecting ItemsView tests");
+            Log.Comment("Selecting ItemsView interactive tests");
 
             ICollection<string> outputDebugStringComponentTypes = new[] { "ScrollView", "ItemsView" };
 
@@ -2129,18 +2220,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     if (layout == "LinedFlowLayout")
                     {
-                        Log.Comment("Changing ItemTemplate selection to 'Recipe DataTemplate (Square ItemContainer)'");
-                        cmbItemTemplate.SelectItemByName("Recipe DataTemplate (Square ItemContainer)");
+                        Log.Comment("Changing ItemTemplate selection to 'Entity DataTemplate (Square ItemContainer)'");
+                        cmbItemTemplate.SelectItemByName("Entity DataTemplate (Square ItemContainer)");
                     }
                     else
                     {
-                        Log.Comment("Changing ItemTemplate selection to 'Recipe DataTemplate (Medium ItemContainer)'");
-                        cmbItemTemplate.SelectItemByName("Recipe DataTemplate (Medium ItemContainer)");
+                        Log.Comment("Changing ItemTemplate selection to 'Entity DataTemplate (Medium ItemContainer)'");
+                        cmbItemTemplate.SelectItemByName("Entity DataTemplate (Medium ItemContainer)");
                     }
                     Log.Comment("Selection is now {0}", cmbItemTemplate.Selection[0].Name);
 
-                    Log.Comment("Changing ItemsSource selection to 'Large List<Recipe>'");
-                    cmbItemsSource.SelectItemByName("Large List<Recipe>");
+                    Log.Comment("Changing ItemsSource selection to 'Large List<Entity>'");
+                    cmbItemsSource.SelectItemByName("Large List<Entity>");
                     Log.Comment("Selection is now {0}", cmbItemsSource.Selection[0].Name);
 
                     if (layout == "LinedFlowLayout")
@@ -2293,7 +2384,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void VerifyItemsViewItemInvokedEvent(bool useItemContainer, bool isItemInvokedEnabled, string selectionMode)
         {
-            Log.Comment("Selecting ItemsView tests");
+            Log.Comment("Selecting ItemsView interactive tests");
 
             using (var setup = new TestSetupHelper(new[] { "ItemsView Tests", "navigateToInteractiveTests" }))
             {
@@ -2331,19 +2422,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 if (useItemContainer)
                 {
-                    Log.Comment("Changing ItemTemplate selection to 'Recipe DataTemplate (Medium ItemContainer)'");
-                    cmbItemTemplate.SelectItemByName("Recipe DataTemplate (Medium ItemContainer)");
+                    Log.Comment("Changing ItemTemplate selection to 'Entity DataTemplate (Medium ItemContainer)'");
+                    cmbItemTemplate.SelectItemByName("Entity DataTemplate (Medium ItemContainer)");
                     Log.Comment("Selection is now {0}", cmbItemTemplate.Selection[0].Name);
                 }
                 else
                 {
-                    Log.Comment("Changing ItemTemplate selection to 'Recipe DataTemplate (Small ContentControl)'");
-                    cmbItemTemplate.SelectItemByName("Recipe DataTemplate (Small ContentControl)");
+                    Log.Comment("Changing ItemTemplate selection to 'Entity DataTemplate (Small ContentControl)'");
+                    cmbItemTemplate.SelectItemByName("Entity DataTemplate (Small ContentControl)");
                     Log.Comment("Selection is now {0}", cmbItemTemplate.Selection[0].Name);
                 }
 
-                Log.Comment("Changing ItemsSource selection to 'List<Recipe>'");
-                cmbItemsSource.SelectItemByName("List<Recipe>");
+                Log.Comment("Changing ItemsSource selection to 'List<Entity>'");
+                cmbItemsSource.SelectItemByName("List<Entity>");
                 Log.Comment("Selection is now {0}", cmbItemsSource.Selection[0].Name);
 
                 Log.Comment("Retrieving itemsView");
@@ -2374,7 +2465,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void TabNavigationThroughItemsView(bool useItemContainer, string selectionMode)
         {
-            Log.Comment("Selecting ItemsView tests");
+            Log.Comment("Selecting ItemsView interactive tests");
 
             using (var setup = new TestSetupHelper(new[] { "ItemsView Tests", "navigateToInteractiveTests" }))
             {
@@ -2412,19 +2503,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 if (useItemContainer)
                 {
-                    Log.Comment("Changing ItemTemplate selection to 'Recipe DataTemplate (Medium ItemContainer)'");
-                    cmbItemTemplate.SelectItemByName("Recipe DataTemplate (Medium ItemContainer)");
+                    Log.Comment("Changing ItemTemplate selection to 'Entity DataTemplate (Medium ItemContainer)'");
+                    cmbItemTemplate.SelectItemByName("Entity DataTemplate (Medium ItemContainer)");
                     Log.Comment("Selection is now {0}", cmbItemTemplate.Selection[0].Name);
                 }
                 else
                 {
-                    Log.Comment("Changing ItemTemplate selection to 'Recipe DataTemplate (Small ContentControl)'");
-                    cmbItemTemplate.SelectItemByName("Recipe DataTemplate (Small ContentControl)");
+                    Log.Comment("Changing ItemTemplate selection to 'Entity DataTemplate (Small ContentControl)'");
+                    cmbItemTemplate.SelectItemByName("Entity DataTemplate (Small ContentControl)");
                     Log.Comment("Selection is now {0}", cmbItemTemplate.Selection[0].Name);
                 }
 
-                Log.Comment("Changing ItemsSource selection to 'List<Recipe>'");
-                cmbItemsSource.SelectItemByName("List<Recipe>");
+                Log.Comment("Changing ItemsSource selection to 'List<Entity>'");
+                cmbItemsSource.SelectItemByName("List<Entity>");
                 Log.Comment("Selection is now {0}", cmbItemsSource.Selection[0].Name);
 
                 Log.Comment("Retrieving itemsView");

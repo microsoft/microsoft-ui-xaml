@@ -32,7 +32,7 @@ public:
 
 private:
     wfc::CollectionChange _change;
-    unsigned int _index;
+    unsigned int _index{};
 };
 
 

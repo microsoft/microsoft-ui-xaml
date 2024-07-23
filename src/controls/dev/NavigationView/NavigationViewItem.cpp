@@ -161,7 +161,7 @@ void NavigationViewItem::LoadMenuItemsHost()
             if (auto stackLayout = repeater.Layout().try_as<winrt::StackLayout>())
             {
                 auto stackLayoutImpl = winrt::get_self<StackLayout>(stackLayout);
-                stackLayoutImpl->DisableVirtualization(true);
+                stackLayoutImpl->IsVirtualizationEnabled(false);
             }
 
             // Primary element setup happens in NavigationView

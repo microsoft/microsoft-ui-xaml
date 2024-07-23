@@ -42,6 +42,7 @@
       <StaticResource x:Key="NavigationViewItemBorderBrushSelectedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
       <StaticResource x:Key="NavigationViewItemBorderBrushSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
       <StaticResource x:Key="NavigationViewItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="NavigationViewItemIconBackground" ResourceKey="SystemControlTransparentBrush" />
       <StaticResource x:Key="NavigationViewItemSeparatorForeground" ResourceKey="DividerStrokeColorDefaultBrush" />
       <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="NavigationViewSelectionIndicatorForeground" ResourceKey="AccentFillColorDefaultBrush" />
@@ -107,6 +108,7 @@
       <StaticResource x:Key="NavigationViewItemBorderBrushSelectedPointerOver" ResourceKey="SubtleFillColorTransparentBrush" />
       <StaticResource x:Key="NavigationViewItemBorderBrushSelectedPressed" ResourceKey="SubtleFillColorTransparentBrush" />
       <StaticResource x:Key="NavigationViewItemBorderBrushSelectedDisabled" ResourceKey="SubtleFillColorTransparentBrush" />
+      <StaticResource x:Key="NavigationViewItemIconBackground" ResourceKey="SystemControlTransparentBrush" />
       <StaticResource x:Key="NavigationViewItemSeparatorForeground" ResourceKey="DividerStrokeColorDefaultBrush" />
       <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="NavigationViewSelectionIndicatorForeground" ResourceKey="AccentFillColorDefaultBrush" />
@@ -172,6 +174,7 @@
       <StaticResource x:Key="NavigationViewItemBorderBrushSelectedPointerOver" ResourceKey="SystemControlHighlightAltTransparentRevealBorderBrush" />
       <StaticResource x:Key="NavigationViewItemBorderBrushSelectedPressed" ResourceKey="SystemControlHighlightAltTransparentRevealBorderBrush" />
       <StaticResource x:Key="NavigationViewItemBorderBrushSelectedDisabled" ResourceKey="SystemControlTransparentBrush" />
+      <StaticResource x:Key="NavigationViewItemIconBackground" ResourceKey="SystemControlTransparentBrush" />
       <StaticResource x:Key="NavigationViewItemSeparatorForeground" ResourceKey="SystemColorWindowTextColorBrush" />
       <StaticResource x:Key="NavigationViewItemHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
       <SolidColorBrush x:Key="NavigationViewSelectionIndicatorForeground" Color="{ThemeResource SystemColorHighlightTextColor}" />
@@ -607,7 +610,7 @@
                 </Grid.ColumnDefinitions>
                 <Border x:Name="IconColumn" Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SmallerIconWidth}">
                   <Viewbox x:Name="IconBox" Height="{ThemeResource NavigationViewItemOnLeftIconBoxHeight}" HorizontalAlignment="Center" Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
-                    <ContentPresenter x:Name="Icon" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}" local:AnimatedIcon.State="Normal" xmlns:local="using:Microsoft.UI.Xaml.Controls" />
+                    <ContentPresenter x:Name="Icon" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}" Background="{ThemeResource NavigationViewItemIconBackground}" local:AnimatedIcon.State="Normal" xmlns:local="using:Microsoft.UI.Xaml.Controls" />
                   </Viewbox>
                 </Border>
                 <ContentPresenter x:Name="ContentPresenter" Grid.Column="1" Margin="{ThemeResource NavigationViewItemContentPresenterMargin}" ContentTransitions="{TemplateBinding ContentTransitions}" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" Padding="{TemplateBinding Padding}" AutomationProperties.AccessibilityView="Raw" />
@@ -708,7 +711,7 @@
                 <RowDefinition Height="*" />
               </Grid.RowDefinitions>
               <Viewbox x:Name="IconBox" Grid.Row="1" Grid.Column="1" Height="16" Margin="0" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <ContentPresenter x:Name="Icon" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}" local:AnimatedIcon.State="Normal" xmlns:local="using:Microsoft.UI.Xaml.Controls" />
+                <ContentPresenter x:Name="Icon" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}" Background="{ThemeResource NavigationViewItemIconBackground}" local:AnimatedIcon.State="Normal" xmlns:local="using:Microsoft.UI.Xaml.Controls" />
               </Viewbox>
               <ContentPresenter x:Name="InfoBadgePresenter" Grid.Column="2" VerticalAlignment="Center" Content="{TemplateBinding InfoBadge}" />
             </Grid>
@@ -883,7 +886,7 @@
                 <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
               <Viewbox x:Name="IconBox" Height="16" Width="16" Margin="12,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <ContentPresenter x:Name="Icon" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}" local:AnimatedIcon.State="Normal" xmlns:local="using:Microsoft.UI.Xaml.Controls" />
+                <ContentPresenter x:Name="Icon" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}" Background="{ThemeResource NavigationViewItemIconBackground}" local:AnimatedIcon.State="Normal" xmlns:local="using:Microsoft.UI.Xaml.Controls" />
               </Viewbox>
               <ContentPresenter x:Name="ContentPresenter" Grid.Column="1" Margin="{ThemeResource TopNavigationViewItemContentPresenterMargin}" TextWrapping="NoWrap" Foreground="{TemplateBinding Foreground}" ContentTransitions="{TemplateBinding ContentTransitions}" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" VerticalAlignment="Center" AutomationProperties.AccessibilityView="Raw" />
               <Grid x:Name="ExpandCollapseChevron" Grid.Column="2" Visibility="Collapsed" HorizontalAlignment="Right" Width="40" Margin="{ThemeResource TopNavigationViewItemExpandChevronMargin}" Background="Transparent">
@@ -1054,7 +1057,7 @@
                   <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <Viewbox x:Name="IconBox" Height="16" Width="16" Margin="16,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Center">
-                  <ContentPresenter x:Name="Icon" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}" local:AnimatedIcon.State="Normal" xmlns:local="using:Microsoft.UI.Xaml.Controls" />
+                  <ContentPresenter x:Name="Icon" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}" Background="{ThemeResource NavigationViewItemIconBackground}" local:AnimatedIcon.State="Normal" xmlns:local="using:Microsoft.UI.Xaml.Controls" />
                 </Viewbox>
                 <ContentPresenter x:Name="ContentPresenter" Grid.Column="1" Margin="{ThemeResource TopNavigationViewItemOnOverflowContentPresenterMargin}" Foreground="{TemplateBinding Foreground}" TextWrapping="NoWrap" ContentTransitions="{TemplateBinding ContentTransitions}" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" VerticalAlignment="Center" AutomationProperties.AccessibilityView="Raw" />
                 <Grid x:Load="False" x:Name="ExpandCollapseChevron" Grid.Column="3" Visibility="Collapsed" HorizontalAlignment="Right" Width="40" Margin="{ThemeResource TopNavigationViewItemOnOverflowExpandChevronMargin}" Padding="{ThemeResource TopNavigationViewItemOnOverflowExpandChevronPadding}" Background="Transparent">

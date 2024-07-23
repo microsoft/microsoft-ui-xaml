@@ -95,6 +95,7 @@ IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::ContainerFromIndex(_In
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ItemContainerGenerator_ContainerFromIndex", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemContainerGenerator*>(this)->ContainerFromIndexImpl(index, ppReturnValue));
 Cleanup:
@@ -112,6 +113,7 @@ IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::ContainerFromItem(_In_
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ItemContainerGenerator_ContainerFromItem", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemContainerGenerator*>(this)->ContainerFromItemImpl(pItem, ppReturnValue));
 Cleanup:
@@ -129,6 +131,7 @@ IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::GenerateNext(_Out_ BOO
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ItemContainerGenerator_GenerateNext", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemContainerGenerator*>(this)->GenerateNextImpl(pIsNewlyRealized, ppReturnValue));
 Cleanup:
@@ -146,6 +149,7 @@ IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::GeneratorPositionFromI
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ItemContainerGenerator_GeneratorPositionFromIndex", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemContainerGenerator*>(this)->GeneratorPositionFromIndexImpl(itemIndex, pReturnValue));
 Cleanup:
@@ -164,6 +168,7 @@ IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::GetItemContainerGenera
     }
     ARG_NOTNULL(pPanel, "panel");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemContainerGenerator*>(this)->GetItemContainerGeneratorForPanelImpl(pPanel, ppReturnValue));
 Cleanup:
@@ -182,6 +187,7 @@ IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::IndexFromContainer(_In
     }
     ARG_NOTNULL(pContainer, "container");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemContainerGenerator*>(this)->IndexFromContainerImpl(pContainer, pReturnValue));
 Cleanup:
@@ -199,6 +205,7 @@ IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::IndexFromGeneratorPosi
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ItemContainerGenerator_IndexFromGeneratorPosition", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemContainerGenerator*>(this)->IndexFromGeneratorPositionImpl(position, pReturnValue));
 Cleanup:
@@ -217,6 +224,7 @@ IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::ItemFromContainer(_In_
     }
     ARG_NOTNULL(pContainer, "container");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<ItemContainerGenerator*>(this)->ItemFromContainerImpl(pContainer, ppReturnValue));
 Cleanup:

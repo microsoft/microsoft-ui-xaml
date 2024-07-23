@@ -14,7 +14,6 @@ namespace XamlGen
         public int stableIndex;
         public string knownIndexName;
         public bool mappedToKnownType;
-        public ContractReference xamlDirectContractReference;
 
         public StableIndexEntry(string[] row)
         {
@@ -63,12 +62,6 @@ namespace XamlGen
         private string outputDirectory;
         private bool partialXbfGeneration;
 
-        // This list will cross reference UniversalApiVersions (beginning with 7) with XamlDirect contract
-        // references.  We use the list of references so that that rather than rewalking all our stable 
-        // indexes we just popouplate the list after the fact.
-        private List<ContractReference> xamlDirectContractReferences;
-        private ContractDefinition xamlDirectContractDefinition;
-
         private List<StableIndexEntry> typeEntriesByIndex;
         private List<StableIndexEntry> propertyEntriesByIndex;
         private List<StableIndexEntry> methodEntriesByIndex;
@@ -93,30 +86,6 @@ namespace XamlGen
             UnknownPropertyName = PropertyDefinition.UnknownProperty.IndexNameWithoutPrefix;
             UnknownMethodName = MethodDefinition.UnknownMethod.IndexNameWithoutPrefix;
             UnknownEventName = EventDefinition.UnknownEvent.IndexNameWithoutPrefix;
-
-            // Locate the XamlDirect contract version by finding the corresponding enteries where we will popuplate
-            // the stable index enums.
-            foreach (var stableEnum in context.GetTypeTableNamespaces().SelectMany(ns => ns.Enums)
-                .Where(t => t.XamlEnumFlags.IsStableEventIndex || t.XamlEnumFlags.IsStablePropertyIndex || t.XamlEnumFlags.IsStableTypeIndex))
-            {
-                if (stableEnum.DeclaringNamespace.Contracts.Count != 1) throw new InvalidOperationException("Expected one and only one contract on a stable index enum.");
-                if (xamlDirectContractDefinition == null)
-                {
-                    xamlDirectContractDefinition = stableEnum.DeclaringNamespace.Contracts[0];
-
-                    // Create the list of contract references for the XamlDirect contracts.  Note: We skip zero
-                    xamlDirectContractReferences = new List<ContractReference>();
-                    xamlDirectContractReferences.Add(null);
-                    for (var i = 1; i <= xamlDirectContractDefinition.MaxVersion; i++)
-                    {
-                        xamlDirectContractReferences.Add(xamlDirectContractDefinition.ContainsVersion(i) ? new ContractReference(xamlDirectContractDefinition, i) : null);
-                    }
-                }
-                else if (xamlDirectContractDefinition != stableEnum.DeclaringNamespace.Contracts[0])
-                {
-                    throw new InvalidOperationException("Expected all stable index enums to use the same contract");
-                }
-            }
         }
 
         public void Run()
@@ -127,7 +96,7 @@ namespace XamlGen
                 out typeEntriesByIndex,
                 out typeEntriesByName,
                 context.GetAllTypeTableTypes().Where(t => !(t is ClassDefinition) || classSelector(t as ClassDefinition) && t.GenerateStableIndex)
-                    .Select(c => new Tuple<string, bool, List<ContractReference>>(c.IndexNameWithoutPrefix, ExposeToPublicStableIndexes(c), c.SupportedContracts)),
+                    .Select(c => c.IndexNameWithoutPrefix),
                 UnknownTypeName
                 );
 
@@ -136,8 +105,7 @@ namespace XamlGen
                 out propertyEntriesByIndex,
                 out propertyEntriesByName,
                 context.GetAllTypeTableProperties().Where(p => classSelector(p.DeclaringClass) && p.GenerateStableIndex).
-                    Select(p => new Tuple<string, bool, List<ContractReference>>(p.IndexNameWithoutPrefix, ExposeToPublicStableIndexes(p), 
-                        p.SupportedContracts.Count != 0 ? p.SupportedContracts : p.DeclaringType.SupportedContracts)),
+                    Select(p => p.IndexNameWithoutPrefix),
                 UnknownPropertyName
                 );
 
@@ -145,7 +113,7 @@ namespace XamlGen
                 MethodCsvFilename,
                 out methodEntriesByIndex,
                 out methodEntriesByName,
-                context.GetAllMethodIndexNamesNoPrefix().Select(m => new Tuple<string, bool, List<ContractReference>>(m, false, null)),
+                context.GetAllMethodIndexNamesNoPrefix(),
                 UnknownMethodName
                 );
 
@@ -154,8 +122,7 @@ namespace XamlGen
                 out eventEntriesByIndex,
                 out eventEntriesByName,
                 context.GetAllEvents().Where(e => e.GenerateStableIndex).
-                    Select(e => new Tuple<string, bool, List<ContractReference>>(e.IndexNameWithoutPrefix, ExposeToPublicStableIndexes(e),
-                        e.SupportedContracts.Count != 0 ? e.SupportedContracts : e.DeclaringType.SupportedContracts)),
+                    Select(e => e.IndexNameWithoutPrefix),
                 UnknownEventName
                 );
         }
@@ -213,7 +180,7 @@ namespace XamlGen
             string csvFilename,
             out List<StableIndexEntry> entriesByIndex,
             out Dictionary<string, StableIndexEntry> entriesByName,
-            IEnumerable<Tuple<string, bool, List<ContractReference>>> knownSourceEntries,
+            IEnumerable<string> knownSourceEntries,
             string unknownName)
         {
             // In order to guarantee a stable ordering, even when types are removed from the table,
@@ -251,24 +218,18 @@ namespace XamlGen
             }
 
             // Now that we've read in the stored CSV, try to match all the known types
-            foreach (Tuple<string, bool, List<ContractReference>> knownSourceEntry in knownSourceEntries)
+            foreach (string knownName in knownSourceEntries)
             {
-                string knownName = knownSourceEntry.Item1;
-                ContractReference contractReference = knownSourceEntry.Item2 ? GetStableIndexContractReference(knownSourceEntry.Item3) : null;
- 
                 if (entriesByName.ContainsKey(knownName))
                 {
                     entriesByName[knownName].mappedToKnownType = true;
-                    entriesByName[knownName].xamlDirectContractReference = contractReference;
                     int stableIndex = entriesByName[knownName].stableIndex;
                     entriesByIndex[stableIndex].mappedToKnownType = true;
-                    entriesByIndex[stableIndex].xamlDirectContractReference = contractReference;
                 }
                 else if (!partialXbfGeneration)
                 {
                     int newIndex = GetNextAvailableIndex(entriesByIndex);
                     StableIndexEntry newEntry = new StableIndexEntry(knownName, newIndex);
-                    newEntry.xamlDirectContractReference = contractReference;
                     entriesByName.Add(knownName, newEntry);
                     entriesByIndex.Add(newEntry);
                 }
@@ -298,22 +259,6 @@ namespace XamlGen
                 }
                 System.IO.File.WriteAllLines(Path.Combine(outputDirectory, csvFilename), lines);
             }
-        }
-
-        private ContractReference GetStableIndexContractReference(List<ContractReference> contractReferences)
-        {
-            if (contractReferences == null || contractReferences.Count == 0) throw new InvalidOperationException("Expected contract references");
-            ContractReference contractReference = contractReferences.GetConcreteContractReference();
-
-            int xamlDirectVersion = contractReference.XamlDirectVersion;
-
-            if (xamlDirectVersion <= 0) throw new InvalidOperationException("Unable to determine Xaml Direct version for " + contractReference.FullName + "(ver:" + contractReference + ")");
-            
-            if (contractReference.FullName != "Microsoft.UI.Xaml.WinUIContract") throw new InvalidOperationException("Only support public stable indicies from the WinUI contract");
-
-            if (xamlDirectVersion < xamlDirectContractReferences.Count && xamlDirectContractReferences[xamlDirectVersion] != null) return xamlDirectContractReferences[xamlDirectVersion];
-
-            throw new InvalidOperationException("XamlDirect Version " + xamlDirectVersion + " used on " + contractReference.FullName + "(ver:" + contractReference + ") not defined");
         }
 
         private string GetDeletedName(string stableIndexName, Dictionary<string, StableIndexEntry> entriesByName)

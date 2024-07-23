@@ -217,7 +217,7 @@ private:
     // ContentProperty, RuntimeNameProperty, etc.
     XamlBitSet<NonBoolTypeValidBits> m_flagsNonBoolTypeValidBits;
     XamlTypeToken m_sBaseTypeToken; // The equivalent Core base type of this type.
-    bool m_bHasContentProperty;
+    bool m_bHasContentProperty{};
     
     static const size_t invalidIndex = static_cast<size_t>(-1);
     size_t m_uiRuntimeIndex = invalidIndex;

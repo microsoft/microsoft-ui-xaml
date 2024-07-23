@@ -15,127 +15,47 @@ class  CCompositeFontFamily;
 
 //------------------------------------------------------------------------
 //
-//  Class:  CWeightStyleStretch
+//  Class:  CFontFaceCriteria
 //
 //  Encapsulates the values which distinguish the typefaces that make up
 //  a FontFamily in a package that is quick to pass around.
 //
 //------------------------------------------------------------------------
 
-struct CWeightStyleStretch
+struct CFontFaceCriteria
 {
 public:
     XUINT16 m_weight  : 10;  // 0 - 999, normal = 400
     XUINT16 m_style   :  2;  // 0 = normal, 1 = oblique, 2 = italic
     XUINT16 m_stretch :  4;  // 0 - 9, normal = 5
 
-    XUINT16 AsXUINT16() const {return (m_weight<<6)|(m_style<<4)|(m_stretch);}
-    bool operator==(const CWeightStyleStretch& other) const
+    XFLOAT  m_opticalSize;
+
+    XUINT16 AsXUINT16() const { return (m_weight << 6) | (m_style << 4) | (m_stretch); }
+    bool operator==(const CFontFaceCriteria& other) const
     {
-        return AsXUINT16() == other.AsXUINT16();
+        return AsXUINT16() == other.AsXUINT16() && m_opticalSize == other.m_opticalSize;
     }
 
-    void Set(XUINT32 weight, XUINT32 style, XUINT32 stretch)
+    void Set(XUINT32 weight, XUINT32 style, XUINT32 stretch, XFLOAT opticalSize)
     {
         m_weight  = weight;
         m_style   = style;
         m_stretch = stretch;
-    }
-    CWeightStyleStretch(XUINT32 weight, XUINT32 style, XUINT32 stretch)
-    {
-        Set(weight, style, stretch);
+        m_opticalSize = opticalSize;
     }
 
-    CWeightStyleStretch(XUINT16 compactedWeightStyleStretch)
+    CFontFaceCriteria(XUINT32 weight, XUINT32 style, XUINT32 stretch, XFLOAT opticalSize)
     {
-        // weight, style and stretch are being compacted into a XUINT16 as
-        // XUINT16 weight  : 10;  // 0 - 999, normal = 400
-        // XUINT16 style   :  2;  // 0 = normal, 1 = oblique, 2 = italic
-        // XUINT16 stretch :  4;  // 0 - 9, normal = 5
-        Set( (compactedWeightStyleStretch & 0xFFC0) >> 6, (compactedWeightStyleStretch & 0x30) >> 4, compactedWeightStyleStretch & 0xf);
-    }
-
-    CWeightStyleStretch()
-    {
-        Set(static_cast<XUINT32>(DirectUI::CoreFontWeight::Normal),
-            static_cast<XUINT32>(DirectUI::FontStyle::Normal),
-            static_cast<XUINT32>(DirectUI::FontStretch::Normal));
-    }
-
-    _Check_return_ XFLOAT GetNormalizedWeight()  { return (XINT32(m_weight) - static_cast<XUINT32>(DirectUI::CoreFontWeight::Normal)) *  0.05f; } // -20 .. 29.95
-    _Check_return_ XFLOAT GetNormalizedStyle()   { return (XINT32(m_style) - static_cast<XUINT32>(DirectUI::FontStyle::Normal)) *  7.00f; } //   0 .. 21
-    _Check_return_ XFLOAT GetNormalizedStretch() { return (XINT32(m_stretch) - static_cast<XUINT32>(DirectUI::FontStretch::Normal)) * 11.00f; } // -55 .. 44
-
-    _Check_return_ XFLOAT Distance(CWeightStyleStretch other) // Distance between two faces
-    {
-        XFLOAT deltaWeight  =  GetNormalizedWeight()  - other.GetNormalizedWeight();
-        XFLOAT deltaStyle   =  GetNormalizedStyle()   - other.GetNormalizedStyle();
-        XFLOAT deltaStretch =  GetNormalizedStretch() - other.GetNormalizedStretch();
-
-        return (deltaWeight  * deltaWeight)
-             + (deltaStyle   * deltaStyle)
-             + (deltaStretch * deltaStretch);
-    }
-
-    _Check_return_ XFLOAT DotProduct(CWeightStyleStretch other) // Distance between two faces
-    {
-        return (GetNormalizedWeight()  * other.GetNormalizedWeight())
-             + (GetNormalizedStyle()   * other.GetNormalizedStyle())
-             + (GetNormalizedStretch() * other.GetNormalizedStretch());
-    }
-
-
-    bool IsBetterMatch(
-        CWeightStyleStretch target,
-        CWeightStyleStretch bestSoFar
-    )
-    {
-        // First compare with target and best-so-far by distance.
-
-        XFLOAT distanceFromTarget       = Distance(target);
-        XFLOAT distanceFromBestToTarget = bestSoFar.Distance(target);
-
-        if (distanceFromTarget < distanceFromBestToTarget)
-        {
-            return true;
-        }
-        else if (distanceFromTarget == distanceFromBestToTarget)
-        {
-            // Same length distance, try comparing by dot product
-
-            XFLOAT dotProductWithTarget     = DotProduct(target);
-            XFLOAT dotProductBestWithTarget = bestSoFar.DotProduct(target);
-
-            if (dotProductWithTarget > dotProductBestWithTarget)
-            {
-                return true; // Prefer typefaces with a greater dot product
-            }
-            else if (dotProductWithTarget == dotProductBestWithTarget)
-            {
-                // This wss is no closer to target than is bestSoFar, and has
-                // the same dot product with target as bestSoFar has.
-
-                // Tiebreaker algorithm:
-
-                if (   m_stretch > bestSoFar.m_stretch
-                    || (   m_stretch == bestSoFar.m_stretch
-                        && (   m_style > bestSoFar.m_style
-                            || (    m_style == bestSoFar.m_style
-                                 && m_weight > bestSoFar.m_weight))))
-                {
-                    return true;
-                }
-            }
-        }
-        return false; // In all other cases, this is a worse match
+        Set(weight, style, stretch, opticalSize);
     }
 };
 
 namespace std {
     template<>
-    struct hash<CWeightStyleStretch>
+    struct hash<CFontFaceCriteria>
     {
-        typedef CWeightStyleStretch argument_type;
+        typedef CFontFaceCriteria argument_type;
         typedef std::size_t result_type;
 
         result_type operator()(const argument_type& arg) const
@@ -380,7 +300,7 @@ public:
 //  Class: CFontTypeface
 //
 //  Representation a combination of a client specified of a FontFamily
-//  text element property, weight, style, stretch and language.
+//  text element property, font face criteria and language.
 //
 //  Provides the cache by codepoint of which glyph typeface to use.
 //
@@ -392,7 +312,7 @@ private:
     // Data to pass to CFontFamily when the codepoint is not
     // already cached.
     CCompositeFontFamily *m_pCompositeFontFamily;
-    CWeightStyleStretch   m_weightStyleStretch;
+    CFontFaceCriteria     m_fontFaceCriteria;
     XUINT32               m_cReferences;
 
     // FontTypeFace attributes
@@ -404,10 +324,10 @@ private:
 public:
     CFontTypeface(
         _In_ CCompositeFontFamily *pCompositeFontFamily,
-        CWeightStyleStretch   weightStyleStretch
+        CFontFaceCriteria   fontFaceCriteria
     )
     : m_pCompositeFontFamily(pCompositeFontFamily)
-    , m_weightStyleStretch(weightStyleStretch)
+    , m_fontFaceCriteria(fontFaceCriteria)
     , m_cReferences(1)
     , m_capHeight(XFLOAT_MIN)
     {
@@ -433,7 +353,7 @@ public:
 
     std::size_t hash() const
     {
-        return std::hash<CWeightStyleStretch>()(m_weightStyleStretch);
+        return std::hash<CFontFaceCriteria>()(m_fontFaceCriteria);
     }
 
     XUINT32 AddRef() override {return ++m_cReferences;}
@@ -518,7 +438,7 @@ public:
 
     _Check_return_ HRESULT GetFontTypeface(
         _In_            CFontContext         *pFontContext,
-        _In_            CWeightStyleStretch   weightStyleStretch,
+        _In_            CFontFaceCriteria        fontFaceCriteria,
         _Outptr_result_maybenull_ CFontTypeface       **ppFontTypeface
     );
 

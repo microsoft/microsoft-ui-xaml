@@ -45,7 +45,7 @@ _Check_return_ HRESULT ValueBuffer::Repackage(_Const_ _In_ const CDependencyProp
 }
 
 // Repackage the incoming value so the types match, and set the given value pointer.
-_Check_return_ HRESULT ValueBuffer::RepackageValueAndSetPtr(_Const_ _In_ const CDependencyProperty* pDP, _Const_ _In_ const CValue* value, _Out_ CValue** ppValue)
+_Check_return_ HRESULT ValueBuffer::RepackageValueAndSetPtr(_Const_ _In_ const CDependencyProperty* pDP, _Const_ _In_ const CValue* value, _Inout_ CValue** ppValue)
 {
     m_value.Unset();
 

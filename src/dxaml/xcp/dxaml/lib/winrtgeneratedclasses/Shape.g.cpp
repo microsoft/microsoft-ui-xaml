@@ -159,6 +159,7 @@ IFACEMETHODIMP DirectUI::Shape::GetAlphaMask(_Outptr_ ABI::Microsoft::UI::Compos
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Shape_GetAlphaMask", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Shape*>(this)->GetAlphaMaskImpl(ppReturnValue));

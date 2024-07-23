@@ -142,7 +142,7 @@ private:
     // are retrieved starting at m_idxNextReusable. This collection is ref-counted starting at
     // m_idxNextReusable (inclusive).
     PCRenderDataList m_RecycledRenderData;
-    XUINT32 m_idxNextReusable;
+    XUINT32 m_idxNextReusable{};
 
     wrl::ComPtr<WUComp::IVisualCollection> m_spCurrentParentCollection;
 };

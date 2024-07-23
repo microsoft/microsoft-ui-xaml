@@ -48,7 +48,7 @@ KeyTip::~KeyTip(void)
 {
 }
 
-long KeyTipManager::Execute(void)
+_Check_return_ long KeyTipManager::Execute(void)
 {
     return 0;
 }

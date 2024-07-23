@@ -75,5 +75,5 @@ class HitTestGeometrySink : public CXcpObjectBase< IPALGeometrySink >
         XPOINTF m_startPoint;
         bool m_figureActive;
 
-        HitTestHelper* m_pBaseHitTestHelper;
+        HitTestHelper* m_pBaseHitTestHelper{};
 };

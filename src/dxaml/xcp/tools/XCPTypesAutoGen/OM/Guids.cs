@@ -156,7 +156,6 @@ namespace OM
     // See https://docs.microsoft.com/en-us/uwp/midl-3/advanced#empty-interfaces for more info
     public static class EmptyInterfaceGuids
     {
-        public static Guids IXamlDirectObject => new InterfaceGuids("f94d4ea9-e795-4425-a8c8-498990fce9c7");
     }
 
     // These GUIDS are needed for compat with the projection layers that hardcode our interfaces.

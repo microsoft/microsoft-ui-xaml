@@ -16,7 +16,6 @@ struct ID2D1Multithread;
 struct ID2D1DeviceContext;
 struct ID2D1SolidColorBrush;
 struct ID3D10Multithread;
-struct IPALRefreshRateInfo;
 struct IDXGIDevice2;
 class SystemMemoryBits;
 class CD2DFactory;
@@ -113,10 +112,6 @@ public:
     _Check_return_ HRESULT GetTextureMemoryUsage(
         _Out_ UINT32 *puTextureMemoryUsage,
         _Out_ UINT32 *puTextureMemoryUsageNPOT
-        );
-
-    _Check_return_ HRESULT GetRefreshRateInfo(
-        _Outptr_ IPALRefreshRateInfo **ppRefreshRateInfo
         );
 
     //

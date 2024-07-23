@@ -44,6 +44,7 @@ IFACEMETHODIMP DirectUI::RectHelperFactory::get_Empty(_Out_ ABI::Windows::Founda
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckActivationAllowed());
     IFC(get_EmptyImpl(pValue));
 Cleanup:
@@ -59,6 +60,7 @@ IFACEMETHODIMP DirectUI::RectHelperFactory::FromCoordinatesAndDimensions(_In_ FL
         XamlTelemetry::PublicApiCall(true, 0, "RectHelper_FromCoordinatesAndDimensions", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(FromCoordinatesAndDimensionsImpl(x, y, width, height, pReturnValue));
 Cleanup:
@@ -76,6 +78,7 @@ IFACEMETHODIMP DirectUI::RectHelperFactory::FromPoints(_In_ ABI::Windows::Founda
         XamlTelemetry::PublicApiCall(true, 0, "RectHelper_FromPoints", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(FromPointsImpl(point1, point2, pReturnValue));
 Cleanup:
@@ -93,6 +96,7 @@ IFACEMETHODIMP DirectUI::RectHelperFactory::FromLocationAndSize(_In_ ABI::Window
         XamlTelemetry::PublicApiCall(true, 0, "RectHelper_FromLocationAndSize", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(FromLocationAndSizeImpl(location, size, pReturnValue));
 Cleanup:
@@ -110,6 +114,7 @@ IFACEMETHODIMP DirectUI::RectHelperFactory::GetIsEmpty(_In_ ABI::Windows::Founda
         XamlTelemetry::PublicApiCall(true, 0, "RectHelper_GetIsEmpty", 0);
     }
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckActivationAllowed());
     IFC(GetIsEmptyImpl(target, pValue));
 Cleanup:
@@ -127,6 +132,7 @@ IFACEMETHODIMP DirectUI::RectHelperFactory::GetBottom(_In_ ABI::Windows::Foundat
         XamlTelemetry::PublicApiCall(true, 0, "RectHelper_GetBottom", 0);
     }
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckActivationAllowed());
     IFC(GetBottomImpl(target, pValue));
 Cleanup:
@@ -144,6 +150,7 @@ IFACEMETHODIMP DirectUI::RectHelperFactory::GetLeft(_In_ ABI::Windows::Foundatio
         XamlTelemetry::PublicApiCall(true, 0, "RectHelper_GetLeft", 0);
     }
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckActivationAllowed());
     IFC(GetLeftImpl(target, pValue));
 Cleanup:
@@ -161,6 +168,7 @@ IFACEMETHODIMP DirectUI::RectHelperFactory::GetRight(_In_ ABI::Windows::Foundati
         XamlTelemetry::PublicApiCall(true, 0, "RectHelper_GetRight", 0);
     }
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckActivationAllowed());
     IFC(GetRightImpl(target, pValue));
 Cleanup:
@@ -178,6 +186,7 @@ IFACEMETHODIMP DirectUI::RectHelperFactory::GetTop(_In_ ABI::Windows::Foundation
         XamlTelemetry::PublicApiCall(true, 0, "RectHelper_GetTop", 0);
     }
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckActivationAllowed());
     IFC(GetTopImpl(target, pValue));
 Cleanup:
@@ -195,6 +204,7 @@ IFACEMETHODIMP DirectUI::RectHelperFactory::Contains(_In_ ABI::Windows::Foundati
         XamlTelemetry::PublicApiCall(true, 0, "RectHelper_Contains", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(ContainsImpl(target, point, pReturnValue));
 Cleanup:
@@ -212,6 +222,7 @@ IFACEMETHODIMP DirectUI::RectHelperFactory::Equals(_In_ ABI::Windows::Foundation
         XamlTelemetry::PublicApiCall(true, 0, "RectHelper_Equals", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(EqualsImpl(target, value, pReturnValue));
 Cleanup:
@@ -229,6 +240,7 @@ IFACEMETHODIMP DirectUI::RectHelperFactory::Intersect(_In_ ABI::Windows::Foundat
         XamlTelemetry::PublicApiCall(true, 0, "RectHelper_Intersect", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(IntersectImpl(target, rect, pReturnValue));
 Cleanup:
@@ -246,6 +258,7 @@ IFACEMETHODIMP DirectUI::RectHelperFactory::UnionWithPoint(_In_ ABI::Windows::Fo
         XamlTelemetry::PublicApiCall(true, 0, "RectHelper_UnionWithPoint", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(UnionWithPointImpl(target, point, pReturnValue));
 Cleanup:
@@ -263,6 +276,7 @@ IFACEMETHODIMP DirectUI::RectHelperFactory::UnionWithRect(_In_ ABI::Windows::Fou
         XamlTelemetry::PublicApiCall(true, 0, "RectHelper_UnionWithRect", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(UnionWithRectImpl(target, rect, pReturnValue));
 Cleanup:
@@ -280,6 +294,7 @@ IFACEMETHODIMP DirectUI::RectHelperFactory::DipsRectToPhysicalRect(_In_ ABI::Win
         XamlTelemetry::PublicApiCall(true, 0, "RectHelper_DipsRectToPhysicalRect", 0);
     }
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckActivationAllowed());
     IFC(DipsRectToPhysicalRectImpl(dipsRect, pResult));
 Cleanup:

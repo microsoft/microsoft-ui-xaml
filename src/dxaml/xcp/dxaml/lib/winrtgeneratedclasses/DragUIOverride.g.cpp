@@ -46,6 +46,7 @@ IFACEMETHODIMP DirectUI::DragUIOverrideGenerated::get_Caption(_Out_ HSTRING* pVa
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<DragUIOverride*>(this)->get_CaptionImpl(pValue));
 Cleanup:
@@ -64,6 +65,7 @@ IFACEMETHODIMP DirectUI::DragUIOverrideGenerated::get_IsCaptionVisible(_Out_ BOO
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<DragUIOverride*>(this)->get_IsCaptionVisibleImpl(pValue));
 Cleanup:
@@ -82,6 +84,7 @@ IFACEMETHODIMP DirectUI::DragUIOverrideGenerated::get_IsContentVisible(_Out_ BOO
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<DragUIOverride*>(this)->get_IsContentVisibleImpl(pValue));
 Cleanup:
@@ -100,6 +103,7 @@ IFACEMETHODIMP DirectUI::DragUIOverrideGenerated::get_IsGlyphVisible(_Out_ BOOLE
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<DragUIOverride*>(this)->get_IsGlyphVisibleImpl(pValue));
 Cleanup:

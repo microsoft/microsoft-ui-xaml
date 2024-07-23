@@ -71,7 +71,7 @@ public:
         _In_ std::shared_ptr<XamlProperty> spProperty,
         _In_ std::shared_ptr<XamlType> spTypeToFind,
         _In_ CompressedStackCacheHint eCacheHint,
-        _Outref_ AmbientValuesVector& rvecValues);
+        _Out_ AmbientValuesVector& rvecValues);
 
     // Resolve the first instance object that matches the ambient search across the parser context
     // using either a type or property criteria.

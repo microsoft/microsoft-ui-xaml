@@ -283,7 +283,7 @@ _Check_return_ HRESULT FacadeAnimationHelper::ScopedBatchCompleted(_In_ IInspect
 
     // Now that we know which facade was being animated, query the backing PropertySet for the appropriate value
     // and propagate the now final value back into the property system.
-    m_callbacks->PullFacadePropertyValueFromCompositionObject(backingCO.Get(), facadeID);
+    VERIFYHR(m_callbacks->PullFacadePropertyValueFromCompositionObject(backingCO.Get(), facadeID));
 
     return S_OK;
 }

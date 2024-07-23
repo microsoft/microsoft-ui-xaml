@@ -242,7 +242,7 @@ _Check_return_ HRESULT DirectUI::TimePickerGenerated::EventAddHandlerByIndex(_In
     case KnownEventIndex::TimePicker_SelectedTimeChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::TimePicker*, ABI::Microsoft::UI::Xaml::Controls::TimePickerSelectedValueChangedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -259,7 +259,7 @@ _Check_return_ HRESULT DirectUI::TimePickerGenerated::EventAddHandlerByIndex(_In
     case KnownEventIndex::TimePicker_TimeChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<ABI::Microsoft::UI::Xaml::Controls::TimePickerValueChangedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -288,7 +288,7 @@ _Check_return_ HRESULT DirectUI::TimePickerGenerated::EventRemoveHandlerByIndex(
     case KnownEventIndex::TimePicker_SelectedTimeChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::TimePicker*, ABI::Microsoft::UI::Xaml::Controls::TimePickerSelectedValueChangedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -305,7 +305,7 @@ _Check_return_ HRESULT DirectUI::TimePickerGenerated::EventRemoveHandlerByIndex(
     case KnownEventIndex::TimePicker_TimeChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<ABI::Microsoft::UI::Xaml::Controls::TimePickerValueChangedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

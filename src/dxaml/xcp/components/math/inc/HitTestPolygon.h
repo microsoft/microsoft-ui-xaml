@@ -54,7 +54,7 @@ private:
     std::vector<XPOINTF4> m_3DPoints;
 
     // Optimization for when we're in 2D mode and the points represent an axis aligned rect
-    XRECTF m_rect;
+    XRECTF m_rect{};
 
     bool m_isRect {false};
 

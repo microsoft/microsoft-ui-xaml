@@ -72,7 +72,7 @@ private:
 
     _Check_return_ HRESULT TryGetResourceCandidate(
         _In_ IPALUri* pMSResourceUri,
-        _Outptr_result_maybenull_ wrl::ComPtr<mwar::IResourceCandidate>& resourceCandidate);
+        _Out_ wrl::ComPtr<mwar::IResourceCandidate>& resourceCandidate);
 
     _Check_return_ HRESULT UpdateContrastQualifier();
     _Check_return_ HRESULT UpdateDeviceFamilyQualifier();

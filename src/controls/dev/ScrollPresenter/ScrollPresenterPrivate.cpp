@@ -104,7 +104,7 @@ winrt::UIElement ScrollPresenter::AnchorElement()
 void ScrollPresenter::RegisterAnchorCandidate(winrt::UIElement const& element)
 {
 #ifdef DBG_VERBOSE
-    SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR_DBL, METH_NAME, this, element, VerticalAnchorRatio());
+    SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
 #endif
 
     if (!element)
@@ -115,7 +115,7 @@ void ScrollPresenter::RegisterAnchorCandidate(winrt::UIElement const& element)
     if (!isnan(HorizontalAnchorRatio()) || !isnan(VerticalAnchorRatio()))
     {
 #ifdef DBG
-        // We should not be registring the same element twice. Even through it is functionally ok,
+        // We should not be registering the same element twice. Even through it is functionally ok,
         // we will end up spending more time during arrange than we must.
         // However checking if an element is already in the list every time a new element is registered is worse for perf.
         // So, I'm leaving an assert here to catch regression in our code but in release builds we run without the check.

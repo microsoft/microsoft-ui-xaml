@@ -67,8 +67,6 @@ namespace DirectUI
     class TextControlFlyout;
     class XamlRoot;
 
-    class XamlDirect;
-
     class DXamlCore final : public IDXamlCore, public XAML::PLM::IPLMHandlerCallbacks
     {
         friend class ::AgCoreCallbacks;
@@ -582,6 +580,7 @@ namespace DirectUI
 
         // Set custom font collection in core text services for testing.
         _Check_return_ HRESULT SetSystemFontCollectionOverride(_In_opt_ IDWriteFontCollection* pFontCollection);
+        _Check_return_ HRESULT ShouldUseTypographicFontModel(_Out_ bool* useDWriteTypographicModel);
 
         void RequestReplayPreviousPointerUpdate_TempTestHook();
 
@@ -647,8 +646,6 @@ namespace DirectUI
 
         ctl::ComPtr<DxamlCoreTestHooks> GetTestHooks();
 #pragma endregion
-
-        XamlDirect* GetXamlDirectDefaultInstanceNoRef();
 
         static void DisableNotifyEndOfReferenceTrackingOnThread()
         {
@@ -848,7 +845,6 @@ namespace DirectUI
         _Check_return_ HRESULT IsAnimationEnabled(_Out_ bool* result);
 
     private:
-        ctl::ComPtr<DirectUI::XamlDirect> m_spDefaultXamlDirectInstance;
         xref_ptr<StaticStore> m_staticStoreGuard;
         bool m_isAnimationEnabled = false;
         static bool s_enableNotifyEndOfReferenceTrackingOnThread;

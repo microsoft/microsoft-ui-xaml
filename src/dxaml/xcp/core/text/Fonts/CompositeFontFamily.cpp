@@ -892,7 +892,7 @@ _Check_return_ HRESULT CCompositeFontFamily::MapCharacters(
     _In_z_ const WCHAR *pLocaleName,
     _In_z_ const WCHAR *pLocaleNameList,
     _In_opt_ const NumberSubstitutionData* pNumberSubstitutionData,
-    _In_ CWeightStyleStretch weightStyleStretch,
+    _In_ CFontFaceCriteria fontFaceCriteria,
     _Outptr_ IFssFontFace **ppMappedFontFace,
     _Out_ XUINT32 *pMappedLength,
     _Out_ XFLOAT *pMappedScale
@@ -959,9 +959,10 @@ _Check_return_ HRESULT CCompositeFontFamily::MapCharacters(
             textLength,
             haveBaseFont ? m_pBaseFontCollection : NULL,
             haveBaseFont ? pBaseFontName : NULL,
-            MIN(MAX(1, weightStyleStretch.m_weight), 999), // Scope to a valid weight or DWrite will complain
-            MIN(MAX(0, weightStyleStretch.m_style), 2),    // Scope to a valid style
-            MIN(MAX(1, weightStyleStretch.m_stretch), 9),  // Scope to a valid stretch
+            MIN(MAX(1, fontFaceCriteria.m_weight), 999), // Scope to a valid weight or DWrite will complain
+            MIN(MAX(0, fontFaceCriteria.m_style), 2),    // Scope to a valid style
+            MIN(MAX(1, fontFaceCriteria.m_stretch), 9),  // Scope to a valid stretch
+            fontFaceCriteria.m_opticalSize,
             pMappedLength,
             ppMappedFontFace,
             pMappedScale));
@@ -1008,7 +1009,7 @@ _Check_return_ HRESULT CCompositeFontFamily::MapCharacters(
 
     if (*ppMappedFontFace == NULL)
     {
-        IFC_RETURN(LookupNominalFontFace(weightStyleStretch, ppMappedFontFace));
+        IFC_RETURN(LookupNominalFontFace(fontFaceCriteria, ppMappedFontFace));
 
         if (*ppMappedFontFace == NULL)
         {
@@ -1018,7 +1019,7 @@ _Check_return_ HRESULT CCompositeFontFamily::MapCharacters(
 
             CCompositeFontFamily *pUltimateFontFamily;
             IFC_RETURN(m_pFontAndScriptServices->GetUltimateFallbackFontFamily(&pUltimateFontFamily));
-            IFC_RETURN(pUltimateFontFamily->LookupNominalFontFace(weightStyleStretch, ppMappedFontFace));
+            IFC_RETURN(pUltimateFontFamily->LookupNominalFontFace(fontFaceCriteria, ppMappedFontFace));
             // fail fast if mapped fontface is still null after ultimate font fall back.
             XCP_FAULT_ON_FAILURE(*ppMappedFontFace != nullptr);
         }
@@ -1032,13 +1033,16 @@ _Check_return_ HRESULT CCompositeFontFamily::MapCharacters(
 //
 //  Method: CCompositeFontFamily::LookupNominalGlyphTypeface
 //
-//  For a given font family, weight, style and stretch, determines which
+//  For a given set of font face criteria, determines which
 //  glyph typeface to use for the missing glyph.
 //
+//  Note, this method is used with richedit which has not yet been adapted
+//        for variable fonts and so the optical size part of the
+//        fontFaceCriteria is ignored.
 //------------------------------------------------------------------------
 
 _Check_return_ HRESULT CCompositeFontFamily::LookupNominalFontFace(
-    _In_        CWeightStyleStretch weightStyleStretch,
+    _In_     CFontFaceCriteria fontFaceCriteria,
     _Outptr_ IFssFontFace         **ppFontFace
 )
 {
@@ -1051,9 +1055,9 @@ _Check_return_ HRESULT CCompositeFontFamily::LookupNominalFontFace(
     if(m_cFontLookups > 0)
     {
         hr = (*m_pFontLookups)[0]->LookupNominalFontFace(
-                weightStyleStretch.m_weight,
-                weightStyleStretch.m_style,
-                weightStyleStretch.m_stretch,
+                fontFaceCriteria.m_weight,
+                fontFaceCriteria.m_style,
+                fontFaceCriteria.m_stretch,
                 ppFontFace);
 
         // Explicitly consider this particular error for downloadable fonts, treating it as if
@@ -1078,13 +1082,13 @@ Cleanup:
 }
 
 const xref_ptr<CFontTypeface>& CCompositeFontFamily::GetFontTypeface(
-    _In_            CWeightStyleStretch   weightStyleStretch
+    _In_            CFontFaceCriteria   fontFaceCriteria
 )
 {
-    auto& value = m_fontTypefaces[weightStyleStretch];
+    auto& value = m_fontTypefaces[fontFaceCriteria];
     if (!value)
     {
-        value = make_xref<CFontTypeface>(this, weightStyleStretch);
+        value = make_xref<CFontTypeface>(this, fontFaceCriteria);
     }
     return value;
 }

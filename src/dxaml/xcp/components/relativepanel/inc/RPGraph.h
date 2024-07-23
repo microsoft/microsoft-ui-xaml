@@ -119,7 +119,7 @@ private:
 
     std::forward_list<RPNode> m_nodes;
 
-    XSIZEF m_availableSizeForNodeResolution;
+    XSIZEF m_availableSizeForNodeResolution{};
 
     float m_minX;
     float m_maxX;

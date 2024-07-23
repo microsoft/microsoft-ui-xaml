@@ -91,7 +91,7 @@ namespace DirectUI
             unsigned int Track;
             ctl::ComPtr<wmc::ITimedMetadataTrack> spTrack;
             EventRegistrationToken EnteredToken;
-            EventRegistrationToken ExitedToken;
+            EventRegistrationToken ExitedToken{};
         };
 
         std::list<std::shared_ptr<CTrackTokens>> m_tokensList;

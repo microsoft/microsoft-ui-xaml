@@ -46,6 +46,7 @@ IFACEMETHODIMP DirectUI::TextBoxViewGenerated::get_CanHorizontallyScroll(_Out_ B
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<TextBoxView*>(this)->get_CanHorizontallyScrollImpl(pValue));
 Cleanup:
@@ -65,6 +66,7 @@ IFACEMETHODIMP DirectUI::TextBoxViewGenerated::get_CanVerticallyScroll(_Out_ BOO
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<TextBoxView*>(this)->get_CanVerticallyScrollImpl(pValue));
 Cleanup:
@@ -84,6 +86,7 @@ IFACEMETHODIMP DirectUI::TextBoxViewGenerated::get_ExtentHeight(_Out_ DOUBLE* pV
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<TextBoxView*>(this)->get_ExtentHeightImpl(pValue));
 Cleanup:
@@ -93,6 +96,7 @@ IFACEMETHODIMP DirectUI::TextBoxViewGenerated::get_ExtentWidth(_Out_ DOUBLE* pVa
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<TextBoxView*>(this)->get_ExtentWidthImpl(pValue));
 Cleanup:
@@ -102,6 +106,7 @@ IFACEMETHODIMP DirectUI::TextBoxViewGenerated::get_HorizontalOffset(_Out_ DOUBLE
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<TextBoxView*>(this)->get_HorizontalOffsetImpl(pValue));
 Cleanup:
@@ -111,6 +116,7 @@ IFACEMETHODIMP DirectUI::TextBoxViewGenerated::get_MinHorizontalOffset(_Out_ DOU
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<TextBoxView*>(this)->get_MinHorizontalOffsetImpl(pValue));
 Cleanup:
@@ -120,6 +126,7 @@ IFACEMETHODIMP DirectUI::TextBoxViewGenerated::get_MinVerticalOffset(_Out_ DOUBL
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<TextBoxView*>(this)->get_MinVerticalOffsetImpl(pValue));
 Cleanup:
@@ -129,6 +136,7 @@ IFACEMETHODIMP DirectUI::TextBoxViewGenerated::get_ScrollOwner(_Outptr_result_ma
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<TextBoxView*>(this)->get_ScrollOwnerImpl(ppValue));
 Cleanup:
@@ -148,6 +156,7 @@ IFACEMETHODIMP DirectUI::TextBoxViewGenerated::get_VerticalOffset(_Out_ DOUBLE* 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<TextBoxView*>(this)->get_VerticalOffsetImpl(pValue));
 Cleanup:
@@ -157,6 +166,7 @@ IFACEMETHODIMP DirectUI::TextBoxViewGenerated::get_ViewportHeight(_Out_ DOUBLE* 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<TextBoxView*>(this)->get_ViewportHeightImpl(pValue));
 Cleanup:
@@ -166,6 +176,7 @@ IFACEMETHODIMP DirectUI::TextBoxViewGenerated::get_ViewportWidth(_Out_ DOUBLE* p
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<TextBoxView*>(this)->get_ViewportWidthImpl(pValue));
 Cleanup:

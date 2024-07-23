@@ -50,6 +50,6 @@ namespace DirectUI
         }
 
     private:
-        BOOLEAN m_bIsBottomAlignment;
+        BOOLEAN m_bIsBottomAlignment{};
     };
 }

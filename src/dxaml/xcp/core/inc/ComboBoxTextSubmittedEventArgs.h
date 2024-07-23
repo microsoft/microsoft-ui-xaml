@@ -13,7 +13,7 @@ class CComboBoxTextSubmittedEventArgs final : public CEventArgs
 public:
     CComboBoxTextSubmittedEventArgs(_In_ HSTRING text)
     {
-        xstring_ptr::CloneRuntimeStringHandle(text, &m_text);
+        IFCFAILFAST(xstring_ptr::CloneRuntimeStringHandle(text, &m_text));
     }
 
     _Check_return_ HRESULT CreateFrameworkPeer(_Outptr_ IInspectable** ppPeer) override

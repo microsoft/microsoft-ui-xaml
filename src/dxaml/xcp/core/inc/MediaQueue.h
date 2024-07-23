@@ -89,7 +89,7 @@ protected:
 private:
     CMediaQueueManager*         m_pManager;
     IMediaQueueClient*          m_pClient;
-    CCoreServices*              m_pCoreNoRef;
+    CCoreServices*              m_pCoreNoRef{};
     wil::critical_section       m_Lock;
     CMediaQueueItem*            m_pHead;
     CMediaQueueItem*            m_pTail;

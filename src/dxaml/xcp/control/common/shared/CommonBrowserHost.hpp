@@ -17,7 +17,7 @@ CEventInfo::~CEventInfo()
 
 CEventInfo::CEventInfo(
         _In_opt_ CDependencyObject *pListener,
-        _In_     EventHandle hEvent,
+        _In_opt_ EventHandle hEvent,
         _In_opt_ CDependencyObject *pSender,
         _In_opt_ CEventArgs *pArgs,
         _In_ XINT32 flags,
@@ -380,7 +380,7 @@ Cleanup:
 //-------------------------------------------------------------------------
 _Check_return_ HRESULT
     CommonBrowserHost:: GetSystemGlyphTypefaces(
-        _Outptr_ CDependencyObject*  *ppDo)
+        _Outptr_opt_ CDependencyObject*  *ppDo)
 {
     HRESULT hr = S_OK;
 
@@ -787,7 +787,7 @@ Cleanup:
 //  Synopsis:
 //
 //-------------------------------------------------------------------------
-HRESULT
+_Check_return_ HRESULT
 CommonBrowserHost::EnsureDownloader()
 {
     HRESULT hr = S_OK;

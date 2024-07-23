@@ -50,6 +50,7 @@ IFACEMETHODIMP DirectUI::CalendarViewBaseItemAutomationPeerGenerated::get_Column
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarViewBaseItemAutomationPeer*>(this)->get_ColumnImpl(pValue));
 Cleanup:
@@ -59,6 +60,7 @@ IFACEMETHODIMP DirectUI::CalendarViewBaseItemAutomationPeerGenerated::get_Column
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarViewBaseItemAutomationPeer*>(this)->get_ColumnSpanImpl(pValue));
 Cleanup:
@@ -68,6 +70,7 @@ IFACEMETHODIMP DirectUI::CalendarViewBaseItemAutomationPeerGenerated::get_Contai
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarViewBaseItemAutomationPeer*>(this)->get_ContainingGridImpl(ppValue));
 Cleanup:
@@ -77,6 +80,7 @@ IFACEMETHODIMP DirectUI::CalendarViewBaseItemAutomationPeerGenerated::get_Row(_O
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarViewBaseItemAutomationPeer*>(this)->get_RowImpl(pValue));
 Cleanup:
@@ -86,6 +90,7 @@ IFACEMETHODIMP DirectUI::CalendarViewBaseItemAutomationPeerGenerated::get_RowSpa
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarViewBaseItemAutomationPeer*>(this)->get_RowSpanImpl(pValue));
 Cleanup:

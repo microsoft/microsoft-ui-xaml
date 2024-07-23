@@ -6,7 +6,10 @@
 
 #pragma once
 
+// Uncomment for DManip debug outputs.
 //#define DM_DEBUG
+
+// Uncomment for anchoring debug outputs.
 //#define ANCHORING_DEBUG
 
 #ifdef ANCHORING_DEBUG
@@ -1353,6 +1356,9 @@ namespace DirectUI
 
 #ifdef DM_DEBUG
         BOOLEAN IsRootScrollViewerDbg() { return IsRootScrollViewer(); }
+
+        bool DMSV_TraceDbg() const;
+        bool DMSVv_TraceDbg() const;
 #endif // DM_DEBUG
 
         // Enters the mode where the child's actual size is used for

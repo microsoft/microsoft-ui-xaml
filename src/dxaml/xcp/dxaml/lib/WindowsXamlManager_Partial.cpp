@@ -41,7 +41,7 @@ public:
         ASSERT(m_managers.empty());
     }
 
-    void OnManagerCreated(_In_ WindowsXamlManager* manager) override
+    void RegisterManager(_In_ WindowsXamlManager* manager) override
     {
         auto it = std::find(m_managers.begin(), m_managers.end(), manager);
         if (it == m_managers.end())
@@ -107,7 +107,7 @@ public:
     ~XamlCoreNewShutdown() {}
 
     // In this model, only one manager is allowed per thread.  Closing a manager is a no-op.
-    void OnManagerCreated(_In_ WindowsXamlManager* manager) override
+    void RegisterManager(_In_ WindowsXamlManager* manager) override
     {
         if (m_manager.Get() != manager)
         {
@@ -205,7 +205,7 @@ _Check_return_ HRESULT WindowsXamlManagerFactory::InitializeForCurrentThreadImpl
     return S_OK;
 }
 
-_Check_return_ HRESULT WindowsXamlManagerFactory::GetForCurrentThreadImpl(_Outptr_ xaml_hosting::IWindowsXamlManager** ppReturnValue)
+_Check_return_ HRESULT WindowsXamlManagerFactory::GetForCurrentThreadImpl(_Outptr_result_maybenull_ xaml_hosting::IWindowsXamlManager** ppReturnValue)
 {
     if (ComPtr<WindowsXamlManager> manager = WindowsXamlManager::GetForCurrentThread())
     {
@@ -335,7 +335,10 @@ _Check_return_ HRESULT WindowsXamlManager::Initialize()
             tls_xamlCore = std::make_shared<XamlCoreNewShutdown>();
         }
 
-        tls_xamlCore->OnManagerCreated(this);
+        // We need to call RegisterManager here to make sure we're tracking it for the current thread before the 
+        // below call to Initialize().  This is because Initialize() will call Application.OnLaunched(), which calls
+        // out to app code, which may call WindowsXamlManager.InitializeForCurrentThread().
+        tls_xamlCore->RegisterManager(this);
 
         IFC_RETURN(tls_xamlCore->Initialize(m_dispatcherQueue.Get()));
     }
@@ -350,7 +353,7 @@ _Check_return_ HRESULT WindowsXamlManager::Initialize()
         tls_xamlCore->SetState(XamlCore::State::Normal);
     }
 
-    tls_xamlCore->OnManagerCreated(this);
+    tls_xamlCore->RegisterManager(this);
 
     // This will make sure that it doesn't get cleared off thread in WeakReferenceSourceNoThreadId::OnFinalReleaseOffThread()
     // as it has thread-local variables and needs to be disposed off by the same thread
@@ -395,7 +398,7 @@ void WindowsXamlManager::RaiseXamlShutdownCompletedOnThreadEvent(_In_ msy::IDisp
         IFCFAILFAST(this->QueryInterfaceImpl(IID_PPV_ARGS(&sender)));
 
         ctl::ComPtr<XamlShutdownCompletedOnThreadEventArgs> args;
-        ctl::make<XamlShutdownCompletedOnThreadEventArgs>(&args);
+        IFCFAILFAST(ctl::make<XamlShutdownCompletedOnThreadEventArgs>(&args));
 
         args->SetDispatcherQueueShutdownStartingEventArgs(shutdownStartingArgs);
         

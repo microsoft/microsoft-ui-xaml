@@ -1374,7 +1374,7 @@ TransformAndClipFrame::Prepend(_In_ const TransformAndClipFrame *pOther)
     // must be transformed through the transform in this frame to bring it up to the root.
     //
     HWClip otherClip;
-    otherClip.Set(&pOther->m_clip);
+    IFC_RETURN(otherClip.Set(&pOther->m_clip));
     IFC_RETURN(IntersectLocalSpaceClip(&otherClip));
 
     PrependTransform(pOther->m_2DTransform);

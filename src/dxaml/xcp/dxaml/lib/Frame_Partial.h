@@ -35,7 +35,7 @@ namespace DirectUI
 
         BOOLEAN m_isLastNavigationBack = FALSE;
 
-        EventRegistrationToken m_nextClick;
+        EventRegistrationToken m_nextClick{};
 
         EventRegistrationToken m_previousClick;
 

@@ -11,12 +11,9 @@
 //
 //---------------------------------------------------------------------------
 DWriteFontCollection::DWriteFontCollection(
-    _In_ IDWriteFontCollection *pDWriteFontCollection
-    ) : m_pDWriteFontCollection(pDWriteFontCollection),
-        m_segoeUIFamilyIndex(0),
-        m_containsSegoeUIFamily(FALSE)
+    _In_ IDWriteFontCollection2 *pDWriteFontCollection
+    ) : m_dwriteFontCollection(pDWriteFontCollection)
 {
-    AddRefInterface(pDWriteFontCollection);
 }
 
 //---------------------------------------------------------------------------
@@ -25,37 +22,14 @@ DWriteFontCollection::DWriteFontCollection(
 //
 //---------------------------------------------------------------------------
 _Check_return_ HRESULT DWriteFontCollection::Create(
-    _In_  IDWriteFontCollection *pDWriteFontCollection,
+    _In_  IDWriteFontCollection2 *pDWriteFontCollection,
     _Outptr_ PALText::IFontCollection **ppFontCollection)
 {
-    HRESULT hr = S_OK;
-    static const WCHAR* pSegoeUI = L"Segoe UI";
-    DWriteFontCollection *pFontCollection = NULL;
-    BOOL exists = FALSE;
-    XUINT32 segoeUIFamilyIndex = 0;
-    
-    IFC(pDWriteFontCollection->FindFamilyName(pSegoeUI, &segoeUIFamilyIndex, &exists));
-    
-    pFontCollection = new DWriteFontCollection(pDWriteFontCollection);
-    pFontCollection->m_containsSegoeUIFamily = !!exists;
-    pFontCollection->m_segoeUIFamilyIndex = segoeUIFamilyIndex;
-    
-    *ppFontCollection = pFontCollection;
-    pFontCollection = NULL;
+    Microsoft::WRL::ComPtr<DWriteFontCollection> fontCollection;
+    fontCollection.Attach(new DWriteFontCollection(pDWriteFontCollection));
 
-Cleanup:
-    ReleaseInterface(pFontCollection);
-    RRETURN(hr);
-}
-
-//---------------------------------------------------------------------------
-//
-//  Release resources associated with the DWriteFontCollection.
-//
-//---------------------------------------------------------------------------
-DWriteFontCollection::~DWriteFontCollection()
-{
-    ReleaseInterface(m_pDWriteFontCollection);
+    *ppFontCollection = fontCollection.Detach();
+    return S_OK;
 }
 
 //---------------------------------------------------------------------------
@@ -74,14 +48,14 @@ HRESULT DWriteFontCollection::LookupPhysicalFontFamily(
     IDWriteFontFamily *pFontFamily = NULL;
     DWriteFontFamily *pDWriteFontFamily = NULL;
 
-    IFC(m_pDWriteFontCollection->FindFamilyName(pFamilyName, &index, &exists));
+    IFC(m_dwriteFontCollection->FindFamilyName(pFamilyName, &index, &exists));
 
     if (exists)
     {      
-        IFC(m_pDWriteFontCollection->GetFontFamily(index, &pFontFamily));
+        IFC(m_dwriteFontCollection->GetFontFamily(index, &pFontFamily));
         pDWriteFontFamily = new DWriteFontFamily(
             pFontFamily,
-            (m_containsSegoeUIFamily && (index == m_segoeUIFamilyIndex)));
+            m_dwriteFontCollection->GetFontFamilyModel() == DWRITE_FONT_FAMILY_MODEL_TYPOGRAPHIC);
     }
 
     *ppPhysicalFontFamily = pDWriteFontFamily;

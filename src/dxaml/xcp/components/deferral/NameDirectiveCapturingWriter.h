@@ -23,7 +23,7 @@ namespace Jupiter {
             std::vector<xstring_ptr>& GetCapturedNameList();
 
         private:
-            bool m_withinXNameMember;
+            bool m_withinXNameMember{};
             std::vector<xstring_ptr> m_nameList;
             XamlSchemaContext* m_context;
         };

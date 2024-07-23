@@ -388,9 +388,6 @@ namespace PALText
         // Returns whether or not the font supports pair-kerning.
         virtual bool HasKerningPairs() = 0;
 
-        // Returns whether we can bypass full shaping.
-        virtual bool CanOptimizeShaping() = 0;
-
         // Returns true if the font has a COLR table
         virtual bool IsColorFont() = 0;
 
@@ -651,6 +648,7 @@ namespace PALText
             XUINT32 baseWeight,
             XUINT32 baseStyle,
             XUINT32 baseStretch,
+            FLOAT opticalSize,
             _Deref_out_range_(0, textLength) XUINT32* pMappedLength,
             _COM_Outptr_ IFontFace** ppMappedFont,
             _Out_ XFLOAT* pScale

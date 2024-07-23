@@ -100,6 +100,7 @@ IFACEMETHODIMP DirectUI::InputValidationCommand::CanValidateCore(_In_ ABI::Micro
     }
     ARG_NOTNULL(pValidationControl, "validationControl");
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<InputValidationCommand*>(this)->CanValidateCoreImpl(pValidationControl, pResult));

@@ -211,7 +211,7 @@ ModernCollectionBasePanel::RegisterItemsHostImpl(_In_ IGeneratorHost* pHost)
     // it's time to get some caching setup and letting our strategy know about grouping
     {
         // we might have switched sources. discard our cache and rebuild from scratch.
-        m_cacheManager.ResetGroupCache();
+        IFC(m_cacheManager.ResetGroupCache());
 
         // re-evaluate
         auto strongCache = m_cacheManager.CacheStrongRefs(&hr); // Releases when it goes out of scope at the end of block
@@ -342,6 +342,52 @@ _Check_return_ HRESULT ModernCollectionBasePanel::SetGroupHeaderPlacement(_In_ x
     RRETURN(ReevaluateGroupHeaderStrategy());
 }
 
+// Returns the group header strategy enum value based on virtualization direction and group header placement.
+_Check_return_ HRESULT ModernCollectionBasePanel::GetGroupHeaderStrategy(_Out_ GroupHeaderStrategy* headerStrategy)
+{
+    *headerStrategy = GroupHeaderStrategy::None;
+
+    if (m_cacheManager.IsGrouping())
+    {
+        ctl::ComPtr<xaml_controls::ILayoutStrategy> layoutStrategy;
+        xaml_controls::Orientation orientation;
+
+        IFC_RETURN(GetLayoutStrategy(&layoutStrategy));
+        IFC_RETURN(layoutStrategy->GetVirtualizationDirection(&orientation));
+
+        switch (orientation)
+        {
+        case xaml_controls::Orientation::Orientation_Horizontal:
+            if (xaml_primitives::GroupHeaderPlacement_Left == m_groupHeaderPlacement)
+            {
+                *headerStrategy = GroupHeaderStrategy::Inline;
+            }
+            else
+            {
+                *headerStrategy = GroupHeaderStrategy::Parallel;
+            }
+            break;
+
+        case xaml_controls::Orientation::Orientation_Vertical:
+            if (xaml_primitives::GroupHeaderPlacement_Left == m_groupHeaderPlacement)
+            {
+                *headerStrategy = GroupHeaderStrategy::Parallel;
+            }
+            else
+            {
+                *headerStrategy = GroupHeaderStrategy::Inline;
+            }
+            break;
+
+        default:
+            ASSERT(false);
+            break;
+        }
+    }
+
+    return S_OK;
+}
+
 // Set the strategy's header strategy based on whether or not we're grouping.
 _Check_return_ HRESULT ModernCollectionBasePanel::ReevaluateGroupHeaderStrategy()
 {
@@ -354,41 +400,18 @@ _Check_return_ HRESULT ModernCollectionBasePanel::ReevaluateGroupHeaderStrategy(
     // Only apiset + vertical Orientation + Headerplacement!=Left can set it to TRUE
     BOOL bOldUseStickyHeaders = m_bUseStickyHeaders;
     m_bUseStickyHeaders = FALSE;
+    m_lastVisibleWindowClippingHeight = 0.0f;
 
     GroupHeaderStrategy headerStrategy = GroupHeaderStrategy::None;
 
-    if (m_cacheManager.IsGrouping())
+    IFC_RETURN(GetGroupHeaderStrategy(&headerStrategy));
+
+    if (m_cacheManager.IsGrouping() &&
+        xaml_primitives::GroupHeaderPlacement_Left != m_groupHeaderPlacement &&
+        orientation == xaml_controls::Orientation::Orientation_Vertical)
     {
-        switch (orientation)
-        {
-        case xaml_controls::Orientation::Orientation_Horizontal:
-            if (xaml_primitives::GroupHeaderPlacement_Left == m_groupHeaderPlacement)
-            {
-                headerStrategy = GroupHeaderStrategy::Inline;
-            }
-            else
-            {
-                headerStrategy = GroupHeaderStrategy::Parallel;
-            }
-            break;
-
-        case xaml_controls::Orientation::Orientation_Vertical:
-            if (xaml_primitives::GroupHeaderPlacement_Left == m_groupHeaderPlacement)
-            {
-                headerStrategy = GroupHeaderStrategy::Parallel;
-            }
-            else
-            {
-                headerStrategy = GroupHeaderStrategy::Inline;
-                // get the BOOLEAN value from the public property AreStickyGroupHeadersEnabled
-                IFC_RETURN(get_AreStickyGroupHeadersEnabledBase(&m_bUseStickyHeaders));
-            }
-            break;
-
-        default:
-            ASSERT(FALSE);
-            break;
-        }
+        // get the BOOLEAN value from the public property AreStickyGroupHeadersEnabled
+        IFC_RETURN(get_AreStickyGroupHeadersEnabledBase(&m_bUseStickyHeaders));
     }
 
     IFC_RETURN(SetGroupHeaderStrategy(headerStrategy));
@@ -519,7 +542,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::RunVirtualization()
 
         // Protected by Apiset
         // Sticky headers : TRUE only for Vertical Orientation + Headerplacement!=Left
-        // MaintainViewprt : needs ItemsStackPanel AND m_itemsUpdatingScrollMode == ItemsUpdatingScrollMode_KeepItemsInView
+        // MaintainViewprt : needs ItemsStackPanel AND m_itemsUpdatingScrollMode != ItemsUpdatingScrollMode::KeepScrollOffset
 
         if (m_bUseStickyHeaders || IsMaintainViewportSupportedAndEnabled())
         {
@@ -786,7 +809,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::RunGenerate()
         CollectionIterator iterator(m_cacheManager);
 
         // Set the starting location.
-        if(m_viewportBehavior.isTracking)
+        if (m_viewportBehavior.isTracking)
         {
             // We need to shift all the elements to go under the realization window that accounts
             // for the virtualization shift.
@@ -859,10 +882,10 @@ _Check_return_ HRESULT ModernCollectionBasePanel::RemoveMeasureLeftOvers(
     INT leftOverContainerCount = 0;
     INT leftOverHeaderCount = 0;
 
-    if(goForward)
+    if (goForward)
     {
         // We stopped at a sentinel header. lastValidHeaderIndex is already correct.
-        if(current.isHeader())
+        if (current.isHeader())
         {
         }
         // We stopped at a sentinel container. lastValidContainerIndex is already correct.
@@ -882,7 +905,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::RemoveMeasureLeftOvers(
             ASSERT(lastValidContainerIndex == -1);
         }
 
-        if(m_cacheManager.IsGrouping())
+        if (m_cacheManager.IsGrouping())
         {
             leftOverHeaderCount = m_containerManager.GetValidHeaderCount() - lastValidHeaderIndex;
         }
@@ -892,7 +915,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::RemoveMeasureLeftOvers(
     else
     {
         // We stopped at a sentinel header.
-        if(current.isHeader())
+        if (current.isHeader())
         {
             // We always generate the floating header while going backwards
             // So we always lay it out if we successfully iterated through all of its items
@@ -913,7 +936,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::RemoveMeasureLeftOvers(
             // Otherwise, if we haven't stopped on the group's last container, there should be
             // a floating header waiting for us. We'll lay it out after the cleanup.
             // In the meantime, let's not recycle it in the cleanup, so decrement the index
-            if(m_cacheManager.IsGrouping() && current.IndexInGroup() != (current.itemCountInGroup - 1))
+            if (m_cacheManager.IsGrouping() && current.IndexInGroup() != (current.itemCountInGroup - 1))
             {
 #ifdef DBG
                 ctl::ComPtr<IUIElement> spHeader;
@@ -926,7 +949,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::RemoveMeasureLeftOvers(
 
         // +1 to convert from an index to a count.
         leftOverContainerCount = lastValidContainerIndex + 1;
-        if(m_cacheManager.IsGrouping())
+        if (m_cacheManager.IsGrouping())
         {
             leftOverHeaderCount = lastValidHeaderIndex + 1;
         }
@@ -1015,7 +1038,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::Generate(
 
     // When tracking, we should care about the future realization window
     // (when EndTrackingFirstVisbleElement gets called).
-    if(m_viewportBehavior.isTracking)
+    if (m_viewportBehavior.isTracking)
     {
         windowToFill = GetRealizationWindowAfterViewportShift();
     }
@@ -1178,8 +1201,8 @@ _Check_return_ HRESULT ModernCollectionBasePanel::Generate(
 
                     // When elements change size, we need to start tracking the first visible element if the maintain
                     // viewport behavior is enabled.
-                    if(oldBoundsAreValid &&
-                       (!DoubleUtil::AreClose(bounds.Width, oldBounds.Width) || !DoubleUtil::AreClose(bounds.Height, oldBounds.Height)))
+                    if (oldBoundsAreValid &&
+                        (!DoubleUtil::AreClose(bounds.Width, oldBounds.Width) || !DoubleUtil::AreClose(bounds.Height, oldBounds.Height)))
                     {
                         IFC_RETURN(BeginTrackingOnMeasureChange(true /* isGroupChange */, current.groupIndex));
                     }
@@ -1187,10 +1210,10 @@ _Check_return_ HRESULT ModernCollectionBasePanel::Generate(
                     // If we are tracking due to a measure change and we are about to set
                     // new bounds for the tracked element, we will need to update the local
                     // realization window.
-                    if(m_viewportBehavior.isTracking &&
-                       !wereTrackingBefore &&
-                       m_viewportBehavior.type == current.type &&
-                       m_viewportBehavior.index == current.groupIndex)
+                    if (m_viewportBehavior.isTracking &&
+                        !wereTrackingBefore &&
+                        m_viewportBehavior.type == current.type &&
+                        m_viewportBehavior.index == current.groupIndex)
                     {
                         m_viewportBehavior.elementBounds = bounds;
                         windowToFill = GetRealizationWindowAfterViewportShift();
@@ -1314,8 +1337,8 @@ _Check_return_ HRESULT ModernCollectionBasePanel::Generate(
 
                     // When elements change size, we need to start tracking the first visible element if the maintain
                     // viewport behavior is enabled.
-                    if(oldBoundsAreValid &&
-                       (!DoubleUtil::AreClose(bounds.Width, oldBounds.Width) || !DoubleUtil::AreClose(bounds.Height, oldBounds.Height)))
+                    if (oldBoundsAreValid &&
+                        (!DoubleUtil::AreClose(bounds.Width, oldBounds.Width) || !DoubleUtil::AreClose(bounds.Height, oldBounds.Height)))
                     {
                         IFC_RETURN(BeginTrackingOnMeasureChange(false /* isGroupChange */, current.itemIndex));
                     }
@@ -1323,10 +1346,10 @@ _Check_return_ HRESULT ModernCollectionBasePanel::Generate(
                     // If we are tracking due to a measure change and we are about to set
                     // new bounds for the tracked element, we will need to update the local
                     // realization window.
-                    if(m_viewportBehavior.isTracking &&
-                       !wereTrackingBefore &&
-                       m_viewportBehavior.type == current.type &&
-                       m_viewportBehavior.index == current.itemIndex)
+                    if (m_viewportBehavior.isTracking &&
+                        !wereTrackingBefore &&
+                        m_viewportBehavior.type == current.type &&
+                        m_viewportBehavior.index == current.itemIndex)
                     {
                         m_viewportBehavior.elementBounds = bounds;
                         windowToFill = GetRealizationWindowAfterViewportShift();
@@ -1604,8 +1627,8 @@ _Check_return_ HRESULT ModernCollectionBasePanel::EnsureRecycleContainerCandidat
                     spFocusedContainer = spCandidate;
                     focusedPosition = currentPosition;
                 }
-                else if(!isRecyclable &&
-                        !isPinned)
+                else if (!isRecyclable &&
+                         !isPinned)
                 {
                     // pin containers which are not pinned yet but should
                     IFC(m_containerManager.RegisterPinnedContainer(
@@ -2368,7 +2391,6 @@ _Check_return_ HRESULT DirectUI::ModernCollectionBasePanel::ArrangeElements(
             {
                 lastCacheIndex = dataIndex;
             }
-
 
             if (!insideVisibleWindow)
             {
@@ -3559,7 +3581,7 @@ float wf::Point::* ModernCollectionBasePanel::PointFromPointInVirtualizingDirect
 {
     xaml_controls::Orientation layoutOrientation = xaml_controls::Orientation_Horizontal;
 
-    if(SUCCEEDED(m_spLayoutStrategy->GetVirtualizationDirection(&layoutOrientation)))
+    if (SUCCEEDED(m_spLayoutStrategy->GetVirtualizationDirection(&layoutOrientation)))
     {
         switch(layoutOrientation)
         {
@@ -3632,7 +3654,7 @@ float wf::Rect::* ModernCollectionBasePanel::PointFromRectInVirtualizingDirectio
 {
     xaml_controls::Orientation layoutOrientation = xaml_controls::Orientation_Horizontal;
 
-    if(SUCCEEDED(m_spLayoutStrategy->GetVirtualizationDirection(&layoutOrientation)))
+    if (SUCCEEDED(m_spLayoutStrategy->GetVirtualizationDirection(&layoutOrientation)))
     {
         switch(layoutOrientation)
         {
@@ -3650,7 +3672,7 @@ float wf::Rect::* ModernCollectionBasePanel::PointFromRectInNonVirtualizingDirec
 {
     xaml_controls::Orientation layoutOrientation = xaml_controls::Orientation_Horizontal;
 
-    if(SUCCEEDED(m_spLayoutStrategy->GetVirtualizationDirection(&layoutOrientation)))
+    if (SUCCEEDED(m_spLayoutStrategy->GetVirtualizationDirection(&layoutOrientation)))
     {
         switch(layoutOrientation)
         {
@@ -3668,7 +3690,7 @@ float wf::Rect::* ModernCollectionBasePanel::SizeFromRectInVirtualizingDirection
 {
     xaml_controls::Orientation layoutOrientation = xaml_controls::Orientation_Horizontal;
 
-    if(SUCCEEDED(m_spLayoutStrategy->GetVirtualizationDirection(&layoutOrientation)))
+    if (SUCCEEDED(m_spLayoutStrategy->GetVirtualizationDirection(&layoutOrientation)))
     {
         switch(layoutOrientation)
         {
@@ -3680,6 +3702,25 @@ float wf::Rect::* ModernCollectionBasePanel::SizeFromRectInVirtualizingDirection
     }
 
     return nullptr;
+}
+
+// Returns the thickess size in the virtualizing direction.
+double ModernCollectionBasePanel::SizeFromThicknessInVirtualizingDirection(xaml::Thickness thickness) const
+{
+    xaml_controls::Orientation layoutOrientation = xaml_controls::Orientation_Horizontal;
+
+    if (SUCCEEDED(m_spLayoutStrategy->GetVirtualizationDirection(&layoutOrientation)))
+    {
+        switch (layoutOrientation)
+        {
+        case xaml_controls::Orientation_Horizontal:
+            return thickness.Left + thickness.Right;
+        case xaml_controls::Orientation_Vertical:
+            return thickness.Top + thickness.Bottom;
+        }
+    }
+
+    return 0.0;
 }
 
 // Gets the cache length.

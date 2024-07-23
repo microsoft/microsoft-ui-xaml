@@ -1990,7 +1990,7 @@ _Check_return_ HRESULT CTextRangeAdapter::GetAttributeValueFromTextElement(
                 ASSERT(tempValue.GetType() == valueObject);
                 CFontFamily* fontFamilyDO = do_pointer_cast<CFontFamily>(tempValue.AsObject());
                 xstring_ptr strValue;
-                fontFamilyDO->get_Source(&strValue);
+                IFC_RETURN(fontFamilyDO->get_Source(&strValue));
                 returnValue.SetString(strValue);
             }
             break;

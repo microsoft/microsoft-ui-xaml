@@ -128,10 +128,7 @@ CSoftwareBitmapSource::SetBitmap(
     {
         ASSERT(m_spAbortableImageOperation == nullptr);
 
-        if (const auto& decodeActivity = GetContext()->GetImageProvider()->GetDecodeActivity())
-        {
-            decodeActivity->SetSoftwareBitmap(reinterpret_cast<uint64_t>(this));
-        }
+        ImagingTelemetry::SetSoftwareBitmap(reinterpret_cast<uint64_t>(this));
 
         IFC_RETURN(ReloadSource(false /* forceCopyToSoftwareSurface */));
     }
@@ -181,10 +178,7 @@ _Check_return_ HRESULT CSoftwareBitmapSource::OnSoftwareBitmapImageAvailable(_In
 
         attemptCopyToSoftwareSurfaceInstead = true;
 
-        if (const auto& decodeActivity = GetContext()->GetImageProvider()->GetDecodeActivity())
-        {
-            decodeActivity->SoftwareBitmapFallbackAfterUploadError(reinterpret_cast<uint64_t>(this), uploadHResult);
-        }
+        ImagingTelemetry::SoftwareBitmapFallbackAfterUploadError(reinterpret_cast<uint64_t>(this), uploadHResult);
 
         // Force a copy into a software surface, which will never hit a device lost error. We'll upload this into a
         // hardware surface later on a UI thread frame.
@@ -194,7 +188,7 @@ _Check_return_ HRESULT CSoftwareBitmapSource::OnSoftwareBitmapImageAvailable(_In
     {
         if (m_closeOnCompletion)
         {
-            CloseSoftwareBitmap();
+            IFC(CloseSoftwareBitmap());
             m_closeOnCompletion = false;
         }
 
@@ -324,7 +318,7 @@ _Check_return_ HRESULT CSoftwareBitmapSource::PrepareCopyParams(
     {
         // There appear to be cases where we might get called prior to the first tick.  When this happens,
         // make sure that the hardware resources are ready for us.
-        core->GetBrowserHost()->GetGraphicsDeviceManager()->WaitForD3DDependentResourceCreation();
+        IFC(core->GetBrowserHost()->GetGraphicsDeviceManager()->WaitForD3DDependentResourceCreation());
 
         INT32 width = 0;
         INT32 height = 0;

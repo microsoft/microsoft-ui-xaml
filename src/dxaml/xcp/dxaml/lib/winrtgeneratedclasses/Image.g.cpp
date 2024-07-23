@@ -191,6 +191,7 @@ IFACEMETHODIMP DirectUI::ImageGenerated::GetAlphaMask(_Outptr_ ABI::Microsoft::U
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Image_GetAlphaMask", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Image*>(this)->GetAlphaMaskImpl(ppReturnValue));
@@ -209,6 +210,7 @@ IFACEMETHODIMP DirectUI::ImageGenerated::GetAsCastingSource(_Outptr_ ABI::Window
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Image_GetAsCastingSource", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Image*>(this)->GetAsCastingSourceImpl(ppReturnValue));

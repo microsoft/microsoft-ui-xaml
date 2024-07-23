@@ -192,7 +192,7 @@ private:
 
     bool m_hasPendingChangedEvent = false;
 
-    bool m_isInputActive;
+    bool m_isInputActive{};
 };
 
 struct XamlRootStateChangedRaiiHelper

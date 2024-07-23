@@ -79,6 +79,7 @@ IFACEMETHODIMP DirectUI::DxamlCoreTestHooksFactory::GetForCurrentThread(_Outptr_
         XamlTelemetry::PublicApiCall(true, 0, "DxamlCoreTestHooks_GetForCurrentThread", 0);
     }
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckActivationAllowed());
     IFC(GetForCurrentThreadImpl(ppResult));
 Cleanup:

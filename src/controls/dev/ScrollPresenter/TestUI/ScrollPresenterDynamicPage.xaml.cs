@@ -114,6 +114,11 @@ namespace MUXControlsTestApp
             AppendAsyncEventMessage("StateChanged " + sender.State.ToString());
         }
 
+        private void ScrollPresenter_ViewChanging(ScrollPresenter sender, ScrollingViewChangingEventArgs args)
+        {
+            AppendAsyncEventMessage("ViewChanging H=" + args.HorizontalOffset.ToString() + ", V=" + args.VerticalOffset + ", ZF=" + args.ZoomFactor);
+        }
+
         private void ScrollPresenter_ViewChanged(ScrollPresenter sender, object args)
         {
             AppendAsyncEventMessage("ViewChanged H=" + sender.HorizontalOffset.ToString() + ", V=" + sender.VerticalOffset + ", ZF=" + sender.ZoomFactor);
@@ -265,6 +270,7 @@ namespace MUXControlsTestApp
         {
             scrollPresenter.ExtentChanged += ScrollPresenter_ExtentChanged;
             scrollPresenter.StateChanged += ScrollPresenter_StateChanged;
+            scrollPresenter.ViewChanging += ScrollPresenter_ViewChanging;
             scrollPresenter.ViewChanged += ScrollPresenter_ViewChanged;
             scrollPresenter.ScrollCompleted += ScrollPresenter_ScrollCompleted;
             scrollPresenter.ZoomCompleted += ScrollPresenter_ZoomCompleted;
@@ -276,6 +282,7 @@ namespace MUXControlsTestApp
         {
             scrollPresenter.ExtentChanged -= ScrollPresenter_ExtentChanged;
             scrollPresenter.StateChanged -= ScrollPresenter_StateChanged;
+            scrollPresenter.ViewChanging -= ScrollPresenter_ViewChanging;
             scrollPresenter.ViewChanged -= ScrollPresenter_ViewChanged;
             scrollPresenter.ScrollCompleted -= ScrollPresenter_ScrollCompleted;
             scrollPresenter.ZoomCompleted -= ScrollPresenter_ZoomCompleted;
@@ -2613,6 +2620,7 @@ namespace MUXControlsTestApp
                     {
                         scrollPresenter.ExtentChanged -= ScrollPresenter_ExtentChanged;
                         scrollPresenter.StateChanged -= ScrollPresenter_StateChanged;
+                        scrollPresenter.ViewChanging -= ScrollPresenter_ViewChanging;
                         scrollPresenter.ViewChanged -= ScrollPresenter_ViewChanged;
                         scrollPresenter.ScrollCompleted -= ScrollPresenter_ScrollCompleted;
                         scrollPresenter.ZoomCompleted -= ScrollPresenter_ZoomCompleted;
@@ -2662,6 +2670,7 @@ namespace MUXControlsTestApp
                     {
                         scrollPresenter.ExtentChanged += ScrollPresenter_ExtentChanged;
                         scrollPresenter.StateChanged += ScrollPresenter_StateChanged;
+                        scrollPresenter.ViewChanging += ScrollPresenter_ViewChanging;
                         scrollPresenter.ViewChanged += ScrollPresenter_ViewChanged;
                         scrollPresenter.ScrollCompleted += ScrollPresenter_ScrollCompleted;
                         scrollPresenter.ZoomCompleted += ScrollPresenter_ZoomCompleted;

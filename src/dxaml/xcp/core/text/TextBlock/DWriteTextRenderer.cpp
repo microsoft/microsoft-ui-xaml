@@ -24,7 +24,7 @@ _Check_return_ HRESULT DWriteTextRenderer::DrawGlyphRun(
     _In_ DWRITE_GLYPH_RUN const* glyphRun,
     _In_ DWRITE_GLYPH_RUN_DESCRIPTION const* glyphRunDescription,
     _In_ IUnknown* clientDrawingEffects
-    ) throw()
+    ) noexcept
 {
 
     xref_ptr<DWriteFontFace> pFontFace;
@@ -132,7 +132,7 @@ _Check_return_ HRESULT DWriteTextRenderer::DrawUnderline(
     _In_ float baselineOriginY,
     _In_ DWRITE_UNDERLINE const* underline,
     _In_ IUnknown* clientDrawingEffects
-    ) throw()
+    ) noexcept
 {
     XPOINTF baselineOrigin = {baselineOriginX, baselineOriginY + underline->offset};
     
@@ -153,7 +153,7 @@ _Check_return_ HRESULT DWriteTextRenderer::DrawStrikethrough(
     _In_ float baselineOriginY,
     _In_ DWRITE_STRIKETHROUGH const* strikethrough,
     _In_ IUnknown* clientDrawingEffects
-    ) throw()
+    ) noexcept
 {
     XPOINTF baselineOrigin = {baselineOriginX, baselineOriginY + strikethrough->offset};
     
@@ -176,7 +176,7 @@ _Check_return_ HRESULT DWriteTextRenderer::DrawInlineObject(
     _In_ BOOL isSideways,
     _In_ BOOL isRightToLeft,
     _In_ IUnknown* clientDrawingEffects
-    ) throw()
+    ) noexcept
 {
     RRETURN(inlineObject->Draw(clientDrawingContext,
         this,
@@ -190,7 +190,7 @@ _Check_return_ HRESULT DWriteTextRenderer::DrawInlineObject(
 _Check_return_ HRESULT DWriteTextRenderer::IsPixelSnappingDisabled(
     _In_opt_ void* clientDrawingContext,
     _Out_ BOOL* isDisabled
-    ) throw()
+    ) noexcept
 {
     *isDisabled = true; //Xaml handles pixel snapping in D2DTextDrawingContext.
     return S_OK;
@@ -199,7 +199,7 @@ _Check_return_ HRESULT DWriteTextRenderer::IsPixelSnappingDisabled(
 _Check_return_ HRESULT DWriteTextRenderer::GetCurrentTransform(
     _In_opt_ void* clientDrawingContext,
     _Out_ DWRITE_MATRIX* transform
-    ) throw()
+    ) noexcept
 {
     ASSERT(FALSE);
     return E_NOTIMPL;
@@ -208,7 +208,7 @@ _Check_return_ HRESULT DWriteTextRenderer::GetCurrentTransform(
 _Check_return_ HRESULT DWriteTextRenderer::GetPixelsPerDip(
     _In_opt_ void* clientDrawingContext,
     _Out_ float* pixelsPerDip
-    ) throw()
+    ) noexcept
 {
     *pixelsPerDip = 1.0;
     return S_OK;

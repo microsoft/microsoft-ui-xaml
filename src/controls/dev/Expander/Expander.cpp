@@ -87,7 +87,7 @@ void Expander::OnContentSizeChanged(const winrt::IInspectable&, const winrt::Siz
 
     auto const height = args.NewSize().Height;
     templateSettings->ContentHeight(height);
-    templateSettings->NegativeContentHeight(-1 * height);
+    templateSettings->NegativeContentHeight(-1 * static_cast<double>(height));
 }
 
 

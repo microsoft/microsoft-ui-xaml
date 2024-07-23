@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::TextCompositionStartedEventArgs::get_StartIndex(_Out_ I
     INT valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CTextCompositionStartedEventArgs*>(pCoreEventArgsNoRef)->get_StartIndex(&valueCore));
@@ -86,6 +87,7 @@ IFACEMETHODIMP DirectUI::TextCompositionStartedEventArgs::get_Length(_Out_ INT* 
     INT valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CTextCompositionStartedEventArgs*>(pCoreEventArgsNoRef)->get_Length(&valueCore));

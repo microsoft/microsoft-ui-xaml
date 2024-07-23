@@ -30,7 +30,7 @@ public:
     ~CModifiedValue()
     {
         // Ensure the base value's expected reference is cleared.
-        ClearBaseValue();
+        VERIFYHR(ClearBaseValue());
     }
 
 public:

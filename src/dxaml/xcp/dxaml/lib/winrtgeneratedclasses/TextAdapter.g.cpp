@@ -47,6 +47,7 @@ IFACEMETHODIMP DirectUI::TextAdapterGenerated::get_DocumentRange(_Outptr_result_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<TextAdapter*>(this)->get_DocumentRangeImpl(ppValue));
 Cleanup:
@@ -60,6 +61,7 @@ IFACEMETHODIMP DirectUI::TextAdapterGenerated::get_SupportedTextSelection(_Out_ 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<TextAdapter*>(this)->get_SupportedTextSelectionImpl(pValue));
 Cleanup:
@@ -77,6 +79,7 @@ IFACEMETHODIMP DirectUI::TextAdapterGenerated::GetSelection(_Out_ UINT* pReturnV
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "TextAdapter_GetSelection", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextAdapter*>(this)->GetSelectionImpl(pReturnValueCount, ppReturnValue));
@@ -95,6 +98,7 @@ IFACEMETHODIMP DirectUI::TextAdapterGenerated::GetVisibleRanges(_Out_ UINT* pRet
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "TextAdapter_GetVisibleRanges", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextAdapter*>(this)->GetVisibleRangesImpl(pReturnValueCount, ppReturnValue));
@@ -114,6 +118,7 @@ IFACEMETHODIMP DirectUI::TextAdapterGenerated::RangeFromChild(_In_ ABI::Microsof
     }
     ARG_NOTNULL(pChildElement, "childElement");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextAdapter*>(this)->RangeFromChildImpl(pChildElement, ppReturnValue));
@@ -132,6 +137,7 @@ IFACEMETHODIMP DirectUI::TextAdapterGenerated::RangeFromPoint(_In_ ABI::Windows:
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "TextAdapter_RangeFromPoint", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextAdapter*>(this)->RangeFromPointImpl(screenLocation, ppReturnValue));

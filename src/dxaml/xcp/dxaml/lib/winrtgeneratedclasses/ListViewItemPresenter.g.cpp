@@ -280,6 +280,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_ListViewItemPresent
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ListViewItemPresenter*>(this)->get_ListViewItemPresenterHorizontalContentAlignmentImpl(pValue));
 Cleanup:
@@ -299,6 +300,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_ListViewItemPresent
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ListViewItemPresenter*>(this)->get_ListViewItemPresenterPaddingImpl(pValue));
 Cleanup:
@@ -318,6 +320,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_ListViewItemPresent
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ListViewItemPresenter*>(this)->get_ListViewItemPresenterVerticalContentAlignmentImpl(pValue));
 Cleanup:

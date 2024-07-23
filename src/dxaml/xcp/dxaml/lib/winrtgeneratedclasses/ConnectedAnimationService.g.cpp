@@ -47,6 +47,7 @@ IFACEMETHODIMP DirectUI::ConnectedAnimationServiceGenerated::get_DefaultDuration
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ConnectedAnimationService*>(this)->get_DefaultDurationImpl(pValue));
 Cleanup:
@@ -66,6 +67,7 @@ IFACEMETHODIMP DirectUI::ConnectedAnimationServiceGenerated::get_DefaultEasingFu
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ConnectedAnimationService*>(this)->get_DefaultEasingFunctionImpl(ppValue));
 Cleanup:
@@ -94,6 +96,7 @@ IFACEMETHODIMP DirectUI::ConnectedAnimationServiceGenerated::GetAnimation(_In_ H
     }
     ARG_NOTNULL(key, "key");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ConnectedAnimationService*>(this)->GetAnimationImpl(key, ppReturnValue));
@@ -114,6 +117,7 @@ IFACEMETHODIMP DirectUI::ConnectedAnimationServiceGenerated::PrepareToAnimate(_I
     ARG_NOTNULL(key, "key");
     ARG_NOTNULL(pSource, "source");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ConnectedAnimationService*>(this)->PrepareToAnimateImpl(key, pSource, ppReturnValue));
@@ -158,6 +162,7 @@ IFACEMETHODIMP DirectUI::ConnectedAnimationServiceFactory::GetForCurrentView(_Ou
         XamlTelemetry::PublicApiCall(true, 0, "ConnectedAnimationService_GetForCurrentView", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(GetForCurrentViewImpl(ppReturnValue));
 Cleanup:

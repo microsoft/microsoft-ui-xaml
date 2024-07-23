@@ -634,7 +634,7 @@ _Check_return_ HRESULT CVirtualSurfaceImageSource::Resize(_In_ XINT32 newWidth,_
 
     // A new UI thread render walk is required after resizing a virtual surface image source
     // since some tiles might have been discarded.
-    SetDirty();
+    IFC_RETURN(SetDirty());
 
     // Request a tick so that the callback can be called if there are updates that are needed.
     // This is required in addition to marking the VSIS as dirty. If Resize is called during the
@@ -1044,7 +1044,7 @@ CVirtualSurfaceImageSource::TrimTiles()
             // Mark the image source as dirty, which will force a re-render on the UI thread.
             // This is necessary because freeing tiles in the composition surface requires that it
             // be re-submitted in a new command list.
-            SetDirty();
+            IFC(SetDirty());
         }
 
         m_hasOutstandingFreedTiles = FALSE;
@@ -1173,7 +1173,7 @@ CVirtualSurfaceImageSource::HandleLostResources()
         m_pImageSurfaceWrapper->CheckForLostHardwareResources())
     {
         XRECT surfaceBounds = { 0, 0, GetWidth(), GetHeight() };
-        Invalidate(surfaceBounds);
+        IFCFAILFAST(Invalidate(surfaceBounds));
 
         // Device lost recovery frees all tiles
         // which invalidates the cached set of needed update rects.

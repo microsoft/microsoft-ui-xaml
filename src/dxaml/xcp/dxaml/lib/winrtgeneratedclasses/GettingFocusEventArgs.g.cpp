@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::GettingFocusEventArgs::get_OldFocusedElement(_Outptr_re
     CDependencyObject* pValueCore = nullptr;
 
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CGettingFocusEventArgs*>(pCoreEventArgsNoRef)->get_OldFocusedElement(&pValueCore));
@@ -70,6 +71,7 @@ IFACEMETHODIMP DirectUI::GettingFocusEventArgs::get_NewFocusedElement(_Outptr_re
     CDependencyObject* pValueCore = nullptr;
 
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CGettingFocusEventArgs*>(pCoreEventArgsNoRef)->get_NewFocusedElement(&pValueCore));
@@ -103,6 +105,7 @@ IFACEMETHODIMP DirectUI::GettingFocusEventArgs::get_FocusState(_Out_ ABI::Micros
     DirectUI::FocusState valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CGettingFocusEventArgs*>(pCoreEventArgsNoRef)->get_FocusState(&valueCore));
@@ -120,6 +123,7 @@ IFACEMETHODIMP DirectUI::GettingFocusEventArgs::get_Direction(_Out_ ABI::Microso
     DirectUI::FocusNavigationDirection valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CGettingFocusEventArgs*>(pCoreEventArgsNoRef)->get_Direction(&valueCore));
@@ -137,6 +141,7 @@ IFACEMETHODIMP DirectUI::GettingFocusEventArgs::get_Handled(_Out_ BOOLEAN* pValu
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CGettingFocusEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));
@@ -170,6 +175,7 @@ IFACEMETHODIMP DirectUI::GettingFocusEventArgs::get_InputDevice(_Out_ ABI::Micro
     DirectUI::FocusInputDeviceKind valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CGettingFocusEventArgs*>(pCoreEventArgsNoRef)->get_InputDevice(&valueCore));
@@ -187,6 +193,7 @@ IFACEMETHODIMP DirectUI::GettingFocusEventArgs::get_Cancel(_Out_ BOOLEAN* pValue
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CGettingFocusEventArgs*>(pCoreEventArgsNoRef)->get_Cancel(&valueCore));
@@ -220,6 +227,7 @@ IFACEMETHODIMP DirectUI::GettingFocusEventArgs::get_CorrelationId(_Out_ GUID* pV
     GUID valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CGettingFocusEventArgs*>(pCoreEventArgsNoRef)->get_CorrelationId(&valueCore));
@@ -239,6 +247,7 @@ IFACEMETHODIMP DirectUI::GettingFocusEventArgs::TryCancel(_Out_ BOOLEAN* pReturn
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "GettingFocusEventArgs_TryCancel", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<GettingFocusEventArgs*>(this)->TryCancelImpl(pReturnValue));
 Cleanup:
@@ -257,6 +266,7 @@ IFACEMETHODIMP DirectUI::GettingFocusEventArgs::TrySetNewFocusedElement(_In_ ABI
     }
     ARG_NOTNULL(pElement, "element");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<GettingFocusEventArgs*>(this)->TrySetNewFocusedElementImpl(pElement, pReturnValue));
 Cleanup:

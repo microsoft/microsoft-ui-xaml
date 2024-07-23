@@ -57,6 +57,7 @@ IFACEMETHODIMP DirectUI::VisualStateChangedEventArgs::get_OldState(_Outptr_resul
     CVisualState* pValueCore = nullptr;
 
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CVisualStateChangedEventArgs*>(pCoreEventArgsNoRef)->get_OldState(&pValueCore));
@@ -90,6 +91,7 @@ IFACEMETHODIMP DirectUI::VisualStateChangedEventArgs::get_NewState(_Outptr_resul
     CVisualState* pValueCore = nullptr;
 
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CVisualStateChangedEventArgs*>(pCoreEventArgsNoRef)->get_NewState(&pValueCore));
@@ -123,6 +125,7 @@ IFACEMETHODIMP DirectUI::VisualStateChangedEventArgs::get_Control(_Outptr_result
     CControl* pValueCore = nullptr;
 
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CVisualStateChangedEventArgs*>(pCoreEventArgsNoRef)->get_Control(&pValueCore));

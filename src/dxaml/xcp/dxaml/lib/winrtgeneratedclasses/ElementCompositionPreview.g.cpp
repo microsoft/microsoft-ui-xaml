@@ -49,6 +49,7 @@ IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::GetElementVisual(_In_
     }
     ARG_NOTNULL(pElement, "element");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckActivationAllowed());
     IFC(GetElementVisualImpl(pElement, ppResult));
 Cleanup:
@@ -67,6 +68,7 @@ IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::GetElementChildVisual
     }
     ARG_NOTNULL(pElement, "element");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckActivationAllowed());
     IFC(GetElementChildVisualImpl(pElement, ppResult));
 Cleanup:
@@ -102,6 +104,7 @@ IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::GetScrollViewerManipu
     }
     ARG_NOTNULL(pScrollViewer, "scrollViewer");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckActivationAllowed());
     IFC(GetScrollViewerManipulationPropertySetImpl(pScrollViewer, ppResult));
 Cleanup:
@@ -171,6 +174,7 @@ IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::GetPointerPositionPro
     }
     ARG_NOTNULL(pTargetElement, "targetElement");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckActivationAllowed());
     IFC(GetPointerPositionPropertySetImpl(pTargetElement, ppResult));
 Cleanup:

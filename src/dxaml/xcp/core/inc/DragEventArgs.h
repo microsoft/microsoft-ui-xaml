@@ -15,7 +15,7 @@ public:
 
     // This specifies if the EventArgs are created by a Drop Event
     // so that we can allow access to the GetData and GetFormats methods on IDataObject
-    bool m_bAllowDataAccess;
+    bool m_bAllowDataAccess{};
 
     // Copy the given object into m_spData (pointer copy only), then
     // peg the managed object reference contained within.

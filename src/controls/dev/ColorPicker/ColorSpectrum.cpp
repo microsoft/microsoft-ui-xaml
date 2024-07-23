@@ -431,10 +431,18 @@ void ColorSpectrum::OnComponentsChanged(winrt::DependencyPropertyChangedEventArg
 
 void ColorSpectrum::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
-    // If we're in the middle of creating an image bitmap while being unloaded,
-    // we'll want to synchronously cancel it so we don't have any asynchronous actions
-    // lingering beyond our lifetime.
-    CancelAsyncAction(m_createImageBitmapAction);
+    // There is an anomaly in the Loading/Loaded/Unloaded events that can cause an Unloaded event to
+    // fire when the element is in the tree. When this happens, we end up cancelling the spectrum
+    // image generation and don't display it.  Unfortunately, we can't fix this until at least version
+    // 2.0, so for now we will work around it (as we have suggested to customers to do), by checking
+    // to see if we are actually unloaded before cancelling.
+    if (!IsLoaded())
+    {
+        // If we're in the middle of creating an image bitmap while being unloaded,
+        // we'll want to synchronously cancel it so we don't have any asynchronous actions
+        // lingering beyond our lifetime.
+        CancelAsyncAction(m_createImageBitmapAction);
+    }
 }
 
 winrt::Rect ColorSpectrum::GetBoundingRectangle()
@@ -556,7 +564,7 @@ void ColorSpectrum::UpdateColorFromPoint(const winrt::PointerPoint& point)
 
     // The gradient image contains two dimensions of HSL information, but not the third.
     // We should keep the third where it already was.
-    Hsv hsvAtPoint = m_hsvValues[y * width + x];
+    Hsv hsvAtPoint = m_hsvValues[static_cast<std::vector<Hsv>::size_type>(y) * width + x];
 
     const auto components = Components();
     const auto hsvColor = HsvColor();
@@ -618,8 +626,8 @@ void ColorSpectrum::UpdateEllipse()
         double yPercent = 0;
 
         const double hPercent = (hsv::GetHue(hsvColor) - m_minHueFromLastBitmapCreation) / (m_maxHueFromLastBitmapCreation - m_minHueFromLastBitmapCreation);
-        double sPercent = (hsv::GetSaturation(hsvColor) * 100.0 - m_minSaturationFromLastBitmapCreation) / (m_maxSaturationFromLastBitmapCreation - m_minSaturationFromLastBitmapCreation);
-        double vPercent = (hsv::GetValue(hsvColor) * 100.0 - m_minValueFromLastBitmapCreation) / (m_maxValueFromLastBitmapCreation - m_minValueFromLastBitmapCreation);
+        double sPercent = (hsv::GetSaturation(hsvColor) * 100.0 - m_minSaturationFromLastBitmapCreation) / (static_cast<double>(m_maxSaturationFromLastBitmapCreation) - m_minSaturationFromLastBitmapCreation);
+        double vPercent = (hsv::GetValue(hsvColor) * 100.0 - m_minValueFromLastBitmapCreation) / (static_cast<double>(m_maxValueFromLastBitmapCreation) - m_minValueFromLastBitmapCreation);
 
         // In the case where saturation was an axis in the spectrum with hue, or value is an axis, full stop,
         // we inverted the direction of that axis in order to put more hue on the outside of the ring,
@@ -681,20 +689,20 @@ void ColorSpectrum::UpdateEllipse()
             0;
         double sThetaValue =
             m_maxSaturationFromLastBitmapCreation != m_minSaturationFromLastBitmapCreation ?
-            360 * (hsv::GetSaturation(hsvColor) * 100.0 - m_minSaturationFromLastBitmapCreation) / (m_maxSaturationFromLastBitmapCreation - m_minSaturationFromLastBitmapCreation) :
+            360 * (hsv::GetSaturation(hsvColor) * 100.0 - m_minSaturationFromLastBitmapCreation) / (static_cast<double>(m_maxSaturationFromLastBitmapCreation) - m_minSaturationFromLastBitmapCreation) :
             0;
         double vThetaValue =
             m_maxValueFromLastBitmapCreation != m_minValueFromLastBitmapCreation ?
-            360 * (hsv::GetValue(hsvColor) * 100.0 - m_minValueFromLastBitmapCreation) / (m_maxValueFromLastBitmapCreation - m_minValueFromLastBitmapCreation) :
+            360 * (hsv::GetValue(hsvColor) * 100.0 - m_minValueFromLastBitmapCreation) / (static_cast<double>(m_maxValueFromLastBitmapCreation) - m_minValueFromLastBitmapCreation) :
             0;
         const double hRValue = m_maxHueFromLastBitmapCreation != m_minHueFromLastBitmapCreation ?
             (hsv::GetHue(hsvColor) - m_minHueFromLastBitmapCreation) / (m_maxHueFromLastBitmapCreation - m_minHueFromLastBitmapCreation) - 1 :
             0;
         double sRValue = m_maxSaturationFromLastBitmapCreation != m_minSaturationFromLastBitmapCreation ?
-            (hsv::GetSaturation(hsvColor) * 100.0 - m_minSaturationFromLastBitmapCreation) / (m_maxSaturationFromLastBitmapCreation - m_minSaturationFromLastBitmapCreation) - 1 :
+            (hsv::GetSaturation(hsvColor) * 100.0 - m_minSaturationFromLastBitmapCreation) / (static_cast<double>(m_maxSaturationFromLastBitmapCreation) - m_minSaturationFromLastBitmapCreation) - 1 :
             0;
         double vRValue = m_maxValueFromLastBitmapCreation != m_minValueFromLastBitmapCreation ?
-            (hsv::GetValue(hsvColor) * 100.0 - m_minValueFromLastBitmapCreation) / (m_maxValueFromLastBitmapCreation - m_minValueFromLastBitmapCreation) - 1 :
+            (hsv::GetValue(hsvColor) * 100.0 - m_minValueFromLastBitmapCreation) / (static_cast<double>(m_maxValueFromLastBitmapCreation) - m_minValueFromLastBitmapCreation) - 1 :
             0;
 
         // In the case where saturation was an axis in the spectrum with hue, or value is an axis, full stop,

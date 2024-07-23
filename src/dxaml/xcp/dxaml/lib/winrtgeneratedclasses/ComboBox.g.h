@@ -207,18 +207,12 @@ namespace DirectUI
 #if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
         , public ABI::Microsoft::UI::Xaml::Controls::IComboBoxStaticsFeature_HeaderPlacement
 #endif
-#if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
-        , public ABI::Microsoft::UI::Xaml::Controls::IComboBoxStaticsFeature_InputValidation
-#endif
     {
         BEGIN_INTERFACE_MAP(ComboBoxFactory, ctl::BetterAggregableCoreObjectActivationFactory)
             INTERFACE_ENTRY(ComboBoxFactory, ABI::Microsoft::UI::Xaml::Controls::IComboBoxFactory)
             INTERFACE_ENTRY(ComboBoxFactory, ABI::Microsoft::UI::Xaml::Controls::IComboBoxStatics)
 #if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
             INTERFACE_ENTRY(ComboBoxFactory, ABI::Microsoft::UI::Xaml::Controls::IComboBoxStaticsFeature_HeaderPlacement)
-#endif
-#if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
-            INTERFACE_ENTRY(ComboBoxFactory, ABI::Microsoft::UI::Xaml::Controls::IComboBoxStaticsFeature_InputValidation)
 #endif
         END_INTERFACE_MAP(ComboBoxFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
@@ -251,9 +245,9 @@ namespace DirectUI
         
         
         
-        IFACEMETHOD(get_ErrorTemplateProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(get_InputValidationModeProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(get_InputValidationKindProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) FEATURE_INPUTVALIDATION_OVERRIDE;
+        
+        
+        
         
 
         // Attached properties.

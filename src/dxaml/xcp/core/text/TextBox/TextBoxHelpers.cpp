@@ -745,9 +745,27 @@ _Check_return_ HRESULT CTextBoxHelpers::VerifyPositionPair(
         _In_ XUINT32 iTextPosition2
     )
 {
-    XUINT32 cPositions = 0;
+    const XUINT32 cPositions = GetMaxTextPosition(pTextContainer);
 
     // Verify that their offset is within the range of the container.
+    IFCEXPECT_RETURN(iTextPosition1 <= cPositions);
+    IFCEXPECT_RETURN(iTextPosition2 <= cPositions);
+
+    // Verify that the positions are ordered.
+    IFCEXPECT_RETURN(iTextPosition1 <= iTextPosition2);
+
+    return S_OK;
+}
+
+//------------------------------------------------------------------------
+//  Summary:
+//  Returns the maximum valid text position taking into account the 
+//  special empty RichTextBlock case.
+//------------------------------------------------------------------------
+XUINT32 CTextBoxHelpers::GetMaxTextPosition(
+    _In_ ITextContainer* pTextContainer)
+{
+    XUINT32 cPositions = 0;
 
     pTextContainer->GetPositionCount(&cPositions);
 
@@ -760,13 +778,7 @@ _Check_return_ HRESULT CTextBoxHelpers::VerifyPositionPair(
         cPositions = 1;
     }
 
-    IFCEXPECT_RETURN(iTextPosition1 <= cPositions);
-    IFCEXPECT_RETURN(iTextPosition2 <= cPositions);
-
-    // Verify that the positions are ordered.
-    IFCEXPECT_RETURN(iTextPosition1 <= iTextPosition2);
-
-    return S_OK;
+    return cPositions;
 }
 
 //------------------------------------------------------------------------

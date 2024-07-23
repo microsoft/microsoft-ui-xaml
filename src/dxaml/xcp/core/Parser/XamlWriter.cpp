@@ -3,7 +3,7 @@
 
 #include "precomp.h"
 
-HRESULT XamlWriter::WriteNode(_In_ const XamlNode& xamlNode)
+_Check_return_ HRESULT XamlWriter::WriteNode(_In_ const XamlNode& xamlNode)
 {
     HRESULT hr = S_OK;
 

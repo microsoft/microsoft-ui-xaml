@@ -21745,9 +21745,9 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::HorizontalAlignment>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Controls::IncrementalLoadingTrigger>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Input::InputScopeNameValue>),
-    __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Controls::InputValidationErrorEventAction>),
-    __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Controls::InputValidationKind>),
-    __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Controls::InputValidationMode>),
+    GUID{} /*GUID_NULL*/,
+    GUID{} /*GUID_NULL*/,
+    GUID{} /*GUID_NULL*/,
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Controls::ItemsUpdatingScrollMode>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Input::KeyboardAcceleratorPlacementMode>),
     __uuidof(ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Input::KeyboardNavigationMode>),
@@ -33850,7 +33850,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::DataTemplate, // Property type
         KnownTypeIndex::PasswordBox, // Declaring type
         KnownTypeIndex::PasswordBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.HasValidationErrors
     {
@@ -33858,7 +33858,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::Boolean, // Property type
         KnownTypeIndex::PasswordBox, // Declaring type
         KnownTypeIndex::PasswordBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.Header
     {
@@ -33898,7 +33898,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::InputValidationKind, // Property type
         KnownTypeIndex::PasswordBox, // Declaring type
         KnownTypeIndex::PasswordBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.InputValidationMode
     {
@@ -33906,7 +33906,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::InputValidationMode, // Property type
         KnownTypeIndex::PasswordBox, // Declaring type
         KnownTypeIndex::PasswordBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.IsPasswordRevealButtonEnabled
     {
@@ -34002,7 +34002,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::InputValidationContext, // Property type
         KnownTypeIndex::PasswordBox, // Declaring type
         KnownTypeIndex::PasswordBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.PasswordBox.ValidationErrors
     {
@@ -34010,7 +34010,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::ValidationErrorsCollection, // Property type
         KnownTypeIndex::PasswordBox, // Declaring type
         KnownTypeIndex::PasswordBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsOnDemandProperty)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsOnDemandProperty)), // Property flags
     },
     // Microsoft.UI.Xaml.Shapes.Path.Data
     {
@@ -34762,7 +34762,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::DataTemplate, // Property type
         KnownTypeIndex::TextBox, // Declaring type
         KnownTypeIndex::TextBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.TextBox.HasValidationErrors
     {
@@ -34770,7 +34770,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::Boolean, // Property type
         KnownTypeIndex::TextBox, // Declaring type
         KnownTypeIndex::TextBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.TextBox.Header
     {
@@ -34818,7 +34818,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::InputValidationKind, // Property type
         KnownTypeIndex::TextBox, // Declaring type
         KnownTypeIndex::TextBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.TextBox.InputValidationMode
     {
@@ -34826,7 +34826,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::InputValidationMode, // Property type
         KnownTypeIndex::TextBox, // Declaring type
         KnownTypeIndex::TextBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.TextBox.IsColorFontEnabled
     {
@@ -35018,7 +35018,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::InputValidationContext, // Property type
         KnownTypeIndex::TextBox, // Declaring type
         KnownTypeIndex::TextBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.TextBox.ValidationErrors
     {
@@ -35026,7 +35026,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::ValidationErrorsCollection, // Property type
         KnownTypeIndex::TextBox, // Declaring type
         KnownTypeIndex::TextBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsOnDemandProperty)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsOnDemandProperty)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.Primitives.Thumb.IsDragging
     {
@@ -35346,7 +35346,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::DataTemplate, // Property type
         KnownTypeIndex::AutoSuggestBox, // Declaring type
         KnownTypeIndex::AutoSuggestBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.AutoSuggestBox.HasValidationErrors
     {
@@ -35354,7 +35354,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::Boolean, // Property type
         KnownTypeIndex::AutoSuggestBox, // Declaring type
         KnownTypeIndex::AutoSuggestBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.AutoSuggestBox.Header
     {
@@ -35378,7 +35378,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::InputValidationKind, // Property type
         KnownTypeIndex::AutoSuggestBox, // Declaring type
         KnownTypeIndex::AutoSuggestBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.AutoSuggestBox.InputValidationMode
     {
@@ -35386,7 +35386,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::InputValidationMode, // Property type
         KnownTypeIndex::AutoSuggestBox, // Declaring type
         KnownTypeIndex::AutoSuggestBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.AutoSuggestBox.IsSuggestionListOpen
     {
@@ -35474,7 +35474,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::InputValidationContext, // Property type
         KnownTypeIndex::AutoSuggestBox, // Declaring type
         KnownTypeIndex::AutoSuggestBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.AutoSuggestBox.ValidationErrors
     {
@@ -35482,7 +35482,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::ValidationErrorsCollection, // Property type
         KnownTypeIndex::AutoSuggestBox, // Declaring type
         KnownTypeIndex::AutoSuggestBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsOnDemandProperty)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsOnDemandProperty)), // Property flags
     },
     // Microsoft.UI.Xaml.Documents.BlockCollection.ContentProperty
     {
@@ -37026,7 +37026,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::DataTemplate, // Property type
         KnownTypeIndex::ComboBox, // Declaring type
         KnownTypeIndex::ComboBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.ComboBox.HasValidationErrors
     {
@@ -37034,7 +37034,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::Boolean, // Property type
         KnownTypeIndex::ComboBox, // Declaring type
         KnownTypeIndex::ComboBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.ComboBox.Header
     {
@@ -37066,7 +37066,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::InputValidationKind, // Property type
         KnownTypeIndex::ComboBox, // Declaring type
         KnownTypeIndex::ComboBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.ComboBox.InputValidationMode
     {
@@ -37074,7 +37074,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::InputValidationMode, // Property type
         KnownTypeIndex::ComboBox, // Declaring type
         KnownTypeIndex::ComboBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.ComboBox.IsDropDownOpen
     {
@@ -37202,7 +37202,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::InputValidationContext, // Property type
         KnownTypeIndex::ComboBox, // Declaring type
         KnownTypeIndex::ComboBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.ComboBox.ValidationErrors
     {
@@ -37210,7 +37210,7 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::ValidationErrorsCollection, // Property type
         KnownTypeIndex::ComboBox, // Declaring type
         KnownTypeIndex::ComboBox, // Target type
-        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsOnDemandProperty)), // Property flags
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsOnDemandProperty)), // Property flags
     },
     // Microsoft.UI.Xaml.Controls.CommandBar.CommandBarOverflowPresenterStyle
     {

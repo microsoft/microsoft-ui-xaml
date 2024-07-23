@@ -2,10 +2,10 @@
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <!-- Build product binaries with Hybrid CRT linkage (Universal CRT + Static VS CRT) to simplify 
-  app install requirements. By default, test code is also built with Hybrid CRT, since it often 
-  links in product code libs and mixing CRT models is not supported.  Projects that are independent 
-  of product code can opt out of Hybrid CRT to keep binaries smaller and build times shorter. 
+  <!-- Build product binaries with Hybrid CRT linkage (Universal CRT + Static VS CRT) to simplify
+  app install requirements. By default, test code is also built with Hybrid CRT, since it often
+  links in product code libs and mixing CRT models is not supported.  Projects that are independent
+  of product code can opt out of Hybrid CRT to keep binaries smaller and build times shorter.
   https://github.com/microsoft/WindowsAppSDK/blob/main/docs/Coding-Guidelines/HybridCRT.md -->
   <PropertyGroup>
     <CxCompilation Condition="'$(CxCompilation)'=='' and ('$(AppContainerApplication)'=='true' or '$(XamlConsumesWinRT)'=='true')">true</CxCompilation>
@@ -15,6 +15,14 @@
     <!-- We'll not use debug libraries when using the Hybrid CRT because doing so causes linker issues.
          See the comment below about _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH. -->
     <UseDebugLibraries Condition="'$(UseHybridCrt)'=='true'">false</UseDebugLibraries>
+    <PlatformTarget Condition="'$(PlatformTarget)' == '' and '$(Platform)' == 'Win32'">x86</PlatformTarget>
+    <PlatformTarget Condition="'$(PlatformTarget)' == ''">$(Platform)</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <VisualStudioLibPath Condition="'$(PlatformTarget)' == 'x86'">$(_VC_LibraryPath_VC_x86_Desktop)\</VisualStudioLibPath>
+    <VisualStudioLibPath Condition="'$(PlatformTarget)' == 'x64'">$(_VC_LibraryPath_VC_x64_Desktop)\</VisualStudioLibPath>
+    <VisualStudioLibPath Condition="'$(PlatformTarget)' == 'arm64'">$(_VC_LibraryPath_VC_arm64_Desktop)\</VisualStudioLibPath>
   </PropertyGroup>
 
   <!-- However, we do need to explicitly disable optimization when we've set UseDebugLibraries to false.
@@ -29,7 +37,6 @@
   <PropertyGroup>
     <CrtLibSuffix/>
     <CrtLibSuffix Condition="'$(UseDebugLibraries)'=='true'">d</CrtLibSuffix>
-    <VisualStudioLibPath>$(VCToolsInstallDir)lib\$(WindowsSDKArch)\</VisualStudioLibPath>
     <CrtDefinitions>
       _UCRT;
       _CRT_SECURE_NO_WARNINGS;
@@ -64,7 +71,7 @@
   <PropertyGroup>
       <!-- CX compilation (/ZW) requires dynamic CRT (/MD).  This collides with hybrid (static) CRT linkage,
       producing error D8016, via a RuntimeLibrary pragma detect mismatch.  We disable this warning for CX test code
-      to allow it to link with C++ product code.  Normally, the mismatch would be a concern in that a binary should 
+      to allow it to link with C++ product code.  Normally, the mismatch would be a concern in that a binary should
       have one CRT instance for efficiency, consistency, to prevent heap confusion, etc.  In this case, we're not
       introducing two CRT instances, since the dynamic CRT imports from CX code actually resolve to the static CRT
       library externals (producing a warning about importing local functions). -->
@@ -79,9 +86,9 @@
       <RuntimeLibrary>$(RuntimeLibrary)</RuntimeLibrary>
       <PreprocessorDefinitions>$(CrtDefinitions) $(StlDefinitions) $(ClMidlDefinitions) $(AllowRuntimeLibraryMismatch) %(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <Midl>    
+    <Midl>
       <PreprocessorDefinitions>$(ClMidlDefinitions) %(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </Midl>    
+    </Midl>
     <Link>
       <IgnoreSpecificDefaultLibraries>
         libucrt.lib;
@@ -110,7 +117,7 @@
     <CrtLib Include="$(VisualStudioLibPath)msvcprt$(CrtLibSuffix).lib"/>
     <CrtLib Include="$(VisualStudioLibPath)vcruntime$(CrtLibSuffix).lib"/>
   </ItemGroup>
-  
+
   <!-- If hybrid CRT, link dynamically to ucrtbase.dll, statically to VC startup/runtime and STL.
   Note that we can't link with libcpmtd.lib (etc), or we'll end up with an iterator debug level mismatch,
   which will break the build.  Using _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH is not a good workaround, as it can
@@ -131,7 +138,7 @@
     <CrtLib Condition="'$(UseHybridCrt)'=='true'" Include="$(VisualStudioLibPath)vccorlib.lib"/>
   </ItemGroup>
 
-  <!-- To ensure that XAML's new/delete function overrides take precedence, 
+  <!-- To ensure that XAML's new/delete function overrides take precedence,
     CRT libs are explicitly added last to the link inputs. -->
   <Target Name="AddCrtLibs" BeforeTargets="Link">
     <ItemGroup>

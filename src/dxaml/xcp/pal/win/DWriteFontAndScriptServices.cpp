@@ -6,20 +6,10 @@
 #include "DWriteTextAnalyzer.h"
 #include "DWriteFontCollection.h"
 #include "DWriteFontFace.h"
-#include "DXamlFontCollectionLoader.h"
 #include "corep.h"
+#include "RuntimeEnabledFeatures.h"
 
 wrl::ComPtr<IUnknown> DWriteFontAndScriptServices::s_customSystemFontCollection;
-
-//---------------------------------------------------------------------------
-//
-//  Initializes a new instance of the DWriteFontAndScriptServices class.
-//
-//---------------------------------------------------------------------------
-DWriteFontAndScriptServices::DWriteFontAndScriptServices() :
-    m_pDXamlFontCollectionLoader(NULL)
-{
-}
 
 //---------------------------------------------------------------------------
 //
@@ -28,15 +18,6 @@ DWriteFontAndScriptServices::DWriteFontAndScriptServices() :
 //---------------------------------------------------------------------------
 DWriteFontAndScriptServices::~DWriteFontAndScriptServices()
 {
-    // Need to call IDWriteFactory::UnregisterFontCollectionLoader to release the ref
-    // added by IDWriteFactory::RegisterFontCollectionLoader.
-    if (m_dwriteFactory && m_pDXamlFontCollectionLoader)
-    {
-        VERIFYHR(m_dwriteFactory->UnregisterFontCollectionLoader(m_pDXamlFontCollectionLoader));
-    }
-
-    ReleaseInterface(m_pDXamlFontCollectionLoader);
-    
     ClearNumberSubstitutionList();
     m_fontNameList.clear();
 }
@@ -74,22 +55,14 @@ Cleanup:
 HRESULT DWriteFontAndScriptServices::Initialize()
 {
     HRESULT hr = S_OK;
-    DXamlFontCollectionLoader *pDXamlFontCollectionLoader = NULL;
 
     if (m_dwriteFactory == nullptr)
     {
-        IFC(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &m_dwriteFactory));
-
-        pDXamlFontCollectionLoader = new DXamlFontCollectionLoader();
-        IFC(m_dwriteFactory->RegisterFontCollectionLoader(pDXamlFontCollectionLoader));
-        m_pDXamlFontCollectionLoader = pDXamlFontCollectionLoader;
-        pDXamlFontCollectionLoader = NULL;
-        
+        IFC(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory6), &m_dwriteFactory));
         IFC(m_dwriteFactory->CreateTextAnalyzer(&m_dwriteTextAnalyzer));
     }
 
 Cleanup:
-    ReleaseInterface(pDXamlFontCollectionLoader);
     RRETURN(hr);
 }
 
@@ -117,24 +90,43 @@ _Check_return_ HRESULT DWriteFontAndScriptServices::GetDWriteFactory(_COM_Outptr
     return S_OK;
 }
 
+_Check_return_ HRESULT DWriteFontAndScriptServices::GetDWriteFactory(_COM_Outptr_ IDWriteFactory6** ppIDWriteFactory6) const
+{
+    IFC_RETURN(m_dwriteFactory.CopyTo(ppIDWriteFactory6));
+    return S_OK;
+}
+
 HRESULT DWriteFontAndScriptServices::EnsureSystemFontCollection()
 {
     if (m_systemFontCollection == nullptr)
     {
-        Microsoft::WRL::ComPtr<IDWriteFontCollection1> dWriteFontCollection;
+        Microsoft::WRL::ComPtr<IDWriteFontCollection2> dWriteFontCollection;
         if (s_customSystemFontCollection != nullptr)
         {
             IFC_RETURN(s_customSystemFontCollection.As(&dWriteFontCollection));
         }
         else
         {
-            IFC_RETURN(m_dwriteFactory->GetSystemFontCollection(/*includeDownloadableFonts*/ true, dWriteFontCollection.GetAddressOf()));
+            DWRITE_FONT_FAMILY_MODEL fontFamilyModel = ShouldUseTypographicFontModel() ? DWRITE_FONT_FAMILY_MODEL_TYPOGRAPHIC : DWRITE_FONT_FAMILY_MODEL_WEIGHT_STRETCH_STYLE;
+            IFC_RETURN(m_dwriteFactory->GetSystemFontCollection(/*includeDownloadableFonts*/ true, fontFamilyModel, dWriteFontCollection.GetAddressOf()));
         }
         IFC_RETURN(DWriteFontCollection::Create(dWriteFontCollection.Get(), m_systemFontCollection.ReleaseAndGetAddressOf()));
     }
     return S_OK;
 }
 
+bool DWriteFontAndScriptServices::ShouldUseTypographicFontModel()
+{
+    if (!RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector()->IsFeatureEnabled(RuntimeFeatureBehavior::RuntimeEnabledFeature::ForceDWriteTypographicModel))
+    {
+        // The typographic model was not explicitly requested, so see if it is disabled
+        if (RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector()->IsFeatureEnabled(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableDWriteTypographicModel))
+        {
+            return false;
+        }
+    }
+    return true;
+}
 
 //---------------------------------------------------------------------------
 //
@@ -158,12 +150,28 @@ HRESULT DWriteFontAndScriptServices::GetSystemFontCollection(
     return S_OK;
 }
 
-_Check_return_ HRESULT DWriteFontAndScriptServices::GetDefaultDWriteTextFormat(_COM_Outptr_ IDWriteTextFormat** ppIDWriteTextFormat)
+_Check_return_ HRESULT DWriteFontAndScriptServices::GetDefaultDWriteTextFormat(_COM_Outptr_ IDWriteTextFormat** ppIDWriteTextFormat, bool isTypographicCollection)
 {
     if (m_defaultTextFormat == nullptr)
     {
+        if (isTypographicCollection)
+        {
+            Microsoft::WRL::ComPtr<IDWriteTextFormat3> defaultTextFormat;
+            IFC_RETURN(m_dwriteFactory->CreateTextFormat(
+                L"Segoe UI", // This value is always overridden in the text layout so it is arbitrary.
+                nullptr, // use default collection
+                nullptr, // use default axis values
+                0,       // value count
+                15.0,    // font size
+                L"en-US",
+                &defaultTextFormat
+            ));
+            IFC_RETURN(defaultTextFormat.As(&m_defaultTextFormat));
+        }
+        else
+        {
         IFC_RETURN(m_dwriteFactory->CreateTextFormat(
-            L"Segoe UI",
+            L"Segoe UI", // This value is always overridden in the text layout so it is arbitrary
             nullptr,
             DWRITE_FONT_WEIGHT_NORMAL,
             DWRITE_FONT_STYLE_NORMAL,
@@ -172,6 +180,7 @@ _Check_return_ HRESULT DWriteFontAndScriptServices::GetDefaultDWriteTextFormat(_
             L"en-US",
             &m_defaultTextFormat
             ));
+        }
     }
     IFC_RETURN(m_defaultTextFormat.CopyTo(ppIDWriteTextFormat));
     return S_OK;
@@ -248,9 +257,7 @@ HRESULT DWriteFontAndScriptServices::CreateCustomFontCollection(
     _Outptr_ PALText::IFontCollection **ppFontCollection
     )
 {
-    HRESULT hr = S_OK;
     xstring_ptr strFilePath;
-    IDWriteFontCollection *pDWriteFontCollection = NULL;
 
     //
     // NOTE: Currently we only support resources that have a file path. 
@@ -258,23 +265,23 @@ HRESULT DWriteFontAndScriptServices::CreateCustomFontCollection(
     //
     // See the explanation below, in DWriteFontAndScriptServices::CreateCustomFontFace().
     //
-    IFC(pResource->TryGetFilePath(&strFilePath));
-    if (strFilePath.IsNullOrEmpty())
-    {
-        IFC(E_FAIL);
-    }
+    IFC_RETURN(pResource->TryGetFilePath(&strFilePath));
+    IFCCHECK_RETURN(!strFilePath.IsNullOrEmpty());
+
+    Microsoft::WRL::ComPtr<IDWriteFontSetBuilder2> fontSetBuilder;
+    IFC_RETURN(m_dwriteFactory->CreateFontSetBuilder(&fontSetBuilder));
+
+    IFC_RETURN(fontSetBuilder->AddFontFile(strFilePath.GetBuffer()));
     
-    IFC(m_dwriteFactory->CreateCustomFontCollection(
-        m_pDXamlFontCollectionLoader,
-        reinterpret_cast<void const*>(strFilePath.GetBuffer()),
-        (strFilePath.GetCount() + 1) * sizeof(XCHAR),
-        &pDWriteFontCollection));
+    Microsoft::WRL::ComPtr<IDWriteFontSet> fontSet;
+    IFC_RETURN(fontSetBuilder->CreateFontSet(&fontSet));
+    wrl::ComPtr<IDWriteFontCollection2> dwriteFontCollection;
+    DWRITE_FONT_FAMILY_MODEL dwriteFontFamilyModel = DWriteFontCollection::GetInternalCollection(m_systemFontCollection)->GetFontFamilyModel();
+    IFC_RETURN(m_dwriteFactory->CreateFontCollectionFromFontSet(fontSet.Get(), dwriteFontFamilyModel, dwriteFontCollection.ReleaseAndGetAddressOf()));
 
-    IFC(DWriteFontCollection::Create(pDWriteFontCollection, ppFontCollection));
+    IFC_RETURN(DWriteFontCollection::Create(dwriteFontCollection.Get(), ppFontCollection));
 
-Cleanup:
-    ReleaseInterface(pDWriteFontCollection);
-    RRETURN(hr);
+    return S_OK;
 }
 
 //---------------------------------------------------------------------------
@@ -497,7 +504,7 @@ _Check_return_ HRESULT DWriteFontAndScriptServices::IsFontNameValid(_In_ const x
         {
             UINT32 index = 0;
             IFC_RETURN(EnsureSystemFontCollection());
-            IDWriteFontCollection* pDWriteFontCollection = reinterpret_cast<DWriteFontCollection*>(m_systemFontCollection.get())->m_pDWriteFontCollection;
+            IDWriteFontCollection2* pDWriteFontCollection = DWriteFontCollection::GetInternalCollection(m_systemFontCollection.get());
             IFC_RETURN(pDWriteFontCollection->FindFamilyName(strFontName.GetBuffer(), &index, pIsValid));
             VERIFY_COND(m_fontNameList.insert({ strFontName, *pIsValid }), .second);
         }

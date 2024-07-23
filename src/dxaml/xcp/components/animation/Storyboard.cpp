@@ -50,6 +50,12 @@ xstring_ptr CStoryboard::GetNameForTracking(
     _In_opt_ CDependencyObject* dynamicTimeline,
     _Out_opt_ XUINT16* scenarioPriority)
 {
+    // Initialize the output parameter to a default value
+    if (scenarioPriority != nullptr)
+    {
+        *scenarioPriority = c_AnimationTrackingDefaultPriority;
+    }
+    
     XStringBuilder nameBuilder;
 
     // Start with any name provided for the storyboard itself.

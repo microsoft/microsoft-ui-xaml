@@ -234,6 +234,7 @@ IFACEMETHODIMP DirectUI::TimelineFactory::get_AllowDependentAnimations(_Out_ BOO
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckActivationAllowed());
     IFC(get_AllowDependentAnimationsImpl(pValue));
 Cleanup:

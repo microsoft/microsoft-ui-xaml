@@ -166,7 +166,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                ScrollTo(scrollPresenter, horizontalOffset, verticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, false /*hookViewChanged*/);
+                ScrollTo(scrollPresenter, horizontalOffset, verticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, false /*hookViewChangingAndChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -282,7 +282,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                ScrollTo(scrollPresenter, horizontalOffset, verticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, false /*hookViewChanged*/);
+                ScrollTo(scrollPresenter, horizontalOffset, verticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, false /*hookViewChangingAndChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -461,7 +461,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                ScrollTo(scrollPresenter, horizontalOffset, verticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, false /*hookViewChanged*/);
+                ScrollTo(scrollPresenter, horizontalOffset, verticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, false /*hookViewChangingAndChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -542,7 +542,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                ScrollTo(scrollPresenter, horizontalOffset, verticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, false /*hookViewChanged*/);
+                ScrollTo(scrollPresenter, horizontalOffset, verticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, false /*hookViewChangingAndChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -834,7 +834,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
                     ZoomTo(scrollPresenter, 2.0f, 0.0f, 0.0f, ScrollingAnimationMode.Enabled, ScrollingSnapPointsMode.Ignore);
-                    ScrollTo(scrollPresenter, 0.0, 250.0, ScrollingAnimationMode.Enabled, ScrollingSnapPointsMode.Ignore, false /*hookViewChanged*/);
+                    ScrollTo(scrollPresenter, 0.0, 250.0, ScrollingAnimationMode.Enabled, ScrollingSnapPointsMode.Ignore, false /*hookViewChangingAndChanged*/);
 
                     ItemsRepeater repeater = null;
                     TestDataSource dataSource = null;

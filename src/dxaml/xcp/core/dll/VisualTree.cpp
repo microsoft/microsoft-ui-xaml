@@ -555,10 +555,9 @@ VisualTree::VisualTree(_In_ CCoreServices *pCore, _In_ XUINT32 backgroundColor, 
         IFCFAILFAST(CreateDO(m_rootVisual.ReleaseAndGetAddressOf(), &cp));
 
         // Mark the element as the root of the render walk.
-        m_rootVisual->SetRequiresComposition(
+        IFCFAILFAST(m_rootVisual->SetRequiresComposition(
             CompositionRequirement::RootElement,
-            IndependentAnimationType::None
-            );
+            IndependentAnimationType::None));
 
         IFCFAILFAST(m_rootVisual->SetAssociatedVisualTree(this));
 

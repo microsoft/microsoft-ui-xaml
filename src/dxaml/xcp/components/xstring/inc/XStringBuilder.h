@@ -19,7 +19,7 @@ private:
     HSTRING_BUFFER m_hPreallocatedBuffer;
     uint32_t m_cBuffer;
     uint32_t m_cActual;
-    WCHAR m_inlineBuffer[Ti];
+    WCHAR m_inlineBuffer[Ti]{};
 
 public:
     _Check_return_ HRESULT Initialize(uint32_t uInitialSize = Ti);

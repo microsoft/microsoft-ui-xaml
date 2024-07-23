@@ -4,6 +4,7 @@
 #include "precomp.h"
 #include "BuildTreeService.g.h"
 #include <UIThreadScheduler.h>
+#include "XamlTelemetry.h"
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -192,6 +193,10 @@ _Check_return_ HRESULT BuildTreeService::BuildTrees(_Out_ bool* pWorkLeft)
         {
             IFC(pCore->SetHasBuildTreeWorksEventSignaledStatus(FALSE /*bSignaled*/));
             IFC(pCore->SetBuildTreeServiceDrainedEvent());
+
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "BuildTreeService_OutOfWork",
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
         }
     }
 

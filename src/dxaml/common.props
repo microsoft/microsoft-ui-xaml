@@ -27,7 +27,7 @@
     <ItemDefinitionGroup Condition="'$(ExperimentalClang)' != 'true'">
         <ClCompile>
             <WarningLevel>EnableAllWarnings</WarningLevel>
-            <TreatWarningAsError>true</TreatWarningAsError>
+            <TreatWarningAsError Condition="'$(ExperimentalAnalysis)'!='true'">true</TreatWarningAsError>
             <DisableSpecificWarnings>%(DisableSpecificWarnings);
                 4061;
                 4062;

@@ -54,6 +54,10 @@ CustomWriterRuntimeObjectCreator::CreateInstance(
     _Out_ std::shared_ptr<CDependencyObject>* pResult,
     _Out_ xref_ptr<CThemeResource>* resultAsThemeResource)
 {
+    // Initialize the output parameters to a valid state
+    *pResult = nullptr;
+    *resultAsThemeResource = nullptr;
+
     IFC_RETURN(EnsureObjectWriter());
     m_pendingFirstNode = true;
     IFC_RETURN(RunObjectWriter(token, nullptr, std::vector<StreamOffsetToken>()));

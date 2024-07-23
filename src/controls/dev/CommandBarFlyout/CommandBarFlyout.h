@@ -43,7 +43,7 @@ private:
     void UnhookAllCommandBarElementDependencyPropertyChanges();
     void OnCommandBarElementDependencyPropertyChanged(winrt::DependencyObject const& dependencyObject, winrt::DependencyProperty const& dependencyProperty);
 
-    bool m_alwaysExpanded;
+    bool m_alwaysExpanded{ false };
 
     winrt::IObservableVector<winrt::ICommandBarElement> m_primaryCommands{ nullptr };
     winrt::IObservableVector<winrt::ICommandBarElement> m_secondaryCommands{ nullptr };

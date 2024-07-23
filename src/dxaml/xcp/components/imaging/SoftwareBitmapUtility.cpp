@@ -10,7 +10,7 @@
 HRESULT SoftwareBitmapUtility::CreateSoftwareBitmap(
     uint32_t width,
     uint32_t height,
-    _Outref_ wrl::ComPtr<wgri::ISoftwareBitmap>& spSoftwareBitmap
+    _Out_ wrl::ComPtr<wgri::ISoftwareBitmap>& spSoftwareBitmap
     )
 {
     return SoftwareBitmapUtility::CreateSoftwareBitmap(
@@ -26,7 +26,7 @@ HRESULT SoftwareBitmapUtility::CreateSoftwareBitmap(
     uint32_t height,
     wgri::BitmapPixelFormat pixelFormat,
     wgri::BitmapAlphaMode alphaMode,
-    _Outref_ wrl::ComPtr<wgri::ISoftwareBitmap>& spSoftwareBitmap
+    _Out_ wrl::ComPtr<wgri::ISoftwareBitmap>& spSoftwareBitmap
     )
 {
     wrl::ComPtr<wgri::ISoftwareBitmapFactory> spSoftwareBitmapFactory;
@@ -47,7 +47,7 @@ HRESULT SoftwareBitmapUtility::CreateSoftwareBitmap(
 _Check_return_ HRESULT SoftwareBitmapUtility::CreateSoftwareBitmap(
     _In_ const wrl::ComPtr<IWICBitmap>& spWicBitmap,
     bool readOnly,
-    _Outref_ wrl::ComPtr<wgri::ISoftwareBitmap>& spSoftwareBitmap
+    _Out_ wrl::ComPtr<wgri::ISoftwareBitmap>& spSoftwareBitmap
     )
 {
     wrl::ComPtr<ISoftwareBitmapNativeFactory> spSoftwareBitmapNativeFactory;

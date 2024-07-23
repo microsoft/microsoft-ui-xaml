@@ -120,7 +120,7 @@ _Check_return_ HRESULT CConnectedAnimationService::OnUnloadingElement(_In_ CUIEl
             // However we need to hide the retaining element for the next frame.
             if (!element->HasActiveConnectedAnimation())
             {
-                element->SetRequiresComposition(CompositionRequirement::HasConnectedAnimation, IndependentAnimationType::None);
+                IFC_RETURN(element->SetRequiresComposition(CompositionRequirement::HasConnectedAnimation, IndependentAnimationType::None));
                 CUIElement::NWSetContentDirty(element, DirtyFlags::Render); // Force dirty the render to make sure the comp node is created..
             }
             return S_OK;
@@ -215,7 +215,7 @@ _Check_return_ HRESULT CConnectedAnimationService::PreCommit()
         // method tell us if we froze a visual surface or not.  If we did on the previous
         // frame, then we need to block here and wait for that to complete, before we return
         // so that we won't commit the tree changes in the same DWM frame.
-        GetContext()->NWGetWindowRenderTarget()->GetDCompTreeHost()->WaitForCommitCompletion();
+        IFC_RETURN(GetContext()->NWGetWindowRenderTarget()->GetDCompTreeHost()->WaitForCommitCompletion());
     }
 
     // Reset our delay animation start state under the assumption that it will be handled (or requested)

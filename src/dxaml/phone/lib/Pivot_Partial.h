@@ -478,24 +478,24 @@ private:
 
     xaml::Controls::IControl *m_pThisAsControlNoRef;
 
-    EventRegistrationToken m_viewChangingToken;
-    EventRegistrationToken m_viewChangedToken;
-    EventRegistrationToken m_sizeChangedToken;
-    EventRegistrationToken m_directManipulationStartedToken;
-    EventRegistrationToken m_directManipulationCompletedToken;
-    EventRegistrationToken m_scrollViewerLoadedToken;
-    EventRegistrationToken m_headerGotFocusToken;
-    EventRegistrationToken m_headerLostFocusToken;
-    EventRegistrationToken m_headerKeyDownToken;
-    EventRegistrationToken m_layoutElementKeyDownToken;
-    EventRegistrationToken m_pointerEnteredHeaderToken;
-    EventRegistrationToken m_pointerExitedHeaderToken;
-    EventRegistrationToken m_pointerEnteredPreviousButtonToken;
-    EventRegistrationToken m_pointerExitedPreviousButtonToken;
-    EventRegistrationToken m_pointerEnteredNextButtonToken;
-    EventRegistrationToken m_pointerExitedNextButtonToken;
-    EventRegistrationToken m_previousButtonClickedToken;
-    EventRegistrationToken m_nextButtonClickedToken;
+    EventRegistrationToken m_viewChangingToken{};
+    EventRegistrationToken m_viewChangedToken{};
+    EventRegistrationToken m_sizeChangedToken{};
+    EventRegistrationToken m_directManipulationStartedToken{};
+    EventRegistrationToken m_directManipulationCompletedToken{};
+    EventRegistrationToken m_scrollViewerLoadedToken{};
+    EventRegistrationToken m_headerGotFocusToken{};
+    EventRegistrationToken m_headerLostFocusToken{};
+    EventRegistrationToken m_headerKeyDownToken{};
+    EventRegistrationToken m_layoutElementKeyDownToken{};
+    EventRegistrationToken m_pointerEnteredHeaderToken{};
+    EventRegistrationToken m_pointerExitedHeaderToken{};
+    EventRegistrationToken m_pointerEnteredPreviousButtonToken{};
+    EventRegistrationToken m_pointerExitedPreviousButtonToken{};
+    EventRegistrationToken m_pointerEnteredNextButtonToken{};
+    EventRegistrationToken m_pointerExitedNextButtonToken{};
+    EventRegistrationToken m_previousButtonClickedToken{};
+    EventRegistrationToken m_nextButtonClickedToken{};
 
     bool HasValidTemplate() const
     {

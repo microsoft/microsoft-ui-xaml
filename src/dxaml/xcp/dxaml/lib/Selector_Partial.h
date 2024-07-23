@@ -618,8 +618,8 @@ namespace DirectUI
         };
 
         TrackerPtr<wfc::IObservableVector<IInspectable*>> m_tpSelectedItemsImpl;
-        EventRegistrationToken m_SelectedItemsVectorChangedToken;
-        EventRegistrationToken m_focusEnagedToken;
+        EventRegistrationToken m_SelectedItemsVectorChangedToken{};
+        EventRegistrationToken m_focusEnagedToken{};
 
         TrackerPtr<wfc::IVector<xaml_data::ItemIndexRange*>> m_tpSelectedRangesImpl;
 

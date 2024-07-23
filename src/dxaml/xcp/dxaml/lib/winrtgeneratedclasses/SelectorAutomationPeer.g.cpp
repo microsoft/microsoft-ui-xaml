@@ -50,6 +50,7 @@ IFACEMETHODIMP DirectUI::SelectorAutomationPeerGenerated::get_CanSelectMultiple(
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<SelectorAutomationPeer*>(this)->get_CanSelectMultipleImpl(pValue));
 Cleanup:
@@ -59,6 +60,7 @@ IFACEMETHODIMP DirectUI::SelectorAutomationPeerGenerated::get_IsSelectionRequire
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<SelectorAutomationPeer*>(this)->get_IsSelectionRequiredImpl(pValue));
 Cleanup:
@@ -76,6 +78,7 @@ IFACEMETHODIMP DirectUI::SelectorAutomationPeerGenerated::GetSelection(_Out_ UIN
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "SelectorAutomationPeer_GetSelection", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<SelectorAutomationPeer*>(this)->GetSelectionImpl(pReturnValueCount, ppReturnValue));

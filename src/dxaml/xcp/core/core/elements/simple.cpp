@@ -35,7 +35,7 @@ CEnumerated::CreateEnumerateHelper(
         {
             uint32_t incomingValue = 0;
             KnownTypeIndex incomingTypeIndex = KnownTypeIndex::UnknownType;
-            pCreate->m_value.GetEnum(incomingValue, incomingTypeIndex);
+            IFC(pCreate->m_value.GetEnum(incomingValue, incomingTypeIndex));
             IFCEXPECT(incomingTypeIndex == enumTypeIndex);
             _this->m_nValue = incomingValue;
         }

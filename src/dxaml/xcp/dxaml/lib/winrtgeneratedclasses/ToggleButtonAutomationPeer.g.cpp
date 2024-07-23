@@ -49,6 +49,7 @@ IFACEMETHODIMP DirectUI::ToggleButtonAutomationPeerGenerated::get_ToggleState(_O
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ToggleButtonAutomationPeer*>(this)->get_ToggleStateImpl(pValue));
 Cleanup:

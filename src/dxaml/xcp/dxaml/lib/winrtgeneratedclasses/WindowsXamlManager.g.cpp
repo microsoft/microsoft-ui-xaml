@@ -136,6 +136,7 @@ IFACEMETHODIMP DirectUI::WindowsXamlManagerFactory::InitializeForCurrentThread(_
         XamlTelemetry::PublicApiCall(true, 0, "WindowsXamlManager_InitializeForCurrentThread", 0);
     }
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     
     IFC(InitializeForCurrentThreadImpl(ppResult));
 Cleanup:
@@ -145,7 +146,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::WindowsXamlManagerFactory::GetForCurrentThread(_Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager** ppResult)
+IFACEMETHODIMP DirectUI::WindowsXamlManagerFactory::GetForCurrentThread(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Hosting::IWindowsXamlManager** ppResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -153,6 +154,7 @@ IFACEMETHODIMP DirectUI::WindowsXamlManagerFactory::GetForCurrentThread(_Outptr_
         XamlTelemetry::PublicApiCall(true, 0, "WindowsXamlManager_GetForCurrentThread", 0);
     }
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     
     IFC(GetForCurrentThreadImpl(ppResult));
 Cleanup:

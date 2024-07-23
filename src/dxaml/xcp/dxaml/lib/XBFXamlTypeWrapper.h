@@ -81,7 +81,7 @@ namespace DirectUI
         IFACEMETHOD(AddToMap)(_In_ IInspectable *instance, _In_ IInspectable *key, _In_ IInspectable *value);
 
     private:
-        xaml_markup::IXamlType* m_pXamlType;
+        xaml_markup::IXamlType* m_pXamlType{};
     };
 
     class XBFXamlMemberWrapper: public xaml_markup::IXamlMember, public ctl::ComBase

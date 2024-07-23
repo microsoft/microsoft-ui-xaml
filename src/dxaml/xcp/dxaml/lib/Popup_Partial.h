@@ -11,12 +11,8 @@
 namespace DirectUI
 {
     // Represents the Popup control
-    PARTIAL_CLASS(Popup), public ABI::Microsoft::Internal::FrameworkUdk::ICoreWindowPositionChangedListener
+    PARTIAL_CLASS(Popup)
     {
-        BEGIN_INTERFACE_MAP(DesktopWindowXamlSource, PopupGenerated)
-            INTERFACE_ENTRY(DesktopWindowXamlSource, ABI::Microsoft::Internal::FrameworkUdk::ICoreWindowPositionChangedListener)
-        END_INTERFACE_MAP(DesktopWindowXamlSource, PopupGenerated)
-
         public:
 
             enum class MajorPlacementMode
@@ -104,12 +100,6 @@ namespace DirectUI
 
             _Check_return_ HRESULT GetShouldUIAPeerExposeWindowPattern(_Out_ bool *shouldExposeWindowPattern);
 
-            _Check_return_ HRESULT HookupWindowPositionChangedHandlerImpl();
-
-            static _Check_return_ HRESULT HookupWindowPositionChangedHandler(_In_ CDependencyObject* nativePopup);
-
-            static void OnHostWindowPositionChanged(_In_ CDependencyObject* nativePopup);
-
             static void OnIslandLostFocus(_In_ CDependencyObject* nativePopup);
 
             _Check_return_ HRESULT SetOwner(_In_opt_ xaml::IDependencyObject* const owner);
@@ -131,8 +121,6 @@ namespace DirectUI
 
             _Check_return_ HRESULT OnPropertyChanged2(_In_ const PropertyChangedParams& args) override;
 
-            _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
-
         private:
             bool IsAssociatedWithXamlIsland() const;
 
@@ -143,10 +131,6 @@ namespace DirectUI
             _Check_return_ HRESULT OnXamlRootChanged(
                 _In_ xaml::IXamlRoot* pSender,
                 _In_ xaml::IXamlRootChangedEventArgs* pArgs);
-
-            STDMETHOD (OnCoreWindowPositionChanged)() override; //ICoreWindowPositionChangedListener
-
-            void OnHostWindowPositionChangedImpl();
 
             void OnIslandLostFocusImpl();
             _Check_return_ HRESULT OnXamlLostFocus();
@@ -226,10 +210,6 @@ namespace DirectUI
             FLOAT m_previousXamlRootWidth;
             FLOAT m_previousXamlRootHeight;
 
-            // Previous position of the window, used to detect when we move.
-            FLOAT m_previousWindowX;
-            FLOAT m_previousWindowY;
-
             // Store the flags that determine what triggers dismissal of this popup
             UINT32 m_dismissalTriggerFlags;
 
@@ -241,7 +221,7 @@ namespace DirectUI
             ctl::WeakRefPtr m_wrOldChild;
 
             bool m_placementAndJustificationCalculated{ false };
-            MajorPlacementMode m_calculatedMajorPlacement;
-            PreferredJustification m_calculatedJustification;
+            MajorPlacementMode m_calculatedMajorPlacement{};
+            PreferredJustification m_calculatedJustification{};
     };
 }

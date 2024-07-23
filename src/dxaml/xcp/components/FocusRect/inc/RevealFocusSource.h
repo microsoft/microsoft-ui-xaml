@@ -69,6 +69,7 @@ namespace FocusRect {
         // Returns the size of the insets to be applied to the nine grid brush based on the FocusVisualPrimaryThickness
         XTHICKNESS GetInsetsFromThickness(_In_ const XTHICKNESS& primaryThickness) const;
 
+#pragma warning(suppress: 6506) // non-pointer when expanding to class actual parameter.
         template <typename InterfaceType>
         bool TryGetLight(RevealFocusLight lightType, _Out_ Microsoft::WRL::Details::ComPtrRef<Microsoft::WRL::ComPtr<InterfaceType>> light) const
         {

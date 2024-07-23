@@ -6,6 +6,7 @@
 #include <ItemsRepeater.common.h>
 #include "FlowLayoutAlgorithm.h"
 #include "VirtualizingLayoutContext.h"
+#include "MuxcTraceLogging.h"
 
 void FlowLayoutAlgorithm::InitializeForContext(
     const winrt::VirtualizingLayoutContext& context,
@@ -35,7 +36,7 @@ winrt::Size FlowLayoutAlgorithm::Measure(
     double lineSpacing,
     unsigned int maxItemsPerLine,
     const ScrollOrientation& orientation,
-    const bool disableVirtualization,
+    const bool isVirtualizationEnabled,
     const wstring_view& layoutId)
 {
     SetScrollOrientation(orientation);
@@ -48,6 +49,15 @@ winrt::Size FlowLayoutAlgorithm::Measure(
         winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data(),
         L"MeasureLayout Realization:", realizationRect.X, realizationRect.Y, realizationRect.Width, realizationRect.Height);
 
+    TraceLoggingProviderWrite(
+        XamlTelemetryLogging, "FlowLayoutAlgorithm_Measure",
+        TraceLoggingWideString(layoutId.data(), "LayoutId"),
+        TraceLoggingFloat32(realizationRect.X, "X"),
+        TraceLoggingFloat32(realizationRect.Y, "Y"),
+        TraceLoggingFloat32(realizationRect.Width, "Width"),
+        TraceLoggingFloat32(realizationRect.Height, "Height"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
     const auto suggestedAnchorIndex = m_context.get().RecommendedAnchorIndex();
     if (m_elementManager.IsIndexValidInData(suggestedAnchorIndex))
     {
@@ -58,14 +68,14 @@ winrt::Size FlowLayoutAlgorithm::Measure(
         }
     }
 
-    if(!disableVirtualization)
+    if(isVirtualizationEnabled)
     {
         m_elementManager.OnBeginMeasure(orientation);
     }
 
-    const int anchorIndex = GetAnchorIndex(availableSize, isWrapping, minItemSpacing, disableVirtualization, layoutId);
-    Generate(GenerateDirection::Forward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
-    Generate(GenerateDirection::Backward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
+    const int anchorIndex = GetAnchorIndex(availableSize, isWrapping, minItemSpacing, isVirtualizationEnabled, layoutId);
+    Generate(GenerateDirection::Forward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, isVirtualizationEnabled, layoutId);
+    Generate(GenerateDirection::Backward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, isVirtualizationEnabled, layoutId);
     if (isWrapping && IsReflowRequired())
     {
         ITEMSREPEATER_TRACE_INFO_DBG(nullptr, TRACE_MSG_METH_IND_STR_STR, METH_NAME, this,
@@ -74,7 +84,7 @@ winrt::Size FlowLayoutAlgorithm::Measure(
         const auto firstElementBounds = m_elementManager.GetLayoutBoundsForRealizedIndex(0);
         MinorStart(firstElementBounds) = 0;
         m_elementManager.SetLayoutBoundsForRealizedIndex(0, firstElementBounds);
-        Generate(GenerateDirection::Forward, 0 /*anchorIndex*/, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
+        Generate(GenerateDirection::Forward, 0 /*anchorIndex*/, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, isVirtualizationEnabled, layoutId);
     }
 
     RaiseLineArranged();
@@ -154,14 +164,14 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
     const winrt::Size& availableSize,
     bool isWrapping,
     double minItemSpacing,
-    const bool disableVirtualization,
+    const bool isVirtualizationEnabled,
     const wstring_view& layoutId)
 {
     int anchorIndex = -1;
     winrt::Point anchorPosition{};
     auto context = m_context.get();
 
-    if (!IsVirtualizingContext() || disableVirtualization)
+    if (!IsVirtualizingContext() || !isVirtualizationEnabled)
     {
         // Non virtualizing host, start generating from the element 0
         anchorIndex = context.ItemCountCore() > 0 ? 0 : -1;
@@ -312,7 +322,7 @@ void FlowLayoutAlgorithm::Generate(
     double minItemSpacing,
     double lineSpacing,
     unsigned int maxItemsPerLine,
-    const bool disableVirtualization,
+    const bool isVirtualizationEnabled,
     const wstring_view& layoutId)
 {
     if (anchorIndex != -1)
@@ -320,9 +330,16 @@ void FlowLayoutAlgorithm::Generate(
         const int step = (direction == GenerateDirection::Forward) ? 1 : -1;
 
         ITEMSREPEATER_TRACE_VERBOSE_DBG(nullptr, TRACE_MSG_METH_IND_STR_STR_INT, METH_NAME, this,
-            winrt::get_self<VirtualizingLayoutContext>(m_context.get())->Indent(), layoutId.data(),            
+            winrt::get_self<VirtualizingLayoutContext>(m_context.get())->Indent(), layoutId.data(),
             direction == GenerateDirection::Forward ? L"Generating forward from anchor:" : L"Generating backward from anchor:",
             anchorIndex);
+
+        TraceLoggingProviderWrite(
+            XamlTelemetryLogging, "FlowLayoutAlgorithm_Generate",
+            TraceLoggingWideString(layoutId.data(), "LayoutId"),
+            TraceLoggingWideString(direction == GenerateDirection::Forward ? L"Forward" : L"Backward", "Direction"),
+            TraceLoggingInt32(anchorIndex, "Anchor"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
         int previousIndex = anchorIndex;
         int currentIndex = anchorIndex + step;
@@ -333,7 +350,7 @@ void FlowLayoutAlgorithm::Generate(
         bool lineNeedsReposition = false;
 
         while (m_elementManager.IsIndexValidInData(currentIndex) &&
-              (disableVirtualization || ShouldContinueFillingUpSpace(previousIndex, direction)))
+              (!isVirtualizationEnabled || ShouldContinueFillingUpSpace(previousIndex, direction)))
         {
             // Ensure layout element.
             m_elementManager.EnsureElementRealized(direction == GenerateDirection::Forward, currentIndex, layoutId);
@@ -345,9 +362,23 @@ void FlowLayoutAlgorithm::Generate(
             const winrt::Rect currentBounds = winrt::Rect{ 0, 0, desiredSize.Width, desiredSize.Height };
             const auto previousElementBounds = m_elementManager.GetLayoutBoundsForDataIndex(previousIndex);
 
+            TraceLoggingProviderWrite(
+                XamlTelemetryLogging, "FlowLayoutAlgorithm_Generate_CurrentBounds",
+                TraceLoggingWideString(layoutId.data(), "LayoutId"),
+                TraceLoggingInt32(currentIndex, "CurrentIndex"),
+                TraceLoggingFloat32(currentBounds.X, "X"),
+                TraceLoggingFloat32(currentBounds.Y, "Y"),
+                TraceLoggingFloat32(currentBounds.Width, "Width"),
+                TraceLoggingFloat32(currentBounds.Height, "Height"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
             if (direction == GenerateDirection::Forward)
             {
-                const double remainingSpace = Minor(availableSize) - (MinorStart(previousElementBounds) + MinorSize(previousElementBounds) + minItemSpacing + Minor(desiredSize));
+                const double remainingSpace = static_cast<double>(Minor(availableSize)) -
+                                              (static_cast<double>(MinorStart(previousElementBounds)) +
+                                               static_cast<double>(MinorSize(previousElementBounds)) +
+                                               minItemSpacing +
+                                               static_cast<double>(Minor(desiredSize)));
                 if (countInLine >= maxItemsPerLine || m_algorithmCallbacks->Algorithm_ShouldBreakLine(currentIndex, remainingSpace))
                 {
                     // No more space in this row. wrap to next row.
@@ -385,7 +416,7 @@ void FlowLayoutAlgorithm::Generate(
             else
             {
                 // Backward
-                const double remainingSpace = MinorStart(previousElementBounds) - (Minor(desiredSize) + static_cast<float>(minItemSpacing));
+                const double remainingSpace = MinorStart(previousElementBounds) - (Minor(desiredSize) + minItemSpacing);
                 if (countInLine >= maxItemsPerLine || m_algorithmCallbacks->Algorithm_ShouldBreakLine(currentIndex, remainingSpace))
                 {
                     // Does not fit, wrap to the previous row

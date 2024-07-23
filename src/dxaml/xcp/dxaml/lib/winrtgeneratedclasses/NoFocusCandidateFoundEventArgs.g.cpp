@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::NoFocusCandidateFoundEventArgs::get_Direction(_Out_ ABI
     DirectUI::FocusNavigationDirection valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CNoFocusCandidateFoundEventArgs*>(pCoreEventArgsNoRef)->get_Direction(&valueCore));
@@ -70,6 +71,7 @@ IFACEMETHODIMP DirectUI::NoFocusCandidateFoundEventArgs::get_Handled(_Out_ BOOLE
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CNoFocusCandidateFoundEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));
@@ -103,6 +105,7 @@ IFACEMETHODIMP DirectUI::NoFocusCandidateFoundEventArgs::get_InputDevice(_Out_ A
     DirectUI::FocusInputDeviceKind valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CNoFocusCandidateFoundEventArgs*>(pCoreEventArgsNoRef)->get_InputDevice(&valueCore));

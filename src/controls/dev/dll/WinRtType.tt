@@ -27,6 +27,14 @@
                                     WinmdType.FullName.StartsWith("Windows.UI.Xaml") || 
                                     WinmdType.FullName.StartsWith("Microsoft.UI.Xaml"); } }
 
+        public bool IsBindable 
+        { 
+            get 
+            { 
+                return GetCustomAttribute(WinmdType, "BindableAttribute") != null;
+            } 
+        }
+
         public WinRtType(Type winmdType)
         {
             if (winmdType.FullName == "System.Runtime.InteropServices.WindowsRuntime.RuntimeClass")

@@ -57,6 +57,7 @@ IFACEMETHODIMP DirectUI::HoldingRoutedEventArgs::get_PointerDeviceType(_Out_ ABI
     DirectUI::PointerDeviceType valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CHoldingEventArgs*>(pCoreEventArgsNoRef)->get_PointerDeviceType(&valueCore));
@@ -74,6 +75,7 @@ IFACEMETHODIMP DirectUI::HoldingRoutedEventArgs::get_HoldingState(_Out_ ABI::Mic
     DirectUI::HoldingState valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CHoldingEventArgs*>(pCoreEventArgsNoRef)->get_HoldingState(&valueCore));
@@ -91,6 +93,7 @@ IFACEMETHODIMP DirectUI::HoldingRoutedEventArgs::get_Handled(_Out_ BOOLEAN* pVal
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CHoldingEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));
@@ -131,6 +134,7 @@ IFACEMETHODIMP DirectUI::HoldingRoutedEventArgs::GetPosition(_In_opt_ ABI::Micro
     ABI::Windows::Foundation::Point returnValueCore;
 
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CHoldingEventArgs*>(pCoreEventArgsNoRef)->GetPosition(pRelativeToCore, &returnValueCore));

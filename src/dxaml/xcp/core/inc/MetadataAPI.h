@@ -431,7 +431,7 @@ namespace DirectUI
 
         // Determines whether the specified type name appears to exist in the type table. This allows us
         // to skip the type table lookup for custom types.
-        static bool ShouldLookupInBuiltinTypeTable(_In_ const xstring_ptr_view& strTypeFullName, _Out_ bool& fIsPrimitiveType)
+        static bool ShouldLookupInBuiltinTypeTable(_In_ const xstring_ptr_view& strTypeFullName, _Inout_ bool& fIsPrimitiveType)
         {
             return strTypeFullName.StartsWith(XSTRING_PTR_EPHEMERAL(L"Windows.")) ||
                 strTypeFullName.StartsWith(XSTRING_PTR_EPHEMERAL(L"Microsoft.")) ||

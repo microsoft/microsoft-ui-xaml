@@ -177,11 +177,6 @@
 #define   AG_E_STYLE_BASEDON_TARGETTYPE_NULL            4019
 #define   AG_E_PROPERTY_INVALID                         4020
 
-#define   AG_E_CAPTURE_DEVICE_IN_USE                    4024
-#define   AG_E_CAPTURE_DEVICE_REMOVED                   4025
-#define   AG_E_CAPTURE_DEVICE_ACCESS_DENIED             4026
-#define   AG_E_CAPTURE_SOURCE_NOT_STOPPED               4027
-#define   AG_E_CAPTURE_DEVICE_NOT_AVAILABLE             4028
 #define   AG_E_TEMPLATEBINDING_TEMPLATEDPARENT_NULL     4031
 #define   AG_E_NO_VECTOR_PRINT                          4032
 

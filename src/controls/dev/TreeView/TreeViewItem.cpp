@@ -208,19 +208,18 @@ void TreeViewItem::OnDragEnter(winrt::DragEventArgs const& args)
                 {
                     if (m_expandContentTimer)
                     {
-                        const auto expandContentTimer = m_expandContentTimer.get();
-                        expandContentTimer.Stop();
-                        expandContentTimer.Start();
+                        m_expandContentTimer.Stop();
+                        m_expandContentTimer.Start();
                     }
                     else
                     {
                         // Initialize timer.
                         const winrt::TimeSpan interval = winrt::TimeSpan::duration(c_dragOverInterval);
-                        const auto expandContentTimer = winrt::DispatcherTimer();
-                        m_expandContentTimer.set(expandContentTimer);
-                        expandContentTimer.Interval(interval);
-                        expandContentTimer.Tick({ this, &TreeViewItem::OnExpandContentTimerTick });
-                        expandContentTimer.Start();
+
+                        m_expandContentTimer = winrt::DispatcherTimer();
+                        m_expandContentTimer.Interval(interval);
+                        m_expandContentTimer.Tick({ this, &TreeViewItem::OnExpandContentTimerTick });
+                        m_expandContentTimer.Start();
                     }
                 }
             }
@@ -242,7 +241,7 @@ void TreeViewItem::OnDragLeave(winrt::DragEventArgs const& args)
 
         if (m_expandContentTimer)
         {
-            m_expandContentTimer.get().Stop();
+            m_expandContentTimer.Stop();
         }
     }
 
@@ -350,7 +349,7 @@ void TreeViewItem::OnExpandContentTimerTick(const winrt::IInspectable& /*sender*
 {
     if (m_expandContentTimer)
     {
-        m_expandContentTimer.get().Stop();
+        m_expandContentTimer.Stop();
     }
     
     if (auto draggedOverNode = TreeNode())
@@ -516,7 +515,7 @@ bool TreeViewItem::IsSelectedInternal()
 void TreeViewItem::UpdateIndentation(int depth)
 {
     winrt::Thickness thickness;
-    thickness.Left = depth * 16;
+    thickness.Left = static_cast<double>(depth) * 16;
     thickness.Top = 0;
     thickness.Right = 0;
     thickness.Bottom = 0;

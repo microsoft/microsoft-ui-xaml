@@ -49,6 +49,7 @@ _Check_return_ HRESULT DirectUI::BudgetManagerGenerated::GetElapsedMilliSecondsS
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "BudgetManager_GetElapsedMilliSecondsSinceLastUITick", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<BudgetManager*>(this)->GetElapsedMilliSecondsSinceLastUITickImpl(pReturnValue));
 Cleanup:

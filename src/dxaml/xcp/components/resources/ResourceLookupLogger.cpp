@@ -31,28 +31,28 @@ namespace
         switch (Theming::GetHighContrastValue(theme))
         {
             case Theming::Theme::HighContrastWhite:
-                builder.Append(c_highConstrastWhite);
+                IFC_RETURN(builder.Append(c_highConstrastWhite));
                 break;
             case Theming::Theme::HighContrastBlack:
-                builder.Append(c_highConstrastBlack);
+                IFC_RETURN(builder.Append(c_highConstrastBlack));
                 break;
             case Theming::Theme::HighContrastCustom:
-                builder.Append(c_highConstrastCustom);
+                IFC_RETURN(builder.Append(c_highConstrastCustom));
                 break;
         }
 
         if (builder.GetCount() > 0)
         {
-            builder.Append(XSTRING_PTR_EPHEMERAL(L" | "));
+            IFC_RETURN(builder.Append(XSTRING_PTR_EPHEMERAL(L" | ")));
         }
 
         switch (Theming::GetBaseValue(theme))
         {
             case Theming::Theme::Light:
-                builder.Append(c_light);
+                IFC_RETURN(builder.Append(c_light));
                 break;
             case Theming::Theme::Dark:
-                builder.Append(c_dark);
+                IFC_RETURN(builder.Append(c_dark));
                 break;
         }
 
@@ -165,7 +165,7 @@ namespace Diagnostics
             TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
             TraceLoggingValue(resourceKey.GetBuffer(), "ResourceKey"));
 
-        StartNewLineWithIndentation();
+        IFC_RETURN(StartNewLineWithIndentation());
         IFC_RETURN(m_messageBuilder->Append(StringCchPrintfWWrapper(
             L"Finished search for resource with key '%s'.",
             resourceKey.GetBuffer())));

@@ -220,8 +220,8 @@ private:
     // ------------------------------------------------------------------------
     _Check_return_ HRESULT ProcessTabStopInternal(_In_ bool bPressedShift, _In_ bool queryOnly, _Outptr_ CDependencyObject** ppNewTabStopElement);
 
-    CDependencyObject* GetFirstFocusableElement(_In_ CDependencyObject* pSearchStart, _In_ CDependencyObject *pFirstFocus);
-    CDependencyObject* GetLastFocusableElement(_In_ CDependencyObject* pSearchStart, _In_ CDependencyObject *pLastFocus);
+    CDependencyObject* GetFirstFocusableElement(_In_ CDependencyObject* pSearchStart, _In_opt_ CDependencyObject *pFirstFocus);
+    CDependencyObject* GetLastFocusableElement(_In_ CDependencyObject* pSearchStart, _In_opt_ CDependencyObject *pLastFocus);
     CDependencyObject* GetNextTabStopInternal(_In_ CDependencyObject *pParent, _In_ CDependencyObject *pCurrent, _In_ CDependencyObject *pCandidate, _Inout_ bool *bCurrentPassed, _Inout_ CDependencyObject **pCurrentCompare);
     CDependencyObject* GetPreviousTabStopInternal(_In_ CDependencyObject *pParent, _In_ CDependencyObject *pCurrent, _In_ CDependencyObject *pCandidate, _Inout_ bool *bCurrentPassed, _Inout_ CDependencyObject **pCurrentCompare);
     XINT32 CompareTabIndex(_In_ CDependencyObject *pObject1, _In_ CDependencyObject *pObject2);
@@ -229,8 +229,8 @@ private:
     bool IsFocusOnLastTabStop();
     CUIElement* GetParentElement(_In_ CDependencyObject *pCurrent);
 
-    CDependencyObject* GetFirstFocusableElementInternal(_In_ CDependencyObject* pSearchStart, _In_ CDependencyObject *pFirstFocus);
-    CDependencyObject* GetLastFocusableElementInternal(_In_ CDependencyObject* pSearchStart, _In_ CDependencyObject *pLastFocus);
+    CDependencyObject* GetFirstFocusableElementInternal(_In_ CDependencyObject* pSearchStart, _In_opt_ CDependencyObject *pFirstFocus);
+    CDependencyObject* GetLastFocusableElementInternal(_In_ CDependencyObject* pSearchStart, _In_opt_ CDependencyObject *pLastFocus);
 
     // The following allows general FocusManager functions to stay agnostic to
     // the specific element's inheritance hierarchy.
@@ -252,7 +252,7 @@ private:
         _In_ DirectUI::FocusNavigationDirection navigationDirection,
         _In_ KnownEventIndex index,
         _In_ GUID correlationId,
-        _Outptr_ CDependencyObject** pFinalGettingFocusElement);
+        _Outptr_result_maybenull_ CDependencyObject** pFinalGettingFocusElement);
 
     CDependencyObject* RaiseFocusElementRemovedEvent(_In_ CDependencyObject* focusedElement);
     bool CanRaiseFocusEventChange();
@@ -282,7 +282,7 @@ private:
     CCoreServices *m_pCoreService;
     xref::weakref_ptr<CUIElement> m_focusRectangleUIElement;
     bool m_bPluginFocused;
-    DirectUI::FocusState m_realFocusStateForFocusedElement;
+    DirectUI::FocusState m_realFocusStateForFocusedElement{};
     std::unique_ptr<FocusObserver> m_focusObserver;
 
     Focus::XYFocus m_xyFocus;

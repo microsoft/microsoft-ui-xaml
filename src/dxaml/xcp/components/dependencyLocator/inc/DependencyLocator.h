@@ -448,7 +448,7 @@ namespace DependencyLocator
             return GetInternal(create);
         }
 
-        T* operator->() const throw()
+        T* operator->() const noexcept
         {
             return GetInternal().operator->();
         }

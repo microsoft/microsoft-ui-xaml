@@ -697,8 +697,8 @@ _Check_return_ HRESULT HWCompTreeNodeWinRT::PushProperties(
 
         if (m_pUIElementNoRef->OfTypeByIndex<KnownTypeIndex::Popup>())
         {
-            // 19H1 Bug #19618232:  If the position or size of a windowed popup changes after it's already open,
-            // we must update the bounds of the popup's HWND.
+            // If the position or size of a windowed popup changes after it's already open, we must update the bounds of
+            // the popup's island.
             CPopup* popup = static_cast<CPopup*>(m_pUIElementNoRef);
             IFCFAILFAST(popup->Reposition());
         }
@@ -3456,7 +3456,7 @@ void HWCompTreeNodeWinRT::InsertChildSynchronousInternal(
     // If the reference node exists, it should already be a child, so it should already have a visual.
     ASSERT(referenceNode == nullptr || referenceNode->GetWUCVisual() != nullptr);
 
-    EnsureVisual(dcompTreeHost);
+    IFCFAILFAST(EnsureVisual(dcompTreeHost));
 
     wrl::ComPtr<WUComp::IVisual> wucChild;
 
@@ -3558,7 +3558,7 @@ _Check_return_ HRESULT HWCompTreeNodeWinRT::InsertChildAtBeginningInternal(
     // Update the DComp tree.
     IFCFAILFAST(child->EnsureVisual(dcompTreeHost));
 
-    EnsureVisual(dcompTreeHost);
+    IFCFAILFAST(EnsureVisual(dcompTreeHost));
 
     xref_ptr<WUComp::IVisual> wucChild = child->GetWUCVisual();
 

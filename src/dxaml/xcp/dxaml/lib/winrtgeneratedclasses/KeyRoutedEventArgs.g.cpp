@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::KeyRoutedEventArgsGenerated::get_Key(_Out_ ABI::Windows
     DirectUI::VirtualKey valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CKeyEventArgs*>(pCoreEventArgsNoRef)->get_Key(&valueCore));
@@ -66,6 +67,7 @@ IFACEMETHODIMP DirectUI::KeyRoutedEventArgsGenerated::get_KeyStatus(_Out_ ABI::W
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<KeyRoutedEventArgs*>(this)->get_KeyStatusImpl(pValue));
 Cleanup:
@@ -79,6 +81,7 @@ _Check_return_ HRESULT DirectUI::KeyRoutedEventArgsGenerated::get_Shift(_Out_ BO
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CKeyEventArgs*>(pCoreEventArgsNoRef)->get_Shift(&valueCore));
@@ -112,6 +115,7 @@ _Check_return_ HRESULT DirectUI::KeyRoutedEventArgsGenerated::get_Ctrl(_Out_ BOO
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CKeyEventArgs*>(pCoreEventArgsNoRef)->get_Ctrl(&valueCore));
@@ -145,6 +149,7 @@ IFACEMETHODIMP DirectUI::KeyRoutedEventArgsGenerated::get_Handled(_Out_ BOOLEAN*
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CKeyEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));
@@ -178,6 +183,7 @@ IFACEMETHODIMP DirectUI::KeyRoutedEventArgsGenerated::get_OriginalKey(_Out_ ABI:
     DirectUI::VirtualKey valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CKeyEventArgs*>(pCoreEventArgsNoRef)->get_OriginalKey(&valueCore));
@@ -195,6 +201,7 @@ IFACEMETHODIMP DirectUI::KeyRoutedEventArgsGenerated::get_DeviceId(_Out_ HSTRING
     xstring_ptr valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CKeyEventArgs*>(pCoreEventArgsNoRef)->get_DeviceId(&valueCore));
@@ -212,6 +219,7 @@ _Check_return_ HRESULT DirectUI::KeyRoutedEventArgsGenerated::get_HandledShouldN
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CKeyEventArgs*>(pCoreEventArgsNoRef)->get_HandledShouldNotImpedeTextInput(&valueCore));

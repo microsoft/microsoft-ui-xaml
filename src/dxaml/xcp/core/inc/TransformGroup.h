@@ -14,9 +14,8 @@ class CTransformGroup final : public CTransform
 private:
     CTransformGroup(_In_ CCoreServices *pCore)
         : CTransform(pCore)
-    {
-        m_groupMatrix.SetToIdentity();
-    }
+        , m_groupMatrix(true /*initialize*/)
+    { }
 
     _Check_return_ HRESULT FromString(
         _In_ CREATEPARAMETERS *pCreate

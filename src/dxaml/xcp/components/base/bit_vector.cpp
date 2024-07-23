@@ -22,7 +22,7 @@ namespace containers
         copy_from(other);
     }
 
-    bit_vector::bit_vector(bit_vector&& other)
+    bit_vector::bit_vector(bit_vector&& other) noexcept
     {
         m_state = other.m_state;
         other.init();
@@ -44,7 +44,7 @@ namespace containers
         return *this;
     }
 
-    bit_vector& bit_vector::operator=(bit_vector&& other)
+    bit_vector& bit_vector::operator=(bit_vector&& other) noexcept
     {
         if (this != &other)
         {

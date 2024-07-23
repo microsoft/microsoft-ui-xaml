@@ -117,7 +117,7 @@ _Check_return_ HRESULT
 AsyncCopyToSurfaceTask::CopyOperation(
     unsigned int width,
     unsigned int height,
-    _Outref_ xref_ptr<OfferableSoftwareBitmap>& spOutputSurface
+    _Out_ xref_ptr<OfferableSoftwareBitmap>& spOutputSurface
     )
 {
     wgri::BitmapAlphaMode bitmapAlphaMode;

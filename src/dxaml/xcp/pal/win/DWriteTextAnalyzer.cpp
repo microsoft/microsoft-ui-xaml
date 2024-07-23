@@ -932,7 +932,7 @@ public:
             rangesCount,
             targetFamilyNames,
             targetFamilyNamesCount,
-            fontCollection ? reinterpret_cast<DWriteFontCollection*>(fontCollection)->m_pDWriteFontCollection : NULL,
+            fontCollection ? DWriteFontCollection::GetInternalCollection(fontCollection) : NULL,
             localeName,
             baseFamilyName,
             scale
@@ -944,7 +944,7 @@ public:
         ) override
     {
         return m_pFontFallbackBuilder->AddMappings(
-            reinterpret_cast<FontFallbackWrapper*>(pFontFallback)->m_pFontFallback);
+            reinterpret_cast<FontFallbackWrapper*>(pFontFallback)->m_fontFallback.Get());
     }
 
     HRESULT CreateFontFallback(
@@ -956,7 +956,7 @@ public:
 
         IFC(m_pFontFallbackBuilder->CreateFontFallback(&pFontFallback));
 
-        *ppFontFallback = new FontFallbackWrapper(pFontFallback);
+        IFC(FontFallbackWrapper::Create(pFontFallback, ppFontFallback));
 
     Cleanup:
         ReleaseInterface(pFontFallback);
@@ -977,42 +977,72 @@ HRESULT FontFallbackWrapper::MapCharacters(
     XUINT32 baseWeight,
     XUINT32 baseStyle,
     XUINT32 baseStretch,
+    FLOAT opticalSize,
     _Deref_out_range_(0, textLength) UINT32* pMappedLength,
     _COM_Outptr_ PALText::IFontFace** ppMappedFont,
     _Out_ FLOAT* pScale
     )
 {
-    HRESULT hr = S_OK;
-
     TextAnalysisSourceProxy textAnalysisSourceProxy(pAnalysisSource);
-    IDWriteFont *pDWriteMappedFont {};
 
     IDWriteTextAnalysisSource* proxy;
-    IFC(TextAnalysis_CreateDWritePrivateTextAnalysisSourceProxy(&textAnalysisSourceProxy, &proxy));
+    IFC_RETURN(TextAnalysis_CreateDWritePrivateTextAnalysisSourceProxy(&textAnalysisSourceProxy, &proxy));
 
     *ppMappedFont = NULL;
 
-    IFC(m_pFontFallback->MapCharacters(
-        proxy, //&textAnalysisSourceProxy,
-        textPosition,
-        textLength,
-        pBaseFontCollection ? reinterpret_cast<DWriteFontCollection*>(pBaseFontCollection)->m_pDWriteFontCollection : NULL,
-        pBaseFamilyName,
-        static_cast<DWRITE_FONT_WEIGHT>(baseWeight),
-        static_cast<DWRITE_FONT_STYLE>(baseStyle),
-        static_cast<DWRITE_FONT_STRETCH>(baseStretch),
-        pMappedLength,
-        &pDWriteMappedFont,
-        pScale));
-
-    if (pDWriteMappedFont != NULL)
+    // This method is used by both rich edit and rich text block, but we don't currently have any way to plumb
+    // through the font size from richedit since TextServicesHost::GetRunFontFaceId does not give use a desired
+    // size.  So for now (until RichEdit is passes us this data), we will fall back to the legacy MapCharacters
+    // implementation when we don't have an optical size.
+    if (pBaseFontCollection && DWriteFontCollection::IsTypographicCollection(pBaseFontCollection) && opticalSize > 0.0f)
     {
-        *ppMappedFont = new DWriteFontFace(pDWriteMappedFont);
+        Microsoft::WRL::ComPtr<IDWriteFontFace5> fontFace;
+        auto axisValues = DWriteFontAndScriptServices::CreateFontAxisValueArray(
+            opticalSize,
+            static_cast<DWRITE_FONT_WEIGHT>(baseWeight),
+            static_cast<DWRITE_FONT_STYLE>(baseStyle),
+            static_cast<DWRITE_FONT_STRETCH>(baseStretch));
+
+        IFC_RETURN(m_fontFallback->MapCharacters(
+            &textAnalysisSourceProxy,
+            textPosition,
+            textLength,
+            DWriteFontCollection::GetInternalCollection(pBaseFontCollection),
+            pBaseFamilyName,
+            axisValues.data(),
+            static_cast<UINT32>(axisValues.size()),
+            pMappedLength,
+            pScale,
+            fontFace.ReleaseAndGetAddressOf()));
+
+        if (fontFace)
+        {
+            *ppMappedFont = new DWriteFontFace(fontFace.Get(), nullptr);
+        }
+    }
+    else
+    {
+        Microsoft::WRL::ComPtr<IDWriteFont> mappedFont;
+        IFC_RETURN(m_fontFallback->MapCharacters(
+            proxy, //&textAnalysisSourceProxy,
+            textPosition,
+            textLength,
+            pBaseFontCollection ? DWriteFontCollection::GetInternalCollection(pBaseFontCollection) : NULL,
+            pBaseFamilyName,
+            static_cast<DWRITE_FONT_WEIGHT>(baseWeight),
+            static_cast<DWRITE_FONT_STYLE>(baseStyle),
+            static_cast<DWRITE_FONT_STRETCH>(baseStretch),
+            pMappedLength,
+            mappedFont.ReleaseAndGetAddressOf(),
+            pScale));
+
+        if (mappedFont)
+        {
+                *ppMappedFont = new DWriteFontFace(mappedFont.Get());
+        }
     }
 
-Cleanup:
-    ReleaseInterface(pDWriteMappedFont);
-    RRETURN(hr);
+    return S_OK;
 }
 
 
@@ -1031,7 +1061,7 @@ HRESULT DWriteFontAndScriptServices::GetSystemFontFallback(
 
     IFC(m_dwriteFactory->GetSystemFontFallback(&pFontFallback));
 
-    *ppFontFallback = new FontFallbackWrapper(pFontFallback);
+    IFC(FontFallbackWrapper::Create(pFontFallback, ppFontFallback));
 
 Cleanup:
     ReleaseInterface(pFontFallback);

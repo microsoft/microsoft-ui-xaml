@@ -268,7 +268,7 @@ CThemeResourceExtension::SetInitialValueAndTargetDictionary(
         IFC_RETURN(SetLastResolvedValue(pValue));
 
         // Remember if value is from the Application's initial theme.
-        SetIsValueFromInitialTheme(targetDictionary);
+        IFC_RETURN(SetIsValueFromInitialTheme(targetDictionary));
     }
 
     return S_OK;
@@ -308,7 +308,7 @@ CThemeResourceExtension::GetValue(_Out_ CValue* pValue)
         IFC_RETURN(SetIsValueFromInitialTheme(pTargetDictionaryNoRef));
    }
 
-   pValue->CopyConverted(m_lastResolvedThemeValue);
+   IFC_RETURN(pValue->CopyConverted(m_lastResolvedThemeValue));
 
    return S_OK;
 }

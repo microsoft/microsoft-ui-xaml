@@ -47,6 +47,7 @@ IFACEMETHODIMP DirectUI::ConnectedAnimationGenerated::get_Configuration(_Outptr_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ConnectedAnimation*>(this)->get_ConfigurationImpl(ppValue));
 Cleanup:
@@ -66,6 +67,7 @@ IFACEMETHODIMP DirectUI::ConnectedAnimationGenerated::get_IsScaleAnimationEnable
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ConnectedAnimation*>(this)->get_IsScaleAnimationEnabledImpl(pValue));
 Cleanup:
@@ -185,6 +187,7 @@ IFACEMETHODIMP DirectUI::ConnectedAnimationGenerated::TryStart(_In_ ABI::Microso
     }
     ARG_NOTNULL(pDestination, "destination");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ConnectedAnimation*>(this)->TryStartImpl(pDestination, pReturnValue));
@@ -205,6 +208,7 @@ IFACEMETHODIMP DirectUI::ConnectedAnimationGenerated::TryStartWithCoordinatedEle
     ARG_NOTNULL(pDestination, "destination");
     ARG_NOTNULL(pCoordinatedElements, "coordinatedElements");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ConnectedAnimation*>(this)->TryStartWithCoordinatedElementsImpl(pDestination, pCoordinatedElements, pReturnValue));

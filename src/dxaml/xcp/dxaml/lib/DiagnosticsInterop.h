@@ -320,7 +320,7 @@ namespace Diagnostics
         // Returns the core dictionary of the passed in dictionaries immediate parent, iff
         // the dictionary is part of a theme dictionary or merged dictionary collection
         static xref_ptr<CResourceDictionary> GetImmediateParentDictionary(
-            _In_ CResourceDictionary* resourceDictionary) throw();
+            _In_ CResourceDictionary* resourceDictionary) noexcept;
 
         // GetAllKeys uses ResourceGraphKeyWithParent because if the dictionary is removed from it's parent collection (if in one), it will
         // no longer be able to get it through CDependencyObject::GetParent
@@ -512,7 +512,7 @@ namespace Diagnostics
             _In_ const CResourceDictionary* dictionaryToSkip,
             const xstring_ptr& key,
             bool isImplicitStyle,
-            _Out_ xref_ptr<CResourceDictionary>& dictionaryFoundIn);
+            _Inout_ xref_ptr<CResourceDictionary>& dictionaryFoundIn);
 
         void CacheRootObject(_In_ IInspectable*);
         void CacheDispatcherQueueForCurrentThread();

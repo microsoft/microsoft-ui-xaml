@@ -211,6 +211,7 @@ std::vector<std::wstring> VisualStateGroupCollectionCustomRuntimeData::GetVisual
 bool VisualStateGroupCollectionCustomRuntimeData::TryGetVisualTransition(
     _In_ int fromIndex, _In_ unsigned int toIndex, _Out_ StreamOffsetToken* token) const
 {
+    *token = StreamOffsetToken();  // Use default constructor to initialize token
     unsigned int groupIndex = GetGroupIndex(toIndex);
     unsigned int transitionIndex = 0;
     if (m_visualTransitionLookup->TryGetVisualTransitionIndex(groupIndex, fromIndex, toIndex, &transitionIndex))

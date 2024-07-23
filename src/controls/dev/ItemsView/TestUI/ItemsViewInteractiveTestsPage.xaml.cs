@@ -22,14 +22,15 @@ namespace MUXControlsTestApp
         private int _scrollViewResetCorrelationId = -1;
         private int _scrollViewOffsetChangeCorrelationId = -1;
         private int _scrollViewZoomFactorChangeCorrelationId = -1;
-        private ObservableCollection<Recipe> _colRecipes = null;
-        private List<Recipe> _lstRecipes = null;
-        private List<Recipe> _lstLargeRecipes = null;
-        private DataTemplate[] _recipeTemplates = new DataTemplate[5];
+        private ObservableCollection<Entity> _colEntities = null;
+        private List<Entity> _lstEntities = null;
+        private List<Entity> _lstLargeEntities = null;
+        private DataTemplate[] _entityTemplates = new DataTemplate[6];
         private LinedFlowLayout _linedFlowLayout = null;
         private StackLayout _stackLayout = null;
         private UniformGridLayout _uniformGridLayout = null;
         private UIElement _oldFocusedElement = null;
+        private LinedFlowLayoutItemCollectionTransitionProvider _linedFlowLayoutItemCollectionTransitionProvider = null;
 
         public ItemsViewInteractiveTestsPage()
         {
@@ -49,6 +50,7 @@ namespace MUXControlsTestApp
             UpdateItemsViewIsItemInvokedEnabled();
             UpdateItemsViewSelectionMode();
             UpdateItemsInfoRequestedCheckBoxes();
+            UpdateAppAnimatorCheckBox();
 
             ScrollView scrollView = ItemsViewTestHooks.GetScrollViewPart(this.itemsView);
 
@@ -89,6 +91,11 @@ namespace MUXControlsTestApp
         private void ChkUseFastPath_IsCheckedChanged(object sender, RoutedEventArgs args)
         {
             UpdateItemsInfoRequestedHandler();
+        }
+
+        private void ChkUseAppAnimator_IsCheckedChanged(object sender, RoutedEventArgs args)
+        {
+            UpdateAppAnimator();
         }
 
         private void ChkLogItemsRepeaterMessages_Checked(object sender, RoutedEventArgs e)
@@ -201,12 +208,12 @@ namespace MUXControlsTestApp
                     {
                         int templateIndex = cmbItemTemplate.SelectedIndex - 1;
 
-                        if (_recipeTemplates[templateIndex] == null)
+                        if (_entityTemplates[templateIndex] == null)
                         {
-                            _recipeTemplates[templateIndex] = Resources["recipeTemplate" + cmbItemTemplate.SelectedIndex.ToString()] as DataTemplate;
+                            _entityTemplates[templateIndex] = Resources["entityTemplate" + cmbItemTemplate.SelectedIndex.ToString()] as DataTemplate;
                         }
 
-                        itemsView.ItemTemplate = _recipeTemplates[templateIndex];
+                        itemsView.ItemTemplate = _entityTemplates[templateIndex];
                     }
 
                     UpdateLinedFlowLayoutLineHeight();
@@ -231,43 +238,43 @@ namespace MUXControlsTestApp
                             itemsView.ItemsSource = null;
                             break;
                         case 1:
-                            if (_lstRecipes == null)
+                            if (_lstEntities == null)
                             {
-                                _lstRecipes = new List<Recipe>(
+                                _lstEntities = new List<Entity>(
                                                 Enumerable.Range(0, 50).Select(k =>
-                                                    new Recipe
+                                                    new Entity
                                                     {
                                                         ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", k % 8 + 1)),
                                                         Description = k + " - " + _lorem.Substring(0, k)
                                                     }));
                             }
-                            itemsView.ItemsSource = _lstRecipes;
+                            itemsView.ItemsSource = _lstEntities;
                             break;
                         case 2:
-                            if (_lstLargeRecipes == null)
+                            if (_lstLargeEntities == null)
                             {
-                                _lstLargeRecipes = new List<Recipe>(
+                                _lstLargeEntities = new List<Entity>(
                                                 Enumerable.Range(0, 1000).Select(k =>
-                                                    new Recipe
+                                                    new Entity
                                                     {
                                                         ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", k % 8 + 1)),
                                                         Description = k + " - " + _lorem.Substring(0, k % 50 + 1)
                                                     }));
                             }
-                            itemsView.ItemsSource = _lstLargeRecipes;
+                            itemsView.ItemsSource = _lstLargeEntities;
                             break;
                         case 3:
-                            if (_colRecipes == null)
+                            if (_colEntities == null)
                             {
-                                _colRecipes = new ObservableCollection<Recipe>(
+                                _colEntities = new ObservableCollection<Entity>(
                                                 Enumerable.Range(0, 25).Select(k =>
-                                                    new Recipe
+                                                    new Entity
                                                     {
                                                         ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", k % 8 + 1)),
                                                         Description = k + " - " + _lorem.Substring(0, 2 * k)
                                                     }));
                             }
-                            itemsView.ItemsSource = _colRecipes;
+                            itemsView.ItemsSource = _colEntities;
                             break;
                     }
                 }
@@ -310,6 +317,7 @@ namespace MUXControlsTestApp
 
                     UpdateLinedFlowLayoutLineHeight();
                     UpdateItemsInfoRequestedCheckBoxes();
+                    UpdateAppAnimatorCheckBox();
                 }
             }
             catch (Exception ex)
@@ -365,7 +373,7 @@ namespace MUXControlsTestApp
 
             args.MinWidth = 80.0;
 
-            double[] desiredAspectRatios = new double[chkUseFastPath.IsChecked == true ? (itemsView.ItemsSource as IReadOnlyCollection<Recipe>).Count : args.ItemsRangeRequestedLength];
+            double[] desiredAspectRatios = new double[chkUseFastPath.IsChecked == true ? (itemsView.ItemsSource as IReadOnlyCollection<Entity>).Count : args.ItemsRangeRequestedLength];
 
             if (chkUseFastPath.IsChecked == true)
             {
@@ -508,6 +516,151 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void BtnInsertItems_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (txtItemsSourceIndexes != null && txtStatus != null)
+                {
+                    txtStatus.Text = "InsertItems ...";
+
+                    string[] indexes = txtItemsSourceIndexes.Text.Split(',');
+
+                    foreach (string index in indexes)
+                    {
+                        InsertItem(int.Parse(index));
+                    }
+
+                    txtStatus.Text = "InsertItems. Done.";
+
+                    if (_oldFocusedElement != null)
+                    {
+                        _oldFocusedElement.Focus(FocusState.Programmatic);
+                        _oldFocusedElement = null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _fullLogs.Add(ex.ToString());
+            }
+        }
+
+        private void BtnRemoveItems_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (txtItemsSourceIndexes != null && txtStatus != null)
+                {
+                    txtStatus.Text = "RemoveItems ...";
+
+                    string[] indexes = txtItemsSourceIndexes.Text.Split(',');
+
+                    foreach (string index in indexes)
+                    {
+                        RemoveItem(int.Parse(index));
+                    }
+
+                    txtStatus.Text = "RemoveItems. Done.";
+                }
+            }
+            catch (Exception ex)
+            {
+                _fullLogs.Add(ex.ToString());
+            }
+        }
+
+        private void InsertItem(int index)
+        {
+            try
+            {
+                if (itemsView != null && cmbItemsSource != null)
+                {
+                    switch (cmbItemsSource.SelectedIndex)
+                    {
+                        case 1:                            
+                            if (_lstEntities != null)
+                            {
+                                int rank = _lstEntities.Count;
+                                Entity entity = new Entity
+                                {
+                                    ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", rank % 8 + 1)),
+                                    Description = rank + " - " + _lorem.Substring(0, rank)
+                                };
+
+                                _lstEntities.Insert(index, entity);
+                            }
+                            break;
+                        case 2:
+                            if (_lstLargeEntities != null)
+                            {
+                                int rank = _lstLargeEntities.Count;
+                                Entity entity = new Entity
+                                {
+                                    ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", rank % 8 + 1)),
+                                    Description = rank + " - " + _lorem.Substring(0, rank % 50 + 1)
+                                };
+
+                                _lstLargeEntities.Insert(index, entity);
+                            }
+                            break;
+                        case 3:
+                            if (_colEntities != null)
+                            {
+                                int rank = _colEntities.Count;
+                                Entity entity = new Entity
+                                {
+                                    ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", rank % 8 + 1)),
+                                    Description = rank + " - " + _lorem.Substring(0, 2 * rank)
+                                };
+
+                                _colEntities.Insert(index, entity);
+                            }
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _fullLogs.Add(ex.ToString());
+            }
+        }
+
+        private void RemoveItem(int index)
+        {
+            try
+            {
+                if (itemsView != null && cmbItemsSource != null)
+                {
+                    switch (cmbItemsSource.SelectedIndex)
+                    {
+                        case 1:
+                            if (_lstEntities != null)
+                            {
+                                _lstEntities.RemoveAt(index);
+                            }
+                            break;
+                        case 2:
+                            if (_lstLargeEntities != null)
+                            {
+                                _lstLargeEntities.RemoveAt(index);
+                            }
+                            break;
+                        case 3:
+                            if (_colEntities != null)
+                            {
+                                _colEntities.RemoveAt(index);
+                            }
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _fullLogs.Add(ex.ToString());
+            }
+        }
+
         private void UpdateItemsInfoRequestedCheckBoxes()
         {
             chkHandleItemsInfoRequested.Visibility = chkUseFastPath.Visibility = cmbLayout.SelectedIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
@@ -515,6 +668,22 @@ namespace MUXControlsTestApp
             if (!chkHandleItemsInfoRequested.IsEnabled)
             {
                 chkHandleItemsInfoRequested.IsChecked = chkUseFastPath.IsEnabled = false;
+            }
+        }
+
+        private void UpdateAppAnimatorCheckBox()
+        {
+            if (cmbLayout.SelectedIndex == 1)
+            {
+                chkUseAppAnimator.Visibility = Visibility.Visible;
+                if (itemsView != null)
+                {
+                    chkUseAppAnimator.IsChecked = itemsView.ItemTransitionProvider != null;
+                }
+            }
+            else
+            {
+                chkUseAppAnimator.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -530,6 +699,32 @@ namespace MUXControlsTestApp
                 }
 
                 _linedFlowLayout.InvalidateItemsInfo();
+            }
+        }
+
+        private void UpdateAppAnimator()
+        {
+            if (itemsView != null && chkUseAppAnimator != null)
+            {
+                if (chkUseAppAnimator.IsChecked == true)
+                {
+                    if (itemsView.ItemTransitionProvider == null)
+                    {
+                        if (_linedFlowLayoutItemCollectionTransitionProvider == null)
+                        {
+                            _linedFlowLayoutItemCollectionTransitionProvider = new LinedFlowLayoutItemCollectionTransitionProvider();
+                        }
+
+                        itemsView.ItemTransitionProvider = _linedFlowLayoutItemCollectionTransitionProvider;
+                    }
+                }
+                else
+                {
+                    if (itemsView.ItemTransitionProvider != null)
+                    {
+                        itemsView.ItemTransitionProvider = null;
+                    }
+                }
             }
         }
 

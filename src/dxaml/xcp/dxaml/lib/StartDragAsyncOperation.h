@@ -72,7 +72,7 @@ namespace DirectUI
         bool m_hasAnchorPoint = false;
         bool m_started = false;
         bool m_deferVisual = true;
-        wf::Point m_anchorPoint;
+        wf::Point m_anchorPoint{};
         ctl::ComPtr<DragVisual> m_spDragVisual;
         ctl::ComPtr<mui::DragDrop::IDragOperation> m_spDragOperation;
         ctl::ComPtr<IAsyncInfo> m_spCoreDragOperationAsyncInfo;

@@ -219,10 +219,7 @@ HRESULT CImageSource::SetupImageSource(
                 }
             }
 
-            if (const auto& decodeActivity = GetContext()->GetImageProvider()->GetDecodeActivity())
-            {
-                decodeActivity->SetUriSource(reinterpret_cast<uint64_t>(this), m_strSource.GetBuffer());
-            }
+            ImagingTelemetry::SetUriSource(reinterpret_cast<uint64_t>(this), m_strSource.GetBuffer());
         }
     }
 
@@ -307,11 +304,8 @@ CImageSource::OnImageAvailableCommon(
 
     HRESULT hrImageResult = pResponse->GetDecodingResult();
 
-    if (const auto& decodeActivity = GetContext()->GetImageProvider()->GetDecodeActivity())
-    {
-        decodeActivity->DecodeResultAvailable(reinterpret_cast<uint64_t>(this), hrImageResult);
-        // TODO: Trace the surface upload as well.
-    }
+    ImagingTelemetry::DecodeResultAvailable(reinterpret_cast<uint64_t>(this), hrImageResult);
+    // TODO: Trace the surface upload as well.
 
     if (SUCCEEDED(hrImageResult))
     {
@@ -591,7 +585,7 @@ CBitmapSource::Create(
     bitmapSource.attach(new CBitmapSource(createParameters->m_pCore));
 
     // Intentionally doesn't set CREATEPARAMETERS for CBitmapSource
-    bitmapSource->SetupImageSource(true /*mustKeepSoftwareSurface*/);
+    IFC_RETURN(bitmapSource->SetupImageSource(true /*mustKeepSoftwareSurface*/));
 
     *retObject = bitmapSource.detach();
 
@@ -658,28 +652,23 @@ _Check_return_ HRESULT CImageSource::SetImageCache(xref_ptr<ImageCache> imageCac
 
             SetBitmapState(BitmapImageState::Downloading);
 
-            const auto& decodeActivity = GetContext()->GetImageProvider()->GetDecodeActivity();
-
-            m_imageMetadataView = m_imageCache->GetMetadataView(decodeActivity, reinterpret_cast<uint64_t>(this));
+            m_imageMetadataView = m_imageCache->GetMetadataView(reinterpret_cast<uint64_t>(this));
             m_imageMetadataView->SetGraphicsDevice(GetContext()->GetGraphicsDevice());
             m_imageMetadataView->SetMaxRootSize(GetContext()->GetContentRootMaxSize());
             m_imageMetadataView->AddImageViewListener(*this);
-            if (m_imageMetadataView->GetImageMetadata() || FAILED(m_imageMetadataView->GetHR(decodeActivity, reinterpret_cast<uint64_t>(this))))
+            if (m_imageMetadataView->GetImageMetadata() || FAILED(m_imageMetadataView->GetHR(reinterpret_cast<uint64_t>(this))))
             {
                 // We already have metadata available, so this doesn't need to be downloaded. Go straight to
                 // OnImageViewUpdated (which gets called when the download completes).
-                if (decodeActivity)
-                {
-                    decodeActivity->FoundCompletedDownload(reinterpret_cast<uint64_t>(this));
-                }
+                ImagingTelemetry::FoundCompletedDownload(reinterpret_cast<uint64_t>(this));
                 IFC_RETURN(OnImageViewUpdated(*m_imageMetadataView));
             }
-            else if (decodeActivity)
+            else
             {
                 // The ImageCache doesn't have metadata yet, so the download is still in progress. We'll wait for the
                 // existing download to complete and be notified via OnImageViewUpdated afterwards (the
                 // AddImageViewListener call above puts us in the list of things to notify once download completes).
-                decodeActivity->WaitForDownloadInProgress(reinterpret_cast<uint64_t>(this));
+                ImagingTelemetry::WaitForDownloadInProgress(reinterpret_cast<uint64_t>(this));
             }
         }
         else
@@ -719,10 +708,7 @@ CImageSource::SetSource(
     // Clear the existing URI source.
     m_strSource.Reset();
 
-    if (const auto& decodeActivity = GetContext()->GetImageProvider()->GetDecodeActivity())
-    {
-        decodeActivity->SetStreamSource(reinterpret_cast<uint64_t>(this));
-    }
+    ImagingTelemetry::SetStreamSource(reinterpret_cast<uint64_t>(this));
 
     // OnSourceSet() is called when we have a stream source. We don't do any automatic
     // reloading for a stream source, so unregister from the reload manager.
@@ -792,7 +778,6 @@ CImageSource::SetSource(
             nullptr /* absoluteUri */,
             false /* isSvg */,
             GetImageOptions::None,
-            GetContext()->GetImageProvider()->GetDecodeActivity(),
             reinterpret_cast<uint64_t>(this),
             &cacheHit,
             imageCache.ReleaseAndGetAddressOf()));
@@ -1280,10 +1265,7 @@ CImageSource::SetValue(_In_ const SetValueParams& args)
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CImageSource::OnUriSourceChanged(bool retainPlaybackState)
 {
-    if (const auto& decodeActivity = GetContext()->GetImageProvider()->GetDecodeActivity())
-    {
-        decodeActivity->SetUriSource(reinterpret_cast<uint64_t>(this), m_strSource.GetBuffer());
-    }
+    ImagingTelemetry::SetUriSource(reinterpret_cast<uint64_t>(this), m_strSource.GetBuffer());
 
     // We may keep the HW surface to avoid flickering when switching URIs.
     IFC_RETURN(ResetForSourceChange(
@@ -1637,7 +1619,6 @@ CImageSource::ReloadImage(bool uriChanged, bool retainPlaybackState)
             m_absoluteUri,
             OfTypeByIndex<KnownTypeIndex::SvgImageSource>(),
             imageGetOptions,
-            GetContext()->GetImageProvider()->GetDecodeActivity(),
             reinterpret_cast<uint64_t>(this),
             &cacheHit,
             imageCache.ReleaseAndGetAddressOf()));
@@ -2548,15 +2529,12 @@ CImageSource::RequestDecode(
             ASSERT(false);
         }
 
-        if (const auto& decodeActivity = GetContext()->GetImageProvider()->GetDecodeActivity())
-        {
-            decodeActivity->RequestDecodeToRenderSize(
-                reinterpret_cast<uint64_t>(this),
-                imageState,
-                requestWidth,
-                requestHeight,
-                m_fDecodeToRenderSize);
-        }
+        ImagingTelemetry::RequestDecodeToRenderSize(
+            reinterpret_cast<uint64_t>(this),
+            imageState,
+            requestWidth,
+            requestHeight,
+            m_fDecodeToRenderSize);
 
         IFC_RETURN(DecodeToRenderSize(requestWidth, requestHeight, retainPlaybackState));
     }
@@ -2568,10 +2546,7 @@ _Check_return_ HRESULT CImageSource::OnImageViewUpdated(ImageViewBase& sender)
 {
     ASSERT(m_imageMetadataView.get() == &sender);
 
-    if (const auto& decodeActivity = GetContext()->GetImageProvider()->GetDecodeActivity())
-    {
-        decodeActivity->ImageDownloadCompleteNotification(reinterpret_cast<uint64_t>(this), m_strSource.GetBuffer(), m_fDecodeToRenderSize);
-    }
+    ImagingTelemetry::ImageDownloadCompleteNotification(reinterpret_cast<uint64_t>(this), m_strSource.GetBuffer(), m_fDecodeToRenderSize);
 
     if (ShouldContinueAsyncAction())
     {
@@ -2579,7 +2554,7 @@ _Check_return_ HRESULT CImageSource::OnImageViewUpdated(ImageViewBase& sender)
 
         // Unintuitive behavior: this GetHR call kicks off the initial parse of the encoded image to read the metadata.
         // Move this out to an explicit "parse for metadata" call?
-        HRESULT parseHR = m_imageMetadataView->GetHR(GetContext()->GetImageProvider()->GetDecodeActivity(), reinterpret_cast<uint64_t>(this));
+        HRESULT parseHR = m_imageMetadataView->GetHR(reinterpret_cast<uint64_t>(this));
 
         if (FAILED(parseHR))
         {
@@ -2732,17 +2707,14 @@ CImageSource::DecodeToRenderSize(
 
         m_pendingDecodeForLostSoftwareSurface = FALSE;
 
-        if (const auto& decodeActivity = GetContext()->GetImageProvider()->GetDecodeActivity())
-        {
-            decodeActivity->DecodeToRenderSizeStart(
-                reinterpret_cast<uint64_t>(this),
-                imageSourceWidth,
-                imageSourceHeight,
-                newWidth,
-                newHeight,
-                imageMetadata->width,
-                imageMetadata->height);
-        }
+        ImagingTelemetry::DecodeToRenderSizeStart(
+            reinterpret_cast<uint64_t>(this),
+            imageSourceWidth,
+            imageSourceHeight,
+            newWidth,
+            newHeight,
+            imageMetadata->width,
+            imageMetadata->height);
 
         // Keep this old event for now. There are tests listening for it.
         TraceDecodeToRenderSizeBegin1(
@@ -2789,10 +2761,7 @@ CImageSource::DecodeToRenderSize(
 
         TraceDecodeToRenderSizeEnd(reinterpret_cast<XUINT64>(this), m_strSource.GetBuffer());
 
-        if (const auto& decodeActivity = GetContext()->GetImageProvider()->GetDecodeActivity())
-        {
-            decodeActivity->DecodeToRenderSizeStop(reinterpret_cast<uint64_t>(this));
-        }
+        ImagingTelemetry::DecodeToRenderSizeStop(reinterpret_cast<uint64_t>(this));
     }
 
     return S_OK;
@@ -3633,7 +3602,6 @@ HRESULT CBitmapImage::GetAutoPlay(
                 isAutoPlay,
                 surfaceUpdateList,
                 false /* isLoadedImageSurface */,
-                GetContext()->GetImageProvider()->GetDecodeActivity(),
                 reinterpret_cast<XUINT64>(this),
                 m_strSource);
         }
@@ -3649,7 +3617,6 @@ HRESULT CBitmapImage::GetAutoPlay(
             height,
             isAutoPlay,
             false /* isLoadedImageSurface */,
-            GetContext()->GetImageProvider()->GetDecodeActivity(),
             reinterpret_cast<XUINT64>(this),
             m_strSource);
     }
@@ -3984,8 +3951,5 @@ void CImageSource::TraceDecodeToRenderSizeDisqualified(ImageDecodeBoundsFinder::
         break;
     }
 
-    if (const auto& decodeActivity = GetContext()->GetImageProvider()->GetDecodeActivity())
-    {
-        decodeActivity->DecodeToRenderSizeDisqualified(reinterpret_cast<uint64_t>(this), description);
-    }
+    ImagingTelemetry::DecodeToRenderSizeDisqualified(reinterpret_cast<uint64_t>(this), description);
 }

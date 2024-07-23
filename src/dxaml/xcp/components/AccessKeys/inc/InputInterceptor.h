@@ -73,6 +73,7 @@ namespace AccessKeys {
         {
             AK_TRACE(L"AK> TryProcessKeyImpl %x\n", inputMessage->m_platformKeyCode);
 
+            *keyProcessed = false;
             bool shouldEvaluate = false;
 
             //If we are attempting to entering AK mode, we need to scan the visual tree to verify that we have

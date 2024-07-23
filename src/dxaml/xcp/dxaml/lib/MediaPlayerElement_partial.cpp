@@ -835,7 +835,7 @@ _Check_return_ HRESULT MediaPlayerElement::UpdatePosterImageVisibility()
             EventName##EventSourceType::HandlerType,\
                 EventName##EventSourceType::SenderType,\
                 EventName##EventSourceType::ArgsType>> spHandler;\
-        ctl::make(pValue, spSender.Get(), &spHandler);\
+        IFC_RETURN(ctl::make(pValue, spSender.Get(), &spHandler));\
         ctl::ComPtr<EventName##EventSourceType::HandlerType> spValue;\
         IFC_RETURN(spHandler.As(&spValue));\
         IFC_RETURN(__super::add_##EventName(spValue.Get(), ptToken));\

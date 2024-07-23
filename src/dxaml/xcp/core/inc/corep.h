@@ -1459,11 +1459,12 @@ public:
         _In_ XHANDLE hwnd,
         float testOverrideScale);
 
-    float GetTestOverrideScale() const { return m_testOverrideScale; } 
+    float GetTestOverrideScale() const { return m_testOverrideScale; }
 
     void OverrideTrimImageResourceDelay(bool enabled);
 
     _Check_return_ HRESULT SetSystemFontCollectionOverride(_In_opt_ IDWriteFontCollection* pFontCollection);
+    _Check_return_ HRESULT ShouldUseTypographicFontModel(_Out_ bool* useDWriteTypographicModel);
 
     void SetTimeManagerClockOverrideConstant(double newTime);
     HRESULT CleanUpAfterTest();
@@ -1590,7 +1591,7 @@ public:
     {
         if (PAL_InterlockedIncrement(&m_cPendingDecodes) == 1)
         {
-            SetImageDecodingIdleEventSignaledStatus(FALSE);
+            IGNOREHR(SetImageDecodingIdleEventSignaledStatus(FALSE));
         }
     }
 
@@ -1599,7 +1600,7 @@ public:
         ASSERT(m_cPendingDecodes > 0);
         if (PAL_InterlockedDecrement(&m_cPendingDecodes) == 0)
         {
-            SetImageDecodingIdleEventSignaledStatus(TRUE);
+            IGNOREHR(SetImageDecodingIdleEventSignaledStatus(TRUE));
         }
     }
     XUINT32 GetPendingDecodeCount() { return m_cPendingDecodes; }
@@ -1608,7 +1609,7 @@ public:
     {
         if (PAL_InterlockedIncrement(&m_cPendingFontDownloads) == 1)
         {
-            SetFontDownloadsIdleEventSignaledStatus(FALSE);
+            IGNOREHR(SetFontDownloadsIdleEventSignaledStatus(FALSE));
         }
     }
 
@@ -1617,7 +1618,7 @@ public:
         ASSERT(m_cPendingFontDownloads > 0);
         if (PAL_InterlockedDecrement(&m_cPendingFontDownloads) == 0)
         {
-            SetFontDownloadsIdleEventSignaledStatus(TRUE);
+            IGNOREHR(SetFontDownloadsIdleEventSignaledStatus(TRUE));
         }
     }
 
@@ -1773,7 +1774,7 @@ private:
 private:
 
     XUINT32                     m_cRef;
-    DWORD                       m_nThreadID;        // Thread that created this core
+    DWORD                       m_nThreadID{};        // Thread that created this core
 
     std::shared_ptr<XamlNodeStreamCacheManager>
                                 m_spXamlNodeStreamCacheManager;
@@ -2041,8 +2042,8 @@ private:
         {
         }
 
-        XUINT32 width;
-        XUINT32 height;
+        XUINT32 width{};
+        XUINT32 height{};
         bool retainPlaybackState;
     };
 
@@ -2050,7 +2051,7 @@ private:
     static const UINT64         sc_imageSurfaceWrapperReleaseDelayMilliseconds = 1000;
 
     // This should only be used by tests to override waiting for the timeout to expire
-    bool                        m_testOverrideImageSurfaceWrapperReleaseDelay;
+    bool                        m_testOverrideImageSurfaceWrapperReleaseDelay{};
     bool m_forceWindowInvisible_TestHook = false;
 
     // Map for all image decode requests
@@ -2104,6 +2105,7 @@ public:
     _Check_return_ HRESULT SetHasDeferredAnimationOperationsEventSignaledStatus(_In_ bool bSignaled);
     _Check_return_ HRESULT SetDeferredAnimationOperationsCompleteEvent();
     _Check_return_ HRESULT SetRootVisualResetEventSignaledStatus(_In_ bool bSignaled);
+    _Check_return_ HRESULT SetLayoutCleanSignaledStatus(_In_ bool bSignaled);
     _Check_return_ HRESULT SetImageDecodingIdleEventSignaledStatus(_In_ bool bSignaled);
     _Check_return_ HRESULT SetFontDownloadsIdleEventSignaledStatus(_In_ bool bSignaled);
     _Check_return_ HRESULT SetPopupMenuCommandInvokedEvent();
@@ -2218,6 +2220,7 @@ private:
     IPALEvent                  *m_pHasDeferredAnimationOperationsEvent;
     IPALEvent                  *m_pDeferredAnimationOperationsCompleteEvent;
     IPALEvent                  *m_pRootVisualResetEvent;
+    IPALEvent*                  m_layoutCleanEvent;
     IPALEvent                  *m_pImageDecodingIdleEvent;
     IPALEvent                  *m_pFontDownloadsIdleEvent;
     IPALEvent                  *m_pPopupMenuCommandInvokedEvent;
@@ -2408,7 +2411,7 @@ private:
         ReleaseInterface(m_pAbortable);
     }
     DREQUEST*                m_pRequest;
-    CCoreServices*           m_pcs;
+    CCoreServices*           m_pcs{};
     XUINT32                  m_cRef;
     IPALAbortableOperation*  m_pAbortable;
 };

@@ -68,7 +68,7 @@ public:
     int GetTopBorderHeight() const noexcept;
     _Check_return_ HRESULT ConfigureWindowChrome();
     _Check_return_ HRESULT ApplyStyling();
-    [[nodiscard]] LRESULT OnNcHitTest(const POINT ptMouse);
+    _Check_return_ HRESULT SetFocusIfNeeded();
     
     // sometimes when you need to temporarily disable dragging like in case when Content Dialog is shown
     // these apis control whether a drag region gets created or not.
@@ -79,7 +79,6 @@ private:
     enum class CaptionButtonState {Normal, Hover, Pressed};
 
     [[nodiscard]] LRESULT OnCreate();
-    [[nodiscard]] LRESULT OnPaint();
     
     
     // Repositions the Visual Studio in-app toolbar below the custom titlebar if necessary,
@@ -88,8 +87,10 @@ private:
     
     bool m_bIsActive = false;
     HWND m_topLevelWindow = NULL;
-    bool m_enabledDrag =  true;
+    bool m_enabledDrag = true;
+    bool m_enabledDragCached = true;
     RECT m_dragRegionCached{};
+    wgr::RectInt32 m_scaledDragRegionCached{};
     bool m_isDefaultCaptionButtonStyleSet = false; // do it only the first time window chrome is created
     
 };

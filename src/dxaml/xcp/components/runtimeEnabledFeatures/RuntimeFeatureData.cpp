@@ -77,5 +77,9 @@ namespace RuntimeFeatureBehavior
         { L"DenySelectionIndicatorVisualEnabled", RuntimeEnabledFeature::DenySelectionIndicatorVisualEnabled, false, 0, 0 },
         { L"ForceSelectionIndicatorModeInline", RuntimeEnabledFeature::ForceSelectionIndicatorModeInline, false, 0, 0 },
         { L"ForceSelectionIndicatorModeOverlay", RuntimeEnabledFeature::ForceSelectionIndicatorModeOverlay, false, 0, 0 },
+
+        // Until the feature is complete, we will default the typographic model back to the legacy one.
+        { L"DisableDWriteTypographicModel", RuntimeEnabledFeature::DisableDWriteTypographicModel, false, 0, 0 },
+        { L"ForceDWriteTypographicModel", RuntimeEnabledFeature::ForceDWriteTypographicModel, false, 0, 0 },
     };
 }

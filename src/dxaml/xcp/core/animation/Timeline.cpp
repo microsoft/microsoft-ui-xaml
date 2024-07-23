@@ -667,7 +667,7 @@ _Check_return_ HRESULT CTimeline::RequestTickForPendingThemeChange()
         m_hasPendingThemeChange = TRUE;
 
         // This is not the top-level timeline, so bubble up request for new tick
-        pTimingParent->RequestTickForPendingThemeChange();
+        IFC_RETURN(pTimingParent->RequestTickForPendingThemeChange());
     }
     else
     {

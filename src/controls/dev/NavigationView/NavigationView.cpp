@@ -454,7 +454,7 @@ void NavigationView::OnApplyTemplate()
         if (auto stackLayout = leftNavRepeater.Layout().try_as<winrt::StackLayout>())
         {
             auto stackLayoutImpl = winrt::get_self<StackLayout>(stackLayout);
-            stackLayoutImpl->DisableVirtualization(true);
+            stackLayoutImpl->IsVirtualizationEnabled(false);
         }
 
         m_leftNavItemsRepeaterElementPreparedRevoker = leftNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
@@ -476,7 +476,7 @@ void NavigationView::OnApplyTemplate()
         if (auto stackLayout = topNavRepeater.Layout().try_as<winrt::StackLayout>())
         {
             auto stackLayoutImpl = winrt::get_self<StackLayout>(stackLayout);
-            stackLayoutImpl->DisableVirtualization(true);
+            stackLayoutImpl->IsVirtualizationEnabled(false);
         }
 
         m_topNavItemsRepeaterElementPreparedRevoker = topNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
@@ -499,7 +499,7 @@ void NavigationView::OnApplyTemplate()
         if (auto stackLayout = topNavListOverflowRepeater.Layout().try_as<winrt::StackLayout>())
         {
             auto stackLayoutImpl = winrt::get_self<StackLayout>(stackLayout);
-            stackLayoutImpl->DisableVirtualization(true);
+            stackLayoutImpl->IsVirtualizationEnabled(false);
         }
 
         m_topNavOverflowItemsRepeaterElementPreparedRevoker = topNavListOverflowRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
@@ -541,7 +541,7 @@ void NavigationView::OnApplyTemplate()
         if (auto stackLayout = leftFooterMenuNavRepeater.Layout().try_as<winrt::StackLayout>())
         {
             auto stackLayoutImpl = winrt::get_self<StackLayout>(stackLayout);
-            stackLayoutImpl->DisableVirtualization(true);
+            stackLayoutImpl->IsVirtualizationEnabled(false);
         }
 
         m_leftNavFooterMenuItemsRepeaterElementPreparedRevoker = leftFooterMenuNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
@@ -564,7 +564,7 @@ void NavigationView::OnApplyTemplate()
         if (auto stackLayout = topFooterMenuNavRepeater.Layout().try_as<winrt::StackLayout>())
         {
             auto stackLayoutImpl = winrt::get_self<StackLayout>(stackLayout);
-            stackLayoutImpl->DisableVirtualization(true);
+            stackLayoutImpl->IsVirtualizationEnabled(false);
         }
 
         m_topNavFooterMenuItemsRepeaterElementPreparedRevoker = topFooterMenuNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
@@ -2281,6 +2281,9 @@ winrt::UIElement NavigationView::FindSelectionIndicator(const winrt::IInspectabl
                 // Indicator was not found, so maybe the layout hasn't updated yet.
                 // So let's do that now.
                 container.UpdateLayout();
+                // Before manually calling ApplyTemplate, make sure the NavigationViewItem is aware
+                // of its owning NavigationView (it is required info for the NavigationViewItem ApplyTemplate process).
+                winrt::get_self<NavigationViewItem>(container)->SetNavigationViewParent(*this);
                 container.ApplyTemplate();
                 return winrt::get_self<NavigationViewItem>(container)->GetSelectionIndicator();
             }

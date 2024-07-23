@@ -46,6 +46,7 @@ IFACEMETHODIMP DirectUI::Setter::get_Property(_Outptr_result_maybenull_ ABI::Mic
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<Setter*>(this)->get_PropertyImpl(ppValue));
 Cleanup:

@@ -15,7 +15,7 @@
 
 using namespace DirectUI;
 
-HRESULT XamlBinaryFormatSubWriter2::Initialize()
+_Check_return_ HRESULT XamlBinaryFormatSubWriter2::Initialize()
 {
     xref_ptr<CMemoryStreamBuffer> spSubNodeBuffer;
     xref_ptr<CMemoryStreamBuffer> spSubLineBuffer;
@@ -31,7 +31,7 @@ HRESULT XamlBinaryFormatSubWriter2::Initialize()
     return S_OK;
 }
 
-HRESULT XamlBinaryFormatSubWriter2::PersistNode(
+_Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistNode(
     _In_ const ObjectWriterNode& node)
 {
     // we do not persist the StreamOffsetMarker
@@ -170,7 +170,7 @@ HRESULT XamlBinaryFormatSubWriter2::PersistNode(
     return S_OK;
 }
 
-HRESULT XamlBinaryFormatSubWriter2::PersistNodeType(
+_Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistNodeType(
     _In_ const ObjectWriterNodeType nodeType)
 {
     IFC_RETURN(XamlBinaryFormatSerializationHelper::SerializeItemToNodeStream(nodeType, GetVersion(), m_spSubNodeStream));
@@ -178,7 +178,7 @@ HRESULT XamlBinaryFormatSubWriter2::PersistNodeType(
     return S_OK;
 }
 
-HRESULT XamlBinaryFormatSubWriter2::PersistConstantNodeType(
+_Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistConstantNodeType(
     _In_ const PersistedConstantType nodeType)
 {
     IFC_RETURN(XamlBinaryFormatSerializationHelper::SerializeItemToNodeStream(nodeType, GetVersion(), m_spSubNodeStream));
@@ -186,7 +186,7 @@ HRESULT XamlBinaryFormatSubWriter2::PersistConstantNodeType(
     return S_OK;
 }
 
-HRESULT XamlBinaryFormatSubWriter2::PersistNamespace(
+_Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistNamespace(
     _In_ const std::shared_ptr<XamlNamespace>& spNamespace,
     _In_ const xstring_ptr& spPrefix)
 {
@@ -207,7 +207,7 @@ HRESULT XamlBinaryFormatSubWriter2::PersistNamespace(
     return S_OK;
 }
 
-HRESULT XamlBinaryFormatSubWriter2::PersistType(
+_Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistType(
     _In_ const std::shared_ptr<XamlType>& spType)
 {
     PersistedXamlNode2 sPersistedXamlNode;
@@ -218,7 +218,7 @@ HRESULT XamlBinaryFormatSubWriter2::PersistType(
     return S_OK;
 }
 
-HRESULT XamlBinaryFormatSubWriter2::PersistProperty(
+_Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistProperty(
     _In_ const std::shared_ptr<XamlProperty>& spProperty)
 {
     PersistedXamlNode2 sPersistedXamlNode;
@@ -229,13 +229,13 @@ HRESULT XamlBinaryFormatSubWriter2::PersistProperty(
     return S_OK;
 }
 
-HRESULT XamlBinaryFormatSubWriter2::PersistConstant(
+_Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistConstant(
     _In_ const unsigned int value)
 {
     return Persist7BitEncodedInt(value, m_spSubNodeStream);
 }
 
-HRESULT XamlBinaryFormatSubWriter2::PersistLineInfo(
+_Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistLineInfo(
     _In_ const ObjectWriterNode& objectNode)
 {
     if (m_fGenerateLineInfo)
@@ -292,7 +292,7 @@ HRESULT XamlBinaryFormatSubWriter2::PersistLineInfo(
     return S_OK;
 }
 
-HRESULT XamlBinaryFormatSubWriter2::Persist7BitEncodedInt(
+_Check_return_ HRESULT XamlBinaryFormatSubWriter2::Persist7BitEncodedInt(
     _In_ const unsigned int value,
     _In_ const xref_ptr<IPALStream>& spStream)
 {
@@ -312,7 +312,7 @@ HRESULT XamlBinaryFormatSubWriter2::Persist7BitEncodedInt(
     return S_OK;
 }
 
-HRESULT XamlBinaryFormatSubWriter2::PersistConstant(
+_Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistConstant(
     _In_ const CValue& value)
 {
     switch (value.GetType())
@@ -323,7 +323,7 @@ HRESULT XamlBinaryFormatSubWriter2::PersistConstant(
             // 8-bit enums are stored as 32 bit
             uint32_t enumValue = 0;
             KnownTypeIndex enumTypeIndex = KnownTypeIndex::UnknownType;
-            value.GetEnum(enumValue, enumTypeIndex);
+            IFC_RETURN(value.GetEnum(enumValue, enumTypeIndex));
 
             ASSERT(enumTypeIndex != KnownTypeIndex::UnknownType);
             auto stableIndex = Parser::GetStableXbfTypeIndex(enumTypeIndex);
@@ -400,7 +400,7 @@ HRESULT XamlBinaryFormatSubWriter2::PersistConstant(
     return S_OK;
 }
 
-HRESULT XamlBinaryFormatSubWriter2::PersistStringConstant(
+_Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistStringConstant(
     _In_ const xstring_ptr strValue)
 {
     PersistedXamlNode2 sPersistedXamlNode;
@@ -448,7 +448,7 @@ HRESULT XamlBinaryFormatSubWriter2::PersistStringConstant(
     return S_OK;
 }
 
-HRESULT XamlBinaryFormatSubWriter2::PersistSharedString(
+_Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistSharedString(
     _In_ const xstring_ptr strValue)
 {
     PersistedXamlNode2 sPersistedXamlNode;

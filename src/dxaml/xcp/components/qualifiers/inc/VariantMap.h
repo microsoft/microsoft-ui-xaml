@@ -74,7 +74,7 @@ class VariantMap : public IQualifierContextCallback
 
     private:
         std::vector<VariantMapItem<TTarget, TData> > m_qualifiedObjects;
-        TTarget m_selectedItem;
+        TTarget m_selectedItem{};
         std::shared_ptr<QualifierContext> m_pQualifierContext;
         bool m_dirty;
         bool m_isSelectionValid;
@@ -220,7 +220,7 @@ TTarget* VariantMap<TTarget, TData>::SelectedItem()
     // If VariantMap has changed, reevaluate to ensure SelectedItem is up to date
     if(m_dirty)
     {
-        Evaluate();
+        IFCFAILFAST(Evaluate());
         m_dirty = false;
     }
 

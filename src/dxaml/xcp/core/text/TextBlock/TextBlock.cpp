@@ -27,7 +27,7 @@
 #include <textsegment.h>
 #include <compositortree.h>
 #include <dwrite_2.h>
-#include <dwrite.h>
+#include <dwrite_3.h>
 #include <paltext.h>
 #include <DWriteFontAndScriptServices.h>
 #include <PALFontAndScriptServices.h>
@@ -559,7 +559,7 @@ _Check_return_ HRESULT CTextBlock::OnPropertySetImpl(_In_ const CDependencyPrope
 
             if (m_pInlines != nullptr)
             {
-                SetTextToInlineCollection();
+                IFC_RETURN(SetTextToInlineCollection());
             }
             else
             {
@@ -1201,10 +1201,19 @@ _Check_return_ HRESULT CTextBlock::ConfigureDWriteTextLayout(
     DWRITE_FONT_STRETCH dwriteFontStretch = MIN(MAX(DWRITE_FONT_STRETCH_ULTRA_CONDENSED, static_cast<DWRITE_FONT_STRETCH>(pTextFormatting->m_nFontStretch)), DWRITE_FONT_STRETCH_ULTRA_EXPANDED);
 
     xstring_ptr strFontFamilyName;
-    Microsoft::WRL::ComPtr<IDWriteFactory> dwriteFactory;
+    Microsoft::WRL::ComPtr<IDWriteFactory6> dwriteFactory;
     DWriteFontAndScriptServices *pDWriteFontServices = nullptr;
 
     IFC_RETURN(pTextFormatting->m_pFontFamily->get_Source(&strFontFamilyName));
+    if (wcscmp(strFontFamilyName.GetBuffer(), L"Global User Interface") == 0)
+    {
+        strFontFamilyName.Reset();
+        CTextCore* pTextCore = nullptr;
+        IFC_RETURN(GetContext()->GetTextCore(&pTextCore));
+        IFontAndScriptServices* pFontAndScriptServices = nullptr;
+        IFC_RETURN(pTextCore->GetFontAndScriptServices(&pFontAndScriptServices));
+        IFC_RETURN(pFontAndScriptServices->GetDefaultFontNameString(&strFontFamilyName));
+    }
 
     IFC_RETURN(GetDWriteFontAndScriptServices(&pDWriteFontServices));
 
@@ -1250,7 +1259,7 @@ _Check_return_ HRESULT CTextBlock::ConfigureDWriteTextLayout(
     if (m_pTextLayout == nullptr) // If there is no DWriteTextLayout object available, we need to create one.
     {
         Microsoft::WRL::ComPtr<IDWriteTextFormat> pTextFormat;
-        IFC_RETURN(pDWriteFontServices->GetDefaultDWriteTextFormat(&pTextFormat));
+        IFC_RETURN(pDWriteFontServices->GetDefaultDWriteTextFormat(&pTextFormat, DWriteFontCollection::IsTypographicCollection(systemFontCollection)));
 
         IGNOREHR(::TextAnalysis_SetLocaleNameList(pTextFormat.Get(), pTextFormatting->GetResolvedLanguageListStringNoRef().GetBuffer()));
 
@@ -1272,16 +1281,27 @@ _Check_return_ HRESULT CTextBlock::ConfigureDWriteTextLayout(
         IFC_RETURN(m_pTextLayout->SetMaxHeight(availableSize.height));
     }
 
-    IFC_RETURN(m_pTextLayout->SetFontFamilyName(wcscmp(strFontFamilyName.GetBuffer(), L"Global User Interface") ? strFontFamilyName.GetBuffer() : L"Segoe UI", textRange));
-    IFC_RETURN(m_pTextLayout->SetFontCollection(static_cast<DWriteFontCollection*>(systemFontCollection.get())->m_pDWriteFontCollection, textRange));
-    IFC_RETURN(m_pTextLayout->SetFontWeight(dwriteFontWeight, textRange));
-    IFC_RETURN(m_pTextLayout->SetFontStyle(dwriteFontStyle, textRange));
-    IFC_RETURN(m_pTextLayout->SetFontStretch(dwriteFontStretch, textRange));
+    IFC_RETURN(m_pTextLayout->SetFontFamilyName(strFontFamilyName.GetBuffer(), textRange));
+    IFC_RETURN(m_pTextLayout->SetFontCollection(DWriteFontCollection::GetInternalCollection(systemFontCollection.get()), textRange));
     IFC_RETURN(m_pTextLayout->SetFontSize(scaledFontSize, textRange));
     IFC_RETURN(m_pTextLayout->SetLocaleName(pTextFormatting->m_strLanguageString.GetBuffer(), textRange));
     IFC_RETURN(m_pTextLayout->SetReadingDirection(dwriteReadingDirection));
     IFC_RETURN(m_pTextLayout->SetTextAlignment(dwriteTextAlignment));
     IFC_RETURN(m_pTextLayout->SetWordWrapping(dwriteWrapping));
+
+    if (DWriteFontCollection::IsTypographicCollection(systemFontCollection.get()))
+    {
+        Microsoft::WRL::ComPtr<IDWriteTextLayout4> textLayout4;
+        IFC_RETURN(m_pTextLayout.As(&textLayout4));
+        auto axisValues = DWriteFontAndScriptServices::CreateFontAxisValueArray(pTextFormatting->m_eFontSize, dwriteFontWeight, dwriteFontStyle, dwriteFontStretch);
+        IFC_RETURN(textLayout4->SetFontAxisValues(axisValues.data(), static_cast<UINT32>(axisValues.size()), textRange));
+    }
+    else
+    {
+        IFC_RETURN(m_pTextLayout->SetFontWeight(dwriteFontWeight, textRange));
+        IFC_RETURN(m_pTextLayout->SetFontStyle(dwriteFontStyle, textRange));
+        IFC_RETURN(m_pTextLayout->SetFontStretch(dwriteFontStretch, textRange));
+    }
 
     ASSERT (m_textTrimming != DirectUI::TextTrimming::Clip);
     if (m_textTrimming != DirectUI::TextTrimming::None)
@@ -1293,18 +1313,39 @@ _Check_return_ HRESULT CTextBlock::ConfigureDWriteTextLayout(
         // For example, when font size = 30, even we call  m_pTextLayout->SetFontSize(30, {0, UINT_MAX}),
         // the trimming sign created will still have the default font size = 15.
         // In this case, we have to create a new IDWriteTextFormat object with all properties (font name, font size, weight, style, stretch) that could affect the trimming sign.
+        // Note: Although the original reason for hardcoding en-us here is lost to history, it is believed by the dwrite team that the
+        //       language of the trimming string doesn't matter and this provides consistent behavior.
         // TODO: consider caching the trimming sign.
         Microsoft::WRL::ComPtr<IDWriteTextFormat> trimmingFormat;
+        if (DWriteFontCollection::IsTypographicCollection(systemFontCollection.get()))
+        {
+            Microsoft::WRL::ComPtr<IDWriteTextFormat3> trimmingFormat6;
+            auto axisValues = DWriteFontAndScriptServices::CreateFontAxisValueArray(pTextFormatting->m_eFontSize, dwriteFontWeight, dwriteFontStyle, dwriteFontStretch);
+
         IFC_RETURN(dwriteFactory->CreateTextFormat(
-            wcscmp(strFontFamilyName.GetBuffer(), L"Global User Interface") ? strFontFamilyName.GetBuffer() : L"Segoe UI",
-            static_cast<DWriteFontCollection*>(systemFontCollection.get())->m_pDWriteFontCollection,
-            dwriteFontWeight,
-            dwriteFontStyle,
-            dwriteFontStretch,
-            scaledFontSize,
-            L"en-us",
-            &trimmingFormat
+                strFontFamilyName.GetBuffer(),
+                DWriteFontCollection::GetInternalCollection(systemFontCollection.get()),
+                axisValues.data(),
+                static_cast<UINT32>(axisValues.size()),
+                scaledFontSize,
+                L"en-us",
+                &trimmingFormat6
             ));
+            IFC_RETURN(trimmingFormat6.As(&trimmingFormat));
+        }
+        else
+        {
+            IFC_RETURN(dwriteFactory->CreateTextFormat(
+                strFontFamilyName.GetBuffer(),
+                DWriteFontCollection::GetInternalCollection(systemFontCollection.get()),
+                dwriteFontWeight,
+                dwriteFontStyle,
+                dwriteFontStretch,
+                scaledFontSize,
+                L"en-us",
+                &trimmingFormat
+            ));
+        }
         IFC_RETURN(dwriteFactory->CreateEllipsisTrimmingSign(trimmingFormat.Get(), &pTrimmingSign));
         IFC_RETURN(m_pTextLayout->SetTrimming(&trimmingOptions, pTrimmingSign.Get()));
     }
@@ -1332,14 +1373,14 @@ _Check_return_ HRESULT CTextBlock::ConfigureDWriteTextLayout(
         IFC_RETURN(pTextFormatting->m_pFontFamily->EnsureCompositeFontFamily(GetFontContext()));
         if (pTextFormatting->m_pFontFamily->m_pCompositeFontFamily->m_pFontFallback)
         {
-            IDWriteFontFallback* fontFallback = static_cast<FontFallbackWrapper*>(pTextFormatting->m_pFontFamily->m_pCompositeFontFamily->m_pFontFallback)->m_pFontFallback;
+            IDWriteFontFallback* fontFallback = static_cast<FontFallbackWrapper*>(pTextFormatting->m_pFontFamily->m_pCompositeFontFamily->m_pFontFallback)->m_fontFallback.Get();
             Microsoft::WRL::ComPtr<IDWriteTextLayout2> spTextLayout2;
             IFC_RETURN(m_pTextLayout.As(&spTextLayout2));
             IFC_RETURN(spTextLayout2->SetFontFallback(fontFallback));
         }
         if (pTextFormatting->m_pFontFamily->m_pCompositeFontFamily->m_pBaseFontCollection)
         {
-            IDWriteFontCollection* dwriteFontCollection = static_cast<DWriteFontCollection*>(pTextFormatting->m_pFontFamily->m_pCompositeFontFamily->m_pBaseFontCollection)->m_pDWriteFontCollection;
+            IDWriteFontCollection* dwriteFontCollection = DWriteFontCollection::GetInternalCollection(pTextFormatting->m_pFontFamily->m_pCompositeFontFamily->m_pBaseFontCollection);
             IFC_RETURN(m_pTextLayout->SetFontCollection(dwriteFontCollection, textRange));
         }
         if (pTextFormatting->m_pFontFamily->m_pCompositeFontFamily->m_pBaseFontName)
@@ -1537,6 +1578,7 @@ _Check_return_ HRESULT CTextBlock::GetLineHeight(_Out_ float* baseline, _Out_ fl
     ASSERT(fontLineAdvance > 0);
 
     float scaledFontSize = pTextFormatting->GetScaledFontSize(GetContext()->GetFontScale());
+
     // When LineHeight is 0, all Linestackstrategies behave identical.
     if (m_eLineHeight <= 0)
     {
@@ -1762,7 +1804,7 @@ _Check_return_ HRESULT CTextBlock::ArrangeOverride(
                     IsSelectionEnabled() &&
                     m_pSelectionManager->IsSelectionVisible())
                 {
-                    m_pSelectionManager->GetSelectionHighlightRegion(UseHighContrastSelection(GetContext()), selection);
+                    IFC_RETURN(m_pSelectionManager->GetSelectionHighlightRegion(UseHighContrastSelection(GetContext()), selection));
                 }
 
                 const TextFormatting* pTextFormatting = nullptr;
@@ -1824,7 +1866,7 @@ _Check_return_ HRESULT CTextBlock::ArrangeOverride(
                 IsSelectionEnabled() &&
                 m_pSelectionManager->IsSelectionVisible())
             {
-                m_pSelectionManager->GetSelectionHighlightRegion(UseHighContrastSelection(GetContext()), selection);
+                IFC_RETURN(m_pSelectionManager->GetSelectionHighlightRegion(UseHighContrastSelection(GetContext()), selection));
             }
 
             // Set DrawingContext properties to handle foreground color when BackPlate is enabled. This must be set every ArrangeOverride because
@@ -2235,7 +2277,7 @@ void CTextBlock::UpdateSelectionHighlightColor()
         {
             selectionHighlightColor = GetDefaultSelectionHighlightColor();
         }
-        m_pSelectionManager->SetSelectionHighlightColor(selectionHighlightColor);
+        VERIFYHR(m_pSelectionManager->SetSelectionHighlightColor(selectionHighlightColor));
         InvalidateRender();
     }
 }

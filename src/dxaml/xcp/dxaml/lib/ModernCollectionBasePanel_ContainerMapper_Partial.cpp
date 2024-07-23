@@ -1360,28 +1360,6 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT ModernCollectionBasePanel::ContainerManager::EnsureContainerPinned(_In_ INT index, _In_ const ctl::ComPtr<xaml::IUIElement>& spContainer)
-{
-    HRESULT hr = S_OK;
-
-    auto& pinnedContainers = m_pinnedElements[xaml_controls::ElementType_ItemContainer];
-    auto foundPinnedContainerInfo = std::find_if(
-        begin(pinnedContainers),
-        end(pinnedContainers),
-        [&spContainer](const PinnedElementInfo& pinnedContainer) -> bool
-    {
-        return pinnedContainer.GetElement() == spContainer;
-    });
-
-    if (foundPinnedContainerInfo == end(pinnedContainers))
-    {
-        IFC(RegisterPinnedContainer(index, spContainer));
-    }
-
-Cleanup:
-    RRETURN(hr);
-}
-
 // Is the given element pinned?
 bool ModernCollectionBasePanel::ContainerManager::GetIsElementPinned(
     _In_ xaml_controls::ElementType type,

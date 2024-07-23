@@ -6,6 +6,7 @@
 #include "QPCTimer.h"
 #include "BuildTreeScheduler.h"
 #include "RepeaterTestHooks.h"
+#include "MuxcTraceLogging.h"
 
 double BuildTreeScheduler::m_budgetInMs = 40.0;
 thread_local QPCTimer BuildTreeScheduler::m_timer{};
@@ -44,7 +45,11 @@ void BuildTreeScheduler::OnRendering(const winrt::IInspectable&, const winrt::II
 
     if (m_pendingWork.empty())
     {
-        // No more pending work, unhook from rendering event since being hooked up will case wux to try to 
+        TraceLoggingProviderWrite(
+            XamlTelemetryLogging, "BuildTreeScheduler_OutOfWork",
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+        // No more pending work, unhook from rendering event since being hooked up will case wux to try to
         // call the event at 60 frames per second
         winrt::Microsoft::UI::Xaml::Media::CompositionTarget::CompositionTarget::Rendering(m_renderingToken);
         m_renderingToken.value = 0;

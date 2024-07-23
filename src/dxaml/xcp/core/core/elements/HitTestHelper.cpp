@@ -15,16 +15,8 @@ HitTestHelper::HitTestHelper(
     )
     : m_tolerance(tolerance)
     , m_encounteredNaN(FALSE)
+    , m_transform(pTransform ? *pTransform : CMILMatrix(true /*initialize*/))
 {
-    if (pTransform != NULL)
-    {
-        m_transform = *pTransform;
-    }
-    else
-    {
-        m_transform.SetToIdentity();
-    }
-
     m_currentPoint.x = 0;
     m_currentPoint.y = 0;
 }

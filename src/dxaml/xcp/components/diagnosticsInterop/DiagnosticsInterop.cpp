@@ -781,7 +781,7 @@ namespace Diagnostics
         _In_ const CResourceDictionary* dictionaryToSkip,
         const xstring_ptr& key,
         bool isImplicitStyle,
-        _Out_ xref_ptr<CResourceDictionary>& dictionaryFoundIn)
+        _Inout_ xref_ptr<CResourceDictionary>& dictionaryFoundIn)
     {
         // This algorithm is very similar to CResourceDictioanry::GetKeyNoRefImpl, the one problem with CResourceDictioanry::GetKeyNoRefImpl is that
         // we are unable to specify a dictionary to skip. We have a dictionary to skip because in the following scenario. If the ResourceDictionary
@@ -794,7 +794,7 @@ namespace Diagnostics
         //     <ResourceDictionary Source="foo.xaml"/>
         //   </ResourceDictionary.MergedDictionaries>
         // </ResourceDictionary>
-        // <Button Background="{StaticResource foo}" />
+        // <Button Background="{StaticResource foo}" />    
         if (startDictionary && startDictionary != dictionaryToSkip)
         {
             if (startDictionary->HasKey(key, isImplicitStyle))

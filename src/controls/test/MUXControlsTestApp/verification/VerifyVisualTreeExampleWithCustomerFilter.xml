@@ -23,17 +23,17 @@
     VerticalAlignment=Stretch
     Width=400
   [Microsoft.UI.Xaml.Controls.TextBlock]
-      ActualHeight=18.62109375
+      ActualHeight=16.80000114440918
       ActualOffset=<0, 0, 0>
       ActualSize=<400, 400>
       ActualTheme=Light
       ActualWidth=23.7275390625
-      BaselineOffset=15.107421875
+      BaselineOffset=12.59999942779541
       CompositeMode=Inherit
       ContentEnd=Microsoft.UI.Xaml.Documents.TextPointer
       ContentStart=Microsoft.UI.Xaml.Documents.TextPointer
       ContextFlyout=Microsoft.UI.Xaml.Controls.TextCommandBarFlyout
-      DesiredSize=24,19
+      DesiredSize=24,17
       DispatcherQueue=Microsoft.UI.Dispatching.DispatcherQueue
       FocusVisualPrimaryBrush=#E4000000
       FocusVisualSecondaryBrush=#B3FFFFFF

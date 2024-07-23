@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::DragEventArgsGenerated::get_Handled(_Out_ BOOLEAN* pVal
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CDragEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));
@@ -103,6 +104,7 @@ _Check_return_ HRESULT DirectUI::DragEventArgsGenerated::get_AllowDataAccess(_Ou
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CDragEventArgs*>(pCoreEventArgsNoRef)->get_AllowDataAccess(&valueCore));
@@ -132,6 +134,7 @@ IFACEMETHODIMP DirectUI::DragEventArgsGenerated::get_Data(_Outptr_result_maybenu
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<DragEventArgs*>(this)->get_DataImpl(ppValue));
 Cleanup:
@@ -150,6 +153,7 @@ IFACEMETHODIMP DirectUI::DragEventArgsGenerated::get_DataView(_Outptr_result_may
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<DragEventArgs*>(this)->get_DataViewImpl(ppValue));
 Cleanup:
@@ -159,6 +163,7 @@ IFACEMETHODIMP DirectUI::DragEventArgsGenerated::get_DragUIOverride(_Outptr_resu
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<DragEventArgs*>(this)->get_DragUIOverrideImpl(ppValue));
 Cleanup:
@@ -168,6 +173,7 @@ IFACEMETHODIMP DirectUI::DragEventArgsGenerated::get_Modifiers(_Out_ ABI::Window
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<DragEventArgs*>(this)->get_ModifiersImpl(pValue));
 Cleanup:
@@ -181,6 +187,7 @@ IFACEMETHODIMP DirectUI::DragEventArgsGenerated::get_AcceptedOperation(_Out_ ABI
     DirectUI::DataPackageOperation valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CDragEventArgs*>(pCoreEventArgsNoRef)->get_AcceptedOperation(&valueCore));
@@ -214,6 +221,7 @@ IFACEMETHODIMP DirectUI::DragEventArgsGenerated::get_AllowedOperations(_Out_ ABI
     DirectUI::DataPackageOperation valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CDragEventArgs*>(pCoreEventArgsNoRef)->get_AllowedOperations(&valueCore));
@@ -249,6 +257,7 @@ IFACEMETHODIMP DirectUI::DragEventArgsGenerated::GetDeferral(_Outptr_ ABI::Micro
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "DragEventArgs_GetDeferral", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<DragEventArgs*>(this)->GetDeferralImpl(ppReturnValue));
 Cleanup:
@@ -271,6 +280,7 @@ IFACEMETHODIMP DirectUI::DragEventArgsGenerated::GetPosition(_In_opt_ ABI::Micro
     ABI::Windows::Foundation::Point returnValueCore;
 
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CDragEventArgs*>(pCoreEventArgsNoRef)->GetPosition(pRelativeToCore, &returnValueCore));

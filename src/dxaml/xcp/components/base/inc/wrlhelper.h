@@ -10,7 +10,7 @@ namespace WRLHelper
     // to remember that the default behavior for the callback template is to create
     // a proxied callback which must execute on the originating thread.
     template<typename TDelegateInterface, typename TCallback>
-    ::Microsoft::WRL::ComPtr<TDelegateInterface> MakeAgileCallback(TCallback callback) throw()
+    ::Microsoft::WRL::ComPtr<TDelegateInterface> MakeAgileCallback(TCallback callback) noexcept
     {
         return ::Microsoft::WRL::Callback <
             ::Microsoft::WRL::Implements <
@@ -22,7 +22,7 @@ namespace WRLHelper
     // Creates an regular callback function. This means that the completion callback is
     // called on the originating thread. 
     template<typename TDelegateInterface, typename TCallback>
-    ::Microsoft::WRL::ComPtr<TDelegateInterface> MakeCallback(TCallback callback) throw()
+    ::Microsoft::WRL::ComPtr<TDelegateInterface> MakeCallback(TCallback callback) noexcept
     {
         return ::Microsoft::WRL::Callback <
             ::Microsoft::WRL::Implements <
@@ -33,7 +33,7 @@ namespace WRLHelper
     // Creates an regular callback function. This means that the completion callback is
     // called on the originating thread. 
     template<typename TDelegateInterface, typename TCallbackObject>
-    ::Microsoft::WRL::ComPtr<TDelegateInterface> MakeCallback2(TCallbackObject* object, HRESULT (TCallbackObject::* callback)()) throw()
+    ::Microsoft::WRL::ComPtr<TDelegateInterface> MakeCallback2(TCallbackObject* object, HRESULT (TCallbackObject::* callback)()) noexcept
     {
         return ::Microsoft::WRL::Callback <
             ::Microsoft::WRL::Implements <

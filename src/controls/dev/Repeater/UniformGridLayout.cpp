@@ -71,7 +71,7 @@ winrt::Size UniformGridLayout::MeasureOverride(
         LineSpacing(),
         m_maximumRowsOrColumns /* maxItemsPerLine */,
         OrientationBasedMeasures::GetScrollOrientation(),
-        false /* disableVirtualization */,
+        true /* isVirtualizationEnabled */,
         LayoutId());
 
     return { desiredSize.Width, desiredSize.Height };
@@ -139,7 +139,7 @@ winrt::FlowLayoutAnchorInfo UniformGridLayout::Algorithm_GetAnchorForRealization
         const auto lastExtent = gridState->FlowAlgorithm().LastExtent();
         const int itemsPerLine = GetItemsPerLine(availableSize, context);
         const double majorSize = (itemsCount / itemsPerLine) * (double)(GetMajorSizeWithSpacing(context));
-        const double realizationWindowStartWithinExtent = (double)(MajorStart(realizationRect) - MajorStart(lastExtent));
+        const double realizationWindowStartWithinExtent = static_cast<double>(MajorStart(realizationRect)) - static_cast<double>(MajorStart(lastExtent));
         if ((realizationWindowStartWithinExtent + MajorSize(realizationRect)) >= 0 && realizationWindowStartWithinExtent <= majorSize)
         {
             const double offset = std::max(0.0f, MajorStart(realizationRect) - MajorStart(lastExtent));

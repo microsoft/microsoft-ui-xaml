@@ -91,7 +91,7 @@ _Check_return_ HRESULT TextNavigationHelper::MoveToStartOrEndOfLine(
     xref_ptr<CTextRangeAdapter> textRangeAdapter;
     IFC_RETURN(CTextAdapter::Create((CDependencyObject**)textAdapter.ReleaseAndGetAddressOf(), &cp));
     IFC_RETURN(textAdapter->GetDocumentRange(textRangeAdapter.ReleaseAndGetAddressOf()));
-    CTextRangeAdapter::MoveToLine(isMoveToEnd, textRangeAdapter, plainTextPosition);
+    IFC_RETURN(CTextRangeAdapter::MoveToLine(isMoveToEnd, textRangeAdapter, plainTextPosition));
     return S_OK;
 }
 

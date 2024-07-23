@@ -42,6 +42,7 @@
 #include "localizedResource.h"
 #include <windows.foundation.metadata.h>
 #include "XamlRoot.g.h"
+#include <windowing.h>
 
 using namespace ctl;
 using namespace DirectUI;
@@ -5895,15 +5896,19 @@ MediaTransportControls::GetCastingDevicePicker(_Out_ ctl::ComPtr<wm::Casting::IC
             ctl::ComPtr<XamlRoot> xamlRoot = XamlRoot::GetImplementationForElementStatic(spOwnerElement.Get());
             IFCEXPECTRC_RETURN(xamlRoot, S_FALSE);
 
-            HWND xamlHwnd;
-            IFC_RETURN(xamlRoot->get_HostWindow(&xamlHwnd));
-            if (xamlHwnd)
+            ctl::ComPtr<ixp::IContentIslandEnvironment> environment;
+            IFC_RETURN(xamlRoot->get_ContentIslandEnvironmentImpl(&environment));
+            ABI::Microsoft::UI::WindowId environmentWindowId;
+            IFC_RETURN(environment->get_AppWindowId(&environmentWindowId));
+            HWND environmentHwnd = nullptr;
+            IFCFAILFAST(Windowing_GetWindowFromWindowId(environmentWindowId, &environmentHwnd));
+            if (environmentHwnd)
             {
                 // We need to set the HWND on the picker by QI'ing it for IInitializeWithWindow.
                 // The reason is that the picker will eventually be modal to that window
                 ctl::ComPtr<IInitializeWithWindow> spInitialize;
                 IFC_RETURN(m_spCastingDevicePicker.As(&spInitialize));
-                IFC_RETURN(spInitialize->Initialize(xamlHwnd));
+                IFC_RETURN(spInitialize->Initialize(environmentHwnd));
             }
 
             // Set the MediaElement Casting Source in the Supported List.

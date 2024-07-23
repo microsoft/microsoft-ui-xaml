@@ -88,7 +88,7 @@ CResourceDictionary::GetItemWithAddRef(UINT32 index)
     // the size of the deferred + undeferred resources. This makes it possible for
     // someone to try and get something from the dictionary that is out of the range so
     // we'll just fault in all deferred resources at this point.
-    LoadAllDeferredResources();
+    IFCFAILFAST(LoadAllDeferredResources());
     return CDOCollection::GetItemWithAddRef(index);
 }
 

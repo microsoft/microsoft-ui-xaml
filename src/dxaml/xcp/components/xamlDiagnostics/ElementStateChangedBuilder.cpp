@@ -142,7 +142,7 @@ namespace Diagnostics
                     {
                         CValue cVal;
                         auto resProp = MetadataAPI::GetPropertyByIndex(KnownPropertyIndex::Application_Resources);
-                        parent->GetValue(resProp, &cVal);
+                        IFC_RETURN(parent->GetValue(resProp, &cVal));
                         CResourceDictionary* appResources = do_pointer_cast<CResourceDictionary>(cVal);
                         if (childResources == appResources)
                         {

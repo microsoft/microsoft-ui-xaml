@@ -31,7 +31,7 @@ namespace DirectUI
             bool m_useSystemDefaultVisual;
             
             // Our ref count.
-            ULONG m_refCount;
+            ULONG m_refCount{};
             
             // The offset we apply to points given to SetPosition.
             wf::Point m_offsetPosition;

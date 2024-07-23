@@ -16,6 +16,8 @@
     <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
+    <!-- PrivateMetaDataTests.cs and many InteractionTests use reflection, not AOT-compatible -->
+    <PublishAot>false</PublishAot>
     <PublishSingleFile>False</PublishSingleFile>
     <PublishReadyToRun>True</PublishReadyToRun>
     <RunSettingsFilePath>$(OutDir)$(MSBuildProjectName).runsettings</RunSettingsFilePath>
@@ -117,6 +119,7 @@
   <Import Project="..\..\dev\AnnotatedScrollBar\InteractionTests\AnnotatedScrollBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureAnnotatedScrollBarEnabled) == 'true'" />
   <Import Project="..\..\dev\MapControl\InteractionTests\MapControl_InteractionTests.projitems" Label="Shared" Condition="$(FeatureMapControlEnabled) == 'true'" />
   <Import Project="..\..\dev\SelectorBar\InteractionTests\SelectorBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureSelectorBarEnabled) == 'true'" />
+  <Import Project="..\..\dev\TitleBar\InteractionTests\TitleBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureTitleBarEnabled) == 'true'" />
   <PropertyGroup>
     <TargetDestination>$(TestBinplaceDestinationPath)</TargetDestination>
   </PropertyGroup>

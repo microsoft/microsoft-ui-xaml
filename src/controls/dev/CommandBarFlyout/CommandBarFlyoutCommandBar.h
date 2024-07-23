@@ -67,6 +67,8 @@ private:
 
     void SetPresenterName(winrt::FlyoutPresenter const& presenter);
 
+    void TryConnectSystemBackdrop();
+
     template<class TCommand>
     bool HasVisibleLabel(TCommand const& command)
     {
@@ -149,6 +151,12 @@ private:
     // dtor, so we cache a copy for ourselves to use during cleanup. Another possibility is to do cleanup during Closed,
     // but the app can release and delete this CommandBarFlyoutCommandBar without ever closing it.
     weak_ref<winrt::SystemBackdrop> m_systemBackdrop{ nullptr };
+
+    // Bookkeeping for registering and unregistering with the SystemBackdrop. In order to register, we need to have a
+    // XamlRoot available so we can listen for events like theme changed or high contrast changed. It's possible we get
+    // a SystemBackdrop object set without being in the tree, in which case there's no XamlRoot so we can't register
+    // yet. We'll wait for the Loaded event to register.
+    bool m_registeredWithSystemBackdrop{ false };
 
     // Localized string caches. Looking these up from MRTCore is expensive, so we don't want to put the lookups in a
     // loop. Instead, look them up once, cache them, use the cached values, then clear the cache. The values in these

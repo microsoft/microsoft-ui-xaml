@@ -234,7 +234,7 @@ _Check_return_ HRESULT ImagingUtility::IsHdrSource(
 
 _Check_return_ HRESULT ImagingUtility::DoesSourceSupportAlpha(
     _In_ const wrl::ComPtr<IWICBitmapSource>& spBitmapSource,
-    _Outref_ bool& supportsAlpha
+    _Out_ bool& supportsAlpha
     )
 {
     auto spWicFactory = WicService::GetInstance().GetFactory();
@@ -286,7 +286,7 @@ _Check_return_ HRESULT ImagingUtility::CreateDefaultScaler(
     uint32_t targetWidth,
     uint32_t targetHeight,
     _In_ const wrl::ComPtr<IWICBitmapSource>& spInputSource,
-    _Outref_ wrl::ComPtr<IWICBitmapScaler>& spBitmapScaler
+    _Out_ wrl::ComPtr<IWICBitmapScaler>& spBitmapScaler
     )
 {
     auto spWicFactory = WicService::GetInstance().GetFactory();
@@ -357,7 +357,7 @@ _Check_return_ HRESULT ImagingUtility::CreateDefaultScaler(
 _Check_return_ HRESULT ImagingUtility::CreateDefaultConverter(
     const WICPixelFormatGUID& targetFormat,
     _In_ const wrl::ComPtr<IWICBitmapSource>& spInputSource,
-    _Outref_ wrl::ComPtr<IWICFormatConverter>& spFormatConverter
+    _Out_ wrl::ComPtr<IWICFormatConverter>& spFormatConverter
     )
 {
     auto spWicFactory = WicService::GetInstance().GetFactory();
@@ -378,7 +378,7 @@ _Check_return_ HRESULT ImagingUtility::CreateDefaultColorTransform(
     _In_ const WICPixelFormatGUID& targetFormat,
     _In_ const wrl::ComPtr<IWICBitmapFrameDecode>& spBitmapFrameDecode,
     _In_ const wrl::ComPtr<IWICBitmapSource>& spInputSource,
-    _Outref_ wrl::ComPtr<IWICColorTransform>& spColorTransform
+    _Out_ wrl::ComPtr<IWICColorTransform>& spColorTransform
     )
 {
     spColorTransform = nullptr;
@@ -437,7 +437,7 @@ _Check_return_ HRESULT ImagingUtility::CreateDefaultColorTransform(
 _Check_return_ HRESULT ImagingUtility::CreateDefaultFlipRotator(
     WICBitmapTransformOptions transformOptions,
     _In_ const wrl::ComPtr<IWICBitmapSource>& spInputSource,
-    _Outref_ wrl::ComPtr<IWICBitmapFlipRotator>& spBitmapFlipRotator
+    _Out_ wrl::ComPtr<IWICBitmapFlipRotator>& spBitmapFlipRotator
     )
 {
     auto spWicFactory = WicService::GetInstance().GetFactory();
@@ -450,7 +450,7 @@ _Check_return_ HRESULT ImagingUtility::CreateDefaultFlipRotator(
 
 static _Check_return_ HRESULT CopyToSoftwareBitmap(
     _In_ IWICBitmapSource *bitmapSource,
-    _Outref_ xref_ptr<OfferableSoftwareBitmap>& spSoftwareBitmap
+    _Out_ xref_ptr<OfferableSoftwareBitmap>& spSoftwareBitmap
     )
 {
     // TODO: Consider doing a cancellable staged copy...
@@ -466,7 +466,7 @@ static _Check_return_ HRESULT CopyToSoftwareBitmap(
 static _Check_return_ HRESULT CopyToHardwareTiles(
     _In_ IWICBitmapSource *bitmapSource,
     _In_ const ImageMetadata& imageMetadata,
-    _Outref_ const SurfaceUpdateList& surfaceUpdateList
+    _Out_ const SurfaceUpdateList& surfaceUpdateList
     )
 {
     // TODO: Clean this up to be new style... use auto initialization and
@@ -756,7 +756,7 @@ _Check_return_ HRESULT ImagingUtility::RealizeBitmapSource(
     _In_ const ImageMetadata& imageMetadata,
     _In_ IWICBitmapSource* bitmapSource,
     _In_ const ImageDecodeParams& decodeParams,
-    _Outref_ xref_ptr<OfferableSoftwareBitmap>& spSoftwareBitmap)
+    _Out_ xref_ptr<OfferableSoftwareBitmap>& spSoftwareBitmap)
 {
     // If input tiles aren't provided, then create a single temporary tile for decoding and return
     // the newly created surface in the response.
@@ -785,19 +785,7 @@ _Check_return_ HRESULT ImagingUtility::RealizeBitmapSource(
 
     const bool isHardwareDecode = !surfaceUpdateList.empty();
 
-    // The activity taking telemetry is owned by the UI thread. If it's still running, then call Split to use it from
-    // this decode worker thread. If it's been stopped, then it means the ImageSource/LoadedImageSurface associated with
-    // the activity has a new encoded source set on it, and that this decode no longer matters. In that case don't bother
-    // tracing anything.
-    // Note: There's a bit of a race condition here - the activity can be stopped between us checking whether it's
-    // running and when we call Split. We minimize the gap in between to mitigate.
-    ImagingTelemetry::ImageDecodeActivity splitActivity;
-    const bool isActivityStillRunning = decodeParams.GetDecodeActivity() && static_cast<bool>(*decodeParams.GetDecodeActivity());   // operator bool() checks whether the activity is still running
-    if (isActivityStillRunning)
-    {
-        splitActivity = decodeParams.GetDecodeActivity()->Split();
-        splitActivity.OffThreadDecodeStart(decodeParams.GetImageId(), decodeParams.GetStrSource().GetBuffer(), isHardwareDecode);
-    }
+    ImagingTelemetry::OffThreadDecodeStart(decodeParams.GetImageId(), decodeParams.GetStrSource().GetBuffer(), isHardwareDecode);
 
     if (isHardwareDecode)
     {
@@ -805,13 +793,13 @@ _Check_return_ HRESULT ImagingUtility::RealizeBitmapSource(
         // and fails gracefully.
         SuspendFailFastOnStowedException suspender;
 
-        IFC_RETURN_STOPACTIVITY(CopyToHardwareTiles(bitmapSource, imageMetadata, surfaceUpdateList), splitActivity);
+        IFC_RETURN(CopyToHardwareTiles(bitmapSource, imageMetadata, surfaceUpdateList));
     }
     else
     {
         auto pipelineOutputWidth = 0u;
         auto pipelineOutputHeight = 0u;
-        IFC_RETURN_STOPACTIVITY(bitmapSource->GetSize(&pipelineOutputWidth, &pipelineOutputHeight), splitActivity);
+        IFC_RETURN(bitmapSource->GetSize(&pipelineOutputWidth, &pipelineOutputHeight));
 
         spSoftwareBitmap = make_xref<OfferableSoftwareBitmap>(
             decodeParams.GetFormat(),
@@ -820,14 +808,10 @@ _Check_return_ HRESULT ImagingUtility::RealizeBitmapSource(
             !imageMetadata.supportsAlpha);
 
         SuspendFailFastOnStowedException suspender(MF_E_TOPO_CODEC_NOT_FOUND);
-        IFC_RETURN_STOPACTIVITY(CopyToSoftwareBitmap(bitmapSource, spSoftwareBitmap), splitActivity);
+        IFC_RETURN(CopyToSoftwareBitmap(bitmapSource, spSoftwareBitmap));
     }
 
-    if (isActivityStillRunning)
-    {
-        splitActivity.OffThreadDecodeStop(decodeParams.GetImageId());
-        splitActivity.Stop();
-    }
+    ImagingTelemetry::OffThreadDecodeStop(decodeParams.GetImageId());
 
     return S_OK;
 }

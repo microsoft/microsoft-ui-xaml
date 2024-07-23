@@ -509,7 +509,19 @@ ElementGestureTracker::ProcessPointerInformation(_In_ const InputMessage& msg)
     {
         wrl::ComPtr<wfc::IVector<ixp::PointerPoint*>> pointerPoints;
 
-        IFC_RETURN(msg.m_pPointerEventArgsNoRef->GetIntermediatePoints(&pointerPoints));
+        if (msg.m_pPointerEventArgsNoRef)
+        {
+            IFC_RETURN(msg.m_pPointerEventArgsNoRef->GetIntermediatePoints(&pointerPoints));
+        }
+        else
+        {
+            if (!m_expPointerPointStatics)
+            {
+                IFC_RETURN(wf::GetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_Experimental_ExpPointerPoint).Get(), &m_expPointerPointStatics));
+            }
+
+            IFC_RETURN(m_expPointerPointStatics->GetIntermediatePoints(pointerId, pointerPoints.ReleaseAndGetAddressOf()));
+        }
 
         // SYNC_CALL_TO_APP
         // Allow the out-of-order error for now.  Tracking this with http://osgvsowi/15831453

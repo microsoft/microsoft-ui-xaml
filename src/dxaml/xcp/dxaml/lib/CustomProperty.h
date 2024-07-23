@@ -92,7 +92,7 @@ namespace DirectUI
         // This class is marked novtable, so must not be instantiated directly.
         CustomProperty() = default;
     private:
-        HSTRING m_hName;
+        HSTRING m_hName{};
         GetValueFunction m_funcGetValue;
     };
 

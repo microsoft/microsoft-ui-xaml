@@ -8,7 +8,8 @@
 #include "values.h"
 
 #pragma once
-class DXamlFontCollectionLoader;
+enum DWRITE_FONT_FAMILY_MODEL;
+
 //---------------------------------------------------------------------------
 //
 //  DWriteFontAndScriptServices
@@ -36,6 +37,56 @@ public:
     static HRESULT Create(
         _Outptr_ DWriteFontAndScriptServices** ppDWriteFontAndScriptServices
         );
+
+    static FLOAT DWriteStretchToFontAxisWidth(DWRITE_FONT_STRETCH stretch) {
+        switch (stretch)
+        {
+        case DWRITE_FONT_STRETCH_ULTRA_CONDENSED: return 50.0f;
+        case DWRITE_FONT_STRETCH_EXTRA_CONDENSED: return 62.5f;
+        case DWRITE_FONT_STRETCH_CONDENSED: return 75.0f;
+        case DWRITE_FONT_STRETCH_SEMI_CONDENSED: return 87.5f;
+        case DWRITE_FONT_STRETCH_SEMI_EXPANDED: return 112.5f;
+        case DWRITE_FONT_STRETCH_EXPANDED: return 125.0f;
+        case DWRITE_FONT_STRETCH_EXTRA_EXPANDED: return 150.0f;
+        case DWRITE_FONT_STRETCH_ULTRA_EXPANDED: return 200.0f;
+        }
+        return 100.0f;
+    }
+    static FLOAT DWriteWeightToFontAxisWeight(DWRITE_FONT_WEIGHT weight)
+    {
+        return static_cast<FLOAT>(weight);
+    }
+    static FLOAT DWriteStyleToFontAxisSlant(DWRITE_FONT_STYLE style)
+    {
+        switch (style)
+        {
+        case DWRITE_FONT_STYLE_ITALIC: return -12.0f;
+        case DWRITE_FONT_STYLE_OBLIQUE: return -20.0f;
+        }
+        return 0.0f;
+    }
+    static FLOAT DWriteStyleToFontAxisItalic(DWRITE_FONT_STYLE style)
+    {
+        return style == DWRITE_FONT_STYLE_ITALIC ? 1.0f : 0.0f;
+    }
+
+    static FLOAT DWriteSizeToFontAxisOpticalSize(FLOAT size)
+    {
+        return size * (72.0f / 96.0f); // Dips to points
+    }
+
+    // Utility function to construct an array of FONT AXIS VALUES
+    static std::array<DWRITE_FONT_AXIS_VALUE, 5> CreateFontAxisValueArray(float fontSize, DWRITE_FONT_WEIGHT weight, DWRITE_FONT_STYLE style, DWRITE_FONT_STRETCH stretch)
+    {
+        std::array<DWRITE_FONT_AXIS_VALUE, 5> axisValues = {
+                DWRITE_FONT_AXIS_VALUE { DWRITE_FONT_AXIS_TAG_OPTICAL_SIZE, DWriteSizeToFontAxisOpticalSize(fontSize) },
+                DWRITE_FONT_AXIS_VALUE { DWRITE_FONT_AXIS_TAG_WEIGHT, DWriteWeightToFontAxisWeight(weight) },
+                DWRITE_FONT_AXIS_VALUE { DWRITE_FONT_AXIS_TAG_ITALIC, DWriteStyleToFontAxisItalic(style) },
+                DWRITE_FONT_AXIS_VALUE { DWRITE_FONT_AXIS_TAG_SLANT, DWriteStyleToFontAxisSlant(style) },
+                DWRITE_FONT_AXIS_VALUE { DWRITE_FONT_AXIS_TAG_WIDTH, DWriteStretchToFontAxisWidth(stretch) }
+        };
+        return axisValues;
+    }
 
     // Gets a font collection representing the set of installed fonts.
     HRESULT GetSystemFontCollection(
@@ -80,6 +131,7 @@ public:
         ) override;
 
     _Check_return_ HRESULT SetSystemFontCollectionOverride(_In_opt_ IDWriteFontCollection* pFontCollection);
+    bool ShouldUseTypographicFontModel();
 
     // Clear the cached IDWriteNumberSubstitution objects when system settings
     // changed. This is triggered only when locale is changed in
@@ -96,13 +148,14 @@ public:
     _Check_return_ HRESULT GetDWriteFactory(_COM_Outptr_ IDWriteFactory2** ppIDWriteFactory2) const;
     _Check_return_ HRESULT GetDWriteFactory(_COM_Outptr_ IDWriteFactory3** ppIDWriteFactory3) const;
     _Check_return_ HRESULT GetDWriteFactory(_COM_Outptr_ IDWriteFactory4** ppIDWriteFactory4) const;
+    _Check_return_ HRESULT GetDWriteFactory(_COM_Outptr_ IDWriteFactory6** ppIDWriteFactory6) const;
 
     // For fast path TextBlock, we need to determine whether the current font collection is the static one,
     // if so, we need to create a IDWriteTextFormat object with the static font collection, so that the static font will be picked up.
     // if not, we need to keep passing nullptr when we create IDWriteTextFormat for perf reasons.
     bool IsSystemFontCollectionOverride() const {return s_customSystemFontCollection != nullptr;}
 
-    _Check_return_ HRESULT GetDefaultDWriteTextFormat(_COM_Outptr_ IDWriteTextFormat** ppIDWriteTextFormat);
+    _Check_return_ HRESULT GetDefaultDWriteTextFormat(_COM_Outptr_ IDWriteTextFormat** ppIDWriteTextFormat, bool isTypographicCollection);
     _Check_return_ HRESULT GetDWriteTextAnalyzer(_COM_Outptr_ IDWriteTextAnalyzer** ppIDWriteTextAnalyzer) const;
 
 private:
@@ -118,10 +171,7 @@ private:
     containers::vector_map<xstring_ptr, BOOL> m_fontNameList;
 
     // The root factory interface for all DWrite objects.
-    Microsoft::WRL::ComPtr<IDWriteFactory4> m_dwriteFactory;
-
-    // DXaml custom font collection loader.
-    DXamlFontCollectionLoader *m_pDXamlFontCollectionLoader;
+    Microsoft::WRL::ComPtr<IDWriteFactory6> m_dwriteFactory;
 
     // Caches the System FssFontCollection to avoid creating multiple DWriteFontCollection.
     xref_ptr<PALText::IFontCollection> m_systemFontCollection;
@@ -135,12 +185,10 @@ private:
 
     HRESULT EnsureSystemFontCollection();
 
-    // Initializes a new instance of the DWriteFontAndScriptServices class.
-    DWriteFontAndScriptServices();
-
     // Release resources associated with the DWriteFontAndScriptServices.
     ~DWriteFontAndScriptServices() override;
 
     // Initialize DWrite wrapper.
     HRESULT Initialize();
+
 };

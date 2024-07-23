@@ -191,6 +191,7 @@ IFACEMETHODIMP DirectUI::SvgImageSourceGenerated::SetSourceAsync(_In_ ABI::Windo
     }
     ARG_NOTNULL(pStreamSource, "streamSource");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<SvgImageSource*>(this)->SetSourceAsyncImpl(pStreamSource, ppReturnValue));

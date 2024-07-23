@@ -67,6 +67,7 @@ class CUIElement;
 class CXamlIslandRoot;
 class CoreWindowIslandAdapter;
 class ProjectedShadowManager;
+class RefreshRateInfo;
 
 const XFLOAT c_FrameRateWhiteSpaceWidth = 20.0f;
 const XFLOAT c_FrameRateHeight = 24.0f;
@@ -378,6 +379,8 @@ public:
 
     ixp::ICoreWindowSiteBridge* GetCoreWindowBridgeNoRef() { return m_contentBridgeCW.Get(); }
 
+    RefreshRateInfo* GetRefreshRateInfo() { return m_refreshRateInfo.Get(); }
+
 private:
     XamlIslandRenderDataMap m_islandRenderData;
 
@@ -417,6 +420,8 @@ private:
     void ReleaseVisualTreeCompositionIslandAdapter();
 
     bool IsElementInKeepAliveVector(_In_ CUIElement* element);
+
+    void UpdateRefreshRate();
 
 private:
     // Storage for references to handin and handoff visuals that, once created, persist throughout UIElement's lifetime.
@@ -468,16 +473,20 @@ private:
 #pragma region ::Windows::UI::Composition
 
     // WinRT composition objects
-    _Maybenull_ Microsoft::WRL::ComPtr<WUComp::ICompositor> m_spCompositor;
+    _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor> m_spCompositor;
     _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor2> m_spCompositor2;
-    _Maybenull_ Microsoft::WRL::ComPtr<WUComp::ICompositor5> m_spCompositor5;
-    _Maybenull_ Microsoft::WRL::ComPtr<WUComp::ICompositor6> m_spCompositor6;
-    _Maybenull_ Microsoft::WRL::ComPtr<WUComp::ICompositorPrivate> m_spCompositorPrivate;
-    _Maybenull_ Microsoft::WRL::ComPtr<WUComp::ICompositorInterop> m_spCompositorInterop;
-    _Maybenull_ Microsoft::WRL::ComPtr<WUComp::IInteropCompositorPartner> m_spInteropCompositorPartner;
+    _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor5> m_spCompositor5;
+    _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor6> m_spCompositor6;
+    _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositorPrivate> m_spCompositorPrivate;
+    _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositorInterop> m_spCompositorInterop;
+    _Maybenull_ Microsoft::WRL::ComPtr<ixp::IInteropCompositorPartner> m_spInteropCompositorPartner;
     _Maybenull_ Microsoft::WRL::ComPtr<ABI::Windows::UI::Composition::ICompositionBrush> m_systemBackdropBrush; // Note: This is a system compositor brush!
-    wrl::ComPtr<WUComp::ICompositionGraphicsDevice> m_compositionGraphicsDevice;
+    wrl::ComPtr<ixp::ICompositionGraphicsDevice> m_compositionGraphicsDevice;
     wrl::ComPtr<ixp::ICompositionEasingFunctionStatics> m_easingFunctionStatics;
+
+    // For updating the refresh rate with GetFrameStatistics
+    wrl::ComPtr<IDCompositionDevice> m_dcompDevice;
+    wrl::ComPtr<RefreshRateInfo> m_refreshRateInfo;
 
 #pragma endregion
 

@@ -1,85 +1,41 @@
 <!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project>
-  
-    <Target Name="GetPathToXAMLWinRTImplementations"
-          BeforeTargets="ReplaceMUXWinRTRegistrations"
-          Returns="$(PathToXAMLWinRTImplementations)"
-          Condition="'$(PathToXAMLWinRTImplementations)'=='' and ('$(MSBuildProjectExtension)'=='.wapproj' or '$(UsingMicrosoftNetSdk)' == 'true')">
-      <PropertyGroup>
-        <_MuxDll>microsoft.ui.xaml.dll</_MuxDll>
-        <_MuxDllRidLocation>runtimes\$(_WinUIRuntimeIdentifier)\native\microsoft.ui.xaml.dll</_MuxDllRidLocation>
-        <_EntryPointProjectName>$([System.IO.Path]::GetFileNameWithoutExtension('$(EntryPointProjectFullPath)'))</_EntryPointProjectName>
-      </PropertyGroup>
-      <ItemGroup>
-        <_WinUINativeItemsFiltered Remove="@(_WinUINativeItemsFiltered)"/>
 
-        <_WinUINativeItemsFiltered Include="@(AppxPackagePayload)" Condition="$([System.String]::new('%(Identity)').EndsWith('Microsoft.UI.Xaml.dll', StringComparison.OrdinalIgnoreCase))"/>
-        <_WinUINativeItemsFiltered Remove="@(_WinUINativeItemsFiltered)"
-                                   Condition="'%(_WinUINativeItemsFiltered.OutputType)'!='Exe' and '%(_WinUINativeItemsFiltered.OutputType)'!='WinExe' and '%(_WinUINativeItemsFiltered.OutputGroup)'!='PublishItemsOutputGroupOutput'"/>
-
-        <_MuxItemFiltered Include="@(_WinUINativeItemsFiltered)"
-            Condition="$(_MuxDll.Equals('%(TargetPath)', StringComparison.OrdinalIgnoreCase)) or $(_MuxDllRidLocation.Equals('%(TargetPath)', StringComparison.OrdinalIgnoreCase))"/>
-      </ItemGroup>
-
-      <!-- Fallback to DestinationSubDirectory if TargetPath check doesn't work for the packaging project -->
-      <ItemGroup Condition="'$(MSBuildProjectExtension)'=='.wapproj' and '@(_MuxItemFiltered->Count())' &lt; 1">
-        <_EntryPointItems Include="@(_WinUINativeItemsFiltered->WithMetadataValue('SourceProject','$(_EntryPointProjectName)'))"/>
-        <_MuxItemFiltered Include="@(_EntryPointItems)" Condition="'%(_EntryPointItems.DestinationSubDirectory)'==''"/>
-        <_MuxItemFiltered Include="@(_EntryPointItems)" Condition="'@(_MuxItemFiltered->Count())' &lt; 1 and '%(_EntryPointItems.DestinationSubDirectory)'=='runtimes\$(_WinUIRuntimeIdentifier)\native\'"/>
-      </ItemGroup>
-
-      <!-- This will only happen if there are multiple .exe's which reference WinUI, which will create duplicate entries in the appxmanifest -->
-      <Error Text="App packages with multiple exes are not supported. To override this, set the PathToXAMLWinRTImplementations property."
-             Condition="'@(_MuxItemFiltered->Count())' &gt; 1" />
-
-      <PropertyGroup>
-        <_XamlItemTargetPath>@(_MuxItemFiltered->'%(TargetPath)')</_XamlItemTargetPath>
-        <!-- Make the path lowerscase so the comparison will succeed -->
-        <_XamlItemTargetPath>$(_XamlItemTargetPath.ToLower())</_XamlItemTargetPath>
-        <PathToXAMLWinRTImplementations>$(_XamlItemTargetPath.Substring(0, $(_XamlItemTargetPath.IndexOf('microsoft.ui.xaml.dll'))))</PathToXAMLWinRTImplementations>
-      </PropertyGroup>
-    </Target>
-
-    <!-- Replace UWP AppxManifest WinRT registrations for Microsoft.UI.Xaml.dll, post-GenerateAppxManifest. -->
+    <!-- Transform fusion manifest activatable class entries and insert into appx manifest, 
+          for WindowsAppSdkSelfContained sample/test execution requiring UWP and/or < RS5. -->
     <!-- Target runs before manifest validation occurs. Requires output file to support incremental builds. -->
-    <Target Name="ReplaceMUXWinRTRegistrations"
+    <Target Name="WinAppSdkInsertActivatableClassEntries"
         BeforeTargets="_GenerateAppxPackageRecipeFile;_WireUpCoreRuntime"
         AfterTargets="_CalculateInputsForGenerateAppxPackageRecipe"
         Inputs="$(MSBuildAllProjects);@(_GenerateCurrentProjectAppxManifestInput);@(_GenerateAppxPackageRecipeInput)"
         Outputs="$(FinalAppxManifestName).incremental" >
-        <PropertyGroup>
-          <WinUIClassRegistrationsDir Condition="'$(WinUIClassRegistrationsDir)' == ''">$(MicrosoftWindowsAppSDKPackageDir)build\native\</WinUIClassRegistrationsDir>
-        </PropertyGroup>
-        <ItemGroup>
-          <_WinUIAssemblies Include="$(MicrosoftWindowsAppSDKPackageDir)runtimes\$(_WinUIRuntimeIdentifier)\native\*.dll"/>
-        </ItemGroup>
-        <PropertyGroup>
-          <_WinUIAssembliesAsString>@(_WinUIAssemblies->'%(Filename)%(Extension)',';')</_WinUIAssembliesAsString>
-          <_WinUIAssembliesAsString>$(_WinUIAssembliesAsString.ToLower())</_WinUIAssembliesAsString>
-        </PropertyGroup>
-        <ReplaceMUXWinRTRegistrations
+        
+        <MSBuild
+            Condition="'$(MSBuildProjectExtension)' == '.wapproj'"
+            Projects="$(EntryPointProjectFullPath)"
+            Targets="WinAppSdkGetActivatableClassEntriesManifest" >
+            <Output TaskParameter="TargetOutputs" PropertyName="ApplicationManifest" />
+        </MSBuild>
+
+        <XslTransformation XslInputPath="$(ProjectRoot)\build\TransformFusionManifest.xslt"
+            XmlInputPaths="$(ApplicationManifest)"
+            OutputPaths="$(FinalAppxManifestName).fragment" />
+
+        <WinAppSdkInsertActivatableClassEntries
             FullPathToAppxManifest="$(FinalAppxManifestName)"
-            FullPathToLiftedXAMLWinRTRegistrations="$(WinUIClassRegistrationsDir)LiftedWinRTClassRegistrations.xml"
-            WinUIAssemblies="$(_WinUIAssembliesAsString)"
-            PathToXAMLWinRTImplementations="$(PathToXAMLWinRTImplementations)"
-         />
+            FullPathToAppxFragment="$(FinalAppxManifestName).fragment" />
 
          <Touch
             Files="$(FinalAppxManifestName).incremental"
-            AlwaysCreate="true"
-         />
-
-        <ItemGroup>
-          <_WinUIAssemblies Remove="@(_WinUIAssemblies)"/>
-        </ItemGroup>
+            AlwaysCreate="true" />
     </Target>
 
-    <UsingTask TaskName="ReplaceMUXWinRTRegistrations" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <Target Name="WinAppSdkGetActivatableClassEntriesManifest" DependsOnTargets="CreateWinRTRegistration" Outputs="$(ApplicationManifest)" />
+
+    <UsingTask TaskName="WinAppSdkInsertActivatableClassEntries" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
         <ParameterGroup>
             <FullPathToAppxManifest ParameterType="System.String" Required="true" />
-            <FullPathToLiftedXAMLWinRTRegistrations ParameterType="System.String" Required="true" />
-            <WinUIAssemblies ParameterType="System.String"  Required="true" />
-            <PathToXAMLWinRTImplementations ParameterType="System.String" />
+            <FullPathToAppxFragment ParameterType="System.String" Required="true" />
         </ParameterGroup>
         <Task>
             <Using Namespace="System" />
@@ -88,70 +44,41 @@
             <Using Namespace="System.Collections.Generic" />
             <Using Namespace="System.IO" />
             <Code Type="Fragment" Language="cs"><![CDATA[
-                if (File.Exists(FullPathToLiftedXAMLWinRTRegistrations) && File.Exists(FullPathToAppxManifest))
+                if (File.Exists(FullPathToAppxManifest) && File.Exists(FullPathToAppxFragment))
                 {
-                    // Load AppxManifest.xml
                     XmlDocument appxManifest = new XmlDocument();
                     appxManifest.Load(FullPathToAppxManifest);
 
                     XmlNamespaceManager namespaceManager = new XmlNamespaceManager(appxManifest.NameTable);
                     namespaceManager.AddNamespace("w", "http://schemas.microsoft.com/appx/manifest/foundation/windows10");
 
-                    // If there exists an existing Extensions node, we'll remove any Microsoft.UI.Xaml.dll, Microsoft.Web.WebView2.Core.dll entry in it
-                    // and add the correct DLL mapping. Otherwise, if there doesn't, we'll create one and add it.
+                    // If Extensions node already exists, merge with it.  Otherwise, create a new one.
                     XmlNode extensionsNode = null;
-
                     foreach (XmlNode node in appxManifest.DocumentElement.SelectNodes("//w:Package/w:Extensions", namespaceManager))
                     {
                         extensionsNode = node;
                         break;
                     }
-
-                    if (extensionsNode != null)
-                    {
-                        XmlNodeList xmlNodeList = appxManifest.DocumentElement.SelectNodes("//w:Package/w:Extensions/w:Extension", namespaceManager);
-
-                        // Remove WinUI registrations from the AppxManifest file as we will be inserting the entries ourselves
-                        foreach (XmlNode node in xmlNodeList)
-                        {
-                            XmlNode pathNode = node.SelectSingleNode("w:InProcessServer/w:Path", namespaceManager);
-                            string path = Path.GetFileName(pathNode.InnerText).ToLower();
-                            if (WinUIAssemblies.Contains(path))
-                            {
-                                extensionsNode.RemoveChild(node);
-                            }
-                        }
-                    }
-                    else
+                    if (extensionsNode == null)
                     {
                         extensionsNode = appxManifest.CreateElement("Extensions", "http://schemas.microsoft.com/appx/manifest/foundation/windows10");
                         appxManifest.DocumentElement.AppendChild(extensionsNode);
                     }
 
-                    // Load correct WinRT registration file created during build.  These entries have the correct implemetation DLLs.
-                    XmlDocument newRegistrations = new XmlDocument();
-                    newRegistrations.Load(FullPathToLiftedXAMLWinRTRegistrations);
-                    XmlNamespaceManager namespaceManager2 = new XmlNamespaceManager(newRegistrations.NameTable);
+                    XmlDocument registrations = new XmlDocument();
+                    registrations.Load(FullPathToAppxFragment);
+                    XmlNamespaceManager namespaceManager2 = new XmlNamespaceManager(registrations.NameTable);
                     namespaceManager2.AddNamespace("w", "http://schemas.microsoft.com/appx/manifest/foundation/windows10");
-                    XmlNodeList newRegistrationNodes = newRegistrations.DocumentElement.SelectNodes("/w:Data/w:Extension", namespaceManager2);
+                    XmlNodeList registrationNodes = registrations.DocumentElement.SelectNodes("//w:Extensions/w:Extension", namespaceManager2);
 
-                    // Add entries for all Microsoft.UI.Xaml types in the AppxManifest
-                    foreach (XmlNode node in newRegistrationNodes)
+                    foreach (XmlNode registrationNode in registrationNodes)
                     {
-                        // If we have a path to our implementation DLLs, we'll add that here.
-                        if (!string.IsNullOrWhiteSpace(PathToXAMLWinRTImplementations))
-                        {
-                            XmlNode pathNode = node.SelectSingleNode("w:InProcessServer/w:Path", namespaceManager);
-                            pathNode.InnerText = PathToXAMLWinRTImplementations + pathNode.InnerText;
-                        }
-                        XmlNode importNode = extensionsNode.OwnerDocument.ImportNode(node, true);
+                        XmlNode importNode = extensionsNode.OwnerDocument.ImportNode(registrationNode, true);
                         extensionsNode.AppendChild(importNode);
                     }
 
-                    // Save the updated AppxManifest.xml file
                     appxManifest.Save(FullPathToAppxManifest);
                 }
-
             ]]></Code>
         </Task>
     </UsingTask>

@@ -15,8 +15,6 @@ namespace DirectUI
         _Check_return_ HRESULT Register(_In_ wuc::ICoreWindow* pCoreWindow);
         _Check_return_ HRESULT Unregister(_In_ wuc::ICoreWindow* pCoreWindow);
 
-        _Check_return_ HRESULT Register(_In_ HWND hwnd);
-
         static _Check_return_ HRESULT TouchHitTesting(
             _In_opt_ CUIElement* subtreeRootElement,
             _In_ mui::ITouchHitTestingEventArgs* pArgs);

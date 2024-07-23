@@ -184,17 +184,17 @@ namespace DirectUI
 
         ctl::ComPtr<xaml_media::ITranslateTransform> m_spCurtainTransform;
 
-        EventRegistrationToken m_dragStarted;
+        EventRegistrationToken m_dragStarted{};
         
-        EventRegistrationToken m_dragDelta;
+        EventRegistrationToken m_dragDelta{};
         
-        EventRegistrationToken m_dragCompleted;
+        EventRegistrationToken m_dragCompleted{};
         
-        EventRegistrationToken m_tap;
+        EventRegistrationToken m_tap{};
         
-        EventRegistrationToken m_knobSizeChanged;
+        EventRegistrationToken m_knobSizeChanged{};
         
-        EventRegistrationToken m_knobBoundsSizeChanged;
+        EventRegistrationToken m_knobBoundsSizeChanged{};
 
     };
 }

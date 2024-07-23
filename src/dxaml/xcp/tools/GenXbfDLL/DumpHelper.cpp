@@ -30,8 +30,8 @@ std::wstring GetStringForCurrentNode(std::wstring& strIndent, ObjectWriterNode& 
     xstring_ptr nodeDescription;
     xstring_ptr lineInfoString;
 
-    node.GetLineInfoAsString(lineInfoString);
-    node.ToString(nodeDescription);
+    IFCFAILFAST(node.GetLineInfoAsString(lineInfoString));
+    IFCFAILFAST(node.ToString(nodeDescription));
     currentNodeAsString.append(L"[");
     currentNodeAsString.append(lineInfoString.GetBuffer());
     currentNodeAsString.append(L"] ");

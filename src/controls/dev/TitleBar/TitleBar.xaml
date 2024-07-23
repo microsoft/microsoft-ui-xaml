@@ -1,88 +1,272 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
-<ResourceDictionary xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:Microsoft.Experimental.UI.Xaml.Controls" xmlns:controls="using:Microsoft.UI.Xaml.Controls" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-  <Style TargetType="local:TitleBar">
-    <Setter Property="HorizontalAlignment" Value="Stretch" />
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="local:TitleBar">
-          <Grid x:Name="LayoutRoot" Height="{ThemeResource TitleBarCompactHeight}" Background="Transparent">
-            <VisualStateManager.VisualStateGroups>
-              <VisualStateGroup x:Name="ActivationStateGroup">
-                <VisualState x:Name="Activated" />
-                <VisualState x:Name="Deactivated">
-                  <VisualState.Setters>
-                    <Setter Target="TitleText.Foreground" Value="{ThemeResource TitleBarDeactivatedForegroundBrush}" />
-                    <Setter Target="BackButton.Foreground" Value="{ThemeResource TitleBarDeactivatedForegroundBrush}" />
-                  </VisualState.Setters>
-                </VisualState>
-              </VisualStateGroup>
-              <VisualStateGroup x:Name="BackButtonVisibilityGroup">
-                <VisualState x:Name="BackButtonVisible" />
-                <VisualState x:Name="BackButtonCollapsed">
-                  <VisualState.Setters>
-                    <Setter Target="BackButton.Visibility" Value="Collapsed" />
-                    <Setter Target="Icon.Margin" Value="16,0,0,0" />
-                  </VisualState.Setters>
-                </VisualState>
-              </VisualStateGroup>
-              <VisualStateGroup x:Name="IconVisibilityGroup">
-                <VisualState x:Name="IconVisible" />
-                <VisualState x:Name="IconCollapsed">
-                  <VisualState.Setters>
-                    <Setter Target="Icon.Visibility" Value="Collapsed" />
-                  </VisualState.Setters>
-                </VisualState>
-              </VisualStateGroup>
-              <VisualStateGroup x:Name="TitleTextVisibilityGroup">
-                <VisualState x:Name="TitleTextVisible" />
-                <VisualState x:Name="TitleTextCollapsed">
-                  <VisualState.Setters>
-                    <Setter Target="TitleText.Visibility" Value="Collapsed" />
-                  </VisualState.Setters>
-                </VisualState>
-              </VisualStateGroup>
-              <VisualStateGroup x:Name="FullScreenGroup">
-                <VisualState x:Name="TitleBarVisible" />
-                <VisualState x:Name="TitleBarCollapsed">
-                  <VisualState.Setters>
-                    <Setter Target="LayoutRoot.Visibility" Value="Collapsed" />
-                  </VisualState.Setters>
-                </VisualState>
-              </VisualStateGroup>
-              <VisualStateGroup x:Name="HeightGroup">
-                <VisualState x:Name="CompactHeight" />
-                <VisualState x:Name="ExpandedHeight">
-                  <VisualState.Setters>
-                    <Setter Target="LayoutRoot.Height" Value="{ThemeResource TitleBarExpandedHeight}" />
-                  </VisualState.Setters>
-                </VisualState>
-              </VisualStateGroup>
-            </VisualStateManager.VisualStateGroups>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition x:Name="LeftPaddingColumn" Width="0" />
-              <ColumnDefinition Width="*" />
-              <ColumnDefinition x:Name="RightPaddingColumn" Width="0" />
-            </Grid.ColumnDefinitions>
-            <Grid Grid.Column="1">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <!-- 0: back button -->
-                <ColumnDefinition Width="Auto" />
-                <!-- 1: icon -->
-                <ColumnDefinition Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TitleColumnGridLength}" />
-                <!-- 2: title -->
-                <ColumnDefinition Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.CustomColumnGridLength}" />
-                <!-- 3: custom content -->
-              </Grid.ColumnDefinitions>
-              <Button x:Name="BackButton" Grid.Column="0" Style="{ThemeResource TitleBarBackButtonStyle}" IsEnabled="{TemplateBinding IsBackEnabled}" ToolTipService.ToolTip="Back" />
-              <Viewbox x:Name="Icon" Grid.Column="1" VerticalAlignment="Center" MaxWidth="16" MaxHeight="16" Margin="4,0,0,0" Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}" />
-              <TextBlock x:Name="TitleText" Grid.Column="2" Text="{TemplateBinding Title}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TitleBarForegroundBrush}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,16,2" MinWidth="48" />
-              <Grid x:Name="DragRegion" Grid.Column="1" Grid.ColumnSpan="3" Background="Transparent" />
-              <ContentPresenter x:Name="CustomContentPresenter" Grid.Column="3" Content="{TemplateBinding CustomContent}" />
-            </Grid>
-          </Grid>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
+<ResourceDictionary
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+
+    <Style TargetType="controls:TitleBar" BasedOn="{StaticResource DefaultTitleBarStyle}"/>
+
+    <Style x:Key="DefaultTitleBarStyle" TargetType="controls:TitleBar">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:TitleBar">
+                    <Grid x:Name="PART_LayoutRoot" Height="{ThemeResource TitleBarCompactHeight}" Background="Transparent">
+                        <VisualStateManager.VisualStateGroups>
+                            
+                            <VisualStateGroup x:Name="BackButtonGroup">
+                                <VisualState x:Name="BackButtonCollapsed" />
+                                <VisualState x:Name="BackButtonVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_BackButton.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="BackButtonDeactivated">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_BackButton.Visibility" Value="Visible" />
+                                        <Setter Target="PART_BackButton.Foreground" Value="{ThemeResource TitleBarDeactivatedForegroundBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            
+                            <VisualStateGroup x:Name="PaneToggleButtonGroup">
+                                <VisualState x:Name="PaneToggleButtonCollapsed" />
+                                <VisualState x:Name="PaneToggleButtonVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_PaneToggleButton.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="PaneToggleButtonDeactivated">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_PaneToggleButton.Visibility" Value="Visible" />
+                                        <Setter Target="PART_PaneToggleButton.Foreground" Value="{ThemeResource TitleBarDeactivatedForegroundBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                           
+                            <VisualStateGroup x:Name="HeaderGroup">
+                                <VisualState x:Name="HeaderCollapsed" />
+                                <VisualState x:Name="HeaderVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_HeaderContentPresenter.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="HeaderDeactivated">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_HeaderContentPresenter.Visibility" Value="Visible" />
+                                        <Setter Target="PART_HeaderContentPresenter.Opacity" Value="{ThemeResource TitleBarDeactivatedOpacity}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            
+                            <VisualStateGroup x:Name="IconGroup">
+                                <VisualState x:Name="IconCollapsed" />
+                                <VisualState x:Name="IconVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_Icon.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="IconDeactivated">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_Icon.Visibility" Value="Visible" />
+                                        <Setter Target="PART_Icon.Opacity" Value="{ThemeResource TitleBarDeactivatedOpacity}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            
+                            <VisualStateGroup x:Name="TitleTextGroup">
+                                <VisualState x:Name="TitleTextCollapsed" />
+                                <VisualState x:Name="TitleTextVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_TitleText.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="TitleTextDeactivated">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_TitleText.Visibility" Value="Visible" />
+                                        <Setter Target="PART_TitleText.Foreground" Value="{ThemeResource TitleBarDeactivatedForegroundBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            
+                            <VisualStateGroup x:Name="SubtitleTextGroup">
+                                <VisualState x:Name="SubtitleTextCollapsed" />
+                                <VisualState x:Name="SubtitleTextVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_SubtitleText.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="SubtitleTextDeactivated">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_SubtitleText.Visibility" Value="Visible" />
+                                        <Setter Target="PART_SubtitleText.Foreground" Value="{ThemeResource TitleBarSubtitleDeactivatedForegroundBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            
+                            <VisualStateGroup x:Name="ContentGroup">
+                                <VisualState x:Name="ContentCollapsed" />
+                                <VisualState x:Name="ContentVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_ContentPresenterGrid.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="ContentDeactivated">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_ContentPresenterGrid.Visibility" Value="Visible" />
+                                        <Setter Target="PART_ContentPresenterGrid.Opacity" Value="{ThemeResource TitleBarDeactivatedOpacity}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            
+                            <VisualStateGroup x:Name="FooterGroup">
+                                <VisualState x:Name="FooterCollapsed" />
+                                <VisualState x:Name="FooterVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_FooterContentPresenter.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="FooterDeactivated">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_FooterContentPresenter.Visibility" Value="Visible" />
+                                        <Setter Target="PART_FooterContentPresenter.Opacity" Value="{ThemeResource TitleBarDeactivatedOpacity}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            
+                            <VisualStateGroup x:Name="HeightGroup">
+                                <VisualState x:Name="CompactHeight" />
+                                <VisualState x:Name="ExpandedHeight">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_LayoutRoot.Height" Value="{ThemeResource TitleBarExpandedHeight}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            
+                            <VisualStateGroup x:Name="DisplayModeGroup">
+                                <VisualState x:Name="Expanded" />
+                                <VisualState x:Name="Compact">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_TitleText.Visibility" Value="Collapsed" />
+                                        <Setter Target="PART_SubtitleText.Visibility" Value="Collapsed" />
+                                        <Setter Target="PART_ContentPresenter.HorizontalAlignment" Value="Left" />
+                                        <Setter Target="PART_ContentPresenter.Margin" Value="16,0" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition x:Name="LeftPaddingColumn" Width="0" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition x:Name="RightPaddingColumn" Width="0" />
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="1">
+                            <Grid.ColumnDefinitions>
+                                <!-- 0: Back Button -->
+                                <ColumnDefinition Width="Auto" />
+                                <!-- 1: Pane Toggle Button -->
+                                <ColumnDefinition Width="Auto" />
+                                <!-- 2: Header Content Presenter -->
+                                <ColumnDefinition Width="Auto" />
+                                <!-- 3: Icon -->
+                                <ColumnDefinition Width="Auto" />
+                                <!-- 4: Title -->
+                                <ColumnDefinition Width="Auto" />
+                                <!-- 5: Subtitle -->
+                                <ColumnDefinition Width="Auto" />
+                                <!-- 6: Content Presenter -->
+                                <ColumnDefinition Width="*" />
+                                <!-- 7: Footer Content Presenter -->
+                                <ColumnDefinition Width="Auto" />
+                                <!-- 8: Min Drag Region -->
+                                <ColumnDefinition Width="60" />
+                            </Grid.ColumnDefinitions>
+                            <Button
+                                x:Name="PART_BackButton"
+                                x:DeferLoadStrategy="Lazy"
+                                Visibility="Collapsed"
+                                Grid.Column="0"
+                                Style="{ThemeResource TitleBarBackButtonStyle}"
+                                IsEnabled="{TemplateBinding IsBackEnabled}"
+                                ToolTipService.ToolTip="Back" />
+
+                            <Button
+                                x:Name="PART_PaneToggleButton"
+                                x:DeferLoadStrategy="Lazy"
+                                Visibility="Collapsed"
+                                Grid.Column="1"
+                                Style="{ThemeResource TitleBarPaneToggleButtonStyle}"
+                                ToolTipService.ToolTip="Navigation" />
+
+                            <ContentPresenter
+                                x:Name="PART_HeaderContentPresenter"
+                                x:DeferLoadStrategy="Lazy"
+                                Visibility="Collapsed"
+                                Grid.Column="2"
+                                Content="{TemplateBinding Header}" />
+                            
+                            <Viewbox
+                                x:Name="PART_Icon"
+                                x:DeferLoadStrategy="Lazy"
+                                Visibility="Collapsed"
+                                Grid.Column="3"
+                                VerticalAlignment="Center"
+                                MaxWidth="16"
+                                MaxHeight="16"
+                                Margin="16,0,0,0"
+                                Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}" />
+                            
+                            <TextBlock
+                                x:Name="PART_TitleText"
+                                x:DeferLoadStrategy="Lazy"
+                                Visibility="Collapsed"
+                                Grid.Column="4"
+                                Text="{TemplateBinding Title}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Foreground="{ThemeResource TitleBarForegroundBrush}"
+                                Margin="16,0"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="NoWrap"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                MinWidth="48" />
+                            
+                            <TextBlock
+                                x:Name="PART_SubtitleText"
+                                x:DeferLoadStrategy="Lazy"
+                                Visibility="Collapsed"
+                                Grid.Column="5"
+                                Text="{TemplateBinding Subtitle}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Foreground="{ThemeResource TitleBarSubtitleForegroundBrush}"
+                                Margin="0,0,16,0"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="NoWrap"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                MinWidth="48" />
+                            
+                            <Grid
+                                x:Name="PART_ContentPresenterGrid"
+                                x:DeferLoadStrategy="Lazy"
+                                Visibility="Collapsed"
+                                Grid.Column="6">
+                                <ContentPresenter
+                                    x:Name="PART_ContentPresenter"
+                                    Content="{TemplateBinding Content}"
+                                    HorizontalAlignment="Center"/>
+                            </Grid>
+                           
+                            <ContentPresenter
+                                x:Name="PART_FooterContentPresenter"
+                                x:DeferLoadStrategy="Lazy"
+                                Visibility="Collapsed"
+                                Grid.Column="7"
+                                Content="{TemplateBinding Footer}" />
+                        </Grid>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

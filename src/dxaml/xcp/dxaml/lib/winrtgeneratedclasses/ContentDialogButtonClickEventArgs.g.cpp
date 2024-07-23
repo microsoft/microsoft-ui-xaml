@@ -72,6 +72,7 @@ IFACEMETHODIMP DirectUI::ContentDialogButtonClickEventArgsGenerated::GetDeferral
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ContentDialogButtonClickEventArgs_GetDeferral", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<ContentDialogButtonClickEventArgs*>(this)->GetDeferralImpl(ppReturnValue));
 Cleanup:

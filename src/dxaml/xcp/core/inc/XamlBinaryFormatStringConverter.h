@@ -13,6 +13,6 @@ public:
     bool TryConvertValue(_Const_ _In_ const XamlTypeToken typeConverterToken, _Inout_ CValue& valueContainer);
 
 private:
-    const CCoreServices* m_core;
+    const CCoreServices* m_core{};
 };
 

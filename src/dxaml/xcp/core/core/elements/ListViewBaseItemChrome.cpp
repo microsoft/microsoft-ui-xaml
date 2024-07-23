@@ -2851,7 +2851,19 @@ _Check_return_ HRESULT CListViewBaseItemChrome::GoToChromedStateNewStyle(
             else if (m_selectionIndicatorRectangle && showSelectionIndicator && oldPressed != pressed)
             {
                 float currentHeight = m_selectionIndicatorRectangle->GetActualHeight();
-                fromScale = pressed ? currentHeight / (currentHeight - s_selectionIndicatorHeightShrinkage) : (currentHeight + s_selectionIndicatorHeightShrinkage) / currentHeight;
+
+                if (pressed && currentHeight <= s_selectionIndicatorHeightShrinkage)
+                {
+                    // s_selectionIndicatorHeightShrinkage equals 6.  currentHeight may be the rounded down value of s_selectionIndicatorHeightShrinkage + 1,
+                    // but it is not expected to be smaller than or equal to s_selectionIndicatorHeightShrinkage.
+                    ASSERT(false);
+                    fromScale = 1.0f;
+                }
+                else
+                {
+                    fromScale = pressed ? currentHeight / (currentHeight - s_selectionIndicatorHeightShrinkage)
+                                        : currentHeight / (currentHeight + s_selectionIndicatorHeightShrinkage);
+                }
 
                 // Trigger animation to shrink/expand the selection indicator.
                 animationCommand.reset(new ListViewBaseItemAnimationCommand_SelectionIndicatorVisibility(

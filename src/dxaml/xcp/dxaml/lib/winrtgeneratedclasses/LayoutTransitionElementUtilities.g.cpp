@@ -77,6 +77,7 @@ IFACEMETHODIMP DirectUI::LayoutTransitionElementUtilitiesFactory::CreateLayoutTr
     }
     ARG_NOTNULL(pSource, "source");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckActivationAllowed());
     IFC(CreateLayoutTransitionElementImpl(pSource, pParent, ppResult));
 Cleanup:

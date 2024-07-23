@@ -59,6 +59,7 @@ IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::get_CanHorizontallyScr
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollContentPresenter*>(this)->get_CanHorizontallyScrollImpl(pValue));
 Cleanup:
@@ -78,6 +79,7 @@ IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::get_CanVerticallyScrol
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollContentPresenter*>(this)->get_CanVerticallyScrollImpl(pValue));
 Cleanup:
@@ -97,6 +99,7 @@ IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::get_ExtentHeight(_Out_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollContentPresenter*>(this)->get_ExtentHeightImpl(pValue));
 Cleanup:
@@ -106,6 +109,7 @@ IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::get_ExtentWidth(_Out_ 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollContentPresenter*>(this)->get_ExtentWidthImpl(pValue));
 Cleanup:
@@ -115,6 +119,7 @@ IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::get_HorizontalOffset(_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollContentPresenter*>(this)->get_HorizontalOffsetImpl(pValue));
 Cleanup:
@@ -124,6 +129,7 @@ IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::get_MinHorizontalOffse
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollContentPresenter*>(this)->get_MinHorizontalOffsetImpl(pValue));
 Cleanup:
@@ -133,6 +139,7 @@ IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::get_MinVerticalOffset(
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollContentPresenter*>(this)->get_MinVerticalOffsetImpl(pValue));
 Cleanup:
@@ -142,6 +149,7 @@ IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::get_ScrollOwner(_Outpt
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollContentPresenter*>(this)->get_ScrollOwnerImpl(ppValue));
 Cleanup:
@@ -170,6 +178,7 @@ IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::get_VerticalOffset(_Ou
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollContentPresenter*>(this)->get_VerticalOffsetImpl(pValue));
 Cleanup:
@@ -179,6 +188,7 @@ IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::get_ViewportHeight(_Ou
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollContentPresenter*>(this)->get_ViewportHeightImpl(pValue));
 Cleanup:
@@ -188,6 +198,7 @@ IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::get_ViewportWidth(_Out
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollContentPresenter*>(this)->get_ViewportWidthImpl(pValue));
 Cleanup:
@@ -278,6 +289,7 @@ IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::MakeVisible(_In_ ABI::
     }
     ARG_NOTNULL(pVisual, "visual");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ScrollContentPresenter*>(this)->MakeVisibleImpl(pVisual, rectangle, pReturnValue));

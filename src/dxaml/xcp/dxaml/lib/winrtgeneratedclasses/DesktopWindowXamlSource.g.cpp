@@ -60,6 +60,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DesktopWindowXamlSourceGenera
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(static_cast<DesktopWindowXamlSource*>(this)->get_ContentImpl(ppValue));
 Cleanup:
@@ -78,6 +79,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DesktopWindowXamlSourceGenera
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<DesktopWindowXamlSource*>(this)->get_HasFocusImpl(pValue));
 Cleanup:
@@ -87,6 +89,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DesktopWindowXamlSourceGenera
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     
     IFC(static_cast<DesktopWindowXamlSource*>(this)->get_ShouldConstrainPopupsToWorkAreaImpl(pValue));
 Cleanup:
@@ -105,6 +108,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DesktopWindowXamlSourceGenera
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(static_cast<DesktopWindowXamlSource*>(this)->get_SiteBridgeImpl(ppValue));
 Cleanup:
@@ -114,6 +118,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DesktopWindowXamlSourceGenera
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(static_cast<DesktopWindowXamlSource*>(this)->get_SystemBackdropImpl(ppValue));
 Cleanup:
@@ -229,6 +234,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DesktopWindowXamlSourceGenera
     }
     ARG_NOTNULL(pRequest, "request");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     
     IFC(static_cast<DesktopWindowXamlSource*>(this)->NavigateFocusImpl(pRequest, ppResult));
 Cleanup:

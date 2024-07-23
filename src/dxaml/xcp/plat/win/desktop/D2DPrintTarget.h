@@ -74,7 +74,7 @@ private:
         _In_ LPARAM lParam);
 
     static XINT32 PrintThreadFn(
-        _In_reads_bytes_(sizeof(PrintThreadData)) XUINT8* pData);
+        _In_ XUINT8* pData);
 
     static void ProcessPrintMessage(
         _In_ UINT   msg,
@@ -136,7 +136,7 @@ public:
     ID3D11Device* m_pD3DDevice;
     ID2D1CommandList* m_pCommandList;
     ID2D1PrintControl* m_pPrintControl;
-    D2D_SIZE_F m_pageSize;
+    D2D_SIZE_F m_pageSize{};
     IPALD2DPrintingData* m_pPreviewData;
 
     bool m_fPreviewStage;

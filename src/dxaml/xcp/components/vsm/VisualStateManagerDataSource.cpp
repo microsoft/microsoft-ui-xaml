@@ -252,7 +252,7 @@ _Check_return_ HRESULT VisualStateManagerDataSource::TryGetOrCreatePropertySette
 
     for (auto& setter : setters)
     {
-        ParentDeferredSetter(xref_ptr<CSetter>(setter.get()));
+        IFC_RETURN(ParentDeferredSetter(xref_ptr<CSetter>(setter.get())));
 
         auto unparentGuard = wil::scope_exit([&]()
         {

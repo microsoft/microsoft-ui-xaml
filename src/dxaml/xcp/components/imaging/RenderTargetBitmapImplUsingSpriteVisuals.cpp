@@ -66,7 +66,7 @@ public:
 private:
     xref_ptr<HWTexture> m_hwTexture;
     wil::unique_handle m_completionEvent;
-    HRESULT m_asyncErrorCode;
+    HRESULT m_asyncErrorCode{};
 };
 
 RenderTargetBitmapImplUsingSpriteVisuals::RenderTargetBitmapImplUsingSpriteVisuals(

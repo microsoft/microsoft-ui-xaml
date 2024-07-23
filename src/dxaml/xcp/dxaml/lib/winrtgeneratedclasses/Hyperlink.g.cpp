@@ -339,6 +339,7 @@ IFACEMETHODIMP DirectUI::HyperlinkGenerated::Focus(_In_ ABI::Microsoft::UI::Xaml
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Hyperlink_Focus", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Hyperlink*>(this)->FocusImpl(value, pReturnValue));

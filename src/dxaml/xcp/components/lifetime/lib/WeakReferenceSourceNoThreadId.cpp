@@ -106,7 +106,7 @@ WeakReferenceSourceNoThreadId::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void
 // WeakReferenceSource Support
 //
 _Check_return_ HRESULT
-WeakReferenceSourceNoThreadId::GetWeakReference(_Outptr_ IWeakReference **weakReference)
+WeakReferenceSourceNoThreadId::GetWeakReference(_COM_Outptr_ IWeakReference **weakReference)
 {
     *weakReference = GetWeakReferenceImpl().Detach();
 
@@ -826,7 +826,7 @@ WeakReferenceSourceNoThreadId::UpdateExpectedRefCount(RefCountUpdateType updateT
 }
 
 void
-WeakReferenceSourceNoThreadId::OnReferenceTrackerWalk( INT walkType )
+WeakReferenceSourceNoThreadId::OnReferenceTrackerWalk( _In_ INT walkType )
 {
     DirectUI::EReferenceTrackerWalkType walkTypeAsEnum = static_cast<DirectUI::EReferenceTrackerWalkType>(walkType);
     #if DBG

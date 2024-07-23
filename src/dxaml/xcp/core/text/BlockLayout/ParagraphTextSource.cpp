@@ -131,12 +131,12 @@ Result::Enum ParagraphTextSource::GetTextRun(
                         // Create content properties from CFormatting
                         pFontContext = GetFontContext();
 
-
                         IFC_FROM_HRESULT_RTS(pFormatting->m_pFontFamily->GetFontTypeface(
                             pFontContext,
-                            CWeightStyleStretch(static_cast<XUINT32>(pFormatting->m_nFontWeight),
+                            CFontFaceCriteria(static_cast<XUINT32>(pFormatting->m_nFontWeight),
                                                 static_cast<XUINT32>(pFormatting->m_nFontStyle),
-                                                static_cast<XUINT32>(pFormatting->m_nFontStretch)),
+                                                static_cast<XUINT32>(pFormatting->m_nFontStretch),
+                                                pFormatting->m_eFontSize),
                             &pFontTypeface));
 
                         pTextProperties = new TextRunProperties(
@@ -214,9 +214,10 @@ Result::Enum ParagraphTextSource::GetTextRun(
 
                 IFC_FROM_HRESULT_RTS(pFormatting->m_pFontFamily->GetFontTypeface(
                     pFontContext,
-                    CWeightStyleStretch(static_cast<XUINT32>(pFormatting->m_nFontWeight),
+                    CFontFaceCriteria(static_cast<XUINT32>(pFormatting->m_nFontWeight),
                                         static_cast<XUINT32>(pFormatting->m_nFontStyle),
-                                        static_cast<XUINT32>(pFormatting->m_nFontStretch)),
+                                        static_cast<XUINT32>(pFormatting->m_nFontStretch),
+                                        pFormatting->m_eFontSize),
                     &pFontTypeface));
 
                 pBrushSource = xref::get_weakref(pNestedElement != nullptr ? static_cast<CDependencyObject*>(pNestedElement) :

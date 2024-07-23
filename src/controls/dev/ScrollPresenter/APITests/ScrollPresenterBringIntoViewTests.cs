@@ -655,7 +655,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             if (originalHorizontalOffset != 0 || originalVerticalOffset != 0)
             {
-                ScrollTo(scrollPresenter, originalHorizontalOffset, originalVerticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, originalZoomFactor == 1.0f /*hookViewChanged*/);
+                ScrollTo(scrollPresenter, originalHorizontalOffset, originalVerticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, originalZoomFactor == 1.0f /*hookViewChangingAndChanged*/);
             }
 
             RunOnUIThread.Execute(() =>
@@ -782,7 +782,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             if (originalOuterHorizontalOffset != 0 || originalOuterVerticalOffset != 0)
             {
-                ScrollTo(outerScrollPresenter, originalOuterHorizontalOffset, originalOuterVerticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, originalOuterZoomFactor == 1.0f /*hookViewChanged*/);
+                ScrollTo(outerScrollPresenter, originalOuterHorizontalOffset, originalOuterVerticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, originalOuterZoomFactor == 1.0f /*hookViewChangingAndChanged*/);
             }
 
             if (originalInnerZoomFactor != 1.0f)
@@ -792,7 +792,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             if (originalInnerHorizontalOffset != 0 || originalInnerVerticalOffset != 0)
             {
-                ScrollTo(innerScrollPresenter, originalInnerHorizontalOffset, originalInnerVerticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, originalInnerZoomFactor == 1.0f /*hookViewChanged*/);
+                ScrollTo(innerScrollPresenter, originalInnerHorizontalOffset, originalInnerVerticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, originalInnerZoomFactor == 1.0f /*hookViewChangingAndChanged*/);
             }
 
             RunOnUIThread.Execute(() =>

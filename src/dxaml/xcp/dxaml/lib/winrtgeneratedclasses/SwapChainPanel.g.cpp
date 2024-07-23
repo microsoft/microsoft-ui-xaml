@@ -116,6 +116,7 @@ IFACEMETHODIMP DirectUI::SwapChainPanelGenerated::CreateCoreIndependentInputSour
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "SwapChainPanel_CreateCoreIndependentInputSource", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<SwapChainPanel*>(this)->CreateCoreIndependentInputSourceImpl(deviceKinds, ppReturnValue));
 Cleanup:

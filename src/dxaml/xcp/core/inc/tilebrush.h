@@ -159,7 +159,7 @@ public:
     DirectUI::AlignmentX      m_AlignmentX  = DirectUI::AlignmentX::Center;
     DirectUI::AlignmentY      m_AlignmentY  = DirectUI::AlignmentY::Center;
     DirectUI::Stretch         m_Stretch     = DirectUI::Stretch::Fill;
-    CMILMatrix                m_matTileMode = CMILMatrix(TRUE);
+    CMILMatrix                m_matTileMode{ true };
 
 //-----------------------------------------------------------------------------
 // D2D Methods/Fields

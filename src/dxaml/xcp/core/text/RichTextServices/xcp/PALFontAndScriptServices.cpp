@@ -15,6 +15,7 @@
 #include "PALResourceManager.h"
 #include "XStringBuilder.h"
 #include "corep.h"
+#include <RuntimeEnabledFeatures.h>
 
 PALFontAndScriptServices::PALFontAndScriptServices(
     _In_ CCoreServices *pCore,
@@ -152,7 +153,7 @@ HRESULT PALFontAndScriptServices::GetDefaultLanguageString(_Out_ xstring_ptr* ps
         IFC_NOTRACE(spLanguages->GetAt(0, strPrimaryLanguage.GetAddressOf()));
         UINT32 length;
         const wchar_t* buffer = strPrimaryLanguage.GetRawBuffer(&length);
-        xstring_ptr::CloneBuffer(buffer, length, &m_strDefaultLanguageString);
+        IFC_NOTRACE(xstring_ptr::CloneBuffer(buffer, length, &m_strDefaultLanguageString));
         applicationLanguagesSupported = TRUE;
     }
 
@@ -191,7 +192,7 @@ HRESULT PALFontAndScriptServices::GetDefaultFontNameString(_Out_ xstring_ptr* ps
                         wrl_wrappers::HString familyName;
                         if (SUCCEEDED(spLanguageFont->get_FontFamily(familyName.GetAddressOf())))
                         {
-                            xstring_ptr::CloneBuffer(familyName.GetRawBuffer(nullptr), &m_strDefaultFontNameString);
+                            IFC_RETURN(xstring_ptr::CloneBuffer(familyName.GetRawBuffer(nullptr), &m_strDefaultFontNameString));
                         }
                     }
                 }
@@ -199,7 +200,40 @@ HRESULT PALFontAndScriptServices::GetDefaultFontNameString(_Out_ xstring_ptr* ps
         }
         else
         {
-            m_strDefaultFontNameString = XSTRING_PTR_FROM_STORAGE(c_strUltimateFallbackFontNameTHStorage);
+            m_strDefaultFontNameString = XSTRING_PTR_FROM_STORAGE(c_strUltimateFallbackFontNameCobaltStorage);
+
+            // Windows does not use a version of RichEdit that will properly handle variable fonts, and the font fallback does not work as
+            // expected when it is passed a variable font name (e.g. SegoeUI Variable).  See:
+            //
+            // Bug 35560704: [HP][Quanta][Win11 21H2] The number displays unknown character in windows settings search bar when input number 0-9 on AR image.
+            //
+            // To combat this, it has been requested that we don't use SegoeUI Variable as the default font unless the current locale uses only latin script.
+            xstring_ptr defaultLanguageString;
+            IFC_RETURN(GetDefaultLanguageString(&defaultLanguageString));
+            WCHAR pszBuffer[6];
+            unsigned int cBuffer = ARRAYSIZE(pszBuffer);
+            if (::GetLocaleInfoEx(defaultLanguageString.GetBuffer(), LOCALE_SSCRIPTS, pszBuffer, cBuffer) <= 0 || CSTR_EQUAL != CompareStringOrdinal(pszBuffer, -1, L"Latn;", -1, TRUE))
+            {
+                m_strDefaultFontNameString = XSTRING_PTR_FROM_STORAGE(c_strUltimateFallbackFontNameTHStorage);
+            }
+            // For testing and debug purposes we will allow the ultimate fallback font to be specified via the registry
+            static const WCHAR XAML_KEY_NAME[] = L"Software\\Microsoft\\XAML";
+            static const WCHAR XAML_VALUE_NAME[] = L"AutoFontFamily";
+            WCHAR szAutoFontFamily[MAX_PATH];
+            DWORD cbData = sizeof(szAutoFontFamily);
+            if (RegGetValue(HKEY_LOCAL_MACHINE, XAML_KEY_NAME, XAML_VALUE_NAME, RRF_RT_REG_SZ, NULL, szAutoFontFamily, &cbData) == ERROR_SUCCESS)
+            {
+                IFC_RETURN(xstring_ptr::CloneBuffer(szAutoFontFamily, &m_strDefaultFontNameString));
+            }
+            else if (!RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector()->IsFeatureEnabled(RuntimeFeatureBehavior::RuntimeEnabledFeature::ForceDWriteTypographicModel))
+            {
+                // The typographic model was not explicitly requested, so see if it is disabled or not applicable due to the quirk
+                if (RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector()->IsFeatureEnabled(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableDWriteTypographicModel))
+                {
+                    // Since the topographic model is not enabled, don't use a variable default font.
+                m_strDefaultFontNameString = XSTRING_PTR_FROM_STORAGE(c_strUltimateFallbackFontNameTHStorage);
+                }
+            }
         }
     }
     *pstrDefaultFontNameString = m_strDefaultFontNameString;

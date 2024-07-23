@@ -34,8 +34,8 @@ public:
     _Check_return_ HRESULT GetID2D1SvgDocument(
         _In_ ID2D1DeviceContext5* pD2DDeviceContextNoRef,
         _Out_ wrl::ComPtr<ID2D1SvgDocument>& d2dSvgDocument,
-        _Outptr_ uint32_t* width,
-        _Outptr_ uint32_t* height
+        _Out_ uint32_t* width,
+        _Out_ uint32_t* height
         ) final;
 
     _Check_return_ HRESULT GetTitle(_Outptr_ HSTRING* output) final;

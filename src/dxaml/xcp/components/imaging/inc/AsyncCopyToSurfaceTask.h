@@ -42,7 +42,7 @@ protected:
     _Check_return_ HRESULT CopyOperation(
         unsigned int width,
         unsigned int height,
-        _Outref_ xref_ptr<OfferableSoftwareBitmap>& spOutputSurface
+        _Out_ xref_ptr<OfferableSoftwareBitmap>& spOutputSurface
         );
 
     void CopyToSoftwareSurface(

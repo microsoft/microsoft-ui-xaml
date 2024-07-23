@@ -463,7 +463,7 @@ _Check_return_ HRESULT DesktopWindowImpl::CloseImpl()
         if (!m_bMinimizedOrHidden)
         {
             // if this call fails, we don't want to reset shutdown status
-            // beter to crash
+            // better to crash
             VERIFYHR(RaiseWindowVisibilityChangedEvent(FALSE));
         }
         // Close win32 window, cleanup, and unregister from hwnd mapping from DXamlCore
@@ -760,22 +760,25 @@ LRESULT DesktopWindowImpl::OnMessage(
 
 _Check_return_ HRESULT DesktopWindowImpl::OnActivate(WPARAM wParam, LPARAM lParam)
 {
-     //
-    // Fire the Window Activated event
-    //
-    if (WA_ACTIVE == LOWORD(wParam))
+    // https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-activate
+    // higher bits mention if a window is minimized or not. non -zero value indicates that it is minimized.
+    const bool isWindowMinimized = HIWORD(wParam) != 0;
+    
+    // Fire the Window Activated event for Xaml listeners
+    // Don't raise xaml activation events if window is minimized
+    if (!isWindowMinimized && WA_ACTIVE == LOWORD(wParam))
     {
         // WA_ACTIVE  : The window has been activated programmatically.
         IFC_RETURN(RaiseWindowActivatedEvent(xaml::WindowActivationState_CodeActivated));
     }
-    else if (WA_CLICKACTIVE == LOWORD(wParam))
+    else if (!isWindowMinimized && WA_CLICKACTIVE == LOWORD(wParam))
     {
         // WA_CLICKACTIVE : The window has been activated by pointer.
         IFC_RETURN(RaiseWindowActivatedEvent(xaml::WindowActivationState_PointerActivated));
     }
-    else // WA_INACTIVE : The window has been deactivated.
+    else if (WA_INACTIVE == LOWORD(wParam))
     {
-        if (!m_bMinimizedOrHidden)
+        if (!isWindowMinimized)
         {
             // Save the handle of the child window that currently has Focus.  The child
             // window will be given focus the next time this window is activated.
@@ -790,12 +793,11 @@ _Check_return_ HRESULT DesktopWindowImpl::OnActivate(WPARAM wParam, LPARAM lPara
 
         IFC_RETURN(RaiseWindowActivatedEvent(xaml::WindowActivationState_Deactivated));
     }
-
     //
     // If the window has been activated and is not minimized, set focus on the last child window
     // that had focus.  If that child window is the composition island, restore focus.
     //
-    if (!m_bMinimizedOrHidden && (WA_INACTIVE != LOWORD(wParam)))
+    if (!isWindowMinimized && (WA_INACTIVE != LOWORD(wParam)))
     {
         // Set the focus to the child window that last had focus when this window was deactivated.
         // also enters when on such deactivation cases where m_lastFocusedWindowHandle didn't get set like in case of window minimize
@@ -816,8 +818,8 @@ _Check_return_ HRESULT DesktopWindowImpl::OnActivate(WPARAM wParam, LPARAM lPara
 
     //
     // If this is the first time the window has been activated, fire Window.Visible.
-    //
-    if (m_bInitialWindowActivation)
+    // a window can be activated to minimized state (ShowWindow SW_SHOWMINIMIZED), skip the below steps in that case
+    if (!isWindowMinimized && m_bInitialWindowActivation)
     {
         // Force focus on the island.
         SetFocusToContentIsland();
@@ -886,11 +888,15 @@ _Check_return_ HRESULT DesktopWindowImpl::OnNonClientRegionButtonUp(WPARAM wPara
 
 void DesktopWindowImpl::SetFocusToContentIsland()
 {
-    if (xaml_hosting::IXamlIslandRoot* island = m_desktopWindowXamlSource->GetXamlIslandRootNoRef())
+    // null check because it can be called quite early when DWXS is not yet initialized
+    if (m_desktopWindowXamlSource)
     {
-        boolean success = false;
-        VERIFYHR(island->TrySetFocus(&success));
-        ASSERT(success, L"Moving focus to content island failed");
+        if (xaml_hosting::IXamlIslandRoot* island = m_desktopWindowXamlSource->GetXamlIslandRootNoRef())
+        {
+            boolean success = false;
+            VERIFYHR(island->TrySetFocus(&success));
+            ASSERT(success, L"Moving focus to content island failed");
+        }
     }
 }
 
@@ -1308,7 +1314,7 @@ void DesktopWindowImpl::MakeWindowRTL()
     WindowHelpers::EnableRTL(m_hwnd.get());
 }
 
-
+// Appwindow can be null if called from "non" top-level HWND case. One such valid case is being called from Xaml Island.
 _Check_return_ HRESULT DesktopWindowImpl::get_AppWindowImpl(_Outptr_result_maybenull_ ixp::IAppWindow** ppValue)
 {
     mu::WindowId windowId;

@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::RenderedEventArgs::get_FrameDuration(_Out_ ABI::Windows
     ABI::Windows::Foundation::TimeSpan valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CRenderedEventArgs*>(pCoreEventArgsNoRef)->get_FrameDuration(&valueCore));

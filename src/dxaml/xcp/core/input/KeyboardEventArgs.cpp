@@ -22,7 +22,7 @@ CKeyEventArgs::GetKeyStatus(
 
 void CKeyEventArgs::SetModifierKeys(_In_ const XUINT32 modifierKeys)
 {
-    put_Shift(modifierKeys & KEY_MODIFIER_SHIFT);
-    put_Ctrl(modifierKeys & KEY_MODIFIER_CTRL);
+    IFCFAILFAST(put_Shift(modifierKeys & KEY_MODIFIER_SHIFT));
+    IFCFAILFAST(put_Ctrl(modifierKeys & KEY_MODIFIER_CTRL));
     put_Alt(modifierKeys & KEY_MODIFIER_ALT);
 }

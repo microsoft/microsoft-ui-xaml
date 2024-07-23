@@ -32,7 +32,8 @@
     <MicrosoftWindowsSDKBuildToolsNugetPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.SDK.BuildTools.*?version="(.*?)"').Groups[1].Value)</MicrosoftWindowsSDKBuildToolsNugetPackageVersion>
     <CurrentPrivateDependencyPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.UI.DCPP.Dependencies.Minimal.*?version="(.*?)"').Groups[1].Value)</CurrentPrivateDependencyPackageVersion>
     <TestInProductionPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.TestInProduction.*?version="(.*?)"').Groups[1].Value)</TestInProductionPackageVersion>
-    <MemoBuildPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'MemoBuild.*?version="(.*?)"').Groups[1].Value)</MemoBuildPackageVersion>
+    <MSBuildCachePackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.MSBuildCache.*?version="(.*?)"').Groups[1].Value)</MSBuildCachePackageVersion>
+    <MicrosoftCsWinRTVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.CsWinRT.*?version="(.*?)"').Groups[1].Value)</MicrosoftCsWinRTVersion>
     <!-- Determine the configured versions based upon the Vesion.Details.xml file. -->
     <VersionDetailsFile>$(MSBuildThisFileDirectory)Version.Details.xml</VersionDetailsFile>
     <VersionDetailsFileContents>$([System.IO.File]::ReadAllText("$(VersionDetailsFile)"))</VersionDetailsFileContents>
@@ -64,21 +65,17 @@
     <!-- For compat reasons, this should always be .NET 6, as it controls the .NET version the Microsoft.WinUI.dll CSWinRT projection assembly targets. -->
     <WindowsAppSdkTargetFrameworkMoniker>net6.0-windows$(WindowsAppSdkTargetPlatformVersion)</WindowsAppSdkTargetFrameworkMoniker>
     <SamplesTargetFrameworkMoniker>$(WindowsAppSdkTargetFrameworkMoniker)</SamplesTargetFrameworkMoniker>
-    <!--
-         Keep this CsWinRT version in sync with both \Samples\WinUIGallery\WinUIGallery\standalone.props as well
-         as what is included in the .NET version specified below
-    -->
-    <MicrosoftCsWinRTPackageVersion>2.0.3</MicrosoftCsWinRTPackageVersion>
-    <MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>29</MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>
-    <dotNetSdkChannel>7.0.1xx</dotNetSdkChannel>
-    <dotNetSdkVNextChannel>8.0.1xx</dotNetSdkVNextChannel>
+    <MicrosoftCsWinRTPackageVersion>2.1.0-prerelease.240605.1</MicrosoftCsWinRTPackageVersion>
+    <MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>36-preview</MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>
+    <dotNetSdkChannel>8.0.1xx</dotNetSdkChannel>
+    <dotNetSdkVNextChannel>9.0.xx</dotNetSdkVNextChannel>
     <CppWinRTVersion>2.0.230706.1</CppWinRTVersion>
     <WebView2Version>1.0.2210.55</WebView2Version>
     <Win2DWinUIVersion>0.1.0.3</Win2DWinUIVersion>
     <Win2DUWPVersion>1.25.0</Win2DUWPVersion>
     <ColorCodeVersion>2.0.13</ColorCodeVersion>
     <CommunityToolkitWinUIVersion>8.0.230907</CommunityToolkitWinUIVersion>
-    <GraphicsWin2DVersion>1.0.4</GraphicsWin2DVersion>
+    <GraphicsWin2DVersion>1.1.1-1.1.1-local6</GraphicsWin2DVersion>
     <NewtonsoftJsonVersion>13.0.2</NewtonsoftJsonVersion>
     <MicrosoftTestNetSdkVersion>17.4.0</MicrosoftTestNetSdkVersion>
     <AbiWinRtVersion>2.0.210330.2</AbiWinRtVersion>
@@ -118,5 +115,6 @@
     <Error Condition="'$(MicrosoftWindowsSDKCppVersion)' != '$(MicrosoftWindowsSDKUWPManagedVersion)'" Text="Version mismatch between Microsoft.Windows.SDK and Microsoft.Windows.SDK.UWP.Managed" />
     <!-- Temporarily requiring BuildTools 22621.756 for transitive reference support -->
     <!-- <Error Condition="'$(MicrosoftWindowsSDKCppVersion)' != '$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)'" Text="Version mismatch between Microsoft.Windows.SDK and Microsoft.Windows.SDK.BuildTools" /> -->
+    <Error Condition="'$(MicrosoftCsWinRTVersion)' != '$(MicrosoftCsWinRTPackageVersion)'" Text="Version mismatch for Microsoft.Windows.CsWinRT between packages.config and versions.props" />
   </Target>
 </Project>

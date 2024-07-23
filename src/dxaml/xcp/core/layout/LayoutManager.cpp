@@ -11,7 +11,7 @@
 // Apps usually tend to have a few entries in the sizeChangedQueue and
 // sometimes up to a dozen. The value of 24 is a conservative estimate to
 // allocate space for 24 entries in the stack vector to avoid running over
-// and having to allocate on the heap. 
+// and having to allocate on the heap.
 static constexpr size_t c_sizeChangedVectorSize = 24;
 
 // SizeChangedQueueItems
@@ -21,7 +21,7 @@ CLayoutManager::SizeChangedQueueItem::SizeChangedQueueItem(_In_ CUIElement* pEle
 {
     // Keep a ref on the element, and protect it from GC while it's on the queue
     m_pElement->AddRef();
-    m_pElement->PegManagedPeer();
+    IFCFAILFAST(m_pElement->PegManagedPeer());
 }
 
 CLayoutManager::SizeChangedQueueItem::~SizeChangedQueueItem()
@@ -368,7 +368,7 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
             m_horizontalViewports.clear();
             m_verticalViewports.clear();
             m_transformsToViewports.clear();
-            
+
             // Even though the root visual is not a viewport per se,
             // we use the original arrange rect to clamp effective viewports.
             // The exception is if we have XAML islands, in which case they'll
@@ -482,7 +482,7 @@ Cleanup:
     // This queue should be empty but if we are exiting due to an error or too many iterations then
     // we should just throw everything away.
     m_sizeChangedQueue.clear();
-    
+
     m_isInUpdateLayout = FALSE;
 
     TraceLayoutEnd();
@@ -510,6 +510,20 @@ Cleanup:
     }
 
     RRETURN(hr);
+}
+
+bool CLayoutManager::IsLayoutClean()
+{
+    if (m_pVisualTree)
+    {
+        CRootVisual* root = m_pVisualTree->GetRootVisual();
+        if (root)
+        {
+            return !root->GetRequiresMeasure() && !root->GetRequiresArrange();
+        }
+    }
+
+    return true;
 }
 
 //-------------------------------------------------------------------------
@@ -752,7 +766,7 @@ void CLayoutManager::UnregisterElementForDeferredTransition(_In_ CUIElement* pTa
     {
         auto toErase = std::find_if(
             m_elementsWithDeferredTransitions.begin(),
-            m_elementsWithDeferredTransitions.end(), 
+            m_elementsWithDeferredTransitions.end(),
             [pTarget](const auto& item){ return item.get() == pTarget; });
 
         if(toErase != m_elementsWithDeferredTransitions.end())
@@ -761,8 +775,8 @@ void CLayoutManager::UnregisterElementForDeferredTransition(_In_ CUIElement* pTa
             pStorage->m_bRegisteredInLayoutManager = false;
         }
 
-        ASSERT(std::find_if(m_elementsWithDeferredTransitions.begin(), 
-            m_elementsWithDeferredTransitions.end(), 
+        ASSERT(std::find_if(m_elementsWithDeferredTransitions.begin(),
+            m_elementsWithDeferredTransitions.end(),
             [pTarget](const auto& item){ return item.get() == pTarget; }) == m_elementsWithDeferredTransitions.end() ,
             L"should not have found an element registered multiple times in the deferred transitions list");
     }
@@ -770,8 +784,8 @@ void CLayoutManager::UnregisterElementForDeferredTransition(_In_ CUIElement* pTa
     ASSERT(!pStorage->m_bRegisteredInLayoutManager);
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 CLayoutManager::GetPosition(_In_ CUIElement* element, _In_ Jupiter::stack_vector<std::pair<CUIElement*, XRECTF>, 16>& cachedPositions, _Out_ XRECTF* position)
 {
     auto foundPosition = std::find_if(
@@ -798,7 +812,7 @@ ElementRectPairVector* CLayoutManager::GetOrCreateCachedElementRects(_In_ CTrans
     auto foundGroupItem = std::find_if(
                 cachedGroups.m_vector.begin(),
                 cachedGroups.m_vector.end(),
-                [transition](auto const& item) { return item.first == transition; }); 
+                [transition](auto const& item) { return item.first == transition; });
     if (foundGroupItem != cachedGroups.m_vector.end())
     {
         return foundGroupItem->second.get();
@@ -809,7 +823,7 @@ ElementRectPairVector* CLayoutManager::GetOrCreateCachedElementRects(_In_ CTrans
         if(!m_elementRectPool.empty())
         {
             elementRects = std::move(m_elementRectPool.back());
-            m_elementRectPool.pop_back(); 
+            m_elementRectPool.pop_back();
         }
         else
         {
@@ -858,7 +872,7 @@ CLayoutManager::RealizeRegisteredLayoutTransitions()
     {
         LayoutTransitionStorage* pStorage = element->GetLayoutTransitionStorage();
         IFCEXPECT(pStorage);
-        ASSERT(!pStorage->m_registeredTransitions.empty()); // should have unregistered with deferredtransitions though.       
+        ASSERT(!pStorage->m_registeredTransitions.empty()); // should have unregistered with deferredtransitions though.
 
         if (pStorage->GetTrigger() != DirectUI::TransitionTrigger::NoTrigger)
         {
@@ -867,14 +881,14 @@ CLayoutManager::RealizeRegisteredLayoutTransitions()
             CUIElement* pParent = do_pointer_cast<CUIElement>(element->GetParentInternal(false));
             IFC(GetPosition(pParent, parentPositions, &parentPosition));
 
-            XRECTF layoutSlot  = {  
+            XRECTF layoutSlot  = {
                 parentPosition.X + pStorage->m_transformStart.GetDx(),
                 parentPosition.Y + pStorage->m_transformStart.GetDy(),
                 pStorage->m_sizeStart.width,
                 pStorage->m_sizeStart.height};
             // fill the groups
             for(const auto& transition : pStorage->m_registeredTransitions)
-            {    
+            {
                 auto elementRects = GetOrCreateCachedElementRects(transition.get(), groups);
                 // finally store the combination of the layoutrect and the element for later use
                 elementRects->emplace_back(element.get(), layoutSlot);
@@ -904,7 +918,7 @@ CLayoutManager::RealizeRegisteredLayoutTransitions()
 
         ASSERT(elementRects);
         ASSERT(elementCount > 0);
-        
+
         // handle staggering
         if (transition->m_pStaggerFunction && transition->GetIsStaggeringEnabled())
         {
@@ -933,7 +947,7 @@ CLayoutManager::RealizeRegisteredLayoutTransitions()
             CUIElement *transitionedElement = pElementRectPair.first;
             // puts the target in a list so that we can later validate that storyboards were setup
             elementsTransitioned.m_vector.emplace_back(transitionedElement);
-            
+
             // will create and call begin on storyboards
             IFC(CTransition::SetupTransition(transitionedElement, transition, delayVector.m_vector[i]));
         }
@@ -949,18 +963,18 @@ CLayoutManager::RealizeRegisteredLayoutTransitions()
 
 Cleanup:
     // Now that we are done with the element rects vector, we cache it in pool member vector
-    // so that it can be reused. This way we avoid repeated allocations of these vectors only 
-    // to throw them away after this method. 
+    // so that it can be reused. This way we avoid repeated allocations of these vectors only
+    // to throw them away after this method.
     for(auto& groupItem: groups.m_vector)
     {
         groupItem.second->clear();
         m_elementRectPool.push_back(std::move(groupItem.second));
     }
-    
+
     m_isInTransitionRealization = FALSE;
     m_elementsWithDeferredTransitions.clear();
     TraceRealizeTransitionEnd();
-    
+
     RRETURN(hr);
 }
 

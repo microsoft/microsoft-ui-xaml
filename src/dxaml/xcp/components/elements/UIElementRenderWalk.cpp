@@ -202,7 +202,7 @@ void CUIElement::NWSetCompositeModeDirty(_In_ CDependencyObject *pTarget, DirtyF
 
     if (isLightTarget && !uiElement->m_isLightTargetOrHasLight)
     {
-        uiElement->SetRequiresComposition(CompositionRequirement::XamlLight, IndependentAnimationType::None);
+        XCP_FAULT_ON_FAILURE(SUCCEEDED(uiElement->SetRequiresComposition(CompositionRequirement::XamlLight, IndependentAnimationType::None)));
     }
     else if (!isLightTarget && uiElement->m_isLightTargetOrHasLight && !uiElement->HasXamlLights())
     {
@@ -219,7 +219,7 @@ void CUIElement::NWSetCompositeModeDirty(_In_ CDependencyObject *pTarget, DirtyF
     bool hasXamlLights = uiElement->HasXamlLights();
     if (hasXamlLights && !uiElement->m_isLightTargetOrHasLight)
     {
-        uiElement->SetRequiresComposition(CompositionRequirement::XamlLight, IndependentAnimationType::None);
+        XCP_FAULT_ON_FAILURE(SUCCEEDED(uiElement->SetRequiresComposition(CompositionRequirement::XamlLight, IndependentAnimationType::None)));
     }
     else if (!hasXamlLights && uiElement->m_isLightTargetOrHasLight && !uiElement->IsLightTarget())
     {

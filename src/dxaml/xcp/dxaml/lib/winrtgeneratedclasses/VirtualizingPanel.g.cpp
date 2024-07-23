@@ -56,6 +56,7 @@ IFACEMETHODIMP DirectUI::VirtualizingPanelGenerated::get_ItemContainerGenerator(
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<VirtualizingPanel*>(this)->get_ItemContainerGeneratorImpl(ppValue));
 Cleanup:

@@ -49,8 +49,7 @@ RootScrollViewer::NotifyInputPaneStateChange(
     ctl::ComPtr<FlyoutMetadata> spFlyoutMetadata;
     ctl::ComPtr<IFlyoutBase> spOpenFlyout;
     ctl::ComPtr<IFrameworkElement> spOpenFlyoutPlacementTarget;
-    ctl::ComPtr<ContentDialogMetadata> spContentDialogMetadata;
-    ctl::ComPtr<XamlRoot> xamlRoot = XamlRoot::GetImplementationForElementStatic(this);
+     ctl::ComPtr<XamlRoot> xamlRoot = XamlRoot::GetImplementationForElementStatic(this);
     BOOLEAN isInputPaneShow = inputPaneState != InputPaneState::InputPaneHidden;
     
     if (inputPaneState == InputPaneState::InputPaneShowing || inputPaneState == InputPaneState::InputPaneHidden)
@@ -105,18 +104,6 @@ RootScrollViewer::NotifyInputPaneStateChange(
     if (spOpenFlyout)
     {
         IFC(spOpenFlyout.Cast<FlyoutBase>()->NotifyInputPaneStateChange(inputPaneState, inputPaneBounds));
-    }
-
-    // Update ContentDialog size/position with showing/hiding IHM.
-    // We wont fail if xamlRoot is null because if RSV is not
-    // in visual tree, it simply means that it's not attached yet.
-    if (xamlRoot)
-    {
-        IFC(xamlRoot->GetContentDialogMetadata(&spContentDialogMetadata));
-        IFC(spContentDialogMetadata->ForEachOpenDialog([inputPaneState, inputPaneBounds](xaml_controls::IContentDialog* openDialog, bool& /*stopIterating*/)
-        {
-            return static_cast<ContentDialog*>(openDialog)->NotifyInputPaneStateChange(inputPaneState, inputPaneBounds);
-        }));
     }
 
     m_isInputPaneShow = isInputPaneShow;

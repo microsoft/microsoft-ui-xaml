@@ -37,8 +37,8 @@ namespace
     _Check_return_ HRESULT
     GetDefaultHighlighterBrushes(
         _In_ CCoreServices* coreServices,
-        _Outref_ xref_ptr<CSolidColorBrush>& foregroundBrush,
-        _Outref_ xref_ptr<CSolidColorBrush>& backgroundBrush
+        _Out_ xref_ptr<CSolidColorBrush>& foregroundBrush,
+        _Out_ xref_ptr<CSolidColorBrush>& backgroundBrush
         )
     {
         xref_ptr<CDependencyObject> defaultForegroundBrushDO;
@@ -69,9 +69,8 @@ namespace
         IterateHighlighterCallback callback
         )
     {
-#if DBG
+#pragma warning(suppress: 4189) // C4189: PREFast does not know this local variable is being used at least in the chk build by the ASSERT() below.
         auto textLength = static_cast<int>(textView->GetContentLength());
-#endif
 
         // Merge all the highlighters so that there is no overlap in ranges and
         // earlier items in the collection get overwritten by later ones.

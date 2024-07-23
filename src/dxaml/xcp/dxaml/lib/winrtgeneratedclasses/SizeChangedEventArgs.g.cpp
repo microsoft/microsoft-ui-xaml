@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::SizeChangedEventArgs::get_PreviousSize(_Out_ ABI::Windo
     ABI::Windows::Foundation::Size valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CSizeChangedEventArgs*>(pCoreEventArgsNoRef)->get_PreviousSize(&valueCore));
@@ -70,6 +71,7 @@ IFACEMETHODIMP DirectUI::SizeChangedEventArgs::get_NewSize(_Out_ ABI::Windows::F
     ABI::Windows::Foundation::Size valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CSizeChangedEventArgs*>(pCoreEventArgsNoRef)->get_NewSize(&valueCore));

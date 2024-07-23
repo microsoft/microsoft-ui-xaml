@@ -57,6 +57,7 @@ IFACEMETHODIMP DirectUI::ManipulationDeltaRoutedEventArgsGenerated::get_Containe
     CUIElement* pValueCore = nullptr;
 
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CManipulationDeltaEventArgs*>(pCoreEventArgsNoRef)->get_Container(&pValueCore));
@@ -74,6 +75,7 @@ IFACEMETHODIMP DirectUI::ManipulationDeltaRoutedEventArgsGenerated::get_Position
     ABI::Windows::Foundation::Point valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CManipulationDeltaEventArgs*>(pCoreEventArgsNoRef)->get_Position(&valueCore));
@@ -91,6 +93,7 @@ IFACEMETHODIMP DirectUI::ManipulationDeltaRoutedEventArgsGenerated::get_IsInerti
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CManipulationDeltaEventArgs*>(pCoreEventArgsNoRef)->get_IsInertial(&valueCore));
@@ -104,6 +107,7 @@ IFACEMETHODIMP DirectUI::ManipulationDeltaRoutedEventArgsGenerated::get_Delta(_O
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ManipulationDeltaRoutedEventArgs*>(this)->get_DeltaImpl(pValue));
 Cleanup:
@@ -113,6 +117,7 @@ IFACEMETHODIMP DirectUI::ManipulationDeltaRoutedEventArgsGenerated::get_Cumulati
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ManipulationDeltaRoutedEventArgs*>(this)->get_CumulativeImpl(pValue));
 Cleanup:
@@ -122,6 +127,7 @@ IFACEMETHODIMP DirectUI::ManipulationDeltaRoutedEventArgsGenerated::get_Velociti
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ManipulationDeltaRoutedEventArgs*>(this)->get_VelocitiesImpl(pValue));
 Cleanup:
@@ -135,6 +141,7 @@ IFACEMETHODIMP DirectUI::ManipulationDeltaRoutedEventArgsGenerated::get_Handled(
     BOOLEAN valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CManipulationDeltaEventArgs*>(pCoreEventArgsNoRef)->get_Handled(&valueCore));
@@ -168,6 +175,7 @@ IFACEMETHODIMP DirectUI::ManipulationDeltaRoutedEventArgsGenerated::get_PointerD
     DirectUI::PointerDeviceType valueCore;
 
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
 
     IFC(GetCorePeerNoRefWithValidation(&pCoreEventArgsNoRef));
     IFC(static_cast<CManipulationDeltaEventArgs*>(pCoreEventArgsNoRef)->get_PointerDeviceType(&valueCore));

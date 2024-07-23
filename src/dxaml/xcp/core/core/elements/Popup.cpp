@@ -43,11 +43,7 @@
 #include "WinRTExpressionConversionContext.h"
 #include "VisualDebugTags.h"
 #include "xcpwindow.h"
-#include <FrameworkUdk/Containment.h>
-
-// Bug 49613456: [1.5 servicing] [GitHub] AutoSuggestBox, ComboBox, (probably others) no longer transform their popups correctly in WindowsAppSDK 1.4
-#define WINAPPSDK_CHANGEID_49613456 49613456
-
+#include <Microsoft.UI.Content.Private.h>
 
 using namespace DirectUI;
 using namespace Focus;
@@ -95,8 +91,6 @@ CPopup::CPopup(_In_ CCoreServices *pCore)
     , m_isClosing(FALSE)
     , m_isUnloading(FALSE)
     , m_isImplicitClose(FALSE)
-    , m_skippedCreatingPopupHwnd(FALSE)
-    , m_registeredWindowPositionChangedHandler(FALSE)
 {
     m_requiresReleaseOverride = true;
 }
@@ -123,6 +117,7 @@ CPopup::~CPopup()
 
     if (m_spUIAWindow)
     {
+        m_spUIAWindow->UIADisconnectAllProviders();
         m_spUIAWindow->Deinit();
     }
 
@@ -226,7 +221,7 @@ _Check_return_ HRESULT CPopup::SetValue(_In_ const SetValueParams& args)
 
             if (m_systemBackdrop && m_fIsOpen && IsWindowed())
             {
-                SystemBackdrop::InvokeOnTargetDisconnectedFromCore(m_systemBackdrop.get(), popupPeerNoRef);
+                IFC(SystemBackdrop::InvokeOnTargetDisconnectedFromCore(m_systemBackdrop.get(), popupPeerNoRef));
 
                 // Clean up the existing backdrop link and placement visual immediately. Normally this is done
                 // synchronously from lifted Composition, but there are cases where we don't get a call back and the
@@ -246,7 +241,7 @@ _Check_return_ HRESULT CPopup::SetValue(_In_ const SetValueParams& args)
             if (m_systemBackdrop && popupPeerNoRef && m_fIsOpen && IsWindowed())
             {
                 ctl::ComPtr<xaml::IXamlRoot> xamlRoot = XamlRoot::GetForElementStatic(popupPeerNoRef);
-                SystemBackdrop::InvokeOnTargetConnectedFromCore(m_systemBackdrop.get(), popupPeerNoRef, xamlRoot.Get());
+                IFC(SystemBackdrop::InvokeOnTargetConnectedFromCore(m_systemBackdrop.get(), popupPeerNoRef, xamlRoot.Get()));
 
                 // Create the backdrop link and placement visual immediately. Normally we wait until we get the call back from
                 // Composition with the system brush, but that creates a race condition. Xaml's own layout and rendering will
@@ -468,7 +463,15 @@ _Check_return_ HRESULT CPopup::Open()
         // DManip, and the IslandInputSite comes from the popup window bridge's ContentIsland.
         if (IsWindowed())
         {
-            IFC_RETURN(EnsureWindowForWindowedPopup());
+            bool windowCreated = false;
+            IFC_RETURN(EnsureWindowForWindowedPopup(&windowCreated));
+
+            // If the window was not created, early-out.
+            if (!windowCreated)
+            {
+                return S_OK;
+            }
+
             IFC_RETURN(EnsureDCompResourcesForWindowedPopup());
         }
 
@@ -574,7 +577,7 @@ _Check_return_ HRESULT CPopup::Open()
     if (m_systemBackdrop && popupPeerNoRef && IsWindowed())
     {
         ctl::ComPtr<xaml::IXamlRoot> xamlRoot = XamlRoot::GetForElementStatic(popupPeerNoRef);
-        SystemBackdrop::InvokeOnTargetConnectedFromCore(m_systemBackdrop.get(), popupPeerNoRef, xamlRoot.Get());
+        IFC_RETURN(SystemBackdrop::InvokeOnTargetConnectedFromCore(m_systemBackdrop.get(), popupPeerNoRef, xamlRoot.Get()));
 
         // Create the backdrop link and placement visual immediately. Normally we wait until we get the call back from
         // Composition with the system brush, but that creates a race condition. Xaml's own layout and rendering will
@@ -672,7 +675,7 @@ _Check_return_ HRESULT CPopup::Close(bool forceCloseforTreeReset)
     if (m_systemBackdrop && IsWindowed())
     {
         DirectUI::Popup* popupPeerNoRef = static_cast<DirectUI::Popup*>(GetDXamlPeer());
-        SystemBackdrop::InvokeOnTargetDisconnectedFromCore(m_systemBackdrop.get(), popupPeerNoRef);
+        IFC_RETURN(SystemBackdrop::InvokeOnTargetDisconnectedFromCore(m_systemBackdrop.get(), popupPeerNoRef));
 
         // Clean up the existing backdrop link and placement visual immediately. Normally this is done
         // synchronously from lifted Composition, but there are cases where we don't get a call back and the
@@ -876,7 +879,7 @@ _Check_return_ HRESULT CPopup::Close(bool forceCloseforTreeReset)
 
     // The PopupAutomationPeer will be null from calling UIElement::GetOrCreateAutomationPeer() if Popup
     // is the closed state and the existing PopupAutomationPeer will invalidate the owner from
-    // CUIElement::OnCreateAutomationPeer() that shouldn�t be referenced from other AutomationPeer.
+    // CUIElement::OnCreateAutomationPeer() that shouldn't be referenced from other AutomationPeer.
     // The below calling SetAPParent(null) ensures the disconnect the relationship between PopupAutomationPeer
     // and Popup child's AutomationPeer when Popup is closed.
     {
@@ -943,7 +946,7 @@ void CPopup::FlushPendingKeepVisibleOperations()
             IFCFAILFAST(StopComposition());
         }
 
-        HideWindowForWindowedPopup();
+        IFCFAILFAST(HideWindowForWindowedPopup());
     }
 }
 
@@ -963,7 +966,7 @@ _Check_return_ HRESULT CPopup::SetIsWindowedIfNeeded()
     if (!value.AsBool() || IsWindowed())
     {
         // Before making the popup windowed, run a set of tests that determine if we can correctly compute
-        // the bounds for the popup's HWND.  If these requirements aren't met, don't actually make it windowed.
+        // the bounds for the popup's island.  If these requirements aren't met, don't actually make it windowed.
         // Note that these requirements are re-evaluated every time the popup is opened, so it's possible for
         // the popup to toggle between windowed/non-windowed due to these requirements.  However it's not possible
         // for an app to toggle the popup between windowed/non-windowed via the ShouldConstrainToRootBounds property
@@ -994,16 +997,6 @@ _Check_return_ HRESULT CPopup::SetIsWindowed()
     // fall back to non-windowed placement.
     if (DoesPlatformSupportWindowedPopup(pCore))
     {
-        // Call DXaml peer to hook up window position handlers for light dismiss behavior
-        if (pCore)
-        {
-            if (!m_registeredWindowPositionChangedHandler)
-            {
-                IFC_RETURN(FxCallbacks::Popup_HookupWindowPositionChangedHandler(this));
-                m_registeredWindowPositionChangedHandler = TRUE;
-            }
-        }
-
         m_isWindowed = true;
     }
 
@@ -1031,129 +1024,116 @@ bool CPopup::HasPointerCapture() const
 }
 
 // Create windowed popup's window, if it doesn't exit
-_Check_return_ HRESULT CPopup::EnsureWindowForWindowedPopup()
+_Check_return_ HRESULT CPopup::EnsureWindowForWindowedPopup(_Out_ bool* windowCreated)
 {
+    *windowCreated = false;
+
     auto core = GetContext();
 
     ASSERT(IsWindowed());
 
-    if (core->GetHostSite()->IsWindowDestroyed())
+    //
+    // It's possible this windowed popup has moved between islands since it last closed. Xaml uses a shared context
+    // menu for all TextBoxes, for example, so we need to check that this windowed popup is still anchored to the same
+    // island. If not, release all the window-related resources and re-create them.
+    //
+    CXamlIslandRoot* island = GetAssociatedXamlIslandNoRef();
+
+    UINT64 currentXamlIslandId;
+    IFC_RETURN(island->GetContentIsland()->get_Id(&currentXamlIslandId));
+
+    if (m_previousXamlIslandId != currentXamlIslandId)
     {
-        // Xaml is shutting down. Trying to create a child hwnd of the destroyed Xaml hwnd will hit an error. Just no-op.
-        m_skippedCreatingPopupHwnd = true;
+        // The PopupWindowSiteBridge needs to be explicitly IClosable::Close()ed, otherwise it will leak. This is because
+        // the bridge's underlying hwnd has a ref count on it, and until we destroy that hwnd (via IClosable::Close)) the
+        // bridge will always be kept alive.
+        // Bug 43723959 - Remove this once the underlying problem is fixed
+        EnsureBridgeClosed();
+
+        m_contentIsland.Reset();
+        m_inputSiteAdapter.reset();
+        m_popupWindowBridge.Reset();
+        m_desktopBridge.Reset();
+        m_windowedPopupWindow = NULL;
+
+        m_previousXamlIslandId = currentXamlIslandId;
     }
-    else
+
+    if (!m_popupWindowBridge)
     {
-        //
-        // It's possible this windowed popup has moved between islands since it last closed. Xaml uses a shared context
-        // menu for all TextBoxes, for example, so we need to check that this windowed popup is still anchored to the same
-        // island. If not, release all the window-related resources and re-create them.
-        //
-        CXamlIslandRoot* island = GetAssociatedXamlIslandNoRef();
+        // PopupSiteBridges can't be created from CoreWindowSiteBridge, only from DesktopChildSiteBridge. That means
+        // windowed popups aren't supported for UWPs (see DoesPlatformSupportWindowedPopup). The lack of support comes
+        // from lack of features for top-level window moving, monitor tracking, and light dismiss behavior in UWPs.
+        ASSERT(island != nullptr);
 
-        UINT64 currentXamlIslandId;
-        IFC_RETURN(island->GetContentIsland()->get_Id(&currentXamlIslandId));
+        wrl::ComPtr<ixp::IDesktopChildSiteBridge> desktopChildSiteBridge { island->GetDesktopContentBridgeNoRef() };
+        wrl::ComPtr<ixp::IDesktopSiteBridge2> contentSiteBridge;
 
-        if (m_previousXamlIslandId != currentXamlIslandId)
+        if (desktopChildSiteBridge)
         {
-            // The PopupWindowSiteBridge needs to be explicitly IClosable::Close()ed, otherwise it will leak. This is because
-            // the bridge's underlying hwnd has a ref count on it, and until we destroy that hwnd (via IClosable::Close)) the
-            // bridge will always be kept alive.
-            // Bug 43723959 - Remove this once the underlying problem is fixed
-            EnsureBridgeClosed();
-
-            m_contentIsland.Reset();
-            m_inputSiteAdapter.reset();
-            m_popupWindowBridge.Reset();
-            m_desktopBridge.Reset();
-            m_windowedPopupWindow = NULL;
-
-            m_previousXamlIslandId = currentXamlIslandId;
-        }
-
-        if (!m_popupWindowBridge)
-        {
-            // PopupSiteBridges can't be created from CoreWindowSiteBridge, only from DesktopChildSiteBridge. That means
-            // windowed popups aren't supported for UWPs (see DoesPlatformSupportWindowedPopup). The lack of support comes
-            // from lack of features for top-level window moving, monitor tracking, and light dismiss behavior in UWPs.
-            ASSERT(island != nullptr);
-
-            wrl::ComPtr<ixp::IDesktopChildSiteBridge> desktopChildSiteBridge { island->GetDesktopContentBridgeNoRef() };
-            wrl::ComPtr<ixp::IDesktopSiteBridge2> contentSiteBridge;
             IFCFAILFAST(desktopChildSiteBridge.As(&contentSiteBridge));
-            IFC_RETURN(contentSiteBridge->TryCreatePopupSiteBridge(m_popupWindowBridge.ReleaseAndGetAddressOf()));
+        }
+        else
+        {
+            // https://task.ms/48749483
+            // This is a temporary workaround to support windowed popups in a XamlIsland. See the
+            // definition of GetDesktopSiteBridge for more information.
+            auto desktopSiteBridge = GetDesktopSiteBridge();
+            IFCFAILFAST(desktopSiteBridge.As(&contentSiteBridge));
+        }
 
-            // Retrieve and cache the windowed popup hwnd.
-            ABI::Microsoft::UI::WindowId windowId;
-            IFCFAILFAST(m_popupWindowBridge.As(&m_desktopBridge));
-            IFC_RETURN(m_desktopBridge->get_WindowId(&windowId));
-            IFC_RETURN(Windowing_GetWindowFromWindowId(windowId, &m_windowedPopupWindow));
+        wrl::ComPtr<mu::IClosableNotifier> contentSiteBridgeAsClosable;
+        IFCFAILFAST(contentSiteBridge.As(&contentSiteBridgeAsClosable));
 
-            // Ensure that the window text is correct for UIA.
-            xstring_ptr strPopupHostUIAName;
-            IFC_RETURN(core->GetBrowserHost()->GetLocalizedResourceString(UIA_WINDOWED_POPUP_HOST, &strPopupHostUIAName));
-            if (!SetWindowText(m_windowedPopupWindow, strPopupHostUIAName.GetBuffer()))
+        BOOLEAN isClosed;
+        IFC_RETURN(contentSiteBridgeAsClosable->get_IsClosed(&isClosed));
+
+        if (isClosed)
+        {
+            return S_OK;
+        }
+
+        IFC_RETURN(contentSiteBridge->TryCreatePopupSiteBridge(m_popupWindowBridge.ReleaseAndGetAddressOf()));
+
+        // Retrieve and cache the windowed popup hwnd.
+        ABI::Microsoft::UI::WindowId windowId;
+        IFCFAILFAST(m_popupWindowBridge.As(&m_desktopBridge));
+        IFC_RETURN(m_desktopBridge->get_WindowId(&windowId));
+        IFC_RETURN(Windowing_GetWindowFromWindowId(windowId, &m_windowedPopupWindow));
+
+        // Ensure that the window text is correct for UIA.
+        xstring_ptr strPopupHostUIAName;
+        IFC_RETURN(core->GetBrowserHost()->GetLocalizedResourceString(UIA_WINDOWED_POPUP_HOST, &strPopupHostUIAName));
+        if (!SetWindowText(m_windowedPopupWindow, strPopupHostUIAName.GetBuffer()))
+        {
+            IFC_RETURN(HResultFromKnownLastError());
+        }
+
+        {
+            wrl::ComPtr<mu::IClosableNotifier> closableNotifier;
+            IFCFAILFAST(m_popupWindowBridge.As(&closableNotifier));
+
+            // It's safe to capture "this" here becasue we ensure the event is unsubscribed in CPopup's dtor.
+            auto frameworkClosedCallback = [this]() -> HRESULT
             {
-                IFC_RETURN(HResultFromKnownLastError());
-            }
+                // http://task.ms/45244384 Simplify the shutdown process of DesktopWindowXamlSource and Popups...
+                // TODO: When the bridge unexpectedly closes we should probably do more cleanup, but this event subscription
+                // was added late in 1.4 and we wanted to reduce risk of regression.
+                this->m_bridgeClosed = true;
+                return S_OK;
+            };
 
-            {
-                wrl::ComPtr<mu::IClosableNotifier> closableNotifier;
-                IFCFAILFAST(m_popupWindowBridge.As(&closableNotifier));
+            IFCFAILFAST(closableNotifier->add_FrameworkClosed(
+                WRLHelper::MakeAgileCallback<mu::IClosableNotifierHandler>(frameworkClosedCallback).Get(),
+                &m_bridgeClosedToken));
 
-                // It's safe to capture "this" here becasue we ensure the event is unsubscribed in CPopup's dtor.
-                auto frameworkClosedCallback = [this]() -> HRESULT
-                {
-                    // http://task.ms/45244384 Simplify the shutdown process of DesktopWindowXamlSource and Popups...
-                    // TODO: When the bridge unexpectedly closes we should probably do more cleanup, but this event subscription
-                    // was added late in 1.4 and we wanted to reduce risk of regression.
-                    this->m_bridgeClosed = true;
-                    return S_OK;
-                };
-
-                IFCFAILFAST(closableNotifier->add_FrameworkClosed(
-                    WRLHelper::MakeAgileCallback<mu::IClosableNotifierHandler>(frameworkClosedCallback).Get(),
-                    &m_bridgeClosedToken));
-
-                // We just successfully set up a new bridge along with the event handler to inform us when it is Closed.
-                // Reset our flag tracking if the bridge is closed to false.
-                m_bridgeClosed = false;
-            }
-
+            // We just successfully set up a new bridge along with the event handler to inform us when it is Closed.
+            // Reset our flag tracking if the bridge is closed to false.
+            m_bridgeClosed = false;
         }
     }
 
-    return S_OK;
-}
-
-_Check_return_ HRESULT CPopup::GetScreenOffsetFromOwner(_Out_ XPOINTF_COORDS* offset)
-{
-    ABI::Microsoft::UI::WindowId windowId;
-    IFCFAILFAST(m_desktopBridge->get_WindowId(&windowId));
-
-    HWND popupHwnd;
-    Windowing_GetWindowFromWindowId(windowId, &popupHwnd);
-
-    POINT origin = {0, 0};
-    ::ClientToScreen(popupHwnd, &origin);
-
-    // Get the popup owner hwnd so that we can get the windowed popup offsets in relation to
-    // its owner which we assume has the same origin as the main window.
-    // Note: Currently this does not work for getting the correct window when running as uap.
-    HWND popupOwnerHwnd = ::GetWindow(popupHwnd, GW_OWNER);
-    if (!popupOwnerHwnd)
-    {
-        IFCW32_RETURN(FALSE);
-    }
-
-    POINT ownerOrigin = {0, 0};
-    ::ClientToScreen(popupOwnerHwnd, &ownerOrigin);
-
-    // ::ClientToScreen doesn't account for the display scale. That's on the popup bridge.
-    offset->isPhysicalPixels = true;
-    offset->x = static_cast<float>(origin.x - ownerOrigin.x);
-    offset->y = static_cast<float>(origin.y - ownerOrigin.y);
-
+    *windowCreated = true;
     return S_OK;
 }
 
@@ -1169,6 +1149,31 @@ wrl::ComPtr<ixp::IIslandInputSitePartner> CPopup::GetIslandInputSite() const
     // If we are not windowed we can simply return the default ElementIslandInputSite.
     // This really should be possible to be make const, but the do_pointer_cast is blocking (see depends.cpp).
     return const_cast<CPopup*>(this)->GetElementIslandInputSite();
+}
+
+wrl::ComPtr<ixp::IDesktopSiteBridge> CPopup::GetDesktopSiteBridge()
+{
+    // https://task.ms/48749483
+    // TODO: Remove once XAML creates Windowed popups without a DesktopSiteBridge. This is a
+    // temporary workaround since we need a DesktopSiteBridge to create windowed popups.
+    // XamlIslands do not have access to a bridge, and may not be hosted in a DesktopSiteBridge
+    // at all, but to unblock the scenario we need a way to create popups. This method
+    // should not be used except to create windowed popups, and once we have another way to
+    // create them this should be removed.
+
+    wrl::ComPtr<ixp::IDesktopSiteBridge> desktopSiteBridge;
+
+    if (auto xamlIsland = GetAssociatedXamlIslandNoRef())
+    {
+        wrl::ComPtr<ixp::IContentIslandPartner> contentIslandPartner;
+        wrl::ComPtr<ixp::IContentIsland> contentIsland = xamlIsland->GetContentIsland();
+
+        IFCFAILFAST(contentIsland.As(&contentIslandPartner));
+
+        IFCFAILFAST(contentIslandPartner->get_TEMP_DesktopSiteBridge(&desktopSiteBridge));
+    }
+
+    return desktopSiteBridge;
 }
 
 // Ensure that DComp resources are created for windowed popup
@@ -1316,7 +1321,8 @@ void CPopup::ReleaseDCompResourcesForWindowedPopup()
     // the SystemBackdrop is removed in the meantime, we'll clear out the link then.
 
     // Note: We don't close or reset the bridge here. ScrollViewers in the popup subtree have already cached the popup
-    // bridge's hwnd for DManip. We don't currently have a code path for those elements to reset the hwnd and pick up a new one.
+    // bridge's input hwnd for DManip. We don't currently have a code path for those elements to reset the input hwnd
+    // and pick up a new one.
 }
 
 // Show windowed popup's window
@@ -1384,7 +1390,7 @@ bool CPopup::ReplayPointerUpdate()
 _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
 {
     // Ignore if not windowed
-    if (!m_windowedPopupWindow)
+    if (!m_desktopBridge)
     {
         return S_OK;
     }
@@ -1410,22 +1416,9 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
     // Find the offset to the root in physical pixels.  This is either XAML's main CoreWindow,
     // or the associated XamlIslandRoot.
     POINT rootOffsetPhysical = {};
-    if (CXamlIslandRoot* island = GetAssociatedXamlIslandNoRef())
-    {
-        // If this popup is attached to a XamlIslandRoot, get the screen offset from the XamlIslandRoot,
-        // it knows its own screen offset.
-        rootOffsetPhysical = island->GetScreenOffset();
-    }
-    else
-    {
-        XamlOneCoreTransforms::FailFastIfEnabled(); // Due to ClientToScreen.  12768041 tracks using island-based windowed popups in XamlOneCoreTransforms mode
-
-        // Get the bounds of the CoreWindow
-        const HWND hwndJupiter = static_cast<HWND>(GetContext()->GetHostSite()->GetXcpControlWindow());
-
-        rootOffsetPhysical = { 0, 0 };
-        ::ClientToScreen(hwndJupiter, &rootOffsetPhysical);
-    }
+    CXamlIslandRoot* island = GetAssociatedXamlIslandNoRef();
+    ASSERT(island);
+    rootOffsetPhysical = island->GetScreenOffset();
 
     // Compute Popup window's position
     int popupWindowLeft = 0;
@@ -1488,11 +1481,11 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
     //  </root>
     //
     // Popup p's child c should render with the transform a-b-p-c. This is also the offset that should be applied to the
-    // popup's hwnd. Xaml rendering code will automatically produce a comp node (and a Composition Visual) for the popup
+    // popup's bridge. Xaml rendering code will automatically produce a comp node (and a Composition Visual) for the popup
     // element, with its transform p already set, and a visual for the popup content with its transform c set on it.
-    // If we just put these visuals inside the hwnd, we'll end up with the transform (a-b-p-c)-p-c. This double counts
-    // two transforms and produces the wrong result. So we apply an undo transform under the hwnd to make sure the net
-    // offset is what we want. We'll have
+    // If we just put these visuals inside the island (which is inside the bridge), we'll end up with the transform
+    // (a-b-p-c)-p-c. This double counts two transforms and produces the wrong result. So we apply an undo transform
+    // under the island to make sure the net offset is what we want. We'll have
     //
     //  (a-b-p-c)-(c'-p')-(p)-(c) = a-b-p-c
     //   ^         ^       ^   ^
@@ -1502,12 +1495,12 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
     //   |         |
     //   |         +- undo transform on the hidden root visual
     //   |
-    //   +- applied by the hwnd
+    //   +- applied by the bridge
     //
     //      where c' and p' are inverse transforms of c and p
     //
     // Note that this is just the offset. In addition we can potentially inherit a scale from the popup's ancestors as
-    // well. This scale can't be baked into the hwnd, so we have to apply it in the subtree under the hwnd. It should be
+    // well. This scale can't be baked into the bridge, so we have to apply it in the subtree under the island. It should be
     // applied at the m_contentIslandRootVisual, where it covers any potential shadows, backdrops, and animations (see
     // the banner comment on EnsureWindowedPopupRootVisualTree for the full visual tree). In terms of the transform
     // chain, it should take the place of (a-b-p-c). Under it should be the undo transform, and under that should be the
@@ -1525,7 +1518,7 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
         // the popup cannot be windowed via the checks done in MeetsRenderingRequirementsForWindowedPopup(), but we will respect
         // the 2D portions of any 3D transforms that are present (Translation.X and Translation.Y).
         //
-        // Note that the undo transform does not always correspond to the hwnd's position. Consider a scenario there's an
+        // Note that the undo transform does not always correspond to the bridge's position. Consider a scenario there's an
         // RTL popup inside an LTR parent. The popup's child lines up with the popup:
         //
         //  o-------------------------------------+
@@ -1542,15 +1535,15 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
         //
         //      "o" is the origin of each element.
         //
-        // Here, the RTL popup has its origin at the top-right corner, but the hwnd that we create for it is positioned by
-        // its top-left corner. So even though the transform from the popup to its parent is 65px, we position the hwnd at
+        // Here, the RTL popup has its origin at the top-right corner, but the bridge that we create for it is positioned by
+        // its top-left corner. So even though the transform from the popup to its parent is 65px, we position the bridge at
         // 15. We do this using GetPhysicalBounds to transform an entire rect up the tree, then taking its top-left corner.
         //
         // Meanwhile, the popup child's undo transform must have -65, because that's transform applied by the popup's comp
-        // node. Here the undo transform doesn't match the hwnd position.
+        // node. Here the undo transform doesn't match the bridge position.
         //
         // Here, we also put an in-place flip (scaleX = -1, dX = 50) on m_contentIslandRootVisual to make its content
-        // render RTL inside the LTR hwnd (see further below as we're computing the transform for m_contentIslandRootVisual).
+        // render RTL inside the LTR island (see further below as we're computing the transform for m_contentIslandRootVisual).
         //
 
         // First transform [0,0] up from Popup.Child to Popup
@@ -1585,21 +1578,14 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
     {
         // Set any scale inherited from the ancestor chain
         CMILMatrix rootTransform(true);
-        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_49613456>())
-        {
-            rootTransform.SetM11(scaleX);
-            rootTransform.SetM22(scaleY);
+        rootTransform.SetM11(scaleX);
+        rootTransform.SetM22(scaleY);
 
-            // Set premultiplied "undo" transform on the window's root visual
-            CMILMatrix undo(true);
-            undo.SetDx(undoX);
-            undo.SetDy(undoY);
-            rootTransform.Prepend(undo);
-        }
-        else
-        {
-            rootTransform.AppendTranslation(undoX, undoY);
-        }
+        // Set premultiplied "undo" transform on the window's root visual
+        CMILMatrix undo(true);
+        undo.SetDx(undoX);
+        undo.SetDy(undoY);
+        rootTransform.Prepend(undo);
 
         if (isParentedPopup && IsRightToLeft())
         {
@@ -1857,9 +1843,9 @@ _Check_return_ HRESULT CPopup::GetPhysicalBounds(_In_ CUIElement* element, _Out_
 
     if (useActualBounds)
     {
-        // With the "UseActualBounds" policy we compute the bounds of the HWND according to the following:
-        // 1) The size of the HWND is based on Popup.Child's ActualWidth/Height
-        // 2) The position of the HWND is based on the position of Popup.
+        // With the "UseActualBounds" policy we compute the bounds of the bridge according to the following:
+        // 1) The size of the bridge is based on Popup.Child's ActualWidth/Height
+        // 2) The position of the bridge is based on the position of Popup.
         // We hope that for 19H1 this can be the policy we ship with.  However the policy is currently turned off by default
         // as multiple controls need to change to work correctly with the policy.
         xref_ptr<CGeneralTransform> transform;
@@ -1867,16 +1853,13 @@ _Check_return_ HRESULT CPopup::GetPhysicalBounds(_In_ CUIElement* element, _Out_
         IFC_RETURN(transform->TransformRect({ left, top, elementForBounds->GetActualWidth(), elementForBounds->GetActualHeight() }, physicalBounds));
         DipsToPhysicalPixelsRect(physicalBounds);
 
-        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_49613456>())
-        {
-            IFC_RETURN(transform->TransformRect(oneByOneTransformed, &oneByOneTransformed));
-        }
+        IFC_RETURN(transform->TransformRect(oneByOneTransformed, &oneByOneTransformed));
     }
     else
     {
-        // The current policy is to compute the bounds of the HWND according to the following:
-        // 1) The size of the HWND is based on Popup.Child's unclipped desired size, if set.
-        // 2) The position of the HWND is based on Popup.Child's position.
+        // The current policy is to compute the bounds of the bridge according to the following:
+        // 1) The size of the bridge is based on Popup.Child's unclipped desired size, if set.
+        // 2) The position of the bridge is based on Popup.Child's position.
         // This policy has caused numerous bugs and will be harder for public customers to understand.
         // If we can convert all controls to adhere to the "UseActualBounds" policy above, we can delete this code path.
         if (elementForBounds->HasLayoutStorage() &&
@@ -1888,10 +1871,7 @@ _Check_return_ HRESULT CPopup::GetPhysicalBounds(_In_ CUIElement* element, _Out_
             IFC_RETURN(transform->TransformRect({ 0, 0, elementForBounds->UnclippedDesiredSize.width, elementForBounds->UnclippedDesiredSize.height }, physicalBounds));
             DipsToPhysicalPixelsRect(physicalBounds);
 
-            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_49613456>())
-            {
-                IFC_RETURN(transform->TransformRect(oneByOneTransformed, &oneByOneTransformed));
-            }
+            IFC_RETURN(transform->TransformRect(oneByOneTransformed, &oneByOneTransformed));
         }
         else
         {
@@ -1903,11 +1883,8 @@ _Check_return_ HRESULT CPopup::GetPhysicalBounds(_In_ CUIElement* element, _Out_
     }
 
     // Note: These assume that the transform was axis-aligned. We don't support windowed popups with rotations above them.
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_49613456>())
-    {
-        *scaleX = oneByOneTransformed.Width;
-        *scaleY = oneByOneTransformed.Height;
-    }
+    *scaleX = oneByOneTransformed.Width;
+    *scaleY = oneByOneTransformed.Height;
 
     // In addition to the contents in the windowed popup, also union in all the non-windowed popups that are nested
     // inside this windowed popup's. They must live in the same island as the windowed popup so that they won't be
@@ -1997,9 +1974,9 @@ XTHICKNESS CPopup::GetInsetsForDropShadow()
     // Round the insets according to the root scale. We do this for a couple of reasons:
     //
     //   1. These insets get multiplied by the root scale in AdjustWindowedPopupBoundsForDropShadow.
-    //      Rounding them here allows us to calculate integer offsets for the hwnd.
+    //      Rounding them here allows us to calculate integer offsets for the bridge.
     //
-    //   2. These insets also factor into the offsets that we set on the hwnd root visual at the end of
+    //   2. These insets also factor into the offsets that we set on the island root visual at the end of
     //      PositionAndSizeWindowForWindowedPopup. Those offsets also get multiplied by the root scale,
     //      and we want integers at the end. Otherwise the content in the windowed popup get placed at
     //      a fractional offset, which produces blurry content.
@@ -2026,7 +2003,7 @@ static bool IsElementScaleOrTranslationOnly(_In_ CUIElement* uielement)
 
 bool CPopup::MeetsRenderingRequirementsForWindowedPopup()
 {
-    // Currently, popups can only be windowed if the bounds for the HWND are of the "simple, rectangular" form.
+    // Currently, popups can only be windowed if the bounds for the island are of the "simple, rectangular" form.
     // This means only scales/translates for everything from Popup.Child up to the root.
     bool isParentedPopup = IsActive();
     if (isParentedPopup)
@@ -2206,10 +2183,10 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
 
         if (RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector()->IsFeatureEnabled(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableWindowedPopupDebugVisual))
         {
-            // Create a "debug" visual for windowed popups.  This visual will be sized to the size of the HWND and will draw
-            // a semi-transparent green color on top of all the content inside the Popup.
-            // This debug visual allows us to see exactly where the HWND is on screen and is helpful in debugging cases where
-            // either the HWND bounds or the "undo transform" was not computed correctly.
+            // Create a "debug" visual for windowed popups.  This visual will be sized to the size of the island and
+            // will draw a semi-transparent green color on top of all the content inside the Popup. This debug visual
+            // allows us to see exactly where the bridge/island are on screen and is helpful in debugging cases where
+            // either the island bounds or the "undo transform" was not computed correctly.
             wrl::ComPtr<ixp::ICompositionColorBrush> debugColor_cb;
             IFCFAILFAST(compositorNoRef->CreateColorBrush(&debugColor_cb));
             IFCFAILFAST(debugColor_cb->put_Color(ColorUtils::GetWUColor(0x8800ff00)));
@@ -2236,20 +2213,14 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
 
 void CPopup::EnsureUIAWindow()
 {
-    if (m_spUIAWindow == nullptr && m_windowedPopupWindow != nullptr)
+    if (m_spUIAWindow == nullptr && m_popupWindowBridge)
     {
         auto core = GetContext();
 
         UIAHostEnvironmentInfo uiaInfo;
-        if (CXamlIslandRoot* island = GetAssociatedXamlIslandNoRef())
-        {
-            uiaInfo = UIAHostEnvironmentInfo(island);
-        }
-        else
-        {
-            // Use Jupiter window here because all elements are positioned relative to it for hit testing
-            uiaInfo = UIAHostEnvironmentInfo(m_windowedPopupWindow, static_cast<HWND>(core->GetHostSite()->GetXcpControlWindow()));
-        }
+        CXamlIslandRoot* island = GetAssociatedXamlIslandNoRef();
+        ASSERT(island);
+        uiaInfo = UIAHostEnvironmentInfo(island);
 
         IFCFAILFAST(CUIAHostWindow::Create(
             uiaInfo,
@@ -2260,6 +2231,7 @@ void CPopup::EnsureUIAWindow()
 }
 
 // If popup is windowed, return popup's positioning (host/non-input) window. Else, return Jupiter window.
+// Should be removable after Task 50004748: Switch TextBoxBase in windowed popups to IContentCoordinateConverter
 HWND CPopup::GetPopupPositioningWindow() const
 {
     // Note: We can't assume that the popup hwnd exists. We won't create one of someone opens a windowed popup
@@ -2429,7 +2401,7 @@ _Check_return_ HRESULT CPopup::SetChild(
         // of the new child is this popup already, meaning the logical parent-child relationship shouldn't be broken.
         if (pChild->GetLogicalParentNoRef() == this)
         {
-            ClearUCRemoveLogicalParentFlag(pChild);
+            IFC(ClearUCRemoveLogicalParentFlag(pChild));
         }
     }
 
@@ -4051,18 +4023,6 @@ void CPopupRoot::CloseAllPopupsForTreeReset()
     }
 }
 
-void CPopupRoot::OnHostWindowPositionChanged()
-{
-    if (m_pOpenPopups != nullptr)
-    {
-        for (auto node = m_pOpenPopups->GetHead(); node != nullptr; node = node->m_pNext)
-        {
-            CPopup* popup = node->m_pData;
-            FxCallbacks::Popup_OnHostWindowPositionChanged(popup);
-        }
-    }
-}
-
 void CPopupRoot::OnIslandLostFocus()
 {
     for (CPopup* popup : GetPopupsInSafeClosingOrder())
@@ -5381,7 +5341,7 @@ std::vector<CDependencyObject*> CPopupRoot::GetPopupChildrenOpenedDuringEngageme
     std::vector<CDependencyObject*> popupChildrenDuringEngagement;
 
     CPopupRoot* popupRoot = nullptr;
-    VisualTree::GetPopupRootForElementNoRef(element, &popupRoot);
+    IFCFAILFAST(VisualTree::GetPopupRootForElementNoRef(element, &popupRoot));
 
     if (popupRoot == nullptr || FAILED(popupRoot->GetOpenPopups(&openPopupsCount, &openedPopups)))
     {

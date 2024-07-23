@@ -19,11 +19,9 @@ class CValue;
 class CMILMatrix
 {
 public:
-    CMILMatrix()
-    {
-    }
-
-    CMILMatrix(bool fInitialize)
+    CMILMatrix() = default;
+    
+    explicit CMILMatrix(bool fInitialize)
     {
         if (fInitialize)
         {
@@ -233,9 +231,7 @@ public:
 class CMILMatrix4x4
 {
 public:
-    CMILMatrix4x4()
-    {
-    }
+    CMILMatrix4x4() = default;
 
     explicit CMILMatrix4x4(bool fInitialize)
     {

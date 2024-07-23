@@ -72,7 +72,7 @@ private:
     void UpdateTextPredictionSettingBits(BOOL bIsPredictionEnabled);
 
     CTextBoxBase *m_pTextBox;
-    UINT32 m_inputScope;
+    UINT32 m_inputScope{};
     TextInput_InputSettings m_inputSettings;
     Microsoft::WRL::ComPtr<ITextServices2> m_spTextServices;
   };

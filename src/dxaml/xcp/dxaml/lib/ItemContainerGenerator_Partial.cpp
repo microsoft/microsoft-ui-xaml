@@ -90,7 +90,7 @@ ItemContainerGenerator::CreateGenerator(
 
     IFC(pHost->get_View(&spView));
     IFC(spView.As(&spObservableVector));
-    if(spObservableVector)
+    if (spObservableVector)
     {
         spItemCollectionVectorChangedHandler.Attach(
             new ClassMemberEventHandler<
@@ -536,7 +536,7 @@ _Check_return_ HRESULT ItemContainerGenerator::ClearBlocks(
                     // If we can't get a peg on the container, it means the container isn't reachable, and we needn't clean
                     // it up.
                     auto peggedContainer = ctl::try_make_autopeg(static_cast<DependencyObject*>(pContainerNoRef));
-                    if( peggedContainer )
+                    if (peggedContainer)
                     {
                         IFC(UnlinkContainerFromItem(pContainerNoRef, /*isRecycling*/FALSE));
                         if (bRecycle)
@@ -2209,7 +2209,7 @@ ItemContainerGenerator::NotifyOfSourceChanged(
     IFC(e->get_CollectionChange(&action));
 
     // if we get reset event from parent collection we should handle it to refresh items in the group.
-    if(wfc::CollectionChange_Reset != action && m_bIsGrouping && m_tpObservableItemsSource.Get() != pSender)
+    if (wfc::CollectionChange_Reset != action && m_bIsGrouping && m_tpObservableItemsSource.Get() != pSender)
     {
         goto Cleanup;
     }
@@ -2276,7 +2276,7 @@ ItemContainerGenerator::OnItemCollectionChanged(
     IFC(e->get_CollectionChange(&action));
 
     // if we get reset event from parent collection we should handle it to refresh items in the group.
-    if(wfc::CollectionChange_Reset != action && m_bIsGrouping && m_tpObservableItemsSource.Get() != pSender)
+    if (wfc::CollectionChange_Reset != action && m_bIsGrouping && m_tpObservableItemsSource.Get() != pSender)
     {
         goto Cleanup;
     }
@@ -2437,7 +2437,7 @@ ItemContainerGenerator::OnItemRemoved(_In_ UINT nIndex)
     }
 
     // remove the item, and remove the block if it's now empty
-    if( rib && rib->m_nItemCount-1 == offsetFromBlockStart )
+    if (rib && rib->m_nItemCount-1 == offsetFromBlockStart)
     {
         // There's no entries in the block behind this one with which to overwrite it.
         // Instead, we just need to clear it.

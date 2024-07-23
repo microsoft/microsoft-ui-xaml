@@ -217,6 +217,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_IsDesktopPopupMenuEnabled(_Out_ B
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<TextBox*>(this)->get_IsDesktopPopupMenuEnabledImpl(pValue));
 Cleanup:
@@ -1342,6 +1343,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::GetLinguisticAlternativesAsync(_Outpt
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "TextBox_GetLinguisticAlternativesAsync", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<TextBox*>(this)->GetLinguisticAlternativesAsyncImpl(ppReturnValue));
@@ -1365,6 +1367,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::GetRectFromCharacterIndex(_In_ INT ch
     ABI::Windows::Foundation::Rect returnValueCore;
 
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
 
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
@@ -1499,12 +1502,6 @@ HRESULT DirectUI::TextBoxFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ v
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ITextBoxStaticsFeature_HeaderPlacement)))
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ITextBoxStaticsFeature_HeaderPlacement*>(this);
-    }
-#endif
-#if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ITextBoxStaticsFeature_InputValidation)))
-    {
-        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ITextBoxStaticsFeature_InputValidation*>(this);
     }
 #endif
     else
@@ -1664,18 +1661,9 @@ IFACEMETHODIMP DirectUI::TextBoxFactory::get_HeaderPlacementProperty(_Out_ ABI::
 
 
 
-IFACEMETHODIMP DirectUI::TextBoxFactory::get_ErrorTemplateProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
-{
-    RRETURN(MetadataAPI::GetIDependencyProperty(KnownPropertyIndex::TextBox_ErrorTemplate, ppValue));
-}
-IFACEMETHODIMP DirectUI::TextBoxFactory::get_InputValidationModeProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
-{
-    RRETURN(MetadataAPI::GetIDependencyProperty(KnownPropertyIndex::TextBox_InputValidationMode, ppValue));
-}
-IFACEMETHODIMP DirectUI::TextBoxFactory::get_InputValidationKindProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
-{
-    RRETURN(MetadataAPI::GetIDependencyProperty(KnownPropertyIndex::TextBox_InputValidationKind, ppValue));
-}
+
+
+
 
 
 // Attached properties.

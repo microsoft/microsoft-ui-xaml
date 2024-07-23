@@ -55,6 +55,7 @@ IFACEMETHODIMP DirectUI::XamlLight::get_CompositionLight(_Outptr_result_maybenul
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<XamlLight*>(this)->get_CompositionLightImpl(ppValue));
 Cleanup:
@@ -82,6 +83,7 @@ IFACEMETHODIMP DirectUI::XamlLight::GetId(_Out_ HSTRING* pReturnValue)
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "XamlLight_GetId", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<XamlLight*>(this)->GetIdImpl(pReturnValue));

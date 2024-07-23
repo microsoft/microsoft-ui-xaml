@@ -33,9 +33,9 @@ namespace DirectUI
         _Check_return_ HRESULT GetElapsedMilliSecondsSinceLastUITickImpl(_Out_ INT* returnValue);
 
     private:
-        LARGE_INTEGER m_freq;
-        LARGE_INTEGER m_startFrameTime;
-        LARGE_INTEGER m_endFrameTime;
+        LARGE_INTEGER m_freq{};
+        LARGE_INTEGER m_startFrameTime{};
+        LARGE_INTEGER m_endFrameTime{};
         
         // exceptionally set to True when (shift) tabbing into an unrealized item to give the BuildTreeService
         // enough time to prepare it to receive focus. This is specific to the Local/Cycle ListviewBase.TabNavigation.

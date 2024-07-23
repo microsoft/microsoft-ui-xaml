@@ -8,10 +8,9 @@ namespace XamlOM
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
     public sealed class ContractVersionAttribute : Attribute, IContractBuilder
     {
-        public ContractVersionAttribute(int version, int xamlDirectVersion = 0)
+        public ContractVersionAttribute(int version)
         {
             Version = version;
-            XamlDirectVersion = xamlDirectVersion;
         }
 
         public int Version
@@ -20,15 +19,9 @@ namespace XamlOM
             private set;
         }
 
-        public int XamlDirectVersion
-        {
-            get;
-            private set;
-        }
-
         void IContractBuilder.BuildContract(OM.ContractDefinition definition, Type source)
         {
-            definition.AddVersion(Version, XamlDirectVersion);
+            definition.AddVersion(Version);
         }
     }
 

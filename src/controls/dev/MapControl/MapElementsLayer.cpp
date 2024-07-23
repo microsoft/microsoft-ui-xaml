@@ -23,6 +23,11 @@ MapElementsLayer::MapElementsLayer()
 
 }
 
+void MapElementsLayer::SetParentMapControl(const winrt::MapControl& parent)
+{
+    m_parentMapControl = winrt::make_weak(parent);
+}
+
 void  MapElementsLayer::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
@@ -33,42 +38,50 @@ void MapElementsLayer::RaiseMapElementClick(MapElementClickEventArgs const& args
     m_mapElementClickEventSource(*this, args);
 }
 
-void MapElementsLayer::OnMapElementsVectorChanged(const winrt::IObservableVector<winrt::MapElement>& sender, const winrt::Collections::IVectorChangedEventArgs& args)
+winrt::fire_and_forget MapElementsLayer::HandleMapElementsChanged(const winrt::IObservableVector<winrt::MapElement>& sender, const winrt::Collections::IVectorChangedEventArgs& args)
 {
     const auto index = args.Index();
-    auto map = winrt::get_self<MapControl>(SharedHelpers::GetAncestorOfType<winrt::MapControl>(winrt::VisualTreeHelper::GetParent(*this)));
-    if (map)
+    if (const auto& mapControl = m_parentMapControl.get())
     {
-        if (index)
+        auto mapControlImpl = winrt::get_self<MapControl>(mapControl);
+        switch (args.CollectionChange())
         {
-            map->LayerElementsChanged(*this, sender, args, m_elementIds.GetAt(index));
-        }
-        else 
-        {
-            map->LayerElementsChanged(*this, sender, args, L"");
+            case winrt::Collections::CollectionChange::ItemInserted:
+            {
+                co_await mapControlImpl->LayerElementsChanged(*this, MapElements(), args, L"");
+                m_elementIds.Append(winrt::get_self<MapElement>(MapElements().GetAt(index))->Id);
+                break;
+            }
+            case winrt::Collections::CollectionChange::ItemRemoved:
+            {
+                co_await mapControlImpl->LayerElementsChanged(*this, MapElements(), args, m_elementIds.GetAt(index));
+                m_elementIds.RemoveAt(index);
+                break;
+            }
+            case winrt::Collections::CollectionChange::ItemChanged:
+            {
+                auto elements = MapElements();
+                co_await mapControlImpl->LayerElementsChanged(*this, elements, args, m_elementIds.GetAt(index));
+                m_elementIds.SetAt(index, winrt::get_self<MapElement>(elements.GetAt(index))->Id);
+                break;
+            }
+            case winrt::Collections::CollectionChange::Reset:
+            {
+                auto elements = MapElements();
+                co_await mapControlImpl->LayerElementsChanged(*this, elements, args, L"");
+                m_elementIds.Clear();
+                for (uint32_t i = 0; i < elements.Size(); i++)
+                {
+                    auto elementId = winrt::get_self<MapElement>(elements.GetAt(i))->Id;
+                    m_elementIds.Append(elementId);
+                }
+                break;
+            }
         }
     }
+}
 
-    switch (args.CollectionChange())
-    {
-    case winrt::Collections::CollectionChange::ItemInserted:
-        m_elementIds.Append(winrt::get_self<MapElement>(sender.GetAt(index))->Id);
-        break;
-    case winrt::Collections::CollectionChange::ItemRemoved:
-        m_elementIds.RemoveAt(index);
-        break;
-    case winrt::Collections::CollectionChange::ItemChanged:
-        m_elementIds.SetAt(index, winrt::get_self<MapElement>(sender.GetAt(index))->Id);
-        break;
-    case winrt::Collections::CollectionChange::Reset:
-    {
-        m_elementIds.Clear();
-        for (uint32_t i = 0; i < sender.Size(); i++)
-        {
-            auto elementId = winrt::get_self<MapElement>(sender.GetAt(i))->Id;
-            m_elementIds.Append(elementId);
-        }
-        break;
-    }
-    }
+void MapElementsLayer::OnMapElementsVectorChanged(const winrt::IObservableVector<winrt::MapElement>& sender, const winrt::Collections::IVectorChangedEventArgs& args)
+{
+    HandleMapElementsChanged(sender, args);
 }

@@ -105,6 +105,7 @@ IFACEMETHODIMP DirectUI::BindingGenerated::get_Path(_Outptr_result_maybenull_ AB
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<Binding*>(this)->get_PathImpl(ppValue));
 Cleanup:

@@ -227,11 +227,11 @@ _Check_return_
 
     // If we still haven't been able to get a usable source, and this is a CLR application, try to get
     // a wrapper around the input collection.
-    if( !spSource && pNewValue != nullptr )
+    if (!spSource && pNewValue != nullptr)
     {
         ctl::ComPtr<IInspectable> spWrapper;
         spWrapper.Attach(ReferenceTrackerManager::GetTrackerTarget(pNewValue));
-        if( spWrapper )
+        if (spWrapper)
         {
             if (auto spBindableIterable = spWrapper.AsOrNull<IBindableIterable>())
             {
@@ -243,7 +243,7 @@ _Check_return_
     // Update ItemCollection with new ItemsSource reference.
     // May be a null, which means clearing. But must be a IEnumerable derived instance.
 
-    if(pNewValue != nullptr && !spSource)
+    if (pNewValue != nullptr && !spSource)
     {
         IFC_RETURN(E_INVALIDARG);
     }
@@ -531,7 +531,7 @@ _Check_return_
     {
         IFC(IsItemItsOwnContainer(pItem, &isOwnContainer));
 
-        if(isOwnContainer)
+        if (isOwnContainer)
         {
             IFC(ctl::do_query_interface(*ppContainer, pItem));
         }
@@ -552,7 +552,7 @@ _Check_return_
             IFC(ContainerFromItem(pItem, &spContainerAsDO));
         }
 
-        if(spContainerAsDO)
+        if (spContainerAsDO)
         {
             IFC(spContainerAsDO.CopyTo(ppContainer));
         }
@@ -660,7 +660,6 @@ _Check_return_
         IFC(OnItemsHostAvailable());
     }
 
-
     if (!spItemsHost)
     {
         goto Cleanup;
@@ -690,6 +689,9 @@ _Check_return_
     }
 
     IFC(get_ItemContainerGenerator(&spItemContainerGenerator));
+
+    ASSERT(m_tpGenerator);
+
     IFC(m_tpGenerator->StartAt(position, xaml_primitives::GeneratorDirection::GeneratorDirection_Forward, TRUE));
 
     for (UINT nIndex = 0; nIndex < nCount ; ++nIndex)
@@ -1049,7 +1051,7 @@ _Check_return_
         // new style panels: the panel implements internal IICG2 interface
         IFC(spCustomItemsHost->NotifyOfItemsChanging(e));
     }
-    else
+    else if (m_tpGenerator)
     {
         // old style panels: m_tpGenerator is pointing to an ICG implementations
         IFC(m_tpGenerator.Cast<ItemContainerGenerator>()->NotifyOfSourceChanged(pSender, e));
@@ -1155,7 +1157,7 @@ _Check_return_ HRESULT ItemsControl::OnItemContainerStyleSelectorChangedImpl(
     HRESULT hr = S_OK;
     ctl::ComPtr<IStyle> spContainerStyle;
     IFC(get_ItemContainerStyle(&spContainerStyle));
-    if(!spContainerStyle)
+    if (!spContainerStyle)
     {
         IFC(RefreshContainers());
     }
@@ -1529,7 +1531,7 @@ _Check_return_
                 spItemsControl = static_cast<IItemsControl*>(spTemplatedParent.Cast<ItemsControl>());
                 spTemplatedParent.Reset();
 
-                if(!ignoreGrouping)
+                if (!ignoreGrouping)
                 {
                     IFC(spItemsControl.Cast<ItemsControl>()->get_TemplatedParent(&spTemplatedParent));
                     spGroupItem = spTemplatedParent.AsOrNull<IGroupItem>();
@@ -2201,8 +2203,9 @@ _Check_return_
     Trace(szTrace);
 #endif
 
-    // Different panel types can have different ICG setups, so we'd better make sure we have the right one
-    if (ctl::is<ICustomGeneratorItemsHost>(spItemsHost))
+    // Different panel types can have different ICG setups, so we'd better make sure we have the right one.
+    // m_tpGenerator can be null when changing the ItemsPanel property while the ItemsSource is null.
+    if (ctl::is<ICustomGeneratorItemsHost>(spItemsHost) || !m_tpGenerator)
     {
         IFC(InitializeItemContainerGenerator());
     }
@@ -2521,12 +2524,12 @@ IFACEMETHODIMP
 {
     HRESULT hr = S_OK;
 
-    if( m_tpItems )
+    if (m_tpItems)
     {
-        IFC( m_tpItems->DisconnectVisualChildrenRecursive() );
+        IFC(m_tpItems->DisconnectVisualChildrenRecursive());
     }
 
-    IFC( ItemsControlGenerated::OnDisconnectVisualChildren() );
+    IFC(ItemsControlGenerated::OnDisconnectVisualChildren());
 
 Cleanup:
 
@@ -2621,13 +2624,13 @@ _Check_return_ HRESULT
     *pGroupItemIndex = 0;
 
     // If groupItem is nullptr, return found= false
-    if(groupItem == nullptr)
+    if (groupItem == nullptr)
     {
         goto Cleanup;
     }
 
     IFC(get_IsGrouping(&isGrouping));
-    if(isGrouping)
+    if (isGrouping)
     {
         ctl::ComPtr<IPanel> spPanel;
 
@@ -3451,7 +3454,8 @@ _Check_return_ HRESULT ItemsControl::ProcessTabStopOverride(
     const bool isBackward,
     const bool didCycleFocusAtRootVisualScope,
     _Outptr_ DependencyObject** ppNewTabStop,
-    _Out_ BOOLEAN* pIsTabStopOverridden)
+    _Out_ BOOLEAN* pIsTabStopOverridden
+    )
 {
 #ifdef ICTL_DEBUG
     IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"ICTL(%s)[0x%p]: ProcessTabStopOverride. isBackward=%d, didCycleFocusAtRootVisualScope=%d",

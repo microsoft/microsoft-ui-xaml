@@ -393,6 +393,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
 
         public static void DragToTarget(UIObject obj, UIObject obj2, int xOffset = 0, int yOffset = 0)
         {
+            DragToTargetHelper(obj, obj2, xOffset, yOffset, useMouse: false);
+        }
+
+        public static void MouseDragToTarget(UIObject obj, UIObject obj2, int xOffset = 0, int yOffset = 0)
+        {
+            DragToTargetHelper(obj, obj2, xOffset, yOffset, useMouse: true);
+        }
+
+        public static void DragToTargetHelper(UIObject obj, UIObject obj2, int xOffset, int yOffset, bool useMouse)
+        {
             Point startPoint = obj.GetClickablePoint();
             Log.Comment("Start Point X:{0} Y:{1}", startPoint.X, startPoint.Y);
 
@@ -406,9 +416,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             using (var waiter = GetWaiterForInputEvent(obj, InputEvent.Drag))
             {
                 Log.Comment("Move input to Start Point.");
-                SinglePointGesture.Current.Move(startPoint);
+
+                if (useMouse)
+                {
+                    PointerInput.Move(startPoint);
+                }
+                else
+                {
+                    SinglePointGesture.Current.Move(startPoint);
+                }
+
                 Log.Comment("Begin Drag.");
-                SinglePointGesture.Current.PressAndDrag(end, dragDuration, 500);
+
+                if (useMouse)
+                {
+                    PointerInput.ClickDrag(end, PointerButtons.Primary, dragDuration);
+                }
+                else
+                {
+                    SinglePointGesture.Current.PressAndDrag(end, dragDuration, 500);
+                }
+
                 Log.Comment("Drag Complete.");
             }
             Wait.ForIdle();

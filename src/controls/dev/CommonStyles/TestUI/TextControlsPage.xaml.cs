@@ -3,6 +3,7 @@
 using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using MUXControlsTestApp.Utilities;
 
 namespace MUXControlsTestApp
 {
@@ -21,12 +22,12 @@ namespace MUXControlsTestApp
         {
             if (isRootGridDefaultSize)
             {
-                TestFrame.Instance.SetRootGridSizeToCustomSize(1, 1);
+                this.FindVisualParentByType<TestFrame>().SetRootGridSizeToCustomSize(1, 1);
             }
             else
             {
                 // Reset to default size
-                TestFrame.Instance.SetRootGridSizeToCustomSize(-1, -1);
+                this.FindVisualParentByType<TestFrame>().SetRootGridSizeToCustomSize(-1, -1);
             }
             isRootGridDefaultSize = !isRootGridDefaultSize;
         }

@@ -946,6 +946,12 @@ namespace MUXControlsTestApp
             }
         }
 
+        public void OnSwitchTargetButtonClicked(object sender, RoutedEventArgs args)
+        {
+            var newTarget = getTeachingTip().Target == targetButton ? targetButton2 : targetButton;
+            getTeachingTip().Target = newTarget;
+        }
+
         public Button ActionButton
         {
             get

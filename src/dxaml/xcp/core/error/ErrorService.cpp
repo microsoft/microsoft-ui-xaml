@@ -153,32 +153,7 @@ const HResultToECodePair eResult_eCode_Table[] =
     {(HRESULT)MX_E_ENCODING,           AG_E_PARSER_INVALID_ENCODING},
     {(HRESULT)WC_E_UNIQUEATTRIBUTE,    AG_E_PARSER_MULT_PROP_VALUES},
 
-    {E_CAPTURE_DEVICE_IN_USE,        AG_E_CAPTURE_DEVICE_IN_USE},
-    {E_CAPTURE_DEVICE_REMOVED,       AG_E_CAPTURE_DEVICE_REMOVED},
-    {E_CAPTURE_DEVICE_ACCESS_DENIED, AG_E_CAPTURE_DEVICE_ACCESS_DENIED},
-    {E_CAPTURE_SOURCE_NOT_STOPPED,   AG_E_CAPTURE_SOURCE_NOT_STOPPED},
-    {E_CAPTURE_DEVICE_NOT_AVAILABLE, AG_E_CAPTURE_DEVICE_NOT_AVAILABLE},
     {E_INVALID_APP_SIGNATURE,        AG_E_INVALID_APP_SIGNATURE},
-};
-
-//
-// Table mapping specific media errors to generic equivalents.  Allows
-// us to expose new media errors in MSS scenario without changing others.
-//
-const ECodePair Media_Specific_to_Generic_Table[] =
-{
-    {AG_E_ATTRIBUTENOTFOUND,           AG_E_UNABLE_TO_PLAY},
-    {AG_E_END_OF_STREAM,               AG_E_UNABLE_TO_PLAY},
-    {AG_E_INVALIDINDEX,                AG_E_UNABLE_TO_PLAY},
-    {AG_E_INVALIDSTREAMNUMBER,         AG_E_UNABLE_TO_PLAY},
-    {AG_E_NO_SAMPLE_DURATION,          AG_E_UNABLE_TO_PLAY},
-    {AG_E_NO_SAMPLE_TIMESTAMP,         AG_E_UNABLE_TO_PLAY},
-    {AG_E_SHUTDOWN,                    AG_E_UNABLE_TO_PLAY},
-    {AG_E_INVALIDMEDIATYPE,            AG_E_INVALID_FILE_FORMAT},
-    {AG_E_INVALIDTYPE,                 AG_E_INVALID_FILE_FORMAT},
-    {AG_E_INVALID_FORMAT,              AG_E_INVALID_FILE_FORMAT},
-    {AG_E_UNSUPPORTED_REPRESENTATION,  AG_E_INVALID_FILE_FORMAT},
-    {AG_E_INVALIDREQUEST,              AG_E_NOT_FOUND},
 };
 
 
@@ -712,36 +687,6 @@ CErrorService::UpdateErrorCodeFromHResult(_In_ HRESULT hResult, _Out_ XUINT32 *p
 
         pr2cm++;
         cr2cm--;
-    }
-    return S_OK;
-}
-
-_Check_return_ HRESULT
-CErrorService::UnspecifyMediaError(_In_ XUINT32 iSpecificCode, _Out_ XUINT32 *pGenericCode)
-{
-    XUINT32 cecp = sizeof(Media_Specific_to_Generic_Table) / sizeof(ECodePair);
-    const ECodePair *pecp = Media_Specific_to_Generic_Table;
-
-    if (pGenericCode == NULL)
-    {
-        IFC_RETURN(E_INVALIDARG);
-    }
-
-    *pGenericCode = iSpecificCode;
-
-    // Search the Specific_to_Generic mapping table to get the original code.
-
-    while (cecp)
-    {
-        if (pecp->m_iKey == iSpecificCode)
-        {
-            // Found a mapping
-            *pGenericCode = pecp->m_iEquivalent;
-            break;
-        }
-
-        pecp++;
-        cecp--;
     }
     return S_OK;
 }

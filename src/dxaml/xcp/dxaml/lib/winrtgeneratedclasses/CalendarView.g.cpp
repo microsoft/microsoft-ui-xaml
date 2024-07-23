@@ -894,7 +894,7 @@ _Check_return_ HRESULT DirectUI::CalendarViewGenerated::EventAddHandlerByIndex(_
     case KnownEventIndex::CalendarView_CalendarViewDayItemChanging:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CalendarView*, ABI::Microsoft::UI::Xaml::Controls::CalendarViewDayItemChangingEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -911,7 +911,7 @@ _Check_return_ HRESULT DirectUI::CalendarViewGenerated::EventAddHandlerByIndex(_
     case KnownEventIndex::CalendarView_SelectedDatesChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CalendarView*, ABI::Microsoft::UI::Xaml::Controls::CalendarViewSelectedDatesChangedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -940,7 +940,7 @@ _Check_return_ HRESULT DirectUI::CalendarViewGenerated::EventRemoveHandlerByInde
     case KnownEventIndex::CalendarView_CalendarViewDayItemChanging:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CalendarView*, ABI::Microsoft::UI::Xaml::Controls::CalendarViewDayItemChangingEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -957,7 +957,7 @@ _Check_return_ HRESULT DirectUI::CalendarViewGenerated::EventRemoveHandlerByInde
     case KnownEventIndex::CalendarView_SelectedDatesChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CalendarView*, ABI::Microsoft::UI::Xaml::Controls::CalendarViewSelectedDatesChangedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

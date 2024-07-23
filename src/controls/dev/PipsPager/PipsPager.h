@@ -20,6 +20,7 @@ class PipsPager :
 {
 public:
     PipsPager();
+    ~PipsPager();
 
     /* IFrameworkElement */
     void OnApplyTemplate();
@@ -46,6 +47,7 @@ public:
         const wstring_view& collapsedStateName,
         const wstring_view& disabledStateName);
     void OnOrientationChanged();
+    void OnWrapModeChanged();
 
     winrt::UIElement GetSelectedItem();
 
@@ -70,6 +72,9 @@ private:
     void UpdateSelectedPip(const int index);
     void UpdatePipOrientation(const winrt::Control& pip);
     void ApplyStyleToPipAndUpdateOrientation(const winrt::FrameworkElement& pip, const winrt::Style& style);
+    void RestoreLayoutVirtualization();
+    void UpdateLayoutVirtualization();
+    bool IsWrapEnabled(){ return WrapMode() == winrt::PipsPagerWrapMode::Wrap; };
     /* Eventing */
     void RaiseSelectedIndexChanged();
 
@@ -79,6 +84,9 @@ private:
     void OnPipsAreaGettingFocus(const IInspectable& sender, const winrt::GettingFocusEventArgs& args);
     void OnPipsAreaBringIntoViewRequested(const IInspectable& sender, const winrt::BringIntoViewRequestedEventArgs& args);
     void OnScrollViewerBringIntoViewRequested(const IInspectable& sender, const winrt::BringIntoViewRequestedEventArgs& args);
+
+    /* Event listeners */
+    void OnItemsRepeaterLayoutChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args);
 
     /* Pips Logic */
     void UpdatePipsItems(const int numberOfPages, int maxVisualIndicators);
@@ -98,6 +106,7 @@ private:
     winrt::UIElement::GettingFocus_revoker m_pipsAreaGettingFocusRevoker{};
     winrt::ItemsRepeater::BringIntoViewRequested_revoker m_pipsAreaBringIntoViewRequestedRevoker{};
     winrt::FxScrollViewer::BringIntoViewRequested_revoker m_scrollViewerBringIntoViewRequestedRevoker{};
+    PropertyChanged_revoker m_itemsRepeaterStackLayoutChangedRevoker{};
     /* Items */
     winrt::IObservableVector<int> m_pipsPagerItems{};
 
@@ -107,4 +116,6 @@ private:
     int m_lastSelectedPageIndex{ -1 };
     bool m_isPointerOver{ false };
     bool m_isFocused{ false };
+    winrt::weak_ref<winrt::StackLayout> m_itemsRepeaterStackLayout{ nullptr };
+    bool m_cachedIsVirtualizationEnabledFlag{ true };
 };

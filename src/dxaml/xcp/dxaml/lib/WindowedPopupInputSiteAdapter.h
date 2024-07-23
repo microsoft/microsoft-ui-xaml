@@ -35,5 +35,5 @@ private:
     ctl::ComPtr<DirectUI::PointerPointTransform> m_pointerPointTransformFromContentRoot;
 
     // This popup controls the lifetime of this WindowedPopupInputSiteAdapter, and we'll never outlive the popup.
-    CPopup* m_windowedPopupNoRef;
+    CPopup* m_windowedPopupNoRef{};
 };

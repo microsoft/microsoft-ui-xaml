@@ -66,7 +66,7 @@ namespace ContentRootInput
             _In_ const XUINT32 modifierKeys,
             _In_ const MessageMap msgId,
             _In_ const bool handledShouldNotImpedeTextInput,
-            _Out_ bool* handled) const;
+            _Inout_ bool* handled) const;
 
         static bool IsFocusNavigationKey(const wsy::VirtualKey virtualKeyCode);
 

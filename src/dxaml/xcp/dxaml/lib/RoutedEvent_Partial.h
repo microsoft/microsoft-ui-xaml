@@ -30,6 +30,6 @@ namespace DirectUI
 
         private:
             wrl_wrappers::HString m_strNativeRepresentation;
-            KnownEventIndex m_EventId;
+            KnownEventIndex m_EventId{};
     };
 }

@@ -278,17 +278,17 @@ XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { n
          // Represent the first date choosable by datepicker. Note that the year of this date can be
          // different from the MinYear as the MinYear value can be unrepresentable depending on the
          // type of the calendar.
-         wf::DateTime _startDate;
+         wf::DateTime _startDate{};
 
          // The year of this date is the latest year that can be selectable by the date picker. Note that
          // month and date values do not necessarily represent the end date of  our date picker since we
          // do not need that information readily. Also note that, this year may be different from the MaxYear
          // since MaxYear may be unrepresentable depending on the calendar.
-         wf::DateTime _endDate;
+         wf::DateTime _endDate{};
 
-         EventRegistrationToken _daySelectionChangedToken;
-         EventRegistrationToken _monthSelectionChangedToken;
-         EventRegistrationToken _yearSelectionChangedToken;
+         EventRegistrationToken _daySelectionChangedToken{};
+         EventRegistrationToken _monthSelectionChangedToken{};
+         EventRegistrationToken _yearSelectionChangedToken{};
 
          // See the comment of AllowReactionToSelectionChange method for use of this variable.
          BOOLEAN _reactionToSelectionChangeAllowed;

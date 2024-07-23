@@ -247,16 +247,19 @@ winrt::hstring InteractionTrackerAsyncOperationTypeToString(InteractionTrackerAs
 
 winrt::hstring InteractionTrackerAsyncOperationTriggerToString(InteractionTrackerAsyncOperationTrigger operationTrigger)
 {
-    switch (operationTrigger)
+    switch (static_cast<int>(operationTrigger))
     {
-    case InteractionTrackerAsyncOperationTrigger::DirectViewChange:
+    case static_cast<int>(InteractionTrackerAsyncOperationTrigger::DirectViewChange):
         return L"DirectViewChange";
-    case InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest:
+    case static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest):
         return L"HorizontalScrollControllerRequest";
-    case InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest:
+    case static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest):
         return L"VerticalScrollControllerRequest";
-    case InteractionTrackerAsyncOperationTrigger::BringIntoViewRequest:
+    case static_cast<int>(InteractionTrackerAsyncOperationTrigger::BringIntoViewRequest):
         return L"BringIntoViewRequest";
+    case static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest) |
+         static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest):
+        return L"HorizontalScrollControllerRequest | VerticalScrollControllerRequest";
     default:
         MUX_ASSERT(false);
         return L"";

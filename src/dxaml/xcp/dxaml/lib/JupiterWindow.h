@@ -128,6 +128,12 @@ public:
         const bool isReplayedMessage,
         _Out_opt_ bool* handled);
 
+    _Check_return_ HRESULT OnIslandNonClientPointerMessage(
+        const UINT msg,
+        _In_opt_ CContentRoot* contentRoot,
+        _In_ ixp::IPointerPoint* pointerPoint,
+        const bool isReplayedMessage);
+
     _Check_return_ HRESULT OnIslandMessage(
         _In_ UINT uMsg,
         _In_ WPARAM wParam,
@@ -253,6 +259,10 @@ private:
         _In_ wsy::VirtualKey virtualKey,
         _Inout_ bool* handled);
 
+    _Check_return_ HRESULT OnContentAutomationProviderRequested(
+        _In_ ixp::IContentIsland* content,
+        _In_ ixp::IContentIslandAutomationProviderRequestedEventArgs* e);
+
     HWND                m_hwnd;
     WindowType::Enum    m_windowType;
     CJupiterControl*    m_pControl;
@@ -283,6 +293,11 @@ private:
     bool m_useCoreDragDrop = false;
 
     std::unique_ptr<InputSiteAdapter> m_inputSiteAdapter{nullptr};
+    bool m_inputSiteAdapterHwndHandlesWmGetObject{false};
+    bool m_legacyCoreWindowUiaProviderSet{false};
+
+    wrl::ComPtr<ixp::IContentIsland> m_contentIsland{nullptr};
+    EventRegistrationToken m_automationProviderRequestedToken = {};
 
 #pragma warning(push)
 #pragma warning(disable:4996) // IApplicationViewStatics is marked as [[deprecated]]

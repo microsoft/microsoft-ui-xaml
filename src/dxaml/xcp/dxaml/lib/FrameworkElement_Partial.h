@@ -248,6 +248,7 @@ namespace DirectUI
         virtual _Check_return_ HRESULT GetLogicalParentForAPProtected(
             _Outptr_ DependencyObject** ppLogicalParentForAP)
         {
+            *ppLogicalParentForAP = nullptr;
             RRETURN(S_OK);
         }
 

@@ -1852,14 +1852,14 @@ D2DTextDrawingContext::HWBuildGlyphRunTextures(
             XRECTF_RB glyphRunBounds;
             CMILMatrix glyphRunRealizationTransform;
 
-            GetGlyphRunTransformAndBounds(
+            IFC_RETURN(GetGlyphRunTransformAndBounds(
                 pSharedD2DDeviceContextNoRef,
                 pGlyphRunDataNoRef,
                 pRealizationTransform,
                 true, // snapToPixel
                 glyphRunRealizationTransform,
                 glyphRunBounds
-                );
+                ));
 
             pGlyphRunDataNoRef->GlyphRunRealizationBounds = ToXRectF(glyphRunBounds);
             pGlyphRunDataNoRef->GlyphRunRealizationTransform = glyphRunRealizationTransform;

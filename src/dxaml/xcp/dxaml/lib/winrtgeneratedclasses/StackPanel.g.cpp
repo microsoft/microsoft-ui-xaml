@@ -62,6 +62,7 @@ IFACEMETHODIMP DirectUI::StackPanelGenerated::get_AreHorizontalSnapPointsRegular
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<StackPanel*>(this)->get_AreHorizontalSnapPointsRegularImpl(pValue));
 Cleanup:
@@ -80,6 +81,7 @@ IFACEMETHODIMP DirectUI::StackPanelGenerated::get_AreVerticalSnapPointsRegular(_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<StackPanel*>(this)->get_AreVerticalSnapPointsRegularImpl(pValue));
 Cleanup:
@@ -288,6 +290,7 @@ IFACEMETHODIMP DirectUI::StackPanelGenerated::GetIrregularSnapPoints(_In_ ABI::M
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "StackPanel_GetIrregularSnapPoints", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<StackPanel*>(this)->GetIrregularSnapPointsImpl(orientation, alignment, ppReturnValue));
@@ -306,6 +309,7 @@ IFACEMETHODIMP DirectUI::StackPanelGenerated::GetRegularSnapPoints(_In_ ABI::Mic
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "StackPanel_GetRegularSnapPoints", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<StackPanel*>(this)->GetRegularSnapPointsImpl(orientation, alignment, pOffset, pReturnValue));
@@ -324,7 +328,7 @@ _Check_return_ HRESULT DirectUI::StackPanelGenerated::EventAddHandlerByIndex(_In
     case KnownEventIndex::StackPanel_HorizontalSnapPointsChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -341,7 +345,7 @@ _Check_return_ HRESULT DirectUI::StackPanelGenerated::EventAddHandlerByIndex(_In
     case KnownEventIndex::StackPanel_VerticalSnapPointsChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -370,7 +374,7 @@ _Check_return_ HRESULT DirectUI::StackPanelGenerated::EventRemoveHandlerByIndex(
     case KnownEventIndex::StackPanel_HorizontalSnapPointsChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -387,7 +391,7 @@ _Check_return_ HRESULT DirectUI::StackPanelGenerated::EventRemoveHandlerByIndex(
     case KnownEventIndex::StackPanel_VerticalSnapPointsChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

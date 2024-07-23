@@ -80,7 +80,7 @@
   <Thickness x:Key="CalendarDatePickerTopHeaderMargin">0,0,0,8</Thickness>
   <Style TargetType="CalendarDatePicker" BasedOn="{StaticResource DefaultCalendarDatePicker}" />
   <Style x:Key="DefaultCalendarDatePicker" TargetType="CalendarDatePicker">
-    <Setter Property="Foreground" Value="{ThemeResource CalendarDatePickerForeground}" />
+    <Setter Property="Foreground" Value="{ThemeResource CalendarDatePickerTextForeground}" />
     <Setter Property="Background" Value="{ThemeResource CalendarDatePickerBackground}" />
     <Setter Property="BorderBrush" Value="{ThemeResource CalendarDatePickerBorderBrush}" />
     <Setter Property="BorderThickness" Value="{ThemeResource CalendarDatePickerBorderThemeThickness}" />
@@ -212,7 +212,7 @@
             </Grid.ColumnDefinitions>
             <ContentPresenter x:Name="HeaderContentPresenter" x:DeferLoadStrategy="Lazy" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}" Margin="{StaticResource CalendarDatePickerTopHeaderMargin}" TextWrapping="Wrap" VerticalAlignment="Top" Visibility="Collapsed" />
             <Border x:Name="Background" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Control.IsTemplateFocusTarget="True" MinHeight="32" />
-            <TextBlock x:Name="DateText" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Foreground="{ThemeResource CalendarDatePickerTextForeground}" Text="{TemplateBinding PlaceholderText}" Padding="12, 0, 0, 2" VerticalAlignment="Center" />
+            <TextBlock x:Name="DateText" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Foreground="{TemplateBinding Foreground}" Text="{TemplateBinding PlaceholderText}" Padding="12, 0, 0, 2" VerticalAlignment="Center" />
             <FontIcon x:Name="CalendarGlyph" Grid.Row="1" Grid.Column="2" Glyph="&#xE787;" FontFamily="{ThemeResource SymbolThemeFontFamily}" Foreground="{ThemeResource CalendarDatePickerCalendarGlyphForeground}" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
             <ContentPresenter x:Name="DescriptionPresenter" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Content="{TemplateBinding Description}" x:Load="False" Foreground="{ThemeResource SystemControlDescriptionTextForegroundBrush}" AutomationProperties.AccessibilityView="Raw" />
           </Grid>

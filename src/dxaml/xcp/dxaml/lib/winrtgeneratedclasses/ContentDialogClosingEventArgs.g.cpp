@@ -89,6 +89,7 @@ IFACEMETHODIMP DirectUI::ContentDialogClosingEventArgsGenerated::GetDeferral(_Ou
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ContentDialogClosingEventArgs_GetDeferral", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(static_cast<ContentDialogClosingEventArgs*>(this)->GetDeferralImpl(ppReturnValue));
 Cleanup:

@@ -49,6 +49,7 @@ IFACEMETHODIMP DirectUI::CalendarDatePickerDateChangedEventArgsGenerated::get_Ne
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarDatePickerDateChangedEventArgs*>(this)->get_NewDateImpl(ppValue));
 Cleanup:
@@ -67,6 +68,7 @@ IFACEMETHODIMP DirectUI::CalendarDatePickerDateChangedEventArgsGenerated::get_Ol
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarDatePickerDateChangedEventArgs*>(this)->get_OldDateImpl(ppValue));
 Cleanup:

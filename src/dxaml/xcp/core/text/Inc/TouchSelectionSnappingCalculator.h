@@ -201,7 +201,7 @@ private:
 
 private:
     SelectionRange<Position> _selectionRange;
-    Position _lastShrinkingPosition;
+    Position _lastShrinkingPosition{};
     GripperSide _lastActiveGripperSide;
 
     // The framework class must outlive this class, as this class references but does not own it

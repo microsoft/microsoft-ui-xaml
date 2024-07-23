@@ -54,6 +54,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::TryFocusAsync(_In_ ABI::Microsoft:
     }
     ARG_NOTNULL(pElement, "element");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(TryFocusAsyncImpl(pElement, value, ppReturnValue));
 Cleanup:
@@ -71,6 +72,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::TryMoveFocusAsync(_In_ ABI::Micros
         XamlTelemetry::PublicApiCall(true, 0, "FocusManager_TryMoveFocusAsync", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(TryMoveFocusAsyncImpl(focusNavigationDirection, ppReturnValue));
 Cleanup:
@@ -89,6 +91,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::TryMoveFocusWithOptionsAsync(_In_ 
     }
     ARG_NOTNULL(pFocusNavigationOptions, "focusNavigationOptions");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(TryMoveFocusWithOptionsAsyncImpl(focusNavigationDirection, pFocusNavigationOptions, ppReturnValue));
 Cleanup:
@@ -107,6 +110,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::TryMoveFocusWithOptions(_In_ ABI::
     }
     ARG_NOTNULL(pFocusNavigationOptions, "focusNavigationOptions");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(TryMoveFocusWithOptionsImpl(focusNavigationDirection, pFocusNavigationOptions, pReturnValue));
 Cleanup:
@@ -124,6 +128,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextElement(_In_ ABI::Microsof
         XamlTelemetry::PublicApiCall(true, 0, "FocusManager_FindNextElement", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(FindNextElementImpl(focusNavigationDirection, ppReturnValue));
 Cleanup:
@@ -141,6 +146,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::FindFirstFocusableElement(_In_opt_
         XamlTelemetry::PublicApiCall(true, 0, "FocusManager_FindFirstFocusableElement", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(FindFirstFocusableElementImpl(pSearchScope, ppReturnValue));
 Cleanup:
@@ -158,6 +164,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::FindLastFocusableElement(_In_opt_ 
         XamlTelemetry::PublicApiCall(true, 0, "FocusManager_FindLastFocusableElement", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(FindLastFocusableElementImpl(pSearchScope, ppReturnValue));
 Cleanup:
@@ -176,6 +183,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextElementWithOptions(_In_ AB
     }
     ARG_NOTNULL(pFocusNavigationOptions, "focusNavigationOptions");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(FindNextElementWithOptionsImpl(focusNavigationDirection, pFocusNavigationOptions, ppReturnValue));
 Cleanup:
@@ -193,6 +201,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextFocusableElement(_In_ ABI:
         XamlTelemetry::PublicApiCall(true, 0, "FocusManager_FindNextFocusableElement", 0);
     }
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckActivationAllowed());
     IFC(FindNextFocusableElementImpl(focusNavigationDirection, ppResult));
 Cleanup:
@@ -210,6 +219,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextFocusableElementWithHint(_
         XamlTelemetry::PublicApiCall(true, 0, "FocusManager_FindNextFocusableElementWithHint", 0);
     }
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckActivationAllowed());
     IFC(FindNextFocusableElementWithHintImpl(focusNavigationDirection, hintRect, ppResult));
 Cleanup:
@@ -227,6 +237,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::TryMoveFocus(_In_ ABI::Microsoft::
         XamlTelemetry::PublicApiCall(true, 0, "FocusManager_TryMoveFocus", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(TryMoveFocusImpl(focusNavigationDirection, pReturnValue));
 Cleanup:
@@ -244,6 +255,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::GetFocusedElement(_Outptr_ IInspec
         XamlTelemetry::PublicApiCall(true, 0, "FocusManager_GetFocusedElement", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(GetFocusedElementImpl(ppReturnValue));
 Cleanup:
@@ -253,7 +265,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FocusManagerFactory::GetFocusedElementWithRoot(_In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP DirectUI::FocusManagerFactory::GetFocusedElementWithRoot(_In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot, _Outptr_result_maybenull_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -262,6 +274,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::GetFocusedElementWithRoot(_In_ ABI
     }
     ARG_NOTNULL(pXamlRoot, "xamlRoot");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckActivationAllowed());
     IFC(GetFocusedElementWithRootImpl(pXamlRoot, ppReturnValue));
 Cleanup:
@@ -280,6 +293,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextFocusWithSearchRootIgnoreE
     }
     ARG_NOTNULL(pSearchRoot, "searchRoot");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckActivationAllowed());
     IFC(FindNextFocusWithSearchRootIgnoreEngagementImpl(focusNavigationDirection, pSearchRoot, ppResult));
 Cleanup:
@@ -298,6 +312,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextFocusWithSearchRootIgnoreE
     }
     ARG_NOTNULL(pSearchRoot, "searchRoot");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckActivationAllowed());
     IFC(FindNextFocusWithSearchRootIgnoreEngagementWithHintRectImpl(focusNavigationDirection, pSearchRoot, hintRect, exclusionRect, ppResult));
 Cleanup:
@@ -316,6 +331,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextFocusWithSearchRootIgnoreE
     }
     ARG_NOTNULL(pSearchRoot, "searchRoot");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckActivationAllowed());
     IFC(FindNextFocusWithSearchRootIgnoreEngagementWithClipImpl(focusNavigationDirection, pSearchRoot, ignoreClipping, ignoreCone, ppResult));
 Cleanup:
@@ -351,6 +367,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::SetFocusedElementWithDirection(_In
     }
     ARG_NOTNULL(pElement, "element");
     ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     IFC(CheckActivationAllowed());
     IFC(SetFocusedElementWithDirectionImpl(pElement, focusState, animateIfBringIntoView, forceBringIntoView, focusNavigationDirection, requestInputActivation, pResult));
 Cleanup:

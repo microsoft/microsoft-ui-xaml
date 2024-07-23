@@ -119,6 +119,7 @@ IFACEMETHODIMP DirectUI::StandardUICommandFactory::get_KindProperty(_Outptr_resu
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckActivationAllowed());
     IFC(get_KindPropertyImpl(ppValue));
 Cleanup:

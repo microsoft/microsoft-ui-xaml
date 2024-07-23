@@ -9,7 +9,7 @@ bool XamlUnknownXmlNamespace::get_IsResolved() const
     return false;
 }
 
-HRESULT XamlUnknownXmlNamespace::GetXamlType(
+_Check_return_ HRESULT XamlUnknownXmlNamespace::GetXamlType(
     _In_ const xstring_ptr& inTypeName, 
     _Out_ std::shared_ptr<XamlType>& outType
     )
@@ -23,7 +23,7 @@ HRESULT XamlUnknownXmlNamespace::GetXamlType(
 
 }
 
-HRESULT XamlUnknownXmlNamespace::GetDirectiveType(
+_Check_return_ HRESULT XamlUnknownXmlNamespace::GetDirectiveType(
     _In_ const xstring_ptr& inTypeName, 
     _Out_ std::shared_ptr<XamlType>& outType
     )
@@ -37,7 +37,7 @@ HRESULT XamlUnknownXmlNamespace::GetDirectiveType(
     RRETURN(hr);    
 }
 
-HRESULT XamlUnknownXmlNamespace::GetDirectiveProperty(
+_Check_return_ HRESULT XamlUnknownXmlNamespace::GetDirectiveProperty(
     _In_ const xstring_ptr_view& inPropertyName, 
     _Out_ std::shared_ptr<DirectiveProperty>& ppOut
     )

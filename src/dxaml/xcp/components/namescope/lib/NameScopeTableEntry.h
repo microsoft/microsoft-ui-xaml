@@ -35,7 +35,7 @@ namespace Jupiter {
             NameScopeTableEntry& operator=(const NameScopeTableEntry& other);
 
             NameScopeTableEntry(NameScopeTableEntry&& other) noexcept;
-            NameScopeTableEntry& operator=(NameScopeTableEntry&& other);
+            NameScopeTableEntry& operator=(NameScopeTableEntry&& other) noexcept;
 
         private:
 

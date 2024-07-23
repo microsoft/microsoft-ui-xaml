@@ -57,6 +57,7 @@ protected:
     std::vector<winrt::IXamlMember> m_members;
 
     bool m_isSystemType = false;
+    bool m_isBindable = false;
 };
 
 class XamlType : public XamlTypeBase
@@ -71,6 +72,7 @@ public:
 
     void SetCollectionAddFunc(std::function<void(winrt::IInspectable const&, winrt::IInspectable const&)> collectionAdd);
     void SetAddToMapFunc(std::function<void(winrt::IInspectable const&, winrt::IInspectable const&, winrt::IInspectable const&)> addToMap);
+    void SetIsBindable(bool isBindable);
 };
 
 class EnumXamlType : public XamlTypeBase

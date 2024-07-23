@@ -54,6 +54,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_ArePointerWheelEventsIgnored
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_ArePointerWheelEventsIgnoredImpl(pValue));
 Cleanup:
@@ -73,6 +74,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_BringIntoViewOnFocusChange(_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_BringIntoViewOnFocusChangeImpl(pValue));
 Cleanup:
@@ -92,6 +94,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_CanContentRenderOutsideBound
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_CanContentRenderOutsideBoundsImpl(pValue));
 Cleanup:
@@ -129,6 +132,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_CurrentAnchor(_Outptr_result
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_CurrentAnchorImpl(ppValue));
 Cleanup:
@@ -174,6 +178,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_HorizontalScrollBarVisibilit
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_HorizontalScrollBarVisibilityImpl(pValue));
 Cleanup:
@@ -193,6 +198,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_HorizontalScrollMode(_Out_ A
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_HorizontalScrollModeImpl(pValue));
 Cleanup:
@@ -230,6 +236,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsDeferredScrollingEnabled(_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_IsDeferredScrollingEnabledImpl(pValue));
 Cleanup:
@@ -249,6 +256,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsHorizontalRailEnabled(_Out
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_IsHorizontalRailEnabledImpl(pValue));
 Cleanup:
@@ -268,6 +276,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsHorizontalScrollChainingEn
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_IsHorizontalScrollChainingEnabledImpl(pValue));
 Cleanup:
@@ -287,6 +296,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsInActiveDirectManipulation
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_IsInActiveDirectManipulationImpl(pValue));
 Cleanup:
@@ -296,6 +306,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsInDirectManipulation(_Out_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_IsInDirectManipulationImpl(pValue));
 Cleanup:
@@ -305,6 +316,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsRequestBringIntoViewIgnore
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_IsRequestBringIntoViewIgnoredImpl(pValue));
 Cleanup:
@@ -324,6 +336,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsScrollInertiaEnabled(_Out_
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_IsScrollInertiaEnabledImpl(pValue));
 Cleanup:
@@ -343,6 +356,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsVerticalRailEnabled(_Out_ 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_IsVerticalRailEnabledImpl(pValue));
 Cleanup:
@@ -362,6 +376,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsVerticalScrollChainingEnab
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_IsVerticalScrollChainingEnabledImpl(pValue));
 Cleanup:
@@ -381,6 +396,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsZoomChainingEnabled(_Out_ 
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_IsZoomChainingEnabledImpl(pValue));
 Cleanup:
@@ -400,6 +416,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsZoomInertiaEnabled(_Out_ B
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_IsZoomInertiaEnabledImpl(pValue));
 Cleanup:
@@ -509,6 +526,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_VerticalScrollBarVisibility(
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_VerticalScrollBarVisibilityImpl(pValue));
 Cleanup:
@@ -528,6 +546,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_VerticalScrollMode(_Out_ ABI
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_VerticalScrollModeImpl(pValue));
 Cleanup:
@@ -592,6 +611,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_ZoomMode(_Out_ ABI::Microsof
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_ZoomModeImpl(pValue));
 Cleanup:
@@ -611,6 +631,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_ZoomSnapPoints(_Outptr_resul
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<ScrollViewer*>(this)->get_ZoomSnapPointsImpl(ppValue));
 Cleanup:
@@ -912,6 +933,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::ChangeView(_In_ ABI::Windows::Fo
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ScrollViewer_ChangeView", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ScrollViewer*>(this)->ChangeViewImpl(pHorizontalOffset, pVerticalOffset, pZoomFactor, pReturnValue));
@@ -930,6 +952,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::ChangeViewWithOptionalAnimation(
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ScrollViewer_ChangeViewWithOptionalAnimation", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ScrollViewer*>(this)->ChangeViewWithOptionalAnimationImpl(pHorizontalOffset, pVerticalOffset, pZoomFactor, disableAnimation, pReturnValue));
@@ -1110,7 +1133,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerGenerated::EventAddHandlerByIndex(_
     case KnownEventIndex::ScrollViewer_AnchorRequested:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ScrollViewer*, ABI::Microsoft::UI::Xaml::Controls::AnchorRequestedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1127,7 +1150,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerGenerated::EventAddHandlerByIndex(_
     case KnownEventIndex::ScrollViewer_DirectManipulationCompleted:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1144,7 +1167,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerGenerated::EventAddHandlerByIndex(_
     case KnownEventIndex::ScrollViewer_DirectManipulationStarted:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1161,7 +1184,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerGenerated::EventAddHandlerByIndex(_
     case KnownEventIndex::ScrollViewer_ViewChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<ABI::Microsoft::UI::Xaml::Controls::ScrollViewerViewChangedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1178,7 +1201,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerGenerated::EventAddHandlerByIndex(_
     case KnownEventIndex::ScrollViewer_ViewChanging:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<ABI::Microsoft::UI::Xaml::Controls::ScrollViewerViewChangingEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1207,7 +1230,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerGenerated::EventRemoveHandlerByInde
     case KnownEventIndex::ScrollViewer_AnchorRequested:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ScrollViewer*, ABI::Microsoft::UI::Xaml::Controls::AnchorRequestedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1224,7 +1247,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerGenerated::EventRemoveHandlerByInde
     case KnownEventIndex::ScrollViewer_DirectManipulationCompleted:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1241,7 +1264,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerGenerated::EventRemoveHandlerByInde
     case KnownEventIndex::ScrollViewer_DirectManipulationStarted:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1258,7 +1281,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerGenerated::EventRemoveHandlerByInde
     case KnownEventIndex::ScrollViewer_ViewChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<ABI::Microsoft::UI::Xaml::Controls::ScrollViewerViewChangedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1275,7 +1298,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerGenerated::EventRemoveHandlerByInde
     case KnownEventIndex::ScrollViewer_ViewChanging:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<ABI::Microsoft::UI::Xaml::Controls::ScrollViewerViewChangingEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

@@ -18,7 +18,7 @@ namespace MUXControlsTestApp
 {
     public sealed partial class FlatItemsControlPage : TestPage
     {
-        private ObservableCollection<Recipe> _colRecipes = null;
+        private ObservableCollection<Entity> _colEntities = null;
         private ItemsPanelTemplate _modernPanelTemplate = null;
         private DataTemplate[] _itemTemplates = new DataTemplate[3];
 
@@ -31,13 +31,13 @@ namespace MUXControlsTestApp
 
         private void FlatItemsControlPage_Loaded(object sender, RoutedEventArgs e)
         {
-            _colRecipes = new ObservableCollection<Recipe>();
+            _colEntities = new ObservableCollection<Entity>();
 
             for (int itemIndex = 0; itemIndex < 250; itemIndex++)
             {
                 BitmapImage bitmapImage = GetBitmapImage(itemIndex % 126 + 1);
 
-                _colRecipes.Add(new Recipe()
+                _colEntities.Add(new Entity()
                 {
                     BitmapImage = bitmapImage,
                     Id = itemIndex
@@ -50,7 +50,7 @@ namespace MUXControlsTestApp
             UpdateItemsControlXYFocusKeyboardNavigation();
             UpdateItemsPanelType();
 
-            itemsControl.ItemsSource = _colRecipes;
+            itemsControl.ItemsSource = _colEntities;
         }
 
         private void UpdateItemsPanelType()
@@ -260,9 +260,9 @@ namespace MUXControlsTestApp
                 {
                     txtDataSourceItemCount.Text = "0";
                 }
-                else if (itemsControl.ItemsSource == _colRecipes)
+                else if (itemsControl.ItemsSource == _colEntities)
                 {
-                    txtDataSourceItemCount.Text = _colRecipes.Count.ToString();
+                    txtDataSourceItemCount.Text = _colEntities.Count.ToString();
                 }
             }
         }
@@ -283,17 +283,17 @@ namespace MUXControlsTestApp
             {
                 if (itemsControl != null && itemsControl.ItemsSource != null)
                 {
-                    if (itemsControl.ItemsSource == _colRecipes)
+                    if (itemsControl.ItemsSource == _colEntities)
                     {
-                        BitmapImage bitmapImage = GetBitmapImage(_colRecipes.Count % 126 + 1);
+                        BitmapImage bitmapImage = GetBitmapImage(_colEntities.Count % 126 + 1);
 
-                        var recipe = new Recipe()
+                        var entity = new Entity()
                         {
                             BitmapImage = bitmapImage,
-                            Id = _colRecipes.Count
+                            Id = _colEntities.Count
                         };
 
-                        _colRecipes.Add(recipe);
+                        _colEntities.Add(entity);
                     }
                 }
             }
@@ -310,17 +310,17 @@ namespace MUXControlsTestApp
             {
                 if (itemsControl != null && itemsControl.ItemsSource != null)
                 {
-                    if (itemsControl.ItemsSource == _colRecipes)
+                    if (itemsControl.ItemsSource == _colEntities)
                     {
-                        BitmapImage bitmapImage = GetBitmapImage(_colRecipes.Count % 126 + 1);
+                        BitmapImage bitmapImage = GetBitmapImage(_colEntities.Count % 126 + 1);
 
-                        var recipe = new Recipe()
+                        var entity = new Entity()
                         {
                             BitmapImage = bitmapImage,
-                            Id = _colRecipes.Count
+                            Id = _colEntities.Count
                         };
 
-                        _colRecipes.Insert(newItemIndex, recipe);
+                        _colEntities.Insert(newItemIndex, entity);
                     }
                 }
             }
@@ -337,9 +337,9 @@ namespace MUXControlsTestApp
             {
                 if (itemsControl != null && itemsControl.ItemsSource != null)
                 {
-                    if (itemsControl.ItemsSource == _colRecipes)
+                    if (itemsControl.ItemsSource == _colEntities)
                     {
-                        _colRecipes.Clear();
+                        _colEntities.Clear();
                     }
                 }
             }
@@ -356,9 +356,9 @@ namespace MUXControlsTestApp
             {
                 if (itemsControl != null && itemsControl.ItemsSource != null)
                 {
-                    if (itemsControl.ItemsSource == _colRecipes)
+                    if (itemsControl.ItemsSource == _colEntities)
                     {
-                        _colRecipes.RemoveAt(oldItemIndex);
+                        _colEntities.RemoveAt(oldItemIndex);
                     }
                 }
             }
@@ -375,17 +375,17 @@ namespace MUXControlsTestApp
             {
                 if (itemsControl != null && itemsControl.ItemsSource != null)
                 {
-                    if (itemsControl.ItemsSource == _colRecipes)
+                    if (itemsControl.ItemsSource == _colEntities)
                     {
-                        BitmapImage bitmapImage = GetBitmapImage(_colRecipes.Count % 126 + 1);
+                        BitmapImage bitmapImage = GetBitmapImage(_colEntities.Count % 126 + 1);
 
-                        var recipe = new Recipe()
+                        var entity = new Entity()
                         {
                             BitmapImage = bitmapImage,
-                            Id = _colRecipes.Count
+                            Id = _colEntities.Count
                         };
 
-                        _colRecipes[itemIndex] = recipe;
+                        _colEntities[itemIndex] = entity;
                     }
                 }
             }
@@ -595,7 +595,7 @@ namespace MUXControlsTestApp
                     }
                 }
 
-                itemsControl.ItemsSource = _colRecipes;
+                itemsControl.ItemsSource = _colEntities;
             }
         }
 
@@ -659,31 +659,31 @@ namespace MUXControlsTestApp
                 {
                     int newItemCount = int.Parse(txtDataSourceItemCount.Text);
 
-                    if (itemsControl.ItemsSource == _colRecipes)
+                    if (itemsControl.ItemsSource == _colEntities)
                     {
-                        if (_colRecipes.Count < newItemCount)
+                        if (_colEntities.Count < newItemCount)
                         {
-                            var colRecipesEnd = new List<Recipe>();
+                            var colEntitiesEnd = new List<Entity>();
 
-                            for (int itemIndex = 0; itemIndex < newItemCount - _colRecipes.Count; itemIndex++)
+                            for (int itemIndex = 0; itemIndex < newItemCount - _colEntities.Count; itemIndex++)
                             {
                                 BitmapImage bitmapImage = GetBitmapImage(itemIndex % 126 + 1);
 
-                                colRecipesEnd.Add(new Recipe()
+                                colEntitiesEnd.Add(new Entity()
                                 {
                                     BitmapImage = bitmapImage,
                                     Id = itemIndex
                                 });
                             }
 
-                            _colRecipes = new ObservableCollection<Recipe>(_colRecipes.Concat(colRecipesEnd));
+                            _colEntities = new ObservableCollection<Entity>(_colEntities.Concat(colEntitiesEnd));
                         }
-                        else if (_colRecipes.Count > newItemCount)
+                        else if (_colEntities.Count > newItemCount)
                         {
-                            _colRecipes = new ObservableCollection<Recipe>(_colRecipes.Take(newItemCount));
+                            _colEntities = new ObservableCollection<Entity>(_colEntities.Take(newItemCount));
                         }
 
-                        itemsControl.ItemsSource = _colRecipes;
+                        itemsControl.ItemsSource = _colEntities;
                     }
                 }
             }

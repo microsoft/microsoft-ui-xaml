@@ -9,11 +9,11 @@ struct EffectiveValue
 {
     EffectiveValue() = default;
 
-    EffectiveValue(EffectiveValue&& other)
+    EffectiveValue(EffectiveValue&& other) noexcept
         : value(std::move(other.value))
     {}
 
-    EffectiveValue& operator=(EffectiveValue&& other)
+    EffectiveValue& operator=(EffectiveValue&& other) noexcept
     {
         if (this != &other)
         {

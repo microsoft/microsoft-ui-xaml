@@ -26,11 +26,6 @@
 #include <MUX-ETWEvents.h>
 #include <palnetwork.h>
 #include <PalResourceManager.h>
-#include <FrameworkUdk/Containment.h>
-
-// Telemetry: Image Decoding Activity is skipped in WinAppSDK 1.5.5+ Servicing releases to avoid crashing
-// Bug 44612834: [1.5 servicing] [Watson Failure] caused by FAIL_FAST_FATAL_APP_EXIT_c0000409_Microsoft.UI.Xaml.dll!ImagingTelemetry::ImageDecodeActivity::Split
-#define WINAPPSDK_CHANGEID_44612834 44612834
 
 typedef ImageAsyncCallback<ImageCache> ImageCacheAsyncTask;
 
@@ -120,9 +115,6 @@ _Check_return_ HRESULT ImageCache::Download()
 
     IFCEXPECT_RETURN(m_State == ImageCacheState::NotDownloaded);
 
-    // TODO: This can be updated to go in ImageDecodeActivity, but we need a trail of breadcrumbs back to the
-    // ImageSource/LoadedImageSurface that triggered the download. There may be others that are waiting for this
-    // download as well. Do they get events too?
     TraceImageCacheDownloadBegin(m_strUri.GetBuffer());
 
     m_State = ImageCacheState::Downloading;
@@ -152,17 +144,14 @@ _Check_return_ HRESULT ImageCache::Download()
     return S_OK;
 }
 
-std::shared_ptr<ImageMetadataView> ImageCache::GetMetadataView(_In_opt_ const std::shared_ptr<ImagingTelemetry::ImageDecodeActivity>& decodeActivity, uint64_t imageId)
+std::shared_ptr<ImageMetadataView> ImageCache::GetMetadataView(uint64_t imageId)
 {
     if (!m_metadataViewImpl)
     {
         if (m_State == ImageCacheState::NotDownloaded &&
             !m_hasProcessDecodeRequestsTask)
         {
-            if (decodeActivity) // Will be null in unit tests
-            {
-                decodeActivity->QueueProcessDownload(imageId, m_strUri.GetBuffer());
-            }
+            ImagingTelemetry::QueueProcessDownload(imageId, m_strUri.GetBuffer());
             m_downloadError = TriggerProcessDecodeRequests();
         }
 
@@ -177,7 +166,7 @@ std::shared_ptr<ImageMetadataView> ImageCache::GetMetadataView(_In_opt_ const st
 _Check_return_ HRESULT ImageCache::GetImage(
     _In_ xref_ptr<ImageDecodeParams>& decodeParams,
     _In_ const xref_ptr<IImageAvailableCallback>& imageAvailableCallback,
-    _Outref_ xref_ptr<IAbortableImageOperation>& abortableImageOperation
+    _Out_ xref_ptr<IAbortableImageOperation>& abortableImageOperation
     )
 {
     //
@@ -346,20 +335,14 @@ _Check_return_ HRESULT ImageCache::TriggerProcessDecodeRequests()
 {
     if (!m_hasProcessDecodeRequestsTask)
     {
-        if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_44612834>())
+        // This ImageCache may be associated with multiple ImageSources (i.e. the same image decoding to multiple
+        // different sizes). Telemetry is associated with the decoded image, so report telemetry for all the
+        // decodes that will be triggered by this ImageCache.
+        for (ImageDecodeRequest* decodeRequest : m_decodeRequests)
         {
-            // This ImageCache may be associated with multiple ImageSources (i.e. the same image decoding to multiple
-            // different sizes). Telemetry is associated with the decoded image, so report telemetry for all the
-            // decodes that will be triggered by this ImageCache.
-            for (ImageDecodeRequest* decodeRequest : m_decodeRequests)
-            {
-                const auto& decodeParams = decodeRequest->GetDecodeParams();
+            const auto& decodeParams = decodeRequest->GetDecodeParams();
 
-                // The call below won't actually AV if there's nothing logging an ETW trace. Assert it explicitly so we
-                // crash consistently if it's null.
-                ASSERT(decodeParams->GetDecodeActivity());
-                decodeParams->GetDecodeActivity()->QueueProcessDecodeRequests(decodeParams->GetImageId(), decodeParams->GetStrSource().GetBuffer());
-            }
+            ImagingTelemetry::QueueProcessDecodeRequests(decodeParams->GetImageId(), decodeParams->GetStrSource().GetBuffer());
         }
 
         auto task = make_xref<ImageCacheAsyncTask>(this, &ImageCache::ProcessDecodeRequests);
@@ -380,13 +363,10 @@ _Check_return_ HRESULT ImageCache::ProcessDecodeRequests()
 {
     m_hasProcessDecodeRequestsTask = FALSE;
 
-    if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_44612834>())
+    for (ImageDecodeRequest* decodeRequest : m_decodeRequests)
     {
-        for (ImageDecodeRequest* decodeRequest : m_decodeRequests)
-        {
-            const auto& decodeParams = decodeRequest->GetDecodeParams();
-            decodeParams->GetDecodeActivity()->ProcessDecodeRequests(decodeParams->GetImageId(), decodeParams->GetStrSource().GetBuffer(), m_State);
-        }
+        const auto& decodeParams = decodeRequest->GetDecodeParams();
+        ImagingTelemetry::ProcessDecodeRequests(decodeParams->GetImageId(), decodeParams->GetStrSource().GetBuffer(), m_State);
     }
 
     //
@@ -496,13 +476,8 @@ _Check_return_ HRESULT ImageCache::BeginDecode(
         if (!decodeInProgress || decodeRequest->GetDecodeParams()->IsLoadedImageSurface())
         {
             const auto& decodeParams = decodeRequest->GetDecodeParams();
-            const std::shared_ptr<ImagingTelemetry::ImageDecodeActivity>& decodeActivity = decodeParams->GetDecodeActivity();
 
-            if (decodeActivity)
-            {
-                decodeActivity->QueueDecodeFromImageCache(decodeParams->GetImageId(), decodeParams->GetStrSource().GetBuffer());
-            }
-
+            ImagingTelemetry::QueueDecodeFromImageCache(decodeParams->GetImageId(), decodeParams->GetStrSource().GetBuffer());
             auto parseHR = m_encodedImageData->Parse(m_core->GetGraphicsDevice(), m_core->GetContentRootMaxSize());
 
             if (FAILED(parseHR))

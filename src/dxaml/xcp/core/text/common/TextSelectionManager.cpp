@@ -3646,8 +3646,8 @@ void TextSelectionManager::UpdateCaretElement()
 
         IFCFAILFAST(m_pTextSelection->GetAnchorTextPosition(&anchorPosition));
         IFCFAILFAST(m_pTextSelection->GetMovingTextPosition(&movingPosition));
-        anchorPosition.GetOffset(&startOffset);
-        movingPosition.GetOffset(&endOffset);
+        IFCFAILFAST(anchorPosition.GetOffset(&startOffset));
+        IFCFAILFAST(movingPosition.GetOffset(&endOffset));
 
         if (startOffset == endOffset)    //if start == end, the caret should be created
         {
@@ -3770,8 +3770,8 @@ void TextSelectionManager::CaretOnKeyDown(
 
     IFCFAILFAST(m_pTextSelection->GetAnchorTextPosition(&anchorPosition));
     IFCFAILFAST(m_pTextSelection->GetMovingTextPosition(&movingPosition));
-    anchorPosition.GetOffset(&startOffset);
-    movingPosition.GetOffset(&endOffset);
+    IFCFAILFAST(anchorPosition.GetOffset(&startOffset));
+    IFCFAILFAST(movingPosition.GetOffset(&endOffset));
     plainTextPosition = movingPosition.GetPlainPosition();
 
     switch (pKeyEventArgs->m_platformKeyCode)
@@ -3785,7 +3785,7 @@ void TextSelectionManager::CaretOnKeyDown(
             else if (startOffset != endOffset && !pKeyEventArgs->IsShiftPressed())    //If selection made and arrow key pressed, go to the end position of selection
             {
                 textPosition = CTextPosition(plainTextPosition);
-                m_pTextSelection->GetEndTextPosition(&textPosition);
+                IFCFAILFAST(m_pTextSelection->GetEndTextPosition(&textPosition));
                 plainTextPosition = textPosition.GetPlainPosition();
             }
             else                                                                      //else move the moving position
@@ -3803,7 +3803,7 @@ void TextSelectionManager::CaretOnKeyDown(
             else if (startOffset != endOffset && !pKeyEventArgs->IsShiftPressed())
             {
                 textPosition = CTextPosition(plainTextPosition);
-                m_pTextSelection->GetStartTextPosition(&textPosition);
+                IFCFAILFAST(m_pTextSelection->GetStartTextPosition(&textPosition));
                 plainTextPosition = textPosition.GetPlainPosition();
             }
             else

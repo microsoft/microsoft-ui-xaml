@@ -97,6 +97,7 @@ IFACEMETHODIMP DirectUI::CommandBarGenerated::get_ParentMenu(_Outptr_result_mayb
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<CommandBar*>(this)->get_ParentMenuImpl(ppValue));
 Cleanup:
@@ -224,7 +225,7 @@ _Check_return_ HRESULT DirectUI::CommandBarGenerated::EventAddHandlerByIndex(_In
     case KnownEventIndex::CommandBar_DynamicOverflowItemsChanging:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CommandBar*, ABI::Microsoft::UI::Xaml::Controls::DynamicOverflowItemsChangingEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -253,7 +254,7 @@ _Check_return_ HRESULT DirectUI::CommandBarGenerated::EventRemoveHandlerByIndex(
     case KnownEventIndex::CommandBar_DynamicOverflowItemsChanging:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CommandBar*, ABI::Microsoft::UI::Xaml::Controls::DynamicOverflowItemsChangingEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -365,6 +366,7 @@ IFACEMETHODIMP DirectUI::CommandBarFactory::GetCurrentBottomCommandBar(_In_ ABI:
     }
     ARG_NOTNULL(pXamlRoot, "xamlRoot");
     ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
     IFC(CheckActivationAllowed());
     IFC(GetCurrentBottomCommandBarImpl(pXamlRoot, ppResult));
 Cleanup:

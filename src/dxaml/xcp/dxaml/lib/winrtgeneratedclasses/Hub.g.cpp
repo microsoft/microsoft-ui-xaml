@@ -107,6 +107,7 @@ IFACEMETHODIMP DirectUI::HubGenerated::get_SectionHeaders(_Outptr_result_maybenu
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<Hub*>(this)->get_SectionHeadersImpl(ppValue));
 Cleanup:
@@ -125,6 +126,7 @@ IFACEMETHODIMP DirectUI::HubGenerated::get_SectionsInView(_Outptr_result_maybenu
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<Hub*>(this)->get_SectionsInViewImpl(ppValue));
 Cleanup:
@@ -409,7 +411,7 @@ _Check_return_ HRESULT DirectUI::HubGenerated::EventAddHandlerByIndex(_In_ Known
     case KnownEventIndex::Hub_SectionHeaderClick:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::IHubSectionHeaderClickEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -426,7 +428,7 @@ _Check_return_ HRESULT DirectUI::HubGenerated::EventAddHandlerByIndex(_In_ Known
     case KnownEventIndex::Hub_SectionsInViewChanged:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::ISectionsInViewChangedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -455,7 +457,7 @@ _Check_return_ HRESULT DirectUI::HubGenerated::EventRemoveHandlerByIndex(_In_ Kn
     case KnownEventIndex::Hub_SectionHeaderClick:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::IHubSectionHeaderClickEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -472,7 +474,7 @@ _Check_return_ HRESULT DirectUI::HubGenerated::EventRemoveHandlerByIndex(_In_ Kn
     case KnownEventIndex::Hub_SectionsInViewChanged:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::ISectionsInViewChangedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

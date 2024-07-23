@@ -103,6 +103,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TestEnvironment.Initialize(testContext);
         }
 
+        [TestCleanup]
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
@@ -166,9 +167,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("BreadcrumbBar Tests"))
             {
                 var breadcrumb = SetUpTest();
-                
+
                 VerifyBreadcrumbBarItemsContain(breadcrumb.Children, new string[] { "Root", "Node A", "Node A_2", "Node A_2_3", "Node A_2_3_1" }, true);
-                
+
                 Verify.AreEqual(1, breadcrumb.Children.Count, "The breadcrumb should contain 1 item");
             }
         }
@@ -248,7 +249,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "A")]
         public void KeyboardNavigationLeftToRightTest()
         {
-            using (var setup = new TestSetupHelper("BreadcrumbBar Tests"))
+            using (var setup = new TestSetupHelper("BreadcrumbBar Tests", new TestSetupHelper.TestSetupHelperOptions { AutomaticCleanup = false }))
             {
                 var breadcrumb = SetUpTest();
                 var breadcrumbItems = breadcrumb.Children;
@@ -287,6 +288,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Bug to solve here
                 KeyboardHelper.PressKey(Key.Left);
                 Verify.IsTrue(breadcrumbItems[0].HasKeyboardFocus, "'Root' BreadcrumbBarItem should keep the focus");
+
+                setup.AllowCleanup();
             }
         }
 
@@ -294,7 +297,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "A")]
         public void KeyboardNavigationRightToLeftTest()
         {
-            using (var setup = new TestSetupHelper("BreadcrumbBar Tests"))
+            using (var setup = new TestSetupHelper("BreadcrumbBar Tests", new TestSetupHelper.TestSetupHelperOptions { AutomaticCleanup = false }))
             {
                 var breadcrumb = SetUpTest();
                 var breadcrumbItems = breadcrumb.Children;
@@ -333,6 +336,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Bug to solve here
                 KeyboardHelper.PressKey(Key.Right);
                 Verify.IsTrue(breadcrumbItems[0].HasKeyboardFocus, "'Root' BreadcrumbBarItem should keep the focus");
+
+                setup.AllowCleanup();
             }
         }
 
@@ -453,7 +458,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(breadcrumbItems[2].HasKeyboardFocus, "'Node A_2' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Enter);
-                
+
                 VerifyLastClickedItemIndexIs(2);
                 VerifyLastClickedItemIs("Node A_2");
 
@@ -470,7 +475,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "A")]
         public void KeyboardNavigationDropDownItemInvokationTest()
         {
-            using(var setup = new TestSetupHelper("BreadcrumbBar Tests"))
+            using(var setup = new TestSetupHelper("BreadcrumbBar Tests", new TestSetupHelper.TestSetupHelperOptions { AutomaticCleanup = false }))
             {
                 var breadcrumb = SetUpCrumbledTest();
                 var breadcrumbItems = breadcrumb.Children;
@@ -503,6 +508,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(2, breadcrumb.Children.Count, "The breadcrumb should contain 2 items.");
 
                 VerifyBreadcrumbBarItemsContain(breadcrumb.Children, new string[] { "Root", "Node A" });
+
+                setup.AllowCleanup();
             }
         }
 
@@ -688,7 +695,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             int indexToFocus = 0;
 
-            // The RS3 and RS2 behaviours seem a little odd on how many tabs need to be pressed 
+            // The RS3 and RS2 behaviours seem a little odd on how many tabs need to be pressed
             bool gotFocus = TryGetFocusForRs2(breadcrumb, indexToFocus, isEllipsisVisible);
             if (!gotFocus)
             {
@@ -763,14 +770,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void VerifyBreadcrumbBarItemsContain(UICollection<UIObject> breadcrumbItems, string[] expectedItemValues, bool firstItemIsCurrentItem = false, bool isEllipsisVisible = false)
         {
-            // WARNING: this method clicks on each breadcrumb so once the verification has finished, 
+            // WARNING: this method clicks on each breadcrumb so once the verification has finished,
             // only the ellipsis item and 'Root' should exist
 
-            // As recycled breadcrumbs are not deleted, then we compare that the breadcrumb count is always bigger 
+            // As recycled breadcrumbs are not deleted, then we compare that the breadcrumb count is always bigger
             // than the expected values count
             var ellipsisPresentCount = isEllipsisVisible ? 1 : 0;
 
-            Verify.IsTrue(breadcrumbItems.Count - ellipsisPresentCount >= expectedItemValues.Length, 
+            Verify.IsTrue(breadcrumbItems.Count - ellipsisPresentCount >= expectedItemValues.Length,
                 "The expected values count should at least be one less than the BreadcrumbBarItems count");
 
             bool mustVerifyItemAsLastItem = firstItemIsCurrentItem;
@@ -813,7 +820,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         private Button GetDropDownItemByName(string dropDownItemName)
         {
             var ellipsisFlyout = FindElement.ByName("EllipsisFlyout");
-            
+
             foreach (var child in ellipsisFlyout.Children)
             {
                 if (child.Name == dropDownItemName)

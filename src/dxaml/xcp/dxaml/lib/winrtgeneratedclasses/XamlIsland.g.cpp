@@ -57,6 +57,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlIslandGenerated::get_Cont
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(static_cast<XamlIsland*>(this)->get_ContentImpl(ppValue));
 Cleanup:
@@ -75,6 +76,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlIslandGenerated::get_Cont
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(static_cast<XamlIsland*>(this)->get_ContentIslandImpl(ppValue));
 Cleanup:
@@ -84,6 +86,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlIslandGenerated::get_Syst
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     
     IFC(static_cast<XamlIsland*>(this)->get_SystemBackdropImpl(ppValue));
 Cleanup:

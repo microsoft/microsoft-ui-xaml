@@ -39,7 +39,7 @@ ScrollView::~ScrollView()
     UnhookCompositionTargetRendering();
     UnhookScrollPresenterEvents(true /*isForDestructor*/);
     UnhookScrollViewEvents();
-    ResetHideIndicatorsTimer(true /*isForDestructor*/);
+    ResetHideIndicatorsTimer();
 }
 
 #pragma region IScrollView
@@ -909,7 +909,9 @@ void ScrollView::OnHideIndicatorsTimerTick(
 
     if (AreScrollControllersAutoHiding())
     {
-        HideIndicators();
+        // As this control may be in the process of being discarded,
+        // use tracker_ref's safe_get() instead of get() to avoid crashes.
+        HideIndicators(true /*useTransitions*/, true /*useSafeGet*/);
     }
 }
 
@@ -966,6 +968,18 @@ void ScrollView::OnZoomAnimationStarting(
         SCROLLVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
         m_zoomAnimationStartingEventSource(*this, args);
+    }
+}
+
+void ScrollView::OnScrollPresenterViewChanging(
+    const winrt::IInspectable& /*sender*/,
+    const winrt::ScrollingViewChangingEventArgs& args)
+{
+    if (m_viewChangingEventSource)
+    {
+        SCROLLVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
+        m_viewChangingEventSource(*this, args);
     }
 }
 
@@ -1131,16 +1145,14 @@ void ScrollView::OnScrollPresenterPropertyChanged(
     }
 }
 
-void ScrollView::ResetHideIndicatorsTimer(bool isForDestructor, bool restart)
+void ScrollView::ResetHideIndicatorsTimer(bool restart)
 {
-    auto hideIndicatorsTimer = m_hideIndicatorsTimer.safe_get(isForDestructor /*useSafeGet*/);
-
-    if (hideIndicatorsTimer && hideIndicatorsTimer.IsEnabled())
+    if (m_hideIndicatorsTimer && m_hideIndicatorsTimer.IsEnabled())
     {
-        hideIndicatorsTimer.Stop();
+        m_hideIndicatorsTimer.Stop();
         if (restart)
         {
-            hideIndicatorsTimer.Start();
+            m_hideIndicatorsTimer.Start();
         }
     }
 }
@@ -1259,6 +1271,7 @@ void ScrollView::HookScrollPresenterEvents()
     MUX_ASSERT(m_scrollPresenterStateChangedToken.value == 0);
     MUX_ASSERT(m_scrollPresenterScrollAnimationStartingToken.value == 0);
     MUX_ASSERT(m_scrollPresenterZoomAnimationStartingToken.value == 0);
+    MUX_ASSERT(m_scrollPresenterViewChangingToken.value == 0);
     MUX_ASSERT(m_scrollPresenterViewChangedToken.value == 0);
     MUX_ASSERT(m_scrollPresenterScrollCompletedToken.value == 0);
     MUX_ASSERT(m_scrollPresenterZoomCompletedToken.value == 0);
@@ -1278,6 +1291,13 @@ void ScrollView::HookScrollPresenterEvents()
         m_scrollPresenterZoomCompletedToken = scrollPresenter.ZoomCompleted({ this, &ScrollView::OnScrollPresenterZoomCompleted });
         m_scrollPresenterBringingIntoViewToken = scrollPresenter.BringingIntoView({ this, &ScrollView::OnScrollPresenterBringingIntoView });
         m_scrollPresenterAnchorRequestedToken = scrollPresenter.AnchorRequested({ this, &ScrollView::OnScrollPresenterAnchorRequested });
+
+        const winrt::IScrollPresenter2 scrollPresenter2 = scrollPresenter.try_as<winrt::IScrollPresenter2>();
+
+        if (scrollPresenter2)
+        {
+            m_scrollPresenterViewChangingToken = scrollPresenter2.ViewChanging({ this, &ScrollView::OnScrollPresenterViewChanging });
+        }
 
         const winrt::DependencyObject scrollPresenterAsDO = scrollPresenter.try_as<winrt::DependencyObject>();
 
@@ -1324,6 +1344,18 @@ void ScrollView::UnhookScrollPresenterEvents(bool isForDestructor)
         {
             scrollPresenter.ZoomAnimationStarting(m_scrollPresenterZoomAnimationStartingToken);
             m_scrollPresenterZoomAnimationStartingToken.value = 0;
+        }
+
+        if (m_scrollPresenterViewChangingToken.value != 0)
+        {
+            const winrt::IScrollPresenter2 scrollPresenter2 = scrollPresenter.try_as<winrt::IScrollPresenter2>();
+
+            if (scrollPresenter2)
+            {
+                scrollPresenter2.ViewChanging(m_scrollPresenterViewChangingToken);
+            }
+
+            m_scrollPresenterViewChangingToken.value = 0;
         }
 
         if (m_scrollPresenterViewChangedToken.value != 0)
@@ -1650,10 +1682,13 @@ bool ScrollView::IsInputKindIgnored(winrt::ScrollingInputKinds const& inputKind)
     return (IgnoredInputKinds() & inputKind) == inputKind;
 }
 
-bool ScrollView::AreAllScrollControllersCollapsed() const
+bool ScrollView::AreAllScrollControllersCollapsed(bool useSafeGet) const
 {
-    return !SharedHelpers::IsAncestor(m_horizontalScrollControllerElement.try_as<winrt::DependencyObject>() /*child*/, static_cast<winrt::DependencyObject>(*this) /*parent*/, true /*checkVisibility*/) &&
-        !SharedHelpers::IsAncestor(m_verticalScrollControllerElement.try_as<winrt::DependencyObject>() /*child*/, static_cast<winrt::DependencyObject>(*this) /*parent*/, true /*checkVisibility*/);
+    return
+        (m_horizontalScrollControllerElement.safe_get(useSafeGet) == nullptr ||
+         !SharedHelpers::IsAncestor(m_horizontalScrollControllerElement.try_as<winrt::DependencyObject>() /*child*/, static_cast<winrt::DependencyObject>(*this) /*parent*/, true /*checkVisibility*/)) &&
+        (m_verticalScrollControllerElement.safe_get(useSafeGet) == nullptr ||
+         !SharedHelpers::IsAncestor(m_verticalScrollControllerElement.try_as<winrt::DependencyObject>() /*child*/, static_cast<winrt::DependencyObject>(*this) /*parent*/, true /*checkVisibility*/));
 }
 
 bool ScrollView::AreBothScrollControllersVisible() const
@@ -1668,13 +1703,14 @@ bool ScrollView::IsScrollControllersSeparatorVisible() const
 }
 
 void ScrollView::HideIndicators(
-    bool useTransitions)
+    bool useTransitions,
+    bool useSafeGet)
 {
     SCROLLVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, useTransitions, m_keepIndicatorsShowing);
 
     MUX_ASSERT(AreScrollControllersAutoHiding());
 
-    if (!AreAllScrollControllersCollapsed() && !m_keepIndicatorsShowing)
+    if (!AreAllScrollControllersCollapsed(useSafeGet) && !m_keepIndicatorsShowing)
     {
         GoToState(s_noIndicatorStateName, useTransitions);
 
@@ -1693,25 +1729,21 @@ void ScrollView::HideIndicatorsAfterDelay()
 
     if (!m_keepIndicatorsShowing && IsLoaded())
     {
-        winrt::DispatcherTimer hideIndicatorsTimer = nullptr;
-
         if (m_hideIndicatorsTimer)
         {
-            hideIndicatorsTimer = m_hideIndicatorsTimer.get();
-            if (hideIndicatorsTimer.IsEnabled())
+            if (m_hideIndicatorsTimer.IsEnabled())
             {
-                hideIndicatorsTimer.Stop();
+                m_hideIndicatorsTimer.Stop();
             }
         }
         else
         {
-            hideIndicatorsTimer = winrt::DispatcherTimer();
-            hideIndicatorsTimer.Interval(winrt::TimeSpan::duration(s_noIndicatorCountdown));
-            hideIndicatorsTimer.Tick({ this, &ScrollView::OnHideIndicatorsTimerTick });
-            m_hideIndicatorsTimer.set(hideIndicatorsTimer);
+            m_hideIndicatorsTimer = winrt::DispatcherTimer();
+            m_hideIndicatorsTimer.Interval(winrt::TimeSpan::duration(s_noIndicatorCountdown));
+            m_hideIndicatorsTimer.Tick({ this, &ScrollView::OnHideIndicatorsTimerTick });
         }
 
-        hideIndicatorsTimer.Start();
+        m_hideIndicatorsTimer.Start();
     }
 }
 
@@ -1759,7 +1791,7 @@ void ScrollView::UpdateScrollControllersVisualState(
             return;
         }
 
-        ResetHideIndicatorsTimer(false /*isForDestructor*/, true /*restart*/);
+        ResetHideIndicatorsTimer(true /*restart*/);
 
         // Mouse indicators dominate if they are already showing or if we have set the flag to prefer them.
         if (m_preferMouseIndicators || m_showingMouseIndicators || !areScrollControllersAutoHiding)

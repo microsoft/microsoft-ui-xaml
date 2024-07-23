@@ -45,6 +45,7 @@ IFACEMETHODIMP DirectUI::WriteableBitmapGenerated::get_PixelBuffer(_Outptr_resul
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<WriteableBitmap*>(this)->get_PixelBufferImpl(ppValue));
 Cleanup:

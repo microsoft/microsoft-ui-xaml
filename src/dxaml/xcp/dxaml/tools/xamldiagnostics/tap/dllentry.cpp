@@ -29,6 +29,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, _COM_Outptr_ void** ppv)
     return wrl::Module<wrl::InProc>::GetModule().GetClassObject(rclsid, riid, ppv);
 }
 
+__control_entrypoint(DllExport)
 STDAPI
 DllCanUnloadNow()
 {

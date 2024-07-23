@@ -50,6 +50,7 @@ IFACEMETHODIMP DirectUI::CalendarViewDayItemAutomationPeerGenerated::get_IsSelec
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarViewDayItemAutomationPeer*>(this)->get_IsSelectedImpl(pValue));
 Cleanup:
@@ -59,6 +60,7 @@ IFACEMETHODIMP DirectUI::CalendarViewDayItemAutomationPeerGenerated::get_Selecti
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<CalendarViewDayItemAutomationPeer*>(this)->get_SelectionContainerImpl(ppValue));
 Cleanup:
@@ -94,6 +96,7 @@ IFACEMETHODIMP DirectUI::CalendarViewDayItemAutomationPeerGenerated::GetColumnHe
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarViewDayItemAutomationPeer_GetColumnHeaderItems", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CalendarViewDayItemAutomationPeer*>(this)->GetColumnHeaderItemsImpl(pReturnValueCount, ppReturnValue));
@@ -112,6 +115,7 @@ IFACEMETHODIMP DirectUI::CalendarViewDayItemAutomationPeerGenerated::GetRowHeade
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "CalendarViewDayItemAutomationPeer_GetRowHeaderItems", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<CalendarViewDayItemAutomationPeer*>(this)->GetRowHeaderItemsImpl(pReturnValueCount, ppReturnValue));

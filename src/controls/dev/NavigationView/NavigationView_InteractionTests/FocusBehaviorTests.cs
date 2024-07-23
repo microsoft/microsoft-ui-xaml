@@ -302,6 +302,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                     Button togglePaneButton = new Button(FindElement.ById("TogglePaneButton"));
                     Button getSelectItemButton = new Button(FindElement.ByName("GetSelectedItemLabelButton"));
 
+                    Log.Comment("Deselect Menu Item 1");
+                    UIObject menuItem1 = FindElement.ByName("Menu Item 1");
+                    menuItem1.SetFocus();
+                    AutomationElement menuItem1AE = AutomationElement.FocusedElement;
+                    SelectionItemPattern menuItem1SIP = menuItem1AE.GetCurrentPattern(SelectionItemPattern.Pattern) as SelectionItemPattern;
+                    menuItem1SIP.RemoveFromSelection();
+
                     VerifyTabNavigationWithoutMenuItemSelected();
                     VerifyTabNavigationWithMenuItemSelected();
                     VerifyTabNavigationWithSettingsItemVisible();
@@ -315,7 +322,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
 
                         Verify.AreEqual("No Item Selected", GetSelectedItem());
 
-                        UIObject menuItem1 = FindElement.ByName("Menu Item 1");
                         UIObject menuItem29 = FindElement.ByName("Menu Item 29 (Selectable)");
 
                         // Set focus on the pane's toggle button.

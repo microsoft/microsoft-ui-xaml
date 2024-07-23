@@ -48,7 +48,7 @@ class GeometryBoundsHelper
             _In_ const XPOINTF& endPoint
             );
 
-        XRECTF_RB m_bounds;
-        XPOINTF m_currentPoint;
-        bool m_hasFirstPoint;
+        XRECTF_RB m_bounds{};
+        XPOINTF m_currentPoint{};
+        bool m_hasFirstPoint{};
 };

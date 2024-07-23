@@ -118,7 +118,7 @@
             Margin=2,0,2,8
             Name=TextLabel
             Padding=0,0,0,0
-            RenderSize=64,16
+            RenderSize=64,14.400001
             Visibility=Visible
         [Microsoft.UI.Xaml.Controls.TextBlock]
             FocusVisualPrimaryBrush=#E4000000

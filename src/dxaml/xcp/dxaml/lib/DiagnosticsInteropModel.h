@@ -86,7 +86,7 @@ namespace DebugTool
 
             return *this;
         }
-        DebugEnumInfo2& operator=(DebugEnumInfo2&& other)
+        DebugEnumInfo2& operator=(DebugEnumInfo2&& other) noexcept
         {
             if (this != &other)
             {

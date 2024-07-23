@@ -13,7 +13,7 @@ protected:
     CommonPlatformUtilities() {}
 public:
     
-    _Check_return_ __ecount_opt((sourceStringLen + 1)) WCHAR* Xstralloc(
+    _Check_return_ __ecount_opt(sourceStringLen + 1) WCHAR* Xstralloc(
         const _In_reads_opt_(sourceStringLen) WCHAR* sourceString,
         const _In_ XUINT32  sourceStringLen) override;
 

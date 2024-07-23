@@ -80,6 +80,7 @@ IFACEMETHODIMP DirectUI::BitmapSourceGenerated::SetSourceAsync(_In_ ABI::Windows
     }
     ARG_NOTNULL(pStreamSource, "streamSource");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<BitmapSource*>(this)->SetSourceAsyncImpl(pStreamSource, ppReturnValue));

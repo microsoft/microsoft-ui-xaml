@@ -187,21 +187,7 @@ _Check_return_ HRESULT CPlainTextPosition::GetVisualParent(
 //------------------------------------------------------------------------
 _Check_return_ bool CPlainTextPosition::IsValid() const
 {
-    bool isValid = false;
-
-    if (m_pContainer)
-    {
-        XUINT32 numPositions = 0;
-        m_pContainer->GetPositionCount(&numPositions);
-
-        // this condition fails in case of empty linked RichTextBlock with offset being 1 and num position being 0.
-        if (m_offset <= numPositions + 1)
-        {
-            isValid = true;
-        }
-    }
-
-    return isValid;
+    return m_pContainer && m_offset <= CTextBoxHelpers::GetMaxTextPosition(m_pContainer);
 }
 
 //------------------------------------------------------------------------

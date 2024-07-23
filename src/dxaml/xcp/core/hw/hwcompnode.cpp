@@ -243,7 +243,7 @@ HWCompTreeNode::UpdateDManipData(_In_ CUIElement* pUIElement)
     }
 
     m_spDManipData->SetManipulatedElement(pUIElement);
-    m_spDManipData->SetManipulationContent(spManipulationContent, contentType);
+    IFC_RETURN(m_spDManipData->SetManipulationContent(spManipulationContent, contentType));
     IFC_RETURN(m_spDManipData->SetClipContent(spClipContent));
     IFC_RETURN(m_spDManipData->SetContentOffsets(contentOffsetX, contentOffsetY));
 
@@ -274,7 +274,7 @@ void HWCompTreeNode::PrepareForSecondaryCurveUpdate(bool targetsClip)
     {
         if (targetsClip)
         {
-            m_spDManipData->SetSharedClipTransform(nullptr);
+            VERIFYHR(m_spDManipData->SetSharedClipTransform(nullptr));
             m_spDManipData->ResetClipContent();
         }
         else
@@ -316,7 +316,7 @@ _Check_return_ HRESULT HWCompTreeNode::SetContentNode(
     // Remove the previous content node (the current first child).
     if (m_pContentNode != NULL)
     {
-        m_pContentNode->Remove();
+        IFC_RETURN(m_pContentNode->Remove());
     }
 
     // Add the new content node as the first child of this element.
@@ -559,7 +559,7 @@ _Check_return_ HRESULT HWCompTreeNode::UpdateTreeVirtual(
         }
     }
 
-    UpdateTreeChildren(pDCompTreeHost, useDCompAnimations, disablePixelSnapping);
+    IFC(UpdateTreeChildren(pDCompTreeHost, useDCompAnimations, disablePixelSnapping));
 
 Cleanup:
     TraceHWCompNodeUpdateEnd();

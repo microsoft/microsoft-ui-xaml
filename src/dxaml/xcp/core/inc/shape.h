@@ -169,8 +169,8 @@ public:
         const bool renderCollapsedMask,
         bool isFillBrushAnimated,
         bool isStrokeBrushAnimated,
-        _Out_ bool* pIsFillForHitTestOnly,
-        _Out_ bool* pIsStrokeForHitTestOnly
+        _Inout_ bool* pIsFillForHitTestOnly,
+        _Inout_ bool* pIsStrokeForHitTestOnly
         ) final;
 
 protected:
@@ -287,7 +287,7 @@ private:
 
     // Natural bounds of the geometry, not including the stretch
     XRECTF_RB m_geometryBounds;
-    XRECTF_RB m_geometryWidenedBounds;
+    XRECTF_RB m_geometryWidenedBounds{};
 
     // Bounds of the fill & stroke, including the stretch. Used to realize brush transforms in PC.
     XRECTF_RB m_innerFillBounds;

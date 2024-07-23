@@ -346,7 +346,7 @@ namespace Diagnostics
                 for (const auto& setter : *setterCollection)
                 {
                     KnownPropertyIndex setterIndex = KnownPropertyIndex::UnknownType_UnknownProperty;
-                    checked_cast<CSetter>(setter)->GetProperty(style->GetTargetType()->GetIndex(), &setterIndex);
+                    IFC_RETURN(checked_cast<CSetter>(setter)->GetProperty(style->GetTargetType()->GetIndex(), &setterIndex));
                     if (setterIndex == m_propertyIndex)
                     {
                         m_dependentItem = xref::get_weakref(setter);

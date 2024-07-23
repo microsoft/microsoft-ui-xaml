@@ -28,6 +28,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)ItemsViewTransitionPage.xaml.cs">
       <DependentUpon>ItemsViewTransitionPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ItemsViewPictureLibraryPage.xaml.cs">
+      <DependentUpon>ItemsViewPictureLibraryPage.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)ItemsViewSummaryPage.xaml">
@@ -60,12 +63,20 @@
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ItemsViewPictureLibraryPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Content Include="$(MSBuildThisFileDirectory)Images\Rect*.png">
       <Link>Images\%(Filename)%(Extension)</Link>
     </Content>
     <Content Include="$(MSBuildThisFileDirectory)Images\vette*.jpg">
+      <Link>Images\%(Filename)%(Extension)</Link>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Images\Picture*.png">
       <Link>Images\%(Filename)%(Extension)</Link>
     </Content>
   </ItemGroup>

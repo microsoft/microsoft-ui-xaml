@@ -53,6 +53,7 @@ IFACEMETHODIMP DirectUI::PaginateEventArgsGenerated::get_PrintTaskOptions(_Outpt
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<PaginateEventArgs*>(this)->get_PrintTaskOptionsImpl(ppValue));
 Cleanup:
@@ -71,6 +72,7 @@ IFACEMETHODIMP DirectUI::PaginateEventArgsGenerated::get_CurrentPreviewPageNumbe
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<PaginateEventArgs*>(this)->get_CurrentPreviewPageNumberImpl(pValue));
 Cleanup:

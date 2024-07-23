@@ -90,6 +90,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::get_AreHorizontalSn
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ModernCollectionBasePanel*>(this)->get_AreHorizontalSnapPointsRegularImpl(pValue));
 Cleanup:
@@ -108,6 +109,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::get_AreVerticalSnap
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ModernCollectionBasePanel*>(this)->get_AreVerticalSnapPointsRegularImpl(pValue));
 Cleanup:
@@ -280,6 +282,7 @@ _Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::get_Panning
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
     IFC(CheckThread());
     IFC(static_cast<ModernCollectionBasePanel*>(this)->get_PanningDirectionBaseImpl(pValue));
 Cleanup:
@@ -471,6 +474,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::BuildTree(_Out_ BOO
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ModernCollectionBasePanel_BuildTree", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->BuildTreeImpl(pReturnValue));
@@ -489,6 +493,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::ContainerFromIndex(
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ModernCollectionBasePanel_ContainerFromIndex", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->ContainerFromIndexImpl(index, ppReturnValue));
@@ -507,6 +512,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::ContainerFromItem(_
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ModernCollectionBasePanel_ContainerFromItem", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->ContainerFromItemImpl(pItem, ppReturnValue));
@@ -561,6 +567,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GenerateContainerAt
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ModernCollectionBasePanel_GenerateContainerAtIndex", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->GenerateContainerAtIndexImpl(index, ppReturnValue));
@@ -579,6 +586,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GenerateHeaderAtGro
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ModernCollectionBasePanel_GenerateHeaderAtGroupIndex", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->GenerateHeaderAtGroupIndexImpl(index, ppReturnValue));
@@ -597,6 +605,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GetContainerRecycle
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ModernCollectionBasePanel_GetContainerRecycleQueueEmpty", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->GetContainerRecycleQueueEmptyImpl(pReturnValue));
@@ -615,6 +624,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GetContainersForInc
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ModernCollectionBasePanel_GetContainersForIncrementalVisualization", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->GetContainersForIncrementalVisualizationImpl(ppReturnValue));
@@ -633,6 +643,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GetGroupHeaderMappi
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ModernCollectionBasePanel_GetGroupHeaderMapping", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->GetGroupHeaderMappingImpl(ppReturnValue));
@@ -651,6 +662,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GetHeaderRecycleQue
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ModernCollectionBasePanel_GetHeaderRecycleQueueEmpty", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->GetHeaderRecycleQueueEmptyImpl(pReturnValue));
@@ -687,6 +699,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GetIrregularSnapPoi
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ModernCollectionBasePanel_GetIrregularSnapPoints", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->GetIrregularSnapPointsImpl(orientation, alignment, ppReturnValue));
@@ -705,6 +718,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GetItemContainerMap
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ModernCollectionBasePanel_GetItemContainerMapping", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->GetItemContainerMappingImpl(ppReturnValue));
@@ -723,6 +737,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GetQueueLength(_Out
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ModernCollectionBasePanel_GetQueueLength", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->GetQueueLengthImpl(pReturnValue));
@@ -741,6 +756,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GetRegularSnapPoint
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ModernCollectionBasePanel_GetRegularSnapPoints", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->GetRegularSnapPointsImpl(orientation, alignment, pOffset, pReturnValue));
@@ -760,6 +776,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GroupFromHeader(_In
     }
     ARG_NOTNULL(pHeader, "header");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->GroupFromHeaderImpl(pHeader, ppReturnValue));
@@ -779,6 +796,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GroupHeaderContaine
     }
     ARG_NOTNULL(pItemContainer, "itemContainer");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->GroupHeaderContainerFromItemContainerImpl(pItemContainer, ppReturnValue));
@@ -798,6 +816,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::HeaderFromGroup(_In
     }
     ARG_NOTNULL(pGroup, "group");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->HeaderFromGroupImpl(pGroup, ppReturnValue));
@@ -816,6 +835,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::HeaderFromIndex(_In
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ModernCollectionBasePanel_HeaderFromIndex", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->HeaderFromIndexImpl(index, ppReturnValue));
@@ -835,6 +855,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::IndexFromContainer(
     }
     ARG_NOTNULL(pContainer, "container");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->IndexFromContainerImpl(pContainer, pReturnValue));
@@ -854,6 +875,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::IndexFromHeader(_In
     }
     ARG_NOTNULL(pHeader, "header");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->IndexFromHeaderImpl(pHeader, excludeHiddenEmptyGroups, pReturnValue));
@@ -872,6 +894,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::IsBuildTreeSuspende
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "ModernCollectionBasePanel_IsBuildTreeSuspended", 0);
     }
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->IsBuildTreeSuspendedImpl(pReturnValue));
@@ -891,6 +914,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::ItemFromContainer(_
     }
     ARG_NOTNULL(pContainer, "container");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->ItemFromContainerImpl(pContainer, ppReturnValue));
@@ -1090,6 +1114,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::TryRecycleContainer
     }
     ARG_NOTNULL(pContainer, "container");
     ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<ModernCollectionBasePanel*>(this)->TryRecycleContainerImpl(pContainer, pReturnValue));
@@ -1108,7 +1133,7 @@ _Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::EventAddHan
     case KnownEventIndex::ModernCollectionBasePanel_HorizontalSnapPointsChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1125,7 +1150,7 @@ _Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::EventAddHan
     case KnownEventIndex::ModernCollectionBasePanel_VerticalSnapPointsChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1154,7 +1179,7 @@ _Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::EventRemove
     case KnownEventIndex::ModernCollectionBasePanel_HorizontalSnapPointsChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1171,7 +1196,7 @@ _Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::EventRemove
     case KnownEventIndex::ModernCollectionBasePanel_VerticalSnapPointsChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

@@ -26,7 +26,7 @@ public:
         TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
 };
 
-void __stdcall WILResultMessageCallback(_In_ wil::FailureInfo* pFailure, _Out_writes_(cchDest) _Always_(_Post_z_) PWSTR pszDest, _Pre_satisfies_(cchDest > 0) _In_ size_t cchDest) noexcept
+void __stdcall WILResultMessageCallback(_Inout_ wil::FailureInfo* pFailure, _Inout_updates_opt_z_(cchDest) PWSTR pszDest, _Pre_satisfies_(cchDest > 0) size_t cchDest) noexcept
 {
     // Debug:
     // %FILENAME(%LINE): %Caller_MSG [%CODE(%FUNCTION)] %HRESULT - %SystemMessage 

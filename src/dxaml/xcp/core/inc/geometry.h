@@ -201,8 +201,8 @@ private:
     CCoreServices *m_pCoreNoRef;
     CPathFigureCollection *m_pPathFigures;
     CPathFigure *m_pCurrentPathFigure;
-    XPOINTF m_ptCurr;
-    XPOINTF m_ptReflect;
+    XPOINTF m_ptCurr{};
+    XPOINTF m_ptReflect{};
 
 };
 

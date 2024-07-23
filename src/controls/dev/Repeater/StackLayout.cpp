@@ -76,7 +76,7 @@ winrt::Size StackLayout::MeasureOverride(
         m_itemSpacing,
         MAXUINT /* maxItemsPerLine */,
         GetScrollOrientation(),
-        DisableVirtualization(),
+        IsVirtualizationEnabled(),
         LayoutId());
     return { desiredSize.Width, desiredSize.Height };
 }
@@ -136,7 +136,7 @@ winrt::FlowLayoutAnchorInfo StackLayout::GetAnchorForRealizationRect(
         const auto lastExtent = state->FlowAlgorithm().LastExtent();
 
         const double averageElementSize = GetAverageElementSize(availableSize, context, state) + m_itemSpacing;
-        const double realizationWindowOffsetInExtent = MajorStart(realizationRect) - MajorStart(lastExtent);
+        const double realizationWindowOffsetInExtent = static_cast<double>(MajorStart(realizationRect)) - static_cast<double>(MajorStart(lastExtent));
         const double majorSize = MajorSize(lastExtent) == 0 ? std::max(0.0, averageElementSize * itemsCount - m_itemSpacing) : MajorSize(lastExtent);
         if (itemsCount > 0 &&
             MajorSize(realizationRect) >= 0 &&

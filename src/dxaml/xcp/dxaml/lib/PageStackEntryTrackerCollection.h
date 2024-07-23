@@ -19,7 +19,7 @@ namespace DirectUI
 
     private:
         // Flag indicating whether this collection corresponds to the BackStack or the ForwardStack.
-        BOOLEAN m_isBackStack;
+        BOOLEAN m_isBackStack{};
 
         // Weak reference to the NavigationHistory that owns this PageStack collection.
         ctl::WeakRefPtr m_wrNavigationHistory;

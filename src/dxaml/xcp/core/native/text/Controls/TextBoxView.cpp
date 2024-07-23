@@ -2706,7 +2706,7 @@ CTextBoxView::GenerateRTLCaret(XFLOAT width, XFLOAT height)
     IFC_RETURN(CCollection::Add(pathFiguresNoRef, 1, &cVal, nullptr));
 
     cVal.WrapObjectNoRef(pathGeometry.get());
-    m_spCaretElement->SetValueByIndex(KnownPropertyIndex::Path_Data, cVal);
+    IFC_RETURN(m_spCaretElement->SetValueByIndex(KnownPropertyIndex::Path_Data, cVal));
 
     return S_OK;
 }
@@ -3307,7 +3307,9 @@ _Check_return_ HRESULT CTextBoxView::GetFontFaceRun(
     _Out_ XUINT32 *pRunCount
     )
 {
-    CWeightStyleStretch weightStyleStretch(weight, style, stretch);
+    // The use of zero for the optical size will cause the MapCharacters to fall
+    // back to legacy versions (non optical).
+    CFontFaceCriteria fontFaceCriteria(weight, style, stretch, 0.0f);
     DWriteFontFace *pDWriteFontFace;
     const TextFormatting* pTextFormatting = NULL;
     XFLOAT mappedScale;
@@ -3321,7 +3323,7 @@ _Check_return_ HRESULT CTextBoxView::GetFontFaceRun(
         pTextFormatting->GetResolvedLanguageStringNoRef().GetBuffer(),
         pTextFormatting->GetResolvedLanguageListStringNoRef().GetBuffer(),
         NULL,
-        weightStyleStretch,
+        fontFaceCriteria,
         &pFontFace,
         pRunCount,
         &mappedScale));
@@ -3698,7 +3700,7 @@ _Check_return_ HRESULT CTextBoxView::IsSelectionEdgeVisible(
 
     IFC_RETURN(TxGetViewportRect(&viewportRect));
 
-    GetSelectionEdgeRects(&beginRect, &endRect);
+    IFC_RETURN(GetSelectionEdgeRects(&beginRect, &endRect));
 
     fVisible = (DoRectsIntersectOrTouch(beginRect, viewportRect) || DoRectsIntersectOrTouch(endRect, viewportRect));
 

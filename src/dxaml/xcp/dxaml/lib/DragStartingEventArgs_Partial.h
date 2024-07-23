@@ -51,7 +51,7 @@ namespace DirectUI
         ctl::ComPtr<xaml::IDragUI> m_spDragUI;
         ctl::ComPtr<xaml::IUIElement> m_spSource;
         ctl::ComPtr<wf::IAsyncOperation<wadt::DataPackageOperation>> m_spStartDragAsyncOperation;
-        wf::Point m_position;
+        wf::Point m_position{};
         bool m_wasDeferred = false;
         unsigned int m_deferralCount = 0;
         ctl::ComPtr<ixp::IPointerPoint> m_pointerPoint;

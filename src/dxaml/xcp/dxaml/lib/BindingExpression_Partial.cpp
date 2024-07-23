@@ -1667,7 +1667,7 @@ _Check_return_ HRESULT BindingExpression::DataContextChanged(_In_ const DataCont
     // with a Content="{Binding}"?
     if (m_spPeggedTarget)
     {
-        m_spPeggedTarget.As<FrameworkElement>(&spPeggedTargetAsFE);
+        IGNOREHR(m_spPeggedTarget.As<FrameworkElement>(&spPeggedTargetAsFE));
     }
 
     const BOOLEAN bIsDataContextBound =

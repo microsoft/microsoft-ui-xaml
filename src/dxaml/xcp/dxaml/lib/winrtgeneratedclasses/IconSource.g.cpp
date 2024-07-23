@@ -90,6 +90,7 @@ IFACEMETHODIMP DirectUI::IconSourceGenerated::CreateIconElementCore(_Outptr_ ABI
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "IconSource_CreateIconElement", 0);
     }
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<IconSource*>(this)->CreateIconElementCoreImpl(ppReturnValue));
@@ -109,6 +110,7 @@ IFACEMETHODIMP DirectUI::IconSourceGenerated::GetIconElementPropertyCore(_In_ AB
     }
     ARG_NOTNULL(pIconSourceProperty, "iconSourceProperty");
     ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<IconSource*>(this)->GetIconElementPropertyCoreImpl(pIconSourceProperty, ppReturnValue));

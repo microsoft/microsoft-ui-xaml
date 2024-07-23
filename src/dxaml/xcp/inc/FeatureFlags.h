@@ -15,20 +15,17 @@ namespace features
     feature_name Feature_Xaml2018 = { AlwaysDisabled, FALSE };
     feature_name Feature_CommandingImprovements = { AlwaysDisabled, FALSE };
     feature_name Feature_WUXCPreviewTypes = { AlwaysDisabled, FALSE };
+    feature_name Feature_UwpSupportApi = { AlwaysDisabled, FALSE };
 
 #ifdef MUX_PRERELEASE
     // In prerelease, the API is "experimental"
-    feature_name Feature_XamlDirect = { DisabledByDefault, FALSE };
     feature_name Feature_InputValidation = { DisabledByDefault, FALSE };
-    feature_name Feature_UwpSupportApi = { DisabledByDefault, FALSE };
     feature_name Feature_UiaEndpointsForContentIslands = { DisabledByDefault, FALSE };
     feature_name Feature_ExperimentalApi = { DisabledByDefault, FALSE };
 #else
     // In release, the experimental feature is disabled, removing it from the final WinMD,
     // but preserving it in the private WinMD.
-    feature_name Feature_XamlDirect = { AlwaysDisabled, FALSE };
     feature_name Feature_InputValidation = { AlwaysDisabled, FALSE };
-    feature_name Feature_UwpSupportApi = { AlwaysDisabled, FALSE };
     feature_name Feature_UiaEndpointsForContentIslands = { AlwaysDisabled, FALSE };
     feature_name Feature_ExperimentalApi = { AlwaysDisabled, FALSE };
 #endif
@@ -104,15 +101,6 @@ namespace Feature_RunawayTextureList
 
 // Below apis are not release ready, hence we have marked them as experimental in winmd in preview build and removed from winmd in final release of WinUI. 
 // This feature is always enabled, so that we can use these features in preview builds.
-
-namespace Feature_XamlDirect
-{
-    #define __INTERNAL_FEATURE_PRESENT_Feature_XamlDirect 1
-    inline bool __cdecl IsEnabled()
-    {
-        return true;
-    }
-}
 
 namespace Feature_InputValidation
 {

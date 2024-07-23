@@ -294,26 +294,6 @@ namespace Details
     } \
     CHECK_MISMATCH_RETURN
 
-// Like IFC_RETURN but also calls Stop() on the given activity on failure, passing the failure HRESULT.
-// Used in conjunction with WIL's TraceLogging activity macros.
-#define IFC_RETURN_STOPACTIVITY(x, activity) \
-    { \
-        const HRESULT _hr_ = (x); \
-        wil::verify_hresult(_hr_); \
-        __pragma(warning(suppress:4127)) \
-        if (SUCCEEDED(_hr_)) \
-        { \
-        } \
-        else \
-        { \
-            OnFailure<__COUNTER__>(_hr_); \
-            DISPLAY_DEBUG(_hr_, #x) \
-            if (activity) { activity.Stop(_hr_); } \
-            return _hr_; \
-        } \
-    } \
-    CHECK_MISMATCH_RETURN
-
 #define IFC_RETURN_EXTRA_INFO(x, extraInfo) \
     { \
         const HRESULT _hr_ = (x); \
@@ -393,7 +373,7 @@ namespace Details
     } \
     else \
     { \
-        HRESULT _hr_ = E_OUTOFMEMORY; \
+        constexpr HRESULT _hr_ = E_OUTOFMEMORY; \
         OnNewFailure<__COUNTER__>(_hr_); \
         DISPLAY_DEBUG(_hr_, #x) \
         return _hr_; \
@@ -422,7 +402,7 @@ namespace Details
     } \
     else \
     { \
-        HRESULT _hr_ = E_POINTER; \
+        constexpr HRESULT _hr_ = E_POINTER; \
         OnNewFailure<__COUNTER__>(_hr_); \
         DISPLAY_DEBUG(_hr_, #x) \
         return _hr_; \
@@ -451,7 +431,7 @@ namespace Details
     } \
     else \
     { \
-        HRESULT _hr_ = E_HANDLE; \
+        constexpr HRESULT _hr_ = E_HANDLE; \
         OnNewFailure<__COUNTER__>(_hr_); \
         DISPLAY_DEBUG(_hr_, #x) \
         return _hr_; \
@@ -480,7 +460,7 @@ namespace Details
     } \
     else \
     { \
-        HRESULT _hr_ = E_FAIL; \
+        constexpr HRESULT _hr_ = E_FAIL; \
         OnNewFailure<__COUNTER__>(_hr_); \
         DISPLAY_DEBUG(_hr_, #x) \
         return _hr_; \
@@ -511,7 +491,7 @@ namespace Details
     else \
     { \
         ASSERT(!"Internal Error"); \
-        HRESULT _hr_ = E_UNEXPECTED; \
+        constexpr HRESULT _hr_ = E_UNEXPECTED; \
         OnNewFailure<__COUNTER__>(_hr_); \
         DISPLAY_DEBUG(_hr_, #x) \
         return _hr_; \
@@ -540,7 +520,7 @@ namespace Details
     } \
     else \
     { \
-        HRESULT _hr_ = E_UNEXPECTED; \
+        constexpr HRESULT _hr_ = E_UNEXPECTED; \
         OnNewFailure<__COUNTER__>(_hr_); \
         DISPLAY_DEBUG(_hr_, #x) \
         return _hr_; \
@@ -568,7 +548,7 @@ namespace Details
     } \
     else \
     { \
-        HRESULT _hr_ = y; \
+        const HRESULT _hr_ = y; \
         OnNewFailure<__COUNTER__>(_hr_); \
         DISPLAY_DEBUG(_hr_, #x) \
         return _hr_; \
@@ -597,7 +577,7 @@ namespace Details
     } \
     else \
     { \
-        HRESULT _hr_ = y; \
+        const HRESULT _hr_ = y; \
         OnNewFailure<__COUNTER__>(_hr_); \
         DISPLAY_DEBUG(_hr_, #x) \
         return _hr_; \
@@ -675,6 +655,7 @@ namespace Details
 
 #define IFCFAILFAST(x) \
     { \
+        __pragma(warning(suppress:26498)) \
         const HRESULT __HR = (x); \
         wil::verify_hresult(__HR); \
         __pragma(warning(suppress:4127)) \
@@ -847,7 +828,7 @@ namespace Details
 // it will turn success into failure.
 inline HRESULT HResultFromKnownLastError()
 {
-    HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
+    const HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
     return (SUCCEEDED(hr) ? E_FAIL : hr);
 }
 

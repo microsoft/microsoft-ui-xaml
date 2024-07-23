@@ -21,7 +21,7 @@ namespace DirectUI
             // Used to assign unique ids to AsyncActions
             static ULONG z_ulUniqueAsyncActionId;
 
-            wfc::IVectorView<HSTRING>* m_pAlternatives;
+            wfc::IVectorView<HSTRING>* m_pAlternatives{};
 
             wrl_wrappers::HString m_compositionString;
             wrl_wrappers::HString m_prefixString;

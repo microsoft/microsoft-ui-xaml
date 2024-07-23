@@ -540,7 +540,7 @@ XamlQualifiedObject ObjectWriterContext::AmbientValue::GetQo() const
     }
     else
     {
-        result.SetDependencyObject(m_do.get());
+        VERIFYHR(result.SetDependencyObject(m_do.get()));
     }
 
     return result;
@@ -563,7 +563,7 @@ std::shared_ptr<XamlQualifiedObject> ObjectWriterContext::AmbientValue::GetQoPtr
     else if(m_do)
     {
         result = std::make_shared<XamlQualifiedObject>();
-        result->SetDependencyObject(m_do.get());
+        VERIFYHR(result->SetDependencyObject(m_do.get()));
     }
     return result;
 }
