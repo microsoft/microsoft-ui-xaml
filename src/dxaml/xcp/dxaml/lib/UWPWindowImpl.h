@@ -59,7 +59,7 @@ namespace DirectUI
         IFACEMETHOD(put_SystemBackdrop)(_In_opt_ ABI::Windows::UI::Composition::ICompositionBrush* systemBackdropBrush) override;
 
         // pubic Window API: IWindowNative
-        IFACEMETHOD(get_WindowHandle)(_Out_ HWND* pValue) override;
+        _Check_return_ IFACEMETHOD(get_WindowHandle)(_Out_ HWND* pValue) override;
 
         // -------------------------------------------------
         // IWindowPrivate

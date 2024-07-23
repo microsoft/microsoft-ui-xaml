@@ -57,7 +57,7 @@ namespace ContentRootInput
 
         _Check_return_ HRESULT HitTestWithLightDismissAwareness(
             _Inout_ xref_ptr<CDependencyObject>& contactDO,
-            XPOINTF contactPoint,
+            _In_ XPOINTF contactPoint,
             _In_ MessageMap message,
             _In_opt_ PointerInfo *pointerInfo,
             _In_ CDependencyObject* hitTestRoot);
@@ -83,7 +83,7 @@ namespace ContentRootInput
             _In_opt_ CDependencyObject *pNewEnteredElement = NULL,
             _In_ bool bRaiseOnce = false);
 
-        _Check_return_ HRESULT ReleasePointerCapture(_In_ CDependencyObject *pObject, _In_ CPointer* pPointer);
+        _Check_return_ HRESULT ReleasePointerCapture(_In_ CDependencyObject *pObject, _In_ CPointer* pPointer, _In_ ixp::IPointerPoint* pointerPoint = nullptr);
         _Check_return_ HRESULT SetPointerCapture( _In_ CDependencyObject *pObject, _In_ CPointer* pPointer, _Out_ bool* pResult );
         _Check_return_ HRESULT ReleaseAllPointerCaptures(_In_opt_ CDependencyObject *pObject);
 
@@ -113,7 +113,7 @@ namespace ContentRootInput
             _In_ XUINT32 pointerId,
             _In_ CPointerEventArgs *pArgs);
 
-        _Check_return_ HRESULT ReleasePointerCaptureById(_In_ XINT32 releasePointerId);
+        _Check_return_ HRESULT ReleasePointerCaptureById(_In_ XINT32 releasePointerId, _In_ ixp::IPointerPoint* pointerPoint);
 
         CInputManager& m_inputManager;
 

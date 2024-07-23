@@ -1577,8 +1577,8 @@ bool CShape::IsMaskDirty(
     const bool renderCollapsedMask,
     bool isFillBrushAnimated,
     bool isStrokeBrushAnimated,
-    _Out_ bool* pIsFillForHitTestOnly,
-    _Out_ bool* pIsStrokeForHitTestOnly
+    _Inout_ bool* pIsFillForHitTestOnly,
+    _Inout_ bool* pIsStrokeForHitTestOnly
     )
 {
     return CFrameworkElement::NWIsContentDirty()

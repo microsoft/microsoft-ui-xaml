@@ -26,7 +26,7 @@ public:
     _Check_return_ HRESULT RepackageValueAndSetPtr(
         _Const_ _In_ const CDependencyProperty* pDP,
         _Const_ _In_ const CValue* value, 
-        _Out_ CValue** ppValue);
+        _Inout_ CValue** ppValue);
 
     _Check_return_ HRESULT RepackageValueAndCopy(
         _Const_ _In_ const CDependencyProperty* pDP,

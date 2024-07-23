@@ -22,6 +22,10 @@
       As a workaround, those entries are copied from the IXP transport package appx manifest. -->
       <_WinMdsForClassRegistration Include="@(ExternalWinMDs)" Condition="'%(ExternalWinMDs.Merge)'=='false'"/>
       <_WinMdsForClassRegistration Include="@(AdditionalWinMDsForClassRegistration)"/>
+
+      <!-- Include Microsoft.Web.WebView2.Core.winmd (needed for internal activation outside of cppwinrt / cswinrt, eg WRL)-->
+      <_WinMdsForClassRegistration Include="@(CoreWebView2WinMD)"/>
+      
       <WinMdsForClassRegistration Include="@(_WinMdsForClassRegistration)" Exclude="@(IxpWinMDs)" Condition="'$(IncludeMrtExtensions)' == 'true'" />
       <WinMdsForClassRegistration Include="@(_WinMdsForClassRegistration)" Exclude="@(IxpWinMDs);@(MRTWinMDs)" Condition="'$(IncludeMrtExtensions)' != 'true'" />
     </ItemGroup>

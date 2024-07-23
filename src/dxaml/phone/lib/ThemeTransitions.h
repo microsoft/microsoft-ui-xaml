@@ -56,7 +56,7 @@ XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { n
 
         // ITransitionPrivate members
         IFACEMETHOD(ParticipatesInTransition)(_In_ xaml::IUIElement* element, _In_ xaml::TransitionTrigger transitionTrigger, _Out_ BOOLEAN* returnValue) override;
-        IFACEMETHOD(CreateStoryboard)(_In_ xaml::IUIElement* element, _In_ wf::Rect start, _In_ wf::Rect destination, _In_ xaml::TransitionTrigger transitionTrigger,  _In_ wfc::IVector<xaml_animation::Storyboard*>* storyboards, _Out_ xaml::TransitionParent* parentForTransition) override;
+        IFACEMETHOD(CreateStoryboard)(_In_ xaml::IUIElement* element, _In_ wf::Rect start, _In_ wf::Rect destination, _In_ xaml::TransitionTrigger transitionTrigger,  _In_ wfc::IVector<xaml_animation::Storyboard*>* storyboards, _Inout_ xaml::TransitionParent* parentForTransition) override;
 
     private:
         ~NavigationThemeTransition();

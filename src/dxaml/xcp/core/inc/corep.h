@@ -640,8 +640,9 @@ public:
 #pragma region NameScope-Related Methods
 
     // Main entry-point
-    xref_ptr<CDependencyObject> TryGetElementByName(
-        const xstring_ptr_view& strName, _In_ CDependencyObject* referenceObject);
+    _Check_return_ xref_ptr<CDependencyObject> TryGetElementByName(
+        _In_ const xstring_ptr_view& strName,
+        _In_ CDependencyObject* referenceObject);
 
     // Called in EnterImpl for non-template namescopes and directly by the
     // parser for template namescopes.
@@ -990,7 +991,7 @@ public:
     _Check_return_ HRESULT HitTestLinkFromTextControl(
         _In_ XPOINTF ptHit,
         _In_ CDependencyObject *pLinkContainer,
-        _Outptr_ CDependencyObject **ppLink);
+        _Outptr_result_maybenull_ CDependencyObject **ppLink);
 
 // InputManager support
     _Check_return_ HRESULT ProcessInput(
@@ -1161,7 +1162,7 @@ public:
         );
 
     // Sets a callback function which is called after every UI thread tick (used by tests).
-    void SetPostTickCallback(_In_opt_ std::function<void()> callback);
+    void SetPostTickCallback(std::function<void()> callback);
 
     _Check_return_ HRESULT ConfigureNumberSubstitution();
 
@@ -1185,7 +1186,7 @@ public:
         _In_ CAutomationPeer* ap,
         UIAXcp::AutomationNotificationKind notificationKind,
         UIAXcp::AutomationNotificationProcessing notificationProcessing,
-        _In_opt_ xstring_ptr displayString,
+        xstring_ptr displayString,
         _In_ xstring_ptr activityId);
     CUIAWindow* GetUIAWindowForElementRootNoRef(_In_ CDependencyObject* root);
 
@@ -1591,7 +1592,7 @@ public:
     {
         if (PAL_InterlockedIncrement(&m_cPendingDecodes) == 1)
         {
-            SetImageDecodingIdleEventSignaledStatus(FALSE);
+            IGNOREHR(SetImageDecodingIdleEventSignaledStatus(FALSE));
         }
     }
 
@@ -1600,7 +1601,7 @@ public:
         ASSERT(m_cPendingDecodes > 0);
         if (PAL_InterlockedDecrement(&m_cPendingDecodes) == 0)
         {
-            SetImageDecodingIdleEventSignaledStatus(TRUE);
+            IGNOREHR(SetImageDecodingIdleEventSignaledStatus(TRUE));
         }
     }
     XUINT32 GetPendingDecodeCount() { return m_cPendingDecodes; }
@@ -1609,7 +1610,7 @@ public:
     {
         if (PAL_InterlockedIncrement(&m_cPendingFontDownloads) == 1)
         {
-            SetFontDownloadsIdleEventSignaledStatus(FALSE);
+            IGNOREHR(SetFontDownloadsIdleEventSignaledStatus(FALSE));
         }
     }
 
@@ -1618,7 +1619,7 @@ public:
         ASSERT(m_cPendingFontDownloads > 0);
         if (PAL_InterlockedDecrement(&m_cPendingFontDownloads) == 0)
         {
-            SetFontDownloadsIdleEventSignaledStatus(TRUE);
+            IGNOREHR(SetFontDownloadsIdleEventSignaledStatus(TRUE));
         }
     }
 
@@ -1694,7 +1695,7 @@ public:
     void RemoveRenderStateListener(_In_ RenderStateListener *renderStateListener);
 
     _Check_return_ HRESULT InvalidateImplicitStylesOnRoots(_In_opt_ CResourceDictionary *pOldResources);
-    _Check_return_ HRESULT UpdateImplicitStylesOnRoots(_In_opt_ CStyle *pOldStyle, _In_opt_ CStyle *pNewStyle, _In_ bool forceUpdate);
+    _Check_return_ HRESULT UpdateImplicitStylesOnRoots(_In_opt_ CStyle *pOldStyle, _In_opt_ CStyle *pNewStyle, bool forceUpdate);
 
     // Note: this is just a shim measure until the Jupiter ResourceManager is implemented.  I would
     // expect that when the true ResourceManager is implemented, this will not be called directly.

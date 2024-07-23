@@ -4,7 +4,6 @@
     <ExternalBinaries Include="$(LiftedMRTRuntimesPath)\Microsoft.Windows.ApplicationModel.Resources.dll" />
     <ExternalBinaries Include="$(LiftedMRTRuntimesPath)\MRM.dll" />
     <ExternalBinaries Include="@(WinUIDetailsBinaries)"/>
-    <ExternalBinaries Include="$(WebView2WinrtLibPath)\Microsoft.Web.WebView2.Core.dll" />
     <ExternalBinaries Include="$(FrameworkUdkNativePath)\Microsoft.Internal.FrameworkUdk.dll" />
   </ItemGroup>
 

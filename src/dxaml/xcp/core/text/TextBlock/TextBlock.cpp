@@ -559,7 +559,7 @@ _Check_return_ HRESULT CTextBlock::OnPropertySetImpl(_In_ const CDependencyPrope
 
             if (m_pInlines != nullptr)
             {
-                SetTextToInlineCollection();
+                IFC_RETURN(SetTextToInlineCollection());
             }
             else
             {
@@ -950,7 +950,7 @@ _Check_return_ HRESULT CTextBlock::SelectAll()
 
 _Check_return_ HRESULT CTextBlock::GetSelectedText(
     _In_ CDependencyObject *pObject,
-    uint32_t cArgs,
+    _In_ uint32_t cArgs,
     _Inout_updates_(cArgs) CValue *ppArgs,
     _In_opt_ IInspectable* pValueOuter,
     _Out_ CValue *pResult
@@ -1804,7 +1804,7 @@ _Check_return_ HRESULT CTextBlock::ArrangeOverride(
                     IsSelectionEnabled() &&
                     m_pSelectionManager->IsSelectionVisible())
                 {
-                    m_pSelectionManager->GetSelectionHighlightRegion(UseHighContrastSelection(GetContext()), selection);
+                    IFC_RETURN(m_pSelectionManager->GetSelectionHighlightRegion(UseHighContrastSelection(GetContext()), selection));
                 }
 
                 const TextFormatting* pTextFormatting = nullptr;
@@ -1866,7 +1866,7 @@ _Check_return_ HRESULT CTextBlock::ArrangeOverride(
                 IsSelectionEnabled() &&
                 m_pSelectionManager->IsSelectionVisible())
             {
-                m_pSelectionManager->GetSelectionHighlightRegion(UseHighContrastSelection(GetContext()), selection);
+                IFC_RETURN(m_pSelectionManager->GetSelectionHighlightRegion(UseHighContrastSelection(GetContext()), selection));
             }
 
             // Set DrawingContext properties to handle foreground color when BackPlate is enabled. This must be set every ArrangeOverride because
@@ -2979,7 +2979,7 @@ void CTextBlock::ClearFastPathOptOutConditions (_In_ FastPathOptOutConditions ma
 
 }
 
-void CTextBlock::SetFastPathOptOutConditions (_In_ FastPathOptOutConditions mask, _In_ bool isSet)
+void CTextBlock::SetFastPathOptOutConditions (_In_ FastPathOptOutConditions mask, bool isSet)
 {
     if (isSet)
     {

@@ -26,7 +26,7 @@ const long long CAnimation::s_minWUCKeyFrameAnimationDurationInTicks = static_ca
 const float CAnimation::s_maxWUCKeyFrameAnimationDurationInSeconds = 60*60*24*24;   // 24 days
 const UINT64 CAnimation::s_maxWUCKeyFrameAnimationDurationInTicks = 10000000ui64 * static_cast<UINT64>(CAnimation::s_maxWUCKeyFrameAnimationDurationInSeconds);
 
-CAnimation::CAnimation(_In_ CCoreServices *pCore)
+CAnimation::CAnimation(_In_opt_ CCoreServices *pCore)
     : CTimeline(pCore)
     , m_fUsesKeyFrames(false)
     , m_hasControlOfTarget(true)
@@ -278,7 +278,7 @@ CompositionAnimationConversionResult CAnimation::MakeCompositionAnimationVirtual
     return result;
 }
 
-CompositionAnimationConversionResult CAnimation::MakeCompositionKeyFrameAnimationVirtual(_Inout_ CompositionAnimationConversionContext* myContext)
+_Check_return_ CompositionAnimationConversionResult CAnimation::MakeCompositionKeyFrameAnimationVirtual(_Inout_ CompositionAnimationConversionContext* myContext)
 {
     return CompositionAnimationConversionResult::Success;
 }

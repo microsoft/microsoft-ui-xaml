@@ -38,7 +38,7 @@ _Check_return_ HRESULT DirectUI::XamlQualifiedObject::GetValue(
 _Check_return_ HRESULT DirectUI::XamlQualifiedObject::SetValue(
     _In_ IInspectable* pValue,
     _In_ const CClassInfo* pValueType,
-    _In_ bool fNewlyCreated)
+    bool fNewlyCreated)
 {
     BoxerBuffer buffer;
 

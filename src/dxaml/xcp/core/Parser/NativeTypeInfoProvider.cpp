@@ -19,7 +19,7 @@ XamlNativeTypeInfoProvider::XamlNativeTypeInfoProvider(
 {
 }
 
-HRESULT XamlNativeTypeInfoProvider::ResolveAssembly(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::ResolveAssembly(
     _In_ const xstring_ptr& inAssemblyName,
     _Out_ XamlAssemblyToken& outAssemblyToken
     )
@@ -35,7 +35,7 @@ HRESULT XamlNativeTypeInfoProvider::ResolveAssembly(
     RRETURN(hr);
 }
 
-HRESULT XamlNativeTypeInfoProvider::GetTypeNamespace(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::GetTypeNamespace(
     _In_ const xstring_ptr& inTypeNamespace,
     _Out_ XamlTypeNamespaceToken& outTypeNamespaceToken
     )
@@ -56,7 +56,7 @@ HRESULT XamlNativeTypeInfoProvider::GetTypeNamespace(
     return S_OK;
 }
 
-HRESULT XamlNativeTypeInfoProvider::GetTypeNamespace(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::GetTypeNamespace(
     _In_ const xstring_ptr& inAssemblyName,
     _In_ const xstring_ptr& inTypeNamespace,
     _Out_ XamlTypeNamespaceToken& outTypeNamespaceToken
@@ -65,7 +65,7 @@ HRESULT XamlNativeTypeInfoProvider::GetTypeNamespace(
     RRETURN(GetTypeNamespace(inTypeNamespace, outTypeNamespaceToken));
 }
 
-HRESULT XamlNativeTypeInfoProvider::GetTypeNamespaceForType(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::GetTypeNamespaceForType(
     _In_ const XamlTypeToken sXamlTypeToken,
     _Out_ XamlTypeNamespaceToken& rXamlTypeNamespaceToken,
     _Out_ xstring_ptr* pstrOutXamlTypeNamespaceName
@@ -82,7 +82,7 @@ HRESULT XamlNativeTypeInfoProvider::GetTypeNamespaceForType(
     return S_OK;
 }
 
-HRESULT XamlNativeTypeInfoProvider::LookupTypeFlags(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::LookupTypeFlags(
     _In_ const XamlTypeToken sTypeToken,
     _In_ const XamlBitSet<BoolTypeBits>& btbLookupValues,
     _Out_ XamlBitSet<BoolTypeBits>& btbBitsChecked,
@@ -145,7 +145,7 @@ HRESULT XamlNativeTypeInfoProvider::LookupTypeFlags(
     return S_OK;
 }
 
-HRESULT XamlNativeTypeInfoProvider::LookupPropertyFlags(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::LookupPropertyFlags(
     _In_ const XamlPropertyToken sPropertyToken,
     _In_ const XamlBitSet<BoolPropertyBits>& bpbLookupValues,
     _Out_ XamlBitSet<BoolPropertyBits>& bpbBitsChecked,
@@ -184,7 +184,7 @@ HRESULT XamlNativeTypeInfoProvider::LookupPropertyFlags(
     return S_OK;
 }
 
-HRESULT XamlNativeTypeInfoProvider::ResolveTypeName(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::ResolveTypeName(
     _In_ const XamlTypeNamespaceToken inNamespaceToken,
     _In_ const xstring_ptr& inTypeName,
     _Out_ XamlTypeToken& rXamlType
@@ -259,7 +259,7 @@ HRESULT XamlNativeTypeInfoProvider::ResolveTypeName(
 
 // Resolves the token for a property name. Contains hard-coded
 // logic for supporting native attached properties.
-HRESULT XamlNativeTypeInfoProvider::ResolvePropertyName(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::ResolvePropertyName(
     _In_ const XamlTypeToken sTypeToken,
     _In_ const xstring_ptr&  inPropertyName,
     _Out_ XamlPropertyToken& outProperty,
@@ -321,7 +321,7 @@ HRESULT XamlNativeTypeInfoProvider::ResolvePropertyName(
 }
 
 // Get the name of the type represented by a token.
-HRESULT XamlNativeTypeInfoProvider::GetTypeName(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::GetTypeName(
     _In_ const XamlTypeToken sTypeToken,
     _Out_ xstring_ptr* pstrOutTypeName
     )
@@ -360,7 +360,7 @@ HRESULT XamlNativeTypeInfoProvider::GetTypeName(
 }
 
 // Get the full name of the type (including its CLR namespace).
-HRESULT XamlNativeTypeInfoProvider::GetTypeFullName(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::GetTypeFullName(
     _In_ const XamlTypeToken sTypeToken,
     _Out_ xstring_ptr* pstrOutTypeFullName
     )
@@ -393,7 +393,7 @@ HRESULT XamlNativeTypeInfoProvider::GetTypeFullName(
     return S_OK;
 }
 
-HRESULT
+_Check_return_ HRESULT
 XamlNativeTypeInfoProvider::GetPropertyName(
     _In_ const XamlPropertyToken sPropertyToken,
     _Out_ xstring_ptr* pstrOutPropertyName
@@ -443,7 +443,7 @@ XamlNativeTypeInfoProvider::GetPropertyName(
 // native code.
 //
 //  TODO: Rename this member.  The name is misleading.
-HRESULT XamlNativeTypeInfoProvider::GetBaseType(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::GetBaseType(
     _In_ const XamlTypeToken sTypeToken,
     _Out_ XamlTypeToken& rBaseTypeToken
     )
@@ -456,7 +456,7 @@ HRESULT XamlNativeTypeInfoProvider::GetBaseType(
 }
 
 // Gets the token of the type that declares the given property.
-HRESULT XamlNativeTypeInfoProvider::GetDeclaringType(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::GetDeclaringType(
     _In_ const XamlPropertyToken sPropertyToken,
     _Out_ XamlTypeToken& rDeclaringTypeToken
     )
@@ -469,7 +469,7 @@ HRESULT XamlNativeTypeInfoProvider::GetDeclaringType(
     return S_OK;
 }
 
-HRESULT XamlNativeTypeInfoProvider::IsAssignableFrom(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::IsAssignableFrom(
     _In_ const XamlTypeToken sDerivedTypeToken,
     _In_ const XamlTypeToken rxtBaseType,
     _Out_ bool& bOut
@@ -490,7 +490,7 @@ HRESULT XamlNativeTypeInfoProvider::IsAssignableFrom(
 }
 
 // Retrieves the content property for a native type.
-HRESULT XamlNativeTypeInfoProvider::GetContentProperty(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::GetContentProperty(
     _In_ const XamlTypeToken sTypeToken,
     _Out_ XamlPropertyToken& rPropertyToken,
     _Out_ XamlTypeToken& rContentPropertyTypeToken
@@ -557,7 +557,7 @@ HRESULT XamlNativeTypeInfoProvider::GetContentProperty(
 // pass literal content to the collection which will handle it.
 //
 // TODO: Need to support multiple content wrappers per type token and let the parser resolve the most appropriate.  Change to return an xvector of type tokens.
-HRESULT XamlNativeTypeInfoProvider::GetContentWrapper(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::GetContentWrapper(
     _In_ const XamlTypeToken sTypeToken,
     _Out_opt_ XamlTypeToken& rContentWrapperTypeToken
     )
@@ -584,7 +584,7 @@ HRESULT XamlNativeTypeInfoProvider::GetContentWrapper(
     RRETURN(hr);
 }
 
-HRESULT XamlNativeTypeInfoProvider::GetRuntimeNameProperty(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::GetRuntimeNameProperty(
     _In_ const XamlTypeToken sTypeToken,
     _Out_ XamlPropertyToken& rPropertyToken,
     _Out_ XamlTypeToken& rPropertyTypeToken
@@ -603,7 +603,7 @@ HRESULT XamlNativeTypeInfoProvider::GetRuntimeNameProperty(
     return S_OK;
 }
 
-HRESULT XamlNativeTypeInfoProvider::GetDictionaryKeyProperty(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::GetDictionaryKeyProperty(
     _In_ const XamlTypeToken sTypeToken,
     _Out_ XamlPropertyToken& rPropertyToken,
     _Out_ XamlTypeToken& rPropertyTypeToken
@@ -628,7 +628,7 @@ HRESULT XamlNativeTypeInfoProvider::GetDictionaryKeyProperty(
     return S_OK;
 }
 
-HRESULT XamlNativeTypeInfoProvider::GetXmlLangProperty(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::GetXmlLangProperty(
     _In_ const XamlTypeToken sTypeToken,
     _Out_ XamlPropertyToken& rPropertyToken,
     _Out_ XamlTypeToken& rPropertyTypeToken
@@ -656,7 +656,7 @@ HRESULT XamlNativeTypeInfoProvider::GetXmlLangProperty(
     return S_OK;
 }
 
-HRESULT
+_Check_return_ HRESULT
 XamlNativeTypeInfoProvider::GetCollectionItemType(
     _In_ const XamlTypeToken sCollectionTypeToken,
     _Out_ XamlTypeToken& rCollectionItemTypeToken
@@ -677,7 +677,7 @@ XamlNativeTypeInfoProvider::GetCollectionItemType(
     return S_OK;
 }
 
-HRESULT XamlNativeTypeInfoProvider::GetTextSyntaxForType(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::GetTextSyntaxForType(
     _In_ const XamlTypeToken sTypeToken,
     _Out_ XamlTypeToken& sTextSyntaxTypeToken
     )
@@ -713,7 +713,7 @@ HRESULT XamlNativeTypeInfoProvider::GetTextSyntaxForType(
     RRETURN(hr);
 }
 
-HRESULT XamlNativeTypeInfoProvider::GetTextSyntaxForProperty(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::GetTextSyntaxForProperty(
     _In_ const XamlPropertyToken sPropertyToken,
     _Out_ XamlTypeToken& sTextSyntaxTypeToken
     )
@@ -755,7 +755,7 @@ HRESULT XamlNativeTypeInfoProvider::GetTextSyntaxForProperty(
     return S_OK;
 }
 
-HRESULT XamlNativeTypeInfoProvider::GetCore(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::GetCore(
     _Outptr_ CCoreServices **ppCore
     )
 {
@@ -771,7 +771,7 @@ HRESULT XamlNativeTypeInfoProvider::GetCore(
     return S_OK;
 }
 
-HRESULT XamlNativeTypeInfoProvider::GetSchemaContext(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::GetSchemaContext(
     _Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext
     )
 {
@@ -780,7 +780,7 @@ HRESULT XamlNativeTypeInfoProvider::GetSchemaContext(
     return S_OK;
 }
 
-HRESULT XamlNativeTypeInfoProvider::IsMarkupExtension(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::IsMarkupExtension(
     _In_ const XamlTypeToken& inTypeToken,
     _Out_ bool& outbIsMarkupExtension
     )
@@ -798,7 +798,7 @@ HRESULT XamlNativeTypeInfoProvider::IsMarkupExtension(
     RRETURN(hr);
 }
 
-HRESULT XamlNativeTypeInfoProvider::IsTypeConstructible(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::IsTypeConstructible(
     _In_ const XamlTypeToken& inTypeToken,
     _Out_ bool& outbIsConstructible
     )
@@ -815,7 +815,7 @@ HRESULT XamlNativeTypeInfoProvider::IsTypeConstructible(
     RRETURN(hr);
 }
 
-HRESULT XamlNativeTypeInfoProvider::IsTypePublic(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::IsTypePublic(
     _In_ const XamlTypeToken& inTypeToken,
     _Out_ bool& outbIsPublic
     )
@@ -833,7 +833,7 @@ HRESULT XamlNativeTypeInfoProvider::IsTypePublic(
 }
 
 // Determine whether the type token represents a String type.
-HRESULT XamlNativeTypeInfoProvider::IsString(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::IsString(
     _In_ const XamlTypeToken& inTypeToken,
     _Out_ bool& outbIsString
     )
@@ -846,7 +846,7 @@ HRESULT XamlNativeTypeInfoProvider::IsString(
     RRETURN(hr);
 }
 
-HRESULT XamlNativeTypeInfoProvider::IsPropertyEvent(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::IsPropertyEvent(
     _In_ const XamlPropertyToken& inPropertyToken,
     _Out_ bool& outbIsEvent
     )
@@ -855,7 +855,7 @@ HRESULT XamlNativeTypeInfoProvider::IsPropertyEvent(
     RRETURN(S_OK);
 }
 
-HRESULT XamlNativeTypeInfoProvider::IsPropertyReadOnly(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::IsPropertyReadOnly(
     _In_ const XamlPropertyToken& inPropertyToken,
     _Out_ bool& outbIsReadOnly
     )
@@ -870,7 +870,7 @@ HRESULT XamlNativeTypeInfoProvider::IsPropertyReadOnly(
     return S_OK;
 }
 
-HRESULT XamlNativeTypeInfoProvider::IsPropertyStatic(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::IsPropertyStatic(
     _In_ const XamlPropertyToken& inPropertyToken,
     _Out_ bool& outbIsStatic
     )
@@ -880,7 +880,7 @@ HRESULT XamlNativeTypeInfoProvider::IsPropertyStatic(
     RRETURN(S_OK);
 }
 
-HRESULT XamlNativeTypeInfoProvider::IsPropertyPublic(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::IsPropertyPublic(
     _In_ const XamlPropertyToken& inPropertyToken,
     _Out_ bool& outbIsPublic
     )
@@ -898,7 +898,7 @@ HRESULT XamlNativeTypeInfoProvider::IsPropertyPublic(
     return S_OK;
 }
 
-HRESULT XamlNativeTypeInfoProvider::IsPropertyAttachable(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::IsPropertyAttachable(
     _In_ const XamlPropertyToken& inPropertyToken,
     _Out_ bool& outbIsAttachable
     )
@@ -917,7 +917,7 @@ HRESULT XamlNativeTypeInfoProvider::IsPropertyAttachable(
     return S_OK;
 }
 
-HRESULT XamlNativeTypeInfoProvider::IsTemplateType(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::IsTemplateType(
     _In_ const XamlTypeToken& inTypeToken,
     _Out_ bool& outbIsTemplateType
     )
@@ -929,7 +929,7 @@ HRESULT XamlNativeTypeInfoProvider::IsTemplateType(
     RRETURN(hr);
 }
 
-HRESULT XamlNativeTypeInfoProvider::GetFullClassNameByIndex(
+_Check_return_ HRESULT XamlNativeTypeInfoProvider::GetFullClassNameByIndex(
     _In_ const KnownTypeIndex nClassIndex,
     _Out_ xstring_ptr* pstrFullName
     )

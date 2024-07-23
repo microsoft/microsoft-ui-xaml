@@ -56,7 +56,7 @@ namespace DirectUI
 
         _Check_return_ HRESULT GetEffectiveDataContext(_Outptr_ IInspectable** ppValue);
 
-        _Check_return_ HRESULT OnTreeParentUpdated(_In_opt_ CDependencyObject *pNewParent, _In_opt_ BOOLEAN isParentAlive) override;
+        _Check_return_ HRESULT OnTreeParentUpdated(_In_opt_ CDependencyObject *pNewParent, BOOLEAN isParentAlive) override;
 
         // FrameworkElement is its own inheritance context, no need to do anything
         _Check_return_ HRESULT OnInheritanceContextChanged() override { return S_OK; }
@@ -73,7 +73,7 @@ namespace DirectUI
         IFACEMETHOD(remove_LayoutUpdated)(
             _In_ EventRegistrationToken tToken) override;
 
-        IFACEMETHOD(RaiseLayoutUpdated)(
+        _Check_return_ IFACEMETHOD(RaiseLayoutUpdated)(
             _In_ IInspectable* pSender,
             _In_ IInspectable* pArgs);
 
@@ -120,7 +120,7 @@ namespace DirectUI
 
         static _Check_return_ HRESULT GetLogicalParentForAPCore(
             _In_ CDependencyObject* nativeTarget,
-            _Outptr_ CDependencyObject** ppLogicalParentForAP);
+            _Outptr_result_maybenull_ CDependencyObject** ppLogicalParentForAP);
 
         static _Check_return_ HRESULT GetStringFromObject(
             _In_ IInspectable* pObject,
@@ -246,8 +246,9 @@ namespace DirectUI
         }
 
         virtual _Check_return_ HRESULT GetLogicalParentForAPProtected(
-            _Outptr_ DependencyObject** ppLogicalParentForAP)
+            _Outptr_result_maybenull_ DependencyObject** ppLogicalParentForAP)
         {
+            *ppLogicalParentForAP = nullptr;
             RRETURN(S_OK);
         }
 

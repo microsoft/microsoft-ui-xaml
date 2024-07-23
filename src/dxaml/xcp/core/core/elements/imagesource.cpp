@@ -184,7 +184,7 @@ CImageSource::CImageSource(_In_ CCoreServices *pCore)
     m_keepSoftwareSurfaceOnReload = false;
 }
 
-HRESULT CImageSource::SetupImageSource(
+_Check_return_ HRESULT CImageSource::SetupImageSource(
     bool mustKeepSoftwareSurface,
     _In_opt_ CREATEPARAMETERS* createParameters
 )
@@ -3334,6 +3334,7 @@ _Check_return_ HRESULT CImageSource::ReloadOnResourceInvalidation(ResourceInvali
         switch (reason)
         {
         case ResourceInvalidationReason::ScaleChanged:
+        case ResourceInvalidationReason::ThemeChanged:
             // We implement reload by following the same code path as when the UriSource property changes -
             // except in the reload case, the UriSource property remains the same.
             //
@@ -3387,7 +3388,10 @@ _Check_return_ HRESULT CImageSource::ShouldReloadOnResourceInvalidation(Resource
             *shouldReload = true;
             return S_OK;
         }
+    }
 
+    if (ResourceInvalidationReason::ScaleChanged == reason || ResourceInvalidationReason::ThemeChanged == reason|| ResourceInvalidationReason::Any == reason)
+    {
         // Check if our resource Uri can be invalidated. We should reload if so.
         xref_ptr<IPALResourceManager> resourceManager;
         IFC_RETURN(GetContext()->GetResourceManager(resourceManager.ReleaseAndGetAddressOf()));

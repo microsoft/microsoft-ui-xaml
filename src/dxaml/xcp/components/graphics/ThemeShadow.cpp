@@ -105,7 +105,7 @@ _Check_return_ HRESULT CThemeShadow::SetValue(_In_ const SetValueParams& args)
             ASSERT(weakCollection != nullptr);
 
             weakCollection->SetCollectionChangeCallback(this);
-            weakCollection->SetOwner(this);
+            IFC_RETURN(weakCollection->SetOwner(this));
             weakCollection->DisallowAncestorsInCollection();
             break;
         }

@@ -5577,7 +5577,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_BringIntoViewRequested:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::BringIntoViewRequestedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5594,7 +5594,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_CharacterReceived:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::CharacterReceivedRoutedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5611,7 +5611,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_ContextCanceled:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::RoutedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5628,7 +5628,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_ContextRequested:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::ContextRequestedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5645,7 +5645,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_DoubleTapped:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IDoubleTappedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5662,7 +5662,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_DragEnter:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IDragEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5679,7 +5679,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_DragLeave:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IDragEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5696,7 +5696,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_DragOver:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IDragEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5713,7 +5713,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_DragStarting:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::DragStartingEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5730,7 +5730,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_Drop:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IDragEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5747,7 +5747,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_DropCompleted:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::DropCompletedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5764,7 +5764,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_GettingFocus:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::GettingFocusEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5781,7 +5781,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_GotFocus:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IRoutedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5798,7 +5798,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_Holding:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IHoldingEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5815,7 +5815,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_KeyDown:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IKeyEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5832,7 +5832,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_KeyUp:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IKeyEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5849,7 +5849,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_LosingFocus:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::LosingFocusEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5866,7 +5866,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_LostFocus:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IRoutedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5883,7 +5883,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_ManipulationCompleted:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IManipulationCompletedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5900,7 +5900,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_ManipulationDelta:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IManipulationDeltaEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5917,7 +5917,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_ManipulationInertiaStarting:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IManipulationInertiaStartingEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5934,7 +5934,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_ManipulationStarted:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IManipulationStartedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5951,7 +5951,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_ManipulationStarting:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IManipulationStartingEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5968,7 +5968,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_NoFocusCandidateFound:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::NoFocusCandidateFoundEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -5985,7 +5985,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_PointerCanceled:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -6002,7 +6002,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_PointerCaptureLost:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -6019,7 +6019,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_PointerEntered:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -6036,7 +6036,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_PointerExited:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -6053,7 +6053,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_PointerMoved:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -6070,7 +6070,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_PointerPressed:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -6087,7 +6087,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_PointerReleased:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -6104,7 +6104,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_PointerWheelChanged:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -6121,7 +6121,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_PreviewKeyDown:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IKeyEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -6138,7 +6138,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_PreviewKeyUp:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IKeyEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -6155,7 +6155,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_ProcessKeyboardAccelerators:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::ProcessKeyboardAcceleratorEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -6172,7 +6172,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_RightTapped:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::IRightTappedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -6189,7 +6189,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::UIElement_Tapped:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Input::ITappedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

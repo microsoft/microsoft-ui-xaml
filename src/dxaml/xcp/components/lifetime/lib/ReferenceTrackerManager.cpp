@@ -416,7 +416,11 @@ ReferenceTrackerManager::ReferenceTrackingStarted()
     #if DBG
     ReferenceTrackerLogTracking::Log( ReferenceTrackerLogTrackingPhase::Start );
 
+    #if XCP_MONITOR
     if( s_cMaxPeerStressIterations == 0 && !m_backgroundGCEnabled)
+    #else
+    if( !m_backgroundGCEnabled)
+    #endif
     {
         LOG(L"Reference tracking starting");
     }
@@ -661,16 +665,19 @@ ReferenceTrackerManager::ReferenceTrackingCompleted()
     }
 
 
-#if DBG
-
+    #if DBG
     ReferenceTrackerLogTracking::Log( ReferenceTrackerLogTrackingPhase::Completed);
 
+    #if XCP_MONITOR
     if( s_cMaxPeerStressIterations == 0 && !m_backgroundGCEnabled)
+    #else
+    if( !m_backgroundGCEnabled)
+    #endif
     {
         LOG(L"Reference tracking completed.  Objects=%d, Sources=%d, Targets=%d, Unreachable=%d",
             _peerCount, m_currentFindWalkID, _targetCount, _unreachableCount );
     }
-#endif
+    #endif
 
     TraceReferenceTrackingCompletedEnd (_peerCount, m_currentFindWalkID, _targetCount, _unreachableCount );
 

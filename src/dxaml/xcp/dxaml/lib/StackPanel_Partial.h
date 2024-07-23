@@ -53,14 +53,14 @@ namespace DirectUI
             IFACEMETHOD(remove_VerticalSnapPointsChanged)(_In_ EventRegistrationToken tToken) override;
 
             // Get the closest element information to the point.
-            IFACEMETHOD(GetClosestElementInfo)(
+            _Check_return_ IFACEMETHOD(GetClosestElementInfo)(
                 _In_ wf::Point position,
                 _Out_ xaml_primitives::ElementInfo* returnValue)
                 override;
 
             // Get the index where an item should be inserted if it were dropped at
             // the given position.  This will be used by live reordering.
-            IFACEMETHOD(GetInsertionIndex)(
+            _Check_return_ IFACEMETHOD(GetInsertionIndex)(
                 _In_ wf::Point position,
                 _Out_ INT* returnValue)
                 override;
@@ -70,7 +70,7 @@ namespace DirectUI
             // edges of the layout.  This can be useful for both determining whether
             // to tilt items at the edges of rows or columns as well as providing
             // data for portal animations.
-            IFACEMETHOD(IsLayoutBoundary)(
+            _Check_return_ IFACEMETHOD(IsLayoutBoundary)(
                 _In_ INT index,
                 _Out_ BOOLEAN* isLeftBoundary,
                 _Out_ BOOLEAN* isTopBoundary,
@@ -78,7 +78,7 @@ namespace DirectUI
                 _Out_ BOOLEAN* isBottomBoundary)
                 override;
 
-            IFACEMETHOD(GetItemsBounds)(
+            _Check_return_ IFACEMETHOD(GetItemsBounds)(
                 _Out_ wf::Rect* returnValue)
                 override;
 
@@ -91,10 +91,10 @@ namespace DirectUI
                 _Out_ INT* pSecond);
 
             // IPaginatedPanel
-            IFACEMETHOD(GetLastItemIndexInViewport)(
+            _Check_return_ IFACEMETHOD(GetLastItemIndexInViewport)(
                 _In_opt_ IScrollInfo* pScrollInfo,
                 _Inout_ INT* pResult) override;
-            IFACEMETHOD(GetItemsPerPage)(
+            _Check_return_ IFACEMETHOD(GetItemsPerPage)(
                 _In_ IScrollInfo* pScrollInfo,
                 _Out_ DOUBLE* pItemsPerPage) override;
 

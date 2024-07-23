@@ -69,6 +69,10 @@ void TitleBar::OnApplyTemplate()
     UpdatePaneToggleButton();
     UpdateTheme();
     UpdateTitle();
+    UpdateSubtitle();
+    UpdateHeader();
+    UpdateContent();
+    UpdateFooter();
     UpdateInteractableElementsList();
 }
 
@@ -162,6 +166,12 @@ void TitleBar::OnInputActivationChanged(const winrt::InputActivationListener& se
             isDeactivated ? s_paneToggleButtonDeactivatedVisualStateName : s_paneToggleButtonVisibleVisualStateName, false);
     }
 
+    if (IconSource() != nullptr)
+    {
+        winrt::VisualStateManager::GoToState(*this,
+            isDeactivated ? s_iconDeactivatedVisualStateName : s_iconVisibleVisualStateName, false);
+    }
+
     if (!Title().empty())
     {
         winrt::VisualStateManager::GoToState(*this,
@@ -172,6 +182,24 @@ void TitleBar::OnInputActivationChanged(const winrt::InputActivationListener& se
     {
         winrt::VisualStateManager::GoToState(*this,
             isDeactivated ? s_subtitleTextDeactivatedVisualStateName : s_subtitleTextVisibleVisualStateName, false);
+    }
+
+    if (Header() != nullptr)
+    {
+        winrt::VisualStateManager::GoToState(*this,
+            isDeactivated ? s_headerDeactivatedVisualStateName : s_headerVisibleVisualStateName, false);
+    }
+
+    if (Content() != nullptr)
+    {
+        winrt::VisualStateManager::GoToState(*this,
+            isDeactivated ? s_contentDeactivatedVisualStateName : s_contentVisibleVisualStateName, false);
+    }
+
+    if (Footer() != nullptr)
+    {
+        winrt::VisualStateManager::GoToState(*this,
+            isDeactivated ? s_footerDeactivatedVisualStateName : s_footerVisibleVisualStateName, false);
     }
 }
 

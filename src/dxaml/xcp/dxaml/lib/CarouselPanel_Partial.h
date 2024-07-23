@@ -617,7 +617,7 @@ namespace DirectUI
                 _Inout_ DOUBLE& offset);
 
             // Provides physical orientation of content
-            IFACEMETHOD(get_PhysicalOrientation)(
+            _Check_return_ IFACEMETHOD(get_PhysicalOrientation)(
                 _Out_ xaml_controls::Orientation* orientation) override;
 
             // Called when a manipulation is starting or ending.

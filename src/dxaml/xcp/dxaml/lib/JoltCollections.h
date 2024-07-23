@@ -744,6 +744,7 @@ namespace DirectUI
             CValue boxedValue;
             XINT32 coreIndex = -1;
             BoxerBuffer buffer;
+            *index = 0;
             DependencyObject* pMOR = NULL;
 
             IFC(this->CheckThread());
@@ -1033,6 +1034,7 @@ namespace DirectUI
             IFCPTR(index);
             IFCPTR(found);
 
+            *index = 0;
             *found = FALSE;
 
             if (value != NULL)

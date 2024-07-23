@@ -15,7 +15,7 @@ class NavigateFocusResult : public ::Microsoft::WRL::RuntimeClass<
 public:
     NavigateFocusResult(_In_ bool focusMoved);
 
-    IFACEMETHOD(get_WasFocusMoved)(_Out_ boolean * result) override;
+    _Check_return_ IFACEMETHOD(get_WasFocusMoved)(_Out_ boolean * result) override;
 
 private:
     bool m_focusMoved;

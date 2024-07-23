@@ -36,7 +36,7 @@ _Check_return_ HRESULT CNoParentShareableDependencyObject::Enter(
                     DirectUI::ManagedEvent::ManagedEventInheritanceContextChanged,
                     /* pArgs */ NULL));
             }
-            OnSkippedLiveEnter();
+            IFC_RETURN(OnSkippedLiveEnter());
         }
     }
     else if (ShouldSharedObjectRegisterName(params.pParentResourceDictionary))
@@ -65,7 +65,7 @@ _Check_return_ HRESULT CNoParentShareableDependencyObject::Leave(
         else
         {
             m_cEnteredLive--;
-            OnSkippedLiveLeave();
+            IFC(OnSkippedLiveLeave());
         }
     }
     else if (ShouldSharedObjectRegisterName(params.pParentResourceDictionary))

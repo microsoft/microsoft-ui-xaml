@@ -163,13 +163,13 @@ AKModeContainer& AccessKeyExport::GetModeContainer() const
     return impl->m_container;
 }
 
-void AccessKeyExport::SetVisualTree(_In_ VisualTree* tree) const
+void AccessKeyExport::SetVisualTree(_In_opt_ VisualTree* tree) const
 {
     impl->m_treeLibrary.SetVisualTree(tree);
     impl->m_isVisualTreeValid = tree != nullptr;
 }
 
-void AccessKeyExport::SetFocusManager(_In_ CFocusManager* focusManager) const
+void AccessKeyExport::SetFocusManager(_In_opt_ CFocusManager* focusManager) const
 {
     impl->m_scopeTree.SetFocusManager(focusManager);
     impl->m_container.SetFocusManager(focusManager);
@@ -189,7 +189,7 @@ _Check_return_ HRESULT AccessKeyExport::CleanupAndExitCurrentScope() const
 _Check_return_ HRESULT AccessKeyExport::ExitAccessKeyMode() const
 {
     IFC_RETURN(CleanupAndExitCurrentScope());
-    impl->m_container.SetIsActive(false);
+    IFC_RETURN(impl->m_container.SetIsActive(false));
     return S_OK;
 }
 
@@ -199,7 +199,7 @@ _Check_return_ HRESULT AccessKeyExport::EnterAccessKeyMode() const
     {
         return S_OK;
     }
-    impl->m_container.SetIsActive(true);
+    IFC_RETURN(impl->m_container.SetIsActive(true));
     IFC_RETURN(impl->m_scopeTree.EnterScope());
     return S_OK;
 }

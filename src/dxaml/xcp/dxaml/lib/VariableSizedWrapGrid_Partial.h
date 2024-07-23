@@ -295,7 +295,7 @@ namespace DirectUI
                             _Out_ wf::Size* pReturnValue)
                             override;
 
-        IFACEMETHOD(SupportsKeyNavigationAction)(
+        _Check_return_ IFACEMETHOD(SupportsKeyNavigationAction)(
                 _In_ xaml_controls::KeyNavigationAction action,
                 _Out_ BOOLEAN* pSupportsAction)
                 override;
@@ -311,7 +311,7 @@ namespace DirectUI
         // If elementIndex is 0 and Key is Up or Left
         // If elementIndex is maxRow -1, maxCol -1 and Key is Right or Down
         // if Key is not Up, Down, Right or Left
-        IFACEMETHOD(GetTargetIndexFromNavigationAction)(
+        _Check_return_ IFACEMETHOD(GetTargetIndexFromNavigationAction)(
             _In_ UINT elementIndex,
             _In_ xaml_controls::ElementType elementType,
             _In_ xaml_controls::KeyNavigationAction action,
@@ -322,12 +322,12 @@ namespace DirectUI
             _Out_ BOOLEAN* actionValidForSourceIndex) override;
 
         // Logical Orientation override
-        IFACEMETHOD(get_LogicalOrientation)(
+        _Check_return_ IFACEMETHOD(get_LogicalOrientation)(
             _Out_ xaml_controls::Orientation* pValue)
             override;
 
         // Physical Orientation override
-        IFACEMETHOD(get_PhysicalOrientation)(
+        _Check_return_ IFACEMETHOD(get_PhysicalOrientation)(
             _Out_ xaml_controls::Orientation* pValue)
             override;
     };

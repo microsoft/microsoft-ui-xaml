@@ -19,7 +19,7 @@ namespace DirectUI
     PARTIAL_CLASS(MenuFlyout)
     {
     public:
-        IFACEMETHOD(ShowAt)(_In_ xaml::IFrameworkElement* pPlacementTarget) override;
+        _Check_return_ IFACEMETHOD(ShowAt)(_In_ xaml::IFrameworkElement* pPlacementTarget) override;
 
         DirectUI::InputDeviceType GetInputDeviceTypeUsedToOpen() const
         {

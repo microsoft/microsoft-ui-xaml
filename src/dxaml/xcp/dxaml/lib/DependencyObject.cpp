@@ -1190,7 +1190,7 @@ _Check_return_ HRESULT DependencyObject::GetValueByKnownIndex(_In_ KnownProperty
     return S_OK;
 }
 
-_Check_return_ HRESULT DependencyObject::SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_ IInspectable* pValue)
+_Check_return_ HRESULT DependencyObject::SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_opt_ IInspectable* pValue)
 {
     IFC_RETURN(CheckThread());
 
@@ -1200,7 +1200,7 @@ _Check_return_ HRESULT DependencyObject::SetValueByKnownIndex(_In_ KnownProperty
     return S_OK;
 }
 
-_Check_return_ HRESULT DependencyObject::SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_ HSTRING value)
+_Check_return_ HRESULT DependencyObject::SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_opt_ HSTRING value)
 {
     IFC_RETURN(CheckThread());
 
@@ -1347,7 +1347,7 @@ Cleanup:
 // contains an IInspectable or not. We will be wrapping only those IInspectable(s) that do not
 // QI for IDependencyObject.
 _Check_return_ HRESULT
-DependencyObject::SetValueCore(_In_ const CDependencyProperty* dp, _In_ IInspectable* value, _In_ bool setEffectiveValueOnly, _In_ ::BaseValueSource baseValueSource)
+DependencyObject::SetValueCore(_In_ const CDependencyProperty* dp, _In_opt_ IInspectable* value, _In_ bool setEffectiveValueOnly, _In_ ::BaseValueSource baseValueSource)
 {
     CValue boxedValue;
     BoxerBuffer buffer;

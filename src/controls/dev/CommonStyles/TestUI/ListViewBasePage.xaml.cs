@@ -18,14 +18,60 @@ namespace MUXControlsTestApp
 {
     public sealed partial class ListViewBasePage : TestPage
     {
-        private ObservableCollection<Recipe> _colRecipes = null;
+        private enum QueuedOperationType
+        {
+            DataSourceAdd,
+            DataSourceInsert,
+            DataSourceRemove,
+            DataSourceRemoveAll,
+            DataSourceReplace,
+            DataSourceRaiseResetNotification
+        }
+
+        private class QueuedOperation
+        {
+            public QueuedOperation(QueuedOperationType type)
+            {
+                this.Type = type;
+            }
+
+            public QueuedOperation(QueuedOperationType type, double value)
+            {
+                this.Type = type;
+                this.DoubleValue = value;
+            }
+
+            public QueuedOperation(QueuedOperationType type, int value)
+            {
+                this.Type = type;
+                this.IntValue = value;
+            }
+
+            public QueuedOperation(QueuedOperationType type, string value)
+            {
+                this.Type = type;
+                this.StringValue = value;
+            }
+
+            public QueuedOperationType Type { get; set; }
+            public double DoubleValue { get; set; }
+            public int IntValue { get; set; }
+            public string StringValue { get; set; }
+        }
+
+        private EntityObservableCollection _colEntities = null;
         private ListViewBase _listViewBase = null;
         private ScrollViewer _scrollViewer = null;
         private ItemsPanelTemplate _modernPanelTemplate = null;
+        private List<QueuedOperation> _lstQueuedOperations = new List<QueuedOperation>();
+        private DispatcherTimer _queuedOperationsTimer = new DispatcherTimer();
 
         public ListViewBasePage()
         {
             this.InitializeComponent();
+
+            _queuedOperationsTimer.Interval = new TimeSpan(0, 0, 10 /*sec*/);
+            _queuedOperationsTimer.Tick += QueuedOperationsTimer_Tick;
 
             Loaded += ListViewBasePage_Loaded;
         }
@@ -55,13 +101,13 @@ namespace MUXControlsTestApp
         {
             _scrollViewer = FindElementOfTypeInSubtree<ScrollViewer>(_listViewBase);
 
-            _colRecipes = new ObservableCollection<Recipe>();
+            _colEntities = new EntityObservableCollection();
 
             for (int itemIndex = 0; itemIndex < 250; itemIndex++)
             {
                 BitmapImage bitmapImage = GetBitmapImage(itemIndex % 126 + 1);
 
-                _colRecipes.Add(new Recipe()
+                _colEntities.Add(new Entity()
                 {
                     BitmapImage = bitmapImage,
                     Id = itemIndex
@@ -71,7 +117,7 @@ namespace MUXControlsTestApp
             UpdateItemsPanelType();
             UpdateListViewBaseSingleSelectionFollowsFocus();
 
-            _listViewBase.ItemsSource = _colRecipes;
+            _listViewBase.ItemsSource = _colEntities;
         }
 
         // Workaround to avoid the ListViewBase not being scrollable after an ItemsPanel change to VirtualizingStackPanel.
@@ -503,9 +549,9 @@ namespace MUXControlsTestApp
                 {
                     txtDataSourceItemCount.Text = "0";
                 }
-                else if (_listViewBase.ItemsSource == _colRecipes)
+                else if (_listViewBase.ItemsSource == _colEntities)
                 {
-                    txtDataSourceItemCount.Text = _colRecipes.Count.ToString();
+                    txtDataSourceItemCount.Text = _colEntities.Count.ToString();
                 }
             }
         }
@@ -526,17 +572,17 @@ namespace MUXControlsTestApp
             {
                 if (_listViewBase != null && _listViewBase.ItemsSource != null)
                 {
-                    if (_listViewBase.ItemsSource == _colRecipes)
+                    if (_listViewBase.ItemsSource == _colEntities)
                     {
-                        BitmapImage bitmapImage = GetBitmapImage(_colRecipes.Count % 126 + 1);
+                        BitmapImage bitmapImage = GetBitmapImage(_colEntities.Count % 126 + 1);
 
-                        var recipe = new Recipe()
+                        var entity = new Entity()
                         {
                             BitmapImage = bitmapImage,
-                            Id = _colRecipes.Count
+                            Id = _colEntities.Count
                         };
 
-                        _colRecipes.Add(recipe);
+                        _colEntities.Add(entity);
                     }
                 }
             }
@@ -553,17 +599,17 @@ namespace MUXControlsTestApp
             {
                 if (_listViewBase != null && _listViewBase.ItemsSource != null)
                 {
-                    if (_listViewBase.ItemsSource == _colRecipes)
+                    if (_listViewBase.ItemsSource == _colEntities)
                     {
-                        BitmapImage bitmapImage = GetBitmapImage(_colRecipes.Count % 126 + 1);
+                        BitmapImage bitmapImage = GetBitmapImage(_colEntities.Count % 126 + 1);
 
-                        var recipe = new Recipe()
+                        var entity = new Entity()
                         {
                             BitmapImage = bitmapImage,
-                            Id = _colRecipes.Count
+                            Id = _colEntities.Count
                         };
 
-                        _colRecipes.Insert(newItemIndex, recipe);
+                        _colEntities.Insert(newItemIndex, entity);
                     }
                 }
             }
@@ -580,9 +626,9 @@ namespace MUXControlsTestApp
             {
                 if (_listViewBase != null && _listViewBase.ItemsSource != null)
                 {
-                    if (_listViewBase.ItemsSource == _colRecipes)
+                    if (_listViewBase.ItemsSource == _colEntities)
                     {
-                        _colRecipes.Clear();
+                        _colEntities.Clear();
                     }
                 }
             }
@@ -599,9 +645,9 @@ namespace MUXControlsTestApp
             {
                 if (_listViewBase != null && _listViewBase.ItemsSource != null)
                 {
-                    if (_listViewBase.ItemsSource == _colRecipes)
+                    if (_listViewBase.ItemsSource == _colEntities)
                     {
-                        _colRecipes.RemoveAt(oldItemIndex);
+                        _colEntities.RemoveAt(oldItemIndex);
                     }
                 }
             }
@@ -618,17 +664,17 @@ namespace MUXControlsTestApp
             {
                 if (_listViewBase != null && _listViewBase.ItemsSource != null)
                 {
-                    if (_listViewBase.ItemsSource == _colRecipes)
+                    if (_listViewBase.ItemsSource == _colEntities)
                     {
-                        BitmapImage bitmapImage = GetBitmapImage(_colRecipes.Count % 126 + 1);
+                        BitmapImage bitmapImage = GetBitmapImage(_colEntities.Count % 126 + 1);
 
-                        var recipe = new Recipe()
+                        var entity = new Entity()
                         {
                             BitmapImage = bitmapImage,
-                            Id = _colRecipes.Count
+                            Id = _colEntities.Count
                         };
 
-                        _colRecipes[itemIndex] = recipe;
+                        _colEntities[itemIndex] = entity;
                     }
                 }
             }
@@ -636,6 +682,14 @@ namespace MUXControlsTestApp
             {
                 txtExceptionReport.Text = ex.ToString();
                 AppendEventMessage(ex.ToString());
+            }
+        }
+
+        private void DataSourceRaiseResetNotification()
+        {
+            if (_colEntities != null)
+            {
+                _colEntities.RaiseResetNotification();
             }
         }
 
@@ -817,7 +871,7 @@ namespace MUXControlsTestApp
                     }
                 }
 
-                _listViewBase.ItemsSource = _colRecipes;
+                _listViewBase.ItemsSource = _colEntities;
 
                 // _listViewBase.ItemsPanelRoot is only updated asynchronously.
                 _ = this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, UpdateScrollViewerScrollOrientation);
@@ -979,31 +1033,31 @@ namespace MUXControlsTestApp
                 {
                     int newItemCount = int.Parse(txtDataSourceItemCount.Text);
 
-                    if (_listViewBase.ItemsSource == _colRecipes)
+                    if (_listViewBase.ItemsSource == _colEntities)
                     {
-                        if (_colRecipes.Count < newItemCount)
+                        if (_colEntities.Count < newItemCount)
                         {
-                            var colRecipesEnd = new List<Recipe>();
+                            var colEntitiesEnd = new List<Entity>();
 
-                            for (int itemIndex = 0; itemIndex < newItemCount - _colRecipes.Count; itemIndex++)
+                            for (int itemIndex = 0; itemIndex < newItemCount - _colEntities.Count; itemIndex++)
                             {
                                 BitmapImage bitmapImage = GetBitmapImage(itemIndex % 126 + 1);
 
-                                colRecipesEnd.Add(new Recipe()
+                                colEntitiesEnd.Add(new Entity()
                                 {
                                     BitmapImage = bitmapImage,
                                     Id = itemIndex
                                 });
                             }
 
-                            _colRecipes = new ObservableCollection<Recipe>(_colRecipes.Concat(colRecipesEnd));
+                            _colEntities = new EntityObservableCollection(_colEntities.Collection.Concat(colEntitiesEnd));
                         }
-                        else if (_colRecipes.Count > newItemCount)
+                        else if (_colEntities.Count > newItemCount)
                         {
-                            _colRecipes = new ObservableCollection<Recipe>(_colRecipes.Take(newItemCount));
+                            _colEntities = new EntityObservableCollection(_colEntities.Collection.Take(newItemCount));
                         }
 
-                        _listViewBase.ItemsSource = _colRecipes;
+                        _listViewBase.ItemsSource = _colEntities;
                     }
                 }
             }
@@ -1018,6 +1072,12 @@ namespace MUXControlsTestApp
         {
             AppendEventMessage("DataSourceAdd");
             DataSourceAddItem();
+        }
+
+        private void BtnQueueDataSourceAddItem_Click(object sender, RoutedEventArgs e)
+        {
+            AppendEventMessage("Queued DataSourceAdd");
+            EnqueueOperation(QueuedOperationType.DataSourceAdd);
         }
 
         private void BtnDataSourceInsertItem_Click(object sender, RoutedEventArgs e)
@@ -1039,10 +1099,47 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void BtnQueueDataSourceInsertItem_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (txtDataSourceItemIndex != null)
+                {
+                    int newItemIndex = int.Parse(txtDataSourceItemIndex.Text);
+
+                    AppendEventMessage("Queued DataSourceInsert " + newItemIndex);
+                    EnqueueOperation(new QueuedOperation(QueuedOperationType.DataSourceInsert, newItemIndex));
+                }
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                AppendEventMessage(ex.ToString());
+            }
+        }
+
         private void BtnDataSourceRemoveAllItems_Click(object sender, RoutedEventArgs e)
         {
             AppendEventMessage("DataSourceRemoveAll");
             DataSourceRemoveAllItems();
+        }
+
+        private void BtnQueueDataSourceRemoveAllItems_Click(object sender, RoutedEventArgs e)
+        {
+            AppendEventMessage("Queued DataSourceRemoveAll");
+            EnqueueOperation(QueuedOperationType.DataSourceRemoveAll);
+        }
+
+        private void BtnDataSourceRaiseResetNotification_Click(object sender, RoutedEventArgs e)
+        {
+            AppendEventMessage("DataSourceRaiseResetNotification");
+            DataSourceRaiseResetNotification();
+        }
+
+        private void BtnQueueDataSourceRaiseResetNotification_Click(object sender, RoutedEventArgs e)
+        {
+            AppendEventMessage("Queued DataSourceRaiseResetNotification");
+            EnqueueOperation(QueuedOperationType.DataSourceRaiseResetNotification);
         }
 
         private void BtnDataSourceRemoveItem_Click(object sender, RoutedEventArgs e)
@@ -1064,6 +1161,25 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void BtnQueueDataSourceRemoveItem_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (txtDataSourceItemIndex != null)
+                {
+                    int oldItemIndex = int.Parse(txtDataSourceItemIndex.Text);
+
+                    AppendEventMessage("Queued DataSourceRemove " + oldItemIndex);
+                    EnqueueOperation(new QueuedOperation(QueuedOperationType.DataSourceRemove, oldItemIndex));
+                }
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                AppendEventMessage(ex.ToString());
+            }
+        }
+
         private void BtnDataSourceReplaceItem_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -1074,6 +1190,25 @@ namespace MUXControlsTestApp
 
                     AppendEventMessage("DataSourceReplace " + itemIndex);
                     DataSourceReplaceItem(itemIndex);
+                }
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                AppendEventMessage(ex.ToString());
+            }
+        }
+
+        private void BtnQueueDataSourceReplaceItem_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (txtDataSourceItemIndex != null)
+                {
+                    int itemIndex = int.Parse(txtDataSourceItemIndex.Text);
+
+                    AppendEventMessage("Queued DataSourceReplace " + itemIndex);
+                    EnqueueOperation(new QueuedOperation(QueuedOperationType.DataSourceReplace, itemIndex));
                 }
             }
             catch (Exception ex)
@@ -1217,7 +1352,10 @@ namespace MUXControlsTestApp
 
         private void AppendEventMessage(string eventMessage)
         {
-            lstLogs.Items.Add(eventMessage);
+            if (chkLog.IsChecked == true)
+            {
+                lstLogs.Items.Add(eventMessage);
+            }
         }
 
         private void BtnClearExceptionReport_Click(object sender, RoutedEventArgs e)
@@ -1258,6 +1396,63 @@ namespace MUXControlsTestApp
             }
 
             return null;
+        }
+
+        private void QueuedOperationsTimer_Tick(object sender, object e)
+        {
+            _queuedOperationsTimer.Stop();
+            ExecuteQueuedOperations();
+        }
+
+        private void EnqueueOperation(QueuedOperationType queuedOperationType)
+        {
+            EnqueueOperation(new QueuedOperation(queuedOperationType));
+        }
+
+        private void EnqueueOperation(QueuedOperation queuedOperation)
+        {
+            _lstQueuedOperations.Add(queuedOperation);
+            _queuedOperationsTimer.Start();
+        }
+
+        private void ExecuteQueuedOperations()
+        {
+            try
+            {
+                while (_lstQueuedOperations.Count > 0)
+                {
+                    QueuedOperation qo = _lstQueuedOperations[0];
+
+                    switch (qo.Type)
+                    {
+                        case QueuedOperationType.DataSourceAdd:
+                            DataSourceAddItem();
+                            break;
+                        case QueuedOperationType.DataSourceInsert:
+                            DataSourceInsertItem(qo.IntValue);
+                            break;
+                        case QueuedOperationType.DataSourceRemove:
+                            DataSourceRemoveItem(qo.IntValue);
+                            break;
+                        case QueuedOperationType.DataSourceRemoveAll:
+                            DataSourceRemoveAllItems();
+                            break;
+                        case QueuedOperationType.DataSourceReplace:
+                            DataSourceReplaceItem(qo.IntValue);
+                            break;
+                        case QueuedOperationType.DataSourceRaiseResetNotification:
+                            DataSourceRaiseResetNotification();
+                            break;
+                    }
+
+                    _lstQueuedOperations.RemoveAt(0);
+                }
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                AppendEventMessage(ex.ToString());
+            }
         }
     }
 }

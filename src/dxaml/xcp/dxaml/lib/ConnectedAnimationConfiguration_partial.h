@@ -22,14 +22,14 @@ namespace DirectUI
 
         // IConnectedAnimationCoreConfiguration;
         _Check_return_ HRESULT GetEffectiveDuration(_Out_ wf::TimeSpan* value) override;
-        _Check_return_ HRESULT GetEffectiveEasingFunction(_Outptr_ WUComp::ICompositionEasingFunction** value) override;
+        _Check_return_ HRESULT GetEffectiveEasingFunction(_Outptr_result_maybenull_ WUComp::ICompositionEasingFunction** value) override;
         _Check_return_ HRESULT GetEffectPropertySet(_In_ wfn::Vector3 scaleFactors, _Out_ WUComp::ICompositionPropertySet** effectPropertySet) override { return S_OK; };
         bool ShouldShadowBeCast() override { return false; }
 
         // Supports the IConnectedAnimationCoreConfiguration interface.
         _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
 
-        virtual _Check_return_ HRESULT GetDefaultEasingFunction(_Outptr_ WUComp::ICompositionEasingFunction** value);
+        virtual _Check_return_ HRESULT GetDefaultEasingFunction(_Outptr_result_maybenull_ WUComp::ICompositionEasingFunction** value);
         virtual const wf::TimeSpan GetDefaultDuration();
 
     protected:

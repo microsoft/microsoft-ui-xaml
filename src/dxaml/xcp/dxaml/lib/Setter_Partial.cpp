@@ -31,7 +31,7 @@ Cleanup:
 }
 
 _Check_return_ HRESULT Setter::get_PropertyImpl(
-    _Outptr_ IDependencyProperty** pValue)
+    _Outptr_result_maybenull_ IDependencyProperty** pValue)
 {
     HRESULT hr = S_OK;
     IInspectable* pProxyAsInsp = NULL;
@@ -61,7 +61,7 @@ Cleanup:
 }
 
 _Check_return_ HRESULT Setter::put_PropertyImpl(
-    _In_ IDependencyProperty* value)
+    _In_opt_ IDependencyProperty* value)
 {
     HRESULT hr = S_OK;
     DependencyPropertyProxy* pProxy = NULL;

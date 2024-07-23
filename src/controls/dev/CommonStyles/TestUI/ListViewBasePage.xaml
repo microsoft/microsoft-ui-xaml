@@ -234,7 +234,7 @@
         <ScrollViewer x:Name="svDataSource" Grid.Row="1" Grid.Column="1">
             <Grid Margin="4,0,4,0" Padding="6"
                 BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1"
-                RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
+                RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
                 ColumnDefinitions="Auto, Auto, Auto, Auto">
                 <TextBlock Text="Data Source" Foreground="Red"/>
 
@@ -244,14 +244,21 @@
                 <Button x:Name="btnDataSourceSetItemCount" Content="S" Margin="1" Grid.Row="1" Grid.Column="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnDataSourceSetItemCount_Click"/>
 
                 <Button x:Name="btnDataSourceAddItem" Content="Add Item" Margin="1" Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnDataSourceAddItem_Click"/>
+                <Button x:Name="btnQueueDataSourceAddItem" Content="Q" Margin="1" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Click="BtnQueueDataSourceAddItem_Click"/>
                 <Button x:Name="btnDataSourceRemoveAllItems" Content="Remove All Items" Margin="1" Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnDataSourceRemoveAllItems_Click"/>
+                <Button x:Name="btnQueueDataSourceRemoveAllItems" Content="Q" Margin="1" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center" Click="BtnQueueDataSourceRemoveAllItems_Click"/>
+                <Button x:Name="btnDataSourceRaiseResetNotification" Content="Raise Reset Notification" Margin="1" Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnDataSourceRaiseResetNotification_Click"/>
+                <Button x:Name="btnQueueDataSourceRaiseResetNotification" Content="Q" Margin="1" Grid.Row="4" Grid.Column="2" VerticalAlignment="Center" Click="BtnQueueDataSourceRaiseResetNotification_Click"/>
 
-                <TextBlock Text="ItemIndex:" Grid.Row="4" VerticalAlignment="Center" Margin="0, 4, 0, 0"/>
-                <TextBox x:Name="txtDataSourceItemIndex" Text="0" Grid.Row="4" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <TextBlock Text="ItemIndex:" Grid.Row="5" VerticalAlignment="Center" Margin="0, 4, 0, 0"/>
+                <TextBox x:Name="txtDataSourceItemIndex" Text="0" Grid.Row="5" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
 
-                <Button x:Name="btnDataSourceReplaceItem" Content="Replace Item" Margin="1, 7, 1, 1" Grid.Row="5" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnDataSourceReplaceItem_Click"/>
-                <Button x:Name="btnDataSourceInsertItem" Content="Insert Item" Margin="1" Grid.Row="6" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnDataSourceInsertItem_Click"/>
-                <Button x:Name="btnDataSourceRemoveItem" Content="Remove Item" Margin="1" Grid.Row="7" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnDataSourceRemoveItem_Click"/>
+                <Button x:Name="btnDataSourceReplaceItem" Content="Replace Item" Margin="1, 7, 1, 1" Grid.Row="6" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnDataSourceReplaceItem_Click"/>
+                <Button x:Name="btnQueueDataSourceReplaceItem" Content="Q" Margin="1, 7, 1, 1" Grid.Row="6" Grid.Column="2" VerticalAlignment="Center" Click="BtnQueueDataSourceReplaceItem_Click"/>
+                <Button x:Name="btnDataSourceInsertItem" Content="Insert Item" Margin="1" Grid.Row="7" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnDataSourceInsertItem_Click"/>
+                <Button x:Name="btnQueueDataSourceInsertItem" Content="Q" Margin="1" Grid.Row="7" Grid.Column="2" VerticalAlignment="Center" Click="BtnQueueDataSourceInsertItem_Click"/>
+                <Button x:Name="btnDataSourceRemoveItem" Content="Remove Item" Margin="1" Grid.Row="8" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Click="BtnDataSourceRemoveItem_Click"/>
+                <Button x:Name="btnQueueDataSourceRemoveItem" Content="Q" Margin="1" Grid.Row="8" Grid.Column="2" VerticalAlignment="Center" Click="BtnQueueDataSourceRemoveItem_Click"/>
             </Grid>
         </ScrollViewer>
 
@@ -260,7 +267,11 @@
             ColumnDefinitions="*">
             <TextBlock Text="Logs" Foreground="Red"/>
 
-            <Button x:Name="btnClearLogs" Grid.Row="1" Content="Clear" Click="BtnClearLogs_Click" Margin="1"/>
+            <StackPanel Orientation="Horizontal" Grid.Row="1">
+                <Button x:Name="btnClearLogs" Content="Clear" Margin="1" Click="BtnClearLogs_Click"/>
+                <CheckBox x:Name="chkLog" Content="Log?" Margin="1" IsChecked="True"/>
+            </StackPanel>
+            
             <ListBox x:Name="lstLogs" Margin="1" Grid.Row="2"/>
         </Grid>
 

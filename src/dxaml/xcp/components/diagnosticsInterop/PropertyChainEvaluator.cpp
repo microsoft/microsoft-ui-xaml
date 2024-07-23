@@ -372,7 +372,7 @@ namespace Diagnostics {
             }
 
             // Add local
-            EvaluateSource(m_do, BaseValueSourceLocal);
+            IFC_RETURN(EvaluateSource(m_do, BaseValueSourceLocal));
 
             // Add Active style and its style chain
             auto doAsFe = do_pointer_cast<CFrameworkElement>(m_do);

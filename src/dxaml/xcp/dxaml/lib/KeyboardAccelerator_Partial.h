@@ -20,7 +20,7 @@ namespace DirectUI
             _In_ CKeyboardAccelerator* pNativeAccelerator,
             _In_ CDependencyObject* pParentElement);
 
-        static _Check_return_ HRESULT GetStringRepresentationForUIElement(_In_ DirectUI::UIElement* uiElement, _Out_ HSTRING *stringRepresentation);
+        static _Check_return_ HRESULT GetStringRepresentationForUIElement(_In_ DirectUI::UIElement* uiElement, _Outptr_result_maybenull_ HSTRING *stringRepresentation);
         _Check_return_ HRESULT GetStringRepresentation(_Out_ HSTRING *stringRepresentation);
 
     protected:

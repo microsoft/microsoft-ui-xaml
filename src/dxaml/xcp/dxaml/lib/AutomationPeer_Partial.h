@@ -229,7 +229,7 @@ namespace DirectUI
             // Initializes a new instance of the AutomationPeer class.
             AutomationPeer();
             ~AutomationPeer() override;
-            HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
+            _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
 
         private:
             TrackerPtr<xaml_automation_peers::IAutomationPeer> m_tpEventsSource;

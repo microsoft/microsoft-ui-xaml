@@ -7,9 +7,9 @@
       <StaticResource x:Key="HyperlinkForegroundPressed" ResourceKey="AccentTextFillColorTertiaryBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="HighContrast">
-      <SolidColorBrush x:Key="HyperlinkForeground" Color="{StaticResource SystemColorHotlightColor}" />
-      <SolidColorBrush x:Key="HyperlinkForegroundPointerOver" Color="{StaticResource SystemColorWindowTextColor}" />
-      <SolidColorBrush x:Key="HyperlinkForegroundPressed" Color="{StaticResource SystemColorHighlightColor}" />
+      <StaticResource x:Key="HyperlinkForeground" ResourceKey="SystemControlHyperlinkTextBrush" />
+      <StaticResource x:Key="HyperlinkForegroundPointerOver" ResourceKey="SystemControlPageTextBaseMediumBrush" />
+      <StaticResource x:Key="HyperlinkForegroundPressed" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Light">
       <StaticResource x:Key="HyperlinkForeground" ResourceKey="AccentTextFillColorPrimaryBrush" />

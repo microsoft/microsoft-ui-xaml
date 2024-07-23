@@ -7,7 +7,7 @@
 #include "RuntimeElement.h"
 
 
-IFACEMETHODIMP XamlDiagnostics::UnregisterInstance(InstanceHandle handle)
+IFACEMETHODIMP XamlDiagnostics::UnregisterInstance(_In_ InstanceHandle handle)
 {
     std::shared_ptr<Diagnostics::RuntimeObject> instance;
     if (TryFindObjectFromHandle(handle, instance))

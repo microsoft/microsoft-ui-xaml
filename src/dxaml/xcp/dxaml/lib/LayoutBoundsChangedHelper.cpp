@@ -85,14 +85,15 @@ _Check_return_ HRESULT LayoutBoundsChangedHelper::GetDesiredBoundsMode(_Out_ wuv
 }
 
 void LayoutBoundsChangedHelper::AddLayoutBoundsChangedCallback(
-    _In_ std::function<HRESULT()> callback, EventRegistrationToken* tokParentBoundsChanged)
+    _In_ std::function<HRESULT()> callback,
+    _Out_ EventRegistrationToken* tokParentBoundsChanged)
 {
     m_callbacks[m_eventTokenNumber] = callback;
     tokParentBoundsChanged->value = m_eventTokenNumber;
     m_eventTokenNumber++;
 }
 
-void LayoutBoundsChangedHelper::RemoveLayoutBoundsChangedCallback(EventRegistrationToken* tokParentBoundsChanged)
+void LayoutBoundsChangedHelper::RemoveLayoutBoundsChangedCallback(_In_ EventRegistrationToken* tokParentBoundsChanged)
 {
     if (tokParentBoundsChanged && tokParentBoundsChanged->value)
     {

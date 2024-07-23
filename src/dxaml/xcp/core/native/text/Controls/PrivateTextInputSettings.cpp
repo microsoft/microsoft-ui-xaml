@@ -96,7 +96,7 @@ _Check_return_ HRESULT CTextInputPrivateSettings::Initialize(ITextServices2 *pTe
 
     UpdateSpellCheckingSettingBits(bIsEnabled);
 
-    m_pTextBox->GetTextPredictionEnabled(&bIsEnabled, &bIsDefault);
+    IFC_RETURN(m_pTextBox->GetTextPredictionEnabled(&bIsEnabled, &bIsDefault));
 
     if (IsPureNumberIS(m_inputScope))
     {

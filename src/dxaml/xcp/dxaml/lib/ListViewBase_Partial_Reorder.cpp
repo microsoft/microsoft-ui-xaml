@@ -318,6 +318,17 @@ _Check_return_ HRESULT ListViewBase::OnDragCompleted(
         IFC(pEventSource->Raise(
             this,
             spArgs.Get()));
+
+        if (dropResult == wadt::DataPackageOperation::DataPackageOperation_None)
+        {
+            // The drag&drop operation was canceled, with an Escape keystroke or a right-mouse-button click
+            // for example. Make sure DropCausesReorder's evaluation is False in the upcoming ListViewBase::OnDropGesture execution 
+            // so that it invokes UpdateDropTargetDropEffect and CompleteDrop.
+            m_isDraggingOverSelf = FALSE;
+
+            // Also, make sure the items that were dragged regain their original location before m_movedItems is cleared.
+            IFC(ResetAllItemsForLiveReorder());
+        }
     }
 
     // stop the timer

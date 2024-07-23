@@ -11,7 +11,7 @@
     mc:Ignorable="d">
 
     <local:TestPage.Resources>
-        <DataTemplate x:Key="recipeTemplate1" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate1" x:DataType="dataModel:Entity">
             <ItemContainer MinWidth="72" Height="96" Background="Gray">
                 <Grid x:Name="itemPanel">
                     <Image x:Name="image" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -24,7 +24,7 @@
             </ItemContainer>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate2" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate2" x:DataType="dataModel:Entity">
             <ItemContainer MinWidth="40" MinHeight="40" Background="Gray">
                 <Image x:Name="image" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Image.Source>
@@ -34,7 +34,7 @@
             </ItemContainer>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate3" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate3" x:DataType="dataModel:Entity">
             <ItemContainer MinHeight="120" Background="Gray">
                 <Image x:Name="image" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Image.Source>
@@ -44,7 +44,7 @@
             </ItemContainer>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate4" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate4" x:DataType="dataModel:Entity">
             <ItemContainer MinWidth="40" Height="120" Background="Gray">
                 <Image x:Name="image" Stretch="UniformToFill">
                     <Image.Source>
@@ -54,7 +54,7 @@
             </ItemContainer>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate5" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate5" x:DataType="dataModel:Entity">
             <ItemContainer Width="100" Height="100">
                 <Image x:Name="image" Stretch="UniformToFill">
                     <Image.Source>
@@ -64,7 +64,7 @@
             </ItemContainer>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate6" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate6" x:DataType="dataModel:Entity">
             <ItemContainer>
                 <Grid MinWidth="96" MinHeight="96">
                     <Rectangle Fill="DarkGray"/>
@@ -73,7 +73,7 @@
             </ItemContainer>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate7" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate7" x:DataType="dataModel:Entity">
             <ItemContainer>
                 <Grid MinWidth="126" MinHeight="96">
                     <Rectangle Fill="DarkGray"/>
@@ -82,7 +82,7 @@
             </ItemContainer>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate8" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate8" x:DataType="dataModel:Entity">
             <Image x:Name="image" MinWidth="40" MinHeight="40" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Image.Source>
                     <BitmapImage DecodePixelHeight="40" UriSource="{Binding ImageUri}"/>
@@ -90,7 +90,7 @@
             </Image>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate9" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate9" x:DataType="dataModel:Entity">
             <Image x:Name="image" MinWidth="40" Height="120" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Image.Source>
                     <BitmapImage DecodePixelHeight="120" UriSource="{Binding ImageUri}"/>
@@ -98,7 +98,7 @@
             </Image>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate10" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate10" x:DataType="dataModel:Entity">
             <Image x:Name="image" Width="100" Height="100" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Image.Source>
                     <BitmapImage DecodePixelHeight="100" UriSource="{Binding ImageUri}"/>
@@ -106,21 +106,21 @@
             </Image>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate11" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate11" x:DataType="dataModel:Entity">
             <Grid CornerRadius="4">
                 <Rectangle MinWidth="96" MinHeight="96" Fill="DarkGray"/>
                 <TextBlock Text="{Binding Id}" TextWrapping="Wrap" Foreground="White" FontSize="16" MaxWidth="72" VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
             </Grid>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate12" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate12" x:DataType="dataModel:Entity">
             <Grid CornerRadius="4" MinWidth="126" MinHeight="96">
                 <Rectangle Fill="DarkGray"/>
                 <TextBlock Text="{Binding Id}" TextWrapping="Wrap" Foreground="White" FontSize="16" MaxWidth="72" VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
             </Grid>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate13" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate13" x:DataType="dataModel:Entity">
             <localUtilities:LoggingContentControl UseSystemFocusVisuals="True">
                 <StackPanel x:Name="itemPanel">
                     <Image x:Name="image" Width="32" Height="32">
@@ -133,7 +133,7 @@
             </localUtilities:LoggingContentControl>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate14" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate14" x:DataType="dataModel:Entity">
             <localUtilities:LoggingContentControl UseSystemFocusVisuals="True">
                 <StackPanel x:Name="itemPanel">
                     <Image x:Name="image" Width="100" Height="100">
@@ -146,7 +146,7 @@
             </localUtilities:LoggingContentControl>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate15" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate15" x:DataType="dataModel:Entity">
             <localUtilities:LoggingContentControl UseSystemFocusVisuals="True">
                 <StackPanel x:Name="itemPanel">
                     <Image x:Name="image" Width="192" Height="192">
@@ -159,7 +159,7 @@
             </localUtilities:LoggingContentControl>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate16" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate16" x:DataType="dataModel:Entity">
             <localUtilities:LoggingContentControl UseSystemFocusVisuals="True" MinWidth="32">
                 <Border CornerRadius="4" Margin="4" Background="Red">
                     <Image x:Name="image" Stretch="Uniform" Height="92">
@@ -171,7 +171,7 @@
             </localUtilities:LoggingContentControl>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate17" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate17" x:DataType="dataModel:Entity">
             <localUtilities:LoggingContentControl UseSystemFocusVisuals="True" MinWidth="32">
                 <Grid CornerRadius="4" MinWidth="96" MinHeight="96">
                     <Rectangle Fill="DarkGray"/>
@@ -294,10 +294,10 @@
                 <ComboBox x:Name="cmbItemsSource" Width="240" Margin="1" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="4"
                     HorizontalAlignment="Left" VerticalAlignment="Center" SelectedIndex="0" SelectionChanged="CmbItemsSource_SelectionChanged">
                     <ComboBoxItem>null</ComboBoxItem>
-                    <ComboBoxItem>List&lt;Recipe&gt;</ComboBoxItem>
-                    <ComboBoxItem>Small ObservableCollection&lt;Recipe&gt;</ComboBoxItem>
-                    <ComboBoxItem>Small Uniform ObservableCollection&lt;Recipe&gt;</ComboBoxItem>
-                    <ComboBoxItem>ObservableCollection&lt;Recipe&gt;</ComboBoxItem>
+                    <ComboBoxItem>List&lt;Entity&gt;</ComboBoxItem>
+                    <ComboBoxItem>Small ObservableCollection&lt;Entity&gt;</ComboBoxItem>
+                    <ComboBoxItem>Small Uniform ObservableCollection&lt;Entity&gt;</ComboBoxItem>
+                    <ComboBoxItem>ObservableCollection&lt;Entity&gt;</ComboBoxItem>
                     <ComboBoxItem>Small ObservableCollection&lt;ItemContainer&gt;</ComboBoxItem>
                     <ComboBoxItem>Small ObservableCollection&lt;Image&gt;</ComboBoxItem>
                 </ComboBox>

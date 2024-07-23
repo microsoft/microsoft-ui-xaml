@@ -47,6 +47,7 @@ protected:
 
     hstring m_typeName;
     winrt::IXamlType m_baseType{};
+    winrt::IXamlType m_boxedType{};
 
     std::function<winrt::IInspectable()> m_activator;
     std::function<winrt::IInspectable(hstring)> m_createFromString;
@@ -92,4 +93,10 @@ public:
         m_typeName = typeName;
         m_isSystemType = true;
     }
+};
+
+class NullableXamlType : public XamlTypeBase
+{
+public:
+    NullableXamlType(wstring_view const& typeName, wstring_view const& valueTypeName);
 };

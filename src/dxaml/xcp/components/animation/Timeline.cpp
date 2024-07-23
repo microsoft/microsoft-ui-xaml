@@ -9,7 +9,7 @@
 #include <DCompTreeHost.h>
 #include "TimeSpan.h"
 
-CTimeline::CTimeline(_In_ CCoreServices *pCore)
+CTimeline::CTimeline(_In_opt_ CCoreServices *pCore)
     : CDependencyObject(pCore)
     , m_fAutoReverse(false)
     , m_rSpeedRatio(1.0f)
@@ -53,7 +53,7 @@ bool CTimeline::IsFilling() const
     return m_clockState == DirectUI::ClockState::Filling;
 }
 
-CompositionAnimationConversionResult CTimeline::MakeCompositionAnimationsWithProperties(_Inout_ CompositionAnimationConversionContext* myContext)
+_Check_return_ CompositionAnimationConversionResult CTimeline::MakeCompositionAnimationsWithProperties(_Inout_ CompositionAnimationConversionContext* myContext)
 {
     // Each timeline tracks the result of trying to create a Composition animation (or, for ParallelTimelines, whether
     // all children were successfully converted). If we have a timeline that can't be converted to a Composition
@@ -339,7 +339,7 @@ float CTimeline::AdjustDurationWithSpeedRatio(float duration, float speedRatio)
     return (speedRatio != 1.0f) ? (duration / speedRatio) : duration;
 }
 
-float CTimeline::AdjustDurationWithBeginTime(float duration, _In_ const CTimeSpan* pBeginTime)
+float CTimeline::AdjustDurationWithBeginTime(float duration, _In_opt_ const CTimeSpan* pBeginTime)
 {
     return (pBeginTime != nullptr) ? (duration + static_cast<float>(pBeginTime->m_rTimeSpan)) : duration;
 }
@@ -461,7 +461,7 @@ void CTimeline::InitializeIteration()
     CTimeline::SetDCompAnimationDirty(this, DirtyFlags::None /* flags - ignored */);
 }
 
-void CTimeline::SetWUCScopedBatch(_In_ WUComp::ICompositionScopedBatch* scopedBatch)
+void CTimeline::SetWUCScopedBatch(_In_opt_ WUComp::ICompositionScopedBatch* scopedBatch)
 {
     m_wucScopedBatch = scopedBatch;
     SetIsWaitingForDCompAnimationCompleted(scopedBatch != nullptr);

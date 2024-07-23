@@ -116,7 +116,7 @@ public:
 
     void CleanupDeviceRelatedResourcesRecursive(_In_ bool cleanupDComp) override;
 
-    static HRESULT TraceImageSourceRelationEtw(
+    static _Check_return_ HRESULT TraceImageSourceRelationEtw(
         _In_ CDependencyObject *pDO
         );
 
@@ -491,6 +491,8 @@ public:
         _Out_ uint32_t* height
         )
     {
+        *width = 0;
+        *height = 0;
         d2dSvgDocument = nullptr;
         return S_OK;
     }

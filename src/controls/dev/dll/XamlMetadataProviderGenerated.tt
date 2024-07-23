@@ -101,16 +101,27 @@ struct Entry
         // every lambda even if the signature is the same).
 
         WriteLine("// Register types encountered "); 
-        foreach (var typeName in DiscoveredTypes.Keys.OrderBy(x=>x).Where(t =>
-            !t.StartsWith("Nullable`1") // Ignore nullables
-        ))
+        foreach (var typeName in DiscoveredTypes.Keys.OrderBy(x=>x))
         {
             if (!RegisteredTypes.Keys.Contains(typeName))
             {
                 var type = DiscoveredTypes[typeName];
                 var winRtType = new WinRtType(type);
 
-                if(winRtType.IsSystemType)
+                if(winRtType.IsNullable)
+                {
+                    StatementBlock(() =>
+                    {
+                        WriteLine("/* Arg1 TypeName */ ");
+                        WriteLine(string.Format("L\"{0}\",", typeName));
+
+                        var valueTypeName = winRtType.GenericWinRtTypes[0].WinRtFullName;
+                        WriteLine("/* Arg2 CreateXamlTypeCallback */ ");
+                        WriteLine(string.Format("[]() {{ return winrt::make<NullableXamlType>((PCWSTR)L\"{0}\", (PCWSTR)L\"{1}\"); }}", typeName, valueTypeName));
+                    });
+                    WriteLine(",");
+                }
+                else if(winRtType.IsSystemType)
                 {
                     StatementBlock(() =>
                     {

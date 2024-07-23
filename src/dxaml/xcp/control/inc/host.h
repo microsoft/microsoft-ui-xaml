@@ -199,7 +199,7 @@ public:
     virtual void HandleInputMessage(
         _In_ XUINT32 uMsg,
         _In_ MsgPacket *pMsgPack,
-        _In_ CContentRoot* contentRoot,
+        _In_opt_ CContentRoot* contentRoot,
         bool isReplayedMessage,
         _Out_ bool &fHandled) = 0;
 

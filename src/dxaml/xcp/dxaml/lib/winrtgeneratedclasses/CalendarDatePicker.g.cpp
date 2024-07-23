@@ -568,7 +568,7 @@ _Check_return_ HRESULT DirectUI::CalendarDatePickerGenerated::EventRemoveHandler
     case KnownEventIndex::CalendarDatePicker_CalendarViewDayItemChanging:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::ICalendarViewDayItemChangingEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -585,7 +585,7 @@ _Check_return_ HRESULT DirectUI::CalendarDatePickerGenerated::EventRemoveHandler
     case KnownEventIndex::CalendarDatePicker_Closed:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -602,7 +602,7 @@ _Check_return_ HRESULT DirectUI::CalendarDatePickerGenerated::EventRemoveHandler
     case KnownEventIndex::CalendarDatePicker_DateChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CalendarDatePicker*, ABI::Microsoft::UI::Xaml::Controls::CalendarDatePickerDateChangedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -619,7 +619,7 @@ _Check_return_ HRESULT DirectUI::CalendarDatePickerGenerated::EventRemoveHandler
     case KnownEventIndex::CalendarDatePicker_Opened:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

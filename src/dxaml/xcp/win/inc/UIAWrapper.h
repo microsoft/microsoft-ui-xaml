@@ -45,7 +45,7 @@ public:
     HRESULT STDMETHODCALLTYPE GetPatternProviderImpl(_In_ PATTERNID patternId, _Out_ IUnknown ** pRetVal);
     HRESULT STDMETHODCALLTYPE GetPropertyValue(_In_ PROPERTYID propertyId, _Out_ VARIANT * pRetVal) override;
     HRESULT STDMETHODCALLTYPE GetPropertyValueImpl(_In_ PROPERTYID propertyId, _Out_ VARIANT * pRetVal);
-    HRESULT STDMETHODCALLTYPE get_HostRawElementProvider(_Out_ IRawElementProviderSimple ** pRetVal) override;
+    HRESULT STDMETHODCALLTYPE get_HostRawElementProvider(_Outptr_result_maybenull_ IRawElementProviderSimple ** pRetVal) override;
 
     // IRawElementProviderSimple2 methods
     HRESULT STDMETHODCALLTYPE ShowContextMenu() override;

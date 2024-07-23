@@ -276,7 +276,7 @@ public:
         _In_z_ const WCHAR *pLocaleName,
         _In_z_ const WCHAR *pLocaleNameList,
         _In_opt_ const NumberSubstitutionData* pNumberSubstitutionData,
-        CFontFaceCriteria fontFaceCriteria,
+        _In_ CFontFaceCriteria fontFaceCriteria,
         _Outptr_ IFssFontFace **ppMappedFontFace,
         _Out_ XUINT32 *pMappedLength,
         _Out_ XFLOAT *pMappedScale

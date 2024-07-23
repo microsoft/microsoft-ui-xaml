@@ -111,7 +111,7 @@ void EffectPolicyHelper::ClearCallback(_In_ IEffectPolicyHelperCallback* callbac
     m_effectPolicyHelperCallbackNoRef = nullptr;
 }
 
-HRESULT EffectPolicyHelper::OnSettingChanged(_In_ IInspectable*, _In_ IInspectable*)
+_Check_return_ HRESULT EffectPolicyHelper::OnSettingChanged(_In_ IInspectable*, _In_ IInspectable*)
 {
     IFC_RETURN(m_coreServicesNoRef->ExecuteOnUIThread(this, ReentrancyBehavior::CrashOnReentrancy));
     return S_OK;

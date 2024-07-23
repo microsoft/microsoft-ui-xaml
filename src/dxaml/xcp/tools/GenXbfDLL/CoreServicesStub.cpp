@@ -113,28 +113,34 @@ CCoreServices::CreateErrorServiceForXbfGenerator()
 }
 
 _Check_return_
-HRESULT CCoreServices::CreateErrorService(struct IErrorService * *)
+HRESULT CCoreServices::CreateErrorService(_Outptr_ struct IErrorService * *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::CheckUri(_In_ const xstring_ptr&,unsigned int)
+HRESULT CCoreServices::CheckUri(_In_ const xstring_ptr&, _In_ unsigned int)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::UnsecureDownloadFromSite(_In_ const xstring_ptr&,struct IPALUri *,struct IPALDownloadResponseCallback *,unsigned int,struct IPALAbortableOperation * *,struct IPALUri *)
+HRESULT CCoreServices::UnsecureDownloadFromSite(
+    _In_ const xstring_ptr&,
+    _In_opt_ struct IPALUri *,
+    _In_ struct IPALDownloadResponseCallback *,
+    _In_ unsigned int,
+    _Outptr_opt_ struct IPALAbortableOperation**,
+    _In_opt_ struct IPALUri *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::RegisterScriptCallback(void *,EVENTPFN, EVENTPFN)
+HRESULT CCoreServices::RegisterScriptCallback(_In_ void *,_In_ EVENTPFN, _In_ EVENTPFN)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
@@ -163,56 +169,64 @@ CCoreServices::GetDefaultFocusVisualSolidColorBrush(
 }
 
 _Check_return_
-HRESULT CCoreServices::GetDefaultTextBrush(class CBrush * *)
+HRESULT CCoreServices::GetDefaultTextBrush(_Outptr_ class CBrush * *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::GetTextSelectionGripperBrush(class CBrush * *)
+HRESULT CCoreServices::GetTextSelectionGripperBrush(_Outptr_ class CBrush * *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::GetSystemTextSelectionBackgroundBrush(class CSolidColorBrush * *)
+HRESULT CCoreServices::GetSystemTextSelectionBackgroundBrush(_Outptr_ class CSolidColorBrush * *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::GetSystemTextSelectionForegroundBrush(class CSolidColorBrush * *)
+HRESULT CCoreServices::GetSystemTextSelectionForegroundBrush(_Outptr_ class CSolidColorBrush * *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::GetTransparentBrush(class CBrush * *)
+HRESULT CCoreServices::GetTransparentBrush(_Outptr_ class CBrush * *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-xref_ptr<CDependencyObject> CCoreServices::TryGetElementByName(_In_ const xstring_ptr_view&, CDependencyObject*)
+xref_ptr<CDependencyObject> CCoreServices::TryGetElementByName(
+    _In_ const xstring_ptr_view&,
+    _In_ CDependencyObject*)
 {
     ASSERT(FALSE);
     return nullptr;
 }
 
 _Check_return_
-HRESULT CCoreServices::CreateObject(const class CClassInfo *,_In_ const xstring_ptr&, CDependencyObject * *)
+HRESULT CCoreServices::CreateObject(
+    _In_ const class CClassInfo *,
+    _In_ const xstring_ptr&,
+    _Outptr_result_maybenull_ CDependencyObject * *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::CreateObject(const class CClassInfo *, CDependencyObject *, CDependencyObject * *)
+HRESULT CCoreServices::CreateObject(
+    _In_ const class CClassInfo *,
+    _In_ CDependencyObject *,
+    _Outptr_result_maybenull_ CDependencyObject * *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
@@ -225,14 +239,17 @@ bool CCoreServices::HasActiveAnimations(void)
 }
 
 _Check_return_
-HRESULT CCoreServices::LoadXaml(unsigned int,const unsigned char *,CDependencyObject * *)
+HRESULT CCoreServices::LoadXaml(
+    _In_ unsigned int cBuffer,
+    _In_reads_opt_(cBuffer) const unsigned char *,
+    _Outptr_result_maybenull_ CDependencyObject * *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::GetResourceManager(struct IPALResourceManager * *)
+HRESULT CCoreServices::GetResourceManager(_Outptr_ struct IPALResourceManager * *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
@@ -289,7 +306,7 @@ HRESULT CCoreServices::ResetCoreWindowVisualTree(void)
 }
 
 _Check_return_
-HRESULT CCoreServices::putVisualRoot(CDependencyObject *)
+HRESULT CCoreServices::putVisualRoot(_In_opt_ CDependencyObject *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
@@ -339,14 +356,20 @@ HRESULT CCoreServices::ReportUnhandledError(long)
 }
 
 _Check_return_
-HRESULT CCoreServices::NWDrawMainTree(class CWindowRenderTarget *,bool,bool *)
+HRESULT CCoreServices::NWDrawMainTree(
+    _In_ CWindowRenderTarget*,
+    bool,
+    _Out_ bool*)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::Tick(bool, bool*, bool*)
+HRESULT CCoreServices::Tick(
+    bool,
+    _Out_opt_ bool*,
+    _Out_opt_ bool*)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
@@ -395,48 +418,61 @@ HRESULT CCoreServices::RemoveVirtualSurfaceImageSource(class CVirtualSurfaceImag
 }
 
 _Check_return_
-HRESULT CCoreServices::VirtualSurfaceImageSourcePerFrameWork(struct XRECTF_RB const *)
+HRESULT CCoreServices::VirtualSurfaceImageSourcePerFrameWork(_In_ struct XRECTF_RB const *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::HitTest(struct XPOINTF,CDependencyObject *,CDependencyObject * *,bool)
+HRESULT CCoreServices::HitTest(
+    struct XPOINTF,
+     _In_opt_ CDependencyObject *,
+    _Outptr_result_maybenull_ CDependencyObject**,
+    bool)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::GetTextElementBoundingRect(CDependencyObject *,struct XRECTF_WH *, bool)
+HRESULT CCoreServices::GetTextElementBoundingRect(
+    _In_ CDependencyObject *,
+    _Out_ struct XRECTF_WH *,
+    _In_ bool)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::HitTestLinkFromTextControl(struct XPOINTF,CDependencyObject *,CDependencyObject * *)
+HRESULT CCoreServices::HitTestLinkFromTextControl(
+    _In_ struct XPOINTF,
+    _In_ CDependencyObject *,
+    _Outptr_result_maybenull_ CDependencyObject * *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::ProcessInput(struct InputMessage *,CContentRoot*,int *)
+HRESULT CCoreServices::ProcessInput(
+    _In_ struct InputMessage *,
+    _In_opt_ CContentRoot*,
+    _Out_ int *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::ProcessTouchInteractionCallback(const xref_ptr<CUIElement> &, TouchInteractionMsg *)
+HRESULT CCoreServices::ProcessTouchInteractionCallback(_In_ const xref_ptr<CUIElement> &, _In_ TouchInteractionMsg *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
-void CCoreServices::RegisterHostSite(struct IXcpHostSite *)
+void CCoreServices::RegisterHostSite(_In_ struct IXcpHostSite *)
 {
     ASSERT(FALSE);
 }
@@ -447,7 +483,7 @@ void CCoreServices::UnregisterHostSite(void)
 }
 
 _Check_return_
-HRESULT CCoreServices::RegisterBrowserHost(struct IXcpBrowserHost *)
+HRESULT CCoreServices::RegisterBrowserHost(_In_ struct IXcpBrowserHost *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
@@ -461,7 +497,7 @@ HRESULT CCoreServices::UnregisterBrowserHost(void)
 }
 
 _Check_return_
-HRESULT CCoreServices::RegisterDownloadSite(struct ICoreServicesSite *)
+HRESULT CCoreServices::RegisterDownloadSite(_In_ struct ICoreServicesSite *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
@@ -473,21 +509,32 @@ void CCoreServices::UnregisterDownloadSite(void)
 }
 
 _Check_return_
-HRESULT CCoreServices::GetSystemGlyphTypefaces(CDependencyObject * *)
+HRESULT CCoreServices::GetSystemGlyphTypefaces(_Outptr_ CDependencyObject * *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::CLR_FireEvent(CDependencyObject *,EventHandle,CDependencyObject *,CEventArgs *,unsigned int)
+HRESULT CCoreServices::CLR_FireEvent(
+    _In_ CDependencyObject *,
+    _In_ EventHandle,
+    _In_ CDependencyObject *,
+    _In_ CEventArgs *,
+    _In_ unsigned int)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::ShouldFireEvent(CDependencyObject *,EventHandle,CDependencyObject *,CEventArgs *,int,int *)
+HRESULT CCoreServices::ShouldFireEvent(
+    _In_ CDependencyObject *,
+    _In_ EventHandle,
+    _In_ CDependencyObject *,
+    _In_ CEventArgs *,
+    _In_ int,
+    _Out_ int *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
@@ -507,12 +554,13 @@ CCoreServices::GetResourceDictionaryUriCache()
 }
 
 _Check_return_
-HRESULT CCoreServices::SetCurrentApplication(class CApplication *)
+HRESULT CCoreServices::SetCurrentApplication(_In_ class CApplication *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
+_Ret_maybenull_
 CWindowRenderTarget *CCoreServices::NWGetWindowRenderTarget(void)
 {
     ASSERT(FALSE);
@@ -520,33 +568,39 @@ CWindowRenderTarget *CCoreServices::NWGetWindowRenderTarget(void)
 }
 
 _Check_return_
-HRESULT CCoreServices::CreateMediaQueue(struct IMediaQueueClient *,struct IMediaQueue * *)
+HRESULT CCoreServices::CreateMediaQueue(_In_ struct IMediaQueueClient *,struct IMediaQueue * *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::CreateCompositorScheduler(class WindowsGraphicsDeviceManager *,class CompositorScheduler * *)
+HRESULT CCoreServices::CreateCompositorScheduler(_In_ class WindowsGraphicsDeviceManager *, _Outptr_ class CompositorScheduler * *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
-void CCoreServices::CreateUIThreadScheduler(struct IXcpDispatcher *,class CompositorScheduler *,struct ITickableFrameScheduler * *)
+void CCoreServices::CreateUIThreadScheduler(
+    _In_ struct IXcpDispatcher *,
+    _In_ class CompositorScheduler *,
+    _Outptr_ struct ITickableFrameScheduler * *)
 {
     ASSERT(FALSE);
 }
 
 _Check_return_
-HRESULT CCoreServices::CreateWindowRenderTarget(class WindowsGraphicsDeviceManager *,class CompositorScheduler *,class WindowsPresentTarget *)
+HRESULT CCoreServices::CreateWindowRenderTarget(
+    _In_ class WindowsGraphicsDeviceManager *,
+    _In_ class CompositorScheduler *,
+    _In_ class WindowsPresentTarget *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }
 
 _Check_return_
-HRESULT CCoreServices::ExecuteOnUIThread(struct IPALExecuteOnUIThread *, const ReentrancyBehavior)
+HRESULT CCoreServices::ExecuteOnUIThread(_In_ struct IPALExecuteOnUIThread *, const ReentrancyBehavior)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
@@ -736,6 +790,7 @@ HRESULT CParser::LoadXaml(
     RRETURN(E_NOTIMPL);
 }
 
+_Ret_maybenull_
 CD3D11Device* CCoreServices::GetGraphicsDevice()
 {
     return nullptr;

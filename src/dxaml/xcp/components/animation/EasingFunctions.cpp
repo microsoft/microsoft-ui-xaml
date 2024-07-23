@@ -31,7 +31,7 @@ float CEasingFunctionBase::EaseValue(_In_ CDependencyObject* pEasingFunction, fl
 void CEasingFunctionBase::GetWUCEasingFunction(
     _In_ ixp::ICompositionEasingFunctionStatics* easingFunctionStatics,
     _In_ ixp::ICompositor* compositor,
-    _Outptr_ ixp::ICompositionEasingFunction** easingFunction)
+    _Outptr_result_maybenull_ ixp::ICompositionEasingFunction** easingFunction)
 {
     *easingFunction = nullptr;
 }

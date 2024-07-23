@@ -22,7 +22,7 @@
     <ItemDefinitionGroup>
         <ClCompile>
             <WarningLevel>Level4</WarningLevel>
-            <TreatWarningAsError>true</TreatWarningAsError>
+            <TreatWarningAsError Condition="'$(ExperimentalAnalysis)'!='true'">true</TreatWarningAsError>
         </ClCompile>
     </ItemDefinitionGroup>
 </Project>

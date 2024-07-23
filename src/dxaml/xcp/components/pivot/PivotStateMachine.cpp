@@ -281,7 +281,7 @@ PivotStateMachine::ViewChangedEvent(_In_ BOOLEAN isInertial, _In_ DOUBLE nextOff
                 m_deferredSetViewportOffsetData.offset :
                 finalOffset;
 
-            m_callbackPtr->UpdateScrollViewerDragDirection(m_predictedViewportOffset < m_staticViewportOffset ? PivotAnimationDirection_Left : PivotAnimationDirection_Right);
+            IFC_RETURN(m_callbackPtr->UpdateScrollViewerDragDirection(m_predictedViewportOffset < m_staticViewportOffset ? PivotAnimationDirection_Left : PivotAnimationDirection_Right));
             if (m_state != PivotState_InFlyOutProgrammaticInertial)
             {
                 // If we're doing the fly-out animation and are animating things ourselves, then we'll transition when the animation completes.
@@ -665,7 +665,7 @@ PivotStateMachine::ItemsCollectionChangedEvent(_In_ INT32 newItemCount, _In_ INT
     // change so that, when using static headers, we update the viewport offset for the current index.
     if (m_state == PivotState_Idle || m_state == PivotState_Locked)
     {
-        Transition(PivotState_ArrangePending);
+        IFC_RETURN(Transition(PivotState_ArrangePending));
     }
     else
     {

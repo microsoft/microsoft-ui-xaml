@@ -149,7 +149,7 @@ namespace VisualStateSetterHelper
             case SetterOperation::Set:
             {
                 ASSERT(!value.IsUnset());
-                setterValue.CopyConverted(value);
+                IFC_RETURN(setterValue.CopyConverted(value));
 
                 // ObjectAnimationUsingKeyFrames is always considered dependent
                 // (because changes are instantaneous and thus can't be interpolated smoothly)
@@ -232,7 +232,7 @@ namespace VisualStateSetterHelper
         return S_OK;
     }
 
-    void PerformSetterOperationIfStateActive(_In_ CVisualState* visualState, _In_ CSetter* setter, VisualStateSetterHelper::SetterOperation operation)
+    void PerformSetterOperationIfStateActive(_In_ CVisualState* visualState, _In_ CSetter* setter, _In_ VisualStateSetterHelper::SetterOperation operation)
     {
         if (setter && CVisualStateManager2::IsActiveVisualState(visualState) && setter->GetTargetPropertyPath())
         {
@@ -263,16 +263,17 @@ namespace VisualStateSetterHelper
                 value.Unset();
             }
 
-            MICROSOFT_TELEMETRY_ASSERT_HR(VisualStateSetterHelper::PerformAnimatedValueOperation(
+            const HRESULT hr = VisualStateSetterHelper::PerformAnimatedValueOperation(
                 operation,
                 targetPropertyOwner,
                 targetProperty,
                 value,
-                xref_ptr<CDependencyObject>(setter)));
+                xref_ptr<CDependencyObject>(setter));
+            MICROSOFT_TELEMETRY_ASSERT_HR(hr);
         }
     }
 
-    CVisualState* GetVisualStateSetterVisualState(_In_ CSetter* setter)
+    _Check_return_ CVisualState* GetVisualStateSetterVisualState(_In_ CSetter* setter)
     {
         CDependencyObject* setterBaseCollectionAsCDO = setter->GetParentInternal(false);
         CSetterBaseCollection* setterBaseCollection = do_pointer_cast<CSetterBaseCollection>(setterBaseCollectionAsCDO);

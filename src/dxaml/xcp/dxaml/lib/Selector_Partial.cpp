@@ -1367,9 +1367,16 @@ _Check_return_ HRESULT
             // unless, of course, it's not possible because of the reduced items count.
             // We had to wait until SelectorGenerated::OnItemsChanged to give the items host
             // panel the chance to handle the collection change and update its container mapping.
+            // Using InputActivationBehavior::NoActivate instead of the default InputActivationBehavior::RequestActivation
+            // to avoid the window/island stealing focus.
             if (focusedIndex == itemIndexInt)
             {
-                IFC(SetFocusedItem(std::min(static_cast<int>(itemsCount) - 1, itemIndexInt), false /* shouldScrollIntoView */));
+                IFC(SetFocusedItem(
+                        std::min(static_cast<int>(itemsCount) - 1, itemIndexInt),
+                        false /*shouldScrollIntoView*/,
+                        false /*animateIfBringIntoView*/,
+                        xaml_input::FocusNavigationDirection::FocusNavigationDirection_None /*focusNavigationDirection*/,
+                        InputActivationBehavior::NoActivate /*inputActivationBehavior*/));
             }
             // An item was removed before our focused item, we need to update
             // the focused item's index to reflect that.

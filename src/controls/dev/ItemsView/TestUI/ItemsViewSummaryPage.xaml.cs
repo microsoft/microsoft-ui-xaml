@@ -73,13 +73,13 @@ namespace MUXControlsTestApp
         private SolidColorBrush _whiteBrush = new SolidColorBrush(Colors.White);
         private ItemsView _dynamicItemsView = null;
         private ItemsView _itemsView = null;
-        private ObservableCollection<Recipe> _colRecipes = null;
-        private ObservableCollection<Recipe> _colSmallRecipes = null;
-        private ObservableCollection<Recipe> _colSmallUniformRecipes = null;
+        private ObservableCollection<Entity> _colEntities = null;
+        private ObservableCollection<Entity> _colSmallEntities = null;
+        private ObservableCollection<Entity> _colSmallUniformEntities = null;
         private ObservableCollection<ItemContainer> _colSmallItemContainers = null;
         private ObservableCollection<Image> _colSmallImages = null;
-        private List<Recipe> _lstRecipes = null;
-        private DataTemplate[] _recipeTemplates = new DataTemplate[17];
+        private List<Entity> _lstEntities = null;
+        private DataTemplate[] _entityTemplates = new DataTemplate[17];
         private StackLayout _stackLayout = null;
         private UniformGridLayout _uniformGridLayout = null;
         private FlowLayout _flowLayout = null;
@@ -678,21 +678,21 @@ namespace MUXControlsTestApp
                 {
                     arrayOffset = args.ItemsRangeStartIndex = 0;
 
-                    if (_itemsView.ItemsSource == _lstRecipes)
+                    if (_itemsView.ItemsSource == _lstEntities)
                     {
-                        arrayLength = _lstRecipes.Count;
+                        arrayLength = _lstEntities.Count;
                     }
-                    else if (_itemsView.ItemsSource == _colSmallRecipes)
+                    else if (_itemsView.ItemsSource == _colSmallEntities)
                     {
-                        arrayLength = _colSmallRecipes.Count;
+                        arrayLength = _colSmallEntities.Count;
                     }
-                    else if (_itemsView.ItemsSource == _colSmallUniformRecipes)
+                    else if (_itemsView.ItemsSource == _colSmallUniformEntities)
                     {
-                        arrayLength = _colSmallUniformRecipes.Count;
+                        arrayLength = _colSmallUniformEntities.Count;
                     }
-                    else if (_itemsView.ItemsSource == _colRecipes)
+                    else if (_itemsView.ItemsSource == _colEntities)
                     {
-                        arrayLength = _colRecipes.Count;
+                        arrayLength = _colEntities.Count;
                     }
                 }
                 else
@@ -724,7 +724,7 @@ namespace MUXControlsTestApp
                     }
                     else
                     {
-                        // These values come from the the 'recipeTemplate1', 'recipeTemplate2', ..., 'recipeTemplate16' DataTemplates defined
+                        // These values come from the the 'entityTemplate1', 'entityTemplate2', ..., 'entityTemplate16' DataTemplates defined
                         // in ItemsViewSummaryPage.xaml.   Their MinWidth values are reused here.
                         switch (templateId)
                         {
@@ -780,9 +780,9 @@ namespace MUXControlsTestApp
                     }
                     else
                     {
-                        // These values come from the the 'recipeTemplate1', 'recipeTemplate2', ..., 'recipeTemplate16' DataTemplates defined
-                        // in ItemsViewSummaryPage.xaml.   Some do not use the Recipe object, but a hard-coded item size that is reused here.
-                        // Others use the Recipe object which exposes its own AspectRatio property.
+                        // These values come from the the 'entityTemplate1', 'entityTemplate2', ..., 'entityTemplate16' DataTemplates defined
+                        // in ItemsViewSummaryPage.xaml.   Some do not use the Entity object, but a hard-coded item size that is reused here.
+                        // Others use the Entity object which exposes its own AspectRatio property.
                         switch (templateId)
                         {
                             case 5:
@@ -803,26 +803,26 @@ namespace MUXControlsTestApp
                                 }
                             default:
                                 {
-                                    Recipe recipe = null;
+                                    Entity entity = null;
 
-                                    if (_itemsView.ItemsSource == _lstRecipes)
+                                    if (_itemsView.ItemsSource == _lstEntities)
                                     {
-                                        recipe = _lstRecipes[arrayOffset + index];
+                                        entity = _lstEntities[arrayOffset + index];
                                     }
-                                    else if (_itemsView.ItemsSource == _colSmallRecipes)
+                                    else if (_itemsView.ItemsSource == _colSmallEntities)
                                     {
-                                        recipe = _colSmallRecipes[arrayOffset + index];
+                                        entity = _colSmallEntities[arrayOffset + index];
                                     }
-                                    else if (_itemsView.ItemsSource == _colSmallUniformRecipes)
+                                    else if (_itemsView.ItemsSource == _colSmallUniformEntities)
                                     {
-                                        recipe = _colSmallUniformRecipes[arrayOffset + index];
+                                        entity = _colSmallUniformEntities[arrayOffset + index];
                                     }
-                                    else if (_itemsView.ItemsSource == _colRecipes)
+                                    else if (_itemsView.ItemsSource == _colEntities)
                                     {
-                                        recipe = _colRecipes[arrayOffset + index];
+                                        entity = _colEntities[arrayOffset + index];
                                     }
 
-                                    desiredAspectRatios[index] = recipe.AspectRatio;
+                                    desiredAspectRatios[index] = entity.AspectRatio;
                                     break;
                                 }
                         }
@@ -1074,21 +1074,21 @@ namespace MUXControlsTestApp
                 {
                     txtDataSourceItemCount.Text = "0";
                 }
-                else if (_itemsView.ItemsSource == _lstRecipes)
+                else if (_itemsView.ItemsSource == _lstEntities)
                 {
-                    txtDataSourceItemCount.Text = _lstRecipes.Count.ToString();
+                    txtDataSourceItemCount.Text = _lstEntities.Count.ToString();
                 }
-                else if (_itemsView.ItemsSource == _colSmallRecipes)
+                else if (_itemsView.ItemsSource == _colSmallEntities)
                 {
-                    txtDataSourceItemCount.Text = _colSmallRecipes.Count.ToString();
+                    txtDataSourceItemCount.Text = _colSmallEntities.Count.ToString();
                 }
-                else if (_itemsView.ItemsSource == _colSmallUniformRecipes)
+                else if (_itemsView.ItemsSource == _colSmallUniformEntities)
                 {
-                    txtDataSourceItemCount.Text = _colSmallUniformRecipes.Count.ToString();
+                    txtDataSourceItemCount.Text = _colSmallUniformEntities.Count.ToString();
                 }
-                else if (_itemsView.ItemsSource == _colRecipes)
+                else if (_itemsView.ItemsSource == _colEntities)
                 {
-                    txtDataSourceItemCount.Text = _colRecipes.Count.ToString();
+                    txtDataSourceItemCount.Text = _colEntities.Count.ToString();
                 }
                 else if (_itemsView.ItemsSource == _colSmallItemContainers)
                 {
@@ -4408,12 +4408,12 @@ namespace MUXControlsTestApp
                     {
                         int templateIndex = cmbItemTemplate.SelectedIndex - 1;
 
-                        if (_recipeTemplates[templateIndex] == null)
+                        if (_entityTemplates[templateIndex] == null)
                         {
-                            _recipeTemplates[templateIndex] = Resources["recipeTemplate" + cmbItemTemplate.SelectedIndex.ToString()] as DataTemplate;
+                            _entityTemplates[templateIndex] = Resources["entityTemplate" + cmbItemTemplate.SelectedIndex.ToString()] as DataTemplate;
                         }
 
-                        _itemsView.ItemTemplate = _recipeTemplates[templateIndex];
+                        _itemsView.ItemTemplate = _entityTemplates[templateIndex];
                     }
                 }
             }
@@ -4436,71 +4436,71 @@ namespace MUXControlsTestApp
                             _itemsView.ItemsSource = null;
                             break;
                         case 1:
-                            if (_lstRecipes == null)
+                            if (_lstEntities == null)
                             {
                                 var rnd = new Random();
-                                _lstRecipes = new List<Recipe>();
+                                _lstEntities = new List<Entity>();
 
                                 for (int itemIndex = 0; itemIndex < 400; itemIndex++)
                                 {
-                                    _lstRecipes.Add(new Recipe() {
+                                    _lstEntities.Add(new Entity() {
                                         ImageUri = new Uri(string.Format("ms-appx:///Images/vette{0}.jpg", itemIndex % 126 + 1)),
                                         Id = itemIndex,
                                         Description = itemIndex + " - " + _lorem.Substring(0, rnd.Next(25, 125))
                                     });
                                 }
                             }
-                            _itemsView.ItemsSource = _lstRecipes;
+                            _itemsView.ItemsSource = _lstEntities;
                             break;
                         case 2:
-                            if (_colSmallRecipes == null)
+                            if (_colSmallEntities == null)
                             {
-                                _colSmallRecipes = new ObservableCollection<Recipe>();
+                                _colSmallEntities = new ObservableCollection<Entity>();
 
                                 for (int itemIndex = 0; itemIndex < 7; itemIndex++)
                                 {
-                                    _colSmallRecipes.Add(new Recipe() {
+                                    _colSmallEntities.Add(new Entity() {
                                         ImageUri = new Uri(string.Format("ms-appx:///Images/Rect{0}.png", itemIndex % 6)),
                                         Id = itemIndex,
                                         Description = itemIndex.ToString()
                                     });
                                 }
                             }
-                            _itemsView.ItemsSource = _colSmallRecipes;
+                            _itemsView.ItemsSource = _colSmallEntities;
                             break;
                         case 3:
-                            if (_colSmallUniformRecipes == null)
+                            if (_colSmallUniformEntities == null)
                             {
                                 var rnd = new Random();
-                                _colSmallUniformRecipes = new ObservableCollection<Recipe>();
+                                _colSmallUniformEntities = new ObservableCollection<Entity>();
 
                                 for (int itemIndex = 0; itemIndex < 7; itemIndex++)
                                 {
-                                    _colSmallUniformRecipes.Add(new Recipe() {
+                                    _colSmallUniformEntities.Add(new Entity() {
                                         ImageUri = new Uri(string.Format("ms-appx:///Images/vette{0}.jpg", itemIndex % 126 + 100)),
                                         Id = itemIndex,
                                         Description = itemIndex + " - " + _lorem.Substring(0, rnd.Next(50, 350))
                                     });
                                 }
                             }
-                            _itemsView.ItemsSource = _colSmallUniformRecipes;
+                            _itemsView.ItemsSource = _colSmallUniformEntities;
                             break;
                         case 4:
-                            if (_colRecipes == null)
+                            if (_colEntities == null)
                             {
                                 var rnd = new Random();
-                                _colRecipes = new ObservableCollection<Recipe>();
+                                _colEntities = new ObservableCollection<Entity>();
 
                                 for (int itemIndex = 0; itemIndex < 300; itemIndex++)
                                 {
-                                    _colRecipes.Add(new Recipe() {
+                                    _colEntities.Add(new Entity() {
                                         ImageUri = new Uri(string.Format("ms-appx:///Images/vette{0}.jpg", itemIndex % 126 + 1)),
                                         Id = itemIndex,
                                         Description = itemIndex + " - " + _lorem.Substring(0, rnd.Next(50, 350))
                                     });
                                 }
                             }
-                            _itemsView.ItemsSource = _colRecipes;
+                            _itemsView.ItemsSource = _colEntities;
                             break;
                         case 5:
                             if (_colSmallItemContainers == null)
@@ -4857,18 +4857,18 @@ namespace MUXControlsTestApp
                     int newItemCount = int.Parse(txtDataSourceItemCount.Text);
                     var rnd = new Random();
 
-                    if (_itemsView.ItemsSource == null || _itemsView.ItemsSource == _lstRecipes)
+                    if (_itemsView.ItemsSource == null || _itemsView.ItemsSource == _lstEntities)
                     {
-                        bool setItemsSource = _itemsView.ItemsSource != null && _itemsView.ItemsSource == _lstRecipes;
-                        int currentItemCount = _lstRecipes == null ? 0 : _lstRecipes.Count;
+                        bool setItemsSource = _itemsView.ItemsSource != null && _itemsView.ItemsSource == _lstEntities;
+                        int currentItemCount = _lstEntities == null ? 0 : _lstEntities.Count;
 
                         if (currentItemCount < newItemCount)
                         {
-                            var lstRecipesEnd = new List<Recipe>();
+                            var lstEntitiesEnd = new List<Entity>();
 
                             for (int itemIndex = currentItemCount; itemIndex < newItemCount; itemIndex++)
                             {
-                                lstRecipesEnd.Add(new Recipe() {
+                                lstEntitiesEnd.Add(new Entity() {
                                     ImageUri = new Uri(string.Format("ms-appx:///Images/vette{0}.jpg", itemIndex % 126 + 1)),
                                     Id = itemIndex,
                                     Description = itemIndex + " - " + _lorem.Substring(0, rnd.Next(25, 125))
@@ -4877,36 +4877,36 @@ namespace MUXControlsTestApp
 
                             if (currentItemCount == 0)
                             {
-                                _lstRecipes = lstRecipesEnd;
+                                _lstEntities = lstEntitiesEnd;
                             }
                             else
                             {
-                                _lstRecipes = new List<Recipe>(_lstRecipes.Concat(lstRecipesEnd));
+                                _lstEntities = new List<Entity>(_lstEntities.Concat(lstEntitiesEnd));
                             }
                         }
                         else if (currentItemCount > newItemCount)
                         {
-                            _lstRecipes = new List<Recipe>(_lstRecipes.Take(newItemCount));
+                            _lstEntities = new List<Entity>(_lstEntities.Take(newItemCount));
                         }
 
                         if (setItemsSource)
                         {
-                            _itemsView.ItemsSource = _lstRecipes;
+                            _itemsView.ItemsSource = _lstEntities;
                         }
                     }
 
-                    if (_itemsView.ItemsSource == null || _itemsView.ItemsSource == _colSmallRecipes)
+                    if (_itemsView.ItemsSource == null || _itemsView.ItemsSource == _colSmallEntities)
                     {
-                        bool setItemsSource = _itemsView.ItemsSource != null && _itemsView.ItemsSource == _colSmallRecipes;
-                        int currentItemCount = _colSmallRecipes == null ? 0 : _colSmallRecipes.Count;
+                        bool setItemsSource = _itemsView.ItemsSource != null && _itemsView.ItemsSource == _colSmallEntities;
+                        int currentItemCount = _colSmallEntities == null ? 0 : _colSmallEntities.Count;
 
                         if (currentItemCount < newItemCount)
                         {
-                            var colRecipesEnd = new ObservableCollection<Recipe>();
+                            var colEntitiesEnd = new ObservableCollection<Entity>();
 
                             for (int itemIndex = currentItemCount; itemIndex < newItemCount; itemIndex++)
                             {
-                                colRecipesEnd.Add(new Recipe() {
+                                colEntitiesEnd.Add(new Entity() {
                                     ImageUri = new Uri(string.Format("ms-appx:///Images/Rect{0}.png", itemIndex % 6)),
                                     Id = itemIndex,
                                     Description = itemIndex.ToString()
@@ -4915,36 +4915,36 @@ namespace MUXControlsTestApp
 
                             if (currentItemCount == 0)
                             {
-                                _colSmallRecipes = colRecipesEnd;
+                                _colSmallEntities = colEntitiesEnd;
                             }
                             else
                             {
-                                _colSmallRecipes = new ObservableCollection<Recipe>(_colSmallRecipes.Concat(colRecipesEnd));
+                                _colSmallEntities = new ObservableCollection<Entity>(_colSmallEntities.Concat(colEntitiesEnd));
                             }
                         }
                         else if (currentItemCount > newItemCount)
                         {
-                            _colSmallRecipes = new ObservableCollection<Recipe>(_colSmallRecipes.Take(newItemCount));
+                            _colSmallEntities = new ObservableCollection<Entity>(_colSmallEntities.Take(newItemCount));
                         }
 
                         if (setItemsSource)
                         {
-                            _itemsView.ItemsSource = _colSmallRecipes;
+                            _itemsView.ItemsSource = _colSmallEntities;
                         }
                     }
 
-                    if (_itemsView.ItemsSource == null || _itemsView.ItemsSource == _colSmallUniformRecipes)
+                    if (_itemsView.ItemsSource == null || _itemsView.ItemsSource == _colSmallUniformEntities)
                     {
-                        bool setItemsSource = _itemsView.ItemsSource != null && _itemsView.ItemsSource == _colSmallUniformRecipes;
-                        int currentItemCount = _colSmallUniformRecipes == null ? 0 : _colSmallUniformRecipes.Count;
+                        bool setItemsSource = _itemsView.ItemsSource != null && _itemsView.ItemsSource == _colSmallUniformEntities;
+                        int currentItemCount = _colSmallUniformEntities == null ? 0 : _colSmallUniformEntities.Count;
 
                         if (currentItemCount < newItemCount)
                         {
-                            var colRecipesEnd = new ObservableCollection<Recipe>();
+                            var colEntitiesEnd = new ObservableCollection<Entity>();
 
                             for (int itemIndex = currentItemCount; itemIndex < newItemCount; itemIndex++)
                             {
-                                colRecipesEnd.Add(new Recipe() {
+                                colEntitiesEnd.Add(new Entity() {
                                     ImageUri = new Uri(string.Format("ms-appx:///Images/vette{0}.jpg", itemIndex % 126 + 1)),
                                     Id = itemIndex,
                                     Description = itemIndex + " - " + _lorem.Substring(0, rnd.Next(50, 350))
@@ -4953,36 +4953,36 @@ namespace MUXControlsTestApp
 
                             if (currentItemCount == 0)
                             {
-                                _colSmallUniformRecipes = colRecipesEnd;
+                                _colSmallUniformEntities = colEntitiesEnd;
                             }
                             else
                             {
-                                _colSmallUniformRecipes = new ObservableCollection<Recipe>(_colSmallUniformRecipes.Concat(colRecipesEnd));
+                                _colSmallUniformEntities = new ObservableCollection<Entity>(_colSmallUniformEntities.Concat(colEntitiesEnd));
                             }
                         }
                         else if (currentItemCount > newItemCount)
                         {
-                            _colSmallUniformRecipes = new ObservableCollection<Recipe>(_colSmallUniformRecipes.Take(newItemCount));
+                            _colSmallUniformEntities = new ObservableCollection<Entity>(_colSmallUniformEntities.Take(newItemCount));
                         }
 
                         if (setItemsSource)
                         {
-                            _itemsView.ItemsSource = _colSmallUniformRecipes;
+                            _itemsView.ItemsSource = _colSmallUniformEntities;
                         }
                     }
 
-                    if (_itemsView.ItemsSource == null || _itemsView.ItemsSource == _colRecipes)
+                    if (_itemsView.ItemsSource == null || _itemsView.ItemsSource == _colEntities)
                     {
-                        bool setItemsSource = _itemsView.ItemsSource != null && _itemsView.ItemsSource == _colRecipes;
-                        int currentItemCount = _colRecipes == null ? 0 : _colRecipes.Count;
+                        bool setItemsSource = _itemsView.ItemsSource != null && _itemsView.ItemsSource == _colEntities;
+                        int currentItemCount = _colEntities == null ? 0 : _colEntities.Count;
 
                         if (currentItemCount < newItemCount)
                         {
-                            var colRecipesEnd = new ObservableCollection<Recipe>();
+                            var colEntitiesEnd = new ObservableCollection<Entity>();
 
                             for (int itemIndex = currentItemCount; itemIndex < newItemCount; itemIndex++)
                             {
-                                colRecipesEnd.Add(new Recipe() {
+                                colEntitiesEnd.Add(new Entity() {
                                     ImageUri = new Uri(string.Format("ms-appx:///Images/vette{0}.jpg", itemIndex % 126 + 1)),
                                     Id = itemIndex,
                                     Description = itemIndex + " - " + _lorem.Substring(0, rnd.Next(50, 350))
@@ -4991,21 +4991,21 @@ namespace MUXControlsTestApp
 
                             if (currentItemCount == 0)
                             {
-                                _colRecipes = colRecipesEnd;
+                                _colEntities = colEntitiesEnd;
                             }
                             else
                             {
-                                _colRecipes = new ObservableCollection<Recipe>(_colRecipes.Concat(colRecipesEnd));
+                                _colEntities = new ObservableCollection<Entity>(_colEntities.Concat(colEntitiesEnd));
                             }
                         }
                         else if (currentItemCount > newItemCount)
                         {
-                            _colRecipes = new ObservableCollection<Recipe>(_colRecipes.Take(newItemCount));
+                            _colEntities = new ObservableCollection<Entity>(_colEntities.Take(newItemCount));
                         }
 
                         if (setItemsSource)
                         {
-                            _itemsView.ItemsSource = _colRecipes;
+                            _itemsView.ItemsSource = _colEntities;
                         }
                     }
 
@@ -5097,43 +5097,43 @@ namespace MUXControlsTestApp
                 {
                     var rnd = new Random();
 
-                    if (_itemsView.ItemsSource == _lstRecipes)
+                    if (_itemsView.ItemsSource == _lstEntities)
                     {
-                        var recipe = new Recipe() {
-                            ImageUri = new Uri(string.Format("ms-appx:///Images/vette{0}.jpg", _lstRecipes.Count % 126 + 1)),
-                            Id = _lstRecipes.Count,
-                            Description = _lstRecipes.Count + " - " + _lorem.Substring(0, rnd.Next(25, 125))
+                        var entity = new Entity() {
+                            ImageUri = new Uri(string.Format("ms-appx:///Images/vette{0}.jpg", _lstEntities.Count % 126 + 1)),
+                            Id = _lstEntities.Count,
+                            Description = _lstEntities.Count + " - " + _lorem.Substring(0, rnd.Next(25, 125))
                         };
 
-                        _lstRecipes.Add(recipe);
+                        _lstEntities.Add(entity);
                     }
                     else
                     {
-                        ObservableCollection<Recipe> colRecipes = _itemsView.ItemsSource as ObservableCollection<Recipe>;
+                        ObservableCollection<Entity> colEntities = _itemsView.ItemsSource as ObservableCollection<Entity>;
 
-                        if (colRecipes != null)
+                        if (colEntities != null)
                         {
                             string uriString;
                             string description;
 
-                            if (colRecipes == _colRecipes || colRecipes == _colSmallUniformRecipes)
+                            if (colEntities == _colEntities || colEntities == _colSmallUniformEntities)
                             {
-                                uriString = string.Format("ms-appx:///Images/vette{0}.jpg", colRecipes.Count % 126 + 1);
-                                description = colRecipes.Count.ToString() + " - " + _lorem.Substring(0, rnd.Next(50, 350));
+                                uriString = string.Format("ms-appx:///Images/vette{0}.jpg", colEntities.Count % 126 + 1);
+                                description = colEntities.Count.ToString() + " - " + _lorem.Substring(0, rnd.Next(50, 350));
                             }
                             else
                             {
-                                uriString = string.Format("ms-appx:///Images/Rect{0}.png", colRecipes.Count % 6);
-                                description = colRecipes.Count.ToString();
+                                uriString = string.Format("ms-appx:///Images/Rect{0}.png", colEntities.Count % 6);
+                                description = colEntities.Count.ToString();
                             }
 
-                            var recipe = new Recipe() {
+                            var entity = new Entity() {
                                 ImageUri = new Uri(uriString),
-                                Id = colRecipes.Count,
+                                Id = colEntities.Count,
                                 Description = description
                             };
 
-                            colRecipes.Add(recipe);
+                            colEntities.Add(entity);
                         }
                         else
                         {
@@ -5175,43 +5175,43 @@ namespace MUXControlsTestApp
                 {
                     var rnd = new Random();
 
-                    if (_itemsView.ItemsSource == _lstRecipes)
+                    if (_itemsView.ItemsSource == _lstEntities)
                     {
-                        var recipe = new Recipe() {
-                            ImageUri = new Uri(string.Format("ms-appx:///Images/vette{0}.jpg", _lstRecipes.Count % 126 + 1)),
-                            Id = _lstRecipes.Count,
-                            Description = _lstRecipes.Count + " - " + _lorem.Substring(0, rnd.Next(25, 125))
+                        var entity = new Entity() {
+                            ImageUri = new Uri(string.Format("ms-appx:///Images/vette{0}.jpg", _lstEntities.Count % 126 + 1)),
+                            Id = _lstEntities.Count,
+                            Description = _lstEntities.Count + " - " + _lorem.Substring(0, rnd.Next(25, 125))
                         };
 
-                        _lstRecipes.Insert(newItemIndex, recipe);
+                        _lstEntities.Insert(newItemIndex, entity);
                     }
                     else
                     {
-                        ObservableCollection<Recipe> colRecipes = _itemsView.ItemsSource as ObservableCollection<Recipe>;
+                        ObservableCollection<Entity> colEntities = _itemsView.ItemsSource as ObservableCollection<Entity>;
 
-                        if (colRecipes != null)
+                        if (colEntities != null)
                         {
                             string uriString;
                             string description;
 
-                            if (colRecipes == _colRecipes || colRecipes == _colSmallUniformRecipes)
+                            if (colEntities == _colEntities || colEntities == _colSmallUniformEntities)
                             {
-                                uriString = string.Format("ms-appx:///Images/vette{0}.jpg", colRecipes.Count % 126 + 1);
-                                description = colRecipes.Count.ToString() + " - " + _lorem.Substring(0, rnd.Next(50, 350));
+                                uriString = string.Format("ms-appx:///Images/vette{0}.jpg", colEntities.Count % 126 + 1);
+                                description = colEntities.Count.ToString() + " - " + _lorem.Substring(0, rnd.Next(50, 350));
                             }
                             else
                             {
-                                uriString = string.Format("ms-appx:///Images/Rect{0}.png", colRecipes.Count % 6);
-                                description = colRecipes.Count.ToString();
+                                uriString = string.Format("ms-appx:///Images/Rect{0}.png", colEntities.Count % 6);
+                                description = colEntities.Count.ToString();
                             }
 
-                            var recipe = new Recipe() {
+                            var entity = new Entity() {
                                 ImageUri = new Uri(uriString),
-                                Id = colRecipes.Count,
+                                Id = colEntities.Count,
                                 Description = description
                             };
 
-                            colRecipes.Insert(newItemIndex, recipe);
+                            colEntities.Insert(newItemIndex, entity);
                         }
                         else
                         {
@@ -5251,21 +5251,21 @@ namespace MUXControlsTestApp
             {
                 if (_itemsView != null && _itemsView.ItemsSource != null)
                 {
-                    if (_itemsView.ItemsSource == _lstRecipes)
+                    if (_itemsView.ItemsSource == _lstEntities)
                     {
-                        _lstRecipes.Clear();
+                        _lstEntities.Clear();
                     }
-                    else if (_itemsView.ItemsSource == _colSmallRecipes)
+                    else if (_itemsView.ItemsSource == _colSmallEntities)
                     {
-                        _colSmallRecipes.Clear();
+                        _colSmallEntities.Clear();
                     }
-                    else if (_itemsView.ItemsSource == _colSmallUniformRecipes)
+                    else if (_itemsView.ItemsSource == _colSmallUniformEntities)
                     {
-                        _colSmallUniformRecipes.Clear();
+                        _colSmallUniformEntities.Clear();
                     }
-                    else if (_itemsView.ItemsSource == _colRecipes)
+                    else if (_itemsView.ItemsSource == _colEntities)
                     {
-                        _colRecipes.Clear();
+                        _colEntities.Clear();
                     }
                     else if (_itemsView.ItemsSource == _colSmallItemContainers)
                     {
@@ -5290,21 +5290,21 @@ namespace MUXControlsTestApp
             {
                 if (_itemsView != null && _itemsView.ItemsSource != null)
                 {
-                    if (_itemsView.ItemsSource == _lstRecipes)
+                    if (_itemsView.ItemsSource == _lstEntities)
                     {
-                        _lstRecipes.RemoveAt(oldItemIndex);
+                        _lstEntities.RemoveAt(oldItemIndex);
                     }
-                    else if (_itemsView.ItemsSource == _colSmallRecipes)
+                    else if (_itemsView.ItemsSource == _colSmallEntities)
                     {
-                        _colSmallRecipes.RemoveAt(oldItemIndex);
+                        _colSmallEntities.RemoveAt(oldItemIndex);
                     }
-                    else if (_itemsView.ItemsSource == _colSmallUniformRecipes)
+                    else if (_itemsView.ItemsSource == _colSmallUniformEntities)
                     {
-                        _colSmallUniformRecipes.RemoveAt(oldItemIndex);
+                        _colSmallUniformEntities.RemoveAt(oldItemIndex);
                     }
-                    else if (_itemsView.ItemsSource == _colRecipes)
+                    else if (_itemsView.ItemsSource == _colEntities)
                     {
-                        _colRecipes.RemoveAt(oldItemIndex);
+                        _colEntities.RemoveAt(oldItemIndex);
                     }
                     else if (_itemsView.ItemsSource == _colSmallItemContainers)
                     {
@@ -5331,43 +5331,43 @@ namespace MUXControlsTestApp
                 {
                     var rnd = new Random();
 
-                    if (_itemsView.ItemsSource == _lstRecipes)
+                    if (_itemsView.ItemsSource == _lstEntities)
                     {
-                        var recipe = new Recipe() {
-                            ImageUri = new Uri(string.Format("ms-appx:///Images/vette{0}.jpg", _lstRecipes.Count % 126 + 1)),
-                            Id = _lstRecipes.Count,
-                            Description = _lstRecipes.Count + " - " + _lorem.Substring(0, rnd.Next(25, 125))
+                        var entity = new Entity() {
+                            ImageUri = new Uri(string.Format("ms-appx:///Images/vette{0}.jpg", _lstEntities.Count % 126 + 1)),
+                            Id = _lstEntities.Count,
+                            Description = _lstEntities.Count + " - " + _lorem.Substring(0, rnd.Next(25, 125))
                         };
 
-                        _lstRecipes[itemIndex] = recipe;
+                        _lstEntities[itemIndex] = entity;
                     }
                     else
                     {
-                        ObservableCollection<Recipe> colRecipes = _itemsView.ItemsSource as ObservableCollection<Recipe>;
+                        ObservableCollection<Entity> colEntities = _itemsView.ItemsSource as ObservableCollection<Entity>;
 
-                        if (colRecipes != null)
+                        if (colEntities != null)
                         {
                             string uriString;
                             string description;
 
-                            if (colRecipes == _colRecipes || colRecipes == _colSmallUniformRecipes)
+                            if (colEntities == _colEntities || colEntities == _colSmallUniformEntities)
                             {
-                                uriString = string.Format("ms-appx:///Images/vette{0}.jpg", colRecipes.Count % 126 + 1);
-                                description = colRecipes.Count.ToString() + " - " + _lorem.Substring(0, rnd.Next(50, 350));
+                                uriString = string.Format("ms-appx:///Images/vette{0}.jpg", colEntities.Count % 126 + 1);
+                                description = colEntities.Count.ToString() + " - " + _lorem.Substring(0, rnd.Next(50, 350));
                             }
                             else
                             {
-                                uriString = string.Format("ms-appx:///Images/Rect{0}.png", colRecipes.Count % 6);
-                                description = colRecipes.Count.ToString();
+                                uriString = string.Format("ms-appx:///Images/Rect{0}.png", colEntities.Count % 6);
+                                description = colEntities.Count.ToString();
                             }
 
-                            var recipe = new Recipe() {
+                            var entity = new Entity() {
                                 ImageUri = new Uri(uriString),
-                                Id = colRecipes.Count,
+                                Id = colEntities.Count,
                                 Description = description
                             };
 
-                            colRecipes[itemIndex] = recipe;
+                            colEntities[itemIndex] = entity;
                         }
                     }
                 }

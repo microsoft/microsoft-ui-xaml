@@ -22,7 +22,7 @@ public:
     _Check_return_ HRESULT CreateFrameworkPeer(_Outptr_ IInspectable** ppPeer) override;
 
     _Check_return_ HRESULT GetCumulative(
-        _Out_ CManipulationDelta** ppCumulative)
+        _Inout_ CManipulationDelta** ppCumulative)
     {
         IFCPTR_RETURN(ppCumulative);
         if (m_pCumulative)

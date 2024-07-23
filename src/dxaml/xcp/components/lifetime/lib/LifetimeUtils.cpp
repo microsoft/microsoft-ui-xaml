@@ -9,7 +9,7 @@ using namespace DirectUI;
 using namespace ctl;
 using namespace xaml_hosting;
 
-_Check_return_ HRESULT  ctl::as_weakref(_Outptr_ IWeakReference *&pWeakRef, _In_ IInspectable *pInput)
+_Check_return_ HRESULT  ctl::as_weakref(_Out_ IWeakReference *&pWeakRef, _In_ IInspectable *pInput)
 {
     HRESULT hr = S_OK;
     IWeakReferenceSource *pWS = NULL;

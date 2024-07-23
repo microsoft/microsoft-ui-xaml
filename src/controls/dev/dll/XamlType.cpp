@@ -88,7 +88,7 @@ winrt::IXamlType XamlTypeBase::KeyType()
 
 winrt::IXamlType XamlTypeBase::BoxedType()
 {
-    return nullptr;
+    return m_boxedType;
 }
 
 winrt::TypeName XamlTypeBase::UnderlyingType()
@@ -228,4 +228,10 @@ EnumXamlType::EnumXamlType(
     m_typeName = typeName;
     m_baseType = baseType;
     m_createFromString = createFromString;
+}
+
+NullableXamlType::NullableXamlType(wstring_view const& typeName, wstring_view const& valueTypeName)
+{
+    m_typeName = typeName;
+    m_boxedType = XamlMetadataProvider::LookupXamlType(valueTypeName);
 }

@@ -46,7 +46,7 @@ public:
         _In_opt_ IUnknown* sharedSecondaryContentTransform,
         _In_opt_ WUComp::ICompositor* pCompositor = nullptr) = 0;
     virtual _Check_return_ HRESULT SetSharedClipTransform(
-        _In_ IUnknown* sharedClipTransform,
+        _In_opt_ IUnknown* sharedClipTransform,
         _In_opt_ WUComp::ICompositor* compositor = nullptr) = 0;
 
 protected:
@@ -97,7 +97,7 @@ public:
     // However, the clip case is simpler in that we only need the primary shared transform (unlike the content case where it had to be comnined with ContentOffset).
     // Therefore, for clip tranform we omit managing an intermedate expression (equivalent of m_spOverallContentPropertySet / EnsureOverallContentPropertySet()).
     _Check_return_ HRESULT SetSharedClipTransform(
-        _In_ IUnknown* sharedClipTransform,
+        _In_opt_ IUnknown* sharedClipTransform,
         _In_opt_ WUComp::ICompositor* pCompositor = nullptr) override;
     WUComp::ICompositionObject* GetClipPrimaryTransformCO() const { return m_spClipPrimaryTransformCO; }
 

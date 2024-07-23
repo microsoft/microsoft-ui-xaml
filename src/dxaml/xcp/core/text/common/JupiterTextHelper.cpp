@@ -74,7 +74,7 @@ Cleanup:
 }
 
 HRESULT JupiterTextHelper::SetGripperData(
-    TextSelectionManager* selectionManager,
+    _In_ TextSelectionManager* selectionManager,
     _Out_ JupiterGripperData*  data)
 {
     CTextSelectionGripper* gripperStart = NULL;

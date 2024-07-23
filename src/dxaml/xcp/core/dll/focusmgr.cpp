@@ -3193,7 +3193,7 @@ void CFocusManager::CancelCurrentAsyncOperation(_In_ const Focus::FocusMovementR
 {
     if (m_asyncOperation != nullptr)
     {
-        m_asyncOperation->CoreSetResults(result);
+        IFCFAILFAST(m_asyncOperation->CoreSetResults(result));
         m_asyncOperation->CoreFireCompletion();
         m_asyncOperation->CoreReleaseRef();
 

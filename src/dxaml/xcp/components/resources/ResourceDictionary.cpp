@@ -158,7 +158,7 @@ CDependencyObject* CResourceDictionary::FindResourceByKey(_In_ const ResourceKey
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
 CResourceDictionary::NotifyImplicitStyleChanged(
-    _In_opt_ CStyle *style,
+    _In_ CStyle *style,
     StyleUpdateType styleType)
 {
     CUIElement * pVisualOwner = do_pointer_cast<CUIElement>(m_pResourceOwner);

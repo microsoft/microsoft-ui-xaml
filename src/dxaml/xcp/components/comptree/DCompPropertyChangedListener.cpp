@@ -425,7 +425,7 @@ void DCompPropertyChangedListener::ForceUpdateFromLayoutOffset()
     }
 }
 
-HRESULT DCompPropertyChangedListener::UpdateOverallOffset(_In_ CUIElement* uielement)
+_Check_return_ HRESULT DCompPropertyChangedListener::UpdateOverallOffset(_In_ CUIElement* uielement)
 {
     // Replicate the math DComp does to incorporate AnchorPoint into the overall offset.
     // From the API spec:
@@ -439,7 +439,7 @@ HRESULT DCompPropertyChangedListener::UpdateOverallOffset(_In_ CUIElement* uiele
     return S_OK;
 }
 
-HRESULT DCompPropertyChangedListener::UpdateOverallCenterPoint(_In_ CUIElement* uielement)
+_Check_return_ HRESULT DCompPropertyChangedListener::UpdateOverallCenterPoint(_In_ CUIElement* uielement)
 {
     // Replicate the math DComp does to incorporate AnchorPoint into the overall center-point.
     // From the API spec:

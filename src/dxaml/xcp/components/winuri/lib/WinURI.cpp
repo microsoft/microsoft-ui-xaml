@@ -180,7 +180,7 @@ _Check_return_ static HRESULT UriSchemeEquals(
 _Check_return_ HRESULT
 CWinUriImpl::Combine(
     _In_ XUINT32 relativeUriLength,
-    _In_reads_(cUri) const WCHAR *relativeUri,
+    _In_reads_(relativeUriLength) const WCHAR *relativeUri,
     _Outptr_ IPALUri** ppUriCombine)
 {
     xstring_ptr baseUri;

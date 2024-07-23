@@ -586,7 +586,7 @@ _Check_return_ HRESULT DirectUI::AppBarGenerated::EventRemoveHandlerByIndex(_In_
     case KnownEventIndex::AppBar_Closed:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -603,7 +603,7 @@ _Check_return_ HRESULT DirectUI::AppBarGenerated::EventRemoveHandlerByIndex(_In_
     case KnownEventIndex::AppBar_Closing:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -620,7 +620,7 @@ _Check_return_ HRESULT DirectUI::AppBarGenerated::EventRemoveHandlerByIndex(_In_
     case KnownEventIndex::AppBar_Opened:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -637,7 +637,7 @@ _Check_return_ HRESULT DirectUI::AppBarGenerated::EventRemoveHandlerByIndex(_In_
     case KnownEventIndex::AppBar_Opening:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

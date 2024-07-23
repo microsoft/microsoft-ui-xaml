@@ -69,7 +69,7 @@ void WinRTExpressionConversionContext::UpdateExpression(
     float staticValue,
     bool isAnimationDirty,
     _In_opt_ WUComp::ICompositionAnimation* animation,
-    _In_opt_ CDependencyObject* targetObject,
+    _In_ CDependencyObject* targetObject,
     _In_ KnownPropertyIndex targetPropertyIndex,
     _In_opt_ CTimeManager* timeManager
     )

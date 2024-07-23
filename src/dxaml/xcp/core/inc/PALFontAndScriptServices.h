@@ -41,7 +41,7 @@ public:
     // Returns the collection of font families installed on the system.
     
     HRESULT GetSystemFontCollection(
-    _Out_ IFontCollection** ppFontCollection
+    _Outptr_ IFontCollection** ppFontCollection
     ) override;
 
     // Creates a FontCollection given a memory stream.
@@ -85,7 +85,7 @@ public:
 
     // Returns the CFontFamily to be used as the ultimate fallback during property inheritance.
     
-    HRESULT GetUltimateFont(_Outptr_ CFontFamily **ppUltimateFont) override;
+    _Check_return_ HRESULT GetUltimateFont(_Outptr_ CFontFamily **ppUltimateFont) override;
 
     
     CCoreServices *GetCoreServices() override {return m_pCore;}

@@ -11,7 +11,7 @@
 class CShareableDependencyObject : public CDependencyObject
 {
 protected:
-    CShareableDependencyObject(_In_ CCoreServices *pCore)
+    CShareableDependencyObject(_In_opt_ CCoreServices *pCore)
         : CDependencyObject(pCore)
     {}
 

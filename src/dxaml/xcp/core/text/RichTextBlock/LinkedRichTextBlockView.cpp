@@ -9,7 +9,7 @@
 #include "RichTextBlockOverflow.h"
 
 LinkedRichTextBlockView::LinkedRichTextBlockView(
-    _In_opt_ CRichTextBlock *pMaster
+    _In_ CRichTextBlock *pMaster
     ) :
     m_pMaster(pMaster)
 {

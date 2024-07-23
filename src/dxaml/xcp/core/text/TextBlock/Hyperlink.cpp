@@ -440,7 +440,7 @@ bool CHyperlink::IsLinkNavigationKey(const UINT32 key)
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CHyperlink::EnterImpl(
     _In_ CDependencyObject *pNamescopeOwner,
-    EnterParams params
+    _In_ EnterParams params
     )
 {
     CEventManager *pEventManager = nullptr;
@@ -484,7 +484,7 @@ _Check_return_ HRESULT CHyperlink::EnterImpl(
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CHyperlink::LeaveImpl(
     _In_ CDependencyObject *pNamescopeOwner,
-    LeaveParams params
+    _In_ LeaveParams params
     )
 {
     CEventManager *pEventManager = nullptr;
@@ -871,7 +871,7 @@ _Check_return_ HRESULT CHyperlink::GetTextContentStart(_Outptr_result_maybenull_
     if (pTempAsIn &&
         pTempAsIn->GetTypeIndex() == KnownTypeIndex::Run)
     {
-        pTempAsIn->GetContentStart(ppTextPointerWrapper);
+        IFC_RETURN(pTempAsIn->GetContentStart(ppTextPointerWrapper));
     }
     return S_OK;
 }

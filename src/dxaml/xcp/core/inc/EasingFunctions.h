@@ -13,7 +13,7 @@
 class CEasingFunctionBase : public CNoParentShareableDependencyObject
 {
 protected:
-    CEasingFunctionBase(_In_ CCoreServices *pCore)
+    CEasingFunctionBase(_In_opt_ CCoreServices *pCore)
         : CNoParentShareableDependencyObject(pCore)
     {}
 
@@ -51,7 +51,7 @@ public:
     virtual void GetWUCEasingFunction(
         _In_ ixp::ICompositionEasingFunctionStatics* easingFunctionStatics,
         _In_ ixp::ICompositor* compositor,
-        _Outptr_ ixp::ICompositionEasingFunction** easingFunction);
+        _Outptr_result_maybenull_ ixp::ICompositionEasingFunction** easingFunction);
 
     DirectUI::EasingMode m_eEasingMode = DirectUI::EasingMode::EaseOut;
 };
@@ -62,7 +62,7 @@ public:
 class CEasingFunctionImpl : public CEasingFunctionBase
 {
 protected:
-    CEasingFunctionImpl(_In_ CCoreServices *pCore)
+    CEasingFunctionImpl(_In_opt_ CCoreServices *pCore)
         : CEasingFunctionBase(pCore)
     {}
 
@@ -87,7 +87,7 @@ public:
         return DependencyObjectTraits<CCircInterpolator>::Index;
     }
 
-    float EaseInCore(float normalizedTime) override;
+    float EaseInCore(_In_ float normalizedTime) override;
 
     void GetWUCEasingFunction(
         _In_ ixp::ICompositionEasingFunctionStatics* easingFunctionStatics,
@@ -112,7 +112,7 @@ public:
         return DependencyObjectTraits<CBackInterpolator>::Index;
     }
 
-    float EaseInCore(float normalizedTime) override;
+    float EaseInCore(_In_ float normalizedTime) override;
 
     void GetWUCEasingFunction(
         _In_ ixp::ICompositionEasingFunctionStatics* easingFunctionStatics,
@@ -139,7 +139,7 @@ public:
         return DependencyObjectTraits<CExponentialInterpolator>::Index;
     }
 
-    float EaseInCore(float normalizedTime) override;
+    float EaseInCore(_In_ float normalizedTime) override;
 
     void GetWUCEasingFunction(
         _In_ ixp::ICompositionEasingFunctionStatics* easingFunctionStatics,
@@ -166,7 +166,7 @@ public:
         return DependencyObjectTraits<CPowerInterpolator>::Index;
     }
 
-    float EaseInCore(float normalizedTime) override;
+    float EaseInCore(_In_ float normalizedTime) override;
 
     void GetWUCEasingFunction(
         _In_ ixp::ICompositionEasingFunctionStatics* easingFunctionStatics,
@@ -198,7 +198,7 @@ public:
         _In_ ixp::ICompositor* compositor,
         _Outptr_ ixp::ICompositionEasingFunction** easingFunction) override;
 
-    float EaseInCore(float normalizedTime) override;
+    float EaseInCore(_In_ float normalizedTime) override;
 };
 
 //
@@ -223,7 +223,7 @@ public:
         _In_ ixp::ICompositor* compositor,
         _Outptr_ ixp::ICompositionEasingFunction** easingFunction) override;
 
-    float EaseInCore(float normalizedTime) override;
+    float EaseInCore(_In_ float normalizedTime) override;
 };
 
 //
@@ -248,7 +248,7 @@ public:
         _In_ ixp::ICompositor* compositor,
         _Outptr_ ixp::ICompositionEasingFunction** easingFunction) override;
 
-    float EaseInCore(float normalizedTime) override;
+    float EaseInCore(_In_ float normalizedTime) override;
 };
 
 //
@@ -273,7 +273,7 @@ public:
         _In_ ixp::ICompositor* compositor,
         _Outptr_ ixp::ICompositionEasingFunction** easingFunction) override;
 
-    float EaseInCore(float normalizedTime) override;
+    float EaseInCore(_In_ float normalizedTime) override;
 };
 
 //
@@ -293,7 +293,7 @@ public:
         return DependencyObjectTraits<CElasticInterpolator>::Index;
     }
 
-    float EaseInCore(float normalizedTime) override;
+    float EaseInCore(_In_ float normalizedTime) override;
 
     void GetWUCEasingFunction(
         _In_ ixp::ICompositionEasingFunctionStatics* easingFunctionStatics,
@@ -326,7 +326,7 @@ public:
         return DependencyObjectTraits<CBounceInterpolator>::Index;
     };
 
-    float EaseInCore(float normalizedTime) override;
+    float EaseInCore(_In_ float normalizedTime) override;
 
     void GetWUCEasingFunction(
         _In_ ixp::ICompositionEasingFunctionStatics* easingFunctionStatics,
@@ -362,5 +362,5 @@ public:
         _In_ ixp::ICompositor* compositor,
         _Outptr_ ixp::ICompositionEasingFunction** easingFunction) override;
 
-    float EaseInCore(float normalizedTime) override;
+    float EaseInCore(_In_ float normalizedTime) override;
 };

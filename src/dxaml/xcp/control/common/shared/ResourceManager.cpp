@@ -326,6 +326,8 @@ ResourceManager::NotifyThemeChanged()
 {
     IFC_RETURN(m_pResourceProvider->NotifyThemeChanged());
 
+    ++m_resourceInvalidationId;
+
     return S_OK;
 }
 

@@ -79,8 +79,6 @@
         <PackageContent Include="$(LiftedIXPInternalIncludePath)\winrtdirect3d11.h" PackageLocation="$(IncludesPackageLocation)"/>
         <PackageContent Include="$(LiftedIXPInternalIncludePath)\winrtdirectxcommon.h" PackageLocation="$(IncludesPackageLocation)"/>
         <PackageContent Include="$(LocalizedMUIFilesPath)\**\*.mui" PackageLocation="$(NativeAssemblyPackageLocation)\%(RecursiveDir)"/>
-        <PackageContent Include="$(WebView2PackagePath)\build\native\include\WebView2.h" PackageLocation="$(IncludesPackageLocation)"/>
-        <PackageContent Include="$(WebView2PackagePath)\WebView2.idl" PackageLocation="$(IncludesPackageLocation)"/>
         <BinplaceItem Include="$(LocalizedMUIFilesPath)\**\*.mui">
             <DestinationSubDirectory>%(RecursiveDir)</DestinationSubDirectory>
         </BinplaceItem>

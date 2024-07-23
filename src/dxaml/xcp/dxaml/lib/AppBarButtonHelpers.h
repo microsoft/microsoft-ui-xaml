@@ -354,7 +354,7 @@ namespace DirectUI
         }
 
         template<class AppBarButtonType>
-        static _Check_return_ HRESULT GetKeyboardAcceleratorText(_In_ AppBarButtonType* const button, _Outptr_ HSTRING *keyboardAcceleratorText)
+        static _Check_return_ HRESULT GetKeyboardAcceleratorText(_In_ AppBarButtonType* const button, _Outptr_result_maybenull_ HSTRING *keyboardAcceleratorText)
         {
             IFC_RETURN(button->GetValueByKnownIndex(GetKeyboardAcceleratorTextDependencyProperty<AppBarButtonType>(), keyboardAcceleratorText));
 

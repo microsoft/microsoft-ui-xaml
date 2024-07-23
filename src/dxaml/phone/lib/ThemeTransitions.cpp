@@ -125,7 +125,7 @@ XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { n
         _In_ wf::Rect /*destination*/,
         _In_ xaml::TransitionTrigger transitionTrigger,
         _In_ wfc::IVector<xaml_animation::Storyboard*>* storyboards,
-        _Out_ xaml::TransitionParent* /*parentForTransition*/)
+        _Inout_ xaml::TransitionParent* parentForTransition)
     {
         HRESULT hr = S_OK;
         BOOLEAN shouldRun = FALSE;
@@ -140,7 +140,7 @@ XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { n
         wrl::ComPtr<xaml_animation::INavigationTransitionInfo> spDefinition;
         wrl::ComPtr<xaml_animation::INavigationTransitionInfoPrivate> spDefinitionPrivate;
         wrl::ComPtr<xaml_animation::IStoryboard> spStoryboard;
-
+            
         shouldRun = ((transitionTrigger == xaml::TransitionTrigger_Load) || (transitionTrigger == xaml::TransitionTrigger_Unload));
 
         if (!shouldRun)

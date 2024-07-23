@@ -43,7 +43,7 @@ _Check_return_ HRESULT QualifierContext::RegisterChangedCallback(_In_ IQualifier
     return S_OK;
 }
 
-_Check_return_ HRESULT QualifierContext::OnWindowChanged(_In_ XUINT32 width, _In_ XUINT32 height)
+HRESULT QualifierContext::OnWindowChanged(_In_ XUINT32 width, _In_ XUINT32 height)
 {
     QualifierFlags flags = QualifierFlags::None;
 

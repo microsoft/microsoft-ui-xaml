@@ -43,9 +43,9 @@ namespace MUXControlsTestApp
 
         private void MarkupScrollPresenter_ViewChanged(ScrollPresenter sender, object args)
         {
-            this.txtScrollPresenterHorizontalOffset.Text = this.markupScrollPresenter.HorizontalOffset.ToString();
-            this.txtScrollPresenterVerticalOffset.Text = this.markupScrollPresenter.VerticalOffset.ToString();
-            this.txtScrollPresenterZoomFactor.Text = this.markupScrollPresenter.ZoomFactor.ToString();
+            this.txtScrollPresenterHorizontalOffset.Text = this.markupScrollPresenter.HorizontalOffset.ToString("F2");
+            this.txtScrollPresenterVerticalOffset.Text = this.markupScrollPresenter.VerticalOffset.ToString("F2");
+            this.txtScrollPresenterZoomFactor.Text = this.markupScrollPresenter.ZoomFactor.ToString("F2");
         }
 
         private void MarkupScrollPresenter_StateChanged(ScrollPresenter sender, object args)

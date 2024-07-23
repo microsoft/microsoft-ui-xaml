@@ -39,7 +39,7 @@ public:
     }
 
     _Check_return_ HRESULT GetCumulative(
-        _Out_ CManipulationDelta** ppCumulative)
+        _Inout_ CManipulationDelta** ppCumulative)
     {
         IFCPTR_RETURN(ppCumulative);
         if (m_pManipulationTotal)
@@ -51,7 +51,7 @@ public:
     }
 
     _Check_return_ HRESULT GetVelocities(
-        _Out_ CManipulationVelocities** ppVelocities)
+        _Inout_ CManipulationVelocities** ppVelocities)
     {
         IFCPTR_RETURN(ppVelocities);
         if (m_pVelocitiesFinal)

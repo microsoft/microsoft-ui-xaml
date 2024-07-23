@@ -280,13 +280,13 @@ private:
 
     _Check_return_ HRESULT DeferredCreateInlineCollection();
 
-    XPOINTF GetContentRenderingOffset(DirectUI::FlowDirection flowDirection) const;
+    XPOINTF GetContentRenderingOffset(_In_ DirectUI::FlowDirection flowDirection) const;
 
-    _Check_return_ HRESULT GetLineStackingOffset(uint32_t lineCount, _Out_ float* offset);
+    _Check_return_ HRESULT GetLineStackingOffset(_In_ uint32_t lineCount, _Out_ float* offset);
 
-    void SetFastPathOptOutConditions (FastPathOptOutConditions mask);
-    void SetFastPathOptOutConditions (FastPathOptOutConditions mask, bool isSet);
-    void ClearFastPathOptOutConditions (FastPathOptOutConditions mask);
+    void SetFastPathOptOutConditions (_In_ FastPathOptOutConditions mask);
+    void SetFastPathOptOutConditions (_In_ FastPathOptOutConditions mask, bool isSet);
+    void ClearFastPathOptOutConditions (_In_ FastPathOptOutConditions mask);
     _Check_return_ HRESULT UpdateFastPathOptOutConditions(_In_ const CDependencyProperty* pDP);
 
     _Check_return_ HRESULT EnsureTextDrawingContext();

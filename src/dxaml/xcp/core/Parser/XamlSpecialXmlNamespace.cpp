@@ -160,7 +160,7 @@ std::shared_ptr<XamlNamespace> XamlSpecialXmlNamespace::Clone() const
 //------------------------------------------------------------------------
 _Check_return_ HRESULT 
 XamlMarkupXmlNamespace::AddTypeNamespace(
-    const std::shared_ptr<XamlTypeNamespace> spTypeNamespace)
+    _In_ const std::shared_ptr<XamlTypeNamespace> spTypeNamespace)
 {
     return E_NOTIMPL;
 }

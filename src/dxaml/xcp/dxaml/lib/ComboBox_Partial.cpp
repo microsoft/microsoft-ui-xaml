@@ -2260,7 +2260,8 @@ _Check_return_ HRESULT ComboBox::ProcessTabStopOverride(
     const bool isBackward,
     const bool didCycleFocusAtRootVisualScope,
     _Outptr_ DependencyObject** ppNewTabStop,
-    _Out_ BOOLEAN* pIsTabStopOverridden)
+    _Out_ BOOLEAN* pIsTabStopOverridden
+    )
 {
     // An editable ComboBox has special tab behavior. We want to be able to Tab a single time
     // directly into the TextBox and to Shift + Tab a single time to move focus outside to a
@@ -3119,7 +3120,7 @@ _Check_return_ HRESULT ComboBox::MainKeyDown(
 }
 
 
-HRESULT ComboBox::OnTextBoxTextChanged(_In_ IInspectable* pSender, _In_ xaml_controls::ITextChangedEventArgs* pArgs)
+_Check_return_ HRESULT ComboBox::OnTextBoxTextChanged(_In_ IInspectable* pSender, _In_ xaml_controls::ITextChangedEventArgs* pArgs)
 {
     //DEAD_CODE_REMOVAL
     return S_OK;

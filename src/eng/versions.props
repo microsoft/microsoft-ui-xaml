@@ -27,6 +27,7 @@
     <TaefNugetPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Taef.*?version="(.*?)"').Groups[1].Value)</TaefNugetPackageVersion>
     <MicrosoftNETCoreUniversalWindowsPlatformVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.NETCore.UniversalWindowsPlatform.*?version="(.*?)"').Groups[1].Value)</MicrosoftNETCoreUniversalWindowsPlatformVersion>
     <CurrentWilPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.ImplementationLibrary.*?version="(.*?)"').Groups[1].Value)</CurrentWilPackageVersion>
+    <WebView2Version>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Web.WebView2.*?version="(.*?)"').Groups[1].Value)</WebView2Version>
     <MuxCustomBuildTasksPackageVersion>1.0.125-winui3</MuxCustomBuildTasksPackageVersion>
     <MicrosoftSourceLinkAzureReposVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.SourceLink.AzureRepos.Git.*?version="(.*?)"').Groups[1].Value)</MicrosoftSourceLinkAzureReposVersion>
     <MicrosoftWindowsSDKBuildToolsNugetPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.SDK.BuildTools.*?version="(.*?)"').Groups[1].Value)</MicrosoftWindowsSDKBuildToolsNugetPackageVersion>
@@ -65,12 +66,12 @@
     <!-- For compat reasons, this should always be .NET 6, as it controls the .NET version the Microsoft.WinUI.dll CSWinRT projection assembly targets. -->
     <WindowsAppSdkTargetFrameworkMoniker>net6.0-windows$(WindowsAppSdkTargetPlatformVersion)</WindowsAppSdkTargetFrameworkMoniker>
     <SamplesTargetFrameworkMoniker>$(WindowsAppSdkTargetFrameworkMoniker)</SamplesTargetFrameworkMoniker>
-    <MicrosoftCsWinRTPackageVersion>2.1.0-prerelease.240517.1</MicrosoftCsWinRTPackageVersion>
-    <MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>35-preview</MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>
+    <MicrosoftCsWinRTPackageVersion>2.1.0-prerelease.240605.1</MicrosoftCsWinRTPackageVersion>
+    <MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>36-preview</MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>
+    <WebView2PackageVersion>1.0.2646-prerelease</WebView2PackageVersion>
     <dotNetSdkChannel>8.0.1xx</dotNetSdkChannel>
     <dotNetSdkVNextChannel>9.0.xx</dotNetSdkVNextChannel>
     <CppWinRTVersion>2.0.230706.1</CppWinRTVersion>
-    <WebView2Version>1.0.2210.55</WebView2Version>
     <Win2DWinUIVersion>0.1.0.3</Win2DWinUIVersion>
     <Win2DUWPVersion>1.25.0</Win2DUWPVersion>
     <ColorCodeVersion>2.0.13</ColorCodeVersion>
@@ -90,6 +91,7 @@
     <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.Internal.WinUIDetails=$(WinUIDetailsNugetVersion)" />
     <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.NETCore.UniversalWindowsPlatform=$(MicrosoftNETCoreUniversalWindowsPlatformVersion)" />
     <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.Windows.ImplementationLibrary=$(CurrentWilPackageVersion)" />
+    <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.Web.WebView2=$(WebView2Version)" />
     <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     MUXCustomBuildTasks=$(MuxCustomBuildTasksPackageVersion)" />
     <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.SourceLink.AzureRepos.Git=$(MicrosoftSourceLinkAzureReposVersion)" />
     <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.Windows.SDK.BuildTools=$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)" />
@@ -106,6 +108,7 @@
     <Error Condition="'$(WinUIDetailsNugetVersion)' == ''" Text="Unable to determine version for package Microsoft.Internal.WinUIDetails" />
     <Error Condition="'$(MicrosoftNETCoreUniversalWindowsPlatformVersion)' == ''" Text="Unable to determine version for package Microsoft.NETCore.UniversalWindowsPlatform" />
     <Error Condition="'$(CurrentWilPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.Windows.ImplementationLibrary" />
+    <Error Condition="'$(WebView2Version)' == ''" Text="Unable to determine version for package Microsoft.Web.WebView2" />
     <Error Condition="'$(MuxCustomBuildTasksPackageVersion)' == ''" Text="Unable to determine version for package MUXCustomBuildTasks" />
     <Error Condition="'$(MicrosoftSourceLinkAzureReposVersion)' == ''" Text="Unable to determine version for package Microsoft.SourceLink.AzureRepos.Git" />
     <Error Condition="'$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.Windows.SDK.BuildTools" />
@@ -116,5 +119,6 @@
     <!-- Temporarily requiring BuildTools 22621.756 for transitive reference support -->
     <!-- <Error Condition="'$(MicrosoftWindowsSDKCppVersion)' != '$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)'" Text="Version mismatch between Microsoft.Windows.SDK and Microsoft.Windows.SDK.BuildTools" /> -->
     <Error Condition="'$(MicrosoftCsWinRTVersion)' != '$(MicrosoftCsWinRTPackageVersion)'" Text="Version mismatch for Microsoft.Windows.CsWinRT between packages.config and versions.props" />
+    <Error Condition="'$(WebView2Version)' != '$(WebView2PackageVersion)'" Text="Version mismatch for Microsoft.Web.WebView2 between packages.config and versions.props" />
   </Target>
 </Project>

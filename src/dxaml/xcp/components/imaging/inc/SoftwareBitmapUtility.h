@@ -30,7 +30,7 @@ namespace SoftwareBitmapUtility
         );
 
     // Validates the SoftwareBitmap fulfills the requirements for use in XAML
-    static HRESULT ValidateSoftwareBitmap(
+    static _Check_return_ HRESULT ValidateSoftwareBitmap(
         _In_ const wrl::ComPtr<wgri::ISoftwareBitmap>& spSoftwareBitmap
         );
 };

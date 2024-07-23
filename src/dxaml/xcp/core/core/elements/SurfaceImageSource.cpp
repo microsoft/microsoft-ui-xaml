@@ -645,7 +645,7 @@ CSurfaceImageSource::EndDrawCommon()
         // of overdraw.
         if (m_shouldPropagateDirtyFlag)
         {
-            SetDirty();
+            IFC(SetDirty());
             m_shouldPropagateDirtyFlag = FALSE;
         }
         else

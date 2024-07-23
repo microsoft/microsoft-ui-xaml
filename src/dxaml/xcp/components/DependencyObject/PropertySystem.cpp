@@ -777,7 +777,7 @@ _Check_return_ HRESULT CDependencyObject::GetEffectiveValueInSparseStorage(_In_ 
         auto it = m_pValueTable->find(pDP->GetIndex());
         if (it != m_pValueTable->end())
         {
-            pValue->CopyConverted(it->second.value);
+            IFC_RETURN(pValue->CopyConverted(it->second.value));
             return S_OK;
         }
     }
@@ -1684,7 +1684,7 @@ _Check_return_ HRESULT CDependencyObject::SetValueByKnownIndex(_In_ KnownPropert
 }
 
 //  Calls SetValue with the given INT32 as the value on the property specified by the given known ID.
-_Check_return_ HRESULT CDependencyObject::SetValueByKnownIndex(_In_ KnownPropertyIndex index, INT32 value)
+_Check_return_ HRESULT CDependencyObject::SetValueByKnownIndex(_In_ KnownPropertyIndex index, _In_ INT32 value)
 {
     CValue cVal;
     cVal.SetSigned(value);
@@ -1987,7 +1987,7 @@ _Check_return_ HRESULT CDependencyObject::OnPropertySetImpl(
     _In_ const CDependencyProperty* dp,
     _In_ const CValue&,
     _In_ const CValue&,
-    _In_ bool)
+    bool)
 {
     if (HasDeferred())
     {
@@ -2102,7 +2102,7 @@ template <typename T>
 static bool UpdateValueHelperVO(
     _In_ XHANDLE field,
     _In_ const CValue& newValue,
-    _Out_ CValue& savedValue)
+    _Inout_ CValue& savedValue)
 {
     using wrapper_type = Flyweight::PropertyValueObjectWrapper<T>;
 
@@ -2429,6 +2429,11 @@ _Check_return_ HRESULT CDependencyObject::SetEffectiveValueInField_Any(_In_ cons
 
 _Check_return_ HRESULT CDependencyObject::SetEffectiveValueInField_Object(_In_ const EffectiveValueParams& args, _In_ XHANDLE field, _Inout_ CValue& oldValue, _Outptr_result_maybenull_ IInspectable** ppOldValueOuter, _Inout_ bool& propertyChangedValue)
 {
+     // Initialize the output parameter to nullptr
+    if (ppOldValueOuter != nullptr)
+    {
+        *ppOldValueOuter = nullptr;
+    }    
     const CDependencyProperty* pDP = args.m_pDP;
     CValue* pValue = const_cast<CValue*>(&args.m_value);
     CDependencyObject* valueAsObject = pValue->AsObject();
@@ -2584,7 +2589,7 @@ _Check_return_ HRESULT CDependencyObject::SetEffectiveValueInSparseStorage(_In_ 
 
     {
         CValue tempValue;
-        tempValue.CopyConverted(args.m_value);
+        IFC_RETURN(tempValue.CopyConverted(args.m_value));
 
         // the garbage collection walk iterates over the m_pValueTable
         // and modifying entries needs to be done in a gc thread safe manner
@@ -3042,7 +3047,7 @@ _Check_return_ HRESULT CDependencyObject::SetPropertyIsLocal(_In_ const CDepende
 // takes effect.
 _Check_return_ HRESULT CDependencyObject::CreateModifiedValue(
     _In_ const CDependencyProperty* dp,
-    _Outptr_ std::shared_ptr<CModifiedValue>& modifiedValue)
+    _Inout_ std::shared_ptr<CModifiedValue>& modifiedValue)
 {
     CValue value;
     auto instance = std::make_shared<CModifiedValue>(dp);

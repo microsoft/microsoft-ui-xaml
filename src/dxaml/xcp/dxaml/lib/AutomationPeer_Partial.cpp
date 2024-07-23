@@ -56,7 +56,7 @@ static _Check_return_ HRESULT BoxObjectValueHelper(
     _In_opt_ IInspectable* value,
     _In_ BoxerBuffer* buffer,
     _Outptr_result_maybenull_ DependencyObject** ppMOR,
-    _In_opt_ BOOLEAN bPreserveObjectIdentity)
+    BOOLEAN bPreserveObjectIdentity)
 {
     CValue temp;
     IFC_RETURN(CValueBoxer::BoxObjectValue(&temp, pSourceType, value, buffer, ppMOR, bPreserveObjectIdentity));
@@ -3988,7 +3988,7 @@ BOOLEAN AutomationPeer::ArePropertyChangedListeners()
     return !!bListenerExist;
 }
 
-HRESULT AutomationPeer::RaiseEventIfListener(
+_Check_return_ HRESULT AutomationPeer::RaiseEventIfListener(
     _In_ UIElement* pUie,
     _In_ xaml_automation_peers::AutomationEvents eventId)
 {

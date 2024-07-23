@@ -24,7 +24,7 @@ namespace DirectUI
 
         // Attached properties.
         static _Check_return_ HRESULT GetAcceleratorKeyPropertyStatic(_Out_ const CDependencyProperty** ppValue);
-        IFACEMETHOD(get_AcceleratorKeyProperty)(_Out_ xaml::IDependencyProperty** ppValue) override;
+        _Check_return_ IFACEMETHOD(get_AcceleratorKeyProperty)(_Out_ xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetAcceleratorKey)(_In_ xaml::IDependencyObject* element, _Out_ HSTRING* pValue) override;
         static _Check_return_ HRESULT GetAcceleratorKeyStatic(_In_ xaml::IDependencyObject* element, _Out_ HSTRING* pValue);
         IFACEMETHOD(SetAcceleratorKey)(_In_ xaml::IDependencyObject* element, _In_ HSTRING value) override;
@@ -171,7 +171,7 @@ namespace DirectUI
         IFACEMETHOD(SetAutomationControlType)(_In_ xaml::IUIElement* element, _In_ xaml_automation_peers::AutomationControlType value) override;
 
     protected:
-        HRESULT QueryInterfaceImpl(_In_ REFIID riid, _Outptr_ void** ppObject) override;
+        _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID riid, _Outptr_ void** ppObject) override;
         AutomationProperties();
     };
 

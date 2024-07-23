@@ -19,10 +19,10 @@ namespace DirectUI
         _Check_return_ HRESULT InitFromStream(_In_ wsts::IRandomAccessStream* stream, _In_ wf::Size size);
 
         // IClosable
-        IFACEMETHOD(Close()) override;
+        _Check_return_ IFACEMETHOD(Close()) override;
 
         // ICompositionSurfaceFacade
-        IFACEMETHOD(GetRealSurface(_Outptr_ WUComp::ICompositionSurface** value)) override;
+        _Check_return_ IFACEMETHOD(GetRealSurface(_Outptr_ WUComp::ICompositionSurface** value)) override;
 
     protected:
         BEGIN_INTERFACE_MAP(LoadedImageSurface, LoadedImageSurfaceGenerated)

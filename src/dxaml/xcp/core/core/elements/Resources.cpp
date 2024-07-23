@@ -995,7 +995,7 @@ CResourceDictionary::Add(
         // This copy is to avoid modifying the incoming CValue struct
         // which will be needed later for future cleanup
         CDependencyObject *pObj = pValue->AsObject();
-        CDOCollection::Remove(pObj);
+        (void)(CDOCollection::Remove(pObj));
         ReleaseInterface(pObj);
         IFC_RETURN(xr);
     }
@@ -1013,7 +1013,7 @@ CResourceDictionary::Add(
 //------------------------------------------------------------------------
 
 _Check_return_ HRESULT
-CResourceDictionary::Append(_In_ CDependencyObject *pObject, _Out_ XUINT32 *pnIndex)
+CResourceDictionary::Append(_In_ CDependencyObject *pObject, _Out_opt_ XUINT32 *pnIndex)
 {
     IFCEXPECTRC_RETURN(m_bHasKey, E_FAIL);
 

@@ -37,7 +37,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-HRESULT XBFXamlMetadataProviderWrapper::QueryInterfaceImpl(_In_ REFIID riid, _Out_ void** ppObject)
+HRESULT XBFXamlMetadataProviderWrapper::QueryInterfaceImpl(_In_ REFIID riid, _Outptr_ void** ppObject)
 {
     if (InlineIsEqualGUID(riid, __uuidof(xaml_markup::IXamlMetadataProvider)))
     {
@@ -123,7 +123,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-HRESULT XBFXamlTypeWrapper::QueryInterfaceImpl(_In_ REFIID riid, _Out_ void** ppObject)
+HRESULT XBFXamlTypeWrapper::QueryInterfaceImpl(_In_ REFIID riid, _Outptr_ void** ppObject)
 {
     if (InlineIsEqualGUID(riid, __uuidof(xaml_markup::IXamlType)))
     {
@@ -360,7 +360,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-HRESULT XBFXamlMemberWrapper::QueryInterfaceImpl(_In_ REFIID riid, _Out_ void** ppObject)
+HRESULT XBFXamlMemberWrapper::QueryInterfaceImpl(_In_ REFIID riid, _Outptr_ void** ppObject)
 {
     if (InlineIsEqualGUID(riid, __uuidof(xaml_markup::IXamlMember)))
     {

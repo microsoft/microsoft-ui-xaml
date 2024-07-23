@@ -607,9 +607,9 @@ HRESULT ModernResourceProvider::TryGetResourceCandidate(
             MsResourceUriSchema.GetCount() + strResourceMapName.GetCount() + MrtSeparator.GetCount() + FilesMapName.GetCount() + strResourceName.GetCount()));
         if (!strResourceMapName.IsNullOrEmpty())
         {
-            mrtResourceNameBuilder.Append(MsResourceUriSchema);
-            mrtResourceNameBuilder.Append(strResourceMapName);
-            mrtResourceNameBuilder.Append(MrtSeparator);
+            IFC_RETURN(mrtResourceNameBuilder.Append(MsResourceUriSchema));
+            IFC_RETURN(mrtResourceNameBuilder.Append(strResourceMapName));
+            IFC_RETURN(mrtResourceNameBuilder.Append(MrtSeparator));
         }
         IFC_RETURN(mrtResourceNameBuilder.Append(FilesMapName));
         IFC_RETURN(mrtResourceNameBuilder.Append(strResourceName));

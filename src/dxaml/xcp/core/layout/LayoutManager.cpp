@@ -21,7 +21,7 @@ CLayoutManager::SizeChangedQueueItem::SizeChangedQueueItem(_In_ CUIElement* pEle
 {
     // Keep a ref on the element, and protect it from GC while it's on the queue
     m_pElement->AddRef();
-    m_pElement->PegManagedPeer();
+    IFCFAILFAST(m_pElement->PegManagedPeer());
 }
 
 CLayoutManager::SizeChangedQueueItem::~SizeChangedQueueItem()

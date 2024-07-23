@@ -230,7 +230,7 @@ DECLARE_INTERFACE_IID_(IXamlTestHooks, IXamlLoggerTestHooks, "43d4bcbd-4f02-4651
 
     IFACEMETHOD_(void, SetIsHolographic)(_In_ bool value) = 0;
 
-    IFACEMETHOD(SimulateInputPaneOccludedRect)(xaml::IXamlRoot* xamlRoot, _In_ wf::Rect occludedRect) = 0;
+    IFACEMETHOD(SimulateInputPaneOccludedRect)(_In_ xaml::IXamlRoot* xamlRoot, _In_ wf::Rect occludedRect) = 0;
 
     IFACEMETHOD_(void, SetMockUIAClientsListening)() = 0;
     IFACEMETHOD_(void, ClearMockUIAClientsListening)() = 0;

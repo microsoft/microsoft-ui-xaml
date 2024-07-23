@@ -121,7 +121,7 @@ namespace ctl
             }
         }
 
-        IFACEMETHODIMP GetIids(_Out_ ULONG *iidCount, _Outptr_ IID **iids) final
+        IFACEMETHODIMP GetIids(_Out_ ULONG *iidCount, _Outptr_result_buffer_all_maybenull_(*iidCount) IID **iids) final
         {
             if (m_pControllingUnknown)
             {

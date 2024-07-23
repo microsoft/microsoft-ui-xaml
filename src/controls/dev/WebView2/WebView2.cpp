@@ -563,15 +563,20 @@ void WebView2::RegisterCoreEventHandlers()
                 if (moveFocusRequestedReason == winrt::CoreWebView2MoveFocusReason::Next ||
                     moveFocusRequestedReason == winrt::CoreWebView2MoveFocusReason::Previous)
                 {
-                    winrt::FocusNavigationDirection xamlDirection{ moveFocusRequestedReason == winrt::CoreWebView2MoveFocusReason::Next ?
-                                                                    winrt::FocusNavigationDirection::Next : winrt::FocusNavigationDirection::Previous };
-                    winrt::FindNextElementOptions findNextElementOptions;
                     winrt::XamlRoot xamlRoot = strongThis->XamlRoot();
                     if (xamlRoot)
                     {
+                        winrt::FocusNavigationDirection xamlDirection = moveFocusRequestedReason == winrt::CoreWebView2MoveFocusReason::Next
+                            ? winrt::FocusNavigationDirection::Next 
+                            : winrt::FocusNavigationDirection::Previous;
+                        
+                        winrt::FindNextElementOptions findNextElementOptions;
                         findNextElementOptions.SearchRoot(xamlRoot.Content());
+
                         winrt::DependencyObject nextElement = winrt::FocusManager::FindNextElement(xamlDirection, findNextElementOptions);
-                        if (nextElement)
+                        winrt::DependencyObject focusedElement = winrt::FocusManager::GetFocusedElement(xamlRoot).try_as<winrt::DependencyObject>();
+
+                        if (nextElement && nextElement != focusedElement)
                         {
                             // TODO_WebView2: We should check TryMoveFocusAsync() result before returning since FindNextElement()
                             //                only finds the next focusable element, but does not guarantee that we can
@@ -589,19 +594,28 @@ void WebView2::RegisterCoreEventHandlers()
 
                             // If core webview is also losing focus via something other than TAB (web LostFocus event fired)
                             // and the TAB handling is arriving later (eg due to longer MOJO delay), skip manually moving Xaml Focus to next element.
-                            auto focusedElement = winrt::FocusManager::GetFocusedElement(xamlRoot).try_as<winrt::UIElement>();
-                            auto thisElement = strongThis->try_as<winrt::UIElement>();
+                            winrt::DependencyObject thisElement = strongThis->try_as<winrt::DependencyObject>();
                             if (thisElement == focusedElement)
                             {
+                                // Move focus to the next XAML element
                                 const auto _ = winrt::FocusManager::TryMoveFocusAsync(xamlDirection, findNextElementOptions);
                             }
-
-                            args.Handled(TRUE);
+                        }
+                        else
+                        {
+                            // Handle the case where there is no "next" focusable XAML element (WebView2 is first/last/only element), 
+                            // which we are in if FindNextElement() returns either null or the (already focused) WebView2. The appropriate 
+                            // behavior here is to cycle focus inside the webview, "wrapping around" to the other end (regardless of
+                            //  WebView2.KeyboardNavigationMode).To achieve this, manually Call MoveFocus() in the specified direction.
+                            strongThis->MoveFocusIntoCoreWebView2(moveFocusRequestedReason);
                         }
                     }
-
-                    // If nextElement is null, focus is maintained in Anaheim by not marking Handled.
                 }
+
+                // Always mark the args handled to prevent CoreWebView2Controller's "default behavior" which breaks XAML focus expectations (by explicitly changing  HWND focus)
+                // More info: https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/winrt/microsoft_web_webview2_core/corewebview2movefocusrequestedeventargs?view=webview2-winrt-1.0.2535.41#handled
+                args.Handled(TRUE);
+
             }
         } });
 
@@ -1248,15 +1262,23 @@ void WebView2::FireCoreWebView2Initialized(winrt::hresult exception)
     m_coreWebView2InitializedEventSource(*this, *eventArgs);
 }
 
-void WebView2::HandleGotFocus(const winrt::Windows::Foundation::IInspectable&, const winrt::RoutedEventArgs&) noexcept
+void WebView2::MoveFocusIntoCoreWebView2(winrt::CoreWebView2MoveFocusReason reason)
 {
-    if (m_coreWebView && m_xamlFocusChangeInfo.m_isPending)
+    if (m_coreWebView && m_coreWebViewController)
     {
         CoreWebView2RunIgnoreInvalidStateSync(
             [&]()
             {
-                m_coreWebViewController.MoveFocus(m_xamlFocusChangeInfo.m_storedMoveFocusReason);
+                m_coreWebViewController.MoveFocus(reason);
             });
+    }
+}
+
+void WebView2::HandleGotFocus(const winrt::Windows::Foundation::IInspectable&, const winrt::RoutedEventArgs&) noexcept
+{
+    if (m_coreWebView && m_xamlFocusChangeInfo.m_isPending)
+    {
+        MoveFocusIntoCoreWebView2(m_xamlFocusChangeInfo.m_storedMoveFocusReason);
         m_xamlFocusChangeInfo.m_isPending = false;
     }
 }

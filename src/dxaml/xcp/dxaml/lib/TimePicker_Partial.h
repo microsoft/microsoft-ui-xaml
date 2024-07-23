@@ -44,7 +44,7 @@ namespace DirectUI
             
             _Check_return_ HRESULT OnLoaded(_In_ IInspectable* sender, _In_ xaml::IRoutedEventArgs* args);
 
-            IFACEMETHOD(OnKeyDown)(_In_ xaml_input::IKeyRoutedEventArgs* pArgs) override;
+            _Check_return_ IFACEMETHOD(OnKeyDown)(_In_ xaml_input::IKeyRoutedEventArgs* pArgs) override;
 
         private:
 

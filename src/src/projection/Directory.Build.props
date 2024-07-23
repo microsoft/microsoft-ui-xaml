@@ -13,13 +13,28 @@
          so disabling them here until they are disabled automatically by CsWinRT. -->
     <CsWinRTIIDOptimizerOptOut>true</CsWinRTIIDOptimizerOptOut>
     <CsWinRTCcwLookupTableGeneratorEnabled>false</CsWinRTCcwLookupTableGeneratorEnabled>
+
+    <!-- Causes loading of winrt dependencies from CoreWebView2 SDK package - required for any usage from WinUI3/WinAppSDK.
+         Note end-user WASDK apps get this implicitly via $(MicrosoftWindowsAppSDKPackageDir).
+
+         In particular, Microsoft.Web.WebView2.Core.winmd is needed by cswinrt's CsWinRTGenerateProjection target 
+         (passed to cswinrt.exe -input and used as reference. -->
+    <WebView2UseWinRT>true</WebView2UseWinRT>
+
+    <!-- Causes loading of cswinrt projection (Microsoft.Web.WebView2.Core.Projection.dll) from CWV2 SDK package,
+         needed by cswinrt's CoreCompile target. -->
+    <WebView2EnableCsWinRTProjection>true</WebView2EnableCsWinRTProjection>
+
+    <!-- Workaround for CWV2 SDK package bug referencing the winrt implementation binary (Microsoft.Web.WebView2.Core.dll)
+         when TargetPlatform=AnyCPU (as in this project). We don't need it for the cswinrt projection, set flag to  avoid loading it. --> 
+    <WebView2EnableCsWinRTProjectionExcludeCoreRef>true</WebView2EnableCsWinRTProjectionExcludeCoreRef>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT"/>
     <PackageReference Include="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage"/>
     <PackageReference Include="Microsoft.Internal.WinUIDetails" ExcludeAssets="All" />
-    <PackageReference Include="Microsoft.Web.WebView2" ExcludeAssets="All"/>
+    <PackageReference Include="Microsoft.Web.WebView2"/>
   </ItemGroup>
 
   <!--
@@ -39,7 +54,6 @@
       Microsoft.UI.Private;
       Microsoft.UI.Text;
       Microsoft.UI.Xaml;
-      Microsoft.Web.WebView2;
       Windows.UI.Xaml.Interop;
       Windows.UI.Text;
     </WinUI_CSWinRTIncludes>

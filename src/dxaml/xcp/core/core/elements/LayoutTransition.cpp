@@ -784,7 +784,7 @@ HRESULT CTransition::OnLayoutChanged(_In_ CUIElement* pTarget)
             // the new location of the UIElement
             if (CTransition::HasActiveTransition(pTarget))
             {
-                pStorage->UpdateBrushes(pStorage->m_arrangeOutput);
+                IFC(pStorage->UpdateBrushes(pStorage->m_arrangeOutput));
             }
             else
             {
@@ -1533,7 +1533,7 @@ _Check_return_ CTransitionCollection* GetInheritedChildTransition(_In_ CUIElemen
 //------------------------------------------------------------------------
 //  Synopsis: Gets the transition that should be used.
 //------------------------------------------------------------------------
-_Check_return_ HRESULT CTransition::AppendAllTransitionsNoAddRefs(_In_ CUIElement* pTarget, _In_ TransitionTrigger trigger, _Out_ xvector<CTransition*>& applicableTransitions)
+_Check_return_ HRESULT CTransition::AppendAllTransitionsNoAddRefs(_In_ CUIElement* pTarget, _In_ TransitionTrigger trigger, _Inout_ xvector<CTransition*>& applicableTransitions)
 {
     CTransitionCollection* pInheritedCollection = NULL;
     if (!pTarget)

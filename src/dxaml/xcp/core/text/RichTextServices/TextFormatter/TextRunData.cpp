@@ -72,7 +72,7 @@ TextRunData::TextRunData(
 TextRunData::TextRunData(
     _In_opt_ TextRunData *pPreviousRunData,
     _In_ TextRun *pTextRun,
-    _In_opt_ IFssFontFace *pFontFace,
+    _In_ IFssFontFace *pFontFace,
     _In_ XFLOAT fontScale,
     _In_ const FssScriptAnalysis &scriptAnalysis,
     _In_ XUINT8 bidiLevel,

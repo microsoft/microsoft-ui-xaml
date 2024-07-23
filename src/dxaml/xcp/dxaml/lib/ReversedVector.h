@@ -33,9 +33,9 @@ public:
 
     // Implement IVector
 
-    IFACEMETHOD(GetAt)(_In_ unsigned int index, _Out_ IInspectable** item) final;
-    IFACEMETHOD(get_Size)(_Out_ unsigned int *size) final;
-    IFACEMETHOD(IndexOf)(_In_ IInspectable* value, _Out_ unsigned int *index, _Out_ boolean *found) final;
+    _Check_return_ IFACEMETHOD(GetAt)(_In_ unsigned int index, _Out_ IInspectable** item) final;
+    _Check_return_ IFACEMETHOD(get_Size)(_Out_ unsigned int *size) final;
+    _Check_return_ IFACEMETHOD(IndexOf)(_In_ IInspectable* value, _Out_ unsigned int *index, _Out_ boolean *found) final;
 
     // The rest of IVector is unimplemented.  We don't expect apps to deal with this type directly, it's intended to
     // be used only by ItemCollection.  If needed, many of these could be implemented trivially, but the IVectorView
@@ -72,8 +72,8 @@ public:
 
     // IObservableVector
 
-    IFACEMETHOD(add_VectorChanged)(_In_ wfc::VectorChangedEventHandler<IInspectable*>* handler, _Out_ EventRegistrationToken* token) final;
-    IFACEMETHOD(remove_VectorChanged)(_In_ EventRegistrationToken token) final;
+    _Check_return_ IFACEMETHOD(add_VectorChanged)(_In_ wfc::VectorChangedEventHandler<IInspectable*>* handler, _Out_ EventRegistrationToken* token) final;
+    _Check_return_ IFACEMETHOD(remove_VectorChanged)(_In_ EventRegistrationToken token) final;
 
 private:
 

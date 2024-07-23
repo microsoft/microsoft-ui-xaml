@@ -33,13 +33,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" PrivateAssets="All" />
-
     <ProjectReference Include="..\..\MergedWinMD\MergedWinMD.vcxproj" />
   </ItemGroup>
 
   <ItemGroup>
     <CsWinRTInputs Include="$(PkgMicrosoft_Internal_WinUIDetails)\lib\uap10.0\Microsoft.UI.Text.winmd" />
-    <CsWinRTInputs Include="$(PkgMicrosoft_Web_WebView2)\lib\Microsoft.Web.WebView2.Core.winmd" />
     <CsWinRTInputs Include="$(LiftedMRTLibPath)\uap10.0\Microsoft.Windows.ApplicationModel.Resources.winmd" />
   </ItemGroup>
 

@@ -5,8 +5,10 @@
     <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextControlSelectionHighlightColor}" />
     <Setter Property="SelectionFlyout" Value="{StaticResource TextControlCommandBarSelectionFlyout}" />
     <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+    <Setter Property="Background" Value="{ThemeResource TextControlBackground}" />
     <Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderThemeThickness}" />
     <Setter Property="BorderBrush" Value="{ThemeResource TextControlBorderBrush}" />
+    <Setter Property="Foreground" Value="{ThemeResource TextControlForeground}" />
     <Setter Property="Padding" Value="{ThemeResource TextControlThemePadding}" />
     <Setter Property="Template">
       <Setter.Value>

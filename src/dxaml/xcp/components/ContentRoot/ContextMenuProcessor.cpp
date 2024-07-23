@@ -79,7 +79,7 @@ _Check_return_ HRESULT ContextMenuProcessor::ProcessContextRequestOnHoldingGestu
 {
     // check if element is draggable/pannable
     bool isDraggableOrPannable = false;
-    FxCallbacks::UIElement_IsDraggableOrPannable(static_cast<CUIElement*>(pElement), &isDraggableOrPannable);
+    IFC_RETURN(FxCallbacks::UIElement_IsDraggableOrPannable(static_cast<CUIElement*>(pElement), &isDraggableOrPannable));
 
     if (isDraggableOrPannable)
     {

@@ -90,7 +90,7 @@ namespace DirectUI
         ctl::ComPtr<ixp::IInputNonClientPointerSource> m_inputNonClientPtrSrc;
 
         // Called when the Content property changes.
-        IFACEMETHOD(OnContentChanged)(_In_ IInspectable* pOldContent, _In_ IInspectable* pNewContent) override;
+        _Check_return_ IFACEMETHOD(OnContentChanged)(_In_ IInspectable* pOldContent, _In_ IInspectable* pNewContent) override;
 
     };
 }

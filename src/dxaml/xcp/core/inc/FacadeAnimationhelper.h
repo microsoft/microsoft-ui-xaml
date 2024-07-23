@@ -84,7 +84,7 @@ public:
         auto callback = WRLHelper::MakeAgileCallback<wf::ITypedEventHandler<IInspectable*, WUComp::CompositionBatchCompletedEventArgs*>>(
             [elementWeak](IInspectable* sender, WUComp::ICompositionBatchCompletedEventArgs* pEventArgs) -> HRESULT
         {
-            return FacadeAnimationHelper::OnScopedBatchCompleted(elementWeak.lock_noref(), sender, pEventArgs);
+            return FacadeAnimationHelper::OnScopedBatchCompleted(elementWeak.lock().get(), sender, pEventArgs);
         });
         return callback;
     }

@@ -21,7 +21,7 @@ namespace DirectUI
         PointerPointTransform();
         ~PointerPointTransform() override;
 
-        HRESULT QueryInterfaceImpl(_In_ REFIID riid, _Outptr_ void** ppObject) override;
+        _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID riid, _Outptr_ void** ppObject) override;
 
         // IPointerPointTransform Methods
         IFACEMETHOD(get_Inverse)(

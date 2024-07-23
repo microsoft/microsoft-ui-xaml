@@ -342,26 +342,26 @@ private:
         uint32_t newPosition);
 
     _Check_return_ HRESULT ExtendSelectionRange(
-        TouchTextSelection::SnappingMode snappingMode,
-        TouchTextSelection::GripperSide gripperSide,
-        uint32_t newPosition,
+        _In_ TouchTextSelection::SnappingMode snappingMode,
+        _In_ TouchTextSelection::GripperSide gripperSide,
+        _In_ uint32_t newPosition,
         _In_ const TouchTextSelection::SelectionRange<uint32_t>& currentRange,
         _Out_ TouchTextSelection::SelectionRange<uint32_t>* newRange);
 
-    _Check_return_ HRESULT GetStartOfWordInPosition(uint32_t position, _Out_ uint32_t* wordStart) const;
+    _Check_return_ HRESULT GetStartOfWordInPosition(_In_ uint32_t position, _Out_ uint32_t* wordStart) const;
 
-    _Check_return_ HRESULT GetEndOfWordInPosition(uint32_t position, _Out_ uint32_t* wordEnd) const;
+    _Check_return_ HRESULT GetEndOfWordInPosition(_In_ uint32_t position, _Out_ uint32_t* wordEnd) const;
 
     _Check_return_ HRESULT GetBoundaryOfWordInPosition(
-        uint32_t position,
-        FindBoundaryType findType,
+        _In_ uint32_t position,
+        _In_ FindBoundaryType findType,
         _Out_ uint32_t* boundary) const;
 
-    bool ArePositionsInSameWord(uint32_t first, uint32_t second);
+    bool ArePositionsInSameWord(_In_ uint32_t first, _In_ uint32_t second);
 
     bool ArePositionsInSameWordBoundary(
-        uint32_t first,
-        uint32_t second,
+        _In_ uint32_t first,
+        _In_ uint32_t second,
         _In_ HRESULT (TextSelectionManager::*GetBoundaryOfWordInPosition)(uint32_t, _Out_ uint32_t*) const) const;
 
     _Check_return_ HRESULT ClearSelection(_In_ const CTextPosition& caretPosition);

@@ -132,12 +132,12 @@ extern EncodedPtr<IPlatformServices> gps;
 #if DBG
 _Check_return_
     HRESULT
-    ObtainPlatformServices(_Out_ IPlatformServices **ppInterface, XUINT8 testMode = FALSE);
+    ObtainPlatformServices(_Outptr_ IPlatformServices **ppInterface, XUINT8 testMode = FALSE);
 
 #else
 _Check_return_
     HRESULT
-    ObtainPlatformServices(_Out_ IPlatformServices **ppInterface);
+    ObtainPlatformServices(_Outptr_ IPlatformServices **ppInterface);
 
 #endif // #if DBG
 typedef _Check_return_ HRESULT (*ObtainPlatformServicesFunc)(IPlatformServices **ppInterface);

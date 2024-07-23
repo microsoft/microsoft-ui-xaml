@@ -108,7 +108,7 @@ CDOCollection::PropagateOwnerInfo(_In_opt_ CDependencyObject* pOwner, _In_opt_ C
 //------------------------------------------------------------------------
 _Check_return_
 HRESULT
-CDOCollection::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+CDOCollection::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     HRESULT hr;
     bool fUnlock = false;
@@ -160,7 +160,7 @@ Cleanup:
 
 _Check_return_
 HRESULT
-CDOCollection::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+CDOCollection::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     HRESULT hr;
     bool fUnlock = false;

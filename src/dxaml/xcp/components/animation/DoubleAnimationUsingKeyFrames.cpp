@@ -12,7 +12,7 @@
 #include <FloatUtil.h>
 #include <TimeMgr.h>
 
-CompositionAnimationConversionResult CDoubleAnimationUsingKeyFrames::MakeCompositionKeyFrameAnimationVirtual(_Inout_ CompositionAnimationConversionContext* myContext)
+_Check_return_ CompositionAnimationConversionResult CDoubleAnimationUsingKeyFrames::MakeCompositionKeyFrameAnimationVirtual(_Inout_ CompositionAnimationConversionContext* myContext)
 {
     wrl::ComPtr<WUComp::IScalarKeyFrameAnimation> scalarAnimation = myContext->CreateEmptyScalarAnimation();
     scalarAnimation.As(&m_spWUCAnimation);

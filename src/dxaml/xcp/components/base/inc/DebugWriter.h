@@ -14,7 +14,7 @@ namespace DebugWriter
 }
 
 // This method overrides the error to log output functionality in WIL with our own.
-void __stdcall WILResultMessageCallback(_In_ wil::FailureInfo* pFailure, _Out_writes_(cchDest) _Always_(_Post_z_) PWSTR pszDest, _Pre_satisfies_(cchDest > 0) _In_ size_t cchDest) noexcept;
+void __stdcall WILResultMessageCallback(_Inout_ wil::FailureInfo* pFailure, _Inout_updates_opt_z_(cchDest) PWSTR pszDest, _Pre_satisfies_(cchDest > 0) size_t cchDest) noexcept;
 
 // Formats a debug message in a standard way and outputs it
 // to the debug console.

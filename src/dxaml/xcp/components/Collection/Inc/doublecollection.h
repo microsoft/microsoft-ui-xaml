@@ -31,7 +31,7 @@ public:
     KnownTypeIndex GetTypeIndex() const override;
 
     _Check_return_ HRESULT Append(CValue& value, _Out_opt_ UINT32 *pnIndex = NULL) override;
-    _Check_return_ HRESULT Insert(_In_ UINT32 nIndex, CValue& value) override;
+    _Check_return_ HRESULT Insert(_In_ UINT32 nIndex, _In_ CValue& value) override;
     _Check_return_ void *RemoveAt(_In_ UINT32 nIndex) override;
     _Check_return_ void *GetItemWithAddRef(_In_ UINT32 nIndex) override;
     _Check_return_ HRESULT IndexOf(CValue& value, _Out_ INT32 *pIndex) override;

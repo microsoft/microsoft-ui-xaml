@@ -44,7 +44,7 @@ namespace DirectUI
         // ITreeBuuilder interface
         IFACEMETHOD(get_IsRegisteredForCallbacks)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(put_IsRegisteredForCallbacks)(_In_ BOOLEAN value) override;
-        IFACEMETHOD(IsBuildTreeSuspended)(_Out_ BOOLEAN* pReturnValue) override;
+        _Check_return_ IFACEMETHOD(IsBuildTreeSuspended)(_Out_ BOOLEAN* pReturnValue) override;
         IFACEMETHOD(BuildTree)(_Out_ BOOLEAN* pWorkLeft) override;
         IFACEMETHOD(ShutDownDeferredWork)() override;
         // End ITreeBuuilder interface

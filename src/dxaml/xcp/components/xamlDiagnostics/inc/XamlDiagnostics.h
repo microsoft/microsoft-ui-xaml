@@ -70,7 +70,7 @@ public:
         _In_ VisualMutationType type);
 
     HRESULT OnCoreDeinitialized(
-        _In_ DWORD coreThreadId);
+        DWORD coreThreadId);
 
     void SignalRootMutation(
         _In_opt_ IInspectable* root,

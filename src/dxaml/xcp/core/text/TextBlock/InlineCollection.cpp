@@ -144,7 +144,7 @@ _Check_return_ HRESULT CInlineCollection::Insert(
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CInlineCollection::Append(
     _In_ CDependencyObject *pObject,
-    _Out_ XUINT32 *pnIndex
+    _Out_opt_ XUINT32 *pnIndex
 )
 {
     CString* pstrText = do_pointer_cast<CString>(pObject);

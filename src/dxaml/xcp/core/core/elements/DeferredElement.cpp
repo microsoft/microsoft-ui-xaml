@@ -270,12 +270,12 @@ _Check_return_ HRESULT CDeferredElement::InsertRealizedElement(
     {
         // Special-case properties which need to be added via framework (e.g. into collection raising events)
 
-        FxCallbacks::DependencyObject_NotifyDeferredElementStateChanged(
+        IFC_RETURN(FxCallbacks::DependencyObject_NotifyDeferredElementStateChanged(
             parent,
             propertyIndex,
             DeferredElementStateChange::Realized,
             m_owningStorage->CalculateRealizedElementInsertionIndex(this),
-            realizedElement);
+            realizedElement));
     }
     else if (NeedsToModifyViaChildrenCollection(parent, propertyIndex))
     {
@@ -335,12 +335,12 @@ _Check_return_ HRESULT CDeferredElement::RemoveRealizedElement(
     {
         // Special-case properties which need to be removed via framework (e.g. into collection raising events)
 
-        FxCallbacks::DependencyObject_NotifyDeferredElementStateChanged(
+        IFC_RETURN(FxCallbacks::DependencyObject_NotifyDeferredElementStateChanged(
             parent,
             propertyIndex,
             DeferredElementStateChange::Deferred,
             0,  // Don't care about collection index when removing.
-            realizedElement);
+            realizedElement));
     }
     else if (NeedsToModifyViaChildrenCollection(parent, propertyIndex))
     {
@@ -390,7 +390,7 @@ _Check_return_ HRESULT CDeferredElement::RemoveRealizedElement(
         {
             if (collection->ContainsNoRefItems())
             {
-                collection->RemoveAt(index);
+                (void)(collection->RemoveAt(index));
             }
             else
             {

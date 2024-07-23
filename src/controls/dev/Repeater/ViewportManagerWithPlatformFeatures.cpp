@@ -61,7 +61,7 @@ winrt::UIElement ViewportManagerWithPlatformFeatures::SuggestedAnchor() const
         {
             ITEMSREPEATER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_STR, METH_NAME, this, GetLayoutId().data(), L"SuggestedAnchor returns null.");
         }
-#endif
+#endif // DBG
     }
 #ifdef DBG
     else
@@ -69,7 +69,7 @@ winrt::UIElement ViewportManagerWithPlatformFeatures::SuggestedAnchor() const
         // Since we have an anchor element, we do not want the scroll anchor provider to start anchoring some other element.
         ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_STR_STR_PTR, METH_NAME, this, GetLayoutId().data(), L"SuggestedAnchor returns non-null m_makeAnchorElement.", m_makeAnchorElement);
     }
-#endif
+#endif // DBG
     return suggestedAnchor;
 }
 
@@ -201,6 +201,13 @@ void ViewportManagerWithPlatformFeatures::SetUnshiftableShift(float unshiftableS
 
 void ViewportManagerWithPlatformFeatures::SetLayoutExtent(const winrt::Rect& layoutExtent)
 {
+#ifdef DBG
+    ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_STR_STR_FLT_FLT, METH_NAME, this,
+        GetLayoutId().data(), L"layoutExtent:", layoutExtent.X, layoutExtent.Y);
+
+    TraceFieldsDbg();
+#endif // DBG
+
     SetExpectedViewportShift(m_expectedViewportShift.X + m_layoutExtent.X - layoutExtent.X, m_expectedViewportShift.Y + m_layoutExtent.Y - layoutExtent.Y);
 
     // We tolerate viewport imprecisions up to 1 pixel to avoid invaliding layout too much.
@@ -510,7 +517,7 @@ void ViewportManagerWithPlatformFeatures::OnMakeAnchor(const winrt::UIElement& a
     }
     else
     {
-        ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_STR_STR_PTR, METH_NAME, this, GetLayoutId().data(), L"%Sets m_makeAnchorElement.", anchor);
+        ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_STR_STR_PTR, METH_NAME, this, GetLayoutId().data(), L"Sets m_makeAnchorElement.", anchor);
     }
 #endif // DBG
 
@@ -583,7 +590,22 @@ void ViewportManagerWithPlatformFeatures::OnCompositionTargetRendering(const win
     m_renderingToken.revoke();
 
     m_isBringIntoViewInProgress = false;
-    m_makeAnchorElement.set(nullptr);
+
+    if (m_makeAnchorElement)
+    {
+        m_makeAnchorElement.set(nullptr);
+
+        if (m_isAnchorOutsideRealizedRange)
+        {
+            m_isAnchorOutsideRealizedRange = false;
+
+            // During the bring-into-view operation, the layout anchor was positioned at the top/left
+            // of the viewport (see ViewportManagerWithPlatformFeatures::GetLayoutVisibleWindow()).
+            // Now it may move within the viewport and require different items to be generated given
+            // its final position. Thus a new measure pass is requested.
+            TryInvalidateMeasure();
+        }
+    }
 
     // Now that the item has been brought into view, we can let the anchor provider pick a new anchor.
     for (const auto& child : m_owner->Children())
@@ -611,7 +633,13 @@ void ViewportManagerWithPlatformFeatures::ResetScrollers()
 
 void ViewportManagerWithPlatformFeatures::OnCacheBuildActionCompleted()
 {
-    m_cacheBuildActionOutstanding = false;
+    if (m_cacheBuildActionOutstanding)
+    {
+        ITEMSREPEATER_TRACE_VERBOSE_DBG(nullptr, TRACE_MSG_METH_STR_STR, METH_NAME, this, GetLayoutId().data(), L"m_cacheBuildActionOutstanding reset.");
+
+        m_cacheBuildActionOutstanding = false;
+    }
+
     if (!m_managingViewportDisabled)
     {
         m_owner->InvalidateMeasure();
@@ -833,12 +861,17 @@ bool ViewportManagerWithPlatformFeatures::UpdateViewport(winrt::Rect const& effe
 
 void ViewportManagerWithPlatformFeatures::ResetLayoutRealizationWindowCacheBuffer()
 {
+    ITEMSREPEATER_TRACE_INFO_DBG(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, GetLayoutId().data());
+
     ResetCacheBuffer(false /*registerCacheBuildWork*/);
 }
 
 void ViewportManagerWithPlatformFeatures::ResetCacheBuffer(bool registerCacheBuildWork)
 {
 #ifdef DBG
+    ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_STR_STR_INT, METH_NAME, this,
+        GetLayoutId().data(), L"registerCacheBuildWork:", registerCacheBuildWork);
+
     if (m_horizontalCacheBufferPerSide != 0.0)
     {
         ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_STR_STR_DBL, METH_NAME, this,
@@ -924,8 +957,8 @@ void ViewportManagerWithPlatformFeatures::RegisterPreparedAndArrangedElementsAsS
 void ViewportManagerWithPlatformFeatures::RegisterCacheBuildWork()
 {
     MUX_ASSERT(!m_managingViewportDisabled);
-    if (m_owner->Layout() &&
-        !m_cacheBuildActionOutstanding)
+
+    if (!m_cacheBuildActionOutstanding)
     {
         // We capture 'owner' (a strong reference on ItemsRepeater) to make sure ItemsRepeater is still around
         // when the async action completes. By protecting ItemsRepeater, we also ensure that this instance
@@ -938,7 +971,17 @@ void ViewportManagerWithPlatformFeatures::RegisterCacheBuildWork()
             {
                 OnCacheBuildActionCompleted();
             });
+
+        ITEMSREPEATER_TRACE_VERBOSE_DBG(nullptr, TRACE_MSG_METH_STR_STR_INT, METH_NAME, this,
+            GetLayoutId().data(), L"m_cacheBuildActionOutstanding set:", m_cacheBuildActionOutstanding);
     }
+#ifdef DBG
+    else
+    {
+        ITEMSREPEATER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_STR, METH_NAME, this,
+            GetLayoutId().data(), L"m_cacheBuildActionOutstanding already set.");
+    }
+#endif // DBG
 }
 
 void ViewportManagerWithPlatformFeatures::TryInvalidateMeasure()

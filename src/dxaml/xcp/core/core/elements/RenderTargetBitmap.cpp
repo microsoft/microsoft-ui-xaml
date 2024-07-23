@@ -284,7 +284,7 @@ CRenderTargetBitmap::PreCommit(
     {
         // Complete the async operation immediately.  It isn't necessarily an error
         // to render an element with no size.
-        completionEvent->Set();
+        IFC_RETURN(completionEvent->Set());
     }
 
     return S_OK;
@@ -318,7 +318,7 @@ CRenderTargetBitmap::PostDraw()
 
     // Invalidate the image on the next draw.
     m_fSourceNeedsMeasure = TRUE;
-    SetDirty();
+    IFC(SetDirty());
 
 Cleanup:
     // Regardless of any error we might be bubbling out, we must guarantee this RTB transitions back to Idle state

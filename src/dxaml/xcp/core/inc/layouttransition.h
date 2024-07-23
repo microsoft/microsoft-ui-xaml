@@ -127,7 +127,7 @@ public:
     _Check_return_ static HRESULT ValidateTransitionWasSetup(_In_ CUIElement* pTarget);
 
     // applicable from this trigger
-    _Check_return_ static HRESULT AppendAllTransitionsNoAddRefs(_In_ CUIElement* pTarget, _In_ DirectUI::TransitionTrigger trigger, _Out_ xvector<CTransition*>& applicableTransitions);
+    _Check_return_ static HRESULT AppendAllTransitionsNoAddRefs(_In_ CUIElement* pTarget, _In_ DirectUI::TransitionTrigger trigger, _Inout_ xvector<CTransition*>& applicableTransitions);
 
     // ==== information about running animations/transitions
 

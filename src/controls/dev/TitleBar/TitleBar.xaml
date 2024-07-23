@@ -44,20 +44,32 @@
                                 </VisualState>
                             </VisualStateGroup>
                            
-                            <VisualStateGroup x:Name="HeaderVisibilityGroup">
+                            <VisualStateGroup x:Name="HeaderGroup">
                                 <VisualState x:Name="HeaderCollapsed" />
                                 <VisualState x:Name="HeaderVisible">
                                     <VisualState.Setters>
                                         <Setter Target="PART_HeaderContentPresenter.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
+                                <VisualState x:Name="HeaderDeactivated">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_HeaderContentPresenter.Visibility" Value="Visible" />
+                                        <Setter Target="PART_HeaderContentPresenter.Opacity" Value="{ThemeResource TitleBarDeactivatedOpacity}" />
+                                    </VisualState.Setters>
+                                </VisualState>
                             </VisualStateGroup>
                             
-                            <VisualStateGroup x:Name="IconVisibilityGroup">
+                            <VisualStateGroup x:Name="IconGroup">
                                 <VisualState x:Name="IconCollapsed" />
                                 <VisualState x:Name="IconVisible">
                                     <VisualState.Setters>
                                         <Setter Target="PART_Icon.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="IconDeactivated">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_Icon.Visibility" Value="Visible" />
+                                        <Setter Target="PART_Icon.Opacity" Value="{ThemeResource TitleBarDeactivatedOpacity}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -87,25 +99,37 @@
                                 <VisualState x:Name="SubtitleTextDeactivated">
                                     <VisualState.Setters>
                                         <Setter Target="PART_SubtitleText.Visibility" Value="Visible" />
-                                        <Setter Target="PART_SubtitleText.Foreground" Value="{ThemeResource TitleBarDeactivatedForegroundBrush}" />
+                                        <Setter Target="PART_SubtitleText.Foreground" Value="{ThemeResource TitleBarSubtitleDeactivatedForegroundBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                             
-                            <VisualStateGroup x:Name="ContentVisibilityGroup">
+                            <VisualStateGroup x:Name="ContentGroup">
                                 <VisualState x:Name="ContentCollapsed" />
                                 <VisualState x:Name="ContentVisible">
                                     <VisualState.Setters>
                                         <Setter Target="PART_ContentPresenterGrid.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
+                                <VisualState x:Name="ContentDeactivated">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_ContentPresenterGrid.Visibility" Value="Visible" />
+                                        <Setter Target="PART_ContentPresenterGrid.Opacity" Value="{ThemeResource TitleBarDeactivatedOpacity}" />
+                                    </VisualState.Setters>
+                                </VisualState>
                             </VisualStateGroup>
                             
-                            <VisualStateGroup x:Name="FooterVisibilityGroup">
+                            <VisualStateGroup x:Name="FooterGroup">
                                 <VisualState x:Name="FooterCollapsed" />
                                 <VisualState x:Name="FooterVisible">
                                     <VisualState.Setters>
                                         <Setter Target="PART_FooterContentPresenter.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="FooterDeactivated">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_FooterContentPresenter.Visibility" Value="Visible" />
+                                        <Setter Target="PART_FooterContentPresenter.Opacity" Value="{ThemeResource TitleBarDeactivatedOpacity}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -214,7 +238,7 @@
                                 Grid.Column="5"
                                 Text="{TemplateBinding Subtitle}"
                                 Style="{StaticResource CaptionTextBlockStyle}"
-                                Foreground="{ThemeResource SubtitleBarForegroundBrush}"
+                                Foreground="{ThemeResource TitleBarSubtitleForegroundBrush}"
                                 Margin="0,0,16,0"
                                 TextTrimming="CharacterEllipsis"
                                 TextWrapping="NoWrap"

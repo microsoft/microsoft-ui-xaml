@@ -30,7 +30,7 @@ namespace DirectUI
 
             _Check_return_ HRESULT GetItemsOwner(_Outptr_ xaml_controls::IItemsControl** ppItemsOwner);
 
-            _Check_return_ HRESULT OnTreeParentUpdated(_In_opt_ CDependencyObject *pNewParent, _In_opt_ BOOLEAN isParentAlive) override;
+            _Check_return_ HRESULT OnTreeParentUpdated(_In_opt_ CDependencyObject *pNewParent, BOOLEAN isParentAlive) override;
 
             IFACEMETHOD(get_Children)(_Outptr_ wfc::IVector<xaml::UIElement*>** pValue) override;
 

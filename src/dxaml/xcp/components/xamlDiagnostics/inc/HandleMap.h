@@ -34,7 +34,7 @@ public:
     // the map.
 
     static InstanceHandle GetHandle(
-        _In_ IInspectable* pObject);
+        _In_opt_ IInspectable* pObject);
 
     static HRESULT GetHandle(
         _In_ CDependencyObject* obj,
@@ -56,7 +56,7 @@ public:
         _In_ int sourcePosition = -1);
 
     void AddToCreatedMap(
-        InstanceHandle object);
+        _In_ InstanceHandle object);
 
     template <typename Interface>
     HRESULT GetFromHandle(

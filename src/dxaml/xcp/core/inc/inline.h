@@ -99,7 +99,7 @@ public:
         _Out_opt_                   const InheritedProperties **ppInheritedProperties,
         _Out_opt_                         TextNestingType      *pNestingType,
         _Out_opt_                         CTextElement        **ppNestedElement,
-        _Outptr_result_buffer_(*pcCharacters) const WCHAR         **ppCharacters,
+        _Outptr_result_buffer_(*pcCharacters) const WCHAR **ppCharacters,
         _Out_                             XUINT32              *pcCharacters
     ) override;
 
@@ -287,8 +287,8 @@ public:
         _Out_opt_                   const TextFormatting      **ppTextFormatting,
         _Out_opt_                   const InheritedProperties **ppInheritedProperties,
         _Out_opt_                         TextNestingType      *pNestingType,
-        _Outptr_result_maybenull_                   CTextElement        **ppNestedElement,
-        _Outptr_result_buffer_(*pcCharacters) const WCHAR         **ppCharacters,
+        _Out_opt_                         CTextElement        **ppNestedElement,
+        _Outptr_result_buffer_maybenull_(*pcCharacters) const WCHAR **ppCharacters,
         _Out_                             XUINT32              *pcCharacters
     ) override;
 
@@ -351,8 +351,8 @@ public:
         _Out_opt_                   const TextFormatting      **ppTextFormatting,
         _Out_opt_                   const InheritedProperties **ppInheritedProperties,
         _Out_opt_                         TextNestingType      *pNestingType,
-        _Outptr_result_maybenull_                   CTextElement        **ppNestedElement,
-        _Outptr_result_buffer_(*pcCharacters) const WCHAR         **ppCharacters,
+        _Out_opt_                         CTextElement        **ppNestedElement,
+        _Outptr_result_buffer_maybenull_(*pcCharacters) const WCHAR **ppCharacters,
         _Out_                             XUINT32              *pcCharacters
     ) final;
 
@@ -492,8 +492,8 @@ public:
         _Out_opt_                   const TextFormatting      **ppTextFormatting,
         _Out_opt_                   const InheritedProperties **ppInheritedProperties,
         _Out_opt_                         TextNestingType      *pNestingType,
-        _Outptr_result_maybenull_                   CTextElement        **ppNestedElement,
-        _Outptr_result_buffer_(*pcCharacters) const WCHAR         **ppCharacters,
+        _Out_opt_                         CTextElement        **ppNestedElement,
+        _Outptr_result_buffer_maybenull_(*pcCharacters) const WCHAR **ppCharacters,
         _Out_                             XUINT32              *pcCharacters
     ) override;
 };

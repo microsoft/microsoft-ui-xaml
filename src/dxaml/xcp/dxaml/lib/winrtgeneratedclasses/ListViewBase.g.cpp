@@ -1199,7 +1199,7 @@ _Check_return_ HRESULT DirectUI::ListViewBaseGenerated::EventRemoveHandlerByInde
     case KnownEventIndex::ListViewBase_ChoosingGroupHeaderContainer:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ListViewBase*, ABI::Microsoft::UI::Xaml::Controls::ChoosingGroupHeaderContainerEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1216,7 +1216,7 @@ _Check_return_ HRESULT DirectUI::ListViewBaseGenerated::EventRemoveHandlerByInde
     case KnownEventIndex::ListViewBase_ChoosingItemContainer:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ListViewBase*, ABI::Microsoft::UI::Xaml::Controls::ChoosingItemContainerEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1233,7 +1233,7 @@ _Check_return_ HRESULT DirectUI::ListViewBaseGenerated::EventRemoveHandlerByInde
     case KnownEventIndex::ListViewBase_ContainerContentChanging:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ListViewBase*, ABI::Microsoft::UI::Xaml::Controls::ContainerContentChangingEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1250,7 +1250,7 @@ _Check_return_ HRESULT DirectUI::ListViewBaseGenerated::EventRemoveHandlerByInde
     case KnownEventIndex::ListViewBase_DragItemsCompleted:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ListViewBase*, ABI::Microsoft::UI::Xaml::Controls::DragItemsCompletedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1267,7 +1267,7 @@ _Check_return_ HRESULT DirectUI::ListViewBaseGenerated::EventRemoveHandlerByInde
     case KnownEventIndex::ListViewBase_DragItemsStarting:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::IDragItemsStartingEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1284,7 +1284,7 @@ _Check_return_ HRESULT DirectUI::ListViewBaseGenerated::EventRemoveHandlerByInde
     case KnownEventIndex::ListViewBase_ItemClick:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::IItemClickEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

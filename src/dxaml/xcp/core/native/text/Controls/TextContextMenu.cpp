@@ -258,7 +258,7 @@ _Check_return_ HRESULT TextContextMenu::InvokeProofingMenuItem(_In_ CDependencyO
         IFC_RETURN(sender->GetValueByIndex(KnownPropertyIndex::MenuFlyoutItem_Text, &value));
 
         xstring_ptr suggestion;
-        value.GetString(suggestion);
+        IFC_RETURN(value.GetString(suggestion));
 
         // First WPARAM is supposed to be cp, but it is not used.
         IFC_RETURN(textBoxBase->GetTextServices()->TxSendMessage(

@@ -173,6 +173,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::GetAcceleratorKeyC
 {
     HRESULT hr = S_OK;
 
+    *returnValue = nullptr;
     wrl::ComPtr<xaml::Automation::Peers::IAutomationPeer> spAutomationPeer;
     IFC(GetContainerAutomationPeer(&spAutomationPeer));
 
@@ -193,6 +194,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::GetAccessKeyCoreIm
 {
     HRESULT hr = S_OK;
 
+    *returnValue = nullptr;
     wrl::ComPtr<xaml::Automation::Peers::IAutomationPeer> spAutomationPeer;
     IFC(GetContainerAutomationPeer(&spAutomationPeer));
 
@@ -232,7 +234,8 @@ Cleanup:
 _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::GetAutomationIdCoreImpl(_Out_ HSTRING* returnValue)
 {
     HRESULT hr = S_OK;
-
+    
+    *returnValue = nullptr;
     wrl::ComPtr<xaml::Automation::Peers::IAutomationPeer> spAutomationPeer;
     IFC(GetContainerAutomationPeer(&spAutomationPeer));
 
@@ -253,6 +256,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::GetBoundingRectang
 {
     HRESULT hr = S_OK;
 
+    *returnValue = {0, 0, 0, 0};
     wrl::ComPtr<xaml::Automation::Peers::IAutomationPeer> spAutomationPeer;
     IFC(GetContainerAutomationPeer(&spAutomationPeer));
 
@@ -292,7 +296,8 @@ Cleanup:
 _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::GetClassNameCoreImpl(_Out_ HSTRING* returnValue)
 {
     HRESULT hr = S_OK;
-
+    
+    *returnValue = nullptr;
     wrl::ComPtr<xaml::Automation::Peers::IAutomationPeer> spAutomationPeer;
     IFC(GetContainerAutomationPeer(&spAutomationPeer));
 
@@ -333,6 +338,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::GetHelpTextCoreImp
 {
     HRESULT hr = S_OK;
 
+    *returnValue = nullptr;
     wrl::ComPtr<xaml::Automation::Peers::IAutomationPeer> spAutomationPeer;
     IFC(GetContainerAutomationPeer(&spAutomationPeer));
 
@@ -353,6 +359,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::GetItemStatusCoreI
 {
     HRESULT hr = S_OK;
 
+    *returnValue = nullptr;
     wrl::ComPtr<xaml::Automation::Peers::IAutomationPeer> spAutomationPeer;
     IFC(GetContainerAutomationPeer(&spAutomationPeer));
 
@@ -373,6 +380,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::GetItemTypeCoreImp
 {
     HRESULT hr = S_OK;
 
+    *returnValue = nullptr;
     wrl::ComPtr<xaml::Automation::Peers::IAutomationPeer> spAutomationPeer;
     IFC(GetContainerAutomationPeer(&spAutomationPeer));
 
@@ -413,6 +421,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::GetLocalizedContro
 {
     HRESULT hr = S_OK;
 
+    *returnValue = nullptr;
     wrl::ComPtr<xaml::Automation::Peers::IAutomationPeer> spAutomationPeer;
     IFC(GetContainerAutomationPeer(&spAutomationPeer));
 
@@ -517,6 +526,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::IsContentElementCo
 {
     HRESULT hr = S_OK;
 
+    *returnValue = FALSE;    
     wrl::ComPtr<xaml::Automation::Peers::IAutomationPeer> spAutomationPeer;
     IFC(GetContainerAutomationPeer(&spAutomationPeer));
 
@@ -537,6 +547,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::IsControlElementCo
 {
     HRESULT hr = S_OK;
 
+    *returnValue = FALSE;
     wrl::ComPtr<xaml::Automation::Peers::IAutomationPeer> spAutomationPeer;
     IFC(GetContainerAutomationPeer(&spAutomationPeer));
 
@@ -545,7 +556,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::IsControlElementCo
         IFC(spAutomationPeer->IsControlElement(returnValue));
     }
     else
-    {
+    {        
         IFC(ThrowElementNotAvailableException());
     }
 
@@ -557,6 +568,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::IsEnabledCoreImpl(
 {
     HRESULT hr = S_OK;
 
+    *returnValue = FALSE;
     wrl::ComPtr<xaml::Automation::Peers::IAutomationPeer> spAutomationPeer;
     IFC(GetContainerAutomationPeer(&spAutomationPeer));
 
@@ -565,7 +577,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::IsEnabledCoreImpl(
         IFC(spAutomationPeer->IsEnabled(returnValue));
     }
     else
-    {
+    {        
         IFC(ThrowElementNotAvailableException());
     }
 
@@ -577,6 +589,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::IsKeyboardFocusabl
 {
     HRESULT hr = S_OK;
 
+    *returnValue = FALSE;
     wrl::ComPtr<xaml::Automation::Peers::IAutomationPeer> spAutomationPeer;
     IFC(GetContainerAutomationPeer(&spAutomationPeer));
 
@@ -616,7 +629,8 @@ Cleanup:
 _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::IsPasswordCoreImpl(_Out_ BOOLEAN* returnValue)
 {
     HRESULT hr = S_OK;
-
+    
+    *returnValue = FALSE;
     wrl::ComPtr<xaml::Automation::Peers::IAutomationPeer> spAutomationPeer;
     IFC(GetContainerAutomationPeer(&spAutomationPeer));
 
@@ -637,6 +651,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::IsRequiredForFormC
 {
     HRESULT hr = S_OK;
 
+    *returnValue = FALSE;
     wrl::ComPtr<xaml::Automation::Peers::IAutomationPeer> spAutomationPeer;
     IFC(GetContainerAutomationPeer(&spAutomationPeer));
 
@@ -679,7 +694,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::GetAnnotationsCore
         IFC_RETURN(spAutomationPeer->GetAnnotations(returnValue));
     }
     else
-    {
+    {        
         IFC_RETURN(ThrowElementNotAvailableException());
     }
 
@@ -688,6 +703,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::GetAnnotationsCore
 
 _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::GetPositionInSetCoreImpl(_Out_ INT* returnValue)
 {
+    *returnValue = 0;
     wrl::ComPtr<xaml_automation_peers::IAutomationPeer> spAutomationPeer;
     IFC_RETURN(GetContainerAutomationPeer(&spAutomationPeer));
 
@@ -705,6 +721,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::GetPositionInSetCo
 
 _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::GetSizeOfSetCoreImpl(_Out_ INT* returnValue)
 {
+    *returnValue = 0;
     wrl::ComPtr<xaml_automation_peers::IAutomationPeer> spAutomationPeer;
     IFC_RETURN(GetContainerAutomationPeer(&spAutomationPeer));
 
@@ -722,6 +739,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::GetSizeOfSetCoreIm
 
 _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::GetLevelCoreImpl(_Out_ INT* returnValue)
 {
+    *returnValue = 0;
     wrl::ComPtr<xaml_automation_peers::IAutomationPeer> spAutomationPeer;
     IFC_RETURN(GetContainerAutomationPeer(&spAutomationPeer));
 
@@ -741,13 +759,14 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::GetLandmarkTypeCor
 {
     wrl::ComPtr<xaml_automation_peers::IAutomationPeer> spAutomationPeer;
     IFC_RETURN(GetContainerAutomationPeer(&spAutomationPeer));
-
+    
     if (spAutomationPeer)
     {
         IFC_RETURN(spAutomationPeer->GetLandmarkType(returnValue));
     }
     else
     {
+        *returnValue = xaml_automation_peers::AutomationLandmarkType::AutomationLandmarkType_None;
         IFC_RETURN(ThrowElementNotAvailableException());
     }
 
@@ -765,6 +784,7 @@ _Check_return_ HRESULT LoopingSelectorItemDataAutomationPeer::GetLocalizedLandma
     }
     else
     {
+        *returnValue = nullptr;    
         IFC_RETURN(ThrowElementNotAvailableException());
     }
 

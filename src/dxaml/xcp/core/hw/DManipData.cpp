@@ -15,7 +15,7 @@ DManipDataBase::DManipDataBase()
 {
 }
 
-HRESULT DManipDataBase::SetManipulationContent(_In_opt_ IObject* pManipulationContent, XDMContentType contentType)
+_Check_return_ HRESULT DManipDataBase::SetManipulationContent(_In_opt_ IObject* pManipulationContent, XDMContentType contentType)
 {
     if (m_spManipulationContent != pManipulationContent)
     {
@@ -38,7 +38,7 @@ XDMContentType DManipDataBase::GetManipulationContentType() const
     return m_manipulationContentType;
 }
 
-HRESULT DManipDataBase::SetClipContent(_In_opt_ IObject* clipContent)
+_Check_return_ HRESULT DManipDataBase::SetClipContent(_In_opt_ IObject* clipContent)
 {
     if (m_spClipContent != clipContent)
     {
@@ -55,7 +55,7 @@ HRESULT DManipDataBase::SetClipContent(_In_opt_ IObject* clipContent)
 
 // Update the stored DCompV1 primary shared content transforms (which are the mechanism for shairing data with DManip,
 // even for DManipDataWinRT) if they have changed. Also notify ScrollViewer which might need to update the exposed ManipulationTransform PropertySet
-HRESULT DManipDataBase::SetSharedContentTransformsHelper(
+_Check_return_ HRESULT DManipDataBase::SetSharedContentTransformsHelper(
     _In_opt_ IUnknown* sharedPrimaryContentTransform,
     _In_opt_ IUnknown* sharedSecondaryContentTransform,
     _Out_ bool* pPrimaryContentTransformChanged,
@@ -183,7 +183,7 @@ _Check_return_ HRESULT DManipDataWinRT::EnsureOverallContentPropertySet(_In_ WUC
 }
 
 // Call base helper and also update stored DCompv2 representation of primary content transform
-HRESULT DManipDataWinRT::SetSharedContentTransforms(
+_Check_return_ HRESULT DManipDataWinRT::SetSharedContentTransforms(
     _In_opt_ IUnknown* sharedPrimaryContentTransform,
     _In_opt_ IUnknown* sharedSecondaryContentTransform,
     _In_opt_ WUComp::ICompositor* pCompositor)
@@ -252,7 +252,7 @@ _Check_return_ HRESULT DManipDataWinRT::SetSharedClipTransform(
     return S_OK;
 }
 
-HRESULT DManipDataWinRT::SetClipContent(_In_opt_ IObject* clipContent)
+_Check_return_ HRESULT DManipDataWinRT::SetClipContent(_In_opt_ IObject* clipContent)
 {
     if (m_spClipContent != clipContent)
     {

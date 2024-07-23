@@ -347,8 +347,8 @@ _Check_return_ HRESULT VisualStateManager::CustomVSMGoToState(
 // implement a custom VSM or override the FE's GoToElementState method.
 _Check_return_ HRESULT
 VisualStateManagerFactory::GoToStateImpl(
-    _In_ IControl* pControl,
-    _In_ HSTRING hStateName,
+    _In_opt_ IControl* pControl,
+    _In_opt_ HSTRING hStateName,
     _In_ BOOLEAN bUseTransitions,
     _Out_ BOOLEAN* pbReturnValue)
 {

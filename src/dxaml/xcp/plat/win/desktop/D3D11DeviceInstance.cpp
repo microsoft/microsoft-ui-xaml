@@ -1063,7 +1063,7 @@ CD3D11DeviceInstance::ReleaseScratchResources()
             if (pThread != nullptr)
             {
                 // Close will CloseHandle on the thread handle and call delete this
-                pThread->Close();
+                IFC(pThread->Close());
             }
         }
     }

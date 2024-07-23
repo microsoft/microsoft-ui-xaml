@@ -26,7 +26,7 @@ public:
         return DependencyObjectTraits<CTransitionCollection>::Index;
     }
 
-    _Check_return_ HRESULT GetApplicableTransitionsNoAddRefs(_In_ CUIElement* pTarget, _In_ DirectUI::TransitionTrigger trigger, _Out_ xvector<CTransition*>& applicableTransitions)
+    _Check_return_ HRESULT GetApplicableTransitionsNoAddRefs(_In_ CUIElement* pTarget, _In_ DirectUI::TransitionTrigger trigger, _Inout_ xvector<CTransition*>& applicableTransitions)
     {
         for (auto transition : *this)
         {

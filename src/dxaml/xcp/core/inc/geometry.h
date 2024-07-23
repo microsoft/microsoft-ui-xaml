@@ -649,6 +649,7 @@ public:
         _In_ ID2D1Factory* /* factory */,
         _COM_Outptr_result_maybenull_ ID2D1Geometry** value) override
     {
+        *value = nullptr;
         return E_NOTIMPL;
     }
 

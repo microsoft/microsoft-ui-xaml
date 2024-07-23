@@ -33,7 +33,7 @@
 
 using namespace DirectUI;
 
-CDependencyObject::CDependencyObject(_In_ CCoreServices* pCore)
+CDependencyObject::CDependencyObject(_In_opt_ CCoreServices* pCore)
     : m_sharedState(
         Flyweight::Create<CDOSharedState>(
               pCore,

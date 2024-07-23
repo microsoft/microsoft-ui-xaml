@@ -16,7 +16,7 @@
 // TODO: Our allocator can return null. A better SAL annotation for the return
 // value (and the other new operator) is: _Ret_maybenull_ _Post_writable_byte_size_(_Size)
 
-#if DBG && !defined(NO_XCP_NEW_AND_DELETE)
+#if DBG && !defined(NO_XCP_NEW_AND_DELETE) && !defined(_PREFAST_)
 
 #include "XcpAllocationDebug.h"
 
@@ -77,44 +77,43 @@ void __cdecl operator delete[](_Frees_ptr_opt_ void *pAddress) noexcept
 #elif !defined(NO_XCP_NEW_AND_DELETE)
 
 // Fail fast allocators - these are also default allocators
-__declspec(allocator) void * __cdecl operator new(size_t cSize)
+_Ret_notnull_ _Post_writable_byte_size_(cSize) __declspec(allocator) void * __cdecl operator new(size_t cSize)
 {
     return XcpAllocation::OSMemoryAllocateFailFast(cSize);
 }
 
-__bcount(cSize) __declspec(allocator) void * __cdecl operator new[](size_t cSize)
+_Ret_notnull_ _Post_writable_byte_size_(cSize) __declspec(allocator) void * __cdecl operator new[](size_t cSize)
 {
     return XcpAllocation::OSMemoryAllocateFailFast(cSize);
 }
 
 // Zero memory allocators
-__declspec(allocator) void * __cdecl operator new(size_t cSize, ZeroMemAllocationPolicy /*policy*/)
+_Ret_notnull_ _Post_writable_byte_size_(cSize) __declspec(allocator) void * __cdecl operator new(size_t cSize, ZeroMemAllocationPolicy /*policy*/)
 {
     return XcpAllocation::OSMemoryAllocateZeroMemoryFailFast(cSize);
 }
 
-__bcount(cSize) __declspec(allocator) void * __cdecl operator new[](size_t cSize, ZeroMemAllocationPolicy /*policy*/)
+_Ret_notnull_ _Post_writable_byte_size_(cSize) __declspec(allocator) void * __cdecl operator new[](size_t cSize, ZeroMemAllocationPolicy /*policy*/)
 {
     return XcpAllocation::OSMemoryAllocateZeroMemoryFailFast(cSize);
 }
 
 // No fail fast allocators
-__declspec(allocator) void * __cdecl operator new(size_t cSize, NoFailFastAllocationPolicy /*policy*/)
+_Ret_notnull_ _Post_writable_byte_size_(cSize) __declspec(allocator) void * __cdecl operator new(size_t cSize, NoFailFastAllocationPolicy /*policy*/)
 {
     return XcpAllocation::OSMemoryAllocateNoFailFast(cSize);
 }
 
-__bcount(cSize) __declspec(allocator) void * __cdecl operator new[](size_t cSize, NoFailFastAllocationPolicy /*policy*/)
+_Ret_notnull_ _Post_writable_byte_size_(cSize) __declspec(allocator) void * __cdecl operator new[](size_t cSize, NoFailFastAllocationPolicy /*policy*/)
 {
     return XcpAllocation::OSMemoryAllocateNoFailFast(cSize);
 }
 
-#pragma warning(push)
 // Some header files have their own definition of this function and don't 
 // properly annotate it. We disable this warning to avoid inconsistent annotation
 // errors for now.
-#pragma warning(disable:28301)
 
+#pragma warning(suppress: 28301) // warning C28301: No annotations for first declaration
 void __cdecl operator delete(_Frees_ptr_opt_ void *pAddress)
 {
     if (pAddress)
@@ -123,6 +122,7 @@ void __cdecl operator delete(_Frees_ptr_opt_ void *pAddress)
     }
 }
 
+#pragma warning(suppress: 28301) // warning C28301: No annotations for first declaration
 void __cdecl operator delete[](_Frees_ptr_opt_ void *pAddress)
 {
     if (pAddress)
@@ -131,28 +131,25 @@ void __cdecl operator delete[](_Frees_ptr_opt_ void *pAddress)
     }
 }
 
-#pragma warning(pop)
 #endif // #if DBG && !defined(NO_XCP_NEW_AND_DELETE)
 
-#pragma prefast(suppress: __WARNING_UNMATCHED_DECL_FIRST, "Can't put attributes on compiler builtins")
-__bcount(cSize) __declspec(allocator) void * __cdecl operator new(size_t cSize, std::nothrow_t const&) noexcept
+_Ret_maybenull_ _Success_(return != NULL) _Post_writable_byte_size_(cSize) __declspec(allocator) void * __cdecl operator new(size_t cSize, std::nothrow_t const&) noexcept
 {
     return operator new(cSize);
 }
 
-#pragma prefast(suppress: __WARNING_UNMATCHED_DECL_FIRST, "Can't put attributes on compiler builtins")
-__bcount(cSize) __declspec(allocator) void * __cdecl operator new[](size_t cSize, const std::nothrow_t&) noexcept
+_Ret_maybenull_ _Success_(return != NULL) _Post_writable_byte_size_(cSize) __declspec(allocator) void * __cdecl operator new[](size_t cSize, const std::nothrow_t&) noexcept
 {
     return operator new[](cSize);
 }
 
-#pragma prefast(suppress: __WARNING_UNMATCHED_DECL_FIRST, "Can't put attributes on compiler builtins")
+#pragma warning(suppress: 28301) // warning C28301: No annotations for first declaration
 void __cdecl operator delete(_Frees_ptr_opt_ void *pAddress, const std::nothrow_t&) noexcept
 {
     operator delete(pAddress);
 }
 
-#pragma prefast(suppress: __WARNING_UNMATCHED_DECL_FIRST, "Can't put attributes on compiler builtins")
+#pragma warning(suppress: 28301) // warning C28301: No annotations for first declaration
 void __cdecl operator delete[](_Frees_ptr_opt_ void *pAddress, const std::nothrow_t&) noexcept
 {
     operator delete[](pAddress);

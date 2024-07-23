@@ -738,7 +738,7 @@ namespace ctl
 
             _Check_return_ HRESULT CopyTo(
                 _In_ REFIID riid,
-                _Outptr_ IInspectable** ptr) noexcept
+                _Outptr_result_maybenull_ IInspectable** ptr) noexcept
             {
                 ASSERT(riid != __uuidof(IWeakReference));
 

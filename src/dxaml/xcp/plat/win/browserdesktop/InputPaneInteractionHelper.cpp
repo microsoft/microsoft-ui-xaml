@@ -75,7 +75,7 @@ CInputPaneInteractionHelper::RegisterInputPaneHandler(_In_ XHANDLE hWindow, _In_
             // As per http://msdn.microsoft.com/en-us/library/vstudio/9e31say1.aspx,
             // CComObject::CreateInstance doesn't AddRef, so AddRef here.
             pFrameworkInputPaneHandler->AddRef();
-            pFrameworkInputPaneHandler->SetInputPaneHandler(m_pInputPaneHandler);
+            IFC(pFrameworkInputPaneHandler->SetInputPaneHandler(m_pInputPaneHandler));
 
             IFC(spFrameworkInputPane->AdviseInternal(
                 hWindow,
@@ -96,7 +96,7 @@ CInputPaneInteractionHelper::RegisterInputPaneHandler(_In_ XHANDLE hWindow, _In_
             // As per http://msdn.microsoft.com/en-us/library/vstudio/9e31say1.aspx,
             // CComObject::CreateInstance doesn't AddRef, so AddRef here.
             pFrameworkInputPaneHandler->AddRef();
-            pFrameworkInputPaneHandler->SetInputPaneHandler(m_pInputPaneHandler);
+            IFC(pFrameworkInputPaneHandler->SetInputPaneHandler(m_pInputPaneHandler));
             IFC(InputPaneFramework_Advise(m_pInputPane.Get(), static_cast<wuc::ICoreWindow*>(hWindow), frameworkHandlerAsArg, &m_dwCookie));
         }
 

@@ -64,7 +64,7 @@ public:
 
     ~CInputScopeNameCollection() override
     {
-        Destroy();
+        VERIFYHR(Destroy());
     }
 
     // Creation method

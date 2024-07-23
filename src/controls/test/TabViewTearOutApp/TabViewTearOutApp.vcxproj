@@ -161,9 +161,16 @@
     </Page>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <PropertyGroup>
+    <!--Causes loading of winrt dependencies from CoreWebView2 SDK package - required for any usage from WinUI3/WinAppSDK.
+        Note end-user WASDK apps get this implicitly via $(MicrosoftWindowsAppSDKPackageDir). -->
+    <WebView2UseWinRT>true</WebView2UseWinRT>
+  </PropertyGroup>
+
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)\build\native\Microsoft.WindowsAppSDK.targets" Condition="Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)\build\native\Microsoft.WindowsAppSDK.targets')" />
     <Import Project="$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -173,6 +180,7 @@
     <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)\build\native\Microsoft.WindowsAppSDK.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)\build\native\Microsoft.WindowsAppSDK.targets'))" />
     <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.targets'))" />
   </Target>
   <PropertyGroup>
     <ResolveReferencesDependsOn>ReferencePrivateWinUIWinMDs;$(ResolveReferencesDependsOn)</ResolveReferencesDependsOn>
@@ -184,8 +192,8 @@
       <WinMDTempPath>$(TEMP)\TabViewTearOutAppWinMDs\</WinMDTempPath>
     </PropertyGroup>
     <ItemGroup>
-      <Reference Remove="@(Reference)" Condition="$([System.String]::Copy('%(Identity)').StartsWith('$(WinUIPackagePath)'))" />
-      <Reference Remove="@(Reference)" Condition="$([System.String]::Copy('%(HintPath)').StartsWith('$(WinUIPackagePath)'))" />
+      <Reference Remove="@(Reference)" Condition="$([System.String]::Copy('%(ReferencePath.Identity)').StartsWith('$(WinUIPackagePath)'))" />
+      <Reference Remove="@(Reference)" Condition="$([System.String]::Copy('%(ReferencePath.HintPath)').StartsWith('$(WinUIPackagePath)'))" />
       <Reference Include="$(ArtifactsObjDir)MergedWinMD\private\Merged\*.winmd" />
     </ItemGroup>
     <!-- We do, however, need to include these WinMDs that are not included in our merged WinMDs.

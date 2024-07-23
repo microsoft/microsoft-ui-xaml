@@ -134,7 +134,7 @@ void WindowsGraphicsDeviceManager::CleanupCachedDeviceResources(_In_ bool cleanu
     m_cachedD3DDevice.reset();
     if (cleanupDComp)
     {
-        m_pDCompTreeHost->ReleaseResources(true /* shouldDeferClosingInteropCompostior */);
+        IFCFAILFAST(m_pDCompTreeHost->ReleaseResources(true /* shouldDeferClosingInteropCompostior */));
     }
     else
     {

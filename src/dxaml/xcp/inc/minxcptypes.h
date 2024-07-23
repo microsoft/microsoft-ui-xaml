@@ -381,7 +381,7 @@ namespace DirectUI { enum class GridUnitType : uint8_t; }
 
 struct XGRIDLENGTH
 {
-    DirectUI::GridUnitType type;
+    DirectUI::GridUnitType type{ 0 };
     char padding[3] { };    // XBF writer will stamp this struct onto disk and compare to the XBF master which has zeros in these 3 bytes
     XFLOAT value{};
 

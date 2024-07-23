@@ -31,6 +31,7 @@ DatePickerFlyoutPresenter::DatePickerFlyoutPresenter() :
     _dayVisible(TRUE),
     _monthVisible(TRUE),
     _yearVisible(TRUE),
+    _reactionToSelectionChangeAllowed(FALSE),
     _minYear(wf::DateTime()),
     _maxYear(wf::DateTime()),
     _acceptDismissButtonsVisible(true)
@@ -1662,7 +1663,7 @@ DatePickerFlyoutPresenter::UpdateOrderAndLayout()
 
             if (firstHostPopulated)
             {
-                _tpYearPicker.As(&firstPickerAsControl);
+                IFC(_tpYearPicker.As(&firstPickerAsControl));
             }
             break;
         case 1:

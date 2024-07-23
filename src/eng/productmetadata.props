@@ -50,13 +50,7 @@
       <Merge>false</Merge>
     </WinUIEditWinMD>
 
-    <WebView2WinMD Include="$(WebView2WinMDPath)\Microsoft.Web.WebView2.Core.winmd">
-      <ImplementationDll>Microsoft.Web.WebView2.Core.dll</ImplementationDll>
-      <!-- This winmd isn't merged into any other winmd -->
-      <Merge>false</Merge>
-    </WebView2WinMD>
-
-    <ExternalWinMDs Include="@(IxpWinMDs);@(MRTWinMDs);@(WinUIEditWinMD);@(WebView2WinMD)"/>
+    <ExternalWinMDs Include="@(IxpWinMDs);@(MRTWinMDs);@(WinUIEditWinMD)"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -67,7 +61,6 @@
     <WinUIWinMDReferences Include="$(PrivateMergedWinMDDir)\Microsoft.UI.Private.winmd" Condition="'$(IncludePrivateMetadata)'=='true'"/>
     <WinUIWinMDReferences Include="@(MRTWinMDs)" />
     <WinUIWinMDReferences Include="@(WinUIEditWinMD)"/>
-    <WinUIWinMDReferences Include="@(WebView2WinMD)"/>
   </ItemGroup>
 
   <PropertyGroup>

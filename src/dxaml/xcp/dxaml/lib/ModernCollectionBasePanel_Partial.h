@@ -1281,12 +1281,12 @@ namespace DirectUI
     // Interactions
     public:
         // IKeyboardNavigationPanel implementation.
-        IFACEMETHOD(SupportsKeyNavigationAction)(
+        _Check_return_ IFACEMETHOD(SupportsKeyNavigationAction)(
                 _In_ xaml_controls::KeyNavigationAction action,
                 _Out_ BOOLEAN* pSupportsAction)
                 override;
 
-        IFACEMETHOD(GetTargetIndexFromNavigationAction)(
+        _Check_return_ IFACEMETHOD(GetTargetIndexFromNavigationAction)(
                 _In_ UINT sourceIndex,
                 _In_ xaml_controls::ElementType sourceType,
                 _In_ xaml_controls::KeyNavigationAction action,
@@ -1298,7 +1298,7 @@ namespace DirectUI
                 override;
 
         // IKeyboardHeaderNavigationPanel implementation.
-        IFACEMETHOD(GetTargetHeaderIndexFromNavigationAction)(
+        _Check_return_ IFACEMETHOD(GetTargetHeaderIndexFromNavigationAction)(
                 _In_ UINT sourceIndex,
                 _In_ xaml_controls::KeyNavigationAction action,
                 _Out_ UINT* pComputedTargetIndex,
@@ -1312,7 +1312,7 @@ namespace DirectUI
 
     public:
         // IChildTransitionContextProvider implementation
-        IFACEMETHOD(GetChildTransitionContext)(
+        _Check_return_ IFACEMETHOD(GetChildTransitionContext)(
                 _In_ xaml::IUIElement* element,
                 _In_ INT layoutTickId,
                 _Out_ ThemeTransitionContext* returnValue) override;
@@ -1322,7 +1322,7 @@ namespace DirectUI
                 _Out_ BOOLEAN* returnValue)
                 override;
 
-        IFACEMETHOD(GetChildTransitionBounds)(
+        _Check_return_ IFACEMETHOD(GetChildTransitionBounds)(
                 _In_ xaml::IUIElement* element,
                 _Out_ wf::Rect* returnValue) override;
 
@@ -1485,14 +1485,14 @@ namespace DirectUI
     // Implementation of IItemLookupPanel
     public:
         // Get the closest element information to the point.
-        IFACEMETHOD(GetClosestElementInfo)(
+        _Check_return_ IFACEMETHOD(GetClosestElementInfo)(
             _In_ wf::Point position,
             _Out_ xaml_primitives::ElementInfo* returnValue)
             override;
 
         // Get the index where an item should be inserted if it were dropped at
         // the given position. This will be used by live reordering.
-        IFACEMETHOD(GetInsertionIndex)(
+        _Check_return_ IFACEMETHOD(GetInsertionIndex)(
             _In_ wf::Point position,
             _Out_ INT* returnValue)
             override;
@@ -1502,7 +1502,7 @@ namespace DirectUI
         // edges of the layout.  This can be useful for both determining whether
         // to tilt items at the edges of rows or columns as well as providing
         // data for portal animations.
-        IFACEMETHOD(IsLayoutBoundary)(
+        _Check_return_ IFACEMETHOD(IsLayoutBoundary)(
             _In_ INT index,
             _Out_ BOOLEAN* isLeftBoundary,
             _Out_ BOOLEAN* isTopBoundary,
@@ -1511,7 +1511,7 @@ namespace DirectUI
             override;
 
         // Gets the bounds of the items.
-        IFACEMETHOD(GetItemsBounds)(
+        _Check_return_ IFACEMETHOD(GetItemsBounds)(
             _Out_ wf::Rect* returnValue)
             override;
 
@@ -1532,11 +1532,11 @@ namespace DirectUI
 
     // Implementation of IPaginatedPanel
     public:
-        IFACEMETHOD(GetLastItemIndexInViewport)(
+        _Check_return_ IFACEMETHOD(GetLastItemIndexInViewport)(
             _In_ DirectUI::IScrollInfo* scrollInfo,
             _Out_ INT* returnValue) override;
 
-        IFACEMETHOD(GetItemsPerPage)(
+        _Check_return_ IFACEMETHOD(GetItemsPerPage)(
             _In_ DirectUI::IScrollInfo* scrollInfo,
             _Out_ DOUBLE* returnValue) override;
 

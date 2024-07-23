@@ -191,7 +191,7 @@ _Check_return_ HRESULT WicAnimatedGifDecoder::DecodeFrame(
     return S_OK;
 }
 
-HRESULT WicAnimatedGifDecoder::CreateDeltaFrameSource(
+_Check_return_ HRESULT WicAnimatedGifDecoder::CreateDeltaFrameSource(
     _In_ const wrl::ComPtr<IWICBitmapDecoder>& spBitmapDecoder,
     int frameIndex,
     _Out_ DeltaFrameInfo& deltaFrameInfo,

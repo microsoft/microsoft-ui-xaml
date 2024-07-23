@@ -350,6 +350,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             return "Activate_" + entry.TypeIndex.ToString() + "_" + entry.Name;
         }
 
+        public String StaticInitializerName(InternalXamlUserTypeInfo entry)
+        {
+            return "StaticInitializer_" + entry.TypeIndex.ToString() + "_" + entry.Name;
+        }
+
         public String VectorAddName(InternalXamlUserTypeInfo entry)
         {
             if (entry.IsCollection)

@@ -45,15 +45,27 @@ namespace CustomTasks
                 "Microsoft.UI.Xaml.Phone.dll",
                 "Microsoft.UI.Xaml.Controls.dll",
                 "WinUIEdit.dll",
-                "Microsoft.Web.WebView2.Core.dll",
             };
 
-        private bool IsPlatformDll(string dllName)
+        // The Edge CoreWebView2 SDK package does not ship with a manifest listing its activatable types, so we 
+        // configure GenerateWinRTClassRegistrations to consider the CoreWebView2 WinRT Implementation ("Microsoft.Web.WebVIew2.Core.dll")
+        // as if it were a  WinUI3 component ("platform DLL"), and generate appropriate <ActivatbleClass> AppXManifest entries.
+        // 
+        // This ensures that CoreWebView2 APIs (like proper WinUI3 APIs) can be invoked outside cswinrt/cppwinrt
+        // projections (eg in WRL apps) for both internal WinUI3 components/tests and external apps consuming WinAppSDK.
+        private readonly string coreWebView2Dll = "Microsoft.Web.WebView2.Core.dll";
+
+        private bool IsPlatformOrCoreWebView2Dll(string dllName)
         {
             // If the DLL name is blank, it's the default.
             if (dllName.Length == 0)
             {
                 dllName = DefaultImplementationDll;
+            }
+
+            if (coreWebView2Dll.Equals(dllName, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return true;
             }
 
             foreach (string platformDll in platformDlls)
@@ -246,7 +258,7 @@ namespace CustomTasks
                                 unmergedWinMDTypeAdded = true;
                             }
 
-                            if (IsPlatformDll(implementationDll))
+                            if (IsPlatformOrCoreWebView2Dll(implementationDll))
                             {
                                 if (attributeTypeName == "Windows.Foundation.Metadata.ActivatableAttribute" && IsActivatable(unmergedWinMDType) && !activatableTypes.Contains(unmergedWinMDType))
                                 {
@@ -270,7 +282,7 @@ namespace CustomTasks
                                     unmergedWinMDTypeAdded = true;
                                 }
 
-                                if (IsPlatformDll(implementationDll) && IsActivatable(unmergedWinMDType) && !activatableTypes.Contains(unmergedWinMDType))
+                                if (IsPlatformOrCoreWebView2Dll(implementationDll) && IsActivatable(unmergedWinMDType) && !activatableTypes.Contains(unmergedWinMDType))
                                 {
                                     activatableTypes.Add(unmergedWinMDType);
                                 }

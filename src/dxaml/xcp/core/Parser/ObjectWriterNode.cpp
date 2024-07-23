@@ -967,7 +967,7 @@ const bool ObjectWriterNode::ProvidesCustomBinaryData() const WI_NOEXCEPT
 }
 
 // Debuggable Information for the Node
-HRESULT ObjectWriterNode::GetLineInfoAsString(_Out_ xstring_ptr& strValue) const
+_Check_return_ HRESULT ObjectWriterNode::GetLineInfoAsString(_Out_ xstring_ptr& strValue) const
 {
     strValue = StringCchPrintfWWrapper(
         L"Line=%d, Column=%d",
@@ -978,7 +978,7 @@ HRESULT ObjectWriterNode::GetLineInfoAsString(_Out_ xstring_ptr& strValue) const
 }
 
 // Debuggable Information for the Node
-HRESULT ObjectWriterNode::ToString(_Out_ xstring_ptr& strValue) const
+_Check_return_ HRESULT ObjectWriterNode::ToString(_Out_ xstring_ptr& strValue) const
 {
     DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_strPushScope, L"PushScope");
 
@@ -1581,7 +1581,7 @@ xstring_ptr ObjectWriterNode::ToStringCValueHelper(_In_ const CValue& inValue) c
         {
             uint32_t enumValue = 0;
             KnownTypeIndex enumTypeIndex = KnownTypeIndex::UnknownType;
-            inValue.GetEnum(enumValue, enumTypeIndex);
+            IGNOREHR(inValue.GetEnum(enumValue, enumTypeIndex));
 
             auto type = DirectUI::MetadataAPI::GetClassInfoByIndex(enumTypeIndex);
             const wchar_t* buffer = type->GetName().GetBuffer();

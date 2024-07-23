@@ -2308,7 +2308,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT ListViewBaseItem::GetLogicalParentForAPProtected(_Outptr_ DependencyObject** ppLogicalParentForAP)
+_Check_return_ HRESULT ListViewBaseItem::GetLogicalParentForAPProtected(_Outptr_result_maybenull_ DependencyObject** ppLogicalParentForAP)
 {
     HRESULT hr = S_OK;
     ctl::ComPtr<ListViewBase> spListView;

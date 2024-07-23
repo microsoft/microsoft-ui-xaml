@@ -241,6 +241,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#      Output_TypeTables();            #>
 
 <#      Output_Activators();            #>
+<#      Output_StaticInitializers();    #>
 <#      Output_ListAndMapMethods();     #>
 
 <#      Output_CreateXamlType();        #>
@@ -257,15 +258,9 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
     internal partial class XamlSystemBaseType : <#=Globalize(KnownTypes.IXamlType)#>
     {
         string _fullName;
-<#  if (ProjectInfo.UsingCSWinRT) { #>
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-<#  }#>
         global::System.Type _underlyingType;
 
         public XamlSystemBaseType(string fullName, 
-<#  if (ProjectInfo.UsingCSWinRT) { #>
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-<#  }#>
             global::System.Type underlyingType)
         {
             _fullName = fullName;
@@ -304,6 +299,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
     }
     
     internal delegate object Activator();
+    internal delegate void StaticInitializer();
     internal delegate void AddToCollection(object instance, object item);
     internal delegate void AddToDictionary(object instance, object key, object item);
     internal delegate object CreateFromStringMethod(string args);
@@ -330,9 +326,6 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
         global::System.Collections.Generic.Dictionary<string, object> _enumValues;
 
         public XamlUserType(<#=Globalize(ProjectInfo.XamlTypeInfoNamespace)#>.XamlTypeInfoProvider provider, string fullName, 
-<#  if (ProjectInfo.UsingCSWinRT) { #>
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-<#  }#>
             global::System.Type fullType, <#=Globalize(KnownTypes.IXamlType)#> baseType)
             :base(fullName, fullType)
         {
@@ -397,15 +390,9 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
             CollectionAdd(instance, item);
         }
 
-        override public void RunInitializer() => RunInitializerImplementation();
-
-<#  if (ProjectInfo.UsingCSWinRT) { #>
-        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2059",
-            Justification = "UnderlyingType (and TypeHandle property) protected at assignment")]
-<#  }#>
-        private void RunInitializerImplementation()
+        override public void RunInitializer() 
         {
-            global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(UnderlyingType.TypeHandle);
+            StaticInitializer();
         }
 
         override public object CreateFromString(string input)
@@ -472,6 +459,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
         // --- End of Interface methods
 
         public Activator Activator { get; set; }
+        public StaticInitializer StaticInitializer { get; set; }
         public AddToCollection CollectionAdd { get; set; }
         public AddToDictionary DictionaryAdd { get; set; }
         public CreateFromStringMethod CreateFromStringMethod {get; set; }
@@ -702,33 +690,8 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+         private void Output_TypeTables()     #>
 <#+         {                                       #>
         string[] _typeNameTable = null;
-
-        class TypeTable
-        {
-            global::System.Type[] _types;
-
-            public TypeTable(int typeCount)
-            {
-                _types = new global::System.Type[typeCount];
-            }
-
-<#+  if (ProjectInfo.UsingCSWinRT) { #>
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-<#+  }#>
-            public global::System.Type this[int i]
-            {
-<#+  if (ProjectInfo.UsingCSWinRT) { #>
-                [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2063",
-                    Justification = "TypeTable assignments are protected through setter")]
-<#+  }#>
-                get { return _types[i]; }
-                set { _types[i] = value; }
-            }
-
-            public int Length { get => _types.Length; }
-        }
-        TypeTable _typeTable;
-
+        global::System.Type[] _typeTable = null;
+        
         private void InitTypeTables()
         {
             _typeNameTable = new string[<#=SchemaInfo.TypeTableFromAllAssemblies.Count#>];
@@ -738,7 +701,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
             _typeNameTable[<#=entry.TypeIndex#>] = "<#=entry.StandardName#>";
 <#+         }                                                           #>
 
-            _typeTable = new TypeTable(<#=SchemaInfo.TypeTableFromAllAssemblies.Count#>);
+            _typeTable = new global::System.Type[<#=SchemaInfo.TypeTableFromAllAssemblies.Count#>];
 <#+         for(int i=0; i<SchemaInfo.TypeTable.Count; i++)             #>
 <#+         {                                                           #>
 <#+             InternalTypeEntry entry = SchemaInfo.TypeTable[i];      #>
@@ -834,6 +797,10 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                         {                               #>
                 userType.Activator = <#=Model.ActivatorName(uentry)#>;
 <#+                         }                               #>
+<#+                         if(!uentry.IsArray)  #>
+<#+                         {                               #>
+                userType.StaticInitializer = <#=Model.StaticInitializerName(uentry)#>;
+<#+                         }                               #>
 <#+                         if(uentry.ContentProperty != null)   #>
 <#+                         {                               #>
                 userType.SetContentPropertyName("<#=uentry.ContentProperty.DeclaringType.StandardName#>.<#=uentry.ContentProperty.Name#>");
@@ -919,6 +886,25 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 #pragma warning restore 0618
 <#+                     }                                                           #>
 
+<#+                 }           #>
+<#+             }               #>
+<#+         }                   #>
+
+<#+         private void Output_StaticInitializers()                                #>
+<#+         {                                                                       #>
+<#+             foreach(InternalXamlUserTypeInfo entry in SchemaInfo.UserTypeInfo)  #>
+<#+             {                                                                   #>
+<#+                 if(!entry.IsArray)                                              #>
+<#+                 {                                                               #>
+<#+                     if (entry.IsDeprecated)                                     #>
+<#+                     {                                                           #>
+#pragma warning disable 0618  //   Warning on Deprecated usage
+<#+                     }                                                           #>
+        private void <#=Model.StaticInitializerName(entry)#>() => global::System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(<#=entry.FullName#>).TypeHandle);
+<#+                     if (entry.IsDeprecated)                                     #>
+<#+                     {                                                           #>
+#pragma warning restore 0618
+<#+                     }                                                           #>
 <#+                 }           #>
 <#+             }               #>
 <#+         }                   #>

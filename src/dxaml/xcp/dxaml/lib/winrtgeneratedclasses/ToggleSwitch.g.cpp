@@ -390,7 +390,7 @@ _Check_return_ HRESULT DirectUI::ToggleSwitchGenerated::EventRemoveHandlerByInde
     case KnownEventIndex::ToggleSwitch_Toggled:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::IRoutedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

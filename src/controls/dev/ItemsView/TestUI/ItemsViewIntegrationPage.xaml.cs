@@ -34,7 +34,7 @@ namespace MUXControlsTestApp
         private object _asyncEventReportingLock = new object();
         private List<string> _lstAsyncEventMessage = new List<string>();
         private List<string> _fullLogs = new List<string>();
-        private ObservableCollection<Recipe> _colPhotos = null;
+        private ObservableCollection<Entity> _colPhotos = null;
         private DataTemplate[] _photoTemplates = new DataTemplate[8];
         private SolidColorBrush _redBrush = new SolidColorBrush(Colors.Red);
         private SolidColorBrush _whiteBrush = new SolidColorBrush(Colors.White);
@@ -349,8 +349,8 @@ namespace MUXControlsTestApp
                 {
                     if (chkGeneralInfoLogs.IsChecked == true)
                     {
-                        Recipe firstRelevantPhoto = _colPhotos[firstRelevantItemContainerIndex];
-                        Recipe lastRelevantPhoto = _colPhotos[lastRelevantItemContainerIndex];
+                        Entity firstRelevantPhoto = _colPhotos[firstRelevantItemContainerIndex];
+                        Entity lastRelevantPhoto = _colPhotos[lastRelevantItemContainerIndex];
 
                         AppendAsyncEventMessage($"PopulateHeader firstRelevantPhoto={firstRelevantPhoto.Description}, lastRelevantPhoto={lastRelevantPhoto.Description}");
                     }
@@ -419,7 +419,7 @@ namespace MUXControlsTestApp
                 UnhookPhotosCollectionChanged();
             }
 
-            _colPhotos = new ObservableCollection<Recipe>();
+            _colPhotos = new ObservableCollection<Entity>();
 
             var rnd = chkUseConstantMonthCount.IsChecked == true ? null : new Random();
             DateTime today = DateTime.Now.Date;
@@ -452,7 +452,7 @@ namespace MUXControlsTestApp
 
                     for (int photoIndex = 0; photoIndex < monthCount; photoIndex++)
                     {
-                        _colPhotos.Add(new Recipe()
+                        _colPhotos.Add(new Entity()
                         {
                             ImageUri = new Uri(string.Format("ms-appx:///Images/vette{0}.jpg", chkUseConstantMonthCount.IsChecked == true ? (yearIndex * 50 + monthIndex * 5 + photoIndex) % 126 + 1 : rnd.Next(1, 127))),
                             Description = GetMonthNameFromIndex(monthIndex) + " " + year + " - #" + photoIndex
@@ -1343,7 +1343,7 @@ namespace MUXControlsTestApp
                     _monthPhotoCounts = new int[_yearCount, 12];
                     if (_colPhotos == null)
                     {
-                        _colPhotos = new ObservableCollection<Recipe>();
+                        _colPhotos = new ObservableCollection<Entity>();
 
                         HookPhotosCollectionChanged();
                     }
@@ -1400,7 +1400,7 @@ namespace MUXControlsTestApp
 
                 Random rnd = new Random();
 
-                _colPhotos.Add(new Recipe()
+                _colPhotos.Add(new Entity()
                 {
                     ImageUri = new Uri(string.Format("ms-appx:///Images/vette{0}.jpg", rnd.Next(1, 127))),
                     Description = GetMonthNameFromIndex(monthIndex) + " " + year + " - #" + photoIndex

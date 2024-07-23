@@ -152,8 +152,8 @@ _Check_return_ HRESULT TextFormatting::CreateDefault(
     strDefaultLanguage = xstring_ptr::NullString();
     pDefault->m_nFlowDirection = DirectUI::FlowDirection::LeftToRight;
     pDefault->m_isTextScaleFactorEnabled = true;
-    pDefault->ResolveLanguageString(pCore);
-    pDefault->ResolveLanguageListString(pCore);
+    IFC(pDefault->ResolveLanguageString(pCore));
+    IFC(pDefault->ResolveLanguageListString(pCore));
 
     *ppDefaultTextFormatting = pDefault;
     pDefault = NULL;

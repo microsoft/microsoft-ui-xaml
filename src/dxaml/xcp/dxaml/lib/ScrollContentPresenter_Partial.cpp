@@ -3979,7 +3979,8 @@ _Check_return_ HRESULT ScrollContentPresenter::ProcessTabStopOverride(
     const bool isBackward,
     const bool /*didCycleFocusAtRootVisualScope*/,
     _Outptr_ DependencyObject** ppNewTabStop,
-    _Out_ BOOLEAN* pIsTabStopOverridden)
+    _Out_ BOOLEAN* pIsTabStopOverridden
+    )
 {
     HRESULT hr = S_OK;
     BOOLEAN isFocusedElementInTopLeftHeader = FALSE;
@@ -5056,7 +5057,8 @@ _Check_return_ HRESULT ScrollContentPresenter::ProcessTabStopPrivate(
     BOOLEAN isFocusedElementInLeftHeader,
     BOOLEAN isFocusedElementInContent,
     _Outptr_ DependencyObject** ppNewTabStop,
-    _Out_ BOOLEAN* pIsTabStopOverridden)
+    _Out_ BOOLEAN* pIsTabStopOverridden
+    )
 {
     HRESULT hr = S_OK;
     BOOLEAN isTopLeftHeader = FALSE;

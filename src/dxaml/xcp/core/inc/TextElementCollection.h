@@ -37,7 +37,7 @@ public:
 
     _Check_return_ HRESULT AppendImpl(
         _In_ CDependencyObject *pObject,
-        _Out_opt_ XUINT32 *pnIndex = NULL
+        _Out_ XUINT32 *pnIndex = NULL
         ) final;
 
     _Check_return_ HRESULT InsertImpl(

@@ -72,7 +72,7 @@ CConnectedAnimation::CConnectedAnimation(_In_ CCoreServices *pCore, _In_ CConnec
 
 CConnectedAnimation::~CConnectedAnimation()
 {
-    Reset();
+    VERIFYHR(Reset());
     delete m_pEventList;
 }
 
@@ -113,7 +113,7 @@ _Check_return_ HRESULT CConnectedAnimation::Prepare(_In_ CUIElement* source)
     Microsoft::WRL::ComPtr<IUnknown> rootVisual;
     IFC_RETURN(root->GetHandOffVisual(&rootVisual));
 
-    source->SetRequiresComposition(CompositionRequirement::HasConnectedAnimation, IndependentAnimationType::None);
+    IFC_RETURN(source->SetRequiresComposition(CompositionRequirement::HasConnectedAnimation, IndependentAnimationType::None));
     CUIElement::NWSetContentDirty(source, DirtyFlags::Render); // Force dirty the render to make sure the comp node is created.
 
     m_state = ConnectedAnimationState::Initialized; // We will prepare on the tick.
@@ -153,7 +153,7 @@ _Check_return_ HRESULT CConnectedAnimation::TryStart(_In_ CUIElement* destinatio
         return S_OK;
     }
 
-    destination->SetRequiresComposition(CompositionRequirement::HasConnectedAnimation, IndependentAnimationType::None);
+    IFC_RETURN(destination->SetRequiresComposition(CompositionRequirement::HasConnectedAnimation, IndependentAnimationType::None));
     CUIElement::NWSetContentDirty(destination, DirtyFlags::Render); // Force dirty the render to make sure the comp node is created.
     m_destination.element = destination;
     m_state = ConnectedAnimationState::Started;
@@ -331,7 +331,7 @@ _Check_return_ HRESULT CConnectedAnimation::UpdatePreCommit(_Out_ bool * remove,
     // Ensure that a coordinated animation is consistent with its base.
     if (m_baseAnimation != nullptr && m_baseAnimation->m_state == ConnectedAnimationState::Canceled)
     {
-        Cancel();
+        IFC_RETURN(Cancel());
     }
 
     switch (m_state)
@@ -425,7 +425,7 @@ _Check_return_ HRESULT CConnectedAnimation::UpdatePreCommit(_Out_ bool * remove,
         // to actually animate it since it will never be seen.
         if (m_baseAnimation->m_destination.clippedRect.Width == 0 || m_baseAnimation->m_destination.clippedRect.Height == 0)
         {
-            Cancel();
+            IFC_RETURN(Cancel());
         }
         else
         {
@@ -482,7 +482,7 @@ _Check_return_ HRESULT CConnectedAnimation::UpdatePreCommit(_Out_ bool * remove,
     {
         m_state = ConnectedAnimationState::Complete;
         FireCompletedEvent();
-        Reset();
+        IFC_RETURN(Reset());
         return S_OK;
     }
 
@@ -1056,7 +1056,7 @@ _Check_return_ HRESULT CConnectedAnimation::CreateSnapshotBrush(_In_ ConnectedAn
     return S_OK;
 }
 
-HRESULT CConnectedAnimation::ConvertSourceBrushToClipped()
+_Check_return_ HRESULT CConnectedAnimation::ConvertSourceBrushToClipped()
 {
     // If we are not animation the scale factor between the source and destination, then we use clipped
     // brushes (brushes that only include the unclipped part of the visuals).  However, we don't know for
@@ -1128,7 +1128,7 @@ HRESULT CConnectedAnimation::ConvertSourceBrushToClipped()
     return S_OK;
 }
 
-HRESULT CConnectedAnimation::UpdateVisualRectForClippedBrushes()
+_Check_return_ HRESULT CConnectedAnimation::UpdateVisualRectForClippedBrushes()
 {
     // Our visual will be based upon the greater of the size of the source and destination
     wfn::Vector2 spriteSize = {
@@ -1245,7 +1245,7 @@ _Check_return_ HRESULT CConnectedAnimation::GetSnapshotTransformInfo(_In_ Connec
     CMILMatrix localTransform;
     // When rendering, we don't care about properties set by composition on the handoff visual. That will prevent problems like
     // creating a tiny mask because there's a WUC scale animation going on.
-    info.element->GetLocalTransform(TransformRetrievalOptions::None, &localTransform);
+    (void)(info.element->GetLocalTransform(TransformRetrievalOptions::None, &localTransform));
 
     // The plateau scale isn't applied by Xaml. Instead it's applied in the ICoreWindowSiteBridge that hosts our
     // visual tree, or by the content bridge in the Xaml island. We won't pick it up by walking the UIElement tree, so
@@ -1512,7 +1512,7 @@ _Check_return_ HRESULT CConnectedAnimation::TryToCompleteAnimation()
     if (canComplete)
     {
         m_state = ConnectedAnimationState::Complete;
-        Reset();
+        IFC_RETURN(Reset());
 
         // Raise the Completed event.
         FireCompletedEvent();

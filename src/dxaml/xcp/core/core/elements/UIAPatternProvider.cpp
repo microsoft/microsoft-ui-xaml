@@ -29,7 +29,7 @@ void CUIAPatternProvider::SetUIAWrapper(IUIAWrapper* pUIAWrapper)
 
 // AutomationPeer::BoxArrayOfHStrings creates an array of CValue strings from HSTRINGs.
 // This marshals that structure to an array of xstring_ptrs.
-HRESULT CUIAPatternProvider::UnboxArrayOfStrings(_In_ const Automation::CValue &source, _Out_ XINT32 *cRetVal, _Out_writes_(*cRetVal) xstring_ptr** ppstrRetVal)
+_Check_return_ HRESULT CUIAPatternProvider::UnboxArrayOfStrings(_In_ const Automation::CValue &source, _Out_ XINT32 *cRetVal, _Out_writes_(*cRetVal) xstring_ptr** ppstrRetVal)
 {
     HRESULT hr = S_OK;
     xstring_ptr* pStrArray = nullptr;

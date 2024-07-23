@@ -59,7 +59,7 @@ namespace AccessKeys {
         return S_OK;
     }
 
-    _Check_return_ HRESULT AKOnIsActiveChanged(_In_opt_ CFocusManager* focusManager,_In_ IInspectable* sender, _In_ IInspectable* args)
+    _Check_return_ HRESULT AKOnIsActiveChanged(_In_opt_ CFocusManager* focusManager, _In_opt_ IInspectable* sender, _In_opt_ IInspectable* args)
     {
         DXamlCore* const dxamlCore = DXamlCore::GetCurrent();
         CCoreServices* const core = dxamlCore->GetHandle();
@@ -89,7 +89,7 @@ namespace AccessKeys {
 namespace DirectUI
 {
 
-_Check_return_ HRESULT AccessKeyManagerFactory::add_IsDisplayModeEnabledChanged(
+HRESULT AccessKeyManagerFactory::add_IsDisplayModeEnabledChanged(
     _In_ wf::ITypedEventHandler<IInspectable*,IInspectable*>* value,
     _Out_ EventRegistrationToken* token)
 {
@@ -98,7 +98,7 @@ _Check_return_ HRESULT AccessKeyManagerFactory::add_IsDisplayModeEnabledChanged(
     return S_OK;
 }
 
-_Check_return_ HRESULT AccessKeyManagerFactory::remove_IsDisplayModeEnabledChanged(
+HRESULT AccessKeyManagerFactory::remove_IsDisplayModeEnabledChanged(
     _In_ EventRegistrationToken token)
 {
     IFC_RETURN(CheckActivationAllowed());

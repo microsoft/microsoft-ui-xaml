@@ -153,7 +153,7 @@ public:
 #endif
 
     // IGripperHost overrides
-    HRESULT ShowGrippers(_In_ POINT *pBeginPoint, float beginLineHeight, _In_ POINT *pEndPoint, float endLineHeight) override;
+    _Check_return_ HRESULT ShowGrippers(_In_ POINT *pBeginPoint, float beginLineHeight, _In_ POINT *pEndPoint, float endLineHeight) override;
     HRESULT GetVisibleRect(_Out_ RECT *pRect) override;
     HRESULT EnsureRectVisible(_In_ const RECT &rect) override;
     HRESULT EnsureRectVisibleWithPadding(_In_ const RECT &rect) override;

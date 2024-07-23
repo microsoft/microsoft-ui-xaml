@@ -37,7 +37,7 @@ namespace RichTextServices
 
         // Releases TextFormatter and makes it available for reuse.
         void ReleaseTextFormatter(
-            _In_ TextFormatter *pTextFormatter
+            _In_opt_ TextFormatter *pTextFormatter
             );
 
         //Releases unused TextFormatters to reduce memory usage

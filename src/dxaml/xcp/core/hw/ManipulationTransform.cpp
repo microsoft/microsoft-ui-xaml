@@ -80,7 +80,7 @@ static HRESULT ConnectAnimationWithOffset(
 // animation to the corresponding property of the manipulation composition object.
 // The propertyName should point to a Matrix4x4 property.
 // The resulting value is pre-multiplied with the specified matrix.
-HRESULT ConnectAnimationWithPrependTransform(
+_Check_return_ HRESULT ConnectAnimationWithPrependTransform(
     _In_ WUComp::ICompositionObject *manipulationPropertySetCO,
     _In_ WUComp::ICompositionObject *sourceCO,
     _In_ wfn::Matrix4x4 prependTransform,

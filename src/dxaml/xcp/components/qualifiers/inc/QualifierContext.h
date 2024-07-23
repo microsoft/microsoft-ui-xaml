@@ -15,9 +15,9 @@ class QualifierContext
         // Registers a callback and subscribes to all events callback is registering for
         // If the same callback is registered more than once, the most recent flags setting
         // is taken.  If no flags are set, the callback is unregistered.
-        HRESULT RegisterChangedCallback(_In_ IQualifierContextCallback*, _In_ QualifierFlags flags);
+        _Check_return_ HRESULT RegisterChangedCallback(_In_ IQualifierContextCallback*, _In_ QualifierFlags flags);
 
-        HRESULT OnWindowChanged(XUINT32 width, XUINT32 height);
+        HRESULT OnWindowChanged(_In_ XUINT32 width, _In_ XUINT32 height);
 
         XUINT32 m_windowWidth = static_cast<XUINT32>(-1);
         XUINT32 m_windowHeight = static_cast<XUINT32>(-1);

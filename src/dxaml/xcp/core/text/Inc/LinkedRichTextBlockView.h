@@ -34,7 +34,7 @@ public:
         _In_ XUINT32 startOffset,
         _In_ XUINT32 endOffset,
         _Out_ XUINT32 *pcRectangles, 
-        _Out_writes_(*pcRectangles) XRECTF **ppRectangles  
+        _Outptr_result_buffer_(*pcRectangles) XRECTF **ppRectangles
     ) override;
 
     _Check_return_ HRESULT TextSelectionToTextBounds(

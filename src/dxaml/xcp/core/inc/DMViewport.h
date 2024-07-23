@@ -1136,8 +1136,8 @@ public:
     _Check_return_ HRESULT RemoveClipContent(_In_ CUIElement* pContentElement, _Outptr_result_maybenull_ CDMContent** ppContent);
     _Check_return_ HRESULT ClearClipContents();
     _Check_return_ HRESULT GetClipContent(_In_ XUINT32 contentIndex, _Outptr_ CDMContent** ppContent);
-    _Check_return_ HRESULT GetClipContentNoRef(_In_ CUIElement* pContentElement, _Out_opt_ CDMContent** ppContent, _Out_opt_ XUINT32* pContentIndex);
-    _Check_return_ HRESULT GetClipContentElementNoRef(_In_ XUINT32 contentIndex, _Out_ CUIElement** ppContentElement);
+    _Check_return_ HRESULT GetClipContentNoRef(_In_ CUIElement* pContentElement, _Outptr_opt_result_maybenull_ CDMContent** ppContent, _Out_opt_ XUINT32* pContentIndex);
+    _Check_return_ HRESULT GetClipContentElementNoRef(_In_ XUINT32 contentIndex, _Outptr_ CUIElement** ppContentElement);
 
     _Check_return_ HRESULT HasActiveStatus(_Out_ bool& fHasActiveStatus);
     _Check_return_ HRESULT RemoveOldStatus();
@@ -1249,8 +1249,8 @@ private:
         ReleaseInterface(m_pManipulatedElement);
         ReleaseInterface(m_pCompositorViewport);
         ReleaseInterface(m_pCompositorPrimaryContent);
-        ClearContents();
-        ClearClipContents();
+        IFCFAILFAST(ClearContents());
+        IFCFAILFAST(ClearClipContents());
     }
 
 

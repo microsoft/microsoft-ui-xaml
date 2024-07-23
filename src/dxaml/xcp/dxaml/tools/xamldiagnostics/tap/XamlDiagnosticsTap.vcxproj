@@ -38,7 +38,7 @@
     <ItemDefinitionGroup>
         <ClCompile>
             <WarningLevel>Level3</WarningLevel>
-            <TreatWarningAsError>true</TreatWarningAsError>
+            <TreatWarningAsError Condition="'$(ExperimentalAnalysis)'!='true'">true</TreatWarningAsError>
 
             <ExceptionHandling>Sync</ExceptionHandling>
         </ClCompile>

@@ -9,8 +9,8 @@
 namespace DirectUI
 {
     #define EVENT_DECL(EventName) \
-        IFACEMETHOD(add_##EventName)(_In_ EventName##EventSourceType::HandlerType* pValue, _Out_ EventRegistrationToken* ptToken) override; \
-        IFACEMETHOD(remove_##EventName)(_In_ EventRegistrationToken tToken) override;
+        _Check_return_ IFACEMETHOD(add_##EventName)(_In_ EventName##EventSourceType::HandlerType* pValue, _Out_ EventRegistrationToken* ptToken) override; \
+        _Check_return_ IFACEMETHOD(remove_##EventName)(_In_ EventRegistrationToken tToken) override;
 
     PARTIAL_CLASS(MediaPlayerElement)
     {
@@ -29,7 +29,7 @@ namespace DirectUI
 
         static _Check_return_ HRESULT ResolveLocalSourceUri(_In_ wf::IUriRuntimeClass* pUri, _Outptr_result_maybenull_ wf::IUriRuntimeClass **ppFileUri);
 
-        IFACEMETHOD(OnApplyTemplate)() override;
+        _Check_return_ IFACEMETHOD(OnApplyTemplate)() override;
 
         // Prepares object's state
         _Check_return_ HRESULT PrepareState() override;

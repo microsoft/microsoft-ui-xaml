@@ -23,10 +23,10 @@ _Ret_notnull_ _Post_writable_byte_size_(cSize) XCP_FORCEINLINE __declspec(alloca
 
 namespace XcpAllocation {
     
-    __declspec(allocator) void *OSMemoryAllocateFailFast(_In_ size_t cSize);
-    __declspec(allocator) void *OSMemoryAllocateNoFailFast(_In_ size_t cSize);
-    __declspec(allocator) void *OSMemoryAllocateZeroMemoryFailFast(_In_ size_t cSize);
-    __declspec(allocator) void *OSMemoryResize(_Frees_ptr_opt_ void *pAddress, _In_ size_t cSize);
+    _Check_return_ __declspec(allocator) void *OSMemoryAllocateFailFast(_In_ size_t cSize);
+    _Check_return_ __declspec(allocator) void *OSMemoryAllocateNoFailFast(_In_ size_t cSize);
+    _Check_return_ __declspec(allocator) void *OSMemoryAllocateZeroMemoryFailFast(_In_ size_t cSize);
+    _Check_return_ __declspec(allocator) void *OSMemoryResize(_Frees_ptr_opt_ void *pAddress, _In_ size_t cSize);
     void __stdcall OSMemoryFree(_Frees_ptr_opt_ void *pAddress);
 
     // An allocator that allows STL to hook into the XcpDebugSetLeakDetectionFlag() machinery

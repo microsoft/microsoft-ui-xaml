@@ -1017,7 +1017,7 @@ ObjectWriter::TypeConvertStringAndAddToCollectionOnCurrentInstance(
 }
 
 _Check_return_ HRESULT
-ObjectWriter::WriteConditionalScope(const std::shared_ptr<Parser::XamlPredicateAndArgs>& xamlPredicateAndArgs)
+ObjectWriter::WriteConditionalScope(_In_ const std::shared_ptr<Parser::XamlPredicateAndArgs>& xamlPredicateAndArgs)
 {
     if (!ShouldSkipForResourceReplacement())
     {
@@ -1101,7 +1101,7 @@ ObjectWriter::WriteEndConditionalScope()
 // not, passes processing on to WriteNamespaceCore
 _Check_return_ HRESULT ObjectWriter::WriteNamespace(
     _In_ const xstring_ptr& spPrefix,
-    const std::shared_ptr<XamlNamespace>& spXamlNamespace)
+    _In_ const std::shared_ptr<XamlNamespace>& spXamlNamespace)
 {
     if (IsSkippingForConditionalScope())
     {

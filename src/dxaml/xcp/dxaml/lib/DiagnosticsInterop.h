@@ -244,33 +244,33 @@ namespace Diagnostics
             _In_ IInspectable* reference,
             _In_ const CCustomProperty* customProp);
 
-        static HRESULT SetThemeResourceBinding(
+        static _Check_return_ HRESULT SetThemeResourceBinding(
             _In_ CDependencyObject* depObj,
             _In_ CThemeResourceExtension* extension,
             KnownPropertyIndex propertyIndex);
 
-        static HRESULT UpdateThemeResourceValue(
+        static _Check_return_ HRESULT UpdateThemeResourceValue(
             _In_ CDependencyObject* depObj,
             _In_ CDependencyObject* value,
             KnownPropertyIndex propertyIndex);
 
-        static HRESULT OnValueChanged(
+        static _Check_return_ HRESULT OnValueChanged(
             _In_ CDependencyObject* object,
             _In_ KnownPropertyIndex changedProperty);
 
-        static HRESULT OnSetterChanged(
+        static _Check_return_ HRESULT OnSetterChanged(
             _In_ CSetter* setter,
             _In_ bool isSetOperation = true);
 
         static bool IsSetterValid(_In_ CSetter* setter);
         static bool IsSetterValueValid(_In_ CSetter* setter);
 
-        static HRESULT UpdateBasedOnStyleListeners(_In_ CStyle* style, _In_opt_ CStyle* oldBasedOn, _In_opt_ CStyle* newBasedOn);
+        static _Check_return_ HRESULT UpdateBasedOnStyleListeners(_In_ CStyle* style, _In_opt_ CStyle* oldBasedOn, _In_opt_ CStyle* newBasedOn);
 
-        static HRESULT OnMarkupExtensionChanged(
+        static _Check_return_ HRESULT OnMarkupExtensionChanged(
             _In_ CMarkupExtensionBase* extension);
 
-        static HRESULT ResolveResource(
+        static _Check_return_ HRESULT ResolveResource(
             _In_ xaml::IDependencyObject* resolveFor,
             _In_opt_ xaml::IResourceDictionary* dictionaryFoundIn,
             const xstring_ptr& resourceKey,
@@ -279,14 +279,14 @@ namespace Diagnostics
             _In_opt_ xaml::IUIElement* resolutionContext,
             _Out_ wrl::ComPtr<IInspectable>& unboxedValue);
 
-        static HRESULT ResolveResource(
+        static _Check_return_ HRESULT ResolveResource(
             _In_ const std::shared_ptr<ResourceDependency>& resourceDependency,
             _In_opt_ const xref_ptr<CResourceDictionary>& dictionaryFoundIn,
             const xstring_ptr& resourceKey,
             _In_opt_ xaml::IUIElement* resolutionContext,
             _Out_ wrl::ComPtr<IInspectable>& unboxedValue);
 
-        static HRESULT AddDictionaryItem(
+        static _Check_return_ HRESULT AddDictionaryItem(
             _In_ xaml::IResourceDictionary* dictionaryFoundIn,
             _In_ IInspectable* key,
             _In_ IInspectable* dictionaryItem,
@@ -297,7 +297,7 @@ namespace Diagnostics
             _In_ IInspectable* key,
             ResourceGraphKeyWithParent& graphKey);
 
-        static HRESULT GetKeyFromIInspectable(
+        static _Check_return_ HRESULT GetKeyFromIInspectable(
             _In_ IInspectable* keyInsp,
             _Out_ xstring_ptr& keyName,
             _Out_ bool* isImplicitStyle);
@@ -352,12 +352,12 @@ namespace Diagnostics
         //       </ResourceDictionary>
         //     <ResourceDictionary.MergedDictionaries>
         // would return a vector with 1 element in it, which would be the dictionary containing the red brush.
-        static HRESULT FindIntersectingKeys(
+        static _Check_return_ HRESULT FindIntersectingKeys(
             _In_ wfc::IVector<xaml::ResourceDictionary*>* dictionaryCollection,
             _In_ xaml::IResourceDictionary* resourceDictionary,
             _Out_ std::vector<ResourceGraphKey>& intesectingKeys);
 
-        static HRESULT FindOtherDictionaryForResolution(
+        static _Check_return_ HRESULT FindOtherDictionaryForResolution(
             _In_ CResourceDictionary* dictionary,
             const xstring_ptr& key,
             bool isImplicitStyle,
@@ -496,7 +496,7 @@ namespace Diagnostics
         // keys would resolve to using the parent dictionary as the starting scope to search.
         // For add operations, this should be done before the add is done. For removals, this
         // should be done after.
-        static HRESULT FindIntersectingKeys(
+        static _Check_return_ HRESULT FindIntersectingKeys(
             _In_ CResourceDictionary* modified,
             _In_ CResourceDictionary* parentDictionary,
             _Out_ std::vector<ResourceGraphKey>& intesectingKeys);
@@ -507,12 +507,12 @@ namespace Diagnostics
         static std::vector<ResourceGraphKeyWithParent> GetAllKeys(
             _In_ CResourceDictionary* dictionary);
 
-        static HRESULT FindOtherDictionaryForResolution(
+        static _Check_return_ HRESULT FindOtherDictionaryForResolution(
             _In_opt_ CResourceDictionary* startDictionary,
             _In_ const CResourceDictionary* dictionaryToSkip,
             const xstring_ptr& key,
             bool isImplicitStyle,
-            _Out_ xref_ptr<CResourceDictionary>& dictionaryFoundIn);
+            _Inout_ xref_ptr<CResourceDictionary>& dictionaryFoundIn);
 
         void CacheRootObject(_In_ IInspectable*);
         void CacheDispatcherQueueForCurrentThread();

@@ -328,7 +328,7 @@ PivotHeaderManager::HeaderStateChangedEvent(_In_ bool useStaticHeaders)
     }
 
     // Clear the current header panel so we can add the header items to the other panel instead.
-    ClearPanel();
+    IFC_RETURN(ClearPanel());
 
     m_useStaticHeaders = useStaticHeaders;
     int headerIndex = 0;

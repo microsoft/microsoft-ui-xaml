@@ -103,8 +103,8 @@ void XamlPredicateService::CrackConditionalXmlns(
     auto delimiterIndex = xmlns.FindChar(CONDITIONAL_PREDICATE_DELIMITER);
     if (delimiterIndex != xstring_ptr_view::npos)
     {
-        xmlns.SubString(0, delimiterIndex, &baseXmlns);
-        xmlns.SubString(delimiterIndex + 1, xmlns.GetCount(), &conditionalPredicateSubstring);
+        THROW_IF_FAILED(xmlns.SubString(0, delimiterIndex, &baseXmlns));
+        THROW_IF_FAILED(xmlns.SubString(delimiterIndex + 1, xmlns.GetCount(), &conditionalPredicateSubstring));
     }
     else
     {
@@ -127,7 +127,7 @@ void XamlPredicateService::CrackConditionalPredicate(
         && conditionalPredicateSubstring.GetChar(conditionalPredicateSubstring.GetCount() - 1) == CONDITIONAL_PREDICATE_ARGS_END)
     {
         xstring_ptr typeName;
-        conditionalPredicateSubstring.SubString(0, parenIndex, &typeName);
+        THROW_IF_FAILED(conditionalPredicateSubstring.SubString(0, parenIndex, &typeName));
 
         // FUTURE: Because we do not yet support custom XamlPredicate types, the following code
         // (which would enable support for them) is commented out, and instead we'll do a simple
@@ -160,7 +160,7 @@ void XamlPredicateService::CrackConditionalPredicate(
         if (knownPredicate != xpsInstance.m_knownXamlPredicates.end())
         {
             THROW_IF_FAILED(schemaContext->GetXamlTypeFromStableXbfIndex(knownPredicate->second, predicateType));
-            conditionalPredicateSubstring.SubString(parenIndex + 1, conditionalPredicateSubstring.GetCount() - 1, &args);
+            THROW_IF_FAILED(conditionalPredicateSubstring.SubString(parenIndex + 1, conditionalPredicateSubstring.GetCount() - 1, &args));
 
             return;
         }

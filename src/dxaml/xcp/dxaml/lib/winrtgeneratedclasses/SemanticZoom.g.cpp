@@ -312,7 +312,7 @@ _Check_return_ HRESULT DirectUI::SemanticZoomGenerated::EventRemoveHandlerByInde
     case KnownEventIndex::SemanticZoom_ViewChangeStarted:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomViewChangedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

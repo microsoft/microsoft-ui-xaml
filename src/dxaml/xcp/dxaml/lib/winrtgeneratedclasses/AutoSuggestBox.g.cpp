@@ -586,7 +586,7 @@ _Check_return_ HRESULT DirectUI::AutoSuggestBoxGenerated::EventRemoveHandlerByIn
     case KnownEventIndex::AutoSuggestBox_QuerySubmitted:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBox*, ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBoxQuerySubmittedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -603,7 +603,7 @@ _Check_return_ HRESULT DirectUI::AutoSuggestBoxGenerated::EventRemoveHandlerByIn
     case KnownEventIndex::AutoSuggestBox_SuggestionChosen:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBox*, ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBoxSuggestionChosenEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -620,7 +620,7 @@ _Check_return_ HRESULT DirectUI::AutoSuggestBoxGenerated::EventRemoveHandlerByIn
     case KnownEventIndex::AutoSuggestBox_TextChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBox*, ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBoxTextChangedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

@@ -3456,7 +3456,7 @@ void HWCompTreeNodeWinRT::InsertChildSynchronousInternal(
     // If the reference node exists, it should already be a child, so it should already have a visual.
     ASSERT(referenceNode == nullptr || referenceNode->GetWUCVisual() != nullptr);
 
-    EnsureVisual(dcompTreeHost);
+    IFCFAILFAST(EnsureVisual(dcompTreeHost));
 
     wrl::ComPtr<WUComp::IVisual> wucChild;
 
@@ -3558,7 +3558,7 @@ _Check_return_ HRESULT HWCompTreeNodeWinRT::InsertChildAtBeginningInternal(
     // Update the DComp tree.
     IFCFAILFAST(child->EnsureVisual(dcompTreeHost));
 
-    EnsureVisual(dcompTreeHost);
+    IFCFAILFAST(EnsureVisual(dcompTreeHost));
 
     xref_ptr<WUComp::IVisual> wucChild = child->GetWUCVisual();
 

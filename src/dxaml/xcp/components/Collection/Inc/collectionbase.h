@@ -33,7 +33,7 @@ public:
     virtual bool IsDOCollection() const { return false; }
     virtual bool ContainsNoRefItems() const { return false; }
     virtual _Check_return_ HRESULT Append(CValue& value, _Out_opt_ XUINT32 *pnIndex = NULL) = 0;
-    virtual _Check_return_ HRESULT Insert(_In_ XUINT32 nIndex, CValue& value) = 0;
+    virtual _Check_return_ HRESULT Insert(_In_ XUINT32 nIndex, _In_ CValue& value) = 0;
     virtual _Check_return_ void *RemoveAt(_In_ XUINT32 nIndex) = 0;
     virtual _Check_return_ void *GetItemWithAddRef(_In_ XUINT32 nIndex) = 0;
     virtual _Check_return_ HRESULT Neat(_In_ bool bBreak) = 0;
@@ -63,7 +63,7 @@ public:
     _Check_return_ HRESULT static Add(_In_ CDependencyObject *pObject, _In_ XUINT32 cArgs,
         _Inout_updates_(1) CValue *ppArgs, _Out_opt_ CValue *pResult);
     _Check_return_ HRESULT static Clear(_In_reads_bytes_(sizeof(CCollection)) CDependencyObject *pObject, _In_ XUINT32 cArgs, _Inout_updates_opt_(0) CValue *ppArgs, _Out_opt_ CValue *pResult);
-    _Check_return_ HRESULT static Count(_In_ CDependencyObject *pObject, _In_ XUINT32 cArgs, _Inout_updates_opt_(0) CValue *ppArgs, _Out_opt_ CValue *pResult);
+    _Check_return_ HRESULT static Count(_In_ CDependencyObject *pObject, _In_ XUINT32 cArgs, _Inout_updates_opt_(0) CValue *ppArgs, _Inout_ CValue *pResult);
     _Check_return_ HRESULT static GetItem(_In_ CDependencyObject *pObject, _In_ XUINT32 index, _Out_ CValue *pResult);
     _Check_return_ HRESULT static InsertDO(_In_ CDependencyObject *pObject, _In_ XUINT32 nIndex, _In_ CValue& value);
     _Check_return_ HRESULT static IndexOf(_In_ CDependencyObject *pObject, _In_ XUINT32 cArgs,
@@ -85,7 +85,7 @@ protected:
 
     ~CCollection() override;
 
-    void ItemToCValue(_In_ CValue *pResult, _In_ void *item, _In_ bool fDeleteValueObject, _In_ bool fManaged);
+    void ItemToCValue(_In_ CValue *pResult, _In_ void *item, bool fDeleteValueObject, bool fManaged);
 
     virtual _Check_return_ bool NeedsOwnerInfo()
     {
@@ -96,8 +96,10 @@ protected:
 
     // The owner can be set externally or internally. It's not always the parent of the DOCollection,
     // sometimes it's the namescope owner and othertimes it's whatever you can imagine it to be.
-    virtual _Check_return_ HRESULT SetOwner(_In_opt_ CDependencyObject *pOwner,
-        _In_ bool bOwnerIsFallback, _In_opt_ RENDERCHANGEDPFN pfnOwnerDirtyFlag = NULL);
+    virtual _Check_return_ HRESULT SetOwner(
+        _In_opt_ CDependencyObject *pOwner,
+        bool bOwnerIsFallback,
+         _In_opt_ RENDERCHANGEDPFN pfnOwnerDirtyFlag = NULL);
 
     // CDependencyObject override
     void NWPropagateDirtyFlag(DirtyFlags flags) final;
@@ -106,7 +108,7 @@ protected:
     // they aren't by the collection implementations today and are instead called manually by
     // calling code.
     virtual _Check_return_ HRESULT PreAddToCollection(_In_ CValue& newItem);
-    virtual _Check_return_ HRESULT OnAddToCollection(const CValue&) { return S_OK; }
+    virtual _Check_return_ HRESULT OnAddToCollection(_In_ const CValue&) { return S_OK; }
     virtual _Check_return_ HRESULT OnRemoveFromCollection(_In_ const CValue&, _In_ XINT32) { return S_OK; }
     virtual void OnRemovingDependencyObject(_In_ CDependencyObject* pDO) { pDO->SetAssociated(false, nullptr); }
     virtual _Check_return_ HRESULT OnClear() { return S_OK; }

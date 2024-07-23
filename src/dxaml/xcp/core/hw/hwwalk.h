@@ -423,7 +423,7 @@ private:
 
     static _Check_return_ HRESULT LeaveSceneRecursive(_In_ CUIElement *pUIElement);
 
-    static CUIElement* GetRedirectionTarget(
+    static _Ret_maybenull_ CUIElement* GetRedirectionTarget(
         _In_ CUIElement *pUIE
         );
 

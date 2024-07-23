@@ -58,7 +58,7 @@ _Check_return_ HRESULT XamlNodeStreamValidator::ValidateStartObject(const XamlNo
     return S_OK;
 }
 
-HRESULT XamlNodeStreamValidator::ValidateStartProperty(const XamlNode& inNode)
+_Check_return_ HRESULT XamlNodeStreamValidator::ValidateStartProperty(const XamlNode& inNode)
 {
     // If the property was declared within a conditional XAML section, we may not have been
     // able to immediately resolve it because it doesn't exist yet (it does, however, 

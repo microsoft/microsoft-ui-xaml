@@ -90,7 +90,7 @@ _Check_return_ HRESULT KeyboardInputProcessor::ProcessKeyboardInput(
     // We do should not wait WM_CHAR events as we cannot inject them
     if (msgId == XCP_KEYDOWN || msgId == XCP_KEYUP)
     {
-        m_inputManager.m_coreServices.SetKeyboardInputEvent();
+        IFC_RETURN(m_inputManager.m_coreServices.SetKeyboardInputEvent());
     }
 
     const bool sipIsOpen = m_inputManager.m_inputPaneProcessor.IsSipOpen();
@@ -650,7 +650,7 @@ _Check_return_ HRESULT KeyboardInputProcessor::RaiseCharacterReceivedEvent(
     _In_ const XUINT32 modifierKeys,
     _In_ const MessageMap msgId,
     _In_ const bool handledShouldNotImpedeTextInput,
-    _Out_ bool* handled) const
+    _Inout_ bool* handled) const
 {
     const auto contentRoot = m_inputManager.GetContentRoot();
 
@@ -759,7 +759,7 @@ CDependencyObject* KeyboardInputProcessor::GetKeyRoutedSource(_In_ CDependencyOb
         {
             CContentControl* pWindowChrome = do_pointer_cast<CContentControl>(pRoutedSource);
             CValue windowContent;
-            pWindowChrome->Content(pWindowChrome, 0, nullptr, nullptr, &windowContent);
+            IFCFAILFAST(pWindowChrome->Content(pWindowChrome, 0, nullptr, nullptr, &windowContent));
             pRoutedSource = windowContent.AsObject();
         }
     }

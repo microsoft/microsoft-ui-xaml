@@ -25,6 +25,7 @@ std::tuple<CDependencyObject*, NameScopeType> CCoreServices::GetAdjustedReferenc
     return std::make_tuple(referenceObject->GetStandardNameScopeOwner(), NameScopeType::StandardNameScope);
 }
 
+_Check_return_
 xref_ptr<CDependencyObject> CCoreServices::TryGetElementByName(
     _In_ const xstring_ptr_view& strName,
     _In_ CDependencyObject *pReferenceObject)
@@ -37,9 +38,9 @@ xref_ptr<CDependencyObject> CCoreServices::TryGetElementByName(
 _Check_return_ HRESULT
 CCoreServices::SetNamedObject(
     _In_ const xstring_ptr_view& strName,
-    _In_opt_ const CDependencyObject *pNamescopeOwner,
+    _In_ const CDependencyObject *pNamescopeOwner,
     _In_ Jupiter::NameScoping::NameScopeType nameScopeType,
-    _In_opt_ CDependencyObject* pObject)
+    _In_ CDependencyObject* pObject)
 {
     IFCPTR_RETURN(pNamescopeOwner);
     ASSERT(nameScopeType == Jupiter::NameScoping::NameScopeType::TemplateNameScope || pNamescopeOwner->IsStandardNameScopeOwner());

@@ -26,26 +26,26 @@ public:
 
     // IFocusController
 
-    IFACEMETHOD(get_HasFocus)(_Out_ boolean* pValue) override;
+    _Check_return_ IFACEMETHOD(get_HasFocus)(_Out_ boolean* pValue) override;
 
-    IFACEMETHOD(NavigateFocus)(
+    _Check_return_ IFACEMETHOD(NavigateFocus)(
         _In_ xaml_hosting::IXamlSourceFocusNavigationRequest* request,
         _In_ FocusObserver* pFocusObserver,
         _Outptr_ xaml_hosting::IXamlSourceFocusNavigationResult** ppResult);
 
-    IFACEMETHOD(add_GotFocus)(
+    _Check_return_ IFACEMETHOD(add_GotFocus)(
         _In_ xaml_hosting::FocusNavigatedEventHandler* handler,
         _Out_ EventRegistrationToken* token) override;
-    IFACEMETHOD(remove_GotFocus)(
+    _Check_return_ IFACEMETHOD(remove_GotFocus)(
         _In_ EventRegistrationToken token) override;
 
-    IFACEMETHOD(add_LosingFocus)(
+    _Check_return_ IFACEMETHOD(add_LosingFocus)(
         _In_ xaml_hosting::FocusDepartingEventHandler* handler,
         _Out_ EventRegistrationToken* token) override;
-    IFACEMETHOD(remove_LosingFocus)(
+    _Check_return_ IFACEMETHOD(remove_LosingFocus)(
         _In_ EventRegistrationToken token) override;
 
-    IFACEMETHOD(DepartFocus)(
+    _Check_return_ IFACEMETHOD(DepartFocus)(
         _In_ xaml_hosting::IXamlSourceFocusNavigationRequest* request) override;
 
 private:

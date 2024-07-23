@@ -226,7 +226,7 @@ void VisualStateManagerDataSource::ClearActiveTransitions(_In_ int groupIndex)
     m_pGroupCollection->GetGroupContext()[groupIndex].ActiveTransitions().clear();
 }
 
-_Check_return_ HRESULT VisualStateManagerDataSource::TryGetOrCreateTransition(_In_ int fromIndex, _In_ int toIndex, _Outptr_ std::shared_ptr<CVisualTransition>* pTransition)
+_Check_return_ HRESULT VisualStateManagerDataSource::TryGetOrCreateTransition(_In_ int fromIndex, _In_ int toIndex, _Out_ std::shared_ptr<CVisualTransition>* pTransition)
 {
     IFC_RETURN(TryGetOrCreateTransitionImpl(fromIndex, toIndex, pTransition));
     return S_OK;
@@ -413,7 +413,7 @@ int VisualStateManagerDataSource::GetVisualStateCount()
     return GetVisualStateCountImpl();
 }
 
-_Check_return_ HRESULT VisualStateManagerDataSource::TryGetOrCreateStateTriggerVariantMap(int index, _Outptr_ std::shared_ptr<StateTriggerVariantMap>* pResult)
+_Check_return_ HRESULT VisualStateManagerDataSource::TryGetOrCreateStateTriggerVariantMap(int index, _Out_ std::shared_ptr<StateTriggerVariantMap>* pResult)
 {
     IFC_RETURN(TryGetOrCreateStateTriggerVariantMapImpl(index, pResult));
     return S_OK;

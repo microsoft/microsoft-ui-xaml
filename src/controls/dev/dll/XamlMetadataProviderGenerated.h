@@ -567,7 +567,7 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"MinHue", L"Int32", statics.MinHueProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"MinSaturation", L"Int32", statics.MinSaturationProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"MinValue", L"Int32", statics.MinValueProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"PreviousColor", L"Nullable`1<Windows.UI.Color>", statics.PreviousColorProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"PreviousColor", L"Windows.Foundation.IReference`1<Windows.UI.Color>", statics.PreviousColorProperty(), false /* isContent */);
                     }
 
                     winrt::IColorPickerStatics2 statics2 = GetFactory<winrt::IColorPickerStatics2>(L"Microsoft.UI.Xaml.Controls.ColorPicker");
@@ -6840,7 +6840,7 @@ Entry c_typeEntries[] =
 
                     winrt::IAcrylicBrushStatics2 statics2 = GetFactory<winrt::IAcrylicBrushStatics2>(L"Microsoft.UI.Xaml.Media.AcrylicBrush");
                     {
-                        xamlType.AddDPMember(L"TintLuminosityOpacity", L"Nullable`1<Double>", statics2.TintLuminosityOpacityProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"TintLuminosityOpacity", L"Windows.Foundation.IReference`1<Double>", statics2.TintLuminosityOpacityProperty(), false /* isContent */);
                     }
 
                 });
@@ -7769,6 +7769,18 @@ Entry c_typeEntries[] =
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Windows.Foundation.IReference`1<Double>",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []() { return winrt::make<NullableXamlType>((PCWSTR)L"Windows.Foundation.IReference`1<Double>", (PCWSTR)L"Double"); }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Windows.Foundation.IReference`1<Windows.UI.Color>",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []() { return winrt::make<NullableXamlType>((PCWSTR)L"Windows.Foundation.IReference`1<Windows.UI.Color>", (PCWSTR)L"Windows.UI.Color"); }
     },
     {
         /* Arg1 TypeName */ 

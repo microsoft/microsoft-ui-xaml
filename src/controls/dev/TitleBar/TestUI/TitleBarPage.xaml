@@ -16,6 +16,17 @@
                 <TitleBar.IconSource>
                     <SymbolIconSource Symbol="Home"/>
                 </TitleBar.IconSource>
+
+                <AutoSuggestBox 
+                    x:Name="AutoSuggestBoxInTitleBar"
+                    PlaceholderText="Search pictures, videos or places..."
+                    QueryIcon="Find"
+                    MinWidth="300" 
+                    MaxWidth="500"
+                    Margin="8"/>
+                <TitleBar.Footer>
+                    <PersonPicture Initials="JD" Width="30" Height="30"/>
+                </TitleBar.Footer>
             </TitleBar>
             <Button Content="New Window with Custom TitleBar" Click="TitleBarWindowingButton_Click"/>
         </StackPanel>

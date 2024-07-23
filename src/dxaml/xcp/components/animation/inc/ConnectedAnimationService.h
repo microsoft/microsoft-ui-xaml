@@ -23,7 +23,7 @@ public:
     _Check_return_ bool HasAnimations() const {return m_animations.size() > 0;}
     _Check_return_ HRESULT CreateAnimation(const xstring_ptr_view& key, _Outptr_ CConnectedAnimation ** animation);
     _Check_return_ HRESULT CreateCoordinatedAnimation(_In_ CConnectedAnimation * baseAnimation, _Outptr_ CConnectedAnimation ** animation);
-    _Check_return_ HRESULT GetAnimation(const xstring_ptr_view& key, _Outptr_opt_ CConnectedAnimation ** animation);
+    _Check_return_ HRESULT GetAnimation(const xstring_ptr_view& key, _Outptr_opt_result_maybenull_ CConnectedAnimation ** animation);
 
     const std::vector<xref_ptr<CUIElement>>& GetUnloadingElements();
     _Check_return_ HRESULT OnUnloadingElement(_In_ CUIElement* unloadingElement, _Out_ bool* shouldRetain);

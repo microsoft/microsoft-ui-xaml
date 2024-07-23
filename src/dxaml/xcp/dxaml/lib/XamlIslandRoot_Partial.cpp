@@ -104,7 +104,7 @@ xaml_controls::IScrollViewer* DirectUI::XamlIslandRoot::GetRootScrollViewer()
 
 _Check_return_ HRESULT DirectUI::XamlIslandRootFactory::GetIslandFromElementImpl(
     _In_ xaml::IDependencyObject* element,
-    _Outptr_result_maybenull_ xaml_hosting::IXamlIslandRoot** result)
+    _Outptr_ xaml_hosting::IXamlIslandRoot** result)
 {
     *result = nullptr;
 

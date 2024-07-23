@@ -17,7 +17,7 @@ class __declspec(novtable) SeekSliderAutomationPeerFactory:
     public ctl::BetterAggregableCoreObjectActivationFactory
 {
 public:
-    IFACEMETHOD(CreateInstanceWithOwner)(_In_ xaml_controls::ISlider* pOwner, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ xaml_automation_peers::ISliderAutomationPeer** ppInstance);
+    _Check_return_ IFACEMETHOD(CreateInstanceWithOwner)(_In_ xaml_controls::ISlider* pOwner, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ xaml_automation_peers::ISliderAutomationPeer** ppInstance);
 
 protected:
     KnownTypeIndex GetTypeIndex() const override

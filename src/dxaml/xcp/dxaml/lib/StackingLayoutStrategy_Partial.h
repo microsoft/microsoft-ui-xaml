@@ -68,7 +68,7 @@ namespace DirectUI
             _In_ xaml_controls::EstimationReference headerReference,
             _In_ xaml_controls::EstimationReference containerReference,
             _In_ wf::Rect window,
-            _Out_ wf::Rect* pTargetRect,
+            _In_ wf::Rect* pTargetRect,
             _Out_ INT* pReturnValue);
 
         _Check_return_ HRESULT EstimateElementBoundsImpl(
@@ -164,8 +164,8 @@ namespace DirectUI
         int GetSpecialItemIndex() const;
         int GetSpecialGroupIndex() const;
 
-        _Check_return_ HRESULT RegisterSpecialContainerSize(_In_ INT itemIndex, _In_ wf::Size containerDesiredSize);
-        _Check_return_ HRESULT RegisterSpecialHeaderSize(_In_ INT groupIndex, _In_ wf::Size headerDesiredSize);
+        _Check_return_ HRESULT RegisterSpecialContainerSize(INT itemIndex, _In_ wf::Size containerDesiredSize);
+        _Check_return_ HRESULT RegisterSpecialHeaderSize(INT groupIndex, _In_ wf::Size headerDesiredSize);
 
         // Notify the layout strategy of the new header placement.
         void SetGroupHeaderStrategy(_In_ GroupHeaderStrategy strategy);

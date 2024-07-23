@@ -83,6 +83,9 @@ _Check_return_ HRESULT CDependencyObject::TryProcessingThemeResourcePropertyValu
     _In_ BaseValueSource baseValueSource,
     _Out_ bool* processed)
 {
+    // Initialize the output parameter to false at the start
+    *processed = false;
+
     xref_ptr<CThemeResource> themeResource;
 
     if (pModifiedValue && pModifiedValue->IsEffectiveValueThemeResource())
@@ -104,7 +107,7 @@ _Check_return_ HRESULT CDependencyObject::TryProcessingThemeResourcePropertyValu
     return S_OK;
 }
 
-_Check_return_ HRESULT CDependencyObject::NotifyThemeChanged(Theme theme, bool forceRefresh)
+_Check_return_ HRESULT CDependencyObject::NotifyThemeChanged(_In_ Theme theme, bool forceRefresh)
 {
     // Make sure no funny business happens where someone tries to cast an unsigned int into
     // an invalid Theme value.
@@ -153,14 +156,14 @@ _Check_return_ HRESULT CDependencyObject::NotifyThemeChanged(Theme theme, bool f
     return S_OK;
 }
 
-_Check_return_ HRESULT CDependencyObject::NotifyThemeChangedCore(Theme theme, bool forceRefresh)
+_Check_return_ HRESULT CDependencyObject::NotifyThemeChangedCore(_In_ Theme theme, bool forceRefresh)
 {
     return NotifyThemeChangedCoreImpl(theme, forceRefresh);
 }
 
 // ignoreGetValueFailures currently addresses [Blue Bug 637457]: For setter values which are invalid, the value may not be resolvable.
 // This should only ever be set to true when being called from a Setter.
-_Check_return_ HRESULT CDependencyObject::NotifyThemeChangedCoreImpl(Theme theme, bool forceRefresh, bool ignoreGetValueFailures)
+_Check_return_ HRESULT CDependencyObject::NotifyThemeChangedCoreImpl(_In_ Theme theme, bool forceRefresh, bool ignoreGetValueFailures)
 {
     const CClassInfo* pClassInfo = GetClassInformation();
 

@@ -214,7 +214,7 @@ void VisualStateGroupCollectionCustomWriter::MarkAbortIfUnexpectedToken(
     }) == directives.end())
     {
         m_runtimeData->m_unexpectedTokensDetected = true;
-        WriteUnexpectedTokenDebug(xamlProperty);
+        IFCFAILFAST(WriteUnexpectedTokenDebug(xamlProperty));
     }
 }
 

@@ -138,7 +138,7 @@ namespace XamlGen.Templates.Code.Framework.Bodies
      } 
             this.Write("\r\n");
  if (Model.BaseClass.IsObjectType && Model.InstanceEvents.Where(m => !m.XamlEventFlags.IsHidden).Count() > 0) { 
-            this.Write("HRESULT ");
+            this.Write("_Check_return_ HRESULT ");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(Model.GeneratedClassFullName)));
             this.Write("::EventAddPreValidation(_In_ void* const pValue, EventRegistrationToken* const pt" +
                     "Token) const\r\n{\r\n    HRESULT hr = S_OK;\r\n\r\n    ARG_VALIDRETURNPOINTER(ptToken);\r" +
@@ -202,9 +202,9 @@ namespace XamlGen.Templates.Code.Framework.Bodies
             this.Write(this.ToStringHelper.ToStringWithCulture(ev.IndexName));
             this.Write(":\r\n        {\r\n            ctl::ComPtr<");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(ev.EventHandlerType.AbiFullName)));
-            this.Write("> spEventHandler;\r\n            IValueBoxer::UnboxValue(pHandler, spEventHandler.R" +
-                    "eleaseAndGetAddressOf());\r\n\r\n            if (nullptr != spEventHandler)\r\n       " +
-                    "     {\r\n                ");
+            this.Write("> spEventHandler;\r\n            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEve" +
+                    "ntHandler.ReleaseAndGetAddressOf()));\r\n\r\n            if (nullptr != spEventHandl" +
+                    "er)\r\n            {\r\n                ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ev.EventSourceTypeName));
             this.Write("* pEventSource = nullptr;\r\n                IFC_RETURN(");
             this.Write(this.ToStringHelper.ToStringWithCulture(ev.GetEventSourceName));

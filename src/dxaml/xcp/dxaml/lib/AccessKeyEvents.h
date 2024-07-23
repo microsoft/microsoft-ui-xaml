@@ -14,7 +14,7 @@ public:
     typedef wf::ITypedEventHandler<IInspectable*, IInspectable*> HandlerType;
     typedef DirectUI::CEventSource<HandlerType, IInspectable, IInspectable> EventSourceType;
 
-    _Check_return_ HRESULT RaiseIsActiveChanged(_In_ IInspectable* sender, _In_ IInspectable* args)
+    _Check_return_ HRESULT RaiseIsActiveChanged(_In_opt_ IInspectable* sender, _In_opt_ IInspectable* args)
     {
         if (isActiveChangedEventSource != nullptr)
         {

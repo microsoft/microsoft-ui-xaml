@@ -102,7 +102,7 @@ CValueStore::PutValue(
     )
 {
     xstring_ptr xstrptrName;
-    strName.Promote(&xstrptrName);
+    IFC_RETURN(strName.Promote(&xstrptrName));
 
     if (hValue)
     {

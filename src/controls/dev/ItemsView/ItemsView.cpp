@@ -1585,6 +1585,9 @@ int ItemsView::GetCornerFocusableItem(
     return itemIndex;
 }
 
+// Returns the ItemsRepeater child index for the provided UIElement.
+// All ItemContainer instances in the element parent chain are candidates
+// until a match is found. Returns -1 when no match was made. 
 int ItemsView::GetElementIndex(
     const winrt::UIElement& element) const
 {
@@ -1592,7 +1595,29 @@ int ItemsView::GetElementIndex(
 
     if (auto const& itemsRepeater = m_itemsRepeater.get())
     {
-        return itemsRepeater.GetElementIndex(element);
+        int index = -1;
+        winrt::ItemContainer itemContainer = element.try_as<winrt::ItemContainer>();
+
+        if (itemContainer == nullptr)
+        {
+            itemContainer = SharedHelpers::GetAncestorOfType<winrt::ItemContainer>(element);
+        }
+
+        if (itemContainer != nullptr)
+        {
+            do
+            {
+                index = itemsRepeater.GetElementIndex(itemContainer);
+
+                if (index == -1)
+                {
+                    itemContainer = SharedHelpers::GetAncestorOfType<winrt::ItemContainer>(itemContainer);
+                }
+            }
+            while (index == -1 && itemContainer != nullptr);
+        }
+
+        return index;
     }
 
     return -1;

@@ -27,7 +27,7 @@ protected:
     bool m_shouldQuitMessagePump { false };
 
     HWND m_hMainWnd { NULL };
-    winrt::guid lastFocusRequestId;
+    winrt::guid lastFocusRequestId {};
     std::vector<winrt::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSource::TakeFocusRequested_revoker> m_takeFocusEventRevokers;
     std::vector<winrt::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSource> m_xamlSources;
     static int s_windowCount;

@@ -105,7 +105,7 @@ public:
 private:
     xencoded_string_ptr AsEncodedStorage() const;
 
-    const WCHAR* GetBuffer() const;
+    _Ret_z_ const WCHAR* GetBuffer() const;
 };
 
 constexpr uintptr_t c_StorageRefersToRuntimeStringHandle = 0x00000001;

@@ -26,7 +26,7 @@ namespace DynamicTransitionStoryboardGenerator {
         _In_ CVisualTransition* transition,
         _In_ const std::vector<CStoryboard*>& activeStoryboards,
         _In_opt_ CStoryboard* destinationStoryboard,
-        _In_ const VisualStateSetterHelper::ResolvedVisualStateSetterCollection& activeSetters,
-        _In_ const VisualStateSetterHelper::ResolvedVisualStateSetterCollection& destinationSetters,
+        _In_opt_ const VisualStateSetterHelper::ResolvedVisualStateSetterCollection& activeSetters,
+        _In_opt_ const VisualStateSetterHelper::ResolvedVisualStateSetterCollection& destinationSetters,
         _Outptr_ CStoryboard** dynamicStoryboard);
 }

@@ -33,7 +33,7 @@ public:
 public:
     _Check_return_ HRESULT Append(_In_ CDependencyObject* object, _Out_opt_ XUINT32* index = nullptr) override;
     _Check_return_ HRESULT Insert(_In_ XUINT32 index, _In_ CDependencyObject* object) override;
-    void* RemoveAt(_In_ XUINT32 index) override;
+    _Check_return_ void* RemoveAt(_In_ XUINT32 index) override;
 
 private:
     std::weak_ptr<ICollectionChangeCallback> m_wrChangeCallback;

@@ -261,12 +261,12 @@ void CUIElement::TransformToOuter(HitTestPolygon& polygon, TransformRetrievalOpt
 
             XRECTF_RB clipBounds = { };
             IFCFAILFAST(rectangleGeometry->GetBounds(&clipBounds));
-            polygon.ClipToRect(ToXRectF(clipBounds));
+            IFCFAILFAST(polygon.ClipToRect(ToXRectF(clipBounds)));
         }
 
         if (HasLayoutClip() && !ShouldApplyLayoutClipAsAncestorClip())
         {
-            polygon.ClipToRect(LayoutClipGeometry->m_rc);
+            IFCFAILFAST(polygon.ClipToRect(LayoutClipGeometry->m_rc));
         }
     }
 
@@ -294,7 +294,7 @@ void CUIElement::TransformToOuter(HitTestPolygon& polygon, TransformRetrievalOpt
 
     if (!ignoreClipping && HasLayoutClip() && ShouldApplyLayoutClipAsAncestorClip())
     {
-        polygon.ClipToRect(LayoutClipGeometry->m_rc);
+        IFCFAILFAST(polygon.ClipToRect(LayoutClipGeometry->m_rc));
     }
 }
 
@@ -352,7 +352,7 @@ bool CUIElement::TransformTargetThroughMatrix4x4(const CMILMatrix4x4& matrix, Hi
     return polygon.TransformWorldToLocalWithInterpolation(matrix);
 }
 
-HRESULT CUIElement::TransformToWorldSpace(
+_Check_return_ HRESULT CUIElement::TransformToWorldSpace(
     _In_ const XRECTF_RB* localSpaceRect,
     _Out_ XRECTF_RB* worldSpaceRect,
     bool ignoreClipping,

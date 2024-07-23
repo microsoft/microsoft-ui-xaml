@@ -101,7 +101,7 @@ Cleanup:
 }
 
 _Check_return_ HRESULT DirectUI::ManipulationInertiaStartingRoutedEventArgs::get_ExpansionBehaviorImpl(
-    _Outptr_ xaml_input::IInertiaExpansionBehavior** ppValue)
+    _Outptr_result_maybenull_ xaml_input::IInertiaExpansionBehavior** ppValue)
 {
     HRESULT hr = S_OK;
     xref_ptr<CEventArgs> spCoreArgs;
@@ -116,7 +116,7 @@ Cleanup:
 }
 
 _Check_return_ HRESULT DirectUI::ManipulationInertiaStartingRoutedEventArgs::put_ExpansionBehaviorImpl(
-    _In_ xaml_input::IInertiaExpansionBehavior* pValue)
+    _In_opt_ xaml_input::IInertiaExpansionBehavior* pValue)
 {
     xref_ptr<CEventArgs> spCoreArgs;
 
@@ -134,7 +134,7 @@ _Check_return_ HRESULT DirectUI::ManipulationInertiaStartingRoutedEventArgs::put
 }
 
 _Check_return_ HRESULT DirectUI::ManipulationInertiaStartingRoutedEventArgs::get_RotationBehaviorImpl(
-    _Outptr_ xaml_input::IInertiaRotationBehavior** ppValue)
+    _Outptr_result_maybenull_ xaml_input::IInertiaRotationBehavior** ppValue)
 {
     HRESULT hr = S_OK;
     xref_ptr<CEventArgs> spCoreArgs;
@@ -149,7 +149,7 @@ Cleanup:
 }
 
 _Check_return_ HRESULT DirectUI::ManipulationInertiaStartingRoutedEventArgs::put_RotationBehaviorImpl(
-    _In_ xaml_input::IInertiaRotationBehavior* pValue)
+    _In_opt_ xaml_input::IInertiaRotationBehavior* pValue)
 {
     xref_ptr<CEventArgs> spCoreArgs;
 
@@ -167,7 +167,7 @@ _Check_return_ HRESULT DirectUI::ManipulationInertiaStartingRoutedEventArgs::put
 }
 
 _Check_return_ HRESULT DirectUI::ManipulationInertiaStartingRoutedEventArgs::get_TranslationBehaviorImpl(
-    _Outptr_ xaml_input::IInertiaTranslationBehavior** ppValue)
+    _Outptr_result_maybenull_ xaml_input::IInertiaTranslationBehavior** ppValue)
 {
     HRESULT hr = S_OK;
     xref_ptr<CEventArgs> spCoreArgs;
@@ -182,7 +182,7 @@ Cleanup:
 }
 
 _Check_return_ HRESULT DirectUI::ManipulationInertiaStartingRoutedEventArgs::put_TranslationBehaviorImpl(
-    _In_ xaml_input::IInertiaTranslationBehavior* pValue)
+    _In_opt_ xaml_input::IInertiaTranslationBehavior* pValue)
 {
     xref_ptr<CEventArgs> spCoreArgs;
 

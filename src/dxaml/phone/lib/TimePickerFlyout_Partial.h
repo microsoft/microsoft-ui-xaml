@@ -57,14 +57,14 @@ XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { n
         static const INT64 s_timeSpanTicksPerHour;
         static const INT64 s_timeSpanTicksPerDay;
 
-        Private::TrackerPtr<ITimePickerFlyoutPresenter> _tpPresenter;
-        Private::TrackerPtr<IFrameworkElement> _tpTarget;
-        Private::TrackerPtr<xaml_primitives::IButtonBase> _tpAcceptButton;
-        Private::TrackerPtr<xaml_primitives::IButtonBase> _tpDismissButton;
+        Private::TrackerPtr<ITimePickerFlyoutPresenter> _tpPresenter{ nullptr };
+        Private::TrackerPtr<IFrameworkElement> _tpTarget{ nullptr };
+        Private::TrackerPtr<xaml_primitives::IButtonBase> _tpAcceptButton{ nullptr };
+        Private::TrackerPtr<xaml_primitives::IButtonBase> _tpDismissButton{ nullptr};
 
         xaml_controls::FlyoutAsyncOperationManager<wf::IReference<wf::TimeSpan>*, TimePickerFlyout, TimePickerFlyoutShowAtAsyncOperationName> _asyncOperationManager;
-        EventRegistrationToken _acceptClickToken;
-        EventRegistrationToken _dismissClickToken;
+        EventRegistrationToken _acceptClickToken{};
+        EventRegistrationToken _dismissClickToken{};
         EventRegistrationToken _keyDownToken{};
     };
 

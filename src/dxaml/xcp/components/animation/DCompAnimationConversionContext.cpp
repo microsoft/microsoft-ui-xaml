@@ -37,7 +37,7 @@ CompositionAnimationConversionContext::CompositionAnimationConversionContext(_In
     m_storyboardTelemetryName = other.m_storyboardTelemetryName;
 }
 
-CompositionAnimationConversionResult CompositionAnimationConversionContext::ApplyBeginTimeSpeedRatioAndDuration(
+_Check_return_ CompositionAnimationConversionResult CompositionAnimationConversionContext::ApplyBeginTimeSpeedRatioAndDuration(
     float beginTime,
     float speedRatio,
     DirectUI::DurationType durationType,
@@ -109,7 +109,7 @@ CompositionAnimationConversionResult CompositionAnimationConversionContext::Appl
     return CompositionAnimationConversionResult::Success;
 }
 
-CompositionAnimationConversionResult CompositionAnimationConversionContext::SetRepeatAndReverse(
+_Check_return_ CompositionAnimationConversionResult CompositionAnimationConversionContext::SetRepeatAndReverse(
     _In_ const xref_ptr<RepeatBehaviorVO::Wrapper> repeat,
     const bool hasReverse,
     DirectUI::DurationType naturalDurationType,
@@ -311,7 +311,7 @@ float CompositionAnimationConversionContext::GetDurationWithSpeedRatio() const
     }
 }
 
-CompositionAnimationConversionResult CompositionAnimationConversionContext::ApplyProperties(_In_ ixp::IKeyFrameAnimation* animation)
+_Check_return_ CompositionAnimationConversionResult CompositionAnimationConversionContext::ApplyProperties(_In_ ixp::IKeyFrameAnimation* animation)
 {
     // By this point something must have set a finite duration. The allowable scenario is an infinitely looping
     // animation inside a Storyboard, in which case that animation would have set a finite duration already.

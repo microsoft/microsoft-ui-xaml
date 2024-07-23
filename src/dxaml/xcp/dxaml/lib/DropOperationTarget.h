@@ -17,7 +17,7 @@ namespace DirectUI
         END_INTERFACE_MAP(DropOperationTarget, ctl::ComBase)
 
     public:
-        HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
+        _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
         HRESULT Initialize(_In_ CXamlIslandRoot* hitTestRootIsland);
 
         // IDropOperationTarget Methods
@@ -42,7 +42,7 @@ namespace DirectUI
             _In_opt_ RaiseDragDropEventAsyncOperation* pRaiseDragDropEventAsyncOperation,
             _Deref_out_ wf::IAsyncAction** ppReturnValue);
 
-        HRESULT RaiseDragDropEventOperationAsync(
+        _Check_return_ HRESULT RaiseDragDropEventOperationAsync(
             _In_ DragDropMessageType type,
             _In_ mui::DragDrop::IDragInfo* pDragInfo,
             _In_opt_ mui::DragDrop::IDragUIOverride* pDragUIOverride,

@@ -19,7 +19,7 @@ public:
     explicit InteractionMapKey(CUIElement* elem)
         : m_interactionElement(elem)
     {
-        m_interactionElement->PegManagedPeer(/*isShutdownException*/true);
+        IFCFAILFAST(m_interactionElement->PegManagedPeer(/*isShutdownException*/true));
     }
 
     ~InteractionMapKey()

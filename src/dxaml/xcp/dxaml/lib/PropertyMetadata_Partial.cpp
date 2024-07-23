@@ -92,7 +92,7 @@ Cleanup:
 
 // Constructors.
 _Check_return_ HRESULT PropertyMetadataFactory::CreateInstanceWithDefaultValueImpl(
-    _In_ IInspectable* pDefaultValue,
+    _In_opt_ IInspectable* pDefaultValue,
     _In_opt_ IInspectable* pOuter,
     _Outptr_ IInspectable** ppInner,
     _Outptr_ IPropertyMetadata** ppInstance)
@@ -124,7 +124,7 @@ _Check_return_ HRESULT PropertyMetadataFactory::CreateInstanceWithDefaultValueAn
 
 // Static methods.
 _Check_return_ HRESULT PropertyMetadataFactory::CreateWithDefaultValueImpl(
-    _In_ IInspectable* pDefaultValue,
+    _In_opt_ IInspectable* pDefaultValue,
     _Outptr_ IPropertyMetadata** ppInstance)
 {
     RRETURN(PropertyMetadata::Create(

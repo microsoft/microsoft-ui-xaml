@@ -135,7 +135,7 @@ _Check_return_ HRESULT CRichTextBlockOverflow::LeaveImpl(
         }
 
         // Ensure this control doesn't have a focus
-        UpdateFocusState(DirectUI::FocusState::Unfocused);
+        IFC_RETURN(UpdateFocusState(DirectUI::FocusState::Unfocused));
     }
 
     IFC_RETURN(CFrameworkElement::LeaveImpl(pNamescopeOwner, params));
@@ -933,7 +933,7 @@ _Check_return_ HRESULT CRichTextBlockOverflow::ArrangeOverride(
             m_pMaster->GetSelectionManager() != nullptr &&
             m_pMaster->GetSelectionManager()->IsSelectionVisible())
         {
-            m_pMaster->GetSelectionManager()->GetSelectionHighlightRegion(UseHighContrastSelection(GetContext()), selection);
+            IFC_RETURN(m_pMaster->GetSelectionManager()->GetSelectionHighlightRegion(UseHighContrastSelection(GetContext()), selection));
         }
 
         // If no selection, no additional processing needs to be done for

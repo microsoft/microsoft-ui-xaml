@@ -36,7 +36,7 @@ FrameworkElement::~FrameworkElement()
 _Check_return_ HRESULT
 FrameworkElement::FindNameImpl(
     _In_ HSTRING name,
-    _Out_ IInspectable** ppReturnValue)
+    _Outptr_ IInspectable** ppReturnValue)
 {
     *ppReturnValue = nullptr;
 
@@ -85,7 +85,7 @@ Cleanup:
 }
 
 _Check_return_ HRESULT
-FrameworkElement::GetBindingExpression(_In_ const CDependencyProperty* pProperty, _In_ xaml_data::IBindingExpression **ppReturnValue)
+FrameworkElement::GetBindingExpression(_In_ const CDependencyProperty* pProperty, _Outptr_ xaml_data::IBindingExpression **ppReturnValue)
 {
     HRESULT hr = S_OK;
     IInspectable* pValue = NULL;
@@ -114,7 +114,7 @@ Cleanup:
 }
 
 _Check_return_ HRESULT
-FrameworkElement::GetBindingExpressionImpl(_In_ IDependencyProperty *pdp, _In_ xaml_data::IBindingExpression **ppReturnValue)
+FrameworkElement::GetBindingExpressionImpl(_In_ IDependencyProperty *pdp, _Outptr_ xaml_data::IBindingExpression **ppReturnValue)
 {
     HRESULT hr = S_OK;
     const CDependencyProperty* pUnderlyingDP = NULL;
@@ -341,7 +341,7 @@ Cleanup:
 _Check_return_ HRESULT
 FrameworkElement::GetLogicalParentForAPCore(
     _In_ CDependencyObject* nativeTarget,
-    _Outptr_ CDependencyObject** ppLogicalParentForAP)
+    _Outptr_result_maybenull_ CDependencyObject** ppLogicalParentForAP)
 {
     HRESULT hr = S_OK;
 
@@ -837,7 +837,7 @@ Cleanup:
 
 _Check_return_
 HRESULT
-FrameworkElement::OnTreeParentUpdated(_In_opt_ CDependencyObject *pNewParent, _In_ BOOLEAN isParentAlive)
+FrameworkElement::OnTreeParentUpdated(_In_opt_ CDependencyObject *pNewParent, BOOLEAN isParentAlive)
 {
     HRESULT hr = S_OK;
     DataContextChangedParams dcArgs(this, EnteringLiveTree);

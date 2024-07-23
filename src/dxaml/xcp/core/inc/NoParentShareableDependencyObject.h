@@ -78,7 +78,7 @@ public:
 #endif
 
 protected:
-    CNoParentShareableDependencyObject(_In_ CCoreServices *pCore)
+    CNoParentShareableDependencyObject(_In_opt_ CCoreServices *pCore)
         : CShareableDependencyObject(pCore)
         , m_fIsClone(FALSE)
         , m_cEnteredLive(0)

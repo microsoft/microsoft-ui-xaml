@@ -139,7 +139,7 @@ namespace FxCallbacks
 
     _Check_return_ HRESULT UIElement_IsScrollViewerContentScrollable(_In_ CUIElement* nativeTarget, _Out_ bool* isContentHorizontallyScrollable, _Out_ bool* isContentVerticallyScrollable);
 
-    _Check_return_ HRESULT UIElement_ProcessTabStop(_In_ CContentRoot* contentRoot, _In_opt_ CDependencyObject* pFocusedElement, _In_opt_ CDependencyObject* pCandidateTabStopElement, const bool isShiftPressed, const bool didCycleFocusAtRootVisualScope, _Outptr_ CDependencyObject** ppNewTabStop, _Out_ bool* pIsTabStopOverrided);
+    _Check_return_ HRESULT UIElement_ProcessTabStop(_In_ CContentRoot* contentRoot, _In_opt_ CDependencyObject* pFocusedElement, _In_opt_ CDependencyObject* pCandidateTabStopElement, const bool isShiftPressed, const bool didCycleFocusAtRootVisualScope, _Outptr_ CDependencyObject** ppNewTabStop, _Out_ bool* pIsTabStopOverridden);
 
     _Check_return_ HRESULT UIElement_GetNextTabStop(_In_ CDependencyObject* pFocusedElement, _Outptr_ CDependencyObject** ppNextTabStop);
 

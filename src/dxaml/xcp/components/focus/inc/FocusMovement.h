@@ -29,7 +29,7 @@ namespace Focus {
             _In_ CDependencyObject* pTarget,
             _In_ DirectUI::FocusNavigationDirection direction,
             _In_ DirectUI::FocusState focusState)
-            : direction(direction), pTarget(pTarget), focusState(focusState) { UuidCreate(&correlationId ); }
+            : direction(direction), pTarget(pTarget), focusState(focusState) { IFCFAILFAST(UuidCreate(&correlationId)); }
 
         FocusMovement(
             _In_ CDependencyObject* pTarget,

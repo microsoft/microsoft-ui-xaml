@@ -13,7 +13,7 @@ using namespace DirectUISynonyms;
 _Check_return_ HRESULT ImageAutomationPeerFactory::CreateInstanceWithOwnerImpl(
     _In_ xaml_controls::IImage* owner,
     _In_opt_ IInspectable* pOuter,
-    _Outptr_opt_ IInspectable** ppInner,
+    _Outptr_ IInspectable** ppInner,
     _Outptr_ xaml_automation_peers::IImageAutomationPeer** ppInstance)
 {
     IFCEXPECT_RETURN(pOuter == NULL || ppInner != NULL);

@@ -63,6 +63,8 @@
 
       <TreatWChar_tAsBuiltInType Condition="'$(XamlConsumesWinRT)'!='true'">false</TreatWChar_tAsBuiltInType>
       <AdditionalOptions Condition="'$(ExperimentalClang)' != 'true'">%(AdditionalOptions) /Wv:19.28.30000.0</AdditionalOptions>
+      <AdditionalOptions Condition="'$(ExperimentalAnalysis)'=='true'">%(AdditionalOptions) /analyze</AdditionalOptions>
+      <TreatWarningAsError Condition="'$(ExperimentalAnalysis)'=='true'">false</TreatWarningAsError>
       <AdditionalOptions Condition="'$(XamlConsumesWinRT)'=='true'">%(AdditionalOptions) $(XamlCppOptionsForWinRt)</AdditionalOptions>
       <AdditionalOptions Condition="'$(XamlConsumesWinRT)'!='true'">%(AdditionalOptions) $(XamlCppOptionsForNonWinRt)</AdditionalOptions>
       <!-- C++/CX and C++20 are incompatible.  If we are building as CX then force the language standard back to C++17. -->

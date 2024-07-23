@@ -311,7 +311,7 @@ public:
         _In_ const CValue &other) const;
 
     // Swap contents of CValues.
-    void swap(CValue& other);
+    void swap(_Inout_ CValue& other);
 
     // Query whether CValue owns value.
     bool OwnsValue() const;
@@ -775,6 +775,7 @@ private:
 
     // No conversion value getter specialization.
     template <ValueType valueType>
+    _Success_(return)
     bool TryGetValueImpl(
         _Out_ ReturnType<valueType>& result,
         tag_conversion_count<0>) const
@@ -792,6 +793,7 @@ private:
 
     // One conversion value getter specialization.
     template <ValueType valueType>
+    _Success_(return)
     bool TryGetValueImpl(
         _Out_ ReturnType<valueType>& result,
         tag_conversion_count<1>) const
@@ -817,6 +819,7 @@ private:
 
     // Two conversions value getter specialization.
     template <ValueType valueType>
+    _Success_(return)
     bool TryGetValueImpl(
         _Out_ ReturnType<valueType>& result,
         tag_conversion_count<2>) const
@@ -849,6 +852,7 @@ private:
 
     // Dispatches to a correct method based on the number of allowed conversions.
     template <ValueType valueType>
+    _Success_(return)
     bool TryGetValue(
         _Out_ ReturnType<valueType>& result) const
     {

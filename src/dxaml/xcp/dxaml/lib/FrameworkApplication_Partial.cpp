@@ -160,7 +160,7 @@ _Check_return_ HRESULT FrameworkApplication::RemoveIslandImpl(_In_ xaml_hosting:
 
 // Shared startup for UWP and desktop apps
 // See startup-overview.md for details
-_Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_ xaml::IApplicationInitializationCallback* pCallback)
+_Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IApplicationInitializationCallback* pCallback)
 {
     g_spApplicationInitializationCallback = pCallback;
 
@@ -260,7 +260,7 @@ IFACEMETHODIMP FrameworkApplication::add_UnhandledException(_In_ xaml::IUnhandle
     return m_UnhandledExceptionEventSource.Add(pValue, pToken);
 }
 
-IFACEMETHODIMP FrameworkApplication::remove_UnhandledException(EventRegistrationToken token)
+IFACEMETHODIMP FrameworkApplication::remove_UnhandledException(_In_ EventRegistrationToken token)
 {
     return m_UnhandledExceptionEventSource.Remove(token);
 }
@@ -452,7 +452,7 @@ std::shared_ptr<MetadataResetter> FrameworkApplication::GetMetadataReference()
     return m_metadataRef;
 }
 
-_Check_return_ HRESULT FrameworkApplicationFactory::get_CurrentImpl(_Outptr_ xaml::IApplication** ppValue)
+_Check_return_ HRESULT FrameworkApplicationFactory::get_CurrentImpl(_Outptr_result_maybenull_ xaml::IApplication** ppValue)
 {
     FrameworkApplication* pInstance = FrameworkApplication::GetCurrentNoRef();
 

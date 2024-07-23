@@ -126,7 +126,7 @@ public:
         _In_ ixp::IPointerPoint* pointerPoint,
         _In_ ixp::IPointerEventArgs* pointerEventArgs,
         const bool isReplayedMessage,
-        _Out_opt_ bool* handled);
+        _Out_ bool* handled);
 
     _Check_return_ HRESULT OnIslandNonClientPointerMessage(
         const UINT msg,

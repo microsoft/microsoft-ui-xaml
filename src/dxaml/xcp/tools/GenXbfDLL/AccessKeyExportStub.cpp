@@ -15,10 +15,10 @@ AccessKeyExport::AccessKeyExport(_In_ CCoreServices* const core)
 
 AccessKeys::AccessKeyExport::~AccessKeyExport() = default;
 
-void AccessKeyExport::SetVisualTree(_In_ VisualTree* tree) const
+void AccessKeyExport::SetVisualTree(_In_opt_ VisualTree* tree) const
 {
 }
 
-void AccessKeyExport::SetFocusManager(_In_ CFocusManager* focusManager) const
+void AccessKeyExport::SetFocusManager(_In_opt_ CFocusManager* focusManager) const
 {
 }

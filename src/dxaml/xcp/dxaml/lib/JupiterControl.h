@@ -51,7 +51,7 @@ public:
     void DisconnectUIA();
     _Check_return_ HRESULT ResetVisualTree();
 
-    bool HandleWindowMessage(UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam, _In_ CContentRoot* contentRoot);
+    bool HandleWindowMessage(UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam, _In_opt_ CContentRoot* contentRoot);
 
     LRESULT HandleGetObjectMessage(_In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam);
     HRESULT CreateUIAHostWindowForHwnd(_In_ HWND hwnd);
@@ -193,8 +193,8 @@ private:
 
     _Check_return_ HRESULT UpdateHdr() const;
     void Paint();
-    bool HandleKeyMessage(_In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam, _In_ CContentRoot* contentRoot);
-    bool HandleGenericMessage(_In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam, _In_ CContentRoot* contentRoot);
+    bool HandleKeyMessage(_In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam, _In_opt_ CContentRoot* contentRoot);
+    bool HandleGenericMessage(_In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam, _In_opt_ CContentRoot* contentRoot);
     bool HandleUpdateUIStateMessage(_In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam, _In_opt_ CContentRoot* contentRoot);
 
     CJupiterWindow* m_pWindow;

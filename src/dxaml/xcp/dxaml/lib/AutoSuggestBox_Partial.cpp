@@ -3124,7 +3124,7 @@ AutoSuggestBox::ShouldUseParentedLTE()
     return false;
 }
 
-HRESULT AutoSuggestBox::GetAdjustedLayoutBounds (_Out_ wf::Rect &layoutBounds) const
+_Check_return_ HRESULT AutoSuggestBox::GetAdjustedLayoutBounds (_Out_ wf::Rect &layoutBounds) const
 {
     IFC_RETURN(DXamlCore::GetCurrent()->GetContentLayoutBoundsForElement(GetHandle(), &layoutBounds));
 
@@ -3141,7 +3141,7 @@ HRESULT AutoSuggestBox::GetAdjustedLayoutBounds (_Out_ wf::Rect &layoutBounds) c
     return S_OK;
 }
 
-HRESULT AutoSuggestBox::GetActualTextBoxSize(_Out_ double& actualWidth, _Out_ double& actualHeight) const
+_Check_return_ HRESULT AutoSuggestBox::GetActualTextBoxSize(_Out_ double& actualWidth, _Out_ double& actualHeight) const
 {
     if (m_tpTextBoxPart)
     {

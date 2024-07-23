@@ -200,7 +200,7 @@ _Check_return_ HRESULT DirectUI::VirtualizingStackPanelGenerated::EventRemoveHan
     case KnownEventIndex::VirtualizingStackPanel_CleanUpVirtualizedItemEvent:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::ICleanUpVirtualizedItemEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

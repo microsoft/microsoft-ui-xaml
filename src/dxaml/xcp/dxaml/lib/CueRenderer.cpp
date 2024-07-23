@@ -334,7 +334,7 @@ CCueRenderer::AddCue(_In_ const ctl::ComPtr<wmc::IMediaCue>& spCue) noexcept
     return S_OK;
 }
 
-HRESULT CCueRenderer::CreateCueRegion(
+_Check_return_ HRESULT CCueRenderer::CreateCueRegion(
     _In_ const ctl::ComPtr<wmc::IMediaCue>& spCue,
     _Out_ ctl::ComPtr<Border>& spRegionBorder,
     _Inout_ std::wstring& regionName
@@ -396,7 +396,7 @@ HRESULT CCueRenderer::CreateCueRegion(
     return S_OK;
 }
 
-HRESULT CCueRenderer::CreateCueItem(
+_Check_return_ HRESULT CCueRenderer::CreateCueItem(
     _In_ const ctl::ComPtr<wmc::IMediaCue>& spCue,
     _In_ ctl::ComPtr<Border>& spRegionBorder,
     _In_ std::wstring& regionName

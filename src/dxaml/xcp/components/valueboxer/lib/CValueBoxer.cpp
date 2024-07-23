@@ -642,7 +642,7 @@ _Check_return_ HRESULT CValueBoxer::BoxObjectValue(
     _In_opt_ IInspectable* value,
     _In_ BoxerBuffer* buffer,
     _Outptr_result_maybenull_ DependencyObject** ppMOR,
-    _In_opt_ BOOLEAN bPreserveObjectIdentity) noexcept
+    BOOLEAN bPreserveObjectIdentity) noexcept
 {
     IFCPTR_RETURN(box);
     IFCPTR_RETURN(buffer);
@@ -2705,7 +2705,7 @@ _Check_return_ HRESULT CValueBoxer::UnboxObjectValue(
 
 void CValueBoxer::UnwrapExternalObjectReferenceIfPresent(
     _In_ IInspectable* pObject,
-    _Outptr_ IInspectable** value)
+    _Outptr_result_maybenull_ IInspectable** value)
 {
     ctl::ComPtr<ExternalObjectReference> spObj = ctl::query_interface_cast<ExternalObjectReference>(pObject);
 
@@ -2732,7 +2732,7 @@ _Check_return_ HRESULT CValueBoxer::GetTypeInfoFromCValue(
                 uint32_t enumValue = 0;
                 KnownTypeIndex enumTypeIndex = KnownTypeIndex::UnknownType;
 
-                box->GetEnum(enumValue, enumTypeIndex);
+                IGNOREHR(box->GetEnum(enumValue, enumTypeIndex));
 
                 if (enumTypeIndex != KnownTypeIndex::UnknownType)
                 {

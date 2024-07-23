@@ -736,7 +736,7 @@ _Check_return_ HRESULT DXamlCoreGetCoreApplication(_Outptr_ T** ppCoreApp)
     return wf::GetActivationFactory(coreApplicationAcid.Get(), ppCoreApp);
 }
 
-HRESULT DXamlCore::add_Suspending(_In_ SuspendingEventHandler* pHandler, _Out_ EventRegistrationToken* pToken)
+_Check_return_ HRESULT DXamlCore::add_Suspending(_In_ SuspendingEventHandler* pHandler, _Out_ EventRegistrationToken* pToken)
 {
     HRESULT hr = S_OK;
     wac::ICoreApplication* pCoreApp = NULL;
@@ -750,7 +750,7 @@ Cleanup:
     return hr;
 }
 
-HRESULT DXamlCore::add_Resuming(_In_ wf::IEventHandler<IInspectable*>* pHandler, _Out_ EventRegistrationToken* pToken)
+_Check_return_ HRESULT DXamlCore::add_Resuming(_In_ wf::IEventHandler<IInspectable*>* pHandler, _Out_ EventRegistrationToken* pToken)
 {
     HRESULT hr = S_OK;
     wac::ICoreApplication* pCoreApp = NULL;
@@ -764,7 +764,7 @@ Cleanup:
     return hr;
 }
 
-HRESULT DXamlCore::add_LeavingBackground(_In_ wf::IEventHandler<wa::LeavingBackgroundEventArgs*>* pHandler, _Out_ EventRegistrationToken* pToken)
+_Check_return_ HRESULT DXamlCore::add_LeavingBackground(_In_ wf::IEventHandler<wa::LeavingBackgroundEventArgs*>* pHandler, _Out_ EventRegistrationToken* pToken)
 {
     ctl::ComPtr<wac::ICoreApplication2> spCoreApp;
     IFC_RETURN(DXamlCoreGetCoreApplication(spCoreApp.GetAddressOf()));
@@ -774,7 +774,7 @@ HRESULT DXamlCore::add_LeavingBackground(_In_ wf::IEventHandler<wa::LeavingBackg
     return S_OK;
 }
 
-HRESULT DXamlCore::add_EnteredBackground(_In_ wf::IEventHandler<wa::EnteredBackgroundEventArgs*>* pHandler, _Out_ EventRegistrationToken* pToken)
+_Check_return_ HRESULT DXamlCore::add_EnteredBackground(_In_ wf::IEventHandler<wa::EnteredBackgroundEventArgs*>* pHandler, _Out_ EventRegistrationToken* pToken)
 {
     ctl::ComPtr<wac::ICoreApplication2> spCoreApp;
     DXamlCoreGetCoreApplication(spCoreApp.GetAddressOf());
@@ -1049,7 +1049,7 @@ Cleanup:
     return hr;
 }
 
-HRESULT DXamlCore::DeinitializeInstanceToIdle()
+_Check_return_ HRESULT DXamlCore::DeinitializeInstanceToIdle()
 {
     RemoveAutoHideScrollBarsChangedHandler();
 
@@ -1401,7 +1401,7 @@ DXamlCore::SetDebugInterop(_In_ DebugTool::IInternalDebugInterop* pDebugInterop)
 }
 
 _Check_return_ HRESULT
-DXamlCore::ActivatePeer(_In_ KnownTypeIndex nTypeIndex, _Out_ DependencyObject** ppObject)
+DXamlCore::ActivatePeer(_In_ KnownTypeIndex nTypeIndex, _COM_Outptr_ DependencyObject** ppObject)
 {
     HRESULT hr = S_OK;
     CDependencyObject* pCoreDO = NULL;
@@ -1421,74 +1421,74 @@ Cleanup:
 }
 
 _Check_return_ HRESULT
-DXamlCore::GetPeer(_In_ CDependencyObject* pDO, _Out_ DependencyObject** ppObject)
+DXamlCore::GetPeer(_In_ CDependencyObject* pDO, _COM_Outptr_ DependencyObject** ppObject)
 {
     return GetPeerPrivate(NULL, pDO, GetPeerPrivateCreateMode::CreateIfNecessary, FALSE, NULL, ppObject);
 }
 
 _Check_return_ HRESULT
-DXamlCore::GetPeerWithInternalRef(_In_ CDependencyObject* pDO, _Out_ DependencyObject** ppObject)
+DXamlCore::GetPeerWithInternalRef(_In_ CDependencyObject* pDO, _COM_Outptr_ DependencyObject** ppObject)
 {
     return GetPeerPrivate(NULL, pDO, GetPeerPrivateCreateMode::CreateIfNecessary, /*bInternalRef*/ TRUE, NULL, ppObject);
 }
 
 _Check_return_ HRESULT
-DXamlCore::GetPeer(_In_ CDependencyObject* pDO, _In_ KnownTypeIndex hClass, _Out_ DependencyObject** ppObject)
+DXamlCore::GetPeer(_In_ CDependencyObject* pDO, _In_ KnownTypeIndex hClass, _COM_Outptr_ DependencyObject** ppObject)
 {
     return GetPeerPrivate(NULL, pDO, GetPeerPrivateCreateMode::CreateIfNecessary, hClass, FALSE, NULL, ppObject);
 }
 
 
 _Check_return_ HRESULT
-DXamlCore::TryGetPeer(_In_ CDependencyObject* pDO, _Out_ DependencyObject** ppObject)
+DXamlCore::TryGetPeer(_In_ CDependencyObject* pDO, _COM_Outptr_ DependencyObject** ppObject)
 {
     return GetPeerPrivate(NULL, pDO, GetPeerPrivateCreateMode::GetOnly, FALSE, NULL, ppObject);
 }
 
 _Check_return_ HRESULT
-DXamlCore::TryGetPeerWithInternalRef(_In_ CDependencyObject* pDO, _Out_ DependencyObject** ppObject)
+DXamlCore::TryGetPeerWithInternalRef(_In_ CDependencyObject* pDO, _COM_Outptr_ DependencyObject** ppObject)
 {
     return GetPeerPrivate(NULL, pDO, GetPeerPrivateCreateMode::GetOnly, /*bInternalRef*/ TRUE, NULL, ppObject);
 }
 
 _Check_return_ HRESULT
-DXamlCore::TryGetPeer(_In_ CDependencyObject* pDO, _In_ KnownTypeIndex hClass, _Out_ DependencyObject** ppObject)
+DXamlCore::TryGetPeer(_In_ CDependencyObject* pDO, _In_ KnownTypeIndex hClass, _COM_Outptr_ DependencyObject** ppObject)
 {
     return GetPeerPrivate(NULL, pDO, GetPeerPrivateCreateMode::GetOnly, hClass, FALSE, NULL, ppObject);
 }
 
 _Check_return_ HRESULT
-DXamlCore::TryGetPeer(_In_ CDependencyObject* pDO, _Out_ bool *pIsPendingDelete, _Out_ DependencyObject** ppObject)
+DXamlCore::TryGetPeer(_In_ CDependencyObject* pDO, _Out_ bool *pIsPendingDelete, _COM_Outptr_ DependencyObject** ppObject)
 {
     return GetPeerPrivate(NULL, pDO, GetPeerPrivateCreateMode::GetOnly, FALSE, pIsPendingDelete, ppObject);
 }
 
 _Check_return_ HRESULT
-DXamlCore::GetPeer(_In_opt_ IInspectable* pOuter, _In_ CDependencyObject* pDO, _Out_ DependencyObject** ppObject)
+DXamlCore::GetPeer(_In_opt_ IInspectable* pOuter, _In_ CDependencyObject* pDO, _COM_Outptr_ DependencyObject** ppObject)
 {
     return GetPeerPrivate(pOuter, pDO, GetPeerPrivateCreateMode::CreateIfNecessary, FALSE, NULL, ppObject);
 }
 
 _Check_return_ HRESULT
-DXamlCore::GetPeer(_In_opt_ IInspectable* pOuter, _In_ CDependencyObject* pDO, _In_ KnownTypeIndex hClass, _Out_ DependencyObject** ppObject)
+DXamlCore::GetPeer(_In_opt_ IInspectable* pOuter, _In_ CDependencyObject* pDO, _In_ KnownTypeIndex hClass, _COM_Outptr_ DependencyObject** ppObject)
 {
     return GetPeerPrivate(pOuter, pDO, GetPeerPrivateCreateMode::CreateIfNecessary, hClass, FALSE, NULL, ppObject);
 }
 
 _Check_return_ HRESULT
-DXamlCore::GetPeer(_In_opt_ IInspectable* pOuter, _In_ CDependencyObject* pDO, _In_ KnownTypeIndex hClass, _In_ bool fCreatePegged, _Out_ DependencyObject** ppObject)
+DXamlCore::GetPeer(_In_opt_ IInspectable* pOuter, _In_ CDependencyObject* pDO, _In_ KnownTypeIndex hClass, _In_ bool fCreatePegged, _COM_Outptr_ DependencyObject** ppObject)
 {
     return GetPeerPrivate(pOuter, pDO, GetPeerPrivateCreateMode::CreateIfNecessary, hClass, FALSE, /* fCreatePegged */ fCreatePegged, NULL, ppObject);
 }
 
 _Check_return_ HRESULT
-DXamlCore::TryGetPeer(_In_opt_ IInspectable* pOuter, _In_ CDependencyObject* pDO, _Out_ DependencyObject** ppObject)
+DXamlCore::TryGetPeer(_In_opt_ IInspectable* pOuter, _In_ CDependencyObject* pDO, _COM_Outptr_ DependencyObject** ppObject)
 {
     return GetPeerPrivate(pOuter, pDO, GetPeerPrivateCreateMode::GetOnly, FALSE, NULL, ppObject);
 }
 
 _Check_return_ HRESULT
-DXamlCore::TryGetPeer(_In_opt_ IInspectable* pOuter, _In_ CDependencyObject* pDO, _In_ KnownTypeIndex hClass, _Out_ DependencyObject** ppObject)
+DXamlCore::TryGetPeer(_In_opt_ IInspectable* pOuter, _In_ CDependencyObject* pDO, _In_ KnownTypeIndex hClass, _COM_Outptr_ DependencyObject** ppObject)
 {
     return GetPeerPrivate(pOuter, pDO, GetPeerPrivateCreateMode::GetOnly, hClass, FALSE, NULL, ppObject);
 }
@@ -1496,7 +1496,7 @@ DXamlCore::TryGetPeer(_In_opt_ IInspectable* pOuter, _In_ CDependencyObject* pDO
 // Get a peer if it already exists.  Otherwise, if possible, create one.  It's possible if this object's peer has never been created
 // before, or if it's resurrectable.
 _Check_return_ HRESULT
-DXamlCore::TryGetOrCreatePeer(_In_ CDependencyObject* pDO, _Out_ DependencyObject** ppObject)
+DXamlCore::TryGetOrCreatePeer(_In_ CDependencyObject* pDO, _COM_Outptr_ DependencyObject** ppObject)
 {
     return GetPeerPrivate(/*pOuter*/ NULL, pDO, GetPeerPrivateCreateMode::TryCreateIfNecessary, /*bInternalRef*/ FALSE, /*pbIsPendingDelete*/ NULL, ppObject);
 }
@@ -4203,7 +4203,7 @@ HRESULT DXamlCore::CleanUpAfterTest()
     return S_OK;
 }
 
-HRESULT DXamlCore::InitializeInstanceFromIdle()
+_Check_return_ HRESULT DXamlCore::InitializeInstanceFromIdle()
 {
     IFCEXPECT_ASSERT_RETURN(GetState() == State::Idle);
 
@@ -4282,7 +4282,7 @@ HRESULT DXamlCore::InitializeInstanceFromIdle()
     }
  }
 
-HRESULT DXamlCore::EnsureEventArgs()
+_Check_return_ HRESULT DXamlCore::EnsureEventArgs()
 {
     if (!m_spDataContextChangedEventArgs)
     {

@@ -50,7 +50,7 @@ HRESULT DirectUI::WindowsXamlManagerGenerated::QueryInterfaceImpl(_In_ REFIID ii
 
 // Properties.
 
-HRESULT DirectUI::WindowsXamlManagerGenerated::EventAddPreValidation(_In_ void* const pValue, EventRegistrationToken* const ptToken) const
+_Check_return_ HRESULT DirectUI::WindowsXamlManagerGenerated::EventAddPreValidation(_In_ void* const pValue, EventRegistrationToken* const ptToken) const
 {
     HRESULT hr = S_OK;
 

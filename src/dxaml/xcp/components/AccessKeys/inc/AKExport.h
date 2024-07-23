@@ -39,8 +39,8 @@ namespace AccessKeys
         bool IsActive() const;
         AKModeContainer& GetModeContainer() const;
 
-        void SetVisualTree(_In_ VisualTree* tree) const;
-        void SetFocusManager(_In_ CFocusManager* focusManager) const;
+        void SetVisualTree(_In_opt_ VisualTree* tree) const;
+        void SetFocusManager(_In_opt_ CFocusManager* focusManager) const;
 
     private:
         std::unique_ptr<AccessKeyExportImpl> impl;

@@ -11,7 +11,7 @@ XamlServiceProviderContext::XamlServiceProviderContext(_In_ const std::shared_pt
 {
 }
 
-HRESULT XamlServiceProviderContext::GetSchemaContext(
+_Check_return_ HRESULT XamlServiceProviderContext::GetSchemaContext(
     _Out_ std::shared_ptr<XamlSchemaContext>& rspSchemaContext)
 {
     IFC_RETURN(GetObjectWriterContext()->get_SchemaContext(rspSchemaContext));
@@ -24,7 +24,7 @@ std::shared_ptr<XamlQualifiedObject> XamlServiceProviderContext::GetRootObject()
     return GetObjectWriterContext()->get_RootInstance();
 }
 
-HRESULT XamlServiceProviderContext::ResolveXamlType(
+_Check_return_ HRESULT XamlServiceProviderContext::ResolveXamlType(
     _In_ const xstring_ptr_view& spQName,
     _Out_ std::shared_ptr<XamlType>& rspType)
 {
@@ -38,7 +38,7 @@ xref_ptr<IPALUri> XamlServiceProviderContext::GetBaseUri()
     return GetObjectWriterContext()->get_BaseUri();
 }
 
-HRESULT XamlServiceProviderContext::GetAmbientTargetType(
+_Check_return_ HRESULT XamlServiceProviderContext::GetAmbientTargetType(
     _Out_ std::shared_ptr<XamlQualifiedObject>& rqoValue)
 {
     IFC_RETURN(GetObjectWriterContext()->ServiceProvider_GetAmbientTargetType(rqoValue));
@@ -46,7 +46,7 @@ HRESULT XamlServiceProviderContext::GetAmbientTargetType(
     return S_OK;
 }
 
-HRESULT XamlServiceProviderContext::GetAllAmbientValues(
+_Check_return_ HRESULT XamlServiceProviderContext::GetAllAmbientValues(
     _In_ std::shared_ptr<XamlType> spCeilingType,
     _In_ std::shared_ptr<XamlProperty> spProperty,
     _In_ std::shared_ptr<XamlType> spTypeToFind,
@@ -58,7 +58,7 @@ HRESULT XamlServiceProviderContext::GetAllAmbientValues(
     return S_OK;
 }
 
-HRESULT XamlServiceProviderContext::GetAmbientValue(
+_Check_return_ HRESULT XamlServiceProviderContext::GetAmbientValue(
     _In_ const std::shared_ptr<XamlType>& spCeilingType1,
     _In_ const std::shared_ptr<XamlType>& spCeilingType2,
     _In_ const std::shared_ptr<XamlProperty>& spProperty1,
@@ -111,7 +111,7 @@ void XamlServiceProviderContext::GetMarkupExtensionTargetProperty(
     }
 }
 
-HRESULT XamlServiceProviderContext::ResolveDependencyProperty(
+_Check_return_ HRESULT XamlServiceProviderContext::ResolveDependencyProperty(
     _In_ const xstring_ptr& spQName,
     _In_ const std::shared_ptr<XamlType>& spTargetType,
     _Out_ std::shared_ptr<XamlProperty>& rspProperty)
@@ -180,7 +180,7 @@ _Check_return_ HRESULT XamlServiceProviderContext::ExtractTargetTypeAndPropertyN
     return S_OK;
 }
 
-HRESULT XamlServiceProviderContext::ResolveProperty(
+_Check_return_ HRESULT XamlServiceProviderContext::ResolveProperty(
     _In_ const xstring_ptr_view& fullyQualifiedName,
     _Out_ std::shared_ptr<XamlProperty>& rspProperty)
 {

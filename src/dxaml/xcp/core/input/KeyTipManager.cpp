@@ -367,7 +367,7 @@ namespace BoundsHelper {
         else if (textElement != nullptr)
         {
             std::vector<XRECTF_RB> boundsList;
-            AddBoundsForTextElement(textElement, boundsList);
+            IFCFAILFAST(AddBoundsForTextElement(textElement, boundsList));
 
             if (boundsList.empty()) { IFCFAILFAST(E_FAIL); } // We should always get the bounds for the textelement
 

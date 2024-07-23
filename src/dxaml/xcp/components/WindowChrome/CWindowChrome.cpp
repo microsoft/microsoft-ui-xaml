@@ -340,7 +340,7 @@ HRESULT CWindowChrome::RefreshToolbarOffset()
 void CWindowChrome::UpdateCanDragStatus(bool enabled)
 {
     m_enabledDrag = enabled;
-    OnTitleBarSizeChanged();
+    VERIFYHR(OnTitleBarSizeChanged());
 }
 
 _Check_return_ HRESULT CWindowChrome::SetDragRegion(RECT rf)

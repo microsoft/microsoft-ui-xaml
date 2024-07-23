@@ -814,7 +814,7 @@ _Check_return_ HRESULT
 HWTextureManager::Create(
     _In_ CWindowRenderTarget *pRenderTarget,
     _In_ MaxTextureSizeProvider& maxTextureSizeProvider,
-    AtlasRequestProvider& atlasRequestProvider,
+    _In_ AtlasRequestProvider& atlasRequestProvider,
     _Outptr_ HWTextureManager **ppHWTextureManager
     )
 {

@@ -180,17 +180,17 @@ _Check_return_ HRESULT CSvgImageSourceFailedEventArgs::CreateFrameworkPeer(_Outp
     RRETURN(DirectUI::OnFrameworkCreateSvgImageSourceFailedEventArgs(this, ppPeer));
 }
 
-_Check_return_ HRESULT CTextCompositionStartedEventArgs::CreateFrameworkPeer(_Outptr_result_nullonfailure_ IInspectable** ppPeer)
+_Check_return_ HRESULT CTextCompositionStartedEventArgs::CreateFrameworkPeer(_Outptr_ IInspectable** ppPeer)
 {
     return (DirectUI::OnFrameworkCreateTextCompositionStartedEventArgs(this, ppPeer));
 }
 
-_Check_return_ HRESULT CTextCompositionChangedEventArgs::CreateFrameworkPeer(_Outptr_result_nullonfailure_ IInspectable** ppPeer)
+_Check_return_ HRESULT CTextCompositionChangedEventArgs::CreateFrameworkPeer(_Outptr_ IInspectable** ppPeer)
 {
     return(DirectUI::OnFrameworkCreateTextCompositionChangedEventArgs(this, ppPeer));
 }
 
-_Check_return_ HRESULT CTextCompositionEndedEventArgs::CreateFrameworkPeer(_Outptr_result_nullonfailure_ IInspectable** ppPeer)
+_Check_return_ HRESULT CTextCompositionEndedEventArgs::CreateFrameworkPeer(_Outptr_ IInspectable** ppPeer)
 {
     return(DirectUI::OnFrameworkCreateTextCompositionEndedEventArgs(this, ppPeer));
 }

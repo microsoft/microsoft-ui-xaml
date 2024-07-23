@@ -1540,8 +1540,8 @@ _Check_return_ HRESULT TextSelectionManager::OnKeyDown(
 _Check_return_ HRESULT TextSelectionManager::HWRender(
     _In_ IContentRenderer* pContentRenderer,
     _In_ ITextView *pTextView,
-    _In_ bool isHighContrast,
-    _In_ uint32_t highlightRectCount,
+    bool isHighContrast,
+    uint32_t highlightRectCount,
     _In_reads_opt_(highlightRectCount) XRECTF *pHighlightRects,
     // Optional highlight rects that can be passed in if the caller is aware of them e.g. in high contrast mode where they are
     // also pushed to the drawing context. This avoids recalculation of the rects.
@@ -1625,8 +1625,8 @@ Cleanup:
 _Check_return_ HRESULT TextSelectionManager::D2DRender(
     _In_ const D2DRenderParams& rp,
     _In_ ITextView *pTextView,
-    _In_ bool isHighContrast,
-    _In_ uint32_t highlightRectCount,
+    bool isHighContrast,
+    uint32_t highlightRectCount,
     _In_reads_opt_(highlightRectCount) XRECTF *pHighlightRects
     // Optional highlight rects that can be passed in if the caller is aware of them e.g. in high contrast mode where they are
     // also pushed to the drawing context. This avoids recalculation of the rects.
@@ -2684,9 +2684,9 @@ _Check_return_ HRESULT TextSelectionManager::UpdateGripperPosition(
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT TextSelectionManager::GetSelectionCoordinates(
-    _In_ bool         fBegin,
-    _In_ bool         fAdjustForGripperPositioning,
-    _Out_ XPOINTF     *pWorldCoordinate,
+    bool              fBegin,
+    bool              fAdjustForGripperPositioning,
+    _Out_     XPOINTF *pWorldCoordinate,
     _Out_opt_ XPOINTF *pLineWorldCoordinate,
     _Out_opt_ XFLOAT  *pLineHeight)
 {
@@ -3021,7 +3021,7 @@ bool TextSelectionManager::IsSelectionVisible() const
 _Check_return_ HRESULT TextSelectionManager::ChangeSelection(
     _In_ const SelectionRange<uint32_t>& currentRange,
     _In_ GripperSide gripperSide,
-    _In_ uint32_t newPosition)
+    uint32_t newPosition)
 {
     TraceChangeSelectionBegin();
     ASSERT(gripperSide != GripperSide::Undefined);
@@ -3646,8 +3646,8 @@ void TextSelectionManager::UpdateCaretElement()
 
         IFCFAILFAST(m_pTextSelection->GetAnchorTextPosition(&anchorPosition));
         IFCFAILFAST(m_pTextSelection->GetMovingTextPosition(&movingPosition));
-        anchorPosition.GetOffset(&startOffset);
-        movingPosition.GetOffset(&endOffset);
+        IFCFAILFAST(anchorPosition.GetOffset(&startOffset));
+        IFCFAILFAST(movingPosition.GetOffset(&endOffset));
 
         if (startOffset == endOffset)    //if start == end, the caret should be created
         {
@@ -3770,8 +3770,8 @@ void TextSelectionManager::CaretOnKeyDown(
 
     IFCFAILFAST(m_pTextSelection->GetAnchorTextPosition(&anchorPosition));
     IFCFAILFAST(m_pTextSelection->GetMovingTextPosition(&movingPosition));
-    anchorPosition.GetOffset(&startOffset);
-    movingPosition.GetOffset(&endOffset);
+    IFCFAILFAST(anchorPosition.GetOffset(&startOffset));
+    IFCFAILFAST(movingPosition.GetOffset(&endOffset));
     plainTextPosition = movingPosition.GetPlainPosition();
 
     switch (pKeyEventArgs->m_platformKeyCode)
@@ -3785,7 +3785,7 @@ void TextSelectionManager::CaretOnKeyDown(
             else if (startOffset != endOffset && !pKeyEventArgs->IsShiftPressed())    //If selection made and arrow key pressed, go to the end position of selection
             {
                 textPosition = CTextPosition(plainTextPosition);
-                m_pTextSelection->GetEndTextPosition(&textPosition);
+                IFCFAILFAST(m_pTextSelection->GetEndTextPosition(&textPosition));
                 plainTextPosition = textPosition.GetPlainPosition();
             }
             else                                                                      //else move the moving position

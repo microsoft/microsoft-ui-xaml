@@ -9,21 +9,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid x:Name="root" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
+    <Grid x:Name="root" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+        RowDefinitions="Auto, *, Auto"
+        ColumnDefinitions="Auto, Auto, Auto, Auto, *, Auto, Auto">
 
         <StackPanel Orientation="Horizontal" Grid.ColumnSpan="7">
             <CheckBox x:Name="chkScrollPresenterProperties" 
@@ -76,47 +64,9 @@
 
         <ScrollViewer x:Name="svScrollPresenterProperties" Grid.Row="1" Grid.Column="1">
             <Grid Background="{ThemeResource SystemListLowColor}" Margin="4,0,4,0" Padding="6"
-                  BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1"
+                RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                ColumnDefinitions="Auto,Auto,Auto,Auto,Auto">
 
                 <TextBlock Text="ScrollPresenter Properties" Grid.Row="0" Grid.ColumnSpan="5" Foreground="Red"/>
 
@@ -336,34 +286,9 @@
         </ScrollViewer>
 
         <Grid x:Name="grdContentProperties" Grid.Row="1" Grid.Column="2" Margin="4,0,4,0" Padding="6"
-                  BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+            BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1"
+            RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
+            ColumnDefinitions="Auto, Auto, Auto, Auto, Auto">
 
             <TextBlock Text="Content Properties" Grid.Row="0" Grid.ColumnSpan="5" Foreground="Red"/>
 
@@ -459,67 +384,20 @@
             <TextBlock Text="Content Events" Grid.Row="16" Grid.ColumnSpan="5" Foreground="Red" Margin="0, 5, 0, 0"/>
 
             <CheckBox x:Name="chkLogContentEffectiveViewportChangedEvent" Grid.Row="17" Content="Log Content EffVPCgd Event?" Margin="1" Checked="ChkLogContentEffectiveViewportChangedEvent_Checked" Unchecked="ChkLogContentEffectiveViewportChangedEvent_Unchecked"/>
+            <CheckBox x:Name="chkLogContentPointerEvents" Grid.Row="18" Content="Log Content Pointer Events?" Margin="1" Checked="ChkLogContentPointerEvents_Checked" Unchecked="ChkLogContentPointerEvents_Unchecked"/>
         </Grid>
 
         <ScrollViewer x:Name="svScrollPresenterMethods" Grid.Row="1" Grid.Column="3">
             <Grid Background="{ThemeResource SystemListLowColor}" Margin="4,0,4,0" Padding="6"
-                  BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1"
+                RowDefinitions="Auto, Auto"
+                ColumnDefinitions="Auto">
 
                 <TextBlock Text="ScrollPresenter Methods" Foreground="Red"/>
 
-                <Grid Grid.Row="1">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+                <Grid Grid.Row="1"
+                    RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                    ColumnDefinitions="Auto,Auto">
 
                     <TextBlock Text="ScrollTo/By Options" Margin="2" Grid.ColumnSpan="2"/>
                     <TextBlock Text="Horizontal Offset:" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center"/>
@@ -661,15 +539,9 @@
         </ScrollViewer>
 
         <Grid x:Name="grdScrollPresenterEvents" Grid.Row="1" Grid.Column="4" Margin="4,0,4,0" Padding="6"
-                  BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1"
+            RowDefinitions="Auto, Auto, *"
+            ColumnDefinitions="*">
         
             <TextBlock Text="ScrollPresenter Events" Foreground="Red"/>
 
@@ -683,24 +555,9 @@
         </Grid>
 
         <Grid x:Name="grdPageMethods" Grid.Row="1" Grid.Column="5" Visibility="Collapsed" Background="{ThemeResource SystemListLowColor}" Margin="4,0,4,0" Padding="6"
-                  BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+            BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1"
+            RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
+            ColumnDefinitions="Auto">
 
             <TextBlock Text="Page Methods" Foreground="Red"/>
 

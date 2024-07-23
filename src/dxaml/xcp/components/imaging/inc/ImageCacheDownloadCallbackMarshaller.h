@@ -23,12 +23,12 @@ public:
 
     ~ImageCacheDownloadCallbackMarshaller() override;
 
-    HRESULT GotResponse(
+    _Check_return_ HRESULT GotResponse(
         _In_ xref_ptr<IPALDownloadResponse> response,
         HRESULT status
         ) override;
 
-    HRESULT GotData(
+    _Check_return_ HRESULT GotData(
         uint64_t size,
         uint64_t totalSize
         ) override;

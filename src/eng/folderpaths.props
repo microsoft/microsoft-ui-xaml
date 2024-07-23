@@ -195,14 +195,6 @@
     <FrameworkUdkLibPath>$(LiftedIXPInternalPackagePath)\lib\native\win10-$(NugetArch)</FrameworkUdkLibPath>
   </PropertyGroup>
 
-  <!-- Core WebView2 SDK (Need to binplace Microsoft.Web.WebView2.Core.dll) -->
-  <PropertyGroup>
-    <WebView2PackagePath>$(NugetPackageDirectory)\$(WebView2PackageName).$(WebView2Version)</WebView2PackagePath>
-    <WebView2WinrtLibPath>$(WebView2PackagePath)\runtimes\win-$(NugetArch)\native_uap</WebView2WinrtLibPath>
-    <WebView2WinMDPath>$(WebView2PackagePath)\lib</WebView2WinMDPath>
-
-  </PropertyGroup>
-
   <!-- WinUIDetails paths -->
   <PropertyGroup>
     <WinUIDetailsArch Condition="'$(Platform)' == 'Win32'">x86</WinUIDetailsArch>

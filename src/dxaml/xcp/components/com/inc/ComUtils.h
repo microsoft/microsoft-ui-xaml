@@ -85,7 +85,8 @@ namespace ctl
     HRESULT do_query_interface(_Out_ T*& pOut, _In_opt_ U *pIn)
     {
         HRESULT hr = S_OK;
-
+        pOut = nullptr;
+        
         if (pIn)
         {
             hr = iunknown_cast(pIn)->QueryInterface(__uuidof(T), (void **)&pOut);

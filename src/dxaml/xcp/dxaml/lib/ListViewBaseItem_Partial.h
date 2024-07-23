@@ -226,7 +226,7 @@ namespace DirectUI
                 _In_ IInspectable* pArgs);
 
             _Check_return_ HRESULT GetLogicalParentForAPProtected(
-                _Outptr_ DependencyObject** ppLogicalParentForAP) override;
+                _Outptr_result_maybenull_ DependencyObject** ppLogicalParentForAP) override;
 
             // Called when the user drags over this ListViewBaseItem
             IFACEMETHOD(OnDragOver)(
@@ -264,7 +264,7 @@ namespace DirectUI
                 _Out_ BOOLEAN* returnValue)
                 override;
 
-            IFACEMETHOD(GetDropOffsetToRoot)(
+            _Check_return_ IFACEMETHOD(GetDropOffsetToRoot)(
                 _Out_ wf::Point* pReturnValue)
                 override;
 

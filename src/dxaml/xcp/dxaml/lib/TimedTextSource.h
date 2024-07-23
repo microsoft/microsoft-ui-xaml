@@ -38,16 +38,16 @@ namespace DirectUI
         IFACEMETHOD(SetMTCOffset)(_In_ double offset) override;
         void ClearCues();
 
-        IFACEMETHOD(Reset)() override;
+        _Check_return_ IFACEMETHOD(Reset)() override;
 
         static bool IsVisibleTrack(_In_ wmc::ITimedMetadataTrack* pTrack, _In_ wmp::IMediaPlaybackItem* pCurrentItem);
         static bool IsSupportedTrack(_In_ wmc::ITimedMetadataTrack* pTrack, _In_ wmp::IMediaPlaybackItem* pCurrentItem);
 
         // ICueRendererCallback
         IFACEMETHOD(ResetActiveCues)() override;
-        IFACEMETHOD(GetNaturalVideoSize)(_Out_ INT32* pHeight, _Out_ INT32* pWidth) override;
-        IFACEMETHOD(get_IsFullWindow)(_Out_ BOOLEAN* isFullWindow) override;
-        IFACEMETHOD(get_Stretch)(_Out_ xaml_media::Stretch* stretch) override;
+        _Check_return_ IFACEMETHOD(GetNaturalVideoSize)(_Out_ INT32* pHeight, _Out_ INT32* pWidth) override;
+        _Check_return_ IFACEMETHOD(get_IsFullWindow)(_Out_ BOOLEAN* isFullWindow) override;
+        _Check_return_ IFACEMETHOD(get_Stretch)(_Out_ xaml_media::Stretch* stretch) override;
 
     protected:
         BEGIN_INTERFACE_MAP(CTimedTextSource, ctl::WeakReferenceSourceNoThreadId)

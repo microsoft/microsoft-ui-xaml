@@ -15,6 +15,6 @@ public:
     virtual _Check_return_ HRESULT GetParserErrorService(
         _Out_ IErrorService **ppErrorService) = 0;
 
-    virtual _Check_return_ HRESULT GetResourceManager(IPALResourceManager** ppResourceManager) = 0;
+    virtual _Check_return_ HRESULT GetResourceManager(_Outptr_ IPALResourceManager** ppResourceManager) = 0;
 };
 

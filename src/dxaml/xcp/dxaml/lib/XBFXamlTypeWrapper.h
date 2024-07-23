@@ -72,7 +72,7 @@ namespace DirectUI
         IFACEMETHOD(get_ItemType)(_Outptr_ xaml_markup::IXamlType **value);
         IFACEMETHOD(get_KeyType)(_Outptr_ xaml_markup::IXamlType **value);
         IFACEMETHOD(get_BoxedType)(_Outptr_ xaml_markup::IXamlType** value);
-        IFACEMETHOD(get_UnderlyingType)(__deref wxaml_interop::TypeName *value);
+        IFACEMETHOD(get_UnderlyingType)(_Out_ wxaml_interop::TypeName *value);
         IFACEMETHOD(ActivateInstance)(_Outptr_ IInspectable **instance);
         IFACEMETHOD(RunInitializer)();
         IFACEMETHOD(GetMember)(_In_ HSTRING name, _Outptr_ xaml_markup::IXamlMember **xamlMember);

@@ -421,7 +421,7 @@ _Check_return_ HRESULT DirectUI::MediaTransportControlsGenerated::EventRemoveHan
     case KnownEventIndex::MediaTransportControls_ThumbnailRequested:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::MediaTransportControls*, ABI::Microsoft::UI::Xaml::Media::MediaTransportControlsThumbnailRequestedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

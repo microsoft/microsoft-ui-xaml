@@ -307,7 +307,7 @@ CJupiterWindow::~CJupiterWindow()
     ReleaseInterface(m_pCoreWindow);
 }
 
-FocusObserver* CJupiterWindow::GetFocusObserverNoRef() const
+_Ret_maybenull_  _Check_return_ FocusObserver* CJupiterWindow::GetFocusObserverNoRef() const
 {
     const auto contentRoot = GetCoreWindowContentRootNoRef();
     if (contentRoot != nullptr)
@@ -564,7 +564,6 @@ _Check_return_ HRESULT CJupiterWindow::PreTranslateMessage(
             return S_OK;
         }
 
-
         if (msg->wParam > UINT_MAX)
         {
             XAML_FAIL_FAST(); // process only when wParam fits in 32 bit as required by PreTranslateKeyboardMessage API
@@ -582,10 +581,15 @@ _Check_return_ HRESULT CJupiterWindow::PreTranslateMessage(
             return S_OK;
         }
 
-
         // Accelerator key not handled, so send the message to the keyboard input source to raise the
         // normal keyboard input events instead.
         IFC_RETURN(keyboardSource->SendKeyboardMessage(msg, handled));
+
+        if (!(*handled))
+        {
+            // Systematically mark the tab or arrow key as handled to avoid CXamlIslandRoot processing it a second time, after PreTranslateMessage.
+            *handled = true;
+        }
     }
     else
     {
@@ -616,12 +620,12 @@ _Check_return_ HRESULT CJupiterWindow::PreTranslateMessage(
         if ((msg->message == WM_KEYDOWN) ||
             (msg->message == WM_SYSKEYDOWN))
         {
-                auto liveAccelerators = contentRoot->GetAllLiveKeyboardAccelerators();
-                *handled = KeyboardAcceleratorUtility::ProcessGlobalAccelerators(
-                    virtualKey,
-                    virtualKeyModifiers,
-                    liveAccelerators
-                );
+            auto liveAccelerators = contentRoot->GetAllLiveKeyboardAccelerators();
+            *handled = KeyboardAcceleratorUtility::ProcessGlobalAccelerators(
+                virtualKey,
+                virtualKeyModifiers,
+                liveAccelerators
+            );
         }
     }
 

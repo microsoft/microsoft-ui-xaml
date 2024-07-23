@@ -160,7 +160,7 @@ CVisualStateGroup::NotifyVisualStateEvent(
         xref_ptr<CUIElement> spSenderOverride;
         if (pControl)
         {
-            pControl->GetImplementationRoot(spSenderOverride.ReleaseAndGetAddressOf());
+            IFC_RETURN(pControl->GetImplementationRoot(spSenderOverride.ReleaseAndGetAddressOf()));
         }
 
         pEventManager->Raise(hEvent, TRUE /* bRefire */, this, spArgs, FALSE /*fRaiseSync */, FALSE /*fInputEvent*/, TRUE /*bAllowErrorFallback*/, spSenderOverride);

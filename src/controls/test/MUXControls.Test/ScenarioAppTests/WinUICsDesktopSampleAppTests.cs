@@ -726,5 +726,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(Convert.ToBoolean(navigationViewItemKeyPress.GetProperty(UIProperty.Get("SelectionItem.IsSelected"))));
             }
         }
+
+        [TestMethod]
+        [Description("Test MUXC's IXMP with Nullable Properties")]
+        public void MuxcIxmpNullablePropertyTest()
+        {
+            ClickSafeElement();
+            WinUISampleAppTestsUtils.VerifyText("TestTextBlock", "Loaded");
+            WinUISampleAppTestsUtils.InvokeButton("MuxcIxmpTestButton");
+            WinUISampleAppTestsUtils.VerifyText("MuxcIxmpTextBlock", "ColorPicker.Color=#FFFF0000, ColorPicker.PreviousColor=#FF0000FF, AcrylicBrush.TintLuminosityOpacity=0.3");
+        }
     }
 }

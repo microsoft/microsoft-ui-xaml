@@ -205,12 +205,12 @@ public:
     StyleCustomRuntimeData& operator=(StyleCustomRuntimeData&& other) = default;
 
     // CustomWriterRuntimeData Serialization/Deserialization
-    HRESULT PrepareStream(_In_ std::shared_ptr<SubObjectWriterResult>& customWriterStream) override;
+    _Check_return_ HRESULT PrepareStream(_In_ std::shared_ptr<SubObjectWriterResult>& customWriterStream) override;
 protected:
-    HRESULT SerializeImpl(_In_ XamlBinaryFormatSubWriter2*, _In_ const std::vector<unsigned int>&) override;
+    _Check_return_ HRESULT SerializeImpl(_In_ XamlBinaryFormatSubWriter2*, _In_ const std::vector<unsigned int>&) override;
     CustomWriterRuntimeDataTypeIndex GetTypeIndexForSerialization(_In_ const TargetOSVersion& targetOS) const override;
 public:
-    HRESULT ToString(_In_ bool verboseData, _Out_ xstring_ptr& strValue) const override;
+    _Check_return_ HRESULT ToString(_In_ bool verboseData, _Out_ xstring_ptr& strValue) const override;
 
     unsigned int GetSetterCount() const { return static_cast<unsigned int>(m_setters.size()); }
     bool IsSetterPropertyResolved(_In_ unsigned int index) const { return m_setters[index].IsPropertyResolved(); }

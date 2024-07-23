@@ -93,7 +93,7 @@ CDependencyObject::~CDependencyObject()
         m_bitFields.fParentIsInheritanceContextOnly = FALSE;
     }
 
-    ClearExpectedReferenceOnPeer();
+    IGNOREHR(ClearExpectedReferenceOnPeer());
 
     // This will call release on the core if we need to based on the fNeedToReleaseCore flag.
     ContextRelease();
@@ -416,7 +416,7 @@ void CDependencyObject::ReleaseImpl(UINT32 cRef)
     }
 }
 
-HRESULT CDependencyObject::SetAndOriginateError(
+_Check_return_ HRESULT CDependencyObject::SetAndOriginateError(
     _In_ HRESULT hrToOriginate,
     _In_ ::ErrorType eType,
     _In_ XUINT32 iErrorCode,
@@ -2667,7 +2667,7 @@ CDependencyObject::TryPegPeer(
 //
 //-----------------------------------------------------------------------------
 
-_Check_return_ HRESULT CDependencyObject::PegManagedPeer( _In_opt_ bool isShutdownException, _Out_opt_ bool* pfPegged )
+_Check_return_ HRESULT CDependencyObject::PegManagedPeer( bool isShutdownException, _Out_opt_ bool* pfPegged )
 {
     if (pfPegged)
     {
@@ -2695,7 +2695,7 @@ _Check_return_ HRESULT CDependencyObject::PegManagedPeer( _In_opt_ bool isShutdo
 }
 
 
-void CDependencyObject::UnpegManagedPeer( _In_opt_ bool isShutdownException )
+void CDependencyObject::UnpegManagedPeer( bool isShutdownException )
 {
     if( ParticipatesInManagedTreeInternal() != DOESNT_PARTICIPATE_IN_MANAGED_TREE  )
     {

@@ -796,7 +796,7 @@ CTemplateContent::LoadAndOptimize(
 
     }
 
-    spOptimizedWriter->Close();
+    IFC(spOptimizedWriter->Close());
     rspOptimizedNodeList = spOptimizedNodeList;
 
 Cleanup:
@@ -909,7 +909,7 @@ CTemplateContent::TryOptimizeValue(
 
         if (pdoLastValue)
         {
-            this->AddPeerReferenceToItem(pdoLastValue);
+            IFC_RETURN(this->AddPeerReferenceToItem(pdoLastValue));
         }
     }
 

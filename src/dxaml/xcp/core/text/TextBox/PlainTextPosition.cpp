@@ -411,7 +411,7 @@ Cleanup:
 //                       the call did not change the position.
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CPlainTextPosition::MoveToPreviousInsertionPosition(
-    _Out_opt_ bool *pFoundPosition)
+    _Out_ bool *pFoundPosition)
 {
     HRESULT hr                    = S_OK;
     XUINT32 numPositions          = 0;
@@ -448,7 +448,7 @@ Cleanup:
 //                       the call did not change the position.
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CPlainTextPosition::MoveToBackspacePosition(
-    _Out_opt_ bool *pFoundPosition)
+    _Out_ bool *pFoundPosition)
 {
     HRESULT hr                    = S_OK;
     XUINT32 oldOffset             = m_offset;

@@ -63,7 +63,7 @@ namespace DirectUI
         _Check_return_ HRESULT GetWindowContentBoundsForElementImpl(_In_ xaml::IDependencyObject* element, _Out_ wf::Rect* rect);
 
         // pubic Window API: IWindowNative
-        IFACEMETHOD(get_WindowHandle)(_Out_ HWND* pValue) override;
+        _Check_return_ IFACEMETHOD(get_WindowHandle)(_Out_ HWND* pValue) override;
         _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
 
         // Windows::UI::Composition::ICompositionSupportsSystemBackdrop implementation

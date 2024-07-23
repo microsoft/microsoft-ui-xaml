@@ -312,8 +312,8 @@ public:
         const bool renderCollapsedMask,
         bool isFillBrushAnimated,
         bool isStrokeBrushAnimated,
-        _Out_ bool* pIsFillForHitTestOnly,
-        _Out_ bool* pIsStrokeForHitTestOnly
+        _Inout_ bool* pIsFillForHitTestOnly,
+        _Inout_ bool* pIsStrokeForHitTestOnly
         )
     {
         return false;
@@ -844,7 +844,7 @@ public:
         return DirectUI::FocusState::Unfocused;
     }
 
-    virtual HRESULT UpdateFocusState(_In_ DirectUI::FocusState focusState);
+    virtual _Check_return_ HRESULT UpdateFocusState(_In_ DirectUI::FocusState focusState);
 
     virtual bool IsFocusable();
 

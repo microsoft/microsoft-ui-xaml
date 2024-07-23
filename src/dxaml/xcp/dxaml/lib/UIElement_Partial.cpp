@@ -1638,7 +1638,7 @@ _Check_return_ HRESULT UIElement::TryInvokeKeyboardAcceleratorImpl(_In_ xaml_inp
     return S_OK;
 }
 
-_Check_return_ HRESULT UIElement::OnCreateAutomationPeerImpl(xaml_automation_peers::IAutomationPeer** ppAutomationPeer)
+_Check_return_ HRESULT UIElement::OnCreateAutomationPeerImpl(_Outptr_ xaml_automation_peers::IAutomationPeer** ppAutomationPeer)
 {
     RRETURN(S_FALSE);
 }
@@ -2020,7 +2020,7 @@ UIElement::SetIsGeneratedContainer(bool value)
 
 _Check_return_ HRESULT
 UIElementFactory::get_KeyDownEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2035,7 +2035,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_PreviewKeyDownEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     IFCPTR_RETURN(ppValue);
     *ppValue = nullptr;
@@ -2046,7 +2046,7 @@ UIElementFactory::get_PreviewKeyDownEventImpl(
 
 _Check_return_ HRESULT
 UIElementFactory::get_KeyUpEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2061,7 +2061,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_PreviewKeyUpEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     IFCPTR_RETURN(ppValue);
     *ppValue = nullptr;
@@ -2071,7 +2071,7 @@ UIElementFactory::get_PreviewKeyUpEventImpl(
 
 _Check_return_ HRESULT
 UIElementFactory::get_CharacterReceivedEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     IFCPTR_RETURN(ppValue);
     *ppValue = nullptr;
@@ -2081,7 +2081,7 @@ UIElementFactory::get_CharacterReceivedEventImpl(
 
 _Check_return_ HRESULT
 UIElementFactory::get_GettingFocusEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     IFCPTR_RETURN(ppValue);
     *ppValue = NULL;
@@ -2093,7 +2093,7 @@ UIElementFactory::get_GettingFocusEventImpl(
 
 _Check_return_ HRESULT
 UIElementFactory::get_LosingFocusEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     IFCPTR_RETURN(ppValue);
     *ppValue = NULL;
@@ -2105,7 +2105,7 @@ UIElementFactory::get_LosingFocusEventImpl(
 
 _Check_return_ HRESULT
 UIElementFactory::get_NoFocusCandidateFoundEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     IFCPTR_RETURN(ppValue);
     *ppValue = NULL;
@@ -2117,7 +2117,7 @@ UIElementFactory::get_NoFocusCandidateFoundEventImpl(
 
 _Check_return_ HRESULT
 UIElementFactory::get_ContextRequestedEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     IFCPTR_RETURN(ppValue);
     *ppValue = NULL;
@@ -2156,7 +2156,7 @@ UIElementFactory::InternalPutIsEnabledImpl(
 
 _Check_return_ HRESULT
 UIElementFactory::get_PointerEnteredEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2171,7 +2171,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_PointerPressedEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2186,7 +2186,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_PointerMovedEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2201,7 +2201,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_PointerReleasedEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2216,7 +2216,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_PointerExitedEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2231,7 +2231,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_PointerCaptureLostEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2246,7 +2246,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_PointerCanceledEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2261,7 +2261,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_PointerWheelChangedEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2276,7 +2276,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_TappedEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2291,7 +2291,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_DoubleTappedEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2306,7 +2306,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_HoldingEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2321,7 +2321,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_RightTappedEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2336,7 +2336,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_RightTappedUnhandledEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2351,7 +2351,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_ManipulationStartingEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2366,7 +2366,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_ManipulationInertiaStartingEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2381,7 +2381,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_ManipulationStartedEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2396,7 +2396,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_ManipulationDeltaEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2411,7 +2411,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_ManipulationCompletedEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2426,7 +2426,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_DragEnterEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2441,7 +2441,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_DragLeaveEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2456,7 +2456,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_DragOverEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2471,7 +2471,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_DropEventImpl(
-    _Outptr_ xaml::IRoutedEvent** ppValue)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -2486,7 +2486,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 UIElementFactory::get_BringIntoViewRequestedEventImpl(
-    _Outptr_ xaml::IRoutedEvent** value)
+    _Outptr_result_maybenull_ xaml::IRoutedEvent** value)
 {
     IFCPTR_RETURN(value);
     *value = NULL;
@@ -2660,11 +2660,18 @@ UIElement::ProcessTabStop(
     ctl::ComPtr<DependencyObject> spNewCandidateTabStop;
     ctl::ComPtr<IApplicationBarService> applicationBarService;
 
+    if (ppNewTabStop)
+    {
+        *ppNewTabStop = NULL;
+    }
+
+    if (pIsTabStopOverridden)
+    {
+        *pIsTabStopOverridden = FALSE;
+    }
+    
     IFCPTR(ppNewTabStop);
     IFCPTR(pIsTabStopOverridden);
-
-    *ppNewTabStop = NULL;
-    *pIsTabStopOverridden = FALSE;
 
     if (pFocusedElement)
     {

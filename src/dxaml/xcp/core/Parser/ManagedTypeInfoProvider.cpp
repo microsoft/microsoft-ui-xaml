@@ -19,7 +19,7 @@ XamlManagedTypeInfoProvider::XamlManagedTypeInfoProvider(
 
 // Resolve an assembly given its name and return a new token used to identify
 // it.  This always fails with E_NOTIMPL right now.
-HRESULT XamlManagedTypeInfoProvider::ResolveAssembly(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::ResolveAssembly(
     _In_ const xstring_ptr& inAssemblyName,
     _Out_ XamlAssemblyToken& outAssemblyToken
     )
@@ -27,7 +27,7 @@ HRESULT XamlManagedTypeInfoProvider::ResolveAssembly(
     RRETURN(E_NOTIMPL);
 }
 
-HRESULT XamlManagedTypeInfoProvider::GetTypeNamespace(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetTypeNamespace(
     _In_ const xstring_ptr& inTypeNamespace,
     _Out_ XamlTypeNamespaceToken& outTypeNamespaceToken
     )
@@ -68,7 +68,7 @@ HRESULT XamlManagedTypeInfoProvider::GetTypeNamespace(
     return S_OK;
 }
 
-HRESULT XamlManagedTypeInfoProvider::GetTypeNamespace(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetTypeNamespace(
     _In_ const xstring_ptr& inAssemblyName,
     _In_ const xstring_ptr& inTypeNamespace,
     _Out_ XamlTypeNamespaceToken& outTypeNamespaceToken
@@ -100,7 +100,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-HRESULT XamlManagedTypeInfoProvider::GetTypeNamespaceForType(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetTypeNamespaceForType(
     _In_ const XamlTypeToken sXamlTypeToken,
     _Out_ XamlTypeNamespaceToken& rXamlTypeNamespaceToken,
     _Out_ xstring_ptr* pstrOutXamlTypeNamespaceName
@@ -121,7 +121,7 @@ HRESULT XamlManagedTypeInfoProvider::GetTypeNamespaceForType(
     RRETURN(hr);
 }
 
-HRESULT XamlManagedTypeInfoProvider::LookupTypeFlags(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::LookupTypeFlags(
     _In_ const XamlTypeToken sTypeToken,
     _In_ const XamlBitSet<BoolTypeBits>& btbLookupValues,
     _Out_ XamlBitSet<BoolTypeBits>& btbBitsChecked,
@@ -174,7 +174,7 @@ HRESULT XamlManagedTypeInfoProvider::LookupTypeFlags(
     return S_OK;
 }
 
-HRESULT XamlManagedTypeInfoProvider::LookupPropertyFlags(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::LookupPropertyFlags(
     _In_ const XamlPropertyToken sPropertyToken,
     _In_ const XamlBitSet<BoolPropertyBits>& bpbLookupValues,
     _Out_ XamlBitSet<BoolPropertyBits>& bpbBitsChecked,
@@ -213,7 +213,7 @@ HRESULT XamlManagedTypeInfoProvider::LookupPropertyFlags(
 // corresponding to the type if found or an empty token if it was not resolved.
 // If the namespace token has the handle 0, we will search the known DXaml
 // namespaces in order.
-HRESULT XamlManagedTypeInfoProvider::ResolveTypeName(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::ResolveTypeName(
     _In_ const XamlTypeNamespaceToken inNamespaceToken,
     _In_ const xstring_ptr& inTypeName,
     _Out_ XamlTypeToken& rXamlType
@@ -254,7 +254,7 @@ HRESULT XamlManagedTypeInfoProvider::ResolveTypeName(
     return S_OK;
 }
 
-HRESULT XamlManagedTypeInfoProvider::ResolvePropertyName(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::ResolvePropertyName(
     _In_ const XamlTypeToken sTypeToken,
     _In_ const xstring_ptr& inPropertyName,
     _Out_ XamlPropertyToken& outProperty,
@@ -311,7 +311,7 @@ HRESULT XamlManagedTypeInfoProvider::ResolvePropertyName(
     return S_OK;
 }
 
-HRESULT XamlManagedTypeInfoProvider::ResolveDependencyPropertyName(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::ResolveDependencyPropertyName(
     _In_ const XamlTypeToken sTypeToken,
     _In_ const xstring_ptr& inPropertyName,
     _Out_ XamlPropertyToken& outProperty,
@@ -348,7 +348,7 @@ HRESULT XamlManagedTypeInfoProvider::ResolveDependencyPropertyName(
     return S_OK;
 }
 
-HRESULT XamlManagedTypeInfoProvider::GetTypeName(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetTypeName(
     _In_ const XamlTypeToken sTypeToken,
     _Out_ xstring_ptr* pstrOutTypeName
     )
@@ -368,7 +368,7 @@ HRESULT XamlManagedTypeInfoProvider::GetTypeName(
 
 }
 
-HRESULT XamlManagedTypeInfoProvider::GetTypeFullName(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetTypeFullName(
     _In_ const XamlTypeToken sTypeToken,
     _Out_ xstring_ptr* pstrOutTypeFullName
     )
@@ -388,7 +388,7 @@ HRESULT XamlManagedTypeInfoProvider::GetTypeFullName(
 
 }
 
-HRESULT XamlManagedTypeInfoProvider::GetPropertyName(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetPropertyName(
     _In_ const XamlPropertyToken sPropertyToken,
     _Out_ xstring_ptr* pstrOutPropertyName
     )
@@ -406,7 +406,7 @@ HRESULT XamlManagedTypeInfoProvider::GetPropertyName(
     return S_OK;
 }
 
-HRESULT XamlManagedTypeInfoProvider::GetBaseType(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetBaseType(
     _In_ const XamlTypeToken sTypeToken,
     _Out_ XamlTypeToken& rBaseTypeToken
     )
@@ -422,7 +422,7 @@ HRESULT XamlManagedTypeInfoProvider::GetBaseType(
     return S_OK;
 }
 
-HRESULT XamlManagedTypeInfoProvider::GetDeclaringType(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetDeclaringType(
     _In_ const XamlPropertyToken sPropertyToken,
     _Out_ XamlTypeToken& rDeclaringTypeToken
     )
@@ -438,7 +438,7 @@ HRESULT XamlManagedTypeInfoProvider::GetDeclaringType(
     return S_OK;
 }
 
-HRESULT XamlManagedTypeInfoProvider::IsAssignableFrom(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::IsAssignableFrom(
     _In_ const XamlTypeToken sDerivedTypeToken,
     _In_ const XamlTypeToken rxtBaseType,
     _Out_ bool& bOut
@@ -454,7 +454,7 @@ HRESULT XamlManagedTypeInfoProvider::IsAssignableFrom(
     return S_OK;
 }
 
-HRESULT XamlManagedTypeInfoProvider::GetContentProperty(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetContentProperty(
     _In_ const XamlTypeToken sTypeToken,
     _Out_ XamlPropertyToken& rPropertyToken,
     _Out_ XamlTypeToken& rContentPropertyTypeToken
@@ -496,7 +496,7 @@ HRESULT XamlManagedTypeInfoProvider::GetContentProperty(
 // content from the parser before inserting into the collection.  The
 // parser won't actually wrap the content, but merely knows it's safe to
 // pass literal content to the collection which will handle it.
-HRESULT XamlManagedTypeInfoProvider::GetContentWrapper(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetContentWrapper(
     _In_ const XamlTypeToken sTypeToken,
     _Out_opt_ XamlTypeToken& rContentWrapperTypeToken
     )
@@ -509,7 +509,7 @@ HRESULT XamlManagedTypeInfoProvider::GetContentWrapper(
     RRETURN(hr);
 }
 
-HRESULT XamlManagedTypeInfoProvider::GetRuntimeNameProperty(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetRuntimeNameProperty(
     _In_ const XamlTypeToken sTypeToken,
     _Out_ XamlPropertyToken& rPropertyToken,
     _Out_ XamlTypeToken& rPropertyTypeToken
@@ -527,7 +527,7 @@ HRESULT XamlManagedTypeInfoProvider::GetRuntimeNameProperty(
     RRETURN(S_OK);
 }
 
-HRESULT XamlManagedTypeInfoProvider::GetDictionaryKeyProperty(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetDictionaryKeyProperty(
     _In_ const XamlTypeToken sTypeToken,
     _Out_ XamlPropertyToken& rPropertyToken,
     _Out_ XamlTypeToken& rPropertyTypeToken
@@ -540,7 +540,7 @@ HRESULT XamlManagedTypeInfoProvider::GetDictionaryKeyProperty(
     RRETURN(S_OK);
 }
 
-HRESULT XamlManagedTypeInfoProvider::GetXmlLangProperty(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetXmlLangProperty(
     _In_ const XamlTypeToken sTypeToken,
     _Out_ XamlPropertyToken& rPropertyToken,
     _Out_ XamlTypeToken& rPropertyTypeToken
@@ -553,7 +553,7 @@ HRESULT XamlManagedTypeInfoProvider::GetXmlLangProperty(
     RRETURN(S_OK);
 }
 
-HRESULT XamlManagedTypeInfoProvider::GetCollectionItemType(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetCollectionItemType(
     _In_ const XamlTypeToken sCollectionTypeToken,
     _Out_ XamlTypeToken& rCollectionItemTypeToken
     )
@@ -588,7 +588,7 @@ HRESULT XamlManagedTypeInfoProvider::GetCollectionItemType(
     return S_OK;
 }
 
-HRESULT XamlManagedTypeInfoProvider::GetTextSyntaxForType(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetTextSyntaxForType(
     _In_ const XamlTypeToken sTypeToken,
     _Out_ XamlTypeToken& rsTextSyntaxTypeToken
     )
@@ -620,7 +620,7 @@ HRESULT XamlManagedTypeInfoProvider::GetTextSyntaxForType(
     return S_OK;
 }
 
-HRESULT XamlManagedTypeInfoProvider::GetTextSyntaxForProperty(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetTextSyntaxForProperty(
     _In_ const XamlPropertyToken sPropertyToken,
     _Out_ XamlTypeToken& rsTextSyntaxTypeToken
     )
@@ -638,7 +638,7 @@ HRESULT XamlManagedTypeInfoProvider::GetTextSyntaxForProperty(
     return S_OK;
 }
 
-HRESULT XamlManagedTypeInfoProvider::GetCore(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetCore(
     _Outptr_ CCoreServices **ppCore
     )
 {
@@ -654,7 +654,7 @@ HRESULT XamlManagedTypeInfoProvider::GetCore(
     return S_OK;
 }
 
-HRESULT XamlManagedTypeInfoProvider::GetSourceAssembly(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetSourceAssembly(
     _Out_ xstring_ptr* pstrOutssSourceAssembly
     )
 {
@@ -666,7 +666,7 @@ HRESULT XamlManagedTypeInfoProvider::GetSourceAssembly(
 
 }
 
-HRESULT XamlManagedTypeInfoProvider::GetSchemaContext(
+_Check_return_ HRESULT XamlManagedTypeInfoProvider::GetSchemaContext(
     _Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext
     )
 {

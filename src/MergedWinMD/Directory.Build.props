@@ -7,6 +7,15 @@
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  
+  <PropertyGroup>
+    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == ''">$(MSBuildThisFileDirectory)..\packages</NuGetPackageRoot>
+
+    <!--Causes loading of winrt dependencies from CoreWebView2 SDK package - required for any usage from WinUI3/WinAppSDK.
+        Note end-user WASDK apps get this implicitly via $(MicrosoftWindowsAppSDKPackageDir). -->
+    <WebView2UseWinRT>true</WebView2UseWinRT>
+  </PropertyGroup>
+  <Import Project="$(NuGetPackageRoot)\Microsoft.Web.WebView2.$(WebView2Version)\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Web.WebView2.$(WebView2Version)\build\native\Microsoft.Web.WebView2.targets')" />
 
   <PropertyGroup Label="Globals">
     <XamlMSBuildAutoGenerate>false</XamlMSBuildAutoGenerate>

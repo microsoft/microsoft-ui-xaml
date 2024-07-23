@@ -45,7 +45,7 @@ namespace DirectUI
             // IsEnabled property changed handler.
             _Check_return_ HRESULT OnIsEnabledChanged(_In_ DirectUI::IsEnabledChangedEventArgs* pArgs) override;
 
-            IFACEMETHOD(OnKeyDown)(_In_ xaml_input::IKeyRoutedEventArgs* pArgs) override;
+            _Check_return_ IFACEMETHOD(OnKeyDown)(_In_ xaml_input::IKeyRoutedEventArgs* pArgs) override;
 
         private:
             // Creates a new DateTimeFormatter with the given parameters.
@@ -60,7 +60,7 @@ namespace DirectUI
             _Check_return_ HRESULT GetYearFormatter(
                 _In_ HSTRING strFormat,
                 _In_ HSTRING strCalendarIdentifier,
-                _Out_ wg::DateTimeFormatting::IDateTimeFormatter** ppDateTimeFormatter);
+                _Outptr_ wg::DateTimeFormatting::IDateTimeFormatter** ppDateTimeFormatter);
 
             // Returns the cached DateTimeFormatter for the given Calendar - Format pair for generating the strings
             // representing the months in our date range. If there isn't a cached DateTimeFormatter instance,
@@ -68,7 +68,7 @@ namespace DirectUI
             _Check_return_ HRESULT GetMonthFormatter(
                 _In_ HSTRING strFormat,
                 _In_ HSTRING strCalendarIdentifier,
-                _Out_ wg::DateTimeFormatting::IDateTimeFormatter** ppDateTimeFormatter);
+                _Outptr_ wg::DateTimeFormatting::IDateTimeFormatter** ppDateTimeFormatter);
 
             // Returns the cached DateTimeFormatter for the given Calendar - Format pair for generating the strings
             // representing the days in our date range. If there isn't a cached DateTimeFormatter instance,
@@ -76,7 +76,7 @@ namespace DirectUI
             _Check_return_ HRESULT GetDayFormatter(
                 _In_ HSTRING strFormat,
                 _In_ HSTRING strCalendarIdentifier,
-                _Out_ wg::DateTimeFormatting::IDateTimeFormatter** ppDateTimeFormatter);
+                _Outptr_ wg::DateTimeFormatting::IDateTimeFormatter** ppDateTimeFormatter);
 
             // Returns the cached DateTimeFormatter for the given Calendar for generating the strings
             // representing the current Date for display on a FlyoutButton. If there isn't a cached

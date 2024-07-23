@@ -17,7 +17,7 @@ _Check_return_ HRESULT StackingLayoutStrategy::Initialize()
 }
 
 _Check_return_ HRESULT
-StackingLayoutStrategy::SetLayoutDataInfoProviderImpl(_Out_ xaml_controls::ILayoutDataInfoProvider* pProvider) /*override*/
+StackingLayoutStrategy::SetLayoutDataInfoProviderImpl(_In_ xaml_controls::ILayoutDataInfoProvider* pProvider) /*override*/
 {
     _spDataInfoProvider = pProvider;
     _layoutStrategyImpl.SetLayoutDataInfoProviderNoRef(pProvider);
@@ -44,7 +44,7 @@ StackingLayoutStrategy::EndMeasureImpl() /*override*/
 // returns the size we should use to measure a container or header with
 // itemIndex - indicates an index of valid item or -1 for general, non-special items
 _Check_return_ HRESULT 
-StackingLayoutStrategy::GetElementMeasureSizeImpl(_Out_ xaml_controls::ElementType elementType, _Out_ INT elementIndex, _Out_ wf::Rect windowConstraint, _Out_ wf::Size* pReturnValue) /*override*/
+StackingLayoutStrategy::GetElementMeasureSizeImpl(_In_ xaml_controls::ElementType elementType, _In_ INT elementIndex, _In_ wf::Rect windowConstraint, _Out_ wf::Size* pReturnValue) /*override*/
 {
     *pReturnValue = {};
     *pReturnValue = _layoutStrategyImpl.GetElementMeasureSize(elementType, elementIndex, windowConstraint);
@@ -367,7 +367,7 @@ int StackingLayoutStrategy::GetSpecialGroupIndex() const
 }
 
 _Check_return_ HRESULT
-StackingLayoutStrategy::RegisterSpecialContainerSize(_Out_ INT itemIndex, _Out_ wf::Size containerDesiredSize)
+StackingLayoutStrategy::RegisterSpecialContainerSize(INT itemIndex, _In_ wf::Size containerDesiredSize)
 {
     _layoutStrategyImpl.RegisterSpecialContainerSize(itemIndex, containerDesiredSize);
 
@@ -375,7 +375,7 @@ StackingLayoutStrategy::RegisterSpecialContainerSize(_Out_ INT itemIndex, _Out_ 
 }
 
 _Check_return_ HRESULT 
-StackingLayoutStrategy::RegisterSpecialHeaderSize(_Out_ INT groupIndex, _Out_ wf::Size headerDesiredSize)
+StackingLayoutStrategy::RegisterSpecialHeaderSize(INT groupIndex, _In_ wf::Size headerDesiredSize)
 {
     _layoutStrategyImpl.RegisterSpecialHeaderSize(groupIndex, headerDesiredSize);
 
@@ -385,7 +385,7 @@ StackingLayoutStrategy::RegisterSpecialHeaderSize(_Out_ INT groupIndex, _Out_ wf
 #pragma endregion
 
 // Notify the layout strategy of the new header placement.
-void StackingLayoutStrategy::SetGroupHeaderStrategy(_Out_ GroupHeaderStrategy strategy)
+void StackingLayoutStrategy::SetGroupHeaderStrategy(_In_ GroupHeaderStrategy strategy)
 {
     return _layoutStrategyImpl.SetGroupHeaderStrategy(strategy);
 }

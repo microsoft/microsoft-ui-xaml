@@ -94,7 +94,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT Binding::get_PathImpl(_In_ xaml::IPropertyPath **ppValue)
+_Check_return_ HRESULT Binding::get_PathImpl(_Outptr_ xaml::IPropertyPath **ppValue)
 {
     HRESULT hr = S_OK;
     wrl_wrappers::HString strPath;

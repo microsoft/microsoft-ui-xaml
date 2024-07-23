@@ -188,7 +188,7 @@ _Check_return_ HRESULT CSoftwareBitmapSource::OnSoftwareBitmapImageAvailable(_In
     {
         if (m_closeOnCompletion)
         {
-            CloseSoftwareBitmap();
+            IFC(CloseSoftwareBitmap());
             m_closeOnCompletion = false;
         }
 

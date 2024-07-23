@@ -150,4 +150,10 @@
     </PropertyGroup>
 
     <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <AdditionalOptions Condition="'$(ExperimentalAnalysis)'=='true'">%(AdditionalOptions) /analyze-</AdditionalOptions>
+            <TreatWarningAsError Condition="'$(ExperimentalAnalysis)'=='true'">true</TreatWarningAsError>
+        </ClCompile>
+    </ItemDefinitionGroup>
 </Project>

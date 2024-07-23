@@ -21,7 +21,8 @@ public:
     bool TryGetVisualState(_In_z_ const WCHAR* stateName,
         _Out_ int* stateIndex, _Out_ int* groupIndex);
 
-    bool TryGetVisualState(_In_ const VisualStateToken vsToken,
+    _Success_(return) _Must_inspect_result_
+     bool TryGetVisualState(_In_ const VisualStateToken vsToken,
         _Out_ int* stateIndex, _Out_ int* groupIndex);
 
     int GetGroupCount() const;

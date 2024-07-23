@@ -10,7 +10,7 @@
 #include "ColorUtil.h"
 #include <DependencyObjectDCompRegistry.h>
 
-CompositionAnimationConversionResult CColorAnimationUsingKeyFrames::MakeCompositionKeyFrameAnimationVirtual(_Inout_ CompositionAnimationConversionContext* myContext)
+_Check_return_ CompositionAnimationConversionResult CColorAnimationUsingKeyFrames::MakeCompositionKeyFrameAnimationVirtual(_Inout_ CompositionAnimationConversionContext* myContext)
 {
     wrl::ComPtr<WUComp::IColorKeyFrameAnimation> colorAnimation = myContext->CreateEmptyColorAnimation();
     colorAnimation.As(&m_spWUCAnimation);

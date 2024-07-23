@@ -95,7 +95,7 @@ namespace Flyweight
 
         template <typename ...Types>
         PropertyValueObjectWrapper(
-            _In_ Types&&... args)
+            Types&&... args)
             : m_value(std::forward<Types>(args)...)
         {}
 

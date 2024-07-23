@@ -22,10 +22,10 @@ namespace MUXControlsTestApp
         private int _scrollViewResetCorrelationId = -1;
         private int _scrollViewOffsetChangeCorrelationId = -1;
         private int _scrollViewZoomFactorChangeCorrelationId = -1;
-        private ObservableCollection<Recipe> _colRecipes = null;
-        private List<Recipe> _lstRecipes = null;
-        private List<Recipe> _lstLargeRecipes = null;
-        private DataTemplate[] _recipeTemplates = new DataTemplate[5];
+        private ObservableCollection<Entity> _colEntities = null;
+        private List<Entity> _lstEntities = null;
+        private List<Entity> _lstLargeEntities = null;
+        private DataTemplate[] _entityTemplates = new DataTemplate[6];
         private LinedFlowLayout _linedFlowLayout = null;
         private StackLayout _stackLayout = null;
         private UniformGridLayout _uniformGridLayout = null;
@@ -208,12 +208,12 @@ namespace MUXControlsTestApp
                     {
                         int templateIndex = cmbItemTemplate.SelectedIndex - 1;
 
-                        if (_recipeTemplates[templateIndex] == null)
+                        if (_entityTemplates[templateIndex] == null)
                         {
-                            _recipeTemplates[templateIndex] = Resources["recipeTemplate" + cmbItemTemplate.SelectedIndex.ToString()] as DataTemplate;
+                            _entityTemplates[templateIndex] = Resources["entityTemplate" + cmbItemTemplate.SelectedIndex.ToString()] as DataTemplate;
                         }
 
-                        itemsView.ItemTemplate = _recipeTemplates[templateIndex];
+                        itemsView.ItemTemplate = _entityTemplates[templateIndex];
                     }
 
                     UpdateLinedFlowLayoutLineHeight();
@@ -238,43 +238,43 @@ namespace MUXControlsTestApp
                             itemsView.ItemsSource = null;
                             break;
                         case 1:
-                            if (_lstRecipes == null)
+                            if (_lstEntities == null)
                             {
-                                _lstRecipes = new List<Recipe>(
+                                _lstEntities = new List<Entity>(
                                                 Enumerable.Range(0, 50).Select(k =>
-                                                    new Recipe
+                                                    new Entity
                                                     {
                                                         ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", k % 8 + 1)),
                                                         Description = k + " - " + _lorem.Substring(0, k)
                                                     }));
                             }
-                            itemsView.ItemsSource = _lstRecipes;
+                            itemsView.ItemsSource = _lstEntities;
                             break;
                         case 2:
-                            if (_lstLargeRecipes == null)
+                            if (_lstLargeEntities == null)
                             {
-                                _lstLargeRecipes = new List<Recipe>(
+                                _lstLargeEntities = new List<Entity>(
                                                 Enumerable.Range(0, 1000).Select(k =>
-                                                    new Recipe
+                                                    new Entity
                                                     {
                                                         ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", k % 8 + 1)),
                                                         Description = k + " - " + _lorem.Substring(0, k % 50 + 1)
                                                     }));
                             }
-                            itemsView.ItemsSource = _lstLargeRecipes;
+                            itemsView.ItemsSource = _lstLargeEntities;
                             break;
                         case 3:
-                            if (_colRecipes == null)
+                            if (_colEntities == null)
                             {
-                                _colRecipes = new ObservableCollection<Recipe>(
+                                _colEntities = new ObservableCollection<Entity>(
                                                 Enumerable.Range(0, 25).Select(k =>
-                                                    new Recipe
+                                                    new Entity
                                                     {
                                                         ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", k % 8 + 1)),
                                                         Description = k + " - " + _lorem.Substring(0, 2 * k)
                                                     }));
                             }
-                            itemsView.ItemsSource = _colRecipes;
+                            itemsView.ItemsSource = _colEntities;
                             break;
                     }
                 }
@@ -373,7 +373,7 @@ namespace MUXControlsTestApp
 
             args.MinWidth = 80.0;
 
-            double[] desiredAspectRatios = new double[chkUseFastPath.IsChecked == true ? (itemsView.ItemsSource as IReadOnlyCollection<Recipe>).Count : args.ItemsRangeRequestedLength];
+            double[] desiredAspectRatios = new double[chkUseFastPath.IsChecked == true ? (itemsView.ItemsSource as IReadOnlyCollection<Entity>).Count : args.ItemsRangeRequestedLength];
 
             if (chkUseFastPath.IsChecked == true)
             {
@@ -579,42 +579,42 @@ namespace MUXControlsTestApp
                     switch (cmbItemsSource.SelectedIndex)
                     {
                         case 1:                            
-                            if (_lstRecipes != null)
+                            if (_lstEntities != null)
                             {
-                                int rank = _lstRecipes.Count;
-                                Recipe recipe = new Recipe
+                                int rank = _lstEntities.Count;
+                                Entity entity = new Entity
                                 {
                                     ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", rank % 8 + 1)),
                                     Description = rank + " - " + _lorem.Substring(0, rank)
                                 };
 
-                                _lstRecipes.Insert(index, recipe);
+                                _lstEntities.Insert(index, entity);
                             }
                             break;
                         case 2:
-                            if (_lstLargeRecipes != null)
+                            if (_lstLargeEntities != null)
                             {
-                                int rank = _lstLargeRecipes.Count;
-                                Recipe recipe = new Recipe
+                                int rank = _lstLargeEntities.Count;
+                                Entity entity = new Entity
                                 {
                                     ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", rank % 8 + 1)),
                                     Description = rank + " - " + _lorem.Substring(0, rank % 50 + 1)
                                 };
 
-                                _lstLargeRecipes.Insert(index, recipe);
+                                _lstLargeEntities.Insert(index, entity);
                             }
                             break;
                         case 3:
-                            if (_colRecipes != null)
+                            if (_colEntities != null)
                             {
-                                int rank = _colRecipes.Count;
-                                Recipe recipe = new Recipe
+                                int rank = _colEntities.Count;
+                                Entity entity = new Entity
                                 {
                                     ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", rank % 8 + 1)),
                                     Description = rank + " - " + _lorem.Substring(0, 2 * rank)
                                 };
 
-                                _colRecipes.Insert(index, recipe);
+                                _colEntities.Insert(index, entity);
                             }
                             break;
                     }
@@ -635,21 +635,21 @@ namespace MUXControlsTestApp
                     switch (cmbItemsSource.SelectedIndex)
                     {
                         case 1:
-                            if (_lstRecipes != null)
+                            if (_lstEntities != null)
                             {
-                                _lstRecipes.RemoveAt(index);
+                                _lstEntities.RemoveAt(index);
                             }
                             break;
                         case 2:
-                            if (_lstLargeRecipes != null)
+                            if (_lstLargeEntities != null)
                             {
-                                _lstLargeRecipes.RemoveAt(index);
+                                _lstLargeEntities.RemoveAt(index);
                             }
                             break;
                         case 3:
-                            if (_colRecipes != null)
+                            if (_colEntities != null)
                             {
-                                _colRecipes.RemoveAt(index);
+                                _colEntities.RemoveAt(index);
                             }
                             break;
                     }

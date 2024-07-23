@@ -436,7 +436,7 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerInput(
             IFC(contextMenuTimer->Stop());
         }
 
-        IFC(ReleasePointerCaptureById(pointerId));
+        IFC(ReleasePointerCaptureById(pointerId, pMsg->m_pPointerPointNoRef));
 
         // Fire PointerCaptureLost if there is no captured before.
         if (pPointerCaptureDO == NULL)
@@ -641,7 +641,7 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerInput(
 
         if (mapPointerState.ContainsKey(pointerId) && pPointerCaptureDO)
         {
-            IFC(ReleasePointerCapture(pPointerCaptureDO, pPointerArgs->m_pPointer));
+            IFC(ReleasePointerCapture(pPointerCaptureDO, pPointerArgs->m_pPointer, pMsg->m_pPointerPointNoRef));
         }
         break;
     }
@@ -1292,7 +1292,7 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerEnterLeave(
     _In_ bool bIgnoreHitTestVisibleForPointerExited,
     _In_ bool bAsyncEvent,
     _In_ bool bAddEventRequest,
-    _Out_ bool* enterLeaveFound)
+    _Out_opt_ bool* enterLeaveFound)
 {
     CDependencyObject *pVisual = pPointerEnterDO;
     xref_ptr<CDependencyObject> pReleaseVisual;
@@ -1460,7 +1460,7 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerEnterLeave(
     }
 
     CDependencyObject* rootElement= m_inputManager.GetContentRoot()->GetVisualTreeNoRef()->GetRootElementNoRef();
-    m_inputManager.m_coreServices.GetInputServices()->UpdateCursor(rootElement);
+    IFC_RETURN(m_inputManager.m_coreServices.GetInputServices()->UpdateCursor(rootElement));
 
     return S_OK;
 }
@@ -1575,7 +1575,7 @@ _Check_return_ HRESULT PointerInputProcessor::GetRemovedPointerExitedEventReques
     return S_OK; //RRETURN_REMOVAL
 }
 
-_Check_return_ HRESULT PointerInputProcessor::ReleasePointerCapture(_In_ CDependencyObject *pObject, _In_ CPointer* pPointer)
+_Check_return_ HRESULT PointerInputProcessor::ReleasePointerCapture(_In_ CDependencyObject *pObject, _In_ CPointer* pPointer, _In_ ixp::IPointerPoint* pointerPoint)
 {
     XUINT32 pointerId = pPointer->GetPointerId();
     std::shared_ptr<CPointerState> pointerState;
@@ -1647,16 +1647,18 @@ _Check_return_ HRESULT PointerInputProcessor::ReleasePointerCapture(_In_ CDepend
     pArgs->m_pPointer = pPointer;
     pPointer->AddRef();
 
-    ixp::IPointerPoint* pointerPoint;
-    CXamlIslandRoot* pIslandRoot = m_inputManager.GetContentRoot()->GetXamlIslandRootNoRef();
-    if (pIslandRoot)
+    if (pointerPoint == nullptr)
     {
-        pointerPoint = (pIslandRoot->GetPreviousPointerPoint()).Get();
-    }
-    else
-    {
-        CJupiterWindow* jupiterWindow = DirectUI::DXamlServices::GetCurrentJupiterWindow();
-        pointerPoint = (jupiterWindow->GetInputSiteAdapterPointerPoint()).Get();
+        CXamlIslandRoot* pIslandRoot = m_inputManager.GetContentRoot()->GetXamlIslandRootNoRef();
+        if (pIslandRoot)
+        {
+            pointerPoint = (pIslandRoot->GetPreviousPointerPoint()).Get();
+        }
+        else
+        {
+            CJupiterWindow* jupiterWindow = DirectUI::DXamlServices::GetCurrentJupiterWindow();
+            pointerPoint = (jupiterWindow->GetInputSiteAdapterPointerPoint()).Get();
+        }
     }
     pArgs->m_pPointerPoint = pointerPoint;
 
@@ -1853,7 +1855,7 @@ _Check_return_ HRESULT PointerInputProcessor::ReleaseAllPointerCaptures(
     return S_OK;
 }
 
-_Check_return_ HRESULT PointerInputProcessor::ReleasePointerCaptureById(_In_ XINT32 releasePointerId)
+_Check_return_ HRESULT PointerInputProcessor::ReleasePointerCaptureById(_In_ XINT32 releasePointerId, _In_ ixp::IPointerPoint* pointerPoint)
 {
     std::shared_ptr<CPointerState> pointerState;
     CDependencyObject* pPointerCaptureDO = NULL;
@@ -1870,7 +1872,7 @@ _Check_return_ HRESULT PointerInputProcessor::ReleasePointerCaptureById(_In_ XIN
             pPointerCaptureDO = pointerState->GetCaptureDO();
             if (pPointerCaptureDO)
             {
-                IFC_RETURN(ReleasePointerCapture(pPointerCaptureDO, pointerState->GetCapturePointer()));
+                IFC_RETURN(ReleasePointerCapture(pPointerCaptureDO, pointerState->GetCapturePointer(), pointerPoint));
             }
 
             if (pointerState->GetEnterDO() && IsInputTypeTreatedLikeTouch(pointerState->GetPointerInputType()) &&
@@ -1905,7 +1907,7 @@ bool PointerInputProcessor::EnsureIslandMouseCaptureReleased()
     {
         if (CXamlIslandRoot* xamlIslandRoot = contentRoot->GetXamlIslandRootNoRef())
         {
-            xamlIslandRoot->ReleasePointerCapture();
+            IFCFAILFAST(xamlIslandRoot->ReleasePointerCapture());
             return true;  // Had capture
         }
     }

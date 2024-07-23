@@ -37,14 +37,23 @@
         Microsoft.UI.Xaml.Controls.dll;
       </_WinUIAssembliesWithMatchingWinMD>
     </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Store CoreWebView2WinMD for use in winrtclassregistration.targets -->
+    <CoreWebView2WinMD Include="%(ReferencePath.Identity)" Condition="'%(ReferencePath.Filename)'=='Microsoft.Web.WebView2.Core'">
+        <ImplementationDll>Microsoft.Web.WebView2.Core.dll</ImplementationDll>
+        <Merge>false</Merge>
+    </CoreWebView2WinMD>
+  </ItemGroup>
+
     <ItemGroup>
         <!-- 
           Only grab references we want to merge; due to the special way we compile midl, where we have
           distinct merge projects, there are differences in how we want to handle this for product vs. test code.
           Test code won't merge any referenced metadata files, since any project reference should just be used as
-          a strict reference.
+          a strict reference. Also exclude the external Microsoft.Web.WebView2.Core.winmd.
         -->
-      <_PossibleWinMdInputsForMerge Include="%(ReferencePath.Identity)" Condition="'%(ReferencePath.Merge)'!='false' and '%(ReferencePath.IsSystemReference)'!='true'">
+      <_PossibleWinMdInputsForMerge Include="%(ReferencePath.Identity)" Condition="'%(ReferencePath.Merge)'!='false' and '%(ReferencePath.IsSystemReference)'!='true' and '%(ReferencePath.Filename)'!='Microsoft.Web.WebView2.Core'">
         <ImplementationDll>%(ReferencePath.ImplementationDll)</ImplementationDll>
         <!--
           If the Implementation of the reference (which is returned via ProjectReference) matches the filename of one of the WinUI assemblies
@@ -64,9 +73,9 @@
       <!--
         If the winmd reference doesn't have merge specified, then it's only used as a metadata dir. This is only necessary while we have this custom
         build logic, and/or we merge in IXP. Once we stop merging IXP, we should be able to move over to consume the Microsoft.Windows.MidlRT package
-        and remove this custom build logic
+        and remove this custom build logic. Also include dir with Microsoft.Web.WebView2.Core.winmd (referenced by Xaml WebView2 API).
       -->
-      <_WinMdReferenceDirectories Include="%(ReferencePath.RootDir)%(ReferencePath.Directory)" Condition="'%(ReferencePath.Merge)'=='false'" />
+      <_WinMdReferenceDirectories Include="%(ReferencePath.RootDir)%(ReferencePath.Directory)" Condition="'%(ReferencePath.Merge)'=='false' or '%(ReferencePath.Filename)'=='Microsoft.Web.WebView2.Core'"/>
       <_WinMdReferenceDirectories Include="$(FacadeWinmdDir)"/>
       <_WinMdReferenceDirectories Condition="'$(XamlLightup)'=='true'" Include="$(SDKReferencesPath)"/>
       <_WinMdReferenceDirectories Include="@(_PossibleWinMdInputsForMerge->'%(RelativeDir)'->Distinct())" Condition="'$(TestCode)'=='true'"/>
@@ -90,7 +99,6 @@
       <IncludePaths>@(_WinMdInputsForMerge->'-i %(Identity)', ' ')</IncludePaths>
       <MetadataDirs>@(_WinMdReferenceDirectories->'-metadata_dir %(Identity)', ' ')</MetadataDirs>
       <WinMdStripMetadata Condition="'$(StripVelocityFromMetadata)'=='true'">-createPublicMetadata -transformExperimental:transform</WinMdStripMetadata>
-      
     </PropertyGroup>
 
     <Exec Command="$(MdMerge) $(MetadataDirs) $(IncludePaths) -o $(WinMdOutputPath) -partial $(WinMdNamespaceOptions) $(WinMdStripMetadata)" />

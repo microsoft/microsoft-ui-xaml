@@ -20,7 +20,7 @@ namespace DirectUI
         bool IsExternalObjectReference() override
         { return true; }
 
-        void get_Target(_COM_Outptr_ IInspectable **ppTarget)
+        void get_Target(_Outptr_result_maybenull_ IInspectable **ppTarget)
         {
             *ppTarget = m_Target.Get();
             AddRefInterface(*ppTarget);

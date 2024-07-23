@@ -883,7 +883,7 @@ CUIElement::SetValue(_In_ const SetValueParams& args)
                 xref_ptr<CInputServices> inputServices(GetContext()->GetInputServices());
                 if (inputServices && IsActive())
                 {
-                    inputServices->UpdateCursor(this);
+                    IFC(inputServices->UpdateCursor(this));
                 }
 
                 break;
@@ -910,7 +910,7 @@ bool CUIElement::OnSetShadowValue(_In_ const SetValueParams& args)
     {
         if (hasShadowNew)
         {
-            SetRequiresComposition(CompositionRequirement::ShadowCaster, IndependentAnimationType::None);
+            IFCFAILFAST(SetRequiresComposition(CompositionRequirement::ShadowCaster, IndependentAnimationType::None));
         }
         else
         {
@@ -1504,7 +1504,7 @@ _Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeO
                 CInputServices* inputServicesNoRef = GetContext()->GetInputServices();
                 if (inputServicesNoRef)
                 {
-                    inputServicesNoRef->EnsureElementIslandInputSiteForDManipService(this);
+                    IFC_RETURN(inputServicesNoRef->EnsureElementIslandInputSiteForDManipService(this));
                 }
 
                 IFC_RETURN(dmContainer->NotifyManipulatabilityAffectingPropertyChanged(TRUE /*fIsInLiveTree*/));
@@ -5046,15 +5046,15 @@ _Check_return_ XUINT32 CUIElement::GetAPChildren(_Outptr_result_buffer_(return) 
         CDOCollection *focusableChildren = nullptr;
         if (this->OfTypeByIndex<KnownTypeIndex::TextBlock>())
         {
-            static_cast<CTextBlock*>(this)->GetFocusableChildren(&focusableChildren);
+            IFCFAILFAST(static_cast<CTextBlock*>(this)->GetFocusableChildren(&focusableChildren));
         }
         else if (this->OfTypeByIndex<KnownTypeIndex::RichTextBlock>())
         {
-            static_cast<CRichTextBlock*>(this)->GetFocusableChildren(&focusableChildren);
+            IFCFAILFAST(static_cast<CRichTextBlock*>(this)->GetFocusableChildren(&focusableChildren));
         }
         else if (this->OfTypeByIndex<KnownTypeIndex::RichTextBlockOverflow>())
         {
-            static_cast<CRichTextBlockOverflow*>(this)->GetMaster()->GetFocusableChildren(&focusableChildren);
+            IFCFAILFAST(static_cast<CRichTextBlockOverflow*>(this)->GetMaster()->GetFocusableChildren(&focusableChildren));
         }
         for (uint32_t i = 0; i < focusableChildren->GetCount() && uAPIndex < totalAPCount; i++)
         {
@@ -6460,7 +6460,7 @@ CUIElement::VisibilityState(
             if (eVisibility == DirectUI::Visibility::Visible)
             {
                 CPopupRoot *popupRoot = nullptr;
-                pUIElement->GetContext()->GetAdjustedPopupRootForElement(pUIElement, &popupRoot);
+                IGNOREHR(pUIElement->GetContext()->GetAdjustedPopupRootForElement(pUIElement, &popupRoot));
                 if (popupRoot != nullptr)
                 {
                     CUIElement::NWSetContentDirty(popupRoot, DirtyFlags::Render);
@@ -10895,7 +10895,7 @@ CUIElement::EnsureCompositionPeer(
         if (pCurrentParentNode != nullptr && pCurrentParentNode != pParentNode)
         {
             HWCompTreeNodeWinRT* compositionPeerWinRT = static_cast<HWCompTreeNodeWinRT*>(pTargetCompositionPeer);
-            compositionPeerWinRT->RemoveForReparenting();
+            IFC_RETURN(compositionPeerWinRT->RemoveForReparenting());
 
             pCurrentParentNode = nullptr;
         }
@@ -10962,7 +10962,7 @@ CUIElement::EnsureCompositionPeer(
             // The root comp node needs to create its visuals. Normally this is done when inserting the content render
             // data node into the root comp node, but when we're synchronously updating the comp tree, there are no render
             // data nodes.
-            pCompositionPeer->EnsureVisual(dcompTreeHost);
+            IFC_RETURN(pCompositionPeer->EnsureVisual(dcompTreeHost));
         }
 
         TraceCompTreeSetCompositionPeerInfo(

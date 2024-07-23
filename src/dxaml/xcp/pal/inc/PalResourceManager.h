@@ -24,7 +24,8 @@ enum class ResourceInvalidationReason
 {
     Any,
     ScaleChanged,
-    HdrChanged
+    HdrChanged,
+    ThemeChanged
 };
 
 //-----------------------------------------------------------------------------

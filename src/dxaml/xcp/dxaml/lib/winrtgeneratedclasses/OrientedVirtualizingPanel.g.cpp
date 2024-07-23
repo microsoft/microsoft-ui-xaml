@@ -740,7 +740,7 @@ _Check_return_ HRESULT DirectUI::OrientedVirtualizingPanelGenerated::EventRemove
     case KnownEventIndex::OrientedVirtualizingPanel_HorizontalSnapPointsChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -757,7 +757,7 @@ _Check_return_ HRESULT DirectUI::OrientedVirtualizingPanelGenerated::EventRemove
     case KnownEventIndex::OrientedVirtualizingPanel_VerticalSnapPointsChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

@@ -408,7 +408,7 @@ CollectionView::LoadMoreItemsAsyncImpl(
 // IObservableVector<IInspectable *>
 IFACEMETHODIMP CollectionView::add_VectorChanged(
     _In_ wfc::VectorChangedEventHandler<IInspectable *> *pHandler,
-    _In_ EventRegistrationToken *token)
+    _Out_ EventRegistrationToken *token)
 {
     HRESULT hr = S_OK;
 

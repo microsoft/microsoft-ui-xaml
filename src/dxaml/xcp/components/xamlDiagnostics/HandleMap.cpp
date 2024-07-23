@@ -57,7 +57,7 @@ HandleMap::GetHandle(
 
 HRESULT
 HandleMap::CreateHandle(
-    _In_opt_ IInspectable* pObject,
+    _In_ IInspectable* pObject,
     _Out_ InstanceHandle* pHandle)
 {
     IFCPTR_RETURN(pHandle);

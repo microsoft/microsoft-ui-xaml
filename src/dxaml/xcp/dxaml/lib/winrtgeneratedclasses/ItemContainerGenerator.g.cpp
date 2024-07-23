@@ -43,7 +43,7 @@ HRESULT DirectUI::ItemContainerGeneratorGenerated::QueryInterfaceImpl(_In_ REFII
 
 // Properties.
 
-HRESULT DirectUI::ItemContainerGeneratorGenerated::EventAddPreValidation(_In_ void* const pValue, EventRegistrationToken* const ptToken) const
+_Check_return_ HRESULT DirectUI::ItemContainerGeneratorGenerated::EventAddPreValidation(_In_ void* const pValue, EventRegistrationToken* const ptToken) const
 {
     HRESULT hr = S_OK;
 

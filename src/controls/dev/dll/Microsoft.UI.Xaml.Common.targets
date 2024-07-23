@@ -7,11 +7,9 @@
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
     <DisableProjectRootFeatureStagingXmlSearch>true</DisableProjectRootFeatureStagingXmlSearch>
   </PropertyGroup>
-  <!-- Run code analysis: Release (locally only) -OR- Debug (pipeline only) -OR- Debug Intellisense -->
-  <PropertyGroup Condition="     ('$(Configuration)'=='Release' AND '$(TF_BUILD)'!='True') OR     ('$(Configuration)'=='Debug' AND '$(TF_BUILD)'=='True') OR     ('$(Configuration)'=='Debug' AND '$(IntelliSenseBuild)'=='1')     ">
+  <!-- Run code analysis: Analysis is turned on -OR- Debug Intellisense -->
+  <PropertyGroup Condition="('$(ExperimentalAnalysis)'=='true') OR ('$(Configuration)'=='Debug' AND '$(IntelliSenseBuild)'=='1')">
     <RunCodeAnalysis>true</RunCodeAnalysis>
-  </PropertyGroup>
-  <PropertyGroup>
     <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
     <CodeAnalysisRuleSet>$(MUXProjectRoot)build\PrefastWarnings.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
@@ -80,7 +78,7 @@
       <AdditionalOptions>/bigobj /await %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions>/Wv:18 /Zc:lambda %(AdditionalOptions)</AdditionalOptions>
       <WarningLevel>Level4</WarningLevel>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError Condition="'$(ExperimentalAnalysis)'!='true'">true</TreatWarningAsError>
       <ShowIncludes>false</ShowIncludes>
       <!-- Disable RTTI to keep binary size down (adds about 50% to release dll size) -->
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
@@ -259,6 +257,13 @@
        in C++/CX format and do us no good. We are currently hand-authoring the necessary parts of our
        IXamlMetadataProvider implementation. -->
   <Target Name="ComputeXamlGeneratedCompileInputs" />
+  
+  <PropertyGroup>
+    <!--Causes loading of winrt dependencies from CoreWebView2 SDK package - required for any usage from WinUI3/WinAppSDK.
+        Note end-user WASDK apps get this implicitly via $(MicrosoftWindowsAppSDKPackageDir). -->
+    <WebView2UseWinRT>true</WebView2UseWinRT>
+  </PropertyGroup>
+
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(NuGetPackageRoot)\MUXCustomBuildTasks.$(MuxCustomBuildTasksPackageVersion)\build\MUXCustomBuildTasks.targets" Condition="Exists('$(NuGetPackageRoot)\MUXCustomBuildTasks.$(MuxCustomBuildTasksPackageVersion)\build\MUXCustomBuildTasks.targets')" />
     <Import Project="$(NuGetPackageRoot)\Microsoft.Build.Tasks.Git.1.1.1\build\Microsoft.Build.Tasks.Git.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Build.Tasks.Git.1.1.1\build\Microsoft.Build.Tasks.Git.targets')" />

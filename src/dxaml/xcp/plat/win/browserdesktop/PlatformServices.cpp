@@ -691,7 +691,7 @@ Cleanup:
 //     Provides platform's Font and Script Services.
 //
 //------------------------------------------------------------------------
-HRESULT CWindowsServices::CreateFontAndScriptServices(_Outptr_ IPALFontAndScriptServices** ppFontAndScriptServices)
+_Check_return_ HRESULT CWindowsServices::CreateFontAndScriptServices(_Outptr_ IPALFontAndScriptServices** ppFontAndScriptServices)
 {
     HRESULT hr = S_OK;
     DWriteFontAndScriptServices *pDWriteFontAndScriptServices = NULL;

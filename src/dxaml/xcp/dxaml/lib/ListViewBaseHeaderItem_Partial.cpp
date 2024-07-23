@@ -474,7 +474,7 @@ ListViewBaseHeaderItem::GetPlainText(_Out_ HSTRING* strPlainText)
     RRETURN(ContentControl::GetPlainText(strPlainText));
 }
 
-_Check_return_ HRESULT ListViewBaseHeaderItem::GetLogicalParentForAPProtected(_Outptr_ DependencyObject** ppLogicalParentForAP)
+_Check_return_ HRESULT ListViewBaseHeaderItem::GetLogicalParentForAPProtected(_Outptr_result_maybenull_ DependencyObject** ppLogicalParentForAP)
 {
     HRESULT hr = S_OK;
     ctl::ComPtr<IListViewBase> spListView;

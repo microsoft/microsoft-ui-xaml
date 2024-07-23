@@ -129,7 +129,7 @@ namespace ctl
     protected:
 
         // IUnknown implementation
-        virtual _Check_return_ HRESULT QueryInterfaceImpl(REFIID iid, void** ppObject)
+        virtual _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
         {
             IUnknown* pInterface = nullptr;
 

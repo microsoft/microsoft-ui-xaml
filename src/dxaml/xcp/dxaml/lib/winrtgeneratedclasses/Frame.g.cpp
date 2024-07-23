@@ -667,7 +667,7 @@ _Check_return_ HRESULT DirectUI::FrameGenerated::EventRemoveHandlerByIndex(_In_ 
     case KnownEventIndex::Frame_Navigated:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Navigation::INavigatedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -684,7 +684,7 @@ _Check_return_ HRESULT DirectUI::FrameGenerated::EventRemoveHandlerByIndex(_In_ 
     case KnownEventIndex::Frame_Navigating:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Navigation::INavigatingCancelEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -701,7 +701,7 @@ _Check_return_ HRESULT DirectUI::FrameGenerated::EventRemoveHandlerByIndex(_In_ 
     case KnownEventIndex::Frame_NavigationFailed:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Navigation::INavigationFailedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -718,7 +718,7 @@ _Check_return_ HRESULT DirectUI::FrameGenerated::EventRemoveHandlerByIndex(_In_ 
     case KnownEventIndex::Frame_NavigationStopped:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Navigation::INavigationStoppedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

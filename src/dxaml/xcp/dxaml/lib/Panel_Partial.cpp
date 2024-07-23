@@ -84,7 +84,7 @@ Cleanup:
 _Check_return_ HRESULT
 Panel::OnTreeParentUpdated(
     _In_opt_ CDependencyObject *pNewParent,
-    _In_opt_ BOOLEAN isParentAlive)
+    BOOLEAN isParentAlive)
 {
     HRESULT hr = S_OK;
 

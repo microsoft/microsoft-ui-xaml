@@ -21,7 +21,7 @@ class PageNode final : public ContainerNode
 public:
     PageNode(
         _In_ BlockLayoutEngine *pBlockLayoutEngine,
-        _In_opt_ CBlockCollection *pBlocks,
+        _In_ CBlockCollection *pBlocks,
         _In_ CFrameworkElement *pPageOwner
         );
     ~PageNode() override;
@@ -110,7 +110,7 @@ private:
     // now since can just check if first child == NULL, but may be necessary with incremental layout.
     uint32_t m_firstChildIndex;
 
-    HRESULT GetChildNode(
+    _Check_return_ HRESULT GetChildNode(
         _In_opt_ CBlockCollection *pBlocks,
         _In_ uint32_t childIndexInCollection,
         _Outptr_ BlockNode **ppChildNode

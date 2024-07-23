@@ -40,7 +40,7 @@ class CTimeline :
     public CDependencyObject
 {
 protected:
-    CTimeline(_In_ CCoreServices *pCore);
+    CTimeline(_In_opt_ CCoreServices *pCore);
     ~CTimeline() override;
 
 public:
@@ -230,7 +230,7 @@ public:
     static bool ExtendDurationWithRepeat(_Inout_ float* pDuration, _In_ const RepeatBehaviorVO& repeatBehavior);
     static float ExtendDurationWithReverse(float duration, bool hasReverse);
     static float AdjustDurationWithSpeedRatio(float duration, float speedRatio);
-    static float AdjustDurationWithBeginTime(float duration, _In_ const CTimeSpan* pBeginTime);
+    static float AdjustDurationWithBeginTime(float duration, _In_opt_ const CTimeSpan* pBeginTime);
 
     void GetDurationWithProperties(
         _Out_ DirectUI::DurationType* pDurationType,
@@ -264,7 +264,7 @@ public:
     // The WUC scoped batch for a WUC animation is created when the animation is started, not when the animation is created.
     // The time manager then subscribes to the completed event and notifies the Xaml animation of the scoped batch that contains
     // it.
-    void SetWUCScopedBatch(_In_ WUComp::ICompositionScopedBatch* scopedBatch);
+    void SetWUCScopedBatch(_In_opt_ WUComp::ICompositionScopedBatch* scopedBatch);
 
     // The WUC animator for a WUC animation is created when the animation is started, not when the animation is created.
     // The time manager then notifies the Xaml animation of the animator that was created for it. The animator is used for

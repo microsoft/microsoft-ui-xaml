@@ -42,7 +42,7 @@ namespace DirectUI
         IFACEMETHOD(OnLostFocus)(_In_ xaml::IRoutedEventArgs* pArgs) override;
         IFACEMETHOD(OnTapped)(_In_ xaml_input::ITappedRoutedEventArgs* pArgs) override;
         IFACEMETHOD(OnRightTapped)(_In_ xaml_input::IRightTappedRoutedEventArgs* pArgs) override;
-        IFACEMETHOD(OnInheritedPropertyChanged)(_In_ IInspectable* pArgs) override;
+        _Check_return_ IFACEMETHOD(OnInheritedPropertyChanged)(_In_ IInspectable* pArgs) override;
         IFACEMETHOD(add_CandidateWindowBoundsChanged)(_In_ wf::ITypedEventHandler<xaml_controls::RichEditBox*, xaml_controls::CandidateWindowBoundsChangedEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
 
         IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_ xaml_automation_peers::IAutomationPeer** returnValue);

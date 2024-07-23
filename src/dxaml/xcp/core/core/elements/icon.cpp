@@ -103,8 +103,8 @@ CIconElement::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
         // been set locally.
         if (IsPropertyDefault(DirectUI::MetadataAPI::GetDependencyPropertyByIndex(KnownPropertyIndex::IconElement_Foreground)))
         {
-            EnsureTextFormattingForRead();
-            PullInheritedTextFormatting();
+            IFC_RETURN(EnsureTextFormattingForRead());
+            IFC_RETURN(PullInheritedTextFormatting());
         }
 
         // Measure the child

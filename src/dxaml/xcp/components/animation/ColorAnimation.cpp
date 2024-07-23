@@ -279,7 +279,7 @@ XUINT32* CColorAnimation::GetInternalOperand(AssignmentOperand operand)
     }
 }
 
-CompositionAnimationConversionResult CColorAnimation::MakeCompositionKeyFrameAnimationVirtual(_Inout_ CompositionAnimationConversionContext* myContext)
+_Check_return_ CompositionAnimationConversionResult CColorAnimation::MakeCompositionKeyFrameAnimationVirtual(_Inout_ CompositionAnimationConversionContext* myContext)
 {
     wu::Color from = ColorUtils::GetWUColor(m_vFrom);
     wu::Color to = ColorUtils::GetWUColor(m_vTo);

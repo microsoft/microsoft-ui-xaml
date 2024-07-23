@@ -91,7 +91,7 @@ namespace AccessKeys
             return S_OK;
         }
 
-        _Check_return_ HRESULT BuildScopeOwnerMapImpl(_In_ Element* current, _Inout_ std::vector<std::pair<Element*,Element*>>& scopeOwnerMap)
+        _Check_return_ HRESULT BuildScopeOwnerMapImpl(_In_opt_ Element* current, _Inout_ std::vector<std::pair<Element*,Element*>>& scopeOwnerMap)
         {
             if (current == nullptr) return S_OK;
 
@@ -120,8 +120,8 @@ namespace AccessKeys
         }
 
         _Check_return_ HRESULT WalkTreeAndFindElements(
-            _In_ const Element* const startRoot,
-            _In_ Element* const currentElement,
+            _In_opt_ const Element* const startRoot,
+            _In_opt_ Element* const currentElement,
             _In_ const std::vector<std::pair<Element*, Element*>>& scopeOwnerMap,
             _Inout_ std::vector<Element*>& elementList,
             _In_ bool returnOnFirstHit = false,
@@ -244,12 +244,12 @@ namespace AccessKeys
 
         static const int MaxDepth = 200;
 
-        static bool IsRootScope(_In_ Element* const scopeOwner)
+        static bool IsRootScope(_In_opt_ Element* const scopeOwner)
         {
             return scopeOwner == nullptr;
         }
 
-        HRESULT ValidateScopeOwner(_In_ Element* const scopeOwner)
+        HRESULT ValidateScopeOwner(_In_opt_ Element* const scopeOwner)
         {
             if (!IsRootScope(scopeOwner))
             {

@@ -22,7 +22,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-HRESULT ComboBoxLightDismiss::put_Owner(_In_ xaml_controls::IComboBox* pOwner)
+_Check_return_ HRESULT ComboBoxLightDismiss::put_Owner(_In_ xaml_controls::IComboBox* pOwner)
 {
     RRETURN(ctl::AsWeak(pOwner, &m_wrComboBox));
 }

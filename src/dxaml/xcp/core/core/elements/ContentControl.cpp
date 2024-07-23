@@ -575,7 +575,7 @@ CContentControl::SetGridViewItemChrome(_In_opt_ CListViewBaseItemChrome* pChrome
 {
     if (m_pListViewBaseItemChrome)
     {
-        m_pListViewBaseItemChrome->SetChromedListViewBaseItem(NULL);
+        IFC_RETURN(m_pListViewBaseItemChrome->SetChromedListViewBaseItem(NULL));
         ReleaseInterface(m_pListViewBaseItemChrome);
     }
 

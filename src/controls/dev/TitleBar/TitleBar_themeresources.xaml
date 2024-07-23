@@ -9,8 +9,8 @@
       <ResourceDictionary x:Key="Default">
         <StaticResource x:Key="TitleBarForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
         <StaticResource x:Key="TitleBarDeactivatedForegroundBrush" ResourceKey="TextFillColorTertiaryBrush" />
-        <StaticResource x:Key="SubtitleBarForegroundBrush" ResourceKey="TextFillColorSecondaryBrush" />
-        <StaticResource x:Key="SubtitleBarDeactivatedForegroundBrush" ResourceKey="TextFillColorTertiaryBrush" />
+        <StaticResource x:Key="TitleBarSubtitleForegroundBrush" ResourceKey="TextFillColorSecondaryBrush" />
+        <StaticResource x:Key="TitleBarSubtitleDeactivatedForegroundBrush" ResourceKey="TextFillColorTertiaryBrush" />
         <Color x:Key="TitleBarButtonForegroundColor">#FFFFFF</Color>
         <Color x:Key="TitleBarButtonHoverForegroundColor">#FFFFFF</Color>
         <Color x:Key="TitleBarButtonPressedForegroundColor">#CFCFCF</Color>
@@ -24,8 +24,8 @@
       <ResourceDictionary x:Key="Light">
         <StaticResource x:Key="TitleBarForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
         <StaticResource x:Key="TitleBarDeactivatedForegroundBrush" ResourceKey="TextFillColorTertiaryBrush" />
-        <StaticResource x:Key="SubtitleBarForegroundBrush" ResourceKey="TextFillColorSecondaryBrush" />
-        <StaticResource x:Key="SubtitleBarDeactivatedForegroundBrush" ResourceKey="TextFillColorTertiaryBrush" />
+        <StaticResource x:Key="TitleBarSubtitleForegroundBrush" ResourceKey="TextFillColorSecondaryBrush" />
+        <StaticResource x:Key="TitleBarSubtitleDeactivatedForegroundBrush" ResourceKey="TextFillColorTertiaryBrush" />
         <Color x:Key="TitleBarButtonForegroundColor">#191919</Color>
         <Color x:Key="TitleBarButtonHoverForegroundColor">#191919</Color>
         <Color x:Key="TitleBarButtonPressedForegroundColor">#606060</Color>
@@ -39,8 +39,8 @@
       <ResourceDictionary x:Key="HighContrast">
         <StaticResource x:Key="TitleBarForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
         <StaticResource x:Key="TitleBarDeactivatedForegroundBrush" ResourceKey="TextFillColorTertiaryBrush" />
-        <StaticResource x:Key="SubtitleBarForegroundBrush" ResourceKey="TextFillColorSecondaryBrush" />
-        <StaticResource x:Key="SubtitleBarDeactivatedForegroundBrush" ResourceKey="TextFillColorTertiaryBrush" />
+        <StaticResource x:Key="TitleBarSubtitleForegroundBrush" ResourceKey="TextFillColorSecondaryBrush" />
+        <StaticResource x:Key="TitleBarSubtitleDeactivatedForegroundBrush" ResourceKey="TextFillColorTertiaryBrush" />
         <StaticResource x:Key="TitleBarButtonForegroundColor" ResourceKey="TextFillColorPrimary" />
         <StaticResource x:Key="TitleBarButtonHoverForegroundColor" ResourceKey="TextFillColorPrimary" />
         <StaticResource x:Key="TitleBarButtonPressedForegroundColor" ResourceKey="TextFillColorSecondary" />
@@ -52,6 +52,8 @@
         <x:Double x:Key="TitleBarExpandedHeight">48</x:Double>
       </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
+
+    <x:Double x:Key="TitleBarDeactivatedOpacity">0.5</x:Double>
 
     <Style x:Key="TitleBarBackButtonStyle" TargetType="Button">
       <Setter Property="Background" Value="{ThemeResource NavigationViewBackButtonBackground}" />

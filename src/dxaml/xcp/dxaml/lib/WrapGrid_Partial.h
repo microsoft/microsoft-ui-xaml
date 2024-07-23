@@ -99,7 +99,7 @@ namespace DirectUI
                 _Out_ wf::Size* returnValue)
                 override;
             
-            IFACEMETHOD(SupportsKeyNavigationAction)(
+            _Check_return_ IFACEMETHOD(SupportsKeyNavigationAction)(
                 _In_ xaml_controls::KeyNavigationAction action,
                 _Out_ BOOLEAN* pSupportsAction)
                 override;
@@ -110,7 +110,7 @@ namespace DirectUI
             // If sourceIndex is 0 and Key is Up or Left
             // If sourceIndex is maxRow -1, maxCol -1 and Key is Right or Down
             // if Key is not Up, Down, Right or Left
-            IFACEMETHOD(GetTargetIndexFromNavigationAction)(
+            _Check_return_ IFACEMETHOD(GetTargetIndexFromNavigationAction)(
                 _In_ UINT sourceIndex,
                 _In_ xaml_controls::ElementType sourceType,
                 _In_ xaml_controls::KeyNavigationAction action,
@@ -122,12 +122,12 @@ namespace DirectUI
                 override;
         
             // Logical Orientation override
-            IFACEMETHOD(get_LogicalOrientation)(
+            _Check_return_ IFACEMETHOD(get_LogicalOrientation)(
                 _Out_ xaml_controls::Orientation* pValue) 
                 override;
             
             // Physical Orientation override
-            IFACEMETHOD(get_PhysicalOrientation)(
+            _Check_return_ IFACEMETHOD(get_PhysicalOrientation)(
                 _Out_ xaml_controls::Orientation* pValue) 
                 override;
 
@@ -146,14 +146,14 @@ namespace DirectUI
                 _Out_ XDOUBLE* pJustificationOffset);
 
             // Get the closest element information to the point.
-            IFACEMETHOD(GetClosestElementInfo)(
+            _Check_return_ IFACEMETHOD(GetClosestElementInfo)(
                 _In_ wf::Point position, 
                 _Out_ xaml_primitives::ElementInfo* returnValue) 
                 override;
         
             // Get the index where an item should be inserted if it were dropped at
             // the given position. This will be used by live reordering.
-            IFACEMETHOD(GetInsertionIndex)(
+            _Check_return_ IFACEMETHOD(GetInsertionIndex)(
                 _In_ wf::Point position, 
                 _Out_ INT* returnValue) 
                 override;
@@ -163,7 +163,7 @@ namespace DirectUI
             // edges of the layout.  This can be useful for both determining whether
             // to tilt items at the edges of rows or columns as well as providing
             // data for portal animations.
-            IFACEMETHOD(IsLayoutBoundary)(
+            _Check_return_ IFACEMETHOD(IsLayoutBoundary)(
                 _In_ INT index, 
                 _Out_ BOOLEAN* isLeftBoundary, 
                 _Out_ BOOLEAN* isTopBoundary, 
@@ -185,7 +185,7 @@ namespace DirectUI
             // a wrapgrid is able to portal (AddDeleteTransition)
             _Check_return_ BOOLEAN IsPortallingSupported() override { return TRUE; }
 
-            IFACEMETHOD(GetItemsPerPage)(
+            _Check_return_ IFACEMETHOD(GetItemsPerPage)(
                 _In_ IScrollInfo* pScrollInfo, 
                 _Out_ DOUBLE* pItemsPerPage) override;
 

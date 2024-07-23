@@ -10,7 +10,7 @@
     mc:Ignorable="d">
 
     <local:TestPage.Resources>
-        <DataTemplate x:Key="recipeTemplate1" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate1" x:DataType="dataModel:Entity">
             <ContentControl IsTabStop="True" UseSystemFocusVisuals="True">
                 <StackPanel>
                     <Image Source="{Binding ImageUri}" Width="32" Height="32"/>
@@ -19,21 +19,21 @@
             </ContentControl>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate2" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate2" x:DataType="dataModel:Entity">
             <StackPanel>
                 <Image Source="{Binding ImageUri}" Width="100" Height="100"/>
                 <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="2" FontSize="12" MaxWidth="200"/>
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate3" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate3" x:DataType="dataModel:Entity">
             <StackPanel>
                 <Image Source="{Binding ImageUri}" Width="192" Height="192"/>
                 <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="2" FontSize="16" MaxWidth="384"/>
             </StackPanel>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate4" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate4" x:DataType="dataModel:Entity">
             <ItemContainer MinWidth="72" Height="96" Background="Gray">
                 <Grid>
                     <Image Source="{Binding ImageUri}" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -42,11 +42,25 @@
             </ItemContainer>
         </DataTemplate>
 
-        <DataTemplate x:Key="recipeTemplate5" x:DataType="dataModel:Recipe">
+        <DataTemplate x:Key="entityTemplate5" x:DataType="dataModel:Entity">
             <ItemContainer Width="80" Height="80" Background="Gray">
                 <Grid>
                     <Image Source="{Binding ImageUri}" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="4" Foreground="White" FontSize="12" MaxWidth="76" MaxHeight="40" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+                </Grid>
+            </ItemContainer>
+        </DataTemplate>
+
+        <DataTemplate x:Key="entityTemplate6" x:DataType="dataModel:Entity">
+            <ItemContainer MinWidth="72" Height="96" Background="Gray">
+                <Grid>
+                    <Image Source="{Binding ImageUri}" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <StackPanel Margin="1" Padding="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" CornerRadius="2" Orientation="Horizontal" Background="White" Spacing="1">
+                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="1,0,0,0" FontSize="8" MaxWidth="48" MaxHeight="48" VerticalAlignment="Center"/>
+                        <ToggleButton Padding="2" Background="Transparent" BorderBrush="Transparent">
+                            <FontIcon FontSize="8" Glyph="&#xE8E1;"/>
+                        </ToggleButton>
+                    </StackPanel>
                 </Grid>
             </ItemContainer>
         </DataTemplate>
@@ -95,20 +109,21 @@
             <ComboBox x:Name="cmbItemTemplate" AutomationProperties.AutomationId="cmbItemTemplate" Width="240" Margin="1"
                 VerticalAlignment="Center" SelectedIndex="0" SelectionChanged="CmbItemTemplate_SelectionChanged">
                 <ComboBoxItem>null</ComboBoxItem>
-                <ComboBoxItem>Recipe DataTemplate (Small ContentControl)</ComboBoxItem>
-                <ComboBoxItem>Recipe DataTemplate (Medium StackPanel)</ComboBoxItem>
-                <ComboBoxItem>Recipe DataTemplate (Large StackPanel)</ComboBoxItem>
-                <ComboBoxItem>Recipe DataTemplate (Medium ItemContainer)</ComboBoxItem>
-                <ComboBoxItem>Recipe DataTemplate (Square ItemContainer)</ComboBoxItem>
+                <ComboBoxItem>Entity DataTemplate (Small ContentControl)</ComboBoxItem>
+                <ComboBoxItem>Entity DataTemplate (Medium StackPanel)</ComboBoxItem>
+                <ComboBoxItem>Entity DataTemplate (Large StackPanel)</ComboBoxItem>
+                <ComboBoxItem>Entity DataTemplate (Medium ItemContainer)</ComboBoxItem>
+                <ComboBoxItem>Entity DataTemplate (Square ItemContainer)</ComboBoxItem>
+                <ComboBoxItem>Entity DataTemplate (ItemContainer with ToggleButton)</ComboBoxItem>
             </ComboBox>
 
             <TextBlock Text="ItemsSource:" Margin="6,2,2,2" VerticalAlignment="Center"/>
             <ComboBox x:Name="cmbItemsSource" AutomationProperties.AutomationId="cmbItemsSource" Width="240" Margin="1"
                 VerticalAlignment="Center" SelectedIndex="0" SelectionChanged="CmbItemsSource_SelectionChanged">
                 <ComboBoxItem>null</ComboBoxItem>
-                <ComboBoxItem>List&lt;Recipe&gt;</ComboBoxItem>
-                <ComboBoxItem>Large List&lt;Recipe&gt;</ComboBoxItem>
-                <ComboBoxItem>ObservableCollection&lt;Recipe&gt;</ComboBoxItem>
+                <ComboBoxItem>List&lt;Entity&gt;</ComboBoxItem>
+                <ComboBoxItem>Large List&lt;Entity&gt;</ComboBoxItem>
+                <ComboBoxItem>ObservableCollection&lt;Entity&gt;</ComboBoxItem>
             </ComboBox>
 
             <TextBlock Text="Layout:" Margin="6,2,2,2" VerticalAlignment="Center"/>

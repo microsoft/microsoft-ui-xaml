@@ -109,7 +109,7 @@ namespace DirectUI
     protected:
         DependencyPropertyFactory() {}
 
-        HRESULT QueryInterfaceImpl(_In_ REFIID riid, _Out_ void** ppObject) override;
+        _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID riid, _Out_ void** ppObject) override;
 
         _Check_return_ HRESULT CheckActivationAllowed() override;
 

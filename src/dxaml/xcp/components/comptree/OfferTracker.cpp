@@ -58,7 +58,7 @@ _Check_return_ HRESULT OfferTracker::Unoffer(_In_ IDCompositionSurfaceFactoryPar
 
 //Wrapper method to iterate through the SurfaceFactory vector, the vector contains all the SurfaceFactories
 //(main and secondary ones), and it is provided by DCompTreeHost
-HRESULT OfferTracker::OfferResources(_In_ std::vector<IDCompositionSurfaceFactoryPartner3*>* surfaceFactoryVector)
+_Check_return_ HRESULT OfferTracker::OfferResources(_In_ std::vector<IDCompositionSurfaceFactoryPartner3*>* surfaceFactoryVector)
 {
     auto guard = m_cs.lock();
 
@@ -80,7 +80,7 @@ HRESULT OfferTracker::OfferResources(_In_ std::vector<IDCompositionSurfaceFactor
 }
 
 // Helper to perform the offer while holding the lock
-HRESULT OfferTracker::OfferSurfaceFactory(_In_ IDCompositionSurfaceFactoryPartner3* surfaceFactory)
+_Check_return_ HRESULT OfferTracker::OfferSurfaceFactory(_In_ IDCompositionSurfaceFactoryPartner3* surfaceFactory)
 {
     IFC_RETURN(surfaceFactory->OfferSurfaceResources());
 
@@ -95,7 +95,7 @@ HRESULT OfferTracker::OfferSurfaceFactory(_In_ IDCompositionSurfaceFactoryPartne
 
 //Wrapper method to iterate through the offeredSurfaceFactory, all the SurfaceFactories
 //stored in the collection should be reclaimed
-HRESULT OfferTracker::ReclaimResources(_Out_ BOOL* discarded)
+_Check_return_ HRESULT OfferTracker::ReclaimResources(_Out_ BOOL* discarded)
 {
     auto guard = m_cs.lock();
 
@@ -127,7 +127,7 @@ HRESULT OfferTracker::ReclaimResources(_Out_ BOOL* discarded)
 }
 
 // Helper to perform the reclaim while holding the lock
-HRESULT OfferTracker::ReclaimSurfaceFactory(_In_ IDCompositionSurfaceFactoryPartner3* surfaceFactory, _Out_ BOOL* discarded)
+_Check_return_ HRESULT OfferTracker::ReclaimSurfaceFactory(_In_ IDCompositionSurfaceFactoryPartner3* surfaceFactory, _Out_ BOOL* discarded)
 {
     IFC_RETURN(surfaceFactory->ReclaimSurfaceResources(discarded));
 

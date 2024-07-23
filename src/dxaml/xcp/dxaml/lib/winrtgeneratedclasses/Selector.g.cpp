@@ -230,7 +230,7 @@ _Check_return_ HRESULT DirectUI::SelectorGenerated::EventRemoveHandlerByIndex(_I
     case KnownEventIndex::Selector_SelectionChanged:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::ISelectionChangedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

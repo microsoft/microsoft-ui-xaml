@@ -11,7 +11,7 @@ namespace DirectUI
     {
     public:
         _Check_return_ HRESULT TryStartImpl(_In_ xaml::IUIElement* pDestination, _Out_ BOOLEAN* pReturnValue);
-        _Check_return_ HRESULT TryStartWithCoordinatedElementsImpl(_In_ xaml::IUIElement* pDestination, _In_ wfc::IIterable<xaml::UIElement*>* pCoordinatedElements, _Out_ BOOLEAN* pReturnValue);
+        _Check_return_ HRESULT TryStartWithCoordinatedElementsImpl(_In_ xaml::IUIElement* pDestination, _In_opt_ wfc::IIterable<xaml::UIElement*>* pCoordinatedElements, _Out_ BOOLEAN* pReturnValue);
         _Check_return_ HRESULT CancelImpl();
         _Check_return_ HRESULT SetAnimationComponentImpl(_In_ xaml_animation::ConnectedAnimationComponent component, _In_opt_ WUComp::ICompositionAnimationBase *animation);
         _Check_return_ HRESULT get_IsScaleAnimationEnabledImpl(_Out_ BOOLEAN* pValue);

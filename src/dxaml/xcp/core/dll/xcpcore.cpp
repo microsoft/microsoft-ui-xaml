@@ -3373,10 +3373,10 @@ wf::IPropertyValueStatics* CCoreServices::GetPropertyValueStatics()
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
 CCoreServices::LoadXaml(
-                        _In_ XUINT32 cBuffer,
-                        _In_reads_opt_(cBuffer) const XUINT8 *pBuffer,
-                        _Outptr_ CDependencyObject **ppDependencyObject
-                        )
+    _In_ XUINT32 cBuffer,
+    _In_reads_opt_(cBuffer) const XUINT8 *pBuffer,
+    _Outptr_result_maybenull_ CDependencyObject **ppDependencyObject
+    )
 {
     HRESULT hr = S_OK;
     CDependencyObject *pTempDependencyObject = NULL;
@@ -5049,7 +5049,7 @@ CCoreServices::UnregisterDownloadSite()
 _Check_return_ HRESULT
 CCoreServices::UnsecureDownloadFromSite(
     _In_ const xstring_ptr& strRelativeUri,
-    _In_ IPALUri *pAbsoluteUri,
+    _In_opt_ IPALUri *pAbsoluteUri,
     _In_ IPALDownloadResponseCallback* pICallback,
     _In_ XUINT32 eUnsecureDownloadAction,
     _Outptr_opt_ IPALAbortableOperation **ppIAbortableDownload,
@@ -5582,7 +5582,7 @@ _Check_return_ HRESULT CCoreServices::UIARaiseNotificationEvent(
     _In_ CAutomationPeer* ap,
     UIAXcp::AutomationNotificationKind notificationKind,
     UIAXcp::AutomationNotificationProcessing notificationProcessing,
-    _In_opt_ xstring_ptr displayString,
+    xstring_ptr displayString,
     _In_ xstring_ptr activityId)
 {
     CUIAWindow* uiaWindow = GetUIAWindowForElementRootNoRef(ap->GetRootNoRef());
@@ -7786,6 +7786,16 @@ CCoreServices::NotifyThemeChange()
         IFC_RETURN(xamlIslandRootCollection->NotifyThemeChanged(m_spTheming->GetTheme(), true /*fForceRefresh*/));
     }
 
+    const auto& contentRoots = GetContentRootCoordinator()->GetContentRoots();
+    for (const auto& contentRoot : contentRoots)
+    {
+        if (const auto rootScale = RootScale::GetRootScaleForContentRoot(contentRoot))
+        {
+            CImageReloadManager& imageReloadManager = rootScale->GetImageReloadManager();
+            IFC_RETURN(imageReloadManager.ReloadImages(ResourceInvalidationReason::ThemeChanged));
+        }
+    }
+
     // Notify registered theme change listeners.
     for(auto& item : m_elementsWithThemeChangedListener)
     {
@@ -7869,7 +7879,7 @@ AtlasRequestProvider& CCoreServices::GetAtlasRequestProvider()
 //      NULL.
 //
 //------------------------------------------------------------------------
-_Out_opt_ HWWalk*
+_Ret_maybenull_ HWWalk*
 CCoreServices::GetHWWalk()
 {
     if (m_pNWWindowRenderTarget != NULL)
@@ -8277,7 +8287,7 @@ _Check_return_ HRESULT CCoreServices::EnsureDeviceLostListener()
             auto core = static_cast<CCoreServices*>(context);
             xref_ptr<DeviceLostDispatcher> deviceLostDispatcher;
             deviceLostDispatcher.init(new DeviceLostDispatcher(core));
-            core->ExecuteOnUIThread(deviceLostDispatcher, ReentrancyBehavior::CrashOnReentrancy);
+            IFCFAILFAST(core->ExecuteOnUIThread(deviceLostDispatcher, ReentrancyBehavior::CrashOnReentrancy));
         }, this, nullptr));
         IFCW32FAILFAST(m_deviceLostWaiter != nullptr);
         SetThreadpoolWait(m_deviceLostWaiter.get(), m_deviceLostEvent.get(), nullptr /*timeout*/);
@@ -8370,7 +8380,7 @@ _Check_return_ HRESULT CCoreServices::RecoverFromDeviceLost()
         if (m_deviceLost != DeviceLostState::HardwareReleased)
         {
             const bool cleanupDComp = m_deviceLost == DeviceLostState::HardwareAndVisuals;
-            CleanupDeviceRelatedResources(cleanupDComp, true /* isDeviceLost */);
+            IFC_RETURN(CleanupDeviceRelatedResources(cleanupDComp, true /* isDeviceLost */));
             m_deviceLost = DeviceLostState::HardwareReleased;
             LogCoreServicesEvent(CoreServicesEvent::HardwareResourcesReleased);
 
@@ -8495,7 +8505,7 @@ _Check_return_ HRESULT CCoreServices::CleanupDeviceRelatedResources(_In_ bool cl
         m_pTextCore->GetWinTextCore()->ReleaseDeviceDependentResources();
     }
 
-    m_pRenderTargetBitmapManager->CleanupDeviceRelatedResources(cleanupDComp);
+    IFC_RETURN(m_pRenderTargetBitmapManager->CleanupDeviceRelatedResources(cleanupDComp));
 
     if (m_pAllSurfaceImageSources != nullptr)
     {
@@ -8937,7 +8947,7 @@ void CCoreServices::OverrideResourcePropertyBag(_In_opt_ std::map<std::wstring, 
     }
 }
 
-_Check_return_ void CCoreServices::SetCustomResourceLoader(_In_ ICustomResourceLoader *pResourceLoader)
+void CCoreServices::SetCustomResourceLoader(_In_opt_ ICustomResourceLoader *pResourceLoader)
 {
     ReleaseInterface(m_pCustomResourceLoader);
     m_pCustomResourceLoader = pResourceLoader;
@@ -9342,7 +9352,7 @@ _Check_return_ HRESULT CCoreServices::OnVisibilityChanged(bool isStartingUp, boo
         // proactively to get the first first frame ready as early as possible.
         if (isXamlVisible || !isStartingUp)
         {
-            EnableRender(isXamlVisible);
+            IFC_RETURN(EnableRender(isXamlVisible));
         }
 
         // Start timer to offer resources while the app is running in the background.
@@ -9759,7 +9769,7 @@ CCoreServices::ProcessTrackedImages()
         // run an algorithm to figure out when we can still use DecodeToRenderSize
         // and if so, compute the same bounds that would have been computed in the RenderWalk
         ImageDecodeBoundsFinder boundsFinder(pImageSource);
-        boundsFinder.FindReasonableDecodeBounds();
+        IFC(boundsFinder.FindReasonableDecodeBounds());
 
         if (!boundsFinder.m_skipDecode)
         {
@@ -9769,7 +9779,7 @@ CCoreServices::ProcessTrackedImages()
 
     for (auto& imageSource: m_animatedImages)
     {
-        imageSource->SuspendAnimation();
+        IFC(imageSource->SuspendAnimation());
     }
 
 Cleanup:
@@ -11132,7 +11142,7 @@ _Check_return_ HRESULT CCoreServices::CancelAllConnectedAnimationsAndResetDefaul
 //      Queues a Commit to the main DComp device
 //
 //------------------------------------------------------------------------
-HRESULT
+_Check_return_ HRESULT
 CCoreServices::RequestMainDCompDeviceCommit(RequestFrameReason reason)
 {
     m_commitRequested = TRUE;
@@ -11186,7 +11196,7 @@ CCoreServices::RemoveThemeChangedListener(_In_ CFrameworkElement* pFE)
 #endif
 }
 
-void CCoreServices::SetPostTickCallback(_In_opt_ std::function<void()> callback)
+void CCoreServices::SetPostTickCallback(std::function<void()> callback)
 {
     m_postTickCallback = std::move(callback);
 }
@@ -11230,7 +11240,7 @@ void CCoreServices::EnsureConnectedAnimationService()
     }
 }
 
-CConnectedAnimationService* CCoreServices::GetConnectedAnimationServiceNoRef()
+_Check_return_ CConnectedAnimationService* CCoreServices::GetConnectedAnimationServiceNoRef()
 {
     return m_connectedAnimationService.get();
 }
@@ -11492,7 +11502,7 @@ void CCoreServices::ClearValuesWithExpectedReference()
     ASSERT(m_valuesWithExpectedReference.empty());
 }
 
-HRESULT AppMemoryUsageLimitChangingCallback::Invoke(_In_opt_ IInspectable* sender, _In_ wsy::IAppMemoryUsageLimitChangingEventArgs* args)
+HRESULT AppMemoryUsageLimitChangingCallback::Invoke(_In_ IInspectable* sender, _In_ wsy::IAppMemoryUsageLimitChangingEventArgs* args)
 {
     CCoreServices* services = DirectUI::DXamlServices::GetSafeHandle();
     if (!services)
@@ -11502,7 +11512,7 @@ HRESULT AppMemoryUsageLimitChangingCallback::Invoke(_In_opt_ IInspectable* sende
     return services->CheckMemoryUsage(false /* simulateLowMemory */);
 }
 
-HRESULT AppMemoryUsageIncreasedCallback::Invoke(_In_opt_ IInspectable* sender, _In_ IInspectable* args)
+HRESULT AppMemoryUsageIncreasedCallback::Invoke(_In_ IInspectable* sender, _In_ IInspectable* args)
 {
     CCoreServices* services = DirectUI::DXamlServices::GetSafeHandle();
     if (!services)

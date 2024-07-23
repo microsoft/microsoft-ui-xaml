@@ -153,7 +153,7 @@ HRESULT PALFontAndScriptServices::GetDefaultLanguageString(_Out_ xstring_ptr* ps
         IFC_NOTRACE(spLanguages->GetAt(0, strPrimaryLanguage.GetAddressOf()));
         UINT32 length;
         const wchar_t* buffer = strPrimaryLanguage.GetRawBuffer(&length);
-        xstring_ptr::CloneBuffer(buffer, length, &m_strDefaultLanguageString);
+        IFC_NOTRACE(xstring_ptr::CloneBuffer(buffer, length, &m_strDefaultLanguageString));
         applicationLanguagesSupported = TRUE;
     }
 
@@ -192,7 +192,7 @@ HRESULT PALFontAndScriptServices::GetDefaultFontNameString(_Out_ xstring_ptr* ps
                         wrl_wrappers::HString familyName;
                         if (SUCCEEDED(spLanguageFont->get_FontFamily(familyName.GetAddressOf())))
                         {
-                            xstring_ptr::CloneBuffer(familyName.GetRawBuffer(nullptr), &m_strDefaultFontNameString);
+                            IFC_RETURN(xstring_ptr::CloneBuffer(familyName.GetRawBuffer(nullptr), &m_strDefaultFontNameString));
                         }
                     }
                 }

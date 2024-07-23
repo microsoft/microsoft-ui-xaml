@@ -57,7 +57,7 @@ public:
         _Out_ bool *pAreAllWValuesPositive
         );
 
-    CMILMatrix4x4 GetOverallProjectionMatrix(const XSIZEF &elementSize);
+    CMILMatrix4x4 GetOverallProjectionMatrix(_In_ const XSIZEF &elementSize);
 
     void SetDCompResourceDirty() override;
 

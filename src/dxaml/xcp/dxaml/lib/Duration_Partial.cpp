@@ -323,7 +323,7 @@ Cleanup:
 
 IFACEMETHODIMP
 DurationFactory::get_Automatic(
-    _Out_opt_ xaml::Duration *pValue)
+    _Out_ xaml::Duration *pValue)
 {
     RRETURN(DurationHelper::GetAutomatic(pValue));
 }
@@ -337,7 +337,7 @@ DurationFactory::get_Automatic(
 
 IFACEMETHODIMP
 DurationFactory::get_Forever(
-    _Out_opt_ xaml::Duration *pValue)
+    _Out_ xaml::Duration *pValue)
 {
     RRETURN(DurationHelper::GetForever(pValue));
 }

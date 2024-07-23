@@ -88,8 +88,8 @@ namespace DirectUI
         _Check_return_ HRESULT SetSuggestedDimension(_In_ int cols, _In_ int rows);
     public:
         // implementation of IOrientedPanel
-        IFACEMETHOD(get_LogicalOrientation)(_Out_ xaml_controls::Orientation* pValue) override;
-        IFACEMETHOD(get_PhysicalOrientation)(_Out_ xaml_controls::Orientation* pValue) override;
+        _Check_return_ IFACEMETHOD(get_LogicalOrientation)(_Out_ xaml_controls::Orientation* pValue) override;
+        _Check_return_ IFACEMETHOD(get_PhysicalOrientation)(_Out_ xaml_controls::Orientation* pValue) override;
 
     private:
         _Check_return_ HRESULT OnRowsOrColsChanged(_In_ xaml_controls::Orientation orientation);

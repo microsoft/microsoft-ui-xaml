@@ -7,7 +7,7 @@
 using namespace DirectUI;
 
 _Check_return_ HRESULT
-XamlReaderFactory::LoadImpl(_In_ HSTRING xaml, _Out_ IInspectable** ppReturnValue)
+XamlReaderFactory::LoadImpl(_In_ HSTRING xaml, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -60,7 +60,7 @@ Cleanup:
 }
 
 _Check_return_ HRESULT
-XamlReaderFactory::LoadWithInitialTemplateValidationImpl(_In_ HSTRING xaml, _Out_ IInspectable** ppReturnValue)
+XamlReaderFactory::LoadWithInitialTemplateValidationImpl(_In_ HSTRING xaml, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 

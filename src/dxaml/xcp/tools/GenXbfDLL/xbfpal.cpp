@@ -467,10 +467,10 @@ IPALCoreServices *GetPALCoreServices()
 _Check_return_ HRESULT
 ObtainPlatformServices(
 #if DBG
-    _Out_ IPlatformServices **ppInterface,
+    _Outptr_ IPlatformServices **ppInterface,
     XUINT8 testMode
 #else
-    _Out_ IPlatformServices **ppInterface
+    _Outptr_ IPlatformServices **ppInterface
 #endif // #if DBG
 )
 {

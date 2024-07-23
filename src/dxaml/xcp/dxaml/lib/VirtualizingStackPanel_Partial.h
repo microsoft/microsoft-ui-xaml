@@ -84,24 +84,24 @@ namespace DirectUI
             _Check_return_ HRESULT OnCleanUpVirtualizedItemImpl(_In_ xaml_controls::ICleanUpVirtualizedItemEventArgs* e);
 
             // Logical Orientation override
-            IFACEMETHOD(get_LogicalOrientation)(
+            _Check_return_ IFACEMETHOD(get_LogicalOrientation)(
                 _Out_ xaml_controls::Orientation* pValue)
                 override;
 
             // Physical Orientation override
-            IFACEMETHOD(get_PhysicalOrientation)(
+            _Check_return_ IFACEMETHOD(get_PhysicalOrientation)(
                 _Out_ xaml_controls::Orientation* pValue)
                 override;
 
             // Get the closest element information to the point.
-            IFACEMETHOD(GetClosestElementInfo)(
+            _Check_return_ IFACEMETHOD(GetClosestElementInfo)(
                 _In_ wf::Point position,
                 _Out_ xaml_primitives::ElementInfo* returnValue)
                 override;
 
             // Get the index where an item should be inserted if it were dropped at
             // the given position.  This will be used by live reordering.
-            IFACEMETHOD(GetInsertionIndex)(
+            _Check_return_ IFACEMETHOD(GetInsertionIndex)(
                 _In_ wf::Point position,
                 _Out_ INT* returnValue)
                 override;
@@ -111,7 +111,7 @@ namespace DirectUI
             // edges of the layout.  This can be useful for both determining whether
             // to tilt items at the edges of rows or columns as well as providing
             // data for portal animations.
-            IFACEMETHOD(IsLayoutBoundary)(
+            _Check_return_ IFACEMETHOD(IsLayoutBoundary)(
                 _In_ INT index,
                 _Out_ BOOLEAN* isLeftBoundary,
                 _Out_ BOOLEAN* isTopBoundary,

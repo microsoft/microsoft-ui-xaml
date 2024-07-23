@@ -10,6 +10,7 @@
     <TargetPlatformVersion>$(WindowsSdkTargetPlatformVersion)</TargetPlatformVersion>
     <WindowsAppSdkUndockedRegFreeWinRTInitialize>false</WindowsAppSdkUndockedRegFreeWinRTInitialize>
     <BinplaceGeneratedFiles>false</BinplaceGeneratedFiles>
+    <ExcludeWebView2ActivatableClassEntries>true</ExcludeWebView2ActivatableClassEntries>
   </PropertyGroup>
   <PropertyGroup>
     <ProjectGuid>{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}</ProjectGuid>
@@ -178,6 +179,9 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="$(WindowsAppSdkPackageVersion)" />
+    <!-- <PackageReference Include="Microsoft.Web.WebView2" Version="$(WebView2PackageVersion)" >
+       <ExcludeAssets>all</ExcludeAssets>
+    </PackageReference> -->
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="$(MicrosoftNETCoreUniversalWindowsPlatformVersion)" />
     <PackageReference Include="Microsoft.Taef" Version="$(TaefNugetPackageVersion)" />
     <PackageReference Include="MUXCustomBuildTasks" Version="$(MuxCustomBuildTasksPackageVersion)" />

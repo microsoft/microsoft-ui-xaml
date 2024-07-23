@@ -35,6 +35,14 @@
             } 
         }
 
+        public bool IsNullable
+        {
+            get
+            {
+                return this.MetadataFullName.StartsWith("Windows.Foundation.IReference");
+            }
+        }
+
         public WinRtType(Type winmdType)
         {
             if (winmdType.FullName == "System.Runtime.InteropServices.WindowsRuntime.RuntimeClass")
@@ -76,7 +84,15 @@
             switch (winrtNamespace)
             {
                 case "System":
-                    winrtNamespace = null;
+                    switch (winmdType.Name)
+                    {
+                        case "Nullable`1":
+                            winrtNamespace = "Windows.Foundation";
+                            break;
+                        default:
+                            winrtNamespace = null;
+                            break;
+                    }
                     break;
                 case "System.Collections.Generic":
                     winrtNamespace = "Windows.Foundation.Collections";
@@ -121,6 +137,9 @@
                 case "IObservableVector`1":
                     name = "IObservableVector";
                     break;
+                case "Nullable`1":
+                    name = "IReference";
+                    break;
             }
 
             return name;
@@ -146,6 +165,9 @@
                     break;
                 case "IObservableVector`1":
                     name = "IObservableVector";
+                    break;
+                case "IReference`1":
+                    name = "IReference";
                     break;
             }
 
@@ -196,6 +218,9 @@
                     break;
                 case "Windows.Foundation.Collections.IObservableVector":
                     metadataFullName = "Windows.Foundation.Collections.IObservableVector`1";
+                    break;
+                case "Windows.Foundation.IReference":
+                    metadataFullName = "Windows.Foundation.IReference`1";
                     break;
             }
 

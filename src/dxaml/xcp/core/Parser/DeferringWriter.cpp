@@ -252,7 +252,7 @@ _Check_return_ HRESULT DeferringWriter::WriteEndMember()
             // the dmTemplateReady state
             if (m_iDeferredTreeDepth == 0)
             {
-                m_spDeferredWriter->Close();
+                IFC_RETURN(m_spDeferredWriter->Close());
                 m_spDeferredWriter.reset();
                 m_eMode = dmTemplateReady;
             }
@@ -272,7 +272,7 @@ _Check_return_ HRESULT DeferringWriter::WriteEndMember()
             // the dmResourceDictionaryDeferring state
             if (m_iDeferredTreeDepth == 0)
             {
-                m_spDeferredWriter->Close();
+                IFC_RETURN(m_spDeferredWriter->Close());
                 m_spDeferredWriter.reset();
                 m_eMode = dmResourceDictionaryReady;
             }

@@ -384,7 +384,7 @@ namespace DirectUI
             _In_opt_ IInspectable* value,
             _In_ BoxerBuffer* buffer,
             _Outptr_result_maybenull_ DependencyObject** ppMOR,
-            _In_opt_ BOOLEAN bPreserveObjectIdentity = FALSE) noexcept;
+            BOOLEAN bPreserveObjectIdentity = FALSE) noexcept;
 
         // Unboxing
 
@@ -641,7 +641,7 @@ namespace DirectUI
 
         static void UnwrapExternalObjectReferenceIfPresent(
             _In_ IInspectable* pObject,
-            _Outptr_ IInspectable** result);
+            _Outptr_result_maybenull_ IInspectable** result);
 
         static _Check_return_ HRESULT UnwrapWeakRef(
             _In_ const CValue* const value,

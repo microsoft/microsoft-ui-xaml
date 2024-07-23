@@ -100,7 +100,7 @@ public:
     _Check_return_ HRESULT TextBoxToClient(_Inout_ XPOINT* point, bool applyRasterizationScale = false);
     _Check_return_ HRESULT ScreenToTextBox(_Inout_ XPOINT* point, bool roundUp = false);
     _Check_return_ HRESULT ClientToTextBox(_Inout_ XPOINTF* point);
-    ixp::IContentCoordinateConverter *GetCoordinateConverter();
+    Microsoft::WRL::ComPtr<ixp::IContentCoordinateConverter> GetCoordinateConverter();
 
     virtual _Check_return_ HRESULT TxGetMaxLength(_Out_ XUINT32 *pLength);
     virtual _Check_return_ HRESULT TxGetPasswordChar(_Out_ WCHAR *pChar);

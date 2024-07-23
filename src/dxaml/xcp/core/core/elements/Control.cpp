@@ -742,7 +742,7 @@ _Check_return_ HRESULT CControl::OnPropertyChanged(_In_ const PropertyChangedPar
         case KnownPropertyIndex::PasswordBox_ValidationErrors:
         {
             auto errors = checked_cast<CValidationErrorsCollection>(args.m_pNewValue->AsObject());
-            errors->SetOwner(this);
+            IFC_RETURN(errors->SetOwner(this));
             break;
         }
         case KnownPropertyIndex::TextBox_InputValidationMode:

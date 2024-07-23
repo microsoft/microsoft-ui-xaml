@@ -2455,7 +2455,7 @@ wrl::ComPtr<IInspectable> DiagnosticsInterop::GetIInspectableFromKey(
     return value;
 }
 
-HRESULT DiagnosticsInterop::UpdateToolbarOffset(
+_Check_return_ HRESULT DiagnosticsInterop::UpdateToolbarOffset(
     _In_ xaml::IUIElement* customTitleBar)
 {
     wfn::Vector2 actualSize = {};
@@ -2470,14 +2470,14 @@ HRESULT DiagnosticsInterop::UpdateToolbarOffset(
     return S_OK;
 }
 
-HRESULT DiagnosticsInterop::ClearToolbarOffset(
+_Check_return_ HRESULT DiagnosticsInterop::ClearToolbarOffset(
     _In_ xaml::IXamlRoot* xamlRoot)
 {
     IFC_RETURN(SetToolbarOffset(xamlRoot, 0));
     return S_OK;
 }
 
-HRESULT DiagnosticsInterop::SetToolbarOffset(
+_Check_return_ HRESULT DiagnosticsInterop::SetToolbarOffset(
     _In_ xaml::IUIElement* customTitleBar,
     _In_ float offset)
 {
@@ -2493,7 +2493,7 @@ HRESULT DiagnosticsInterop::SetToolbarOffset(
 }
 
 
-HRESULT DiagnosticsInterop::SetToolbarOffset(
+_Check_return_ HRESULT DiagnosticsInterop::SetToolbarOffset(
     _In_ xaml::IXamlRoot* ixamlRoot,
     _In_ float offset)
 {
@@ -2532,7 +2532,7 @@ HRESULT DiagnosticsInterop::SetToolbarOffset(
     return S_OK;
 }
 
-HRESULT DiagnosticsInterop::UpdateToolbarOffsetCallback(
+_Check_return_ HRESULT DiagnosticsInterop::UpdateToolbarOffsetCallback(
     _In_ CDependencyObject* potentialToolbar,
     _In_ float offset)
 {

@@ -18,7 +18,7 @@ namespace DirectUI
 
     public:
         _Check_return_ HRESULT Initialize() override;
-        IFACEMETHOD(Close)() override;
+        _Check_return_ IFACEMETHOD(Close)() override;
         _Check_return_ HRESULT CloseImpl(bool synchronous);
 
         _Check_return_ HRESULT GetXamlShutdownCompletedOnThreadEventSourceNoRef(

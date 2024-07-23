@@ -669,7 +669,7 @@ _Check_return_ HRESULT CRichEditBox::OnApplyTemplate()
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CRichEditBox::OnCharacterReceived(_In_ CEventArgs* pEventArgs)
 {
-    CTextBoxBase::OnCharacterReceived(pEventArgs);
+    IFC_RETURN(CTextBoxBase::OnCharacterReceived(pEventArgs));
 
     // TextBox in the XAML layer needs to be notified when pText is changed so it can
     // update Placeholder Text visiblity.
@@ -693,7 +693,7 @@ _Check_return_ HRESULT CRichEditBox::SetTextServicesBuffer(
         // If NULL, removes all content.
     )
 {
-    CTextBoxBase::SetTextServicesBuffer(strText);
+    IFC_RETURN(CTextBoxBase::SetTextServicesBuffer(strText));
 
 
     // TextBox in the XAML layer needs to be notified when pText is changed so it can

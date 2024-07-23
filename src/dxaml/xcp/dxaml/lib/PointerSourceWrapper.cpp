@@ -8,7 +8,7 @@
 
 #include <dcomprestricted.h>
 
-HRESULT PointerSourceWrapper::Initialize(_In_ CUIElement* hoverPointerSourceElement)
+_Check_return_ HRESULT PointerSourceWrapper::Initialize(_In_ CUIElement* hoverPointerSourceElement)
 {
     wrl::ComPtr<IUnknown> handOffVisual;
     IFC_RETURN(hoverPointerSourceElement->GetHandOffVisual(&handOffVisual));

@@ -20,7 +20,7 @@ namespace Parser
         if (isEncoding)
         {
             auto encoder = std::make_shared<ObjectWriterRuntimeEncoder>(spContext, spErrorService);
-            encoder->Initialize();
+            IFC_RETURN(encoder->Initialize());
             spRuntime = std::static_pointer_cast<ObjectWriterCommonRuntime>(std::move(encoder));
         }
         else

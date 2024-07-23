@@ -69,7 +69,7 @@ KnownTypeIndex CDoubleCollection::GetTypeIndex() const
 
 _Check_return_
 HRESULT
-CDoubleCollection::Append(CValue& value, _Out_ XUINT32 *pnIndex)
+CDoubleCollection::Append(CValue& value, _Out_opt_ XUINT32 *pnIndex)
 {
     CValue vValue;
 
@@ -92,7 +92,7 @@ CDoubleCollection::Append(CValue& value, _Out_ XUINT32 *pnIndex)
     return S_OK;
 }
 
-_Check_return_ HRESULT CDoubleCollection::Insert(_In_ XUINT32 nIndex, CValue& value)
+_Check_return_ HRESULT CDoubleCollection::Insert(_In_ XUINT32 nIndex, _In_ CValue& value)
 {
     CValue vValue;
 

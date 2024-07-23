@@ -2570,7 +2570,7 @@ void CFrameworkElement::UpdateRequiresCompNodeForRoundedCorners()
     {
         if (!RequiresCompNodeForRoundedCorners())
         {
-            SetRequiresComposition(CompositionRequirement::HasRoundedCorners, IndependentAnimationType::None);
+            IFCFAILFAST(SetRequiresComposition(CompositionRequirement::HasRoundedCorners, IndependentAnimationType::None));
         }
     }
     else
@@ -2911,7 +2911,7 @@ void CFrameworkElement::SetIsPropertyBitSet(_In_ const CDependencyProperty* pdp,
 //      pdp                     --  The DependencyProperty, the flag of which is to be checked.
 //
 //------------------------------------------------------------------------
-bool CFrameworkElement::IsPropertySetByStyle(_In_ const CDependencyProperty *pdp) const
+_Check_return_ bool CFrameworkElement::IsPropertySetByStyle(_In_ const CDependencyProperty *pdp) const
 {
     if (pdp->IsSparse())
     {
@@ -3095,7 +3095,7 @@ CFrameworkElement::get_Parent(
 //------------------------------------------------------------------------
 
 _Check_return_ CDependencyObject* CFrameworkElement::GetInheritanceParentInternal(
-    _In_opt_ bool fLogicalParent
+    bool fLogicalParent
 ) const
 {
     CDependencyObject *pdoVisualParent      = CUIElement::GetInheritanceParentInternal();

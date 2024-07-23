@@ -302,7 +302,7 @@ _Check_return_ HRESULT XamlProperty::get_DeclaringType(
 //
 //------------------------------------------------------------------------
 //
-HRESULT XamlProperty::get_Type(std::shared_ptr<XamlType>& outType)
+_Check_return_ HRESULT XamlProperty::get_Type(_Out_ std::shared_ptr<XamlType>& outType)
 {
     // Get a reference to the cached type
     if (!m_spType.expired())
@@ -405,7 +405,7 @@ HRESULT XamlProperty::DependsOn(std::shared_ptr<XamlProperty>& outDependsOn)
 //      Xxx
 //
 //------------------------------------------------------------------------
-HRESULT XamlProperty::GetValue(
+_Check_return_ HRESULT XamlProperty::GetValue(
     _In_ const XamlQualifiedObject& qoInstance,
     _Out_ XamlQualifiedObject& rqoOut
     )
@@ -431,7 +431,7 @@ HRESULT XamlProperty::GetValue(
 //
 //------------------------------------------------------------------------
 //
-HRESULT 
+_Check_return_ HRESULT
 XamlProperty::GetAmbientValue(
     _In_ const XamlQualifiedObject& qoInstance,
     _Out_ XamlQualifiedObject& rqoOut
@@ -458,7 +458,7 @@ XamlProperty::GetAmbientValue(
 //
 //------------------------------------------------------------------------
 //
-HRESULT 
+_Check_return_ HRESULT
 XamlProperty::SetValue(
     _In_ const std::shared_ptr<XamlQualifiedObject>& qoInstance, 
     _In_ const std::shared_ptr<XamlQualifiedObject>& qoValue,

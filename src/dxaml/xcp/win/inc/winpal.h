@@ -876,7 +876,7 @@ public:
 // CPU Info
 
     _Check_return_ HRESULT GetNumberOfCPUCores(_Out_ XUINT32 *pcProcessorCores) override;
-    bool IsSupportedPlatform() override;
+    _Check_return_ bool IsSupportedPlatform() override;
 
 // COM initialization
     _Check_return_ HRESULT CallCoInitializeMTA() override;

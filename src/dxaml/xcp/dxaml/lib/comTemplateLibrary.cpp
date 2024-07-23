@@ -175,7 +175,7 @@ _Check_return_ HRESULT ctl::BetterAggregableAbstractCoreObjectActivationFactory:
     return S_OK;
 }
 
-/*static*/ _Check_return_ HRESULT ctl::BetterAggregableAbstractCoreObjectActivationFactory::ActivateInstanceStatic(_In_ IInspectable* pOuter, _Outptr_ IInspectable** ppInstance, KnownTypeIndex typeIndex, bool shouldCheckActivationAllowed, bool isFreeThreaded)
+/*static*/ _Check_return_ HRESULT ctl::BetterAggregableAbstractCoreObjectActivationFactory::ActivateInstanceStatic(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInstance, _In_ KnownTypeIndex typeIndex, bool shouldCheckActivationAllowed, bool isFreeThreaded)
 {
     HRESULT hr = S_OK;
     ctl::ComPtr<IInspectable> spInstance;

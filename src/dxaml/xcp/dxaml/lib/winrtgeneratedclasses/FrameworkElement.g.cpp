@@ -1242,7 +1242,7 @@ _Check_return_ HRESULT DirectUI::FrameworkElementGenerated::EventRemoveHandlerBy
     case KnownEventIndex::FrameworkElement_DataContextChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::FrameworkElement*, ABI::Microsoft::UI::Xaml::DataContextChangedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1259,7 +1259,7 @@ _Check_return_ HRESULT DirectUI::FrameworkElementGenerated::EventRemoveHandlerBy
     case KnownEventIndex::FrameworkElement_LayoutUpdated:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<IInspectable*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -1276,7 +1276,7 @@ _Check_return_ HRESULT DirectUI::FrameworkElementGenerated::EventRemoveHandlerBy
     case KnownEventIndex::FrameworkElement_SizeChanged:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::ISizeChangedEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

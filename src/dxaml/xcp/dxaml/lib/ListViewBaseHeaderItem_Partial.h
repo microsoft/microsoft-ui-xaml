@@ -32,7 +32,7 @@ namespace DirectUI
 
         _Check_return_ HRESULT GetPlainText(_Out_ HSTRING* strPlainText) override;
 
-        _Check_return_ HRESULT GetLogicalParentForAPProtected(_Outptr_ DependencyObject** ppLogicalParentForAP) override;
+        _Check_return_ HRESULT GetLogicalParentForAPProtected(_Outptr_result_maybenull_ DependencyObject** ppLogicalParentForAP) override;
 
         // Sticky Headers
         // Computes the offsets resulting from Sticky Headers
@@ -96,11 +96,11 @@ namespace DirectUI
             _Out_ BOOLEAN* returnValue)
             override;
 
-        IFACEMETHOD(GetDropOffsetToRoot)(
+        _Check_return_ IFACEMETHOD(GetDropOffsetToRoot)(
             _Out_ wf::Point* pReturnValue)
             override;
 
-        IFACEMETHOD(OnTapped)(
+        _Check_return_ IFACEMETHOD(OnTapped)(
             _In_ xaml_input::ITappedRoutedEventArgs* pArgs) override;
 
         // Called when the element leaves the tree. Clears the sticky header wrapper.

@@ -21,9 +21,16 @@
             XmlInputPaths="$(ApplicationManifest)"
             OutputPaths="$(FinalAppxManifestName).fragment" />
 
+        <PropertyGroup>
+            <!-- The _WireUpCoreRuntime target also generates ActivatableClass manifest entries for referenced winmds files,
+                 which include WebView2, colliding with those we would create here -->
+            <ExcludeWebView2ActivatableClassEntries Condition="'$(ExcludeWebView2ActivatableClassEntries)'!='true'">false</ExcludeWebView2ActivatableClassEntries>
+        </PropertyGroup>
+
         <WinAppSdkInsertActivatableClassEntries
             FullPathToAppxManifest="$(FinalAppxManifestName)"
-            FullPathToAppxFragment="$(FinalAppxManifestName).fragment" />
+            FullPathToAppxFragment="$(FinalAppxManifestName).fragment"
+            ExcludeWebView2ActivatableClassEntries="$(ExcludeWebView2ActivatableClassEntries)"/>
 
          <Touch
             Files="$(FinalAppxManifestName).incremental"
@@ -36,6 +43,7 @@
         <ParameterGroup>
             <FullPathToAppxManifest ParameterType="System.String" Required="true" />
             <FullPathToAppxFragment ParameterType="System.String" Required="true" />
+            <ExcludeWebView2ActivatableClassEntries ParameterType="System.Boolean" Required="true" />
         </ParameterGroup>
         <Task>
             <Using Namespace="System" />
@@ -73,8 +81,12 @@
 
                     foreach (XmlNode registrationNode in registrationNodes)
                     {
-                        XmlNode importNode = extensionsNode.OwnerDocument.ImportNode(registrationNode, true);
-                        extensionsNode.AppendChild(importNode);
+                        var IsCoreWebView2 = registrationNode.SelectNodes("w:InProcessServer[w:Path='Microsoft.Web.WebView2.Core.dll']", namespaceManager2).Count > 0;
+                        if (!(ExcludeWebView2ActivatableClassEntries && IsCoreWebView2))
+                        {
+                            XmlNode importNode = extensionsNode.OwnerDocument.ImportNode(registrationNode, true);
+                            extensionsNode.AppendChild(importNode);
+                        }
                     }
 
                     appxManifest.Save(FullPathToAppxManifest);

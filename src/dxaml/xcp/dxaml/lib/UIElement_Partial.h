@@ -400,6 +400,7 @@ namespace DirectUI
                 _In_ xaml::IRoutedEvent* routedEvent,
                 _In_ IInspectable* pEventHandler);
 
+#pragma warning( suppress : 6101 ) // Out params don't get set, but this copy of the function should never be called.
             // Tab navigation virtual override methods to interact with Focus Manager.
             virtual _Check_return_ HRESULT ProcessTabStopOverride(
                 _In_opt_ DependencyObject* pFocusedElement,
@@ -412,6 +413,7 @@ namespace DirectUI
                 RRETURN(S_OK);
             }
 
+#pragma warning( suppress : 6101 ) // Out params don't get set, but this copy of the function should never be called.
             virtual _Check_return_ HRESULT ProcessCandidateTabStopOverride(
                 _In_opt_ DependencyObject* pFocusedElement,
                 _In_ DependencyObject* pCandidateTabStopElement,
@@ -423,12 +425,14 @@ namespace DirectUI
                 RRETURN(S_OK);
             }
 
+#pragma warning( suppress : 6101 ) // Out params don't get set, but this copy of the function should never be called.
             virtual _Check_return_ HRESULT GetNextTabStopOverride(
                 _Outptr_ DependencyObject** ppNextTabStop)
             {
                 RRETURN(S_OK);
             }
 
+#pragma warning( suppress : 6101 ) // Out params don't get set, but this copy of the function should never be called.
             virtual _Check_return_ HRESULT GetPreviousTabStopOverride(
                 _Outptr_ DependencyObject** ppPreviousTabStop)
             {
@@ -455,12 +459,14 @@ namespace DirectUI
                 m_animateIfBringIntoView = TRUE;
             }
 
+#pragma warning( suppress : 6101 ) // Out params don't get set, but this copy of the function should never be called.
             virtual _Check_return_ HRESULT GetFirstFocusableElementOverride(
                 _Outptr_ DependencyObject** ppFirstFocusable)
             {
                 RRETURN(S_OK);
             }
 
+#pragma warning( suppress : 6101 ) // Out params don't get set, but this copy of the function should never be called.
             virtual _Check_return_ HRESULT GetLastFocusableElementOverride(
                 _Outptr_ DependencyObject** ppLastFocusable)
             {
@@ -497,7 +503,7 @@ namespace DirectUI
                 _Outptr_ xaml_media::IGeneralTransform** ppReturnValue);
 
         protected:
-            _Check_return_ HRESULT ConfigureAutomaticDragHelper(_In_ bool startDetectingDrag);
+            _Check_return_ HRESULT ConfigureAutomaticDragHelper(bool startDetectingDrag);
 
             // Anchor point has to take into account RTL and scale factor as Core wants physical pixels
             void GetAnchorPoint(_In_ wf::Point pointerLocation, _Out_ wf::Point* anchorPoint);
@@ -786,7 +792,7 @@ namespace DirectUI
             HRESULT get_AccessKeyScopeOwnerImpl(_Outptr_result_maybenull_ xaml::IDependencyObject** ppValue);
             HRESULT put_AccessKeyScopeOwnerImpl(_In_opt_ xaml::IDependencyObject* pValue);
 
-            HRESULT get_LightsImpl(_Outptr_result_maybenull_ wfc::IVector<xaml_media::XamlLight*>** ppValue);
+            _Check_return_ HRESULT get_LightsImpl(_Outptr_result_maybenull_ wfc::IVector<xaml_media::XamlLight*>** ppValue);
 
             // Get the UIElement focus candidate given an IInspectable
             // If this inspectable is not a UIElement, we will walk up the tree

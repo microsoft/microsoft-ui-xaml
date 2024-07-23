@@ -2651,7 +2651,7 @@ MediaTransportControls::UsedPreviously(_In_ std::vector<wrl_wrappers::HString>&&
     return S_OK;
 }
 
-HRESULT MediaTransportControls::CreateLanguage(_In_z_ PCWSTR languageTag, _COM_Outptr_ wg::ILanguage ** ppLanguage)
+_Check_return_ HRESULT MediaTransportControls::CreateLanguage(_In_z_ PCWSTR languageTag, _COM_Outptr_ wg::ILanguage ** ppLanguage)
 {
     wrl_wrappers::HStringReference tag(languageTag);
 

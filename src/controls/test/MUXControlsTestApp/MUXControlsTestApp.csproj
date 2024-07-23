@@ -6,8 +6,6 @@
   <Import Project="$(MUXCProjectRoot)FeatureAreas.props" />
 
   <PropertyGroup>
-    <!-- Temporary workaround for CsWinRT 1.3.3 causing corruption of patched DLLs on exception -->
-    <CsWinRTIIDOptimizerOptOut>true</CsWinRTIIDOptimizerOptOut>
     <OutputType>WinExe</OutputType>
     <TargetFramework>$(DotNetCoreTargetFrameworkMoniker)</TargetFramework>
     <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
@@ -96,7 +94,6 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="@(WinUIEditWinMD)" />
-    <Reference Include="@(WebView2WinMD)" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MUXProjectRoot)build\WinUITest.pfx" />
@@ -153,6 +150,8 @@
     <PackageReference Include="MUXCustomBuildTasks" />
     <!-- When updating to the winui3 compatible win2d, remove the FixWUXReferences target -->
     <PackageReference Include="Win2d.WinUI" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Web.WebView2" />
+
     <Manifest Include="$(ApplicationManifest)" />
 
     <!--

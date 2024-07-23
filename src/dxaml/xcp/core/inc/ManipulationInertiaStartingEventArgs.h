@@ -33,7 +33,7 @@ public:
     _Check_return_ HRESULT CreateFrameworkPeer(_Outptr_ IInspectable** ppPeer) override;
 
     _Check_return_ HRESULT GetDelta(
-        _Outptr_ CManipulationDelta** ppDelta)
+        _Inout_ CManipulationDelta** ppDelta)
     {
         IFCPTR_RETURN(ppDelta);
         if (m_pDelta)
@@ -46,7 +46,7 @@ public:
     }
     
     _Check_return_ HRESULT GetCumulative(
-        _Outptr_ CManipulationDelta** ppCumulative)
+        _Inout_ CManipulationDelta** ppCumulative)
     {
         IFCPTR_RETURN(ppCumulative);
         if (m_pCumulative)
@@ -59,7 +59,7 @@ public:
     }
     
     _Check_return_ HRESULT GetVelocities(
-        _Outptr_ CManipulationVelocities** ppVelocities)
+        _Inout_ CManipulationVelocities** ppVelocities)
     {
         IFCPTR_RETURN(ppVelocities);
         if (m_pVelocities)

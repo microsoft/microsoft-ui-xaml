@@ -81,7 +81,7 @@ CustomWriterManager::TryCustomWriterActivation(
     return S_OK;
 }
 
-HRESULT CustomWriterManager::WriteObject(
+_Check_return_ HRESULT CustomWriterManager::WriteObject(
     _In_ const std::shared_ptr<XamlType>& spXamlType,
     _In_ bool bFromMember,
     _Out_ bool& handled)
@@ -129,7 +129,7 @@ HRESULT CustomWriterManager::WriteObject(
     return S_OK;
 }
 
-HRESULT CustomWriterManager::WriteEndObject(_Out_ bool& handled)
+_Check_return_ HRESULT CustomWriterManager::WriteEndObject(_Out_ bool& handled)
 {
     handled = false;
 
@@ -182,7 +182,7 @@ HRESULT CustomWriterManager::WriteEndObject(_Out_ bool& handled)
     return S_OK;
 }
 
-HRESULT CustomWriterManager::WriteMember(
+_Check_return_ HRESULT CustomWriterManager::WriteMember(
     _In_ const std::shared_ptr<XamlProperty>& spProperty,
     _Out_ bool& handled)
 {
@@ -213,7 +213,7 @@ HRESULT CustomWriterManager::WriteMember(
     return S_OK;
 }
 
-HRESULT CustomWriterManager::WriteEndMember(_Out_ bool& handled)
+_Check_return_ HRESULT CustomWriterManager::WriteEndMember(_Out_ bool& handled)
 {
     handled = false;
 
@@ -255,7 +255,7 @@ HRESULT CustomWriterManager::WriteEndMember(_Out_ bool& handled)
     return S_OK;
 }
 
-HRESULT CustomWriterManager::WriteConditionalScope(
+_Check_return_ HRESULT CustomWriterManager::WriteConditionalScope(
     _In_ const std::shared_ptr<Parser::XamlPredicateAndArgs>& xamlPredicateAndArgs,
     _Out_ bool& handled)
 {
@@ -283,7 +283,7 @@ HRESULT CustomWriterManager::WriteConditionalScope(
     return S_OK;
 }
 
-HRESULT CustomWriterManager::WriteEndConditionalScope(_Out_ bool& handled)
+_Check_return_ HRESULT CustomWriterManager::WriteEndConditionalScope(_Out_ bool& handled)
 {
     handled = false;
 
@@ -309,7 +309,7 @@ HRESULT CustomWriterManager::WriteEndConditionalScope(_Out_ bool& handled)
     return S_OK;
 }
 
-HRESULT CustomWriterManager::WriteValue(
+_Check_return_ HRESULT CustomWriterManager::WriteValue(
     _In_ const std::shared_ptr<XamlQualifiedObject>& spValue,
     _Out_ bool& handled)
 {
@@ -340,7 +340,7 @@ HRESULT CustomWriterManager::WriteValue(
     return S_OK;
 }
 
-HRESULT CustomWriterManager::WriteNamespace(
+_Check_return_ HRESULT CustomWriterManager::WriteNamespace(
     _In_ const xstring_ptr& spPrefix,
     _In_ const std::shared_ptr<XamlNamespace>& spXamlNamespace,
     _Out_ bool& handled)

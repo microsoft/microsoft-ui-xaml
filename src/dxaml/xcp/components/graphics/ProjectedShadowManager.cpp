@@ -529,7 +529,7 @@ void ProjectedShadowManager::UpdateCasterStatus(
     _In_ CCoreServices* core,
     SourceType sourceType,
     _In_ WUComp::IVisual* visual,
-    _In_ CUIElement* uielement,
+    _In_opt_ CUIElement* uielement,
     _In_opt_ CThemeShadow* themeShadow,
     bool addToGlobalScene,
     _In_opt_ CPopup* containingPopup,

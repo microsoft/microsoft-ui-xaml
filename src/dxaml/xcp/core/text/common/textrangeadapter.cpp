@@ -454,7 +454,7 @@ _Check_return_ HRESULT CTextRangeAdapter::ExpandToEnclosingUnit(_In_ UIAXcp::Tex
     return S_OK;
 }
 
-_Check_return_ HRESULT CTextRangeAdapter::GetAttributeValue(DirectUI::AutomationTextAttributesEnum attributeID, _Out_ CValue* pRetVal)
+_Check_return_ HRESULT CTextRangeAdapter::GetAttributeValue(_In_ DirectUI::AutomationTextAttributesEnum attributeID, _Out_ CValue* pRetVal)
 {
     ITextContainer *pTextContainer = nullptr;
     CTextElement *pContainingElement = nullptr;
@@ -1990,7 +1990,7 @@ _Check_return_ HRESULT CTextRangeAdapter::GetAttributeValueFromTextElement(
                 ASSERT(tempValue.GetType() == valueObject);
                 CFontFamily* fontFamilyDO = do_pointer_cast<CFontFamily>(tempValue.AsObject());
                 xstring_ptr strValue;
-                fontFamilyDO->get_Source(&strValue);
+                IFC_RETURN(fontFamilyDO->get_Source(&strValue));
                 returnValue.SetString(strValue);
             }
             break;

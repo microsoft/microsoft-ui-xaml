@@ -327,7 +327,7 @@ CTimeManager::Tick(
                 // Each timeline in this timing tree has recorded its own conversion result. The parts that failed to
                 // convert will tick dependently during ComputeState. The parts that succeeded will attach them to
                 // animation targets during AttachDCompAnimations.
-                pTimeline->MakeCompositionAnimationsWithProperties(&compContext);
+                (void)pTimeline->MakeCompositionAnimationsWithProperties(&compContext);
             }
 
             IFC(pTimeline->ComputeState(parentParams, &hasNoExternalReferences));

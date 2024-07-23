@@ -52,7 +52,7 @@ void PropertyAccessPathStep::DisconnectCurrentItem()
 
 _Check_return_
 HRESULT
-PropertyAccessPathStep::GetValue(_Out_ IInspectable **ppValue)
+PropertyAccessPathStep::GetValue(_Outptr_ IInspectable **ppValue)
 {
     HRESULT hr = S_OK;
 
@@ -185,7 +185,7 @@ HRESULT
 PropertyAccessPathStep::ConnectPropertyAccessForObject(
     _In_ IInspectable *pSource,
     _In_ bool fListenToChanges,
-    __deref BOOLEAN* pbConnected)
+    _Out_ BOOLEAN* pbConnected)
 {
     HRESULT hr = S_OK;
     ctl::ComPtr<wfc::IMap<HSTRING, IInspectable *>> spMap;

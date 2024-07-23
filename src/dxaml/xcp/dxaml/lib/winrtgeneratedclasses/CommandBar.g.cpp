@@ -254,7 +254,7 @@ _Check_return_ HRESULT DirectUI::CommandBarGenerated::EventRemoveHandlerByIndex(
     case KnownEventIndex::CommandBar_DynamicOverflowItemsChanging:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CommandBar*, ABI::Microsoft::UI::Xaml::Controls::DynamicOverflowItemsChangingEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

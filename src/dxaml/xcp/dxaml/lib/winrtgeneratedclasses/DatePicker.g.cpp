@@ -360,7 +360,7 @@ _Check_return_ HRESULT DirectUI::DatePickerGenerated::EventRemoveHandlerByIndex(
     case KnownEventIndex::DatePicker_DateChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::IEventHandler<ABI::Microsoft::UI::Xaml::Controls::DatePickerValueChangedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {
@@ -377,7 +377,7 @@ _Check_return_ HRESULT DirectUI::DatePickerGenerated::EventRemoveHandlerByIndex(
     case KnownEventIndex::DatePicker_SelectedDateChanged:
         {
             ctl::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::DatePicker*, ABI::Microsoft::UI::Xaml::Controls::DatePickerSelectedValueChangedEventArgs*>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

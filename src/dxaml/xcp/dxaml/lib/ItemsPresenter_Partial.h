@@ -205,7 +205,7 @@ namespace DirectUI
 
         // IManipulationDataProvider methods accessed by scrolling owner to support DirectManipulation.
 
-        IFACEMETHOD(get_PhysicalOrientation)(
+        _Check_return_ IFACEMETHOD(get_PhysicalOrientation)(
             _Out_ xaml_controls::Orientation* pValue) override;
 
 

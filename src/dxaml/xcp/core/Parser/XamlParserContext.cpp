@@ -17,8 +17,8 @@ XamlParserContext::XamlParserContext(const std::shared_ptr<XamlSchemaContext>& i
 }
 
 HRESULT XamlParserContext::Create(
-            const std::shared_ptr<XamlSchemaContext>& inSchemaContext, 
-            std::shared_ptr<XamlParserContext>& outParserContext)
+            _In_ const std::shared_ptr<XamlSchemaContext>& inSchemaContext, 
+            _In_ std::shared_ptr<XamlParserContext>& outParserContext)
 {
     outParserContext = std::make_shared<XamlParserContext>(inSchemaContext);
     // ZPTD: Consider giving different initial size.
@@ -41,7 +41,7 @@ bool XamlParserContext::IsNamespaceUriIgnored(_In_ const xstring_ptr& uri)
 
 HRESULT XamlParserContext::AddNamespacePrefix(
             _In_ const xstring_ptr& inPrefix, 
-            const std::shared_ptr<XamlNamespace>& inXamlNamespace)
+            _In_ const std::shared_ptr<XamlNamespace>& inXamlNamespace)
 {
     // TODO: We allow adding a null namespace here.
     auto result = m_PrescopeNamespaces->insert({ inPrefix, inXamlNamespace });

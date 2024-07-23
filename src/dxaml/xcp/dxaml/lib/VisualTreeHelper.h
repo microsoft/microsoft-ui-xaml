@@ -56,7 +56,7 @@ namespace DirectUI
             _In_ xaml::IWindow* pWindow,
             _Outptr_ wfc::IVectorView<xaml_primitives::Popup*>** ppPopups) override;
 
-        IFACEMETHODIMP GetOpenPopupsForXamlRoot(
+        _Check_return_ IFACEMETHODIMP GetOpenPopupsForXamlRoot(
             _In_ xaml::IXamlRoot* xamlRoot,
             _Outptr_ wfc::IVectorView<xaml_primitives::Popup*>** ppPopups) override;
 
@@ -82,27 +82,27 @@ namespace DirectUI
 
         static _Check_return_ HRESULT FindElementsInHostCoordinatesPointStatic(
             _In_ wf::Point intersectingPoint,
-            _In_ xaml::IUIElement* pSubTree,
+            _In_opt_ xaml::IUIElement* pSubTree,
             _In_ BOOLEAN canHitDisabledElements,
             _In_ BOOLEAN canHitInvisibleElements,
             _Out_ wfc::IIterable<xaml::UIElement*>** ppElements);
 
         static _Check_return_ HRESULT FindElementsInHostCoordinatesRectStatic(
             _In_ wf::Rect intersectingRect,
-            _In_ xaml::IUIElement* pSubTree,
+            _In_opt_ xaml::IUIElement* pSubTree,
             _In_ BOOLEAN canHitDisabledElements,
             _In_ BOOLEAN canHitInvisibleElements,
             _Out_ wfc::IIterable<xaml::UIElement*>** ppElements);
 
         static _Check_return_ HRESULT FindAllElementsInHostCoordinatesPointStatic(
             _In_ wf::Point intersectingPoint,
-            _In_ xaml::IUIElement* pSubTree,
+            _In_opt_ xaml::IUIElement* pSubTree,
             _In_ BOOLEAN includeAllElements,
             _Out_ wfc::IIterable<xaml::UIElement*>** ppElements);
 
         static _Check_return_ HRESULT FindAllElementsInHostCoordinatesRectStatic(
             _In_ wf::Rect intersectingRect,
-            _In_ xaml::IUIElement* pSubTree,
+            _In_opt_ xaml::IUIElement* pSubTree,
             _In_ BOOLEAN includeAllElements,
             _Out_ wfc::IIterable<xaml::UIElement*>** ppElements);
 

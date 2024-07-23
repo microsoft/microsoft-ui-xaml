@@ -595,7 +595,7 @@ HRESULT WinTextCore::ConfigureNumberSubstitution()
 //  Sets a custom font collection for core text services to use in testing.
 //
 //------------------------------------------------------------------------
-HRESULT WinTextCore::SetSystemFontCollectionOverride(_In_opt_ IDWriteFontCollection* pFontCollection)
+_Check_return_ HRESULT WinTextCore::SetSystemFontCollectionOverride(_In_opt_ IDWriteFontCollection* pFontCollection)
 {
     CTextCore *pTextCore = nullptr;
     IFontAndScriptServices *pFontServices = nullptr;
@@ -619,7 +619,7 @@ HRESULT WinTextCore::SetSystemFontCollectionOverride(_In_opt_ IDWriteFontCollect
 //  Determines whether we should be using the typographic font model.
 //
 //------------------------------------------------------------------------
-HRESULT WinTextCore::ShouldUseTypographicFontModel(_Out_ bool* shouldUseTypographicModel)
+_Check_return_ HRESULT WinTextCore::ShouldUseTypographicFontModel(_Out_ bool* shouldUseTypographicModel)
 {
     CTextCore* pTextCore = nullptr;
     IFontAndScriptServices* pFontServices = nullptr;

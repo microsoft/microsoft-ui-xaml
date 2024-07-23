@@ -221,7 +221,7 @@ _Check_return_ HRESULT CPopup::SetValue(_In_ const SetValueParams& args)
 
             if (m_systemBackdrop && m_fIsOpen && IsWindowed())
             {
-                SystemBackdrop::InvokeOnTargetDisconnectedFromCore(m_systemBackdrop.get(), popupPeerNoRef);
+                IFC(SystemBackdrop::InvokeOnTargetDisconnectedFromCore(m_systemBackdrop.get(), popupPeerNoRef));
 
                 // Clean up the existing backdrop link and placement visual immediately. Normally this is done
                 // synchronously from lifted Composition, but there are cases where we don't get a call back and the
@@ -241,7 +241,7 @@ _Check_return_ HRESULT CPopup::SetValue(_In_ const SetValueParams& args)
             if (m_systemBackdrop && popupPeerNoRef && m_fIsOpen && IsWindowed())
             {
                 ctl::ComPtr<xaml::IXamlRoot> xamlRoot = XamlRoot::GetForElementStatic(popupPeerNoRef);
-                SystemBackdrop::InvokeOnTargetConnectedFromCore(m_systemBackdrop.get(), popupPeerNoRef, xamlRoot.Get());
+                IFC(SystemBackdrop::InvokeOnTargetConnectedFromCore(m_systemBackdrop.get(), popupPeerNoRef, xamlRoot.Get()));
 
                 // Create the backdrop link and placement visual immediately. Normally we wait until we get the call back from
                 // Composition with the system brush, but that creates a race condition. Xaml's own layout and rendering will
@@ -577,7 +577,7 @@ _Check_return_ HRESULT CPopup::Open()
     if (m_systemBackdrop && popupPeerNoRef && IsWindowed())
     {
         ctl::ComPtr<xaml::IXamlRoot> xamlRoot = XamlRoot::GetForElementStatic(popupPeerNoRef);
-        SystemBackdrop::InvokeOnTargetConnectedFromCore(m_systemBackdrop.get(), popupPeerNoRef, xamlRoot.Get());
+        IFC_RETURN(SystemBackdrop::InvokeOnTargetConnectedFromCore(m_systemBackdrop.get(), popupPeerNoRef, xamlRoot.Get()));
 
         // Create the backdrop link and placement visual immediately. Normally we wait until we get the call back from
         // Composition with the system brush, but that creates a race condition. Xaml's own layout and rendering will
@@ -675,7 +675,7 @@ _Check_return_ HRESULT CPopup::Close(bool forceCloseforTreeReset)
     if (m_systemBackdrop && IsWindowed())
     {
         DirectUI::Popup* popupPeerNoRef = static_cast<DirectUI::Popup*>(GetDXamlPeer());
-        SystemBackdrop::InvokeOnTargetDisconnectedFromCore(m_systemBackdrop.get(), popupPeerNoRef);
+        IFC_RETURN(SystemBackdrop::InvokeOnTargetDisconnectedFromCore(m_systemBackdrop.get(), popupPeerNoRef));
 
         // Clean up the existing backdrop link and placement visual immediately. Normally this is done
         // synchronously from lifted Composition, but there are cases where we don't get a call back and the
@@ -879,7 +879,7 @@ _Check_return_ HRESULT CPopup::Close(bool forceCloseforTreeReset)
 
     // The PopupAutomationPeer will be null from calling UIElement::GetOrCreateAutomationPeer() if Popup
     // is the closed state and the existing PopupAutomationPeer will invalidate the owner from
-    // CUIElement::OnCreateAutomationPeer() that shouldn�t be referenced from other AutomationPeer.
+    // CUIElement::OnCreateAutomationPeer() that shouldn't be referenced from other AutomationPeer.
     // The below calling SetAPParent(null) ensures the disconnect the relationship between PopupAutomationPeer
     // and Popup child's AutomationPeer when Popup is closed.
     {
@@ -946,7 +946,7 @@ void CPopup::FlushPendingKeepVisibleOperations()
             IFCFAILFAST(StopComposition());
         }
 
-        HideWindowForWindowedPopup();
+        IFCFAILFAST(HideWindowForWindowedPopup());
     }
 }
 
@@ -2401,7 +2401,7 @@ _Check_return_ HRESULT CPopup::SetChild(
         // of the new child is this popup already, meaning the logical parent-child relationship shouldn't be broken.
         if (pChild->GetLogicalParentNoRef() == this)
         {
-            ClearUCRemoveLogicalParentFlag(pChild);
+            IFC(ClearUCRemoveLogicalParentFlag(pChild));
         }
     }
 
@@ -4924,7 +4924,7 @@ std::vector<CPopup*> CPopupRoot::GetOpenPopupList(bool includeUnloadingPopups)
 //  Finally note the special casing for contentcontrol.
 //
 //------------------------------------------------------------------------
-CTransitionCollection* CPopupRoot::GetTransitionsForChildElementNoAddRef(_In_ CUIElement* pChild)
+_Check_return_ CTransitionCollection* CPopupRoot::GetTransitionsForChildElementNoAddRef(_In_ CUIElement* pChild)
 {
     // a popup root is a strange beast. It might be the visual parent, but it is not flowing any of the
     // transitions. The childtransitions are coming from the popup itself that hosts this pChild.
@@ -5341,7 +5341,7 @@ std::vector<CDependencyObject*> CPopupRoot::GetPopupChildrenOpenedDuringEngageme
     std::vector<CDependencyObject*> popupChildrenDuringEngagement;
 
     CPopupRoot* popupRoot = nullptr;
-    VisualTree::GetPopupRootForElementNoRef(element, &popupRoot);
+    IFCFAILFAST(VisualTree::GetPopupRootForElementNoRef(element, &popupRoot));
 
     if (popupRoot == nullptr || FAILED(popupRoot->GetOpenPopups(&openPopupsCount, &openedPopups)))
     {

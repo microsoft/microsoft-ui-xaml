@@ -1080,7 +1080,7 @@ HWWalk::RenderProperties(
 //      for rendering the specified redirected element.
 //
 //------------------------------------------------------------------------
-/*static*/ _Out_opt_ CUIElement*
+/*static*/ _Ret_maybenull_ CUIElement*
 HWWalk::GetRedirectionTarget(_In_ CUIElement *pUIE)
 {
     const KnownTypeIndex index = pUIE->GetTypeIndex();
@@ -2111,7 +2111,9 @@ HWWalk::RenderRootImpl(
     // TODO: HWPC: Could clip to window bounds here to cull the tree walk?  Happens w/ prepend transform in SCBP case
     // Initialize the rendering transform.
     TransformAndClipStack transformsAndClips;
-    transformsAndClips.PushTransformsAndClips(pPrependTransformAndClip);
+
+    // Using VERIFYHR instead of IFC() because the latter breaks the build by skipping initialization of visualContentRenderer below.
+    VERIFYHR(transformsAndClips.PushTransformsAndClips(pPrependTransformAndClip));
     rp.pTransformsAndClipsToCompNode = &transformsAndClips;
 
     rp.m_useDCompAnimations = useDCompAnimations;

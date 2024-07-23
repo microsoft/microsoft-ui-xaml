@@ -125,8 +125,8 @@ public:
     HRESULT GetFlowsTo(_Outptr_ CAutomationPeerCollection **ppRetVal);
     HRESULT GetFlowsFrom(_Outptr_ CAutomationPeerCollection **ppRetVal);
     HRESULT GetCulture(_Out_ XINT32* pRetVal);
-    HRESULT GetHeadingLevel(_Out_ UIAXcp::AutomationHeadingLevel* pRetVal);
-    HRESULT IsDialog(_Out_ XINT32* returnValue);
+    _Check_return_ HRESULT GetHeadingLevel(_Out_ UIAXcp::AutomationHeadingLevel* pRetVal);
+    _Check_return_ HRESULT IsDialog(_Out_ XINT32* returnValue);
 
     bool ListenerExists(_In_ UIAXcp::APAutomationEvents eventId);
     void RaiseAutomationEvent(_In_ UIAXcp::APAutomationEvents eventId);

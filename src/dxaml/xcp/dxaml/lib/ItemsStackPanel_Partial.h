@@ -44,8 +44,8 @@ namespace DirectUI
 
     public:
         // implementation of IOrientedPanel
-        IFACEMETHOD(get_LogicalOrientation)(_Out_ xaml_controls::Orientation* pValue) override;
-        IFACEMETHOD(get_PhysicalOrientation)(_Out_ xaml_controls::Orientation* pValue) override;
+        _Check_return_ IFACEMETHOD(get_LogicalOrientation)(_Out_ xaml_controls::Orientation* pValue) override;
+        _Check_return_ IFACEMETHOD(get_PhysicalOrientation)(_Out_ xaml_controls::Orientation* pValue) override;
 
         _Check_return_ HRESULT get_FirstCacheIndexImpl(_Out_ INT* pValue) { RRETURN(get_FirstCacheIndexBase(pValue)); }
         _Check_return_ HRESULT get_FirstVisibleIndexImpl(_Out_ INT* pValue) { RRETURN(get_FirstVisibleIndexBase(pValue)); }

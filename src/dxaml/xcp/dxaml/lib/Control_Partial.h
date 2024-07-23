@@ -143,7 +143,7 @@ namespace DirectUI
             _Check_return_ HRESULT OnManipulationStartedImpl(_In_ xaml_input::IManipulationStartedRoutedEventArgs* pArgs);
             _Check_return_ HRESULT OnManipulationDeltaImpl(_In_ xaml_input::IManipulationDeltaRoutedEventArgs* pArgs);
             _Check_return_ HRESULT OnManipulationCompletedImpl(_In_ xaml_input::IManipulationCompletedRoutedEventArgs* pArgs);
-            IFACEMETHOD(OnInheritedPropertyChanged)(_In_ IInspectable* pArgs);
+            _Check_return_ IFACEMETHOD(OnInheritedPropertyChanged)(_In_ IInspectable* pArgs);
 
             _Check_return_ HRESULT OnKeyUpImpl(_In_ xaml_input::IKeyRoutedEventArgs* pArgs);
             _Check_return_ HRESULT OnKeyDownImpl(_In_ xaml_input::IKeyRoutedEventArgs* pArgs);

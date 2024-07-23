@@ -272,7 +272,7 @@ _Check_return_ HRESULT DirectUI::ScrollBarGenerated::EventRemoveHandlerByIndex(_
     case KnownEventIndex::ScrollBar_Scroll:
         {
             ctl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollEventHandler> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

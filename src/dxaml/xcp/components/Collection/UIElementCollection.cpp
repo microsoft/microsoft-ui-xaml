@@ -1069,7 +1069,7 @@ _Check_return_ bool CUIElementCollection::UnloadElement(_In_ XUINT32 nIndex, _In
                 if (removedHasConnectedAnimation)
                 {
                     retainElement = true;
-                    pRemove->OnZOrderChanged(); // Tears down DComp visuals and recreates in new z order position on next RenderWalk
+                    IFC(pRemove->OnZOrderChanged()); // Tears down DComp visuals and recreates in new z order position on next RenderWalk
                     initialClearLogic = static_cast<UnloadCleanup>(initialClearLogic | UC_REFERENCE_ConnectedAnimation);
                 }
             }
@@ -1079,7 +1079,7 @@ _Check_return_ bool CUIElementCollection::UnloadElement(_In_ XUINT32 nIndex, _In
                 if (pRemove->ComputeKeepVisible())
                 {
                     pRemove->SetKeepVisible(true);
-                    pRemove->OnZOrderChanged(); // Tears down DComp visuals and recreates in new z order position on next RenderWalk
+                    IFC(pRemove->OnZOrderChanged()); // Tears down DComp visuals and recreates in new z order position on next RenderWalk
                     initialClearLogic = static_cast<UnloadCleanup>(initialClearLogic | UC_REFERENCE_ImplicitAnimation);
                     retainElement = true;
 

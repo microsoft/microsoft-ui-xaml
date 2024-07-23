@@ -17,7 +17,7 @@ XamlBinaryFormatWriter::~XamlBinaryFormatWriter()
 {
 }
 
-HRESULT XamlBinaryFormatWriter::WriteAllNodes(
+_Check_return_ HRESULT XamlBinaryFormatWriter::WriteAllNodes(
     _In_ const std::shared_ptr<XamlReader>& spReader
     )
 {
@@ -55,7 +55,7 @@ HRESULT XamlBinaryFormatWriter::WriteAllNodes(
     return S_OK;
 }
 
-HRESULT XamlBinaryFormatWriter::SkipEventProperty(
+_Check_return_ HRESULT XamlBinaryFormatWriter::SkipEventProperty(
     _In_ const std::shared_ptr<XamlReader>& spReader
     )
 {
@@ -84,7 +84,7 @@ HRESULT XamlBinaryFormatWriter::SkipEventProperty(
 }
 
 
-HRESULT
+_Check_return_ HRESULT
 XamlBinaryFormatWriter::SaveNodeType(
     XamlNodeType nodeType
     )
@@ -95,7 +95,7 @@ XamlBinaryFormatWriter::SaveNodeType(
     RRETURN(m_spNodeStreamStream->Write(&nodeTypeByte, sizeof(XBYTE), 0, NULL));
 }
 
-HRESULT
+_Check_return_ HRESULT
 XamlBinaryFormatWriter::SaveValueNodeType(
     PersistedXamlValueNode::PersistedXamlValueNodeType nodeType
     )
@@ -106,7 +106,7 @@ XamlBinaryFormatWriter::SaveValueNodeType(
     RRETURN(m_spNodeStreamStream->Write(&nodeTypeByte, sizeof(XBYTE), 0, NULL));
 }
 
-HRESULT
+_Check_return_ HRESULT
 XamlBinaryFormatWriter::PersistNode(
     const XamlNode& xamlNode
     )
@@ -160,7 +160,7 @@ XamlBinaryFormatWriter::PersistNode(
     return S_OK;
 }
 
-HRESULT
+_Check_return_ HRESULT
 XamlBinaryFormatWriter::PersistLineInfoIfNeeded(const XamlNode& xamlNode)
 {
     bool fStoreAbsolutePosition = false;
@@ -226,7 +226,7 @@ XamlBinaryFormatWriter::PersistLineInfoIfNeeded(const XamlNode& xamlNode)
 
 
 
-HRESULT
+_Check_return_ HRESULT
 XamlBinaryFormatWriter::PersistAddNamespaceNode(const XamlNode& xamlNode)
 {
     PersistedXamlNode sPersistedXamlNode;
@@ -239,7 +239,7 @@ XamlBinaryFormatWriter::PersistAddNamespaceNode(const XamlNode& xamlNode)
     return S_OK;
 }
 
-HRESULT
+_Check_return_ HRESULT
 XamlBinaryFormatWriter::PersistStartObjectNode(const XamlNode& xamlNode)
 {
     PersistedXamlNode sPersistedXamlNode;
@@ -266,7 +266,7 @@ XamlBinaryFormatWriter::PersistStartObjectNode(const XamlNode& xamlNode)
     return S_OK;
 }
 
-HRESULT
+_Check_return_ HRESULT
 XamlBinaryFormatWriter::PersistEndObjectNode(const XamlNode& xamlNode)
 {
     // please see comments in WinBluePropertyTypeCompatHelper.cpp.
@@ -279,7 +279,7 @@ XamlBinaryFormatWriter::PersistEndObjectNode(const XamlNode& xamlNode)
     return S_OK;
 }
 
-HRESULT
+_Check_return_ HRESULT
 XamlBinaryFormatWriter::PersistStartMemberNode(const XamlNode& xamlNode)
 {
     PersistedXamlNode sPersistedXamlNode;
@@ -301,7 +301,7 @@ XamlBinaryFormatWriter::PersistStartMemberNode(const XamlNode& xamlNode)
     return S_OK;
 }
 
-HRESULT
+_Check_return_ HRESULT
 XamlBinaryFormatWriter::PersistEndMemberNode(const XamlNode& xamlNode)
 {
     m_spLastXamlProperty.reset();
@@ -311,7 +311,7 @@ XamlBinaryFormatWriter::PersistEndMemberNode(const XamlNode& xamlNode)
     return S_OK;
 }
 
-HRESULT
+_Check_return_ HRESULT
 XamlBinaryFormatWriter::PersistEndOfAttributesNode(const XamlNode& xamlNode)
 {
     IFC_RETURN(SaveNodeType(XamlNodeType::xntEndOfAttributes));
@@ -320,7 +320,7 @@ XamlBinaryFormatWriter::PersistEndOfAttributesNode(const XamlNode& xamlNode)
     return S_OK;
 }
 
-HRESULT
+_Check_return_ HRESULT
 XamlBinaryFormatWriter::PersistEndOfStreamNode(const XamlNode& xamlNode)
 {
     IFC_RETURN(SaveNodeType(XamlNodeType::xntEndOfStream));
@@ -330,7 +330,7 @@ XamlBinaryFormatWriter::PersistEndOfStreamNode(const XamlNode& xamlNode)
     return S_OK;
 }
 
-HRESULT
+_Check_return_ HRESULT
 XamlBinaryFormatWriter::TryOptimizePropertyValue(std::shared_ptr<XamlProperty>& spXamlProperty, _In_ const xstring_ptr& spTextString, bool *pfPropertyOptimized)
 {
     HRESULT hr = S_OK;
@@ -505,7 +505,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-HRESULT
+_Check_return_ HRESULT
 XamlBinaryFormatWriter::PersistTextValueNode(const XamlNode& xamlNode)
 {
     bool fPropertyOptimized = false;
@@ -559,7 +559,7 @@ XamlBinaryFormatWriter::PersistTextValueNode(const XamlNode& xamlNode)
     return S_OK;
 }
 
-HRESULT
+_Check_return_ HRESULT
 XamlBinaryFormatWriter::PersistValueNode(const XamlNode& xamlNode)
 {
     PersistedXamlNode sPersistedXamlNode;

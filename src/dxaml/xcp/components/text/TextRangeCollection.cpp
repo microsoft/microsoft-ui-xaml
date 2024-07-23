@@ -147,7 +147,7 @@ CTextRangeCollection::EnsureValue(
 
     if (originalValue.GetType() == valueTextRange)
     {
-        coercedValue.CopyConverted(originalValue);
+        IFC_RETURN(coercedValue.CopyConverted(originalValue));
     }
     else
     {

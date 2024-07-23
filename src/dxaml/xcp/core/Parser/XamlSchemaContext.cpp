@@ -34,8 +34,8 @@ _Check_return_ HRESULT XamlSchemaContext::Create(
 // factory creator using an existing parser error service
 _Check_return_ HRESULT XamlSchemaContext::Create(
     _In_ IParserCoreServices *pCore,
-    const std::shared_ptr<ParserErrorReporter>& inErrorReporter,
-    std::shared_ptr<XamlSchemaContext>& outXamlSchemaContext
+    _In_ const std::shared_ptr<ParserErrorReporter>& inErrorReporter,
+    _Out_ std::shared_ptr<XamlSchemaContext>& outXamlSchemaContext
     )
 {
     outXamlSchemaContext = std::make_shared<XamlSchemaContext>();

@@ -318,7 +318,7 @@ _Check_return_ HRESULT GetAncestorClipsInClientSpace(
         if (rectangle)
         {
             xref_ptr<CGeneralTransform> xform;
-            element->TransformToVisual(nullptr, &xform);
+            IFC_RETURN(element->TransformToVisual(nullptr, &xform));
 
             XRECTF clipRect = rectangle->m_rc;
             XRECTF transformedClipRect = {};
@@ -348,7 +348,7 @@ _Check_return_ HRESULT GetAncestorClipsInClientSpace(
             if (elementDefiningClipSpace)
             {
                 xref_ptr<CGeneralTransform> xform;
-                elementDefiningClipSpace->TransformToVisual(nullptr, &xform);
+                IFC_RETURN(elementDefiningClipSpace->TransformToVisual(nullptr, &xform));
 
                 XRECTF clipRect = layoutClipRect->m_rc;
                 XRECTF transformedClipRect = {};
@@ -471,7 +471,7 @@ _Check_return_ HRESULT GetFocusRectWithNudging(
             focusRectHost.Element;
 
         xref_ptr<CGeneralTransform> scrollContentToClientTransform;
-        scrollContent->TransformToVisual(nullptr, &scrollContentToClientTransform);
+        IFC_RETURN(scrollContent->TransformToVisual(nullptr, &scrollContentToClientTransform));
 
         XRECTF scrollContentBounds = GetElementLayoutBoundsWithMargins(scrollContent);
 

@@ -89,7 +89,7 @@ public:
     bool IsActive() const override { return m_state != ConnectedAnimationState::Idle; }
 
     // WUC::CompositionScopedBatch::Completed handler.
-    HRESULT OnAnimationCompleted(
+    _Check_return_ HRESULT OnAnimationCompleted(
         _In_ IInspectable* sender,
         _In_ WUComp::ICompositionBatchCompletedEventArgs* args);
 

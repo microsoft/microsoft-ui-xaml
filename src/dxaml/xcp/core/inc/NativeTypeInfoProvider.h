@@ -175,7 +175,7 @@ protected:
 
     _Check_return_ HRESULT IsTypePublic(
         _In_ const XamlTypeToken& inTypeToken,
-        bool& outbIsPublic
+        _Out_ bool& outbIsPublic
         );
 
     // Determine whether the type token represents a System.String type.

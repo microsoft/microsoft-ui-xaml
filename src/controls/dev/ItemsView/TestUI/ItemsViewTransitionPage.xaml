@@ -24,27 +24,28 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition Width="300" />
+            <ColumnDefinition/>
+            <ColumnDefinition Width="300"/>
         </Grid.ColumnDefinitions>
         <ItemsView x:Name="itemsView"
-                   AutomationProperties.AutomationId="ItemsView"
-                   ItemsSource="{x:Bind items}"
-                   KeyDown="OnItemsViewKeyDown">
+            AutomationProperties.AutomationId="ItemsView"
+            ItemsSource="{x:Bind items}"
+            KeyDown="OnItemsViewKeyDown">
             <ItemsView.ItemTemplate>
                 <DataTemplate>
                     <ItemContainer MinWidth="1" AutomationProperties.AutomationId="{Binding Path=UriSource.AbsoluteUri}">
-                        <Image Height="120" Source="{Binding}" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Image Height="120" Source="{Binding}" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </ItemContainer>
                 </DataTemplate>
             </ItemsView.ItemTemplate>
         </ItemsView>
         <ScrollViewer Grid.Column="1">
             <StackPanel Spacing="5" Margin="5">
-                <Button AutomationProperties.AutomationId="DeleteButton" Content="Delete selected item" Click="OnDeleteButtonClick" />
-                <Button AutomationProperties.AutomationId="AddButton" Content="Add new first item" Click="OnAddButtonClick" />
-                <Button AutomationProperties.AutomationId="MoveButton" Content="Move selected item to first" Click="OnMoveButtonClick" />
-                <Button AutomationProperties.AutomationId="RefreshButton" Content="Refresh items" Click="OnRefreshButtonClick" />
+                <Button AutomationProperties.AutomationId="DeleteButton" Content="Delete selected item" Click="OnDeleteButtonClick"/>
+                <Button AutomationProperties.AutomationId="AddButton" Content="Add new first item" Click="OnAddButtonClick"/>
+                <Button AutomationProperties.AutomationId="MoveButton" Content="Move selected item to first" Click="OnMoveButtonClick"/>
+                <Button AutomationProperties.AutomationId="RefreshButton" Content="Refresh items" Click="OnRefreshButtonClick"/>
+                <Button AutomationProperties.AutomationId="ResetItemTransitionProviderButton" Content="Reset ItemTransitionProvider" Click="OnResetItemTransitionProviderButtonClick"/>
                 <ComboBox Header="Layout" SelectionChanged="OnLayoutSelectionChanged" SelectedIndex="1">
                     <ComboBoxItem>null</ComboBoxItem>
                     <ComboBoxItem>LinedFlowLayout</ComboBoxItem>
@@ -54,16 +55,16 @@
                 <ComboBox x:Name="ItemCountComboBox" Header="Item Count">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding}" />
+                            <TextBlock Text="{Binding}"/>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-                <Button AutomationProperties.AutomationId="ClearHistoryButton" Content="Clear TransitionCompleted history" Click="OnClearHistoryButtonClick" />
+                <Button AutomationProperties.AutomationId="ClearHistoryButton" Content="Clear TransitionCompleted history" Click="OnClearHistoryButtonClick"/>
                 <StackPanel Margin="5">
-                    <TextBlock Text="TransitionCompleted history:" />
+                    <TextBlock Text="TransitionCompleted history:"/>
                     <TextBox IsReadOnly="True" TextWrapping="Wrap" Height="200"
                         x:Name="TransitionCompletedHistoryTextBox"
-                        AutomationProperties.AutomationId="TransitionCompletedHistoryTextBox" />
+                        AutomationProperties.AutomationId="TransitionCompletedHistoryTextBox"/>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

@@ -108,7 +108,7 @@ namespace AccessKeys {
             return S_OK;
         }
 
-        void SetFocusManager(_In_ CFocusManager* pFocusManager)
+        void SetFocusManager(_In_opt_ CFocusManager* pFocusManager)
         {
             m_pFocusManager = pFocusManager;
         }

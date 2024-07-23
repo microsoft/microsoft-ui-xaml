@@ -73,7 +73,7 @@ CCollection::Clear()
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CCollection::SetOwner(_In_opt_ CDependencyObject *pNewOwner, _In_ bool fOwnerIsFallback, _In_opt_ RENDERCHANGEDPFN pfnNewOwnerRenderChangedHandler)
+CCollection::SetOwner(_In_opt_ CDependencyObject *pNewOwner, bool fOwnerIsFallback, _In_opt_ RENDERCHANGEDPFN pfnNewOwnerRenderChangedHandler)
 {
     auto currentOwner = m_pOwner.lock_noref();
     bool fShouldKeepOwner = pNewOwner && m_pOwner && currentOwner == pNewOwner;
@@ -264,7 +264,7 @@ CCollection::Count(
     _In_ CDependencyObject *pObject,
     _In_ XUINT32 cArgs,
     _Inout_updates_opt_(0) CValue *ppArgs,
-    _Out_ CValue *pResult
+    _Inout_ CValue *pResult
 )
 {
     IFC_RETURN(ValidateParams(0 /* cArgsExpected */, pObject, cArgs, ppArgs));

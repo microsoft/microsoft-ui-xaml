@@ -220,7 +220,7 @@ TTarget* VariantMap<TTarget, TData>::SelectedItem()
     // If VariantMap has changed, reevaluate to ensure SelectedItem is up to date
     if(m_dirty)
     {
-        Evaluate();
+        IFCFAILFAST(Evaluate());
         m_dirty = false;
     }
 

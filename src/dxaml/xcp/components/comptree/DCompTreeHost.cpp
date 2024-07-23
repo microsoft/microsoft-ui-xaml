@@ -672,7 +672,7 @@ DCompTreeHost::EnsureResources() noexcept
         // (eg LoadedImageSurface), we may not have updated the atlas hint yet and will use the default atlas size.
         // Push any explicit atlas hint down into DComp just after creating the primary SurfaceFactory, to
         // guarantee we will use any hint that was set by the app early on app launch.
-        UpdateExplicitAtlasHint();
+        IFC_RETURN(UpdateExplicitAtlasHint());
     }
 
     return S_OK;
@@ -2737,8 +2737,8 @@ void DCompTreeHost::UpdateXamlIslandTargetSize(_In_ CXamlIslandRoot* xamlIslandR
             if(islandData->second.windowsPresentTarget)
             {
                 auto xamlIslandRootSize = xamlIslandRoot->GetSize();
-                islandData->second.windowsPresentTarget->SetWidth(static_cast<XUINT32>(xamlIslandRootSize.Width));
-                islandData->second.windowsPresentTarget->SetHeight(static_cast<XUINT32>(xamlIslandRootSize.Height));
+                IFCFAILFAST(islandData->second.windowsPresentTarget->SetWidth(static_cast<XUINT32>(xamlIslandRootSize.Width)));
+                IFCFAILFAST(islandData->second.windowsPresentTarget->SetHeight(static_cast<XUINT32>(xamlIslandRootSize.Height)));
             }
         }
 

@@ -150,7 +150,7 @@ namespace ctl
 
     public:
         // IWeakReferenceSource methods
-        _Check_return_ HRESULT GetWeakReference(_Outptr_ IWeakReference **weakReference);
+        _Check_return_ HRESULT GetWeakReference(_COM_Outptr_ IWeakReference **weakReference);
         void Resurrect();
 
         // Override to break reference cycles.

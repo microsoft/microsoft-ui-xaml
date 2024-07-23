@@ -353,7 +353,7 @@ public:
 protected:
     _Check_return_ bool ShouldAssociateChildren(_In_ CDependencyObject*) override { return false; }
 
-    _Check_return_ HRESULT Insert(_In_ XUINT32 nIndex, CValue& value) override;
+    _Check_return_ HRESULT Insert(_In_ XUINT32 nIndex, _In_ CValue& value) override;
     _Check_return_ void *RemoveAt(_In_ XUINT32 nIndex) override;
 
     _Check_return_ HRESULT OnClear() override;

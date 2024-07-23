@@ -2384,7 +2384,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-HRESULT CTextBoxView::CalculateBaseLine(_In_ const wrl::ComPtr<ITextRange2>& spRange, _Out_ UINT32& lineHeight, _Out_ UINT32 &baselineY)
+_Check_return_ HRESULT CTextBoxView::CalculateBaseLine(_In_ const wrl::ComPtr<ITextRange2>& spRange, _Out_ UINT32& lineHeight, _Out_ UINT32 &baselineY)
 {
     long baselineX;
     long tempBaselineY;
@@ -2412,7 +2412,7 @@ HRESULT CTextBoxView::CalculateBaseLine(_In_ const wrl::ComPtr<ITextRange2>& spR
     return S_OK;
 }
 
-HRESULT CTextBoxView::DrawBaseLine(_In_ const XRECT_RB& updateBounds, _In_ UINT32 crText)
+_Check_return_ HRESULT CTextBoxView::DrawBaseLine(_In_ const XRECT_RB& updateBounds, _In_ UINT32 crText)
 {
     wrl::ComPtr<ITextDocument2> spDocument;
     wrl::ComPtr<ITextRange2> spRange;
@@ -2706,7 +2706,7 @@ CTextBoxView::GenerateRTLCaret(XFLOAT width, XFLOAT height)
     IFC_RETURN(CCollection::Add(pathFiguresNoRef, 1, &cVal, nullptr));
 
     cVal.WrapObjectNoRef(pathGeometry.get());
-    m_spCaretElement->SetValueByIndex(KnownPropertyIndex::Path_Data, cVal);
+    IFC_RETURN(m_spCaretElement->SetValueByIndex(KnownPropertyIndex::Path_Data, cVal));
 
     return S_OK;
 }
@@ -3700,7 +3700,7 @@ _Check_return_ HRESULT CTextBoxView::IsSelectionEdgeVisible(
 
     IFC_RETURN(TxGetViewportRect(&viewportRect));
 
-    GetSelectionEdgeRects(&beginRect, &endRect);
+    IFC_RETURN(GetSelectionEdgeRects(&beginRect, &endRect));
 
     fVisible = (DoRectsIntersectOrTouch(beginRect, viewportRect) || DoRectsIntersectOrTouch(endRect, viewportRect));
 

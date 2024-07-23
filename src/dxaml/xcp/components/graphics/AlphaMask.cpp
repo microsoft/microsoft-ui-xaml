@@ -63,7 +63,7 @@ public:
         _In_opt_ WUComp::ICompositionSurfaceBrush* compositionBrush);
 
 private:
-    HRESULT EnsureBackingSurface(
+    _Check_return_ HRESULT EnsureBackingSurface(
         DCompTreeHost* pDCompTreeHostNoRef,
         uint32_t width,
         uint32_t height,

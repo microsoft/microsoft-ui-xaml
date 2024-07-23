@@ -140,7 +140,7 @@ void CInputServices::ResetAllCrossSlideServices()
         auto cpDMCrossSlideService = islandInputSiteRegistration.DMCrossSlideService();
         if (nullptr != cpDMCrossSlideService)
         {
-            cpDMCrossSlideService->DeactivateDirectManipulationManager();
+            IFCFAILFAST(cpDMCrossSlideService->DeactivateDirectManipulationManager());
             islandInputSiteRegistration.DMCrossSlideService(nullptr);
         }
     }
@@ -180,7 +180,7 @@ void CInputServices::UnregisterIslandInputSite(_In_ ixp::IIslandInputSitePartner
         auto cpDMCrossSlideService = iter->DMCrossSlideService();
         if (nullptr != cpDMCrossSlideService)
         {
-            cpDMCrossSlideService->DeactivateDirectManipulationManager();
+            IFCFAILFAST(cpDMCrossSlideService->DeactivateDirectManipulationManager());
             iter->DMCrossSlideService(nullptr);
         }
 
@@ -597,155 +597,153 @@ CInputServices::ProcessPointerExitedEventByPointerEnteredElementStateChange(
         }
 
         // Get the current pointer information and fire PointerExited event.
-        if (isPointerInfoValid)
+
+        // Get the new entered element to stop the bubbling PointerExit.
+        pPointerEnteredFE = do_pointer_cast<CFrameworkElement>(pPointerEnteredDO);
+        if (pPointerEnteredFE)
         {
-            // Get the new entered element to stop the bubbling PointerExit.
-            pPointerEnteredFE = do_pointer_cast<CFrameworkElement>(pPointerEnteredDO);
-            if (pPointerEnteredFE)
+            pTemplatedParent = pPointerEnteredFE->GetTemplatedParent();
+
+            while (pTemplatedParent)
             {
-                pTemplatedParent = pPointerEnteredFE->GetTemplatedParent();
-
-                while (pTemplatedParent)
+                pPointerEnteredFE = do_pointer_cast<CFrameworkElement>(pTemplatedParent);
+                if (pPointerEnteredFE && pPointerEnteredFE->GetTemplatedParent())
                 {
-                    pPointerEnteredFE = do_pointer_cast<CFrameworkElement>(pTemplatedParent);
-                    if (pPointerEnteredFE && pPointerEnteredFE->GetTemplatedParent())
-                    {
-                        pTemplatedParent = pPointerEnteredFE->GetTemplatedParent();
-                    }
-                    else
-                    {
-                        break;
-                    }
+                    pTemplatedParent = pPointerEnteredFE->GetTemplatedParent();
                 }
-
-                if (pTemplatedParent)
+                else
                 {
-                    pNewPointerEnteredDO = pTemplatedParent->GetParentInternal();
+                    break;
                 }
             }
 
-            // Set the new entered element as the current entered element's parent.
-            if (!pNewPointerEnteredDO)
+            if (pTemplatedParent)
             {
-                pNewPointerEnteredDO = pPointerEnteredDO->GetParentInternal();
+                pNewPointerEnteredDO = pTemplatedParent->GetParentInternal();
             }
+        }
+
+        // Set the new entered element as the current entered element's parent.
+        if (!pNewPointerEnteredDO)
+        {
+            pNewPointerEnteredDO = pPointerEnteredDO->GetParentInternal();
+        }
+
+        if (pNewPointerEnteredDO)
+        {
+            // Ensure the new entered element is enabled and hit-test visible.
+            pNewPointerEnteredUIE = do_pointer_cast<CUIElement>(pNewPointerEnteredDO);
+            while (pNewPointerEnteredUIE)
+            {
+                if (!(pNewPointerEnteredUIE->IsHitTestVisible()) ||
+                    !(pNewPointerEnteredUIE->IsEnabled()))
+                {
+                    pNewPointerEnteredDO = static_cast<CDependencyObject*>(pNewPointerEnteredDO)->GetParentInternal();
+                    pNewPointerEnteredUIE = do_pointer_cast<CUIElement>(pNewPointerEnteredDO);
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        if (isPointerInfoValid && pointerInfo.m_pointerInputType == XcpPointerInputTypeMouse && !contentRoot->GetInputManager().GetPointerInputProcessor().IsProcessingPointerInput())
+        {
+            // If the entered element is changing the visual state that used with the mouse pointer input device and
+            // it is not the input stack call, we need to process PointerExited now asynchronously.
+            //
+            // Raise PointerExited event on the pointer entered element that leave the tree, visibility collapsed or disabled.
+            // Raise PointerEntered event if the pointer is positioned to the new contact element. For example, collapse of
+            // the original pointer entered element.
+
+            // Create the pointer event arg.
+            pPointerArgs = new CPointerEventArgs(pCoreService);
+
+            pPointerArgs->SetGlobalPoint(pointerState->GetLastPosition());
+
+            // Set the original source element
+            IFC(pPointerArgs->put_Source(pPointerEnteredDO));
+
+            // Set the Pointer object
+            IFC(CPointer::Create((CDependencyObject**)&pPointer, &cp));
+            IFC(pPointer->SetPointerFromPointerInfo(pointerInfo));
+            pPointerArgs->m_pPointer = pPointer;
+            pPointerArgs->m_pPointerPoint = pointerPoint.Get();
+
+            pPointer = NULL;
+
+            // Get the current key modifiers and set to PointerArgs.
+            IFC(gps->GetKeyboardModifiersState(&modifierKeys));
+            IFC(ContentRootInput::PointerInputProcessor::SetPointerKeyModifiers(modifierKeys, pPointerArgs));
 
             if (pNewPointerEnteredDO)
             {
-                // Ensure the new entered element is enabled and hit-test visible.
-                pNewPointerEnteredUIE = do_pointer_cast<CUIElement>(pNewPointerEnteredDO);
-                while (pNewPointerEnteredUIE)
+                IFC(contentRoot->GetInputManager().GetPointerInputProcessor().ProcessPointerEnterLeave(
+                    pNewPointerEnteredDO,
+                    pPointerEnteredDO,
+                    pointerId,
+                    pPointerArgs,
+                    FALSE /* bSkipLeave */,
+                    FALSE /* bForceRaisePointerEntered */,
+                    TRUE /* bIgnoreHitTestVisibleForPointerExited */,
+                    TRUE /*bAsyncEvent*/));
+            }
+            else
+            {
+                IFC(contentRoot->GetInputManager().GetPointerInputProcessor().ProcessPointerLeave(pPointerEnteredDO, pointerId, pPointerArgs, TRUE /*bAsyncEvent*/));
+            }
+        }
+        else
+        {
+            // Save the pointer exited state information to process PointerExited event
+            // on the next WM_POINTERXXX input stack.
+            PointerExitedStateKey key = { pointerId, pPointerEnteredDO };
+            if (m_mapPointerExitedState.ContainsKey(key))
+            {
+                IFC(m_mapPointerExitedState.Get(key, pPointerExitedState));
+            }
+            else
+            {
+                pPointerExitedState = new CPointerExitedState(pointerId);
+                IFC(m_mapPointerExitedState.Add(key, pPointerExitedState));
+            }
+
+            if (pPointerExitedState->GetExitedDONoRef() == NULL)
+            {
+                IFC(pPointerExitedState->SetExitedDO(pPointerEnteredDO));
+            }
+
+            if (pNewPointerEnteredDO && pPointerExitedState->GetEnteredDONoRef() == NULL)
+            {
+                IFC(pPointerExitedState->SetEnteredDO(static_cast<CDependencyObject*>(pNewPointerEnteredDO)));
+            }
+
+            // In case of having pNewPointerEnteredDO, we need to ensure the PointerExited firing element's
+            // managed object life time by calling PegManagedPeer() while processing PointerExited event.
+            // If pNewPointerEnteredDO is null, we will only fire PointerExited event once to the current
+            // pointer exited DO so we don't need to call PegManagedPeer().
+            // The pointer exited DO doesn't call PegManagedPeer() here since it is already pegged by
+            // calling SetEnteredDO() above.
+            if (pNewPointerEnteredDO)
+            {
+                auto peggedPointerExitedDOs = pPointerExitedState->GetPeggedPointerExitedDOs();
+                pElementParent = pPointerEnteredDO;
+                while (pElementParent)
                 {
-                    if (!(pNewPointerEnteredUIE->IsHitTestVisible()) ||
-                        !(pNewPointerEnteredUIE->IsEnabled()))
-                    {
-                        pNewPointerEnteredDO = static_cast<CDependencyObject*>(pNewPointerEnteredDO)->GetParentInternal();
-                        pNewPointerEnteredUIE = do_pointer_cast<CUIElement>(pNewPointerEnteredDO);
-                    }
-                    else
+                    IFC(pElementParent->PegManagedPeer(TRUE /* isShutdownException */));
+                    peggedPointerExitedDOs->push_back(xref::get_weakref(pElementParent));
+                    pElementParent = pElementParent->GetParentInternal();
+                    if (pElementParent == pNewPointerEnteredDO)
                     {
                         break;
                     }
                 }
             }
-
-            if (pointerInfo.m_pointerInputType == XcpPointerInputTypeMouse && !contentRoot->GetInputManager().GetPointerInputProcessor().IsProcessingPointerInput())
-            {
-                // If the entered element is changing the visual state that used with the mouse pointer input device and
-                // it is not the input stack call, we need to process PointerExited now asynchronously.
-                //
-                // Raise PointerExited event on the pointer entered element that leave the tree, visibility collapsed or disabled.
-                // Raise PointerEntered event if the pointer is positioned to the new contact element. For example, collapse of
-                // the original pointer entered element.
-
-                // Create the pointer event arg.
-                pPointerArgs = new CPointerEventArgs(pCoreService);
-
-                pPointerArgs->SetGlobalPoint(pointerState->GetLastPosition());
-
-                // Set the original source element
-                IFC(pPointerArgs->put_Source(pPointerEnteredDO));
-
-                // Set the Pointer object
-                IFC(CPointer::Create((CDependencyObject**)&pPointer, &cp));
-                IFC(pPointer->SetPointerFromPointerInfo(pointerInfo));
-                pPointerArgs->m_pPointer = pPointer;
-                pPointerArgs->m_pPointerPoint = pointerPoint.Get();
-
-                pPointer = NULL;
-
-                // Get the current key modifiers and set to PointerArgs.
-                IFC(gps->GetKeyboardModifiersState(&modifierKeys));
-                IFC(ContentRootInput::PointerInputProcessor::SetPointerKeyModifiers(modifierKeys, pPointerArgs));
-
-                if (pNewPointerEnteredDO)
-                {
-                    IFC(contentRoot->GetInputManager().GetPointerInputProcessor().ProcessPointerEnterLeave(
-                        pNewPointerEnteredDO,
-                        pPointerEnteredDO,
-                        pointerId,
-                        pPointerArgs,
-                        FALSE /* bSkipLeave */,
-                        FALSE /* bForceRaisePointerEntered */,
-                        TRUE /* bIgnoreHitTestVisibleForPointerExited */,
-                        TRUE /*bAsyncEvent*/));
-                }
-                else
-                {
-                    IFC(contentRoot->GetInputManager().GetPointerInputProcessor().ProcessPointerLeave(pPointerEnteredDO, pointerId, pPointerArgs, TRUE /*bAsyncEvent*/));
-                }
-            }
-            else
-            {
-                // Save the pointer exited state information to process PointerExited event
-                // on the next WM_POINTERXXX input stack.
-                PointerExitedStateKey key = { pointerId, pPointerEnteredDO };
-                if (m_mapPointerExitedState.ContainsKey(key))
-                {
-                    IFC(m_mapPointerExitedState.Get(key, pPointerExitedState));
-                }
-                else
-                {
-                    pPointerExitedState = new CPointerExitedState(pointerId);
-                    IFC(m_mapPointerExitedState.Add(key, pPointerExitedState));
-                }
-
-                if (pPointerExitedState->GetExitedDONoRef() == NULL)
-                {
-                    IFC(pPointerExitedState->SetExitedDO(pPointerEnteredDO));
-                }
-
-                if (pNewPointerEnteredDO && pPointerExitedState->GetEnteredDONoRef() == NULL)
-                {
-                    IFC(pPointerExitedState->SetEnteredDO(static_cast<CDependencyObject*>(pNewPointerEnteredDO)));
-                }
-
-                // In case of having pNewPointerEnteredDO, we need to ensure the PointerExited firing element's
-                // managed object life time by calling PegManagedPeer() while processing PointerExited event.
-                // If pNewPointerEnteredDO is null, we will only fire PointerExited event once to the current
-                // pointer exited DO so we don't need to call PegManagedPeer().
-                // The pointer exited DO doesn't call PegManagedPeer() here since it is already pegged by
-                // calling SetEnteredDO() above.
-                if (pNewPointerEnteredDO)
-                {
-                    auto peggedPointerExitedDOs = pPointerExitedState->GetPeggedPointerExitedDOs();
-                    pElementParent = pPointerEnteredDO;
-                    while (pElementParent)
-                    {
-                        IFC(pElementParent->PegManagedPeer(TRUE /* isShutdownException */));
-                        peggedPointerExitedDOs->push_back(xref::get_weakref(pElementParent));
-                        pElementParent = pElementParent->GetParentInternal();
-                        if (pElementParent == pNewPointerEnteredDO)
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
-
-            // Set the pointer entered element.
-            IFC(pointerState->SetEnterDO(pNewPointerEnteredDO ? static_cast<CDependencyObject*>(pNewPointerEnteredDO) : NULL));
         }
+
+        // Set the pointer entered element.
+        IFC(pointerState->SetEnterDO(pNewPointerEnteredDO ? static_cast<CDependencyObject*>(pNewPointerEnteredDO) : NULL));
     }
 
 Cleanup:
@@ -1406,7 +1404,7 @@ XFLOAT CInputServices::ConvertDipsToPixels(_In_ float scale, _In_ float dipsValu
 //  Synopsis:
 //      Convert the transform point from the global to the local point.
 //------------------------------------------------------------------------
-HRESULT CInputServices::ConvertTransformPointToLocal(
+_Check_return_ HRESULT CInputServices::ConvertTransformPointToLocal(
     _In_ CUIElement *pUIElement,
     _Inout_ XPOINTF *ppt)
 {
@@ -1437,7 +1435,7 @@ Cleanup:
 //  Synopsis:
 //      Convert the transform point from the local to the global point.
 //------------------------------------------------------------------------
-HRESULT CInputServices::ConvertTransformPointToGlobal(
+_Check_return_ HRESULT CInputServices::ConvertTransformPointToGlobal(
     _In_ CUIElement *pUIElement,
     _Inout_ XPOINTF *ppt)
 {
@@ -2284,7 +2282,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-HRESULT CInputServices::ProcessTouchInteractionCallback(
+_Check_return_ HRESULT CInputServices::ProcessTouchInteractionCallback(
     _In_ const xref_ptr<CUIElement> &element,
     _In_ TouchInteractionMsg *message)
 {
@@ -8476,7 +8474,7 @@ CInputServices::ProcessConstantVelocityViewportStatusUpdate(
     {
         // An edge scroll completed.
         // Make sure the auto-scroll configuration and status are reset in the DManip Service.
-        SetConstantVelocities(pDMContainer, pManipulatedElement, 0.0f /*panXVelocity*/, 0.0f /*panYVelocity*/);
+        IFC(SetConstantVelocities(pDMContainer, pManipulatedElement, 0.0f /*panXVelocity*/, 0.0f /*panYVelocity*/));
 
         if (wasPreConstantVelocityPanStateStarting || fIsInRunning)
         {

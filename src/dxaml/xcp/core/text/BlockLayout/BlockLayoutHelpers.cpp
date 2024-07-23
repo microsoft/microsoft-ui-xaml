@@ -176,7 +176,7 @@ Cleanup:
 //
 //---------------------------------------------------------------------------
 _Check_return_ HRESULT BlockLayoutHelpers::CreateCollapsingSymbol(
-    _In_ CDependencyObject *pParagraph,
+    _In_opt_ CDependencyObject *pParagraph,
     _In_ CDependencyObject *pLayoutOwner,
     _Outptr_ RichTextServices::TextCollapsingSymbol **ppCollapsingSymbol
     )
@@ -280,7 +280,7 @@ Cleanup:
 //
 //---------------------------------------------------------------------------
 _Check_return_ HRESULT BlockLayoutHelpers::GetTextAlignment(
-    _In_ CDependencyObject *pParagraph,
+    _In_opt_ CDependencyObject *pParagraph,
     _In_ CDependencyObject *pLayoutOwner,
     _Out_ DirectUI::TextAlignment *pTextAlignment
     )
@@ -575,7 +575,7 @@ _Check_return_ HRESULT BlockLayoutHelpers::GetElementBaseline(
 //
 //---------------------------------------------------------------------------
 _Check_return_ HRESULT BlockLayoutHelpers::GetLineStackingInfo(
-    _In_ CDependencyObject *pParagraph,
+    _In_opt_ CDependencyObject *pParagraph,
     _In_ CDependencyObject *pLayoutOwner,
     _Out_ LineStackingStrategy *pLineStackingStrategy,
     _Out_ XFLOAT *pDefaultFontBaseline,

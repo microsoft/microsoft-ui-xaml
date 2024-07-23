@@ -43,7 +43,7 @@ HRESULT XamlOptimizedNodeList::XamlOptimizedNodeListWriter::WriteNode( _In_ cons
 //          -- XamlType ID
 //
 //------------------------------------------------------------------------
-HRESULT XamlOptimizedNodeList::XamlOptimizedNodeListWriter::WriteObject(const std::shared_ptr<XamlType>& inType, bool bIsObjectFromMember)
+_Check_return_ HRESULT XamlOptimizedNodeList::XamlOptimizedNodeListWriter::WriteObject(_In_ const std::shared_ptr<XamlType>& inType, bool bIsObjectFromMember)
 {
     XUINT32 uiFlags = XamlOptimizedNodeList::nlfNone;
     
@@ -77,7 +77,7 @@ HRESULT XamlOptimizedNodeList::XamlOptimizedNodeListWriter::WriteObject(const st
 //          -- PositionDelta
 //
 //------------------------------------------------------------------------
-HRESULT XamlOptimizedNodeList::XamlOptimizedNodeListWriter::WriteEndObject()
+_Check_return_ HRESULT XamlOptimizedNodeList::XamlOptimizedNodeListWriter::WriteEndObject()
 {
     WriteCommonInfo(XamlNodeType::xntEndObject, XamlOptimizedNodeList::nlfNone);
     return S_OK;
@@ -98,7 +98,7 @@ HRESULT XamlOptimizedNodeList::XamlOptimizedNodeListWriter::WriteEndObject()
 //          -- XamlProperty ID
 //
 //------------------------------------------------------------------------
-HRESULT XamlOptimizedNodeList::XamlOptimizedNodeListWriter::WriteMember(const std::shared_ptr<XamlProperty>& inProperty)
+_Check_return_ HRESULT XamlOptimizedNodeList::XamlOptimizedNodeListWriter::WriteMember(_In_ const std::shared_ptr<XamlProperty>& inProperty)
 {
     WriteCommonInfo(XamlNodeType::xntStartProperty, XamlOptimizedNodeList::nlfNone);
     m_spXamlOptimizedNodeList->AddProperty(inProperty);
@@ -120,14 +120,14 @@ HRESULT XamlOptimizedNodeList::XamlOptimizedNodeListWriter::WriteMember(const st
 //          -- PositionDelta
 //
 //------------------------------------------------------------------------
-HRESULT XamlOptimizedNodeList::XamlOptimizedNodeListWriter::WriteEndMember()
+_Check_return_ HRESULT XamlOptimizedNodeList::XamlOptimizedNodeListWriter::WriteEndMember()
 {
     WriteCommonInfo(XamlNodeType::xntEndProperty, XamlOptimizedNodeList::nlfNone);
     return S_OK;
 }
 
 
-HRESULT XamlOptimizedNodeList::XamlOptimizedNodeListWriter::WriteConditionalScope(const std::shared_ptr<Parser::XamlPredicateAndArgs>& xamlPredicateAndArgs)
+_Check_return_ HRESULT XamlOptimizedNodeList::XamlOptimizedNodeListWriter::WriteConditionalScope(const std::shared_ptr<Parser::XamlPredicateAndArgs>& xamlPredicateAndArgs)
 {
     WriteCommonInfo(XamlNodeType::xntStartConditionalScope, XamlOptimizedNodeList::nlfNone);
     m_spXamlOptimizedNodeList->AddType(xamlPredicateAndArgs->PredicateType);
@@ -136,7 +136,7 @@ HRESULT XamlOptimizedNodeList::XamlOptimizedNodeListWriter::WriteConditionalScop
     return S_OK;
 }
 
-HRESULT XamlOptimizedNodeList::XamlOptimizedNodeListWriter::WriteEndConditionalScope()
+_Check_return_ HRESULT XamlOptimizedNodeList::XamlOptimizedNodeListWriter::WriteEndConditionalScope()
 {
     WriteCommonInfo(XamlNodeType::xntEndConditionalScope, XamlOptimizedNodeList::nlfNone);
 

@@ -803,7 +803,7 @@ Cleanup:
 
 // Gets the UI Automation CUIAWrapper for the host window. This CUIAWrapper supplies most properties.
 
-HRESULT STDMETHODCALLTYPE CUIAWrapper::get_HostRawElementProvider(_Outptr_ IRawElementProviderSimple** pRetVal)
+HRESULT STDMETHODCALLTYPE CUIAWrapper::get_HostRawElementProvider(_Outptr_result_maybenull_ IRawElementProviderSimple** pRetVal)
 {
     if (m_providerSimpleOverrider)
     {

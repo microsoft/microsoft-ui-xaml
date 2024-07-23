@@ -94,8 +94,8 @@ namespace DirectUI
         }
         IFACEMETHOD(BuildTree)(_Out_ BOOLEAN* returnValue) override;
         IFACEMETHOD(ShutDownDeferredWork)() override;
-        IFACEMETHOD(get_IsRegisteredForCallbacks)(_Out_ BOOLEAN* value) override;
-        IFACEMETHOD(put_IsRegisteredForCallbacks)(_In_ BOOLEAN value) override;
+        _Check_return_ IFACEMETHOD(get_IsRegisteredForCallbacks)(_Out_ BOOLEAN* value) override;
+        _Check_return_ IFACEMETHOD(put_IsRegisteredForCallbacks)(_In_ BOOLEAN value) override;
 
 
 

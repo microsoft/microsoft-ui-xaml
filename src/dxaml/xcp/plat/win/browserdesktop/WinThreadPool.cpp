@@ -40,7 +40,7 @@ protected:
     }
     ~CWinWorkItem() override
     {
-        Close();
+        IFCFAILFAST(Close());
         ReleaseInterface(m_pData);
         DECWORKITEMCOUNTER;
     }
@@ -171,7 +171,7 @@ public:
 // Creates a work item
 //
 //---------------------------------------------------------------------------
-HRESULT
+_Check_return_ HRESULT
 CWinWorkItem::Create(_Outptr_ CWinWorkItem **pNewItem,
     _In_ PALWORKITEMCALLBACK pfn,
     _In_opt_ IObject *pData,

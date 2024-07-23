@@ -82,11 +82,11 @@ public:
     {
     }
 
-    static HRESULT Create(_In_ CCoreServices *pCore, _In_ const XamlTypeToken& typeToken, _Outptr_ XamlQualifiedObject **ppQO);
+    static _Check_return_ HRESULT Create(_In_ CCoreServices *pCore, _In_ const XamlTypeToken& typeToken, _Outptr_ XamlQualifiedObject **ppQO);
 
-    static HRESULT Create(_In_ CCoreServices *pCore, _In_ const XamlTypeToken& typeToken, _Out_ std::shared_ptr<XamlQualifiedObject>& outQO);
+    static _Check_return_ HRESULT Create(_In_ CCoreServices *pCore, _In_ const XamlTypeToken& typeToken, _Out_ std::shared_ptr<XamlQualifiedObject>& outQO);
 
-    static HRESULT Create(_In_ CCoreServices *pCore, _In_ const XamlTypeToken& typeToken, _In_ CDependencyObject* pDO, _Out_ std::shared_ptr<XamlQualifiedObject>& outQO);
+    static _Check_return_ HRESULT Create(_In_ CCoreServices *pCore, _In_ const XamlTypeToken& typeToken, _In_ CDependencyObject* pDO, _Out_ std::shared_ptr<XamlQualifiedObject>& outQO);
 
     // CreateNoAddRef
     //
@@ -94,7 +94,7 @@ public:
     // in the case that the XamlQualifiedObject is wrapping a newly-created DO, in which case
     // the ref-count will have already been bumped to 1 by its ctor.
     // 
-    static HRESULT CreateNoAddRef(_In_ CCoreServices *pCore, _In_ const XamlTypeToken& typeToken, _In_ CDependencyObject* pDO, _Out_ std::shared_ptr<XamlQualifiedObject>& outQO);
+    static _Check_return_ HRESULT CreateNoAddRef(_In_ CCoreServices *pCore, _In_ const XamlTypeToken& typeToken, _In_ CDependencyObject* pDO, _Out_ std::shared_ptr<XamlQualifiedObject>& outQO);
        
     _Check_return_ HRESULT CreateFromXStringPtr(_In_ xstring_ptr& objectString,
         _Out_ std::shared_ptr<XamlQualifiedObject>& createdQO);

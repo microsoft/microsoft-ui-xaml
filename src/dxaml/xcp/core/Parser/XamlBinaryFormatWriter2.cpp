@@ -15,7 +15,7 @@
 
 using namespace DirectUI;
 
-HRESULT XamlBinaryFormatWriter2::WriteAllNodes(
+_Check_return_ HRESULT XamlBinaryFormatWriter2::WriteAllNodes(
     _In_ const std::shared_ptr<ObjectWriterNodeList>& spObjectNodeList
     )
 {
@@ -66,7 +66,7 @@ HRESULT XamlBinaryFormatWriter2::WriteAllNodes(
     return S_OK;
 }
 
-HRESULT XamlBinaryFormatWriter2::WriteToMasterStream(
+_Check_return_ HRESULT XamlBinaryFormatWriter2::WriteToMasterStream(
     _In_ xref_ptr<IPALStream> spMasterStream,
     _In_ xref_ptr<IPALStream> spStream)
 {
@@ -95,7 +95,7 @@ HRESULT XamlBinaryFormatWriter2::WriteToMasterStream(
     return S_OK;
 }
 
-HRESULT XamlBinaryFormatWriter2::GetMasterStreamOffset(
+_Check_return_ HRESULT XamlBinaryFormatWriter2::GetMasterStreamOffset(
     _In_ xref_ptr<IPALStream> spMasterStream,
     _Out_ XUINT32 *pOffset)
 {
@@ -114,7 +114,7 @@ HRESULT XamlBinaryFormatWriter2::GetMasterStreamOffset(
     return S_OK;
 }
 
-HRESULT XamlBinaryFormatWriter2::ProcessSubNodes(
+_Check_return_ HRESULT XamlBinaryFormatWriter2::ProcessSubNodes(
     _In_ const std::shared_ptr<ObjectWriterNodeList>& spObjectNodeList,
     _Out_ std::vector<unsigned int>& streamOffsetList)
 {
@@ -166,7 +166,7 @@ HRESULT XamlBinaryFormatWriter2::ProcessSubNodes(
     return S_OK;
 }
 
-HRESULT XamlBinaryFormatWriter2::PersistReferencedResourceList(
+_Check_return_ HRESULT XamlBinaryFormatWriter2::PersistReferencedResourceList(
     _In_ const std::vector<std::pair<bool, xstring_ptr>>& listOfResources,
     _In_ const std::shared_ptr<XamlBinaryFormatSubWriter2>& spSubWriter)
 {

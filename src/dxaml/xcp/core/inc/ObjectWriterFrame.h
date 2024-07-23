@@ -183,7 +183,7 @@ public:
 
     _Check_return_ HRESULT tryget_Directive(
         _In_ const std::shared_ptr<DirectiveProperty>& inProperty,
-        _Out_ std::shared_ptr<XamlQualifiedObject>& outInstance)
+        _Inout_ std::shared_ptr<XamlQualifiedObject>& outInstance)
     {
         if (m_spFrameLegacyStorage && m_spFrameLegacyStorage->m_spDirectiveValuesMap)
         {

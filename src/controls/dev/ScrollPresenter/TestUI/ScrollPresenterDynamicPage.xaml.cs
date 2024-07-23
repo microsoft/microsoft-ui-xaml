@@ -79,6 +79,10 @@ namespace MUXControlsTestApp
         private StackPanel verticalStackPanel;
         private ScrollPresenter dynamicScrollPresenter = null;
         private ScrollPresenter scrollPresenter = null;
+        private PointerEventHandler contentPointerPressedEventHandler = null;
+        private PointerEventHandler contentPointerReleasedEventHandler = null;
+        private PointerEventHandler contentPointerCanceledEventHandler = null;
+        private PointerEventHandler contentPointerCaptureLostEventHandler = null;
 
         public ScrollPresenterDynamicPage()
         {
@@ -300,6 +304,16 @@ namespace MUXControlsTestApp
             UnhookContentEffectiveViewportChanged();
         }
 
+        private void ChkLogContentPointerEvents_Checked(object sender, RoutedEventArgs e)
+        {
+            HookContentPointerEvents();
+        }
+
+        private void ChkLogContentPointerEvents_Unchecked(object sender, RoutedEventArgs e)
+        {
+            UnhookContentPointerEvents();
+        }
+
         private void HookContentEffectiveViewportChanged()
         {
             if (scrollPresenter != null)
@@ -324,11 +338,66 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void HookContentPointerEvents()
+        {
+            if (scrollPresenter != null)
+            {
+                UIElement contentAsUIE = scrollPresenter.Content as UIElement;
+                if (contentAsUIE != null)
+                {
+                    contentPointerPressedEventHandler = new PointerEventHandler(Content_PointerPressed);
+                    contentPointerReleasedEventHandler = new PointerEventHandler(Content_PointerReleased);
+                    contentPointerCanceledEventHandler = new PointerEventHandler(Content_PointerCanceled);
+                    contentPointerCaptureLostEventHandler = new PointerEventHandler(Content_PointerCaptureLost);
+
+                    contentAsUIE.AddHandler(UIElement.PointerPressedEvent, contentPointerPressedEventHandler, true);
+                    contentAsUIE.AddHandler(UIElement.PointerReleasedEvent, contentPointerReleasedEventHandler, true);
+                    contentAsUIE.AddHandler(UIElement.PointerCanceledEvent, contentPointerCanceledEventHandler, true);
+                    contentAsUIE.AddHandler(UIElement.PointerCaptureLostEvent, contentPointerCaptureLostEventHandler, true);
+                }
+            }
+        }
+
+        private void UnhookContentPointerEvents()
+        {
+            if (scrollPresenter != null)
+            {
+                UIElement contentAsUIE = scrollPresenter.Content as UIElement;
+                if (contentAsUIE != null)
+                {
+                    contentAsUIE.RemoveHandler(UIElement.PointerPressedEvent, contentPointerPressedEventHandler);
+                    contentAsUIE.RemoveHandler(UIElement.PointerReleasedEvent, contentPointerReleasedEventHandler);
+                    contentAsUIE.RemoveHandler(UIElement.PointerCanceledEvent, contentPointerCanceledEventHandler);
+                    contentAsUIE.RemoveHandler(UIElement.PointerCaptureLostEvent, contentPointerCaptureLostEventHandler);
+                }
+            }
+        }
+
         private void Content_EffectiveViewportChanged(FrameworkElement sender, EffectiveViewportChangedEventArgs args)
         {
             AppendAsyncEventMessage("Content_EffectiveViewportChanged: BringIntoViewDistance=" +
                 args.BringIntoViewDistanceX + "," + args.BringIntoViewDistanceY + ", EffectiveViewport=" +
                 args.EffectiveViewport.ToString() + ", MaxViewport=" + args.MaxViewport.ToString());
+        }
+
+        private void Content_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            AppendAsyncEventMessage("Content_PointerPressed: PointerId=" + e.Pointer.PointerId);
+        }
+
+        private void Content_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            AppendAsyncEventMessage("Content_PointerReleased: PointerId=" + e.Pointer.PointerId);
+        }
+
+        private void Content_PointerCanceled(object sender, PointerRoutedEventArgs e)
+        {
+            AppendAsyncEventMessage("Content_PointerCanceled: PointerId=" + e.Pointer.PointerId);
+        }
+
+        private void Content_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
+        {
+            AppendAsyncEventMessage("Content_PointerCaptureLost: PointerId=" + e.Pointer.PointerId);
         }
 
         private void MUXControlsTestHooks_LoggingMessage(object sender, MUXControlsTestHooksLoggingMessageEventArgs args)
@@ -796,6 +865,11 @@ namespace MUXControlsTestApp
                     UnhookContentEffectiveViewportChanged();
                 }
 
+                if (chkLogContentPointerEvents.IsChecked == true)
+                {
+                    UnhookContentPointerEvents();
+                }
+
                 scrollPresenter.Content = newContent;
 
                 if (chkPreserveProperties.IsChecked == false)
@@ -808,6 +882,11 @@ namespace MUXControlsTestApp
                 if (chkLogScrollPresenterEvents.IsChecked == true)
                 {
                     HookContentEffectiveViewportChanged();
+                }
+
+                if (chkLogContentPointerEvents.IsChecked == true)
+                {
+                    HookContentPointerEvents();
                 }
             }
             catch (Exception ex)

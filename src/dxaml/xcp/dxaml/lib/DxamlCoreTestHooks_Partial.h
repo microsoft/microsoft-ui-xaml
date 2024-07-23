@@ -212,7 +212,7 @@ namespace DirectUI
         IFACEMETHOD(RequestKeepAlive)(_In_ xaml::IUIElement* element) override;
         IFACEMETHOD(ReleaseKeepAlive)(_In_ xaml::IUIElement* element) override;
 
-        IFACEMETHOD(GetVisibleContentBounds)(_In_ xaml::IUIElement* element, _Out_ wf::Rect* pValue) override;
+        _Check_return_ IFACEMETHOD(GetVisibleContentBounds)(_In_ xaml::IUIElement* element, _Out_ wf::Rect* pValue) override;
 
         IFACEMETHOD(CalculateAvailableMonitorRect)(
             _In_ xaml::IUIElement* element,

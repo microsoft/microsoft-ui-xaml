@@ -34,7 +34,7 @@ Cleanup:
 //      using this QI override.
 //
 //------------------------------------------------------------------------
-HRESULT SwapChainPanel::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
+_Check_return_ HRESULT SwapChainPanel::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
     if (InlineIsEqualGUID(iid, __uuidof(ISwapChainPanelNative2)))
     {

@@ -7,7 +7,7 @@
 namespace DirectUI
 {
     enum class FocusNavigationDirection : uint8_t;
-    FocusNavigationDirection GetFocusNavigationDirectionFromReason(xaml_hosting::XamlSourceFocusNavigationReason reason);
+    FocusNavigationDirection GetFocusNavigationDirectionFromReason(_In_ xaml_hosting::XamlSourceFocusNavigationReason reason);
     xaml_hosting::XamlSourceFocusNavigationReason GetFocusNavigationReasonFromDirection(_In_ FocusNavigationDirection direction);
     FocusNavigationDirection GetReverseDirection(_In_ FocusNavigationDirection direction);
 

@@ -245,11 +245,11 @@ namespace DirectUI
         {
             return SetValueCore(SetValueParams(pDP, value));
         }
-        _Check_return_ HRESULT SetValueCore(_In_ const CDependencyProperty* pDP, _In_ IInspectable* pValue)
+        _Check_return_ HRESULT SetValueCore(_In_ const CDependencyProperty* pDP, _In_opt_ IInspectable* pValue)
         {
             return SetValueCore(pDP, pValue, false);
         }
-        _Check_return_ HRESULT SetValueCore(_In_ const CDependencyProperty* dp, _In_ IInspectable* value, _In_ bool setEffectiveValueOnly, _In_ ::BaseValueSource baseValueSource = ::BaseValueSourceUnknown);
+        _Check_return_ HRESULT SetValueCore(_In_ const CDependencyProperty* dp, _In_opt_ IInspectable* value, _In_ bool setEffectiveValueOnly, _In_ ::BaseValueSource baseValueSource = ::BaseValueSourceUnknown);
 
         #pragma region Generated code helpers.
         template<class T>
@@ -327,17 +327,17 @@ namespace DirectUI
         _Check_return_ HRESULT GetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _Out_ HSTRING* pValue);
 
         template<class T>
-        _Check_return_ typename std::enable_if<!ctl::IsComObject<T>::value, HRESULT>::type SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_ T* pValue)
+        _Check_return_ typename std::enable_if<!ctl::IsComObject<T>::value, HRESULT>::type SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_opt_ T* pValue)
         {
             RRETURN(SetValueByKnownIndex(nPropertyIndex, static_cast<IInspectable*>(pValue)));
         }
 
         template<class T>
-        _Check_return_ typename std::enable_if<ctl::IsComObject<T>::value, HRESULT>::type SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_ T* pValue)
+        _Check_return_ typename std::enable_if<ctl::IsComObject<T>::value, HRESULT>::type SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_opt_ T* pValue)
         {
             RRETURN(SetValueByKnownIndex(nPropertyIndex, ctl::iinspectable_cast(pValue)));
         }
-        _Check_return_ HRESULT SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_ IInspectable* ppValue);
+        _Check_return_ HRESULT SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_opt_ IInspectable* ppValue);
 
         template<class T>
         _Check_return_ typename std::enable_if<!std::is_enum<T>::value && NeedsBoxerBuffer<T>::value, HRESULT>::type SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_ T value)
@@ -381,7 +381,7 @@ namespace DirectUI
             return S_OK;
         }
 
-        _Check_return_ HRESULT SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_ HSTRING value);
+        _Check_return_ HRESULT SetValueByKnownIndex(_In_ KnownPropertyIndex nPropertyIndex, _In_opt_ HSTRING value);
 
         template<class T>
         static _Check_return_ HRESULT GetAttachedValueByKnownIndex(_In_ DependencyObject* pElement, _In_ KnownPropertyIndex nPropertyIndex, _Out_ T* pValue)
@@ -434,7 +434,7 @@ namespace DirectUI
         _Check_return_ HRESULT DetachExpression(_In_ const CDependencyProperty* pDP, _In_ BindingExpressionBase* pExpression);
         _Check_return_ HRESULT RefreshExpression(_In_ const CDependencyProperty* pDP);
         _Check_return_ HRESULT SetValueInternal(_In_ const CDependencyProperty* pDP, _In_ IInspectable* pValue, _In_ bool fAllowReadOnly, _In_::BaseValueSource baseValueSource = ::BaseValueSourceUnknown);
-        _Check_return_ HRESULT UpdateEffectiveValue(_In_ const CDependencyProperty* pDP, _Inout_opt_ EffectiveValueEntry* pValueEntry, _In_ ValueOperation valueOperation, _In_ ::BaseValueSource baseValueSource, _In_opt_ IInspectable* pCorePropertyNewValue = NULL);
+        _Check_return_ HRESULT UpdateEffectiveValue(_In_ const CDependencyProperty* pDP, _In_opt_ EffectiveValueEntry* pValueEntry, _In_ ValueOperation valueOperation, _In_ ::BaseValueSource baseValueSource, _In_opt_ IInspectable* pCorePropertyNewValue = NULL);
         _Check_return_ HRESULT EvaluateEffectiveValue(_In_ const CDependencyProperty* pDP, _Inout_ EffectiveValueEntry* pValueEntry, _In_ ValueOperation valueOperation);
         _Check_return_ HRESULT EvaluateBaseValue(_In_ const CDependencyProperty* pDP, _Inout_ EffectiveValueEntry* pValueEntry, _In_ ValueOperation valueOperation);
         _Check_return_ HRESULT TryProcessThemeResourceBaseValue(
@@ -475,7 +475,7 @@ namespace DirectUI
             _In_opt_ CDependencyObject* pNewParentCore,
             _In_ bool isNewParentAlive);
 
-        virtual _Check_return_ HRESULT OnTreeParentUpdated(_In_opt_ CDependencyObject* pNewParent, _In_ BOOLEAN isParentAlive) { return S_OK; }
+        virtual _Check_return_ HRESULT OnTreeParentUpdated(_In_opt_ CDependencyObject* pNewParent, BOOLEAN isParentAlive) { return S_OK; }
 
         virtual _Check_return_ HRESULT OnCollectionChanged(_In_ XUINT32 nCollectionChangeType, _In_ XUINT32 nIndex)  { return S_OK; }
 
@@ -785,7 +785,7 @@ namespace DirectUI
         static _Check_return_ HRESULT GetUseStrictPropertyStatic(_Out_ const CDependencyProperty** ppValue);
 
     protected:
-        HRESULT QueryInterfaceImpl(_In_ REFIID riid, _Out_ void** ppObject) override;
+        _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID riid, _Out_ void** ppObject) override;
 
         KnownTypeIndex GetTypeIndex() const override;
     };

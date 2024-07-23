@@ -31,7 +31,7 @@ XamlBinaryFormatValidator::Create(
     return S_OK;
 }
 
-HRESULT XamlBinaryFormatValidator::Read()
+_Check_return_ HRESULT XamlBinaryFormatValidator::Read()
 {
     HRESULT hr = S_OK;
     HRESULT xr = S_OK;

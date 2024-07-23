@@ -73,7 +73,7 @@ public:
         _Out_ bool* interactionStopping,
         const float rasterizationScale = 1.0f);
 
-    InertiaParameters GetInertiaParametersFromMsg(const TouchInteractionMsg& msg);
+    InertiaParameters GetInertiaParametersFromMsg(_In_ const TouchInteractionMsg& msg);
 
     struct InertiaParameters
     {

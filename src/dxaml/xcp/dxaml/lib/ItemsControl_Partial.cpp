@@ -3454,7 +3454,8 @@ _Check_return_ HRESULT ItemsControl::ProcessTabStopOverride(
     const bool isBackward,
     const bool didCycleFocusAtRootVisualScope,
     _Outptr_ DependencyObject** ppNewTabStop,
-    _Out_ BOOLEAN* pIsTabStopOverridden)
+    _Out_ BOOLEAN* pIsTabStopOverridden
+    )
 {
 #ifdef ICTL_DEBUG
     IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"ICTL(%s)[0x%p]: ProcessTabStopOverride. isBackward=%d, didCycleFocusAtRootVisualScope=%d",

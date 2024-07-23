@@ -846,7 +846,7 @@ Cleanup:
 
 _Check_return_ HRESULT DefaultStyles::GetDefaultStyleByKey(
     _In_ DependencyObject* pDO,
-    _Outptr_ Style** ppStyle)
+    _Outptr_result_maybenull_ Style** ppStyle)
 {
 
     HRESULT hr = S_OK;

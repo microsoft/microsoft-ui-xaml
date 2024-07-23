@@ -27,7 +27,7 @@ namespace DebugTool
         {
             *this = other;
         }
-        DebugPropertyInfo(DebugPropertyInfo&& other)
+        DebugPropertyInfo(DebugPropertyInfo&& other) noexcept
         {
             *this = std::move(other);
         }
@@ -57,7 +57,7 @@ namespace DebugTool
 
             return *this;
         }
-        DebugPropertyInfo& operator=(DebugPropertyInfo&& other)
+        DebugPropertyInfo& operator=(DebugPropertyInfo&& other) noexcept
         {
             if (this != &other)
             {
@@ -170,7 +170,7 @@ namespace DebugTool
         {
             *this = other;
         }
-        DebugEnumInfo(DebugEnumInfo&& other)
+        DebugEnumInfo(DebugEnumInfo&& other) noexcept
         {
             *this = std::move(other);
         }

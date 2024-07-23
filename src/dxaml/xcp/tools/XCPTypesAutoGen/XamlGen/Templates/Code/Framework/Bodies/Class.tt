@@ -96,7 +96,7 @@ HRESULT <#= AsCppType(Model.GeneratedClassFullName) #>::QueryInterfaceImpl(_In_ 
 <#     } #>
 
 <# if (Model.BaseClass.IsObjectType && Model.InstanceEvents.Where(m => !m.XamlEventFlags.IsHidden).Count() > 0) { #>
-HRESULT <#= AsCppType(Model.GeneratedClassFullName) #>::EventAddPreValidation(_In_ void* const pValue, EventRegistrationToken* const ptToken) const
+_Check_return_ HRESULT <#= AsCppType(Model.GeneratedClassFullName) #>::EventAddPreValidation(_In_ void* const pValue, EventRegistrationToken* const ptToken) const
 {
     HRESULT hr = S_OK;
 
@@ -168,7 +168,7 @@ _Check_return_ HRESULT <#= AsCppType(Model.GeneratedClassFullName) #>::EventRemo
     case <#= ev.IndexName #>:
         {
             ctl::ComPtr<<#= AsCppType(ev.EventHandlerType.AbiFullName) #>> spEventHandler;
-            IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf());
+            IFC_RETURN(IValueBoxer::UnboxValue(pHandler, spEventHandler.ReleaseAndGetAddressOf()));
 
             if (nullptr != spEventHandler)
             {

@@ -235,7 +235,7 @@ namespace CValueConvert
         _Out_ bool& success)
     {
         ASSERT(inValue);
-
+        outValue.SetNull();
         success = false;
 
         switch (inValue->GetTypeIndex())
@@ -477,6 +477,7 @@ namespace CValueConvert
         ASSERT(inValue);
 
         success = false;
+        outValue.SetNull();
 
         switch (inValue->GetTypeIndex())
         {

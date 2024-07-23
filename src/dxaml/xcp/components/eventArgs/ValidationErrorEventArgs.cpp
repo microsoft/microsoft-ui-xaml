@@ -19,7 +19,7 @@ KnownTypeIndex CInputValidationErrorEventArgs::GetTypeIndex() const
     return DependencyObjectTraits<CInputValidationErrorEventArgs>::Index;
 }
 
-_Check_return_ HRESULT CInputValidationErrorEventArgs::get_Action(_Outptr_ DirectUI::InputValidationErrorEventAction* action)
+_Check_return_ HRESULT CInputValidationErrorEventArgs::get_Action(_Out_ DirectUI::InputValidationErrorEventAction* action)
 {
     *action = m_errorAction;
     return S_OK;

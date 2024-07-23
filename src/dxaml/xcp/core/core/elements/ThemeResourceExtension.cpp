@@ -268,7 +268,7 @@ CThemeResourceExtension::SetInitialValueAndTargetDictionary(
         IFC_RETURN(SetLastResolvedValue(pValue));
 
         // Remember if value is from the Application's initial theme.
-        SetIsValueFromInitialTheme(targetDictionary);
+        IFC_RETURN(SetIsValueFromInitialTheme(targetDictionary));
     }
 
     return S_OK;

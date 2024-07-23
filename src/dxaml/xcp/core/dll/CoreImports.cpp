@@ -1406,7 +1406,7 @@ _Check_return_ HRESULT Collection_RemoveAt(_In_ CCollection* collection, XUINT32
     else if (collection->ContainsNoRefItems())
     {
         // No cleanup necessary
-        collection->RemoveAt(index);
+        (void)collection->RemoveAt(index);
     }
     else
     {

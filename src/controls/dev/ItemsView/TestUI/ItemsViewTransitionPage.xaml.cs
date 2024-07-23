@@ -88,6 +88,11 @@ namespace MUXControlsTestApp
             RefreshItems((int)ItemCountComboBox.SelectedItem);
         }
 
+        private void OnResetItemTransitionProviderButtonClick(object sender, RoutedEventArgs e)
+        {
+            itemsView.ItemTransitionProvider = null;
+        }
+
         private void OnLayoutSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             switch (((ComboBox)sender).SelectedIndex)

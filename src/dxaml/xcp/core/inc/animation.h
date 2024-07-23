@@ -47,7 +47,7 @@ public:
     }
 
 protected:
-    CAnimation(_In_ CCoreServices *pCore);
+    CAnimation(_In_opt_ CCoreServices *pCore);
     ~CAnimation() override;
 
 public:

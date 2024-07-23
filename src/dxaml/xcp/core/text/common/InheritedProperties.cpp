@@ -147,7 +147,7 @@ _Check_return_ HRESULT InheritedProperties::CreateDefault(
 //------------------------------------------------------------------------
 
 //static
-_Check_return_ HRESULT InheritedProperties::GetDefaultValue(KnownPropertyIndex userIndex, CValue* pDefaultValue)
+_Check_return_ HRESULT InheritedProperties::GetDefaultValue(_In_ KnownPropertyIndex userIndex, _Inout_ CValue* pDefaultValue)
 {
     switch (userIndex)
     {

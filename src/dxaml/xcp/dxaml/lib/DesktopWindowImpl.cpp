@@ -745,7 +745,7 @@ LRESULT DesktopWindowImpl::OnMessage(
 
 // This is a private method that is only called from a Microsoft::UI::XAML::Window
 // instance.  DXamlCore will always outlive any Window instances.
-/* static */ Window* DesktopWindowImpl::GetMUXWindowFromHwnd(_In_ DXamlCore* dxamlCore, _In_ const HWND& topLevelDesktopWindowHwnd)
+/* static */ _Check_return_ Window* DesktopWindowImpl::GetMUXWindowFromHwnd(_In_ DXamlCore* dxamlCore, _In_ const HWND& topLevelDesktopWindowHwnd)
 {
     const auto& iter = dxamlCore->m_handleToDesktopWindowMap.find(topLevelDesktopWindowHwnd);
     if (iter != dxamlCore->m_handleToDesktopWindowMap.end())
@@ -967,7 +967,7 @@ _Check_return_ HRESULT DesktopWindowImpl::OnClosed()
     return S_OK;
 }
 
-_Check_return_ HRESULT DesktopWindowImpl::RestoreFocus(xaml_hosting::IXamlSourceFocusNavigationResult** result)
+_Check_return_ HRESULT DesktopWindowImpl::RestoreFocus(_Outptr_ xaml_hosting::IXamlSourceFocusNavigationResult** result)
 {
     // Create a XamlSourceFocusNavigationRequest
     ctl::ComPtr<xaml_hosting::IXamlSourceFocusNavigationRequest> spRequest;
@@ -1257,7 +1257,7 @@ bool DesktopWindowImpl::ShouldShrinkApplicationViewVisibleBounds() const
     return false;
 }
 
-HRESULT DesktopWindowImpl::CheckIsWindowClosed()
+_Check_return_ HRESULT DesktopWindowImpl::CheckIsWindowClosed()
 {
     if (m_bIsClosed)
     {

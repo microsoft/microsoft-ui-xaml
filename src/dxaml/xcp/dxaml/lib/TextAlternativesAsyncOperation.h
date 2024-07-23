@@ -60,7 +60,7 @@ namespace DirectUI
 
         protected:
             // wf::IAsyncAction overrides
-            HRESULT OnStart(void) override;
+            _Check_return_ HRESULT OnStart(void) override;
             void OnClose(void) override;
             void OnCancel(void) override;
 

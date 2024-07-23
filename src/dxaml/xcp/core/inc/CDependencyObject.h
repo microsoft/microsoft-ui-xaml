@@ -365,8 +365,8 @@ public:
 
     CAutomationPeer* OnCreateAutomationPeerInternal();
 
-    void UnpegManagedPeer(_In_opt_ bool isShutdownException = false);
-    _Check_return_ HRESULT PegManagedPeer(_In_opt_ bool isShutdownException = false, _Out_opt_ bool* pfPegged = nullptr);
+    void UnpegManagedPeer(bool isShutdownException = false);
+    _Check_return_ HRESULT PegManagedPeer(bool isShutdownException = false, _Out_opt_ bool* pfPegged = nullptr);
 
     // All objects derived from dependency objects expose this method. It would be
     // a virtual method except we're using it to create the object that will have
@@ -419,7 +419,7 @@ public:
     _Check_return_ HRESULT ClearExtraExpectedReferenceOnPeer();
 
 protected:
-    CDependencyObject(_In_ CCoreServices *pCore);
+    CDependencyObject(_In_opt_ CCoreServices *pCore);
 
     virtual  ~CDependencyObject();
 
@@ -568,6 +568,7 @@ public:
         return NULL;
     }
 
+    #pragma warning( suppress : 6101 ) // pppReturnAP doesn't get set, but this copy of the function should never be called.
     virtual XUINT32 GetAPChildren(_Outptr_result_buffer_(return) CAutomationPeer ***pppReturnAP)
     {
         (pppReturnAP); // Ignore the parameter.
@@ -584,7 +585,7 @@ public:
     CUIElement* GetUIElementParentInternal(_In_ bool publicParentOnly = true) const;
 
     virtual _Check_return_ CDependencyObject* GetInheritanceParentInternal(
-        _In_opt_ bool fLogicalParent = false // Not used here, used in the CFrameworkElement override.
+        bool fLogicalParent = false // Not used here, used in the CFrameworkElement override.
         ) const
     {
         UNREFERENCED_PARAMETER(fLogicalParent);
@@ -691,7 +692,7 @@ public:
     _Check_return_ HRESULT GetAnimationBaseValue(_In_ const  CDependencyProperty* dp, _Out_ CValue* pValue);
 
     // Get's the animated value for the property. Fails if the property is not animated
-    _Check_return_ HRESULT GetAnimatedValue(_In_ const  CDependencyProperty* const dp, _Inout_ CValue* pValue) const;
+    _Check_return_ HRESULT GetAnimatedValue(_In_ const  CDependencyProperty* const dp, _Out_ CValue* pValue) const;
     virtual _Ret_maybenull_ CDependencyObject* GetMentor();
 
     bool UseLogicalParent(_In_ KnownPropertyIndex propertyIndex) const;
@@ -997,7 +998,7 @@ public:
 
 protected:
 
-    _Check_return_ HRESULT CreateModifiedValue(_In_ const CDependencyProperty* dp, _Out_ std::shared_ptr<CModifiedValue>& modifiedValue);
+    _Check_return_ HRESULT CreateModifiedValue(_In_ const CDependencyProperty* dp, _Inout_ std::shared_ptr<CModifiedValue>& modifiedValue);
     void DeleteModifiedValue(_In_ const std::shared_ptr<CModifiedValue>& modifiedValue);
     std::shared_ptr<CModifiedValue> GetModifiedValue(_In_ const CDependencyProperty* dp) const;
 
@@ -1102,7 +1103,7 @@ protected:
         );
 
     virtual _Check_return_ HRESULT OnPropertyChanged(_In_ const PropertyChangedParams& args);
-    virtual _Check_return_ HRESULT OnPropertySetImpl(_In_ const CDependencyProperty* pDP, _In_ const CValue& oldValue, _In_ const CValue& value, _In_ bool propertyChangedValue);
+    virtual _Check_return_ HRESULT OnPropertySetImpl(_In_ const CDependencyProperty* pDP, _In_ const CValue& oldValue, _In_ const CValue& value, bool propertyChangedValue);
 
     // Allows a parent to react to a setvalue on another parent
     // Only called (for perf) before we are about to fail because the object is already associated.
@@ -1113,15 +1114,15 @@ protected:
         return S_OK;
     }
 
-    virtual _Check_return_ HRESULT NotifyThemeChangedCore(_In_ Theming::Theme theme, _In_ bool forceRefresh = false);
-    _Check_return_ HRESULT NotifyThemeChangedCoreImpl(_In_ Theming::Theme theme, _In_ bool forceRefresh = false, _In_ bool ignoreGetValueFailures = false);
+    virtual _Check_return_ HRESULT NotifyThemeChangedCore(_In_ Theming::Theme theme, bool forceRefresh = false);
+    _Check_return_ HRESULT NotifyThemeChangedCoreImpl(_In_ Theming::Theme theme, bool forceRefresh = false, bool ignoreGetValueFailures = false);
 
     // Required because this is stubbed out in unittests
     Theming::Theme GetRequestedThemeForSubTreeFromCore();
     void SetRequestedThemeForSubTreeOnCore(Theming::Theme);
 
 public:
-    _Check_return_ HRESULT NotifyThemeChanged(_In_ Theming::Theme theme, _In_ bool forceRefresh = false);
+    _Check_return_ HRESULT NotifyThemeChanged(_In_ Theming::Theme theme, bool forceRefresh = false);
 
     // Notifies us that a DP's value is going to be set from a ThemeResourceExpression in the framework.
     // These methods will make sure that when the expression tries to update the effective value, we

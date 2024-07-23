@@ -191,7 +191,7 @@ public:
         _Outptr_ InheritedProperties **ppInheritedProperties
         );
 
-    static _Check_return_ HRESULT GetDefaultValue(_In_ KnownPropertyIndex userIndex, _Out_ CValue* pDefaultValue);
+    static _Check_return_ HRESULT GetDefaultValue(_In_ KnownPropertyIndex userIndex, _Inout_ CValue* pDefaultValue);
 
     // Property flags for inherited properties are maintained in the
     // inherited property storage group.

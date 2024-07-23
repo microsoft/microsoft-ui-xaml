@@ -41,7 +41,7 @@ _Check_return_ HRESULT CValidationErrorsCollection::OnAddToCollection(_In_ CDepe
     }
     return S_OK;
 }
-_Check_return_ HRESULT CValidationErrorsCollection::OnRemoveFromCollection(_In_ CDependencyObject *obj, int32_t previousIndex)
+_Check_return_ HRESULT CValidationErrorsCollection::OnRemoveFromCollection(_In_ CDependencyObject *obj, _In_ int32_t previousIndex)
 {
     wrl::ComPtr<xaml_controls::IInputValidationError> error;
     if (TryGetValidationError(obj, &error))
@@ -66,6 +66,9 @@ _Check_return_ HRESULT CValidationErrorsCollection::Neat(bool)
 
 bool CValidationErrorsCollection::TryGetValidationError(_In_ CDependencyObject* obj, _COM_Outptr_ xaml_controls::IInputValidationError** error) const
 {
+    // Initialize the output parameter to nullptr at the start
+    *error = nullptr;
+    
     bool gotObject = false;
     if (auto eor = do_pointer_cast<CManagedObjectReference>(obj))
     {

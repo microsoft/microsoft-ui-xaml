@@ -16,8 +16,8 @@ namespace DirectUI
     interface __declspec(uuid("e8b3f9b0-7efb-4e7a-9616-2b390cea2623")) IOrientedPanel : public IInspectable
     {
         // Properties.
-        IFACEMETHOD(get_LogicalOrientation)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Orientation* pValue) = 0;
-        IFACEMETHOD(get_PhysicalOrientation)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Orientation* pValue) = 0;
+        _Check_return_ IFACEMETHOD(get_LogicalOrientation)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Orientation* pValue) = 0;
+        _Check_return_ IFACEMETHOD(get_PhysicalOrientation)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Orientation* pValue) = 0;
 
         // Events.
 

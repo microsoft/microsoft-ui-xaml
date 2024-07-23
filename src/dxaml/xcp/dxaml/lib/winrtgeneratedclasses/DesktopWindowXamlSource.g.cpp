@@ -134,7 +134,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-HRESULT DirectUI::DesktopWindowXamlSourceGenerated::EventAddPreValidation(_In_ void* const pValue, EventRegistrationToken* const ptToken) const
+_Check_return_ HRESULT DirectUI::DesktopWindowXamlSourceGenerated::EventAddPreValidation(_In_ void* const pValue, EventRegistrationToken* const ptToken) const
 {
     HRESULT hr = S_OK;
 

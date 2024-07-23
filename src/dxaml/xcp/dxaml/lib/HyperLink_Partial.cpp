@@ -49,7 +49,7 @@ HRESULT Hyperlink::OnClick()
 }
 
 // Create HyperlinkAutomationPeer to represent the Hyperlink.
-HRESULT Hyperlink::OnCreateAutomationPeer(_Outptr_ xaml_automation_peers::IAutomationPeer **ppAutomationPeer)
+_Check_return_ HRESULT Hyperlink::OnCreateAutomationPeer(_Outptr_ xaml_automation_peers::IAutomationPeer **ppAutomationPeer)
 {
     ctl::ComPtr<HyperlinkAutomationPeer> spAutomationPeer;
     IFC_RETURN(ActivationAPI::ActivateAutomationInstance(KnownTypeIndex::HyperlinkAutomationPeer, GetHandle(), spAutomationPeer.GetAddressOf()));

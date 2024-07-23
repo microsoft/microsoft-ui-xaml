@@ -133,7 +133,7 @@ CInteractionManager::GetReusableInteractionEngine(
             // Reset the ICM on the idling element. Swap it out of the map because we are re-using
             // it and don't want to destroy it.
             reusedContext.swap(it->second);
-            reusedContext->Reset();
+            IFCFAILFAST(reusedContext->Reset());
             m_mapInteractions.erase(it);
         }
     }

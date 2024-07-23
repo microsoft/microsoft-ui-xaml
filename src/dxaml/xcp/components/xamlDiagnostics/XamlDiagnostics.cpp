@@ -637,7 +637,7 @@ IFACEMETHODIMP
 XamlDiagnostics::GetProperty(
     _In_ InstanceHandle object,
     _In_ unsigned int propertyIndex,
-    _Outptr_ InstanceHandle* pValue)
+    _Out_ InstanceHandle* pValue)
 {
     SuspendFailFastOnStowedException suspender;
     IFCPTR_RETURN(pValue);

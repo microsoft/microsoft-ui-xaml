@@ -312,9 +312,9 @@ CFocusRectManager::DetermineRenderOptions(
     if (!previousFocusTarget.IsNull())
     {
         xref_ptr<CGeneralTransform> previousToCurrent;
-        previousFocusTarget.GetElementResponsibleForDrawingThisElement()->TransformToVisual(
+        IFCFAILFAST(previousFocusTarget.GetElementResponsibleForDrawingThisElement()->TransformToVisual(
             focusTarget.GetElementResponsibleForDrawingThisElement(),
-            &previousToCurrent);
+            &previousToCurrent));
 
         if(FAILED (previousToCurrent->TransformRect(focusRectBoundsWithNudging, &options.previousBounds)))
         {
@@ -397,12 +397,12 @@ CFocusRectManager::GetDefaultFocusOptions(
     CValue blackColorValue;
     blackColorValue.SetColor(0xFF000000);
     CREATEPARAMETERS cpBlackColor(core, blackColorValue);
-    CSolidColorBrush::Create(reinterpret_cast<CDependencyObject**>(newOptions->firstBrush.ReleaseAndGetAddressOf()), &cpBlackColor);
+    IFCFAILFAST(CSolidColorBrush::Create(reinterpret_cast<CDependencyObject**>(newOptions->firstBrush.ReleaseAndGetAddressOf()), &cpBlackColor));
 
     CValue whiteColorValue;
     whiteColorValue.SetColor(0xFFFFFFFF);
     CREATEPARAMETERS cpWhiteColor(core, whiteColorValue);
-    CSolidColorBrush::Create(reinterpret_cast<CDependencyObject**>(newOptions->secondBrush.ReleaseAndGetAddressOf()), &cpWhiteColor);
+    IFCFAILFAST(CSolidColorBrush::Create(reinterpret_cast<CDependencyObject**>(newOptions->secondBrush.ReleaseAndGetAddressOf()), &cpWhiteColor));
 
     newOptions->firstThickness = Thickness(1.0f);
     newOptions->secondThickness = Thickness(1.0f);
@@ -817,7 +817,7 @@ void CFocusRectManager::UpdateFocusRect(
     CUIElementCollection* collection = m_canvasForFocusRects->GetChildren();
     while (collection && collection->GetCount() > boundsVector.size() * 2)
     {
-        collection->RemoveAt(collection->GetCount()-1);
+        IGNOREHR(collection->RemoveAt(collection->GetCount()-1));
     }
 
     // Place the focus rect canvas in the tree
@@ -899,7 +899,7 @@ void CFocusRectManager::UpdateFocusRect(
         if (scpClipRect)
         {
             xref_ptr<CGeneralTransform> transform;
-            scp->TransformToVisual(focusRectHost.Element, &transform);
+            IFCFAILFAST(scp->TransformToVisual(focusRectHost.Element, &transform));
             XRECTF clipInScrollViewerSpace = {};
             if (FAILED(transform->TransformRect(scpClipRect->m_rc, &clipInScrollViewerSpace)))
             {
@@ -957,7 +957,7 @@ void CFocusRectManager::UpdateFocusRect(
         xref_ptr<CRectangleGeometry> svClipRect;
         CDependencyObject* obj = nullptr;
         CREATEPARAMETERS cp(core);
-        CRectangleGeometry::Create(&obj, &cp);
+        IFCFAILFAST(CRectangleGeometry::Create(&obj, &cp));
         svClipRect.attach(static_cast<CRectangleGeometry*>(obj));
 
         svClipRect->m_rc = newClipRect;

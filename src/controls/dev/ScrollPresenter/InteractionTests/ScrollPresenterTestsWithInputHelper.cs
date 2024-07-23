@@ -50,10 +50,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
-        //[TestMethod]
-        //[TestProperty("Description", "Pans a Rectangle in a ScrollPresenter, with railing.")]
-        //[TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
-        // Bug 24357468: DCPP: MUXControls.InteractionTests.ScrollPresenterTestsWithInputHelper is failing
+        [TestMethod]
+        [TestProperty("Description", "Pans a Rectangle in a ScrollPresenter, with railing.")]
+        [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
         public void PanWithRailing()
         {
             const double minVerticalScrollPercent = 50.0;
@@ -132,10 +131,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod]
-        //[TestProperty("Description", "Pans an Image in a ScrollPresenter, without railing.")]
-        //[TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
-        // Bug 24357468: DCPP: MUXControls.InteractionTests.ScrollPresenterTestsWithInputHelper is failing
+        [TestMethod]
+        [TestProperty("Description", "Pans an Image in a ScrollPresenter, without railing.")]
+        [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
         public void PanWithoutRailing()
         {
             const double minHorizontalScrollPercent = 35.0;
@@ -217,9 +215,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod]
-        //[TestProperty("Description", "Scrolls a Rectangle in a ScrollPresenter, with the mouse wheel.")]
-        // Bug 24357468: DCPP: MUXControls.InteractionTests.ScrollPresenterTestsWithInputHelper is failing
+        [TestMethod]
+        [TestProperty("Description", "Scrolls a Rectangle in a ScrollPresenter, with the mouse wheel.")]
         public void ScrollWithMouseWheel()
         {
             double minVerticalScrollPercent = 5.0;
@@ -586,20 +583,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod]
-        //[TestProperty("Description", "Reduce the Content size while it is far-anchored and overpanned.")]
-        //[TestProperty("Ignore", "True")] // 24178380
-        //[TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
-        // Bug 24357468: DCPP: MUXControls.InteractionTests.ScrollPresenterTestsWithInputHelper is failing
+        [TestMethod]
+        [TestProperty("Description", "Reduce the Content size while it is far-anchored and overpanned.")]
+        [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
         public void OverpanWithAnchoredSkrinkingContent()
         {
             OverpanWithAnchoredSkrinkingContent(isForHorizontalDirection: true);
         }
 
-        //[TestMethod]
-        //[TestProperty("Description", "Reduce the Content size while it is far-anchored and overpanned.")]
-        //[TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
-        // Bug 24357468: DCPP: MUXControls.InteractionTests.ScrollPresenterTestsWithInputHelper is failing
+        [TestMethod]
+        [TestProperty("Description", "Reduce the Content size while it is far-anchored and overpanned.")]
+        [TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
         public void OverpanWithAnchoredSkrinkingContentVert()
         {
             OverpanWithAnchoredSkrinkingContent(isForHorizontalDirection: false);
@@ -744,7 +738,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         //[TestMethod]
         //[TestProperty("Description", "Pans an inner ScrollViewer and chains to an outer ScrollPresenter.")]
         //[TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
-        // Bug 24357468: DCPP: MUXControls.InteractionTests.ScrollPresenterTestsWithInputHelper is failing
+        // Bug 51897603: ScrollPresenter: Fix and re-enable interaction tests
         public void PanWithChainingFromScrollViewerToScrollPresenter()
         {
             Log.Comment("Selecting ScrollPresenter tests");
@@ -816,7 +810,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         //[TestMethod]
         //[TestProperty("Description", "Pans an inner ScrollPresenter and chains to an outer ScrollViewer.")]
         //[TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
-        // Bug 24357468: DCPP: MUXControls.InteractionTests.ScrollPresenterTestsWithInputHelper is failing
+        // Bug 51897603: ScrollPresenter: Fix and re-enable interaction tests
         public void PanWithChainingFromScrollPresenterToScrollViewer()
         {
             // Inner ScrollPresenter uses ChainingMode.Always
@@ -826,7 +820,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         //[TestMethod]
         //[TestProperty("Description", "Pans an inner ScrollPresenter and chains to an outer ScrollViewer.")]
         //[TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
-        // Bug 24357468: DCPP: MUXControls.InteractionTests.ScrollPresenterTestsWithInputHelper is failing
+        // Bug 51897603: ScrollPresenter: Fix and re-enable interaction tests
         public void PanWithChainingFromScrollPresenterToScrollViewer_Auto()
         {
             // Inner ScrollPresenter uses ChainingMode.Auto
@@ -924,7 +918,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         //[TestMethod]
         //[TestProperty("Description", "Attempts to scroll when ManipulationMode is not System.")]
         //[TestProperty("TestPass:MinOSVer", WindowsOSVersion.RS5)] // Touch input injection is only supported on RS5 and up
-        // Bug 24357468: DCPP: MUXControls.InteractionTests.ScrollPresenterTestsWithInputHelper is failing
+        // Bug 51897603: ScrollPresenter: Fix and re-enable interaction tests
         public void ScrollWithNonSystemManipulationMode()
         {
             Log.Comment("Selecting ScrollPresenter tests");
@@ -1082,24 +1076,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             MoveTowardsTwoManditoryIrregularSnapPoint(alignment: ScrollSnapPointsAlignment.Far, withTouch: true);
         }
 
-        //[TestMethod]
-        //[TestProperty("Description", "Apply two mandatory irregular snap points to the scrollPresenter and snap to them using mouse-wheel input.")]
-        // Bug 24357468: DCPP: MUXControls.InteractionTests.ScrollPresenterTestsWithInputHelper is failing
+        [TestMethod]
+        [TestProperty("Description", "Apply two mandatory irregular snap points to the scrollPresenter and snap to them using mouse-wheel input.")]
         public void ScrollTowardsTwoManditoryIrregularSnapPoint_Near()
         {
             MoveTowardsTwoManditoryIrregularSnapPoint(alignment: ScrollSnapPointsAlignment.Near, withTouch: false);
         }
 
-        //[TestMethod]
-        // Bug 24357468: DCPP: MUXControls.InteractionTests.ScrollPresenterTestsWithInputHelper is failing
+        [TestMethod]
         public void ScrollTowardsTwoManditoryIrregularSnapPoint_Center()
         {
             MoveTowardsTwoManditoryIrregularSnapPoint(alignment: ScrollSnapPointsAlignment.Center, withTouch: false);
         }
 
-        //[TestMethod]
-        //[TestProperty("Description", "Apply two mandatory irregular snap points to the scrollPresenter and snap to them using mouse-wheel input.")]
-        // Bug 24357468: DCPP: MUXControls.InteractionTests.ScrollPresenterTestsWithInputHelper is failing
+        [TestMethod]
+        [TestProperty("Description", "Apply two mandatory irregular snap points to the scrollPresenter and snap to them using mouse-wheel input.")]
         public void ScrollTowardsTwoManditoryIrregularSnapPoint_Far()
         {
             MoveTowardsTwoManditoryIrregularSnapPoint(alignment: ScrollSnapPointsAlignment.Far, withTouch: false);
@@ -1248,25 +1239,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             MoveWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignment: ScrollSnapPointsAlignment.Far, withTouch: true);
         }
 
-        //[TestMethod]
-        //[TestProperty("Description", "Apply a single mandatory repeated snap point across the scrollPresenter extent and snap to it using mouse-wheel input.")]
-        // Bug 24357468: DCPP: MUXControls.InteractionTests.ScrollPresenterTestsWithInputHelper is failing
+        [TestMethod]
+        [TestProperty("Description", "Apply a single mandatory repeated snap point across the scrollPresenter extent and snap to it using mouse-wheel input.")]
         public void ScrollWithinARepeatedMandatorySnapPoint_Near()
         {
             MoveWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignment: ScrollSnapPointsAlignment.Near, withTouch: false);
         }
 
-        //[TestMethod]
-        //[TestProperty("Description", "Apply a single mandatory repeated snap point across the scrollPresenter extent and snap to it using mouse-wheel input.")]
-        // Bug 24357468: DCPP: MUXControls.InteractionTests.ScrollPresenterTestsWithInputHelper is failing
+        [TestMethod]
+        [TestProperty("Description", "Apply a single mandatory repeated snap point across the scrollPresenter extent and snap to it using mouse-wheel input.")]
         public void ScrollWithinARepeatedMandatorySnapPoint_Center()
         {
             MoveWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignment: ScrollSnapPointsAlignment.Center, withTouch: false);
         }
 
-        //[TestMethod]
-        //[TestProperty("Description", "Apply a single mandatory repeated snap point across the scrollPresenter extent and snap to it using mouse-wheel input.")]
-        // Bug 24357468: DCPP: MUXControls.InteractionTests.ScrollPresenterTestsWithInputHelper is failing
+        [TestMethod]
+        [TestProperty("Description", "Apply a single mandatory repeated snap point across the scrollPresenter extent and snap to it using mouse-wheel input.")]
         public void ScrollWithinARepeatedMandatorySnapPoint_Far()
         {
             MoveWithinARepeatedMandatorySnapPoint(withOffsetEqualToStart: false, alignment: ScrollSnapPointsAlignment.Far, withTouch: false);

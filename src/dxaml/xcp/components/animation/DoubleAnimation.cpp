@@ -775,7 +775,7 @@ void CDoubleAnimation::ReleaseDCompResources()
     __super::ReleaseDCompResources();
 }
 
-CompositionAnimationConversionResult CDoubleAnimation::MakeCompositionKeyFrameAnimationVirtual(_Inout_ CompositionAnimationConversionContext* myContext)
+_Check_return_ CompositionAnimationConversionResult CDoubleAnimation::MakeCompositionKeyFrameAnimationVirtual(_Inout_ CompositionAnimationConversionContext* myContext)
 {
     const auto& scalarAnimation = myContext->CreateScalarLinearAnimation(
         m_vFrom,

@@ -7,7 +7,7 @@
 #include <Windows.Graphics.Imaging.Interop.h>
 #include "SoftwareBitmapUtility.h"
 
-HRESULT SoftwareBitmapUtility::CreateSoftwareBitmap(
+_Check_return_ HRESULT SoftwareBitmapUtility::CreateSoftwareBitmap(
     uint32_t width,
     uint32_t height,
     _Out_ wrl::ComPtr<wgri::ISoftwareBitmap>& spSoftwareBitmap
@@ -21,7 +21,7 @@ HRESULT SoftwareBitmapUtility::CreateSoftwareBitmap(
         spSoftwareBitmap);
 }
 
-HRESULT SoftwareBitmapUtility::CreateSoftwareBitmap(
+_Check_return_ HRESULT SoftwareBitmapUtility::CreateSoftwareBitmap(
     uint32_t width,
     uint32_t height,
     wgri::BitmapPixelFormat pixelFormat,

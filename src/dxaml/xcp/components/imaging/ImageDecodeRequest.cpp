@@ -51,7 +51,7 @@ HRESULT ImageDecodeRequest::SetImageDecoder(std::unique_ptr<AsyncImageDecoder> i
     return S_OK;
 }
 
-HRESULT ImageDecodeRequest::SetDecodeParams(
+_Check_return_ HRESULT ImageDecodeRequest::SetDecodeParams(
     _In_ xref_ptr<IImageAvailableCallback> imageAvailableCallback,
     _In_ xref_ptr<ImageDecodeParams> decodeParams)
 {

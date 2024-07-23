@@ -171,7 +171,7 @@ HRESULT ResourceDictionaryCustomRuntimeData::PrepareStream(_In_ std::shared_ptr<
                 CValue strValue;
                 strValue.SetString((*m_explicitKeyResourcesMap.begin()).first);
 
-                spKey->SetValue(strValue);
+                IFC_RETURN(spKey->SetValue(strValue));
                 IFC_RETURN(customWriterStream->GetNodeList()->AddNode(ObjectWriterNode::MakeAddToDictionaryWithKeyNode(nodeListVector.rbegin()->GetLineInfo(), spKey)));
             }
             else

@@ -13,7 +13,7 @@ namespace DirectUI
     IManipulationDataProvider : public IInspectable
     {
         // Provides physical orientation of content
-        IFACEMETHOD(get_PhysicalOrientation)(
+        _Check_return_ IFACEMETHOD(get_PhysicalOrientation)(
             _Out_ xaml_controls::Orientation* value) = 0;
 
         // Tells whether the element is participating in a manipulation or not.

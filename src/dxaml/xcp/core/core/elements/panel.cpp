@@ -236,7 +236,7 @@ CPanel::PreChildrenPrintVirtual(
 //  return the itemscontrols child transitions.
 //
 //------------------------------------------------------------------------
-CTransitionCollection*
+_Check_return_ CTransitionCollection*
 CPanel::GetTransitionsForChildElementNoAddRef(_In_ CUIElement* pChild)
 {
     // Panel.ChildrenTransitions is a create-on-demand property, so we need to first check
@@ -472,8 +472,8 @@ bool CPanel::IsMaskDirty(
     const bool renderCollapsedMask,
     bool isFillBrushAnimated,
     bool isStrokeBrushAnimated,
-    _Out_ bool* pIsFillForHitTestOnly,
-    _Out_ bool* pIsStrokeForHitTestOnly
+    _Inout_ bool* pIsFillForHitTestOnly,
+    _Inout_ bool* pIsStrokeForHitTestOnly
     )
 {
     return CFrameworkElement::NWIsContentDirty()

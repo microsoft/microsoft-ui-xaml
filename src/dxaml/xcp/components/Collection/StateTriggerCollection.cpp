@@ -69,7 +69,7 @@ _Check_return_ void* CStateTriggerCollection::RemoveAt(XUINT32 nIndex)
     CDependencyObject* pDO = static_cast<CDependencyObject*>(CDOCollection::RemoveAt(nIndex));
     if(pDO)
     {
-        RemoveTriggerFromVariantMap(pDO);
+        VERIFYHR(RemoveTriggerFromVariantMap(pDO));
     }
 
     return pDO;

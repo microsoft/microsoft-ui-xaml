@@ -26,7 +26,7 @@
     <PackageReference Update="MUXCustomBuildTasks" Version="$(MuxCustomBuildTasksPackageVersion)" />
     <PackageReference Update="Microsoft.Taef" Version="$(TaefNugetPackageVersion)" />
     <PackageReference Update="ColorCode.Core" Version="$(ColorCodeVersion)" />
-    <PackageReference Update="CommunityToolkit.WinUI.Controls.Segmented" Version="$(CommunityToolkitWinUIVersion)" />                      
+    <PackageReference Update="CommunityToolkit.WinUI.Controls.Segmented" Version="$(CommunityToolkitWinUIVersion)" />
     <PackageReference Update="CommunityToolkit.WinUI.Controls.SettingsControls" Version="$(CommunityToolkitWinUIVersion)" />
     <PackageReference Update="CommunityToolkit.WinUI.Converters" Version="$(CommunityToolkitWinUIVersion)" />
     <PackageReference Update="CommunityToolkit.WinUI.Animations" Version="$(CommunityToolkitWinUIVersion)" />

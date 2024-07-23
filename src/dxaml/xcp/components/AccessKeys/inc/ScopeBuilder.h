@@ -67,7 +67,7 @@ namespace AccessKeys {
         }
 
     private:
-        _Check_return_ HRESULT GetElementsForAKScope(_In_ Element* const scopeOwner, _Inout_ std::vector<Element*>& elementList)
+        _Check_return_ HRESULT GetElementsForAKScope(_In_opt_ Element* const scopeOwner, _Inout_ std::vector<Element*>& elementList)
         {
             return m_treeAnalyzer.FindElementsForAK(scopeOwner, elementList);
         }

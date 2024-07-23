@@ -17,7 +17,7 @@ public:
     {
     }
 
-    HRESULT STDMETHODCALLTYPE DrawGlyphRun(
+    _Check_return_ HRESULT STDMETHODCALLTYPE DrawGlyphRun(
         _In_ void* clientDrawingContext,
         _In_ float baselineOriginX,
         _In_ float baselineOriginY,
@@ -27,7 +27,7 @@ public:
         _In_ IUnknown* clientDrawingEffects
         ) noexcept override;
 
-    HRESULT STDMETHODCALLTYPE DrawUnderline(
+    _Check_return_ HRESULT STDMETHODCALLTYPE DrawUnderline(
         _In_ void* clientDrawingContext,
         _In_ float baselineOriginX,
         _In_ float baselineOriginY,
@@ -35,7 +35,7 @@ public:
         _In_ IUnknown* clientDrawingEffects
         ) noexcept override;
 
-    HRESULT STDMETHODCALLTYPE DrawStrikethrough(
+    _Check_return_ HRESULT STDMETHODCALLTYPE DrawStrikethrough(
         _In_ void* clientDrawingContext,
         _In_ float baselineOriginX,
         _In_ float baselineOriginY,
@@ -43,7 +43,7 @@ public:
         _In_ IUnknown* clientDrawingEffects
         ) noexcept override;
 
-    HRESULT STDMETHODCALLTYPE DrawInlineObject(
+    _Check_return_ HRESULT STDMETHODCALLTYPE DrawInlineObject(
         _In_ void* clientDrawingContext,
         _In_ float originX,
         _In_ float originY,
@@ -53,17 +53,17 @@ public:
         _In_ IUnknown* clientDrawingEffects
         ) noexcept override;
 
-    HRESULT STDMETHODCALLTYPE IsPixelSnappingDisabled(
+    _Check_return_ HRESULT STDMETHODCALLTYPE IsPixelSnappingDisabled(
         _In_opt_ void* clientDrawingContext,
         _Out_ BOOL* isDisabled
         ) noexcept override;
 
-    HRESULT STDMETHODCALLTYPE GetCurrentTransform(
+    _Check_return_ HRESULT STDMETHODCALLTYPE GetCurrentTransform(
         _In_opt_ void* clientDrawingContext,
         _Out_ DWRITE_MATRIX* transform
         ) noexcept override;
 
-    HRESULT STDMETHODCALLTYPE GetPixelsPerDip(
+    _Check_return_ HRESULT STDMETHODCALLTYPE GetPixelsPerDip(
         _In_opt_ void* clientDrawingContext,
         _Out_ float* pixelsPerDip
         ) noexcept override;

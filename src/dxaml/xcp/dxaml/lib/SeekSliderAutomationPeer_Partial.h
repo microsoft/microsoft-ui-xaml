@@ -14,7 +14,7 @@ namespace DirectUI
     PARTIAL_CLASS(SeekSliderAutomationPeer)
     {
     public:
-        static HRESULT CreateInstanceWithOwner(_In_ xaml_controls::ISlider* pOwner, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ xaml_automation_peers::ISliderAutomationPeer** ppInstance);
+        static _Check_return_ HRESULT CreateInstanceWithOwner(_In_ xaml_controls::ISlider* pOwner, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ xaml_automation_peers::ISliderAutomationPeer** ppInstance);
 
         // Initializes a new instance of the SeekSliderAutomationPeer class.
         SeekSliderAutomationPeer();
