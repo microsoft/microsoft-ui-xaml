@@ -611,7 +611,7 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ProgressRing_APITests", "de
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ProgressBar_APITests", "dev\ProgressBar\APITests\ProgressBar_APITests.shproj", "{DD024665-31DA-4290-993E-2E46EB370C77}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.UI.Xaml.Projection", "dev\Projection\Microsoft.UI.Xaml.Projection.csproj", "{5ED66F64-4DA3-4B29-8CAF-883C9481B54F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.UI.Xaml.Projection", "dev\Projection\Microsoft.UI.Xaml.Projection.csproj", "{5ED66F64-4DA3-4B29-8CAF-883C9481B54F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

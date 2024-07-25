@@ -238,44 +238,44 @@ extends:
             continueOnError: true
 
 
-          - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
-            displayName: First Party StoreSign Framework Package
-            inputs:
-              ConnectedServiceName: WinUISigning
-              FolderPath: '$(Build.SourcesDirectory)\Artifacts\drop'
-              UseMinimatch: true
-              Pattern: |
-                **/Microsoft.UI.Xaml.*.appx
-              signConfigType: 'inlineSignParams'
-              inlineOperation: >-
-                [
-                    {
-                        "KeyCode" : "Dynamic",
-                        "CertTemplateName" : "WINMSAPP1ST",
-                        "CertSubjectName" : "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
-                        "OperationCode" : "SigntoolSign",
-                        "Parameters" : {
-                            "OpusName" : "Microsoft",
-                            "OpusInfo" : "http://www.microsoft.com",
-                            "FileDigest" : "/fd \"SHA256\"",
-                            "TimeStamp" : "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
-                        },
-                        "ToolName" : "sign",
-                        "ToolVersion" : "1.0"
-                    },
-                    {
-                        "KeyCode" : "Dynamic",
-                        "CertTemplateName" : "WINMSAPP1ST",
-                        "CertSubjectName" : "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
-                        "OperationCode" : "SigntoolVerify",
-                        "Parameters" : {},
-                        "ToolName" : "sign",
-                        "ToolVersion" : "1.0"
-                    }
-                ]
-              SessionTimeout: '60'
-              MaxConcurrency: '50'
-              MaxRetryAttempts: '5'
+          # - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+          #   displayName: First Party StoreSign Framework Package
+          #   inputs:
+          #     ConnectedServiceName: WinUISigning
+          #     FolderPath: '$(Build.SourcesDirectory)\Artifacts\drop'
+          #     UseMinimatch: true
+          #     Pattern: |
+          #       **/Microsoft.UI.Xaml.*.appx
+          #     signConfigType: 'inlineSignParams'
+          #     inlineOperation: >-
+          #       [
+          #           {
+          #               "KeyCode" : "Dynamic",
+          #               "CertTemplateName" : "WINMSAPP1ST",
+          #               "CertSubjectName" : "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+          #               "OperationCode" : "SigntoolSign",
+          #               "Parameters" : {
+          #                   "OpusName" : "Microsoft",
+          #                   "OpusInfo" : "http://www.microsoft.com",
+          #                   "FileDigest" : "/fd \"SHA256\"",
+          #                   "TimeStamp" : "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+          #               },
+          #               "ToolName" : "sign",
+          #               "ToolVersion" : "1.0"
+          #           },
+          #           {
+          #               "KeyCode" : "Dynamic",
+          #               "CertTemplateName" : "WINMSAPP1ST",
+          #               "CertSubjectName" : "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+          #               "OperationCode" : "SigntoolVerify",
+          #               "Parameters" : {},
+          #               "ToolName" : "sign",
+          #               "ToolVersion" : "1.0"
+          #           }
+          #       ]
+          #     SessionTimeout: '60'
+          #     MaxConcurrency: '50'
+          #     MaxRetryAttempts: '5'
 
 
           - powershell: |
