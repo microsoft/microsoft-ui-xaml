@@ -195,7 +195,8 @@ extends:
         pool:
           type: windows  
         variables:
-          useReleaseTag: '$(MUXFinalRelease)'
+          # useReleaseTag: '$(MUXFinalRelease)'
+          useReleaseTag: false # TODO remove. Temporarily use -prerelease even for stable build.
           nupkgdir: '$(build.artifactStagingDirectory)'
           primaryBuildArch: x86
           ob_outputDirectory: $(build.artifactStagingDirectory)
