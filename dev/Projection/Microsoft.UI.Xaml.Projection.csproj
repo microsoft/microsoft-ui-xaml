@@ -11,16 +11,18 @@
 
 	<PropertyGroup>
 		<CsWinRTIncludes>Microsoft.UI.Xaml</CsWinRTIncludes>
-		<CsWinRTExcludes>Microsoft.UI.Xaml.Controls.WebView2;Microsoft.UI.Xaml.Controls.CoreWebView2InitializedEventArgs;Microsoft.UI.Xaml.Controls.IWebView2;Microsoft.UI.Xaml.Controls.IWebView2Factory;Microsoft.UI.Xaml.Controls.IWebView2Statics;Microsoft.UI.Xaml.Controls.ICoreWebView2InitializedEventArgs;Microsoft.UI.Xaml.Automation.Peers.WebView2AutomationPeer;Microsoft.UI.Xaml.Automation.Peers.IWebView2AutomationPeer;Microsoft.UI.Xaml.Automation.Peers.IWebView2AutomationPeerFactory</CsWinRTExcludes>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Windows.CSWinRT" Version="2.1.0-prerelease.240722.1" />
-		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1264.42" />
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2646-prerelease" >
+			<IncludeAssets>none</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 
 	<ItemGroup>
-		<CsWinRTInputs Include="$(PkgMicrosoft_Web_WebView2)\lib\Microsoft.Web.WebView2.Core.winmd" />
 		<ProjectReference Include="..\dll\Microsoft.UI.Xaml.vcxproj" />
+		<CsWinRTInputs Include="$(PkgMicrosoft_Web_WebView2)\lib\Microsoft.Web.WebView2.Core.winmd" />
+		<Reference Include="$(PkgMicrosoft_Web_WebView2)\lib_manual\net6.0-windows10.0.17763.0\Microsoft.Web.WebView2.Core.Projection.dll" />
 	</ItemGroup>
 </Project>
