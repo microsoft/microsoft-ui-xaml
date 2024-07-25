@@ -10,6 +10,8 @@
 
 #include "CommandBarFlyout.properties.cpp"
 
+#pragma warning(disable: 26495)
+
 // Change to 'true' to turn on debugging outputs in Output window
 bool CommandBarFlyoutTrace::s_IsDebugOutputEnabled{ false };
 bool CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled{ false };

@@ -111,18 +111,18 @@ Write-Verbose "TempDir = $($TempDir.FullName)"
 $runtimesDir = "$($TempDir.FullName)\runtimes"
 $toolsDir = "$($TempDir.FullName)\tools"
 
-Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x86\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll "$runtimesDir\win10-x86\native"
-Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x86\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri "$runtimesDir\win10-x86\native"
-Copy-IntoNewDirectory -IfExists ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png "$runtimesDir\win10-x86\native\Microsoft.UI.Xaml\Assets"
-Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x64\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll "$runtimesDir\win10-x64\native"
-Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x64\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri "$runtimesDir\win10-x64\native"
-Copy-IntoNewDirectory -IfExists ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png "$runtimesDir\win10-x64\native\Microsoft.UI.Xaml\Assets"
-Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll "$runtimesDir\win10-arm\native"
-Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri "$runtimesDir\win10-arm\native"
-Copy-IntoNewDirectory -IfExists ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png "$runtimesDir\win10-arm\native\Microsoft.UI.Xaml\Assets"
-Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm64\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll "$runtimesDir\win10-arm64\native"
-Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm64\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri "$runtimesDir\win10-arm64\native"
-Copy-IntoNewDirectory -IfExists ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png "$runtimesDir\win10-arm64\native\Microsoft.UI.Xaml\Assets"
+Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x86\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll "$runtimesDir\win-x86\native"
+Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x86\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri "$runtimesDir\win-x86\native"
+Copy-IntoNewDirectory -IfExists ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png "$runtimesDir\win-x86\native\Microsoft.UI.Xaml\Assets"
+Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x64\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll "$runtimesDir\win-x64\native"
+Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x64\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri "$runtimesDir\win-x64\native"
+Copy-IntoNewDirectory -IfExists ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png "$runtimesDir\win-x64\native\Microsoft.UI.Xaml\Assets"
+Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll "$runtimesDir\win-arm\native"
+Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri "$runtimesDir\win-arm\native"
+Copy-IntoNewDirectory -IfExists ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png "$runtimesDir\win-arm\native\Microsoft.UI.Xaml\Assets"
+Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm64\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll "$runtimesDir\win-arm64\native"
+Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm64\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri "$runtimesDir\win-arm64\native"
+Copy-IntoNewDirectory -IfExists ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png "$runtimesDir\win-arm64\native\Microsoft.UI.Xaml\Assets"
 Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\AnyCPU\Microsoft.UI.Xaml.Projection\Microsoft.UI.Xaml.Projection.dll "$BuildOutput\$BuildFlavor\$BuildArch\Microsoft.UI.Xaml.Projection"
 
 $CommonNugetArgs = "-properties `"BuildOutput=$BuildOutput``;ID=$nupkgtitle``;RUNTIMESDIR=$runtimesDir`;TOOLSDIR=$toolsDir`;BUILDFLAVOR=$($BuildFlavor)`;BUILDARCH=$($BuildArch)`""
@@ -158,7 +158,9 @@ if(-not $SkipFrameworkPackage)
     #Copy-IntoNewDirectory -IfExists $BuildOutput\debug\arm\FrameworkPackage\Microsoft.UI.Xaml.Debug.*.appx "$toolsDir\AppX\arm\Debug"
     #Copy-IntoNewDirectory -IfExists $BuildOutput\debug\arm64\FrameworkPackage\Microsoft.UI.Xaml.Debug.*.appx "$toolsDir\AppX\arm64\Debug"
 
-    $NugetCmdLine = "$nugetExe pack MUXControlsFrameworkPackage.nuspec $NugetArgs -version $version"
+    # $NugetCmdLine = "$nugetExe pack MUXControlsFrameworkPackage.nuspec $NugetArgs -version $version"
+    #TODO: temporarily adding -fr suffix to framework package nupkg
+    $NugetCmdLine = "$nugetExe pack MUXControlsFrameworkPackage.nuspec $NugetArgs -version $version-fr"
     Write-Host $NugetCmdLine
     Invoke-Expression $NugetCmdLine
     if ($lastexitcode -ne 0)
