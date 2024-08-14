@@ -58,7 +58,7 @@ void CMediaPlayerElement::SetPresenter(_In_opt_ CMediaPlayerPresenter* pPresente
     }
 }
 
-_Check_return_ HRESULT CMediaPlayerElement::MeasureOverride(_In_ XSIZEF availableSize, _Inout_ XSIZEF& desiredSize)
+_Check_return_ HRESULT CMediaPlayerElement::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     CMediaPlayerPresenter *pPresenter = m_wpPresenter.lock();
     if (pPresenter && !m_isFullWindow)

@@ -89,7 +89,7 @@ CApplication::RemoveEventListener(
 //------------------------------------------------------------------------
 _Check_return_
 HRESULT
-CApplication::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+CApplication::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     CEventManager * pEventManager = NULL;
 
@@ -121,7 +121,7 @@ CApplication::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams par
 
 _Check_return_
 HRESULT
-CApplication::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+CApplication::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     IFC_RETURN(CDependencyObject::LeaveImpl(pNamescopeOwner, params));
 

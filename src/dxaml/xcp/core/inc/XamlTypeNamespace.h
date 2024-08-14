@@ -66,7 +66,7 @@ protected:
 
     xstring_ptr get_TargetNamespaceCore() const override;
 
-    _Check_return_ HRESULT GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext);
+    _Check_return_ HRESULT GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext);
 
 private:
     // TODO: I make spOwningAssembly weak_ptr but it may not even be

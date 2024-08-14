@@ -11,9 +11,11 @@
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition />
-            <RowDefinition Height="0"/>
         </Grid.RowDefinitions>
+
+        <helpers:TestAutomationHelpersPanel />
         
         <TabView
             AutomationProperties.Name="TearOutTabsTabView"
@@ -24,7 +26,8 @@
             TabTearOutWindowRequested="OnTabTearOutWindowRequested"
             TabTearOutRequested="OnTabTearOutRequested"
             ExternalTornOutTabsDropping="OnExternalTornOutTabsDropping"
-            ExternalTornOutTabsDropped="OnExternalTornOutTabsDropped">
+            ExternalTornOutTabsDropped="OnExternalTornOutTabsDropped"
+            Grid.Row="1">
             <TabView.TabItemTemplate>
                 <DataTemplate x:DataType="sys:String">
                     <TabViewItem AutomationProperties.Name="{x:Bind}" Header="{x:Bind}">
@@ -33,8 +36,6 @@
                 </DataTemplate>
             </TabView.TabItemTemplate>
         </TabView>
-
-        <helpers:TestAutomationHelpersPanel Grid.Row="1" />
     </Grid>
     
 </Window>

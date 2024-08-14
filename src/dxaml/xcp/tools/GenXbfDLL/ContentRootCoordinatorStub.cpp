@@ -4,7 +4,7 @@
 #include "precomp.h"
 #include "contentrootcoordinator.h"
 
-ContentRootCoordinator::ContentRootCoordinator(CCoreServices& coreServices)
+ContentRootCoordinator::ContentRootCoordinator(_In_ CCoreServices& coreServices)
     : m_coreServices(coreServices)
 {
 }

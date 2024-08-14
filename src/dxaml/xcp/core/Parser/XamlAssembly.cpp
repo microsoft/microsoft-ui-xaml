@@ -40,7 +40,7 @@ XamlAssembly::get_Name(_Out_ xstring_ptr* pstrOutName)
 }
 
 _Check_return_ HRESULT 
-XamlAssembly::GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext)
+XamlAssembly::GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext)
 {
     outSchemaContext = m_spSchemaContext.lock();
     if (!outSchemaContext)

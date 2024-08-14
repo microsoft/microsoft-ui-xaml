@@ -211,7 +211,7 @@ _Check_return_ HRESULT
 CEllipseGeometry::GetPrintGeometryVirtual(
     _In_ const D2DPrecomputeParams& cp,
     _In_ const D2DRenderParams &printParams,
-    IPALAcceleratedGeometry** ppGeometry
+    _Outptr_ IPALAcceleratedGeometry** ppGeometry
     )
 {
     HRESULT hr = S_OK;

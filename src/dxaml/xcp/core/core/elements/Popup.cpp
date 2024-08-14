@@ -2711,7 +2711,7 @@ CPopup::UpdateTranslationFromContentRoot(const wf::Point& offset, bool forceUpda
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CPopup::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+CPopup::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     bool bOldFlowDirection = IsRightToLeft();
 
@@ -2756,7 +2756,7 @@ CPopup::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CPopup::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+CPopup::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     // If the Popup was marked for composition, unmark is when it leaves.
     // This is safe because the Popup cannot be rendered again in this state, since it will also Close() here.
@@ -4040,7 +4040,7 @@ void CPopupRoot::OnIslandLostFocus()
 //      popups.
 //
 //------------------------------------------------------------------------
-_Check_return_ HRESULT CPopupRoot::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
+_Check_return_ HRESULT CPopupRoot::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     desiredSize.width = 0;
     desiredSize.height = 0;
@@ -4113,7 +4113,7 @@ _Check_return_ HRESULT CPopupRoot::MeasureOverride(XSIZEF availableSize, XSIZEF&
 //      popups.
 //
 //------------------------------------------------------------------------
-_Check_return_ HRESULT CPopupRoot::ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize)
+_Check_return_ HRESULT CPopupRoot::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize)
 {
     HRESULT hr = S_OK;
     CXcpList<CPopup>::XCPListNode *pNode = NULL;
@@ -4992,7 +4992,7 @@ Cleanup:
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CPopupRoot::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+CPopupRoot::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     // scope
     {

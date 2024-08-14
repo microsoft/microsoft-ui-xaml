@@ -80,8 +80,8 @@ public:
     _Check_return_ HRESULT GetValue(_In_ const CDependencyProperty *pdp, _Inout_ CValue *pValue) override;
 
     _Check_return_ HRESULT SetCustomWriterRuntimeData(
-            std::shared_ptr<CustomWriterRuntimeData> data,
-            std::unique_ptr<CustomWriterRuntimeContext> context) override;
+        _In_ std::shared_ptr<CustomWriterRuntimeData> data,
+        _In_ std::unique_ptr<CustomWriterRuntimeContext> context) override;
 
     _Check_return_ CSetterBaseCollection* GetSetterCollection() const;
 

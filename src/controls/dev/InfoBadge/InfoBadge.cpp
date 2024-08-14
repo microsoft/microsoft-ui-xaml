@@ -61,11 +61,12 @@ void InfoBadge::OnDisplayKindPropertiesChanged()
     winrt::Control const thisAsControl = *this;
     if (Value() >= 0)
     {
-    winrt::VisualStateManager::GoToState(thisAsControl, L"Value", true);
+        winrt::VisualStateManager::GoToState(thisAsControl, L"Value", true);
     }
     else if (auto const iconSource = IconSource())
     {
-        TemplateSettings().IconElement(iconSource.CreateIconElement());
+        TemplateSettings().IconElement(SharedHelpers::MakeIconElementFrom(iconSource));
+
         if (auto const fontIconSource = iconSource.try_as<winrt::FontIconSource>())
         {
             winrt::VisualStateManager::GoToState(thisAsControl, L"FontIcon", true);

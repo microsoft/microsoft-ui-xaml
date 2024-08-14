@@ -160,7 +160,7 @@ XamlTypeNamespace::GetOwningAssembly(std::shared_ptr<XamlAssembly>& outOwningAss
 }
 
 _Check_return_ HRESULT 
-XamlTypeNamespace::GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext)
+XamlTypeNamespace::GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext)
 {
     outSchemaContext = m_spXamlSchemaContext.lock();
     if (!outSchemaContext)

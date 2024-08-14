@@ -52,7 +52,7 @@ XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { n
         RRETURN(hr);
     }
 
-    HRESULT
+    _Check_return_ HRESULT
     NavigationThemeTransition::OnPropertyChanged(
         _In_ xaml::IDependencyPropertyChangedEventArgs* /* pArgs */)
     {

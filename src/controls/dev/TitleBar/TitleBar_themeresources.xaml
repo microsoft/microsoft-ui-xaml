@@ -60,14 +60,14 @@
       <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForegroundChecked}" />
       <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
       <Setter Property="FontSize" Value="16" />
-      <Setter Property="Width" Value="44" />
+      <Setter Property="Width" Value="{ThemeResource NavigationBackButtonWidth}" />
       <Setter Property="VerticalAlignment" Value="Stretch" />
       <Setter Property="HorizontalContentAlignment" Value="Center" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
       <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
       <Setter Property="Content" Value="&#xE72B;" />
-      <Setter Property="Margin" Value="0" />
-      <Setter Property="CornerRadius" Value="0" />
+      <Setter Property="Margin" Value="2" />
+      <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="Button">
@@ -127,14 +127,14 @@
         <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForegroundChecked}" />
         <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
         <Setter Property="FontSize" Value="16" />
-        <Setter Property="Width" Value="44" />
+        <Setter Property="Width" Value="{ThemeResource NavigationBackButtonWidth}" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="Content" Value="&#xE700;" />
-        <Setter Property="Margin" Value="0" />
-        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="Margin" Value="2" />
+        <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">

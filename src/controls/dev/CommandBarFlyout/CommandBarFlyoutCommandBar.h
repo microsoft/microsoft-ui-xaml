@@ -109,6 +109,7 @@ private:
     winrt::FrameworkElement::SizeChanged_revoker m_secondaryItemsRootSizeChangedRevoker{};
     winrt::FrameworkElement::Loaded_revoker m_firstItemLoadedRevoker{};
     std::vector<winrt::FrameworkElement::Loaded_revoker> m_itemLoadedRevokerVector{};
+    std::vector<winrt::FrameworkElement::SizeChanged_revoker> m_itemSizeChangedRevokerVector{};
 
     // We need to manually connect the end element of the primary items to the start element of the secondary items
     // for the purposes of UIA items navigation. To ensure that we only have the current start and end elements registered

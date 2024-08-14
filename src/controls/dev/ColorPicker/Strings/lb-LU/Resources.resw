@@ -169,7 +169,7 @@
     <value>2D-Navigatioun mat Feiltasten</value>
     <comment>The help text associated with ColorSpectrum.</comment>
   </data>
-  <data name="AutomationNameHexTextBox" xml:space="preserve">
+  <data name="AutomationNameRGBHexTextBox" xml:space="preserve">
     <value>RGB hexadezimal</value>
     <comment>The automation name for the text box to edit the current RGB color as a hex value.</comment>
   </data>
@@ -296,5 +296,9 @@
   <data name="TextMoreButtonLabelExpanded" xml:space="preserve">
     <value>Manner</value>
     <comment>The string to display in the "more" button when it's expanded.</comment>
+  </data>
+  <data name="AutomationNameHSVHexTextBox" xml:space="preserve">
+    <value>HSV hex</value>
+    <comment>The automation name for the text box to edit the current HSV color as a hex value.</comment>
   </data>
 </root>

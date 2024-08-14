@@ -394,7 +394,7 @@ namespace DirectUI
             RRETURN(hr);
         }
 
-        IFACEMETHODIMP GetAt(_In_opt_ UINT index, _Out_ T_abi *item) override
+        IFACEMETHODIMP GetAt(UINT index, _Out_ T_abi *item) override
         {
             HRESULT hr = S_OK;
             UINT nPosition = 0;
@@ -619,7 +619,7 @@ namespace DirectUI
             return E_NOTIMPL;
         }
 
-        IFACEMETHODIMP SetAt(_In_ UINT index, _In_opt_ T_abi item) override
+        IFACEMETHODIMP SetAt(UINT index, _In_opt_ T_abi item) override
         {
             IFC_RETURN(CheckThread());
             UINT size = 0;
@@ -633,7 +633,7 @@ namespace DirectUI
             return S_OK;
         }
 
-        IFACEMETHODIMP RemoveAt(_In_ UINT index) override
+        IFACEMETHODIMP RemoveAt(UINT index) override
         {
             IFC_RETURN(CheckThread());
 
@@ -724,7 +724,7 @@ namespace DirectUI
             RRETURN(hr);
         }
 
-        IFACEMETHODIMP GetAt(_In_opt_ UINT index, _Out_ T_abi *item) override
+        IFACEMETHODIMP GetAt(UINT index, _Out_ T_abi *item) override
         {
             HRESULT hr = S_OK;
             CValue value;
@@ -769,7 +769,7 @@ namespace DirectUI
             RRETURN(hr);
         }
 
-        IFACEMETHODIMP InsertAt(_In_ UINT index, _In_opt_ T_abi item) override
+        IFACEMETHODIMP InsertAt(UINT index, _In_opt_ T_abi item) override
         {
             HRESULT hr = S_OK;
             CValue boxedValue;
@@ -1006,7 +1006,7 @@ namespace DirectUI
             RRETURN(hr);
         }
 
-        IFACEMETHODIMP GetAt(_In_opt_ UINT index, _Out_ T_abi *item) override
+        IFACEMETHODIMP GetAt(UINT index, _Out_ T_abi *item) override
         {
             HRESULT hr = S_OK;
             CValue value;
@@ -1081,7 +1081,7 @@ namespace DirectUI
             RRETURN(hr);
         }
 
-        IFACEMETHODIMP InsertAt(_In_ UINT index, _In_opt_ T_abi item) override
+        IFACEMETHODIMP InsertAt(UINT index, _In_opt_ T_abi item) override
         {
             HRESULT hr = S_OK;
             CValue boxedValue;
@@ -1125,8 +1125,8 @@ namespace DirectUI
     public:
         // IVector<FLOAT> implementation
         IFACEMETHOD(Append)(_In_ FLOAT item) override;
-        IFACEMETHOD(GetAt)(_In_opt_ UINT index, _Out_ FLOAT *item) override;
-        IFACEMETHOD(InsertAt)(_In_ UINT index, _In_ FLOAT item) override;
+        IFACEMETHOD(GetAt)(UINT index, _Out_ FLOAT *item) override;
+        IFACEMETHOD(InsertAt)(UINT index, _In_ FLOAT item) override;
         IFACEMETHOD(IndexOf)(_In_ FLOAT value, _Out_ UINT *index, _Out_ BOOLEAN *found) override;
     };
 
@@ -1137,8 +1137,8 @@ namespace DirectUI
     public:
         // IVector<DOUBLE> implementation
         IFACEMETHOD(Append)(_In_ DOUBLE item) override;
-        IFACEMETHOD(GetAt)(_In_opt_ UINT index, _Out_ DOUBLE *item) override;
-        IFACEMETHOD(InsertAt)(_In_ UINT index, _In_ DOUBLE item) override;
+        IFACEMETHOD(GetAt)(UINT index, _Out_ DOUBLE *item) override;
+        IFACEMETHOD(InsertAt)(UINT index, _In_ DOUBLE item) override;
         IFACEMETHOD(IndexOf)(_In_ DOUBLE value, _Out_ UINT *index, _Out_ BOOLEAN *found) override;
     };
 
@@ -1149,8 +1149,8 @@ namespace DirectUI
     public:
         // IVector<wf::Point> implementation
         IFACEMETHOD(Append)(_In_ wf::Point item) override;
-        IFACEMETHOD(GetAt)(_In_opt_ UINT index, _Out_ wf::Point *item) override;
-        IFACEMETHOD(InsertAt)(_In_ UINT index, _In_ wf::Point item) override;
+        IFACEMETHOD(GetAt)(UINT index, _Out_ wf::Point *item) override;
+        IFACEMETHOD(InsertAt)(UINT index, _In_ wf::Point item) override;
         IFACEMETHOD(IndexOf)(_In_ wf::Point value, _Out_ UINT *index, _Out_ BOOLEAN *found) override;
     };
 
@@ -1161,8 +1161,8 @@ namespace DirectUI
     public:
         // IVector<wf::TextRange> implementation
         IFACEMETHOD(Append)(_In_ xaml_docs::TextRange item) override;
-        IFACEMETHOD(GetAt)(_In_opt_ UINT index, _Out_ xaml_docs::TextRange *item) override;
-        IFACEMETHOD(InsertAt)(_In_ UINT index, _In_ xaml_docs::TextRange item) override;
+        IFACEMETHOD(GetAt)(UINT index, _Out_ xaml_docs::TextRange *item) override;
+        IFACEMETHOD(InsertAt)(UINT index, _In_ xaml_docs::TextRange item) override;
         IFACEMETHOD(IndexOf)(_In_ xaml_docs::TextRange value, _Out_ UINT *index, _Out_ BOOLEAN *found) override;
     };
 #pragma endregion
@@ -1303,7 +1303,7 @@ namespace DirectUI
             RRETURN(hr);
         }
 
-        IFACEMETHODIMP GetAt(_In_opt_ UINT index, _Out_ T *item) override
+        IFACEMETHODIMP GetAt(UINT index, _Out_ T *item) override
         {
             HRESULT hr = S_OK;
 
@@ -1407,7 +1407,7 @@ namespace DirectUI
 
     public:
 
-        IFACEMETHODIMP GetAt(_In_opt_ UINT index, _Out_ T *item) override
+        IFACEMETHODIMP GetAt(UINT index, _Out_ T *item) override
         {
             RRETURN(ValueTypeView<T>::GetAt(index, item));
         }
@@ -1431,7 +1431,7 @@ namespace DirectUI
             RRETURN(ValueTypeView<T>::IndexOf(value, index, found));
         }
 
-        IFACEMETHODIMP SetAt(_In_ UINT index, _In_opt_ T item) override
+        IFACEMETHODIMP SetAt(UINT index, _In_opt_ T item) override
         {
             HRESULT hr = S_OK;
 
@@ -1453,7 +1453,7 @@ namespace DirectUI
             RRETURN(hr);
         }
 
-        IFACEMETHODIMP InsertAt(_In_ UINT index, _In_opt_ T item) override
+        IFACEMETHODIMP InsertAt(UINT index, _In_opt_ T item) override
         {
             HRESULT hr = S_OK;
 
@@ -1469,7 +1469,7 @@ namespace DirectUI
             RRETURN(hr);
         }
 
-        IFACEMETHODIMP RemoveAt(_In_ UINT index) override
+        IFACEMETHODIMP RemoveAt(UINT index) override
         {
             HRESULT hr = S_OK;
 

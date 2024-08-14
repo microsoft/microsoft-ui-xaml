@@ -169,7 +169,7 @@
     <value>Mil tugmalari yordamida 2D navigatsiya</value>
     <comment>The help text associated with ColorSpectrum.</comment>
   </data>
-  <data name="AutomationNameHexTextBox" xml:space="preserve">
+  <data name="AutomationNameRGBHexTextBox" xml:space="preserve">
     <value>RGB oltiburchak</value>
     <comment>The automation name for the text box to edit the current RGB color as a hex value.</comment>
   </data>
@@ -190,11 +190,11 @@
     <comment>The string to provide as the localized control type of the ColorSpectrum.</comment>
   </data>
   <data name="TextRedLabel" xml:space="preserve">
-    <value>Qizil</value>
+    <value>Red</value>
     <comment>The label for the text box to edit the red component of the current RGB color.</comment>
   </data>
   <data name="AutomationNameRedTextBox" xml:space="preserve">
-    <value>Qizil</value>
+    <value>Red</value>
     <comment>The automation name for the text box to edit the red component of the current RGB color.</comment>
   </data>
   <data name="ContentRGBComboBoxItem" xml:space="preserve">
@@ -296,5 +296,9 @@
   <data name="TextMoreButtonLabelExpanded" xml:space="preserve">
     <value>Kamroq</value>
     <comment>The string to display in the "more" button when it's expanded.</comment>
+  </data>
+  <data name="AutomationNameHSVHexTextBox" xml:space="preserve">
+    <value>HSV oʻn oltilik qiymat</value>
+    <comment>The automation name for the text box to edit the current HSV color as a hex value.</comment>
   </data>
 </root>

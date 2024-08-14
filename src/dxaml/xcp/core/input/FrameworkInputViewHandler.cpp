@@ -15,7 +15,7 @@ CFrameworkInputViewHandler::~CFrameworkInputViewHandler()
     }
 }
 
-HRESULT CFrameworkInputViewHandler::Initialize()
+_Check_return_ HRESULT CFrameworkInputViewHandler::Initialize()
 {
     // If we're in the context of XAML islands, then we don't want to use GetForCurrentView -
     // that requires CoreWindow, which is not supported in islands.

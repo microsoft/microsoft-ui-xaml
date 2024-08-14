@@ -241,7 +241,6 @@ void DesktopWindow::RemoveDesktopWindowXamlSource(winrt::Microsoft::UI::Xaml::Ho
 {
     for (int i = 0; i < static_cast<int>(m_xamlSources.size()); ++i)
     {
-        
         if (m_xamlSources[i].as<IInspectable>() == dwxs.as<IInspectable>())
         {
             m_xamlSources[i].Close();
@@ -250,13 +249,5 @@ void DesktopWindow::RemoveDesktopWindowXamlSource(winrt::Microsoft::UI::Xaml::Ho
             
             return;
         }
-    }
-}
-
-void DesktopWindow::ClearXamlIslands()
-{
-    while (!m_xamlSources.empty())
-    {
-        RemoveDesktopWindowXamlSource(m_xamlSources.back());
     }
 }

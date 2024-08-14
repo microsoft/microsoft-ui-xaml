@@ -74,7 +74,7 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
         <#=Projection(KnownNamespaces.XamlMarkup)#>::IComponentConnector,
         <#=Projection(KnownNamespaces.XamlMarkup)#>::IDataTemplateComponent>
     {
-        XamlBindings(std::unique_ptr<IXamlBindings>&& pBindings);
+        XamlBindings(std::shared_ptr<IXamlBindings>&& pBindings);
 
         // IComponentConnector
         void Connect(int connectionId, IInspectable const& target);
@@ -99,7 +99,7 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
         virtual void DisconnectUnloadedObject(int connectionId);
 
     private:
-        std::unique_ptr<IXamlBindings> _pBindings;
+        std::shared_ptr<IXamlBindings> _pBindings;
     };
 
     template <typename TBindingsTracking>

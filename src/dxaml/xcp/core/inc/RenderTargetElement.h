@@ -30,7 +30,7 @@ struct IRenderTargetElement
     virtual _Check_return_ HRESULT SetCurrentState(RenderTargetElementState currentState) =0;
     virtual RenderTargetElementState GetCurrentState() const =0;
 
-    virtual CRenderTargetElementData* GetRenderTargetElementData() const =0;
+    virtual _Check_return_ CRenderTargetElementData* GetRenderTargetElementData() const =0;
 
     virtual bool HasHardwareResources() =0;
     virtual bool HasLostHardwareResources() =0;

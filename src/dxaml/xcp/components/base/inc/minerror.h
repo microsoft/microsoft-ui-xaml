@@ -281,7 +281,7 @@ namespace Details
     { \
         const HRESULT _hr_ = (x); \
         wil::verify_hresult(_hr_); \
-        __pragma(warning(suppress:4127)) \
+        __pragma(warning(suppress:4127 26498)) \
         if (SUCCEEDED(_hr_)) \
         { \
         } \
@@ -577,7 +577,7 @@ namespace Details
     } \
     else \
     { \
-        const HRESULT _hr_ = y; \
+        constexpr HRESULT _hr_ = y; \
         OnNewFailure<__COUNTER__>(_hr_); \
         DISPLAY_DEBUG(_hr_, #x) \
         return _hr_; \

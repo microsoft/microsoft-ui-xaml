@@ -6,7 +6,7 @@
 // Override for Enter to enforce only entering the tree on the first time.
 _Check_return_ HRESULT CNoParentShareableDependencyObject::Enter(
     _In_ CDependencyObject *pNamescopeOwner,
-    EnterParams params)
+    _In_ EnterParams params)
 {
     if (params.fIsLive)
     {
@@ -50,7 +50,7 @@ _Check_return_ HRESULT CNoParentShareableDependencyObject::Enter(
 // Override for Leave to enforce only leaving the tree on the last time.
 _Check_return_ HRESULT CNoParentShareableDependencyObject::Leave(
     _In_ CDependencyObject *pNamescopeOwner,
-    LeaveParams params )
+    _In_ LeaveParams params )
 {
     HRESULT hr = S_OK; // WARNING_IGNORES_FAILURES
 

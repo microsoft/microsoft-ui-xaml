@@ -774,7 +774,7 @@ _Check_return_ HRESULT CDependencyObject::TryReCreateUIAWrapper()
 // Causes the object and its "children" to enter scope. If bLive,
 // then the object can now respond to OM requests and perform actions
 // like downloads and animation.
-_Check_return_ HRESULT CDependencyObject::Enter(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+_Check_return_ HRESULT CDependencyObject::Enter(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     // If IsProcessingEnterLeave is true, then this element is already part of the
     // Enter/Leave walk. This can happen, for instance, if a custom DP's value has
@@ -947,7 +947,7 @@ _Check_return_ HRESULT CDependencyObject::Enter(_In_ CDependencyObject *pNamesco
 //
 // Derived classes are expected to first call <base>::EnterImpl, and
 // then call Enter on any "children".
-_Check_return_ HRESULT CDependencyObject::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+_Check_return_ HRESULT CDependencyObject::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     // Mark the object as in the live tree
     // Enter cannot make a Live object non-live
@@ -1055,7 +1055,7 @@ _Check_return_ HRESULT CDependencyObject::EnterImpl(_In_ CDependencyObject *pNam
 // then the object is leaving the "Live" tree, and the object can no
 // longer respond to OM requests related to being Live.   Actions
 // like downloads and animation will be halted.
-_Check_return_ HRESULT CDependencyObject::Leave(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+_Check_return_ HRESULT CDependencyObject::Leave(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     // If IsProcessingEnterLeave is true, then this element is already part of the
     // Enter/Leave walk.  This can happen, for instance, if a custom DP's value has
@@ -1232,7 +1232,7 @@ _Check_return_ HRESULT CDependencyObject::Leave(_In_ CDependencyObject *pNamesco
 // would do similar cleanup on their final leave. This enables appropriate sharing.
 // Hence an element should not cleanup resources for its
 // child/property in its leave.
-_Check_return_ HRESULT CDependencyObject::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+_Check_return_ HRESULT CDependencyObject::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     // Raise InheritanceContextChanged for the live leave.  We need to do this before m_bitFields.fLive is updated.
     // params.fIsLive cannot be used because it is updated before we get here.

@@ -15,7 +15,7 @@ CFlyoutBase::CFlyoutBase(_In_ CCoreServices *pCore)
     : CDependencyObject(pCore)
 {}
 
-_Check_return_ HRESULT CFlyoutBase::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+_Check_return_ HRESULT CFlyoutBase::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     IFC_RETURN(CDependencyObject::EnterImpl(pNamescopeOwner, params));
 
@@ -34,7 +34,7 @@ _Check_return_ HRESULT CFlyoutBase::EnterImpl(_In_ CDependencyObject *pNamescope
     return S_OK;
 }
 
-_Check_return_ HRESULT CFlyoutBase::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+_Check_return_ HRESULT CFlyoutBase::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     IFC_RETURN(CDependencyObject::LeaveImpl(pNamescopeOwner, params));
 

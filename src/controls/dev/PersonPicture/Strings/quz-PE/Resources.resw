@@ -154,7 +154,7 @@
     <comment>This format string is used for the automation name. It is 'Person Name, badgenumber badgetext', where badge text is a user specified string overriding 'item(s)'.</comment>
   </data>
   <data name="BadgeIcon" xml:space="preserve">
-    <value>%1!s!, unancha</value>
+    <value>%1!s!, icono</value>
     <comment>This text is used with the badging glyph. %1 is the contact name.</comment>
   </data>
   <data name="BadgeIconTextOverride" xml:space="preserve">

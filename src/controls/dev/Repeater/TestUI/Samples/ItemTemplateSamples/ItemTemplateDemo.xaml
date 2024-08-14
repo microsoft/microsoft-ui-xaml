@@ -10,108 +10,249 @@
         <RecyclePool x:Name="recyclePool"/>
         <StackLayout x:Name="stackLayout"/>
     </Page.Resources>
-    <Grid ColumnDefinitions="170, 170, 170, 170, 170, 170" RowDefinitions="Auto, Auto">
-        <TextBlock Text="DataTemplate Sample:" TextWrapping="WrapWholeWords" Margin="10"/>
-        <ItemsRepeaterScrollHost Height="400" Margin="10" Grid.Row="1">
-            <ScrollViewer>
-                <ItemsRepeater x:Name="itemsRepeater0"
-                    ItemsSource="{x:Bind Data}"
-                    Layout="{StaticResource stackLayout}">
-                    <ItemsRepeater.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding}"/>
-                        </DataTemplate>
-                    </ItemsRepeater.ItemTemplate>
-                </ItemsRepeater>
-            </ScrollViewer>
-        </ItemsRepeaterScrollHost>
-
-        <TextBlock Text="DataTemplateSelector Sample:" TextWrapping="WrapWholeWords" Margin="10" Grid.Column="1"/>
-        <ItemsRepeaterScrollHost Height="400" Margin="10" Grid.Column="1" Grid.Row="1">
-            <ScrollViewer>
-                <ItemsRepeater x:Name="itemsRepeater1" 
-                    ItemsSource="{x:Bind Data}"
-                    Layout="{StaticResource stackLayout}">
-                    <ItemsRepeater.ItemTemplate>
-                        <local:MySelector>
-                            <local:MySelector.TemplateOdd>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding}" Foreground="Red"/>
-                                </DataTemplate>
-                            </local:MySelector.TemplateOdd>
-                            <local:MySelector.TemplateEven>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding}" Foreground="Green"/>
-                                </DataTemplate>
-                            </local:MySelector.TemplateEven>
-                        </local:MySelector>
-                    </ItemsRepeater.ItemTemplate>
-                </ItemsRepeater>
-            </ScrollViewer>
-        </ItemsRepeaterScrollHost>
-
-        <TextBlock Text="ElementFactory Single Template Sample:" TextWrapping="WrapWholeWords" Margin="10" Grid.Column="2"/>
-        <ItemsRepeaterScrollHost Height="400" Margin="10" Grid.Column="2" Grid.Row="1">
-            <ScrollViewer>
-                <ItemsRepeater x:Name="itemsRepeater2" 
-                    ItemsSource="{x:Bind Data}"
-                    Layout="{StaticResource stackLayout}">
-                    <ItemsRepeater.ItemTemplate>
-                        <RecyclingElementFactory RecyclePool="{StaticResource recyclePool}">
-                            <DataTemplate x:Key="item">
+    <ScrollViewer HorizontalScrollMode="Auto" HorizontalScrollBarVisibility="Auto">
+        <Grid ColumnDefinitions="170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170, 170" RowDefinitions="Auto, 400, Auto">
+            <TextBlock Text="DataTemplate Sample:" TextWrapping="WrapWholeWords" Margin="10"/>
+            <ItemsRepeaterScrollHost x:Name="itemsRepeaterScrollHost0" Height="400" Margin="10" Grid.Row="1" Visibility="Collapsed">
+                <ScrollViewer>
+                    <ItemsRepeater x:Name="itemsRepeater0"
+                        ItemsSource="{x:Bind Data}"
+                        Layout="{StaticResource stackLayout}">
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate>
                                 <TextBlock Text="{Binding}"/>
                             </DataTemplate>
-                        </RecyclingElementFactory>
-                    </ItemsRepeater.ItemTemplate>
-                </ItemsRepeater>
-            </ScrollViewer>
-        </ItemsRepeaterScrollHost>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </ScrollViewer>
+            </ItemsRepeaterScrollHost>
+            <CheckBox x:Name="chkSample0" Content="Show sample?" Margin="10" Grid.Row="2" Checked="ChkSample_CheckedChanged" Unchecked="ChkSample_CheckedChanged"/>
 
-        <TextBlock Text="ElementFactory Multiple Template Sample:" TextWrapping="WrapWholeWords" Margin="10" Grid.Column="3"/>
-        <ItemsRepeaterScrollHost Height="400" Margin="10" Grid.Column="3" Grid.Row="1">
-            <ScrollViewer>
-                <ItemsRepeater x:Name="itemsRepeater3" 
-                    ItemsSource="{x:Bind Data}"
-                    Layout="{StaticResource stackLayout}">
-                    <ItemsRepeater.ItemTemplate>
-                        <RecyclingElementFactory 
-                            RecyclePool="{StaticResource recyclePool}"
-                            SelectTemplateKey="OnSelectTemplateKey">
-                            <DataTemplate x:Key="odd">
-                                <TextBlock Text="{Binding}" Foreground="Red"/>
-                            </DataTemplate>
-                            <DataTemplate x:Key="even">
-                                <TextBlock Text="{Binding}" Foreground="Green"/>
-                            </DataTemplate>
-                        </RecyclingElementFactory>
-                    </ItemsRepeater.ItemTemplate>
-                </ItemsRepeater>
-            </ScrollViewer>
-        </ItemsRepeaterScrollHost>
-        
-        <TextBlock Text="DataTemplate clear count checking:" TextWrapping="WrapWholeWords" Margin="10" Grid.Column="4"/>
-        <ItemsRepeaterScrollHost Height="400" Margin="10" Grid.Column="4" Grid.Row="1">
-            <ScrollViewer>
-                <ItemsRepeater x:Name="itemsRepeater4" 
-                    ItemsSource="{x:Bind Numbers}"
-                    Layout="{StaticResource stackLayout}">
-                    <ItemsRepeater.ItemTemplate>
-                        <DataTemplate x:DataType="local:MyData" >
-                            <local:DisposableUserControl Number="{x:Bind number}"/>
-                        </DataTemplate>
-                    </ItemsRepeater.ItemTemplate>
-                </ItemsRepeater>
-            </ScrollViewer>
-        </ItemsRepeaterScrollHost>
+            <TextBlock Text="DataTemplateSelector Sample:" TextWrapping="WrapWholeWords" Margin="10" Grid.Column="1"/>
+            <ItemsRepeaterScrollHost x:Name="itemsRepeaterScrollHost1" Height="400" Margin="10" Grid.Column="1" Grid.Row="1" Visibility="Collapsed">
+                <ScrollViewer>
+                    <ItemsRepeater x:Name="itemsRepeater1" 
+                        ItemsSource="{x:Bind Data}"
+                        Layout="{StaticResource stackLayout}">
+                        <ItemsRepeater.ItemTemplate>
+                            <local:MySelector>
+                                <local:MySelector.TemplateOdd>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" Foreground="Red"/>
+                                    </DataTemplate>
+                                </local:MySelector.TemplateOdd>
+                                <local:MySelector.TemplateEven>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" Foreground="Green"/>
+                                    </DataTemplate>
+                                </local:MySelector.TemplateEven>
+                            </local:MySelector>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </ScrollViewer>
+            </ItemsRepeaterScrollHost>
+            <CheckBox x:Name="chkSample1" Content="Show sample?" Margin="10" Grid.Row="2" Grid.Column="1" Checked="ChkSample_CheckedChanged" Unchecked="ChkSample_CheckedChanged"/>
 
-        <TextBlock x:Name="tbl5" Tag="Binding Source" Text="DataTemplate with ElementName Binding:" TextWrapping="WrapWholeWords" Margin="10" Grid.Column="5"/>
-        <ItemsRepeater x:Name="itemsRepeater5" Height="400" Margin="10" Grid.Column="5" Grid.Row="1"
-            ItemsSource="{x:Bind Numbers}">
-            <ItemsRepeater.ItemTemplate>
-                <DataTemplate>
-                    <Button x:Name="itemsRepeaterChildButton5" Content="{Binding ElementName=tbl5, Path=Tag}"/>
-                </DataTemplate>
-            </ItemsRepeater.ItemTemplate>
-        </ItemsRepeater>
-    </Grid>
+            <TextBlock Text="ElementFactory Single Template Sample:" TextWrapping="WrapWholeWords" Margin="10" Grid.Column="2"/>
+            <ItemsRepeaterScrollHost x:Name="itemsRepeaterScrollHost2" Height="400" Margin="10" Grid.Column="2" Grid.Row="1" Visibility="Collapsed">
+                <ScrollViewer>
+                    <ItemsRepeater x:Name="itemsRepeater2" 
+                        ItemsSource="{x:Bind Data}"
+                        Layout="{StaticResource stackLayout}">
+                        <ItemsRepeater.ItemTemplate>
+                            <RecyclingElementFactory RecyclePool="{StaticResource recyclePool}">
+                                <DataTemplate x:Key="item">
+                                    <TextBlock Text="{Binding}"/>
+                                </DataTemplate>
+                            </RecyclingElementFactory>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </ScrollViewer>
+            </ItemsRepeaterScrollHost>
+            <CheckBox x:Name="chkSample2" Content="Show sample?" Margin="10" Grid.Row="2" Grid.Column="2" Checked="ChkSample_CheckedChanged" Unchecked="ChkSample_CheckedChanged"/>
+
+            <TextBlock Text="ElementFactory Multiple Template Sample:" TextWrapping="WrapWholeWords" Margin="10" Grid.Column="3"/>
+            <ItemsRepeaterScrollHost x:Name="itemsRepeaterScrollHost3" Height="400" Margin="10" Grid.Column="3" Grid.Row="1" Visibility="Collapsed">
+                <ScrollViewer>
+                    <ItemsRepeater x:Name="itemsRepeater3" 
+                        ItemsSource="{x:Bind Data}"
+                        Layout="{StaticResource stackLayout}">
+                        <ItemsRepeater.ItemTemplate>
+                            <RecyclingElementFactory 
+                                RecyclePool="{StaticResource recyclePool}"
+                                SelectTemplateKey="OnSelectTemplateKey">
+                                <DataTemplate x:Key="odd">
+                                    <TextBlock Text="{Binding}" Foreground="Red"/>
+                                </DataTemplate>
+                                <DataTemplate x:Key="even">
+                                    <TextBlock Text="{Binding}" Foreground="Green"/>
+                                </DataTemplate>
+                            </RecyclingElementFactory>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </ScrollViewer>
+            </ItemsRepeaterScrollHost>
+            <CheckBox x:Name="chkSample3" Content="Show sample?" Margin="10" Grid.Row="2" Grid.Column="3" Checked="ChkSample_CheckedChanged" Unchecked="ChkSample_CheckedChanged"/>
+
+            <TextBlock Text="DataTemplate clear count checking:" TextWrapping="WrapWholeWords" Margin="10" Grid.Column="4"/>
+            <ItemsRepeaterScrollHost x:Name="itemsRepeaterScrollHost4" Height="400" Margin="10" Grid.Column="4" Grid.Row="1" Visibility="Collapsed">
+                <ScrollViewer>
+                    <ItemsRepeater x:Name="itemsRepeater4" 
+                        ItemsSource="{x:Bind Numbers}"
+                        Layout="{StaticResource stackLayout}">
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="local:MyData" >
+                                <local:DisposableUserControl Number="{x:Bind number}"/>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </ScrollViewer>
+            </ItemsRepeaterScrollHost>
+            <CheckBox x:Name="chkSample4" Content="Show sample?" Margin="10" Grid.Row="2" Grid.Column="4" Checked="ChkSample_CheckedChanged" Unchecked="ChkSample_CheckedChanged"/>
+
+            <TextBlock x:Name="tbl5" Tag="Binding Source" Text="DataTemplate with ElementName Binding:" TextWrapping="WrapWholeWords" Margin="10" Grid.Column="5"/>
+            <ItemsRepeater x:Name="itemsRepeater5" Height="400" Margin="10" Grid.Column="5" Grid.Row="1" Visibility="Collapsed"
+                ItemsSource="{x:Bind Numbers}">
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate>
+                        <Button x:Name="itemsRepeaterChildButton5" Content="{Binding ElementName=tbl5, Path=Tag}"/>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+            <CheckBox x:Name="chkSample5" Content="Show sample?" Margin="10" Grid.Row="2" Grid.Column="5" Checked="ChkSample_CheckedChanged" Unchecked="ChkSample_CheckedChanged"/>
+
+            <TextBlock x:Name="tbl6" Tag="Nested Binding Source" Text="DataTemplate with nested ElementName Binding:" TextWrapping="WrapWholeWords" Margin="10" Grid.Column="6"/>
+            <ItemsRepeater x:Name="itemsRepeater6" Height="400" Margin="10" Grid.Column="6" Grid.Row="1" Visibility="Collapsed"
+                ItemsSource="{x:Bind Numbers}">
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel x:Name="sp6" Background="Yellow">
+                            <Border x:Name="bdr6" BorderBrush="Red" BorderThickness="1">
+                                <Button x:Name="itemsRepeaterChildButton6" Content="{Binding ElementName=tbl6, Path=Tag}"/>
+                            </Border>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+            <CheckBox x:Name="chkSample6" Content="Show sample?" Margin="10" Grid.Row="2" Grid.Column="6" Checked="ChkSample_CheckedChanged" Unchecked="ChkSample_CheckedChanged"/>
+
+            <TextBlock x:Name="tbl7" Tag="Nested Binding Source /w Templated Ctrl" Text="DataTemplate with nested ElementName Binding &amp; Templated Ctrl:" TextWrapping="WrapWholeWords"
+                Margin="10" Grid.Column="7"/>
+            <ItemsRepeater x:Name="itemsRepeater7" Height="400" Margin="10" Grid.Column="7" Grid.Row="1" Visibility="Collapsed"
+                ItemsSource="{x:Bind Numbers}">
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel x:Name="sp7" Background="Orange">
+                            <Button x:Name="btn7">
+                                <Border x:Name="bdr7" BorderBrush="DarkRed" BorderThickness="1">
+                                    <Button x:Name="itemsRepeaterChildButton7" Content="{Binding ElementName=tbl7, Path=Tag}"/>
+                                </Border>
+                            </Button>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+            <CheckBox x:Name="chkSample7" Content="Show sample?" Margin="10" Grid.Row="2" Grid.Column="7" Checked="ChkSample_CheckedChanged" Unchecked="ChkSample_CheckedChanged"/>
+
+            <TextBlock x:Name="tbl8" Tag="Binding Source /w Custom ItemsRepeater" Text="DataTemplate with ElementName Binding &amp; Custom ItemsRepeater:" TextWrapping="WrapWholeWords"
+                Margin="10" Grid.Column="8"/>
+            <local:MyItemsRepeater x:Name="myItemsRepeater8" Height="400" Margin="10" Grid.Column="8" Grid.Row="1" Visibility="Collapsed"
+                ItemsSource="{x:Bind Numbers}">
+                <local:MyItemsRepeater.ItemTemplate>
+                    <DataTemplate>
+                        <Button x:Name="itemsRepeaterChildButton8" Content="{Binding ElementName=tbl8, Path=Tag}"/>
+                    </DataTemplate>
+                </local:MyItemsRepeater.ItemTemplate>
+            </local:MyItemsRepeater>
+            <CheckBox x:Name="chkSample8" Content="Show sample?" Margin="10" Grid.Row="2" Grid.Column="8" Checked="ChkSample_CheckedChanged" Unchecked="ChkSample_CheckedChanged"/>
+
+            <TextBlock x:Name="tbl9" Tag="Nested Templated Ctrl &amp; ItemTemplate" Text="DataTemplate with ElementName Binding /w nested Templated Ctrl &amp; ItemTemplate:"
+                TextWrapping="WrapWholeWords" Margin="10" Grid.Column="9"/>
+            <ItemsRepeater x:Name="itemsRepeater9" Height="400" Margin="10" Grid.Column="9" Grid.Row="1" Visibility="Collapsed"
+                ItemsSource="{x:Bind Numbers}">
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel x:Name="sp9" Background="Beige">
+                            <GridView x:Name="gridView9" Height="250" Margin="2" ItemsSource="{Binding ElementName=itemsRepeater9, Path=ItemsSource}">
+                                <GridView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button x:Name="btn9">
+                                            <Border x:Name="bdr9" BorderBrush="Yellow" BorderThickness="1">
+                                                <Button x:Name="itemsRepeaterChildButton9" Content="{Binding ElementName=tbl9, Path=Tag}"/>
+                                            </Border>
+                                        </Button>
+                                    </DataTemplate>
+                                </GridView.ItemTemplate>
+                            </GridView>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+            <CheckBox x:Name="chkSample9" Content="Show sample?" Margin="10" Grid.Row="2" Grid.Column="9" Checked="ChkSample_CheckedChanged" Unchecked="ChkSample_CheckedChanged"/>
+
+            <TextBlock x:Name="tbl10" Tag="Nested ItemsRepeater" Text="DataTemplate with ElementName Binding &amp; Nested ItemsRepeater:" TextWrapping="WrapWholeWords"
+                Margin="10" Grid.Column="10"/>
+            <ItemsRepeater x:Name="itemsRepeater10" Height="400" Margin="10" Grid.Column="10" Grid.Row="1" Visibility="Collapsed"
+                ItemsSource="{x:Bind Numbers}">
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel x:Name="sp10" Background="Azure">
+                            <ItemsRepeater x:Name="innerItemsRepeater10" Height="250" Margin="2" ItemsSource="{Binding ElementName=itemsRepeater10, Path=ItemsSource}">
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button x:Name="btn10">
+                                            <Border x:Name="bdr10" BorderBrush="Cyan" BorderThickness="1">
+                                                <Button x:Name="itemsRepeaterChildButton10" Content="{Binding ElementName=tbl10, Path=Tag}"/>
+                                            </Border>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+            <CheckBox x:Name="chkSample10" Content="Show sample?" Margin="10" Grid.Row="2" Grid.Column="10" Checked="ChkSample_CheckedChanged" Unchecked="ChkSample_CheckedChanged"/>
+
+            <TextBlock x:Name="tbl11" Tag="Outer ListView" Text="DataTemplate with ElementName Binding &amp; outer ListView:" TextWrapping="WrapWholeWords"
+                Margin="10" Grid.Column="11"/>
+            <ListView x:Name="listView11" Height="400" Margin="10" Grid.Column="11" Grid.Row="1" Visibility="Collapsed"
+                ItemsSource="{x:Bind Numbers}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel x:Name="sp11" Background="Cornsilk">
+                            <ItemsRepeater x:Name="innerItemsRepeater11" Height="250" Margin="2" ItemsSource="{Binding ElementName=listView11, Path=ItemsSource}">
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button x:Name="btn11">
+                                            <Border x:Name="bdr11" BorderBrush="Blue" BorderThickness="1">
+                                                <Button x:Name="itemsRepeaterChildButton11" Content="{Binding ElementName=tbl11, Path=Tag}"/>
+                                            </Border>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <CheckBox x:Name="chkSample11" Content="Show sample?" Margin="10" Grid.Row="2" Grid.Column="11" Checked="ChkSample_CheckedChanged" Unchecked="ChkSample_CheckedChanged"/>
+
+            <TextBlock x:Name="tbl12" Tag="Popup root" Text="DataTemplate with popup root:" TextWrapping="WrapWholeWords" Margin="10" Grid.Column="12"/>
+            <ItemsRepeater x:Name="itemsRepeater12" Height="400" Margin="10" Grid.Column="12" Grid.Row="1" Visibility="Collapsed"
+                ItemsSource="{x:Bind Numbers}" ElementPrepared="ItemsRepeater_ElementPrepared">
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate>
+                        <Popup x:Name="popup12" ShouldConstrainToRootBounds="False" IsLightDismissEnabled="True">
+                            <Border x:Name="bdr12" BorderBrush="Red" BorderThickness="1">
+                                <Button x:Name="itemsRepeaterChildButton12" Content="{Binding ElementName=tbl12, Path=Tag}"/>
+                            </Border>
+                        </Popup>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+            <CheckBox x:Name="chkSample12" Content="Show sample?" Margin="10" Grid.Row="2" Grid.Column="12" Checked="ChkSample_CheckedChanged" Unchecked="ChkSample_CheckedChanged"/>
+
+        </Grid>
+    </ScrollViewer>
 </Page>

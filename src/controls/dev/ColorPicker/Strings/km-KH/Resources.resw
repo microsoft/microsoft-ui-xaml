@@ -169,7 +169,7 @@
     <value>ការ​ប្រាប់​ទិស 2D ជាមួយ​នឹង​ឃី​សញ្ញា​ព្រួញ</value>
     <comment>The help text associated with ColorSpectrum.</comment>
   </data>
-  <data name="AutomationNameHexTextBox" xml:space="preserve">
+  <data name="AutomationNameRGBHexTextBox" xml:space="preserve">
     <value>RGB ជា​តម្លៃ​គោល​ដប់​ប្រាំ​មួយ</value>
     <comment>The automation name for the text box to edit the current RGB color as a hex value.</comment>
   </data>
@@ -296,5 +296,9 @@
   <data name="TextMoreButtonLabelExpanded" xml:space="preserve">
     <value>តិច​ជាង​នេះ</value>
     <comment>The string to display in the "more" button when it's expanded.</comment>
+  </data>
+  <data name="AutomationNameHSVHexTextBox" xml:space="preserve">
+    <value>HSV ជា​តម្លៃ​គោល​ដប់​ប្រាំ​មួយ</value>
+    <comment>The automation name for the text box to edit the current HSV color as a hex value.</comment>
   </data>
 </root>

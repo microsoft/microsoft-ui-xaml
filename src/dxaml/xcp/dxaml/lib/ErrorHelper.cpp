@@ -688,8 +688,8 @@ Cleanup:
 }
 
 _Check_return_ HRESULT ErrorHelper::OriginateErrorUsingFormattedResourceID(
-    _In_ HRESULT hrEncountered,
-    _In_ XUINT32 resourceStringFormatID,
+    HRESULT hrEncountered,
+    XUINT32 resourceStringFormatID,
     _In_ const xstring_ptr_view& strParam1,
     const WCHAR* param2)
 {

@@ -137,6 +137,7 @@ namespace ctl
 
         static _Check_return_ HRESULT CreateInstance(_Outptr_ IInspectable **ppNewInstance)
         {
+            #pragma warning(suppress: 6387) // This is the only case where NULL is acceptable
             return CreateInstance(NULL, ppNewInstance);
         }
 
@@ -156,6 +157,7 @@ namespace ctl
         template <class T>
         static _Check_return_ HRESULT CreateInstance(_Outptr_ T **ppNewInstance, bool fDisableLeakCheck = false)
         {
+            #pragma warning(suppress: 6387) // This is the only case where NULL is acceptable
             return CreateInstance(NULL, ppNewInstance, fDisableLeakCheck);
         }
 

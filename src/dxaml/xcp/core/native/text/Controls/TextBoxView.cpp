@@ -1642,8 +1642,8 @@ _Check_return_ HRESULT CTextBoxView::D2DRenderCommon(
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CTextBoxView::MeasureOverride(
-    XSIZEF availableSize,
-    XSIZEF &desiredSize
+    _In_ XSIZEF availableSize,
+    _Out_ XSIZEF &desiredSize
     )
 {
     auto scopeGuard = wil::scope_exit([&]
@@ -1713,7 +1713,7 @@ _Check_return_ HRESULT CTextBoxView::MeasureOverride(
 //      Gets the natural size of text when laid out against the availableSize.
 //
 //------------------------------------------------------------------------
-_Check_return_ HRESULT CTextBoxView::GetTextNaturalSize(XSIZEF availableSize, XSIZEF& naturalSize)
+_Check_return_ HRESULT CTextBoxView::GetTextNaturalSize(_In_ XSIZEF availableSize, _Out_ XSIZEF& naturalSize)
 {
     // NB: These are extra flags in textserv.h.
     const DWORD TXTNS_FITTOCONTENTWSP = 4;
@@ -1754,8 +1754,8 @@ Cleanup:
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CTextBoxView::ArrangeOverride(
-    XSIZEF finalSize,
-    XSIZEF &newFinalSize
+    _In_ XSIZEF finalSize,
+    _Out_ XSIZEF &newFinalSize
     )
 {
     bool fInvalidateScrollInfo = false;
@@ -3927,7 +3927,7 @@ void CTextBoxView::CleanupDeviceRelatedResourcesRecursive(_In_ bool cleanupDComp
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CTextBoxView::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+CTextBoxView::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     IFC_RETURN(CFrameworkElement::LeaveImpl(pNamescopeOwner, params));
     if (params.fIsLive)

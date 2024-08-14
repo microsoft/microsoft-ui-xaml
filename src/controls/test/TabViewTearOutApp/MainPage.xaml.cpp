@@ -4,6 +4,7 @@
 #include "MainPage.g.cpp"
 #endif
 
+#include "DocumentInfo.h"
 #include "MainWindow.h"
 
 using namespace winrt;
@@ -15,20 +16,20 @@ namespace winrt::TabViewTearOutApp::implementation
 {
     MainPage::MainPage()
     {
-        m_stringList.Append(winrt::box_value(L"Item 1"));
-        m_stringList.Append(winrt::box_value(L"Item 2"));
-        m_stringList.Append(winrt::box_value(L"Item 3"));
+        m_documentList.Append(winrt::make<DocumentInfo>(L"Document 1", L"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."));
+        m_documentList.Append(winrt::make<DocumentInfo>(L"Document 2", L"Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."));
+        m_documentList.Append(winrt::make<DocumentInfo>(L"Document 3", L"Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."));
     }
 
-    void MainPage::Init(winrt::com_array<IInspectable> const& stringList)
+    void MainPage::Init(winrt::com_array<IInspectable> const& documentList)
     {
-        if (!stringList.empty())
+        if (!documentList.empty())
         {
-            m_stringList.Clear();
+            m_documentList.Clear();
 
-            for (IInspectable string : stringList)
+            for (IInspectable documentInfo : documentList)
             {
-                m_stringList.Append(string);
+                m_documentList.Append(documentInfo);
             }
         }
     }
@@ -50,9 +51,9 @@ namespace winrt::TabViewTearOutApp::implementation
         {
             auto item = items[i];
             uint32_t index;
-            if (m_stringList.IndexOf(item, index))
+            if (m_documentList.IndexOf(item, index))
             {
-                m_stringList.RemoveAt(index);
+                m_documentList.RemoveAt(index);
             }
         }
     }
@@ -72,15 +73,34 @@ namespace winrt::TabViewTearOutApp::implementation
         for (uint32_t i = 0; i < items.size(); i++)
         {
             uint32_t index;
-            if (m_stringList.IndexOf(items[i], index))
+            if (m_documentList.IndexOf(items[i], index))
             {
-                m_stringList.RemoveAt(index);
+                m_documentList.RemoveAt(index);
             }
         }
 
         for (uint32_t i = 0; i < items.size(); i++)
         {
-            m_stringList.InsertAt(args.DropIndex() + i, items[i]);
+            m_documentList.InsertAt(args.DropIndex() + i, items[i]);
+        }
+    }
+
+    void MainPage::OnAddTabButtonClick(TabView const& sender, IInspectable const& args)
+    {
+        UNREFERENCED_PARAMETER(args);
+
+        m_documentList.Append(winrt::make<DocumentInfo>(L"New Document", L""));
+        sender.SelectedIndex(m_documentList.Size() - 1);
+    }
+
+    void MainPage::OnTabCloseRequested(TabView const& sender, TabViewTabCloseRequestedEventArgs const& args)
+    {
+        UNREFERENCED_PARAMETER(sender);
+
+        uint32_t index;
+        if (m_documentList.IndexOf(args.Item(), index))
+        {
+            m_documentList.RemoveAt(index);
         }
     }
 }

@@ -44,7 +44,7 @@ struct IPALWorkItem : public IObject
     // the object will be cleaned up when the work is completed or cancelled.
     virtual _Check_return_ HRESULT Submit() = 0;
     virtual _Check_return_ HRESULT Wait(bool cancelPending) = 0; 
-    virtual IObject *GetDataNoRef() = 0;    
+    virtual _Check_return_ IObject *GetDataNoRef() = 0;    
 };
 
 typedef HRESULT (__stdcall *PALWORKITEMCALLBACK)(_In_opt_ IObject *pData);

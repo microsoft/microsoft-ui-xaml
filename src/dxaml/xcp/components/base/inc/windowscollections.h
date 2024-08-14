@@ -615,7 +615,7 @@ namespace XWinRT
                 }
             }
             // Move constructor is used to transfer ownership of the reentrancy guard
-            ReentrancyGuard(ReentrancyGuard&& rg)
+            ReentrancyGuard(ReentrancyGuard&& rg) noexcept
             {
                 _pGuard = rg._pGuard;
                 _hr = rg._hr;

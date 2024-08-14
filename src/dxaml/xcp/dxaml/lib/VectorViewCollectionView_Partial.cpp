@@ -13,7 +13,7 @@ VectorViewCollectionView::VectorViewCollectionView()
 VectorViewCollectionView::~VectorViewCollectionView()
 { }
 
-IFACEMETHODIMP VectorViewCollectionView::GetAt(_In_opt_ unsigned index, _Out_  IInspectable **item)
+IFACEMETHODIMP VectorViewCollectionView::GetAt(unsigned index, _Out_  IInspectable **item)
 {
     HRESULT hr = S_OK;
 

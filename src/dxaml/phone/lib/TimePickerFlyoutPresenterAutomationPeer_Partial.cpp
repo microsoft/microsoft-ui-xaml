@@ -6,7 +6,7 @@
 XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { namespace Automation { namespace Peers
 {
 
-HRESULT
+_Check_return_ HRESULT
 TimePickerFlyoutPresenterAutomationPeer::InitializeImpl(
     _In_ xaml_controls::ITimePickerFlyoutPresenter* pOwner)
 {

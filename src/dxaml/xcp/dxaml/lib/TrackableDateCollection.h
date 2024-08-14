@@ -48,16 +48,16 @@ namespace DirectUI
         }
 
     public:
-        IFACEMETHOD(RemoveAt)(_In_ UINT index) override;
+        IFACEMETHOD(RemoveAt)(UINT index) override;
 
         IFACEMETHOD(Clear)() override;
 
 
         IFACEMETHOD(Append)(_In_opt_  wf::DateTime item) override;
 
-        IFACEMETHOD(InsertAt)(_In_ UINT index, _In_opt_ wf::DateTime item) override;
+        IFACEMETHOD(InsertAt)(UINT index, _In_opt_ wf::DateTime item) override;
 
-        IFACEMETHOD(SetAt)(_In_ UINT index, _In_opt_ wf::DateTime item) override;
+        IFACEMETHOD(SetAt)(UINT index, _In_opt_ wf::DateTime item) override;
 
         IFACEMETHOD(IndexOf)(_In_opt_ wf::DateTime value, _Out_ UINT *index, _Out_ BOOLEAN *found) override;
 

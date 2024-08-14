@@ -17,7 +17,7 @@ using namespace Focus;
 //  Click handler for the Hyperlink - performs URI navigation.
 //
 //------------------------------------------------------------------------
-HRESULT Hyperlink::OnClick()
+_Check_return_ HRESULT Hyperlink::OnClick()
 {
     ctl::ComPtr<wf::IUriRuntimeClass> spNavigateUri;
 

@@ -372,7 +372,7 @@ DirectUI::PropertyValue::AreEqual(_In_ IInspectable* oldValue, _In_ IInspectable
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateEmpty(_Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateEmpty(_Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateEmpty(ppValue));
 
@@ -381,7 +381,7 @@ DirectUI::PropertyValue::CreateEmpty(_Out_ IInspectable **ppValue)
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromBoolean(_In_ BOOLEAN bValue, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromBoolean(_In_ BOOLEAN bValue, _Outptr_ IInspectable **ppValue)
 {
     //IFC(StaticStore::GetPropertyValueStaticsNoRef()->CreateBoolean(bValue, ppValue));
     IFC_RETURN(StaticStore::GetBoolean(bValue, ppValue));
@@ -391,7 +391,7 @@ DirectUI::PropertyValue::CreateFromBoolean(_In_ BOOLEAN bValue, _Out_ IInspectab
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromUInt8(_In_ BYTE nValue, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromUInt8(_In_ BYTE nValue, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateUInt8(nValue, ppValue));
 
@@ -400,7 +400,7 @@ DirectUI::PropertyValue::CreateFromUInt8(_In_ BYTE nValue, _Out_ IInspectable **
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromInt16(_In_ INT16 nValue, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromInt16(_In_ INT16 nValue, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateInt16(nValue, ppValue));
 
@@ -409,7 +409,7 @@ DirectUI::PropertyValue::CreateFromInt16(_In_ INT16 nValue, _Out_ IInspectable *
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromUInt16(_In_ UINT16 nValue, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromUInt16(_In_ UINT16 nValue, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateUInt16(nValue, ppValue));
 
@@ -418,7 +418,7 @@ DirectUI::PropertyValue::CreateFromUInt16(_In_ UINT16 nValue, _Out_ IInspectable
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromInt32(_In_ INT32 nValue, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromInt32(_In_ INT32 nValue, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateInt32(nValue, ppValue));
 
@@ -427,7 +427,7 @@ DirectUI::PropertyValue::CreateFromInt32(_In_ INT32 nValue, _Out_ IInspectable *
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromUInt32(_In_ UINT32 nValue, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromUInt32(_In_ UINT32 nValue, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateUInt32(nValue, ppValue));
 
@@ -436,7 +436,7 @@ DirectUI::PropertyValue::CreateFromUInt32(_In_ UINT32 nValue, _Out_ IInspectable
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromInt64(_In_ INT64 nValue, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromInt64(_In_ INT64 nValue, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateInt64(nValue, ppValue));
 
@@ -445,7 +445,7 @@ DirectUI::PropertyValue::CreateFromInt64(_In_ INT64 nValue, _Out_ IInspectable *
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromUInt64(_In_ UINT64 nValue, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromUInt64(_In_ UINT64 nValue, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateUInt64(nValue, ppValue));
 
@@ -454,7 +454,7 @@ DirectUI::PropertyValue::CreateFromUInt64(_In_ UINT64 nValue, _Out_ IInspectable
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromDouble(_In_ DOUBLE nValue, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromDouble(_In_ DOUBLE nValue, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateDouble(nValue, ppValue));
 
@@ -463,7 +463,7 @@ DirectUI::PropertyValue::CreateFromDouble(_In_ DOUBLE nValue, _Out_ IInspectable
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromSingle(_In_ FLOAT nValue, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromSingle(_In_ FLOAT nValue, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateSingle(nValue, ppValue));
 
@@ -472,7 +472,7 @@ DirectUI::PropertyValue::CreateFromSingle(_In_ FLOAT nValue, _Out_ IInspectable 
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromString(_In_opt_ HSTRING hString, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromString(_In_opt_ HSTRING hString, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateString(hString, ppValue));
 
@@ -481,7 +481,7 @@ DirectUI::PropertyValue::CreateFromString(_In_opt_ HSTRING hString, _Out_ IInspe
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromChar16(_In_ WCHAR chValue, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromChar16(_In_ WCHAR chValue, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateChar16(chValue, ppValue));
 
@@ -490,7 +490,7 @@ DirectUI::PropertyValue::CreateFromChar16(_In_ WCHAR chValue, _Out_ IInspectable
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromTimeSpan(_In_ wf::TimeSpan value, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromTimeSpan(_In_ wf::TimeSpan value, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateTimeSpan(value, ppValue));
 
@@ -499,7 +499,7 @@ DirectUI::PropertyValue::CreateFromTimeSpan(_In_ wf::TimeSpan value, _Out_ IInsp
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromDateTime(_In_ wf::DateTime value, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromDateTime(_In_ wf::DateTime value, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateDateTime(value, ppValue));
 
@@ -509,7 +509,7 @@ DirectUI::PropertyValue::CreateFromDateTime(_In_ wf::DateTime value, _Out_ IInsp
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromPoint(_In_ wf::Point value, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromPoint(_In_ wf::Point value, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreatePoint(value, ppValue));
 
@@ -518,7 +518,7 @@ DirectUI::PropertyValue::CreateFromPoint(_In_ wf::Point value, _Out_ IInspectabl
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromRect(_In_ wf::Rect value, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromRect(_In_ wf::Rect value, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateRect(value, ppValue));
 
@@ -527,7 +527,7 @@ DirectUI::PropertyValue::CreateFromRect(_In_ wf::Rect value, _Out_ IInspectable 
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromSize(_In_ wf::Size value, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromSize(_In_ wf::Size value, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateSize(value, ppValue));
 
@@ -536,7 +536,7 @@ DirectUI::PropertyValue::CreateFromSize(_In_ wf::Size value, _Out_ IInspectable 
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromGuid(_In_ GUID value, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromGuid(_In_ GUID value, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetPropertyValueStaticsNoRef()->CreateGuid(value, ppValue));
 
@@ -545,7 +545,7 @@ DirectUI::PropertyValue::CreateFromGuid(_In_ GUID value, _Out_ IInspectable **pp
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromVisibility(_In_ xaml::Visibility visibility, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromVisibility(_In_ xaml::Visibility visibility, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetVisibilityValue(visibility, ppValue));
 
@@ -554,7 +554,7 @@ DirectUI::PropertyValue::CreateFromVisibility(_In_ xaml::Visibility visibility, 
 
 _Check_return_
 HRESULT
-DirectUI::PropertyValue::CreateFromTextRange(_In_ xaml_docs::TextRange value, _Out_ IInspectable **ppValue)
+DirectUI::PropertyValue::CreateFromTextRange(_In_ xaml_docs::TextRange value, _Outptr_ IInspectable **ppValue)
 {
     IFC_RETURN(StaticStore::GetTextRangeValue(value, ppValue));
 
@@ -591,7 +591,7 @@ Cleanup:
 
 _Check_return_
 HRESULT
-DirectUI::ValueWeakReference::Create(_In_ IInspectable *value, _Out_ IInspectable **ppValue)
+DirectUI::ValueWeakReference::Create(_In_ IInspectable *value, _Outptr_ IInspectable **ppValue)
 {
     HRESULT hr = S_OK;
     DirectUI::ValueWeakReference *pNewValue = NULL;
@@ -614,7 +614,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DirectUI::ValueWeakReference::GetInspectable(_Out_ IInspectable **value)
+_Check_return_ HRESULT DirectUI::ValueWeakReference::GetInspectable(_Outptr_ IInspectable **value)
 {
     return m_pWeakReference->Resolve(__uuidof(IInspectable), value);
 }

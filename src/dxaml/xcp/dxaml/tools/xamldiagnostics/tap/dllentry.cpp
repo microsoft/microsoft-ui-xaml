@@ -24,7 +24,7 @@ DllMain(_In_ HINSTANCE hinstDLL, _In_ unsigned int fdwReason, _In_opt_ void *)
     return TRUE;
 }
 
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, _COM_Outptr_ void** ppv)
+_Check_return_ STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ void** ppv)
 {
     return wrl::Module<wrl::InProc>::GetModule().GetClassObject(rclsid, riid, ppv);
 }

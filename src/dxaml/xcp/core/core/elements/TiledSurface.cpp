@@ -342,7 +342,7 @@ CTiledSurface::FreeTile(
 //      Returns the tile with a particular origin (if it exists).  Returns NULL otherwise.
 //
 //------------------------------------------------------------------------
-_Out_opt_ CTiledSurface::Tile *
+_Ret_maybenull_ CTiledSurface::Tile *
 CTiledSurface::GetTile(
     _In_ const XPOINT &origin
     )

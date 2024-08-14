@@ -53,8 +53,8 @@ public:
     bool IsEnabledInXamlIsland();
 
 protected:
-    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params) override;
-    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params) override;
+    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params) override;
+    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params) override;
 
 public:
     // If a XamlLight just entered the tree or got a new CompositionLight, it needs to trigger a full rewalk of its subtree on

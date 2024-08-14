@@ -48,7 +48,7 @@ class ObjectWriterFrame final
             , m_conditionalScopesToSkip(std::move(other.m_conditionalScopesToSkip))
         {}
 
-        FrameOverflowStorage& operator=(FrameOverflowStorage&& other)
+        FrameOverflowStorage& operator=(FrameOverflowStorage&& other) noexcept
         {
             if (this != &other)
             {
@@ -84,7 +84,7 @@ class ObjectWriterFrame final
             , m_fIsObjectFromMember(std::move(other.m_fIsObjectFromMember))
         {}
 
-        FrameLegacyStorage& operator=(FrameLegacyStorage&& other)
+        FrameLegacyStorage& operator=(FrameLegacyStorage&& other) noexcept
         {
             if (this != &other)
             {

@@ -725,7 +725,7 @@ IsEmptyRectF(_In_ const XRECTF_RB& Rect)
 
 bool IsInvalidRectF(_In_ const XRECTF_RB& rect)
 {
-    const float inf = std::numeric_limits<float>::infinity();
+    constexpr float inf = std::numeric_limits<float>::infinity();
 
     return rect.left == inf && rect.right == inf && rect.top == inf && rect.bottom == inf;
 }

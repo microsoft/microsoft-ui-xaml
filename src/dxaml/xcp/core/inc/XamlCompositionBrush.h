@@ -43,9 +43,9 @@ public:
         return DependencyObjectTraits<CXamlCompositionBrush>::Index;
     }
 
-    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *namescopeOwner, EnterParams params) override;
+    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *namescopeOwner, _In_ EnterParams params) override;
 
-    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *namescopeOwner, LeaveParams params) override;
+    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *namescopeOwner, _In_ LeaveParams params) override;
 
     _Check_return_ HRESULT SetValue(_In_ const SetValueParams& args) override;
 

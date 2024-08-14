@@ -6,7 +6,7 @@
 
 _Check_return_
 HRESULT
-CSemanticZoom::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+CSemanticZoom::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     if (!params.fSkipNameRegistration)
     {
@@ -31,7 +31,7 @@ CSemanticZoom::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams pa
 
 _Check_return_
 HRESULT
-CSemanticZoom::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+CSemanticZoom::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     if (!params.fSkipNameRegistration)
     {

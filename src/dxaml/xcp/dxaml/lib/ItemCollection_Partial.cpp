@@ -84,7 +84,7 @@ ItemCollection::get_Size(_Out_ UINT* size)
 
 IFACEMETHODIMP
 ItemCollection::GetAt(
-    _In_opt_ UINT index,
+    UINT index,
     _Out_ IInspectable** item)
 {
     if (ItemsSourceActive() && m_tpItemsView)
@@ -133,7 +133,7 @@ ItemCollection::IndexOf(
 
 IFACEMETHODIMP
 ItemCollection::SetAt(
-    _In_ UINT index,
+    UINT index,
     _In_opt_ IInspectable* item)
 {
     HRESULT hr = S_OK;
@@ -158,7 +158,7 @@ Cleanup:
 
 IFACEMETHODIMP
 ItemCollection::InsertAt(
-    _In_ UINT index,
+    UINT index,
     _In_opt_ IInspectable* item)
 {
     HRESULT hr = S_OK;
@@ -185,7 +185,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP
-ItemCollection::RemoveAt(_In_ UINT index)
+ItemCollection::RemoveAt(UINT index)
 {
     HRESULT hr = S_OK;
 

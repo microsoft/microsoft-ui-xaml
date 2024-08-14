@@ -10,7 +10,7 @@
 //  Need to do this ourselves since we don't derive from CUIElement.
 _Check_return_ HRESULT CKeyboardAccelerator::EnterImpl(
     _In_ CDependencyObject *pNamescopeOwner,
-    EnterParams params)
+    _In_ EnterParams params)
 {
     IFC_RETURN(CDependencyObject::EnterImpl(pNamescopeOwner, params));
 
@@ -75,7 +75,7 @@ _Check_return_ HRESULT CKeyboardAccelerator::EnterImpl(
 //  Need to do this ourselves since we don't derive from CUIElement.
 _Check_return_ HRESULT CKeyboardAccelerator::LeaveImpl(
     _In_ CDependencyObject *pNamescopeOwner,
-    LeaveParams params)
+    _In_ LeaveParams params)
 {
     IFC_RETURN(CDependencyObject::LeaveImpl(pNamescopeOwner, params));
 

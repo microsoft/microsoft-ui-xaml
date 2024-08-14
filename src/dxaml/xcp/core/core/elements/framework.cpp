@@ -1454,7 +1454,7 @@ _Check_return_
 
 
 _Check_return_ HRESULT
-CFrameworkElement::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
+CFrameworkElement::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     desiredSize.width = desiredSize.height = 0;
     return S_OK;
@@ -1462,7 +1462,7 @@ CFrameworkElement::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
 
 _Check_return_
 HRESULT
-CFrameworkElement::ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize)
+CFrameworkElement::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize)
 {
     newFinalSize = finalSize;
 
@@ -2318,7 +2318,7 @@ bool CFrameworkElement::IsPropertyTemplateBound(_In_ const CDependencyProperty* 
 //------------------------------------------------------------------------
 _Check_return_
 HRESULT
-CFrameworkElement::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+CFrameworkElement::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     auto core = GetContext();
 
@@ -2401,7 +2401,7 @@ CFrameworkElement::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParam
 //      AppWhileInTree to AppWhileNotInTree
 //
 //------------------------------------------------------------------------
- _Check_return_ HRESULT CFrameworkElement::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+ _Check_return_ HRESULT CFrameworkElement::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
  {
     CDependencyObject *pImplicitStyleParent = NULL;
     auto core = GetContext();

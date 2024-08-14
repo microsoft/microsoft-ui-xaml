@@ -833,7 +833,7 @@ FlyoutBase::~FlyoutBase()
 }
 
 _Check_return_ HRESULT
-FlyoutBase::OnPropertyChanged2(const PropertyChangedParams& args)
+FlyoutBase::OnPropertyChanged2(_In_ const PropertyChangedParams& args)
 {
     IFC_RETURN(__super::OnPropertyChanged2(args));
 

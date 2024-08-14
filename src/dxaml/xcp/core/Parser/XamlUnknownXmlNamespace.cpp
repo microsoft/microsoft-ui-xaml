@@ -52,7 +52,7 @@ xstring_ptr XamlUnknownXmlNamespace::get_TargetNamespaceCore() const
 }
 
 
-HRESULT XamlUnknownXmlNamespace::GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext)
+HRESULT XamlUnknownXmlNamespace::GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext)
 {
     outSchemaContext = m_spXamlSchemaContext.lock();
     if (!outSchemaContext)

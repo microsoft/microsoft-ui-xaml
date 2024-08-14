@@ -1114,6 +1114,13 @@ winrt::Size TabView::MeasureOverride(winrt::Size const& availableSize)
 
 void TabView::UpdateTabWidths(bool shouldUpdateWidths, bool fillAllAvailableSpace)
 {
+    // Don't update any tab widths when we're in the middle of a tab tear-out loop -
+    // we'll update tab widths when it's done.
+    if (m_isInTabTearOutLoop)
+    {
+        return;
+    }
+
     auto const maxTabWidth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewItemMaxWidthName, box_value(c_tabMaximumWidth)));
     double tabWidth = std::numeric_limits<double>::quiet_NaN();
     uint32_t tabCount = TabItems().Size();
@@ -1705,12 +1712,18 @@ void TabView::OnEnteringMoveSize(const winrt::InputNonClientPointerSource& sende
         GetWindowRect(currentWindow, &windowRect);
         SetWindowPos(
             newWindow,
-            HWND_TOP,
+            currentWindow,
             windowRect.left,
             windowRect.top,
             wp.rcNormalPosition.right - wp.rcNormalPosition.left,
             wp.rcNormalPosition.bottom - wp.rcNormalPosition.top,
-            SWP_HIDEWINDOW);
+            SWP_SHOWWINDOW);
+
+        // The move-size loop prevents the pumping of window messages, which includes WM_PAINT messages. This creates the problem that a window that is
+        // initially shown will not have any ability to handle those WM_PAINT messages to initially display its contents.
+        // To get around this limitation, we'll show the window to allow it to initially draw its content, and then immediately hide it.
+        // This allows it to render its contents without actually visually appearing to users.
+        DispatcherQueue().TryEnqueue(winrt::DispatcherQueueHandler([window = m_tabTearOutNewAppWindow]() { window.Hide(); }));
     }
     else
     {
@@ -1776,8 +1789,9 @@ void TabView::OnWindowRectChanging(const winrt::InputNonClientPointerSource& sen
     }
 
     auto newWindowRect = args.NewWindowRect();
-    newWindowRect.X -= static_cast<int32_t>(m_dragPositionOffset.X);
-    newWindowRect.X -= static_cast<int32_t>(m_dragPositionOffset.Y);
+    const auto rasterizationScale = XamlRoot().RasterizationScale();
+    newWindowRect.X -= static_cast<int32_t>(m_dragPositionOffset.X * rasterizationScale);
+    newWindowRect.Y -= static_cast<int32_t>(m_dragPositionOffset.Y * rasterizationScale);
     args.NewWindowRect(newWindowRect);
 }
 
@@ -1788,25 +1802,28 @@ void TabView::DragTabWithinTabView(const winrt::WindowRectChangingEventArgs& arg
 
     if (tabBeingDragged)
     {
-        // We'll retrieve the bounds of the tab view in which we're dragging the tab, in order to be able to tell whether the tab has been dragged out of it.
-        auto bounds = m_tabViewContainingTabBeingDragged.TransformToVisual(nullptr).TransformBounds({ 0, 0, static_cast<float>(m_tabViewContainingTabBeingDragged.ActualWidth()), static_cast<float>(m_tabViewContainingTabBeingDragged.ActualHeight()) });
-
-        // We'll add a one-pixel margin to the bounds, since otherwise we could run into the situation where we immediately reattach after dragging out of a tab view,
-        // depending on how sub-pixel rounding works out.
-        bounds.X -= 1;
-        bounds.Y -= 1;
-        bounds.Width += 2;
-        bounds.Height += 2;
-
-        if (SharedHelpers::DoesRectContainPoint(bounds, pointInIslandCoords))
+        if (auto& listView = winrt::get_self<TabView>(m_tabViewContainingTabBeingDragged)->m_listView.get())
         {
-            // If the tab view bounds contain the pointer point, then we'll update the index of the tab being dragged within its tab view.
-            UpdateTabIndex(tabBeingDragged, pointInIslandCoords);
-        }
-        else
-        {
-            // Otherwise, we'll tear out the tab and show the window created to host the torn-out tab.
-            TearOutTab(tabBeingDragged, pointInIslandCoords);
+            // We'll retrieve the bounds of the tab view's list view in which we're dragging the tab, in order to be able to tell whether the tab has been dragged out of it.
+            auto bounds = listView.TransformToVisual(nullptr).TransformBounds({ 0, 0, static_cast<float>(listView.ActualWidth()), static_cast<float>(listView.ActualHeight()) });
+
+            // We'll add a one-pixel margin to the bounds, since otherwise we could run into the situation where we immediately reattach after dragging out of a tab view,
+            // depending on how sub-pixel rounding works out.
+            bounds.X -= 1;
+            bounds.Y -= 1;
+            bounds.Width += 2;
+            bounds.Height += 2;
+
+            if (SharedHelpers::DoesRectContainPoint(bounds, pointInIslandCoords))
+            {
+                // If the tab view bounds contain the pointer point, then we'll update the index of the tab being dragged within its tab view.
+                UpdateTabIndex(tabBeingDragged, pointInIslandCoords);
+            }
+            else
+            {
+                // Otherwise, we'll tear out the tab and show the window created to host the torn-out tab.
+                TearOutTab(tabBeingDragged, pointInIslandCoords);
+            }
         }
     }
 }
@@ -1865,6 +1882,8 @@ void TabView::TearOutTab(winrt::TabViewItem const& tabBeingDragged, winrt::Point
     // Now we'll show the window.
     m_tabTearOutNewAppWindow.Show();
 
+    UpdateLayout();
+
     if (m_tabViewContainingTabBeingDragged)
     {
         m_tabViewContainingTabBeingDragged.UpdateLayout();
@@ -1872,7 +1891,7 @@ void TabView::TearOutTab(winrt::TabViewItem const& tabBeingDragged, winrt::Point
         // We want to keep the tab under the user's pointer, so we'll subtract off the difference from the XAML position of the tab in the original window,
         // in order to ensure we position the window such that the tab in the new window is in the same position as the tab in the old window.
         auto containingTabPosition = m_tabViewContainingTabBeingDragged.ContainerFromIndex(m_tabViewContainingTabBeingDragged.SelectedIndex()).as<winrt::TabViewItem>().TransformToVisual(nullptr).TransformPoint({ 0, 0 });
-        m_dragPositionOffset = { containingTabPosition.X - m_originalTabBeingDraggedPoint.X , containingTabPosition.Y - m_originalTabBeingDraggedPoint.Y };
+        m_dragPositionOffset = { containingTabPosition.X - m_originalTabBeingDraggedPoint.X, containingTabPosition.Y - m_originalTabBeingDraggedPoint.Y };
     }
     else
     {
@@ -1918,10 +1937,7 @@ void TabView::DragTornOutTab(const winrt::WindowRectChangingEventArgs& args)
 
                     // If the other tab view's app window is a different app window than the one being dragged, bring it to the front beneath the one being dragged.
                     auto otherTabViewAppWindow = winrt::AppWindow::GetFromWindowId(otherTabView.XamlRoot().ContentIslandEnvironment().AppWindowId());
-                    if (otherTabViewAppWindow.Id() != m_tabTearOutNewAppWindow.Id())
-                    {
-                        otherTabViewAppWindow.MoveInZOrderBelow(m_tabTearOutNewAppWindow.Id());
-                    }
+                    otherTabViewAppWindow.MoveInZOrderAtTop();
 
                     m_tabViewContainingTabBeingDragged = otherTabView;
                     m_dragPositionOffset = {};
@@ -2038,7 +2054,11 @@ void TabView::OnExitedMoveSize(const winrt::InputNonClientPointerSource& sender,
 
     // We'll also update this tab view's non-client region, now that it's stabilized.
     UpdateNonClientRegion();
+
     m_isInTabTearOutLoop = false;
+
+    // We'll also update tab widths, since we ceased doing so while the move-size loop was underway.
+    UpdateTabWidths();
 }
 
 winrt::TabViewItem TabView::GetTabAtPoint(const winrt::Point& point)
@@ -2112,10 +2132,40 @@ void TabView::PopulateTabViewList()
             }
             else
             {
-                auto otherTabViewXamlBounds = otherTabView.TransformToVisual(nullptr).TransformBounds(winrt::Rect(0, 0, static_cast<float>(otherTabView.ActualWidth()), static_cast<float>(otherTabView.ActualHeight())));
-                auto otherTabViewScreenBounds = otherTabView.XamlRoot().CoordinateConverter().ConvertLocalToScreen(otherTabViewXamlBounds);
+                auto otherTabViewImpl = winrt::get_self<TabView>(otherTabView);
 
-                m_tabViewBoundsTuples.push_back(std::make_tuple(otherTabViewScreenBounds, otherTabView));
+                if (auto& otherTabViewListView = otherTabViewImpl->m_listView.get())
+                {
+                    auto dragBounds = otherTabViewListView.TransformToVisual(nullptr).TransformBounds(winrt::Rect(0, 0, static_cast<float>(otherTabViewListView.ActualWidth()), static_cast<float>(otherTabViewListView.ActualHeight())));
+
+                    // We'll add the add button's bounds to the drag bounds, since it's also a valid element to drag a tab over, which will add the tab to the end of the tab view.
+                    if (otherTabView.IsAddTabButtonVisible())
+                    {
+                        if (auto& otherTabViewAddButton = otherTabViewImpl->m_addButton.get())
+                        {
+                            auto addButtonBounds = otherTabViewAddButton.TransformToVisual(nullptr).TransformBounds(winrt::Rect(0, 0, static_cast<float>(otherTabViewAddButton.ActualWidth()), static_cast<float>(otherTabViewAddButton.ActualHeight())));
+
+                            float dragBoundsRight = dragBounds.X + dragBounds.Width;
+                            float dragBoundsBottom = dragBounds.Y + dragBounds.Height;
+                            float addButtonBoundsRight = addButtonBounds.X + addButtonBounds.Width;
+                            float addButtonBoundsBottom = addButtonBounds.Y + addButtonBounds.Height;
+
+                            float minX = std::min(dragBounds.X, addButtonBounds.X);
+                            float minY = std::min(dragBounds.Y, addButtonBounds.Y);
+
+                            dragBounds = {
+                                minX,
+                                minY,
+                                std::max(dragBoundsRight, addButtonBoundsRight) - minX,
+                                std::max(dragBoundsBottom, addButtonBoundsBottom) - minY
+                            };
+                        }
+                    }
+
+                    auto dragScreenBounds = otherTabView.XamlRoot().CoordinateConverter().ConvertLocalToScreen(dragBounds);
+
+                    m_tabViewBoundsTuples.push_back(std::make_tuple(dragScreenBounds, otherTabView));
+                }
             }
 
             iterator++;
@@ -2167,7 +2217,7 @@ void TabView::UpdateNonClientRegion()
         std::vector<winrt::RectInt32> captionRegions;
         std::for_each(captionRects.cbegin(), captionRects.cend(), [&](winrt::RectInt32 const& rect)
             {
-                if (!m_nonClientRegionSet || rect == m_nonClientRegion)
+                if (!m_nonClientRegionSet || rect != m_nonClientRegion)
                 {
                     captionRegions.push_back(rect);
                 }

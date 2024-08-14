@@ -2,27 +2,27 @@
 <!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.WindowsAppSDK.Foundation.TransportPackage" Version="1.6.0-20240629.1.release">
+    <Dependency Name="Microsoft.WindowsAppSDK.Foundation.TransportPackage" Version="1.6.0-20240807.0.release">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
-      <Sha>eae7f1c6c17450976fc341273627d96d06b9346c</Sha>
+      <Sha>6a0b9dcf278e67147e5ac3ae1961853a87c36209</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="1.6.4-CI-26107.1004.240627-1116.8">
+    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="1.6.4-CI-26107.1007.240806-0649.0">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
-      <Sha>ebe74081674bbb08c7459039d696051d5631e163</Sha>
+      <Sha>2755c21b3b1bad26019e8a8d721f1675c2685720</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.InteractiveExperiences" Version="1.6.4-CI-26107.1004.240627-1116.8">
+    <Dependency Name="Microsoft.Internal.InteractiveExperiences" Version="1.6.4-CI-26107.1007.240806-0649.0">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
-      <Sha>ebe74081674bbb08c7459039d696051d5631e163</Sha>
+      <Sha>2755c21b3b1bad26019e8a8d721f1675c2685720</Sha>
     </Dependency>
     <!-- Microsoft-WinUI-SDK subdirectory in WindowsAppSDKClosed (MSBuild and Visual Studio extensions for building, deploying, and debugging packaged applications.)  -->
-    <Dependency Name="Microsoft.Build.Msix" Version="1.6.0-exp2.20240628.2">
+    <Dependency Name="Microsoft.Build.Msix" Version="1.6.0-preview1.20240806.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKClosed</Uri>
-      <Sha>077ad7990ccc421623fe99390cd5ca4a254ae786</Sha>
+      <Sha>83c84efeaeb446672487167978254004791e55cd</Sha>
     </Dependency>
     <!-- Closed source binary (ex PTLS and WinUIEdit) -->
-    <Dependency Name="Microsoft.Internal.WinUIDetails" Version="1.610.0-exp2.20240628.2">
+    <Dependency Name="Microsoft.Internal.WinUIDetails" Version="1.610.0-preview1.20240806.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKClosed</Uri>
-      <Sha>077ad7990ccc421623fe99390cd5ca4a254ae786</Sha>
+      <Sha>83c84efeaeb446672487167978254004791e55cd</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>

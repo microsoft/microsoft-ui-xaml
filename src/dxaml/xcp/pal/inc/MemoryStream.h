@@ -12,8 +12,8 @@ class CMemoryStream final : public IPALStream
 public:
     static  _Check_return_ HRESULT Create(_In_ CMemoryStreamBuffer* pData, _Outptr_ CMemoryStream **ppMemStream);
 
-    _Check_return_ XUINT32 AddRef() override;
-    _Check_return_ XUINT32 Release() override;
+    XUINT32 AddRef() override;
+    XUINT32 Release() override;
     _Check_return_ HRESULT Clone(_Outptr_result_maybenull_ IPALStream **ppNewStream) override;
     _Check_return_ HRESULT Read(_Out_writes_bytes_(cb) void* pv, XUINT32 cb,  _Out_opt_ XUINT32* pcbRead) override;
     _Check_return_ HRESULT Seek(XINT64 qwMove, PALSeekOrigin eSeekOrigin,  _Out_opt_ XUINT64* pqwNewPosition) override;

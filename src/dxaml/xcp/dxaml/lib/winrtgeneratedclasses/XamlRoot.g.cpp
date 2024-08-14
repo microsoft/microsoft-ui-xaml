@@ -36,6 +36,10 @@ HRESULT DirectUI::XamlRootGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IXamlRoot2>(this);
     }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlRoot3)))
+    {
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IXamlRoot3>(this);
+    }
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlRootFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
     {

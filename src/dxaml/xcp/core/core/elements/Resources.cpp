@@ -159,7 +159,7 @@ CResourceDictionary::SetValue(_In_ const SetValueParams& args)
 _Check_return_ HRESULT CResourceDictionary::ChildEnter(
     _In_ CDependencyObject *pChild,
     _In_ CDependencyObject *pNamescopeOwner,
-    EnterParams params,
+    _In_ EnterParams params,
     bool fCanProcessEnterLeave)
 {
     EnterParams enterParams(params);
@@ -181,7 +181,7 @@ _Check_return_ HRESULT
 CResourceDictionary::ChildLeave(
     _In_ CDependencyObject *pChild,
     _In_ CDependencyObject *pNamescopeOwner,
-    LeaveParams params,
+    _In_ LeaveParams params,
     bool fCanProcessEnterLeave)
 {
     LeaveParams leaveParams(params);

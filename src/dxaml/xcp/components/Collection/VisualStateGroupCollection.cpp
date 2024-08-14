@@ -89,8 +89,9 @@ CDependencyObject* CVisualStateGroupCollection::GetTemplatedParent()
 
 #pragma region Optimized Storage and Data Accessors
 _Check_return_ HRESULT
-CVisualStateGroupCollection::SetCustomWriterRuntimeData(std::shared_ptr<CustomWriterRuntimeData> data,
-    std::unique_ptr<CustomWriterRuntimeContext> context)
+CVisualStateGroupCollection::SetCustomWriterRuntimeData(
+    _In_ std::shared_ptr<CustomWriterRuntimeData> data,
+    _In_ std::unique_ptr<CustomWriterRuntimeContext> context)
 {
     // Depending on how the ObjectWriter is configured these invariants might not always be true.
     // It's better to capture this condition on origination than allow it to blow up later.

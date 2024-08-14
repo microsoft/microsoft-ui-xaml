@@ -1,7 +1,7 @@
 ﻿namespace MU_XAP_NAMESPACE
 {
 
-[MUX_PREVIEW]
+[MUX_PUBLIC_V7]
 [webhosthidden]
 unsealed runtimeclass ScrollPresenterAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {

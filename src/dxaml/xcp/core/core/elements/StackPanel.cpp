@@ -19,7 +19,7 @@ CStackPanel::~CStackPanel()
 
 _Check_return_
 HRESULT
-CStackPanel::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
+CStackPanel::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     XSIZEF stackDesiredSize = { };
     const XSIZEF combinedThickness = CBorder::HelperGetCombinedThickness(this);
@@ -79,7 +79,7 @@ CStackPanel::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
 
 _Check_return_
 HRESULT
-CStackPanel::ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize)
+CStackPanel::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize)
 {
     newFinalSize = finalSize;
 

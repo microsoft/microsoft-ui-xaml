@@ -443,7 +443,7 @@ CImageSource::CheckForLostHardwareResources()
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CImageSource::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+CImageSource::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     IFC_RETURN(CMultiParentShareableDependencyObject::LeaveImpl(pNamescopeOwner, params));
     if (params.fIsLive)
@@ -1970,7 +1970,7 @@ CImageSource::FireImageOpened()
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CImageSource::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+CImageSource::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     IPALUri* preferredBaseURI = GetPreferredBaseUri();
 

@@ -144,7 +144,7 @@ CContentControl::SetValue(_In_ const SetValueParams& args)
 //------------------------------------------------------------------------
 _Check_return_
 HRESULT
-CContentControl::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+CContentControl::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     HRESULT hr;
     CDependencyObject *pContent = m_content.AsObject();
@@ -175,7 +175,7 @@ Cleanup:
 
 _Check_return_
 HRESULT
-CContentControl::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+CContentControl::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     HRESULT hr;
     CDependencyObject *pContent = m_content.AsObject();

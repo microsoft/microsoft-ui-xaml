@@ -60,7 +60,7 @@ Cleanup:
 
 IFACEMETHODIMP 
 PresentationFrameworkCollection<FLOAT>::GetAt(
-    _In_opt_ UINT index, 
+    UINT index, 
     _Out_ FLOAT *item)
 {
     HRESULT hr = S_OK;
@@ -104,7 +104,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP
-PresentationFrameworkCollection<FLOAT>::InsertAt(_In_ UINT index, _In_ FLOAT item)
+PresentationFrameworkCollection<FLOAT>::InsertAt(UINT index, _In_ FLOAT item)
 {
     HRESULT hr = S_OK;
     CValue boxedValue;
@@ -140,7 +140,7 @@ Cleanup:
 
 IFACEMETHODIMP 
 PresentationFrameworkCollection<DOUBLE>::GetAt(
-    _In_opt_ UINT index, 
+    UINT index, 
     _Out_ DOUBLE *item)
 {
     HRESULT hr = S_OK;
@@ -184,7 +184,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP
-PresentationFrameworkCollection<DOUBLE>::InsertAt(_In_ UINT index, _In_ DOUBLE item)
+PresentationFrameworkCollection<DOUBLE>::InsertAt(UINT index, _In_ DOUBLE item)
 {
     HRESULT hr = S_OK;
     CValue boxedValue;
@@ -221,7 +221,7 @@ Cleanup:
 
 IFACEMETHODIMP 
 PresentationFrameworkCollection<wf::Point>::GetAt(
-    _In_opt_ UINT index, 
+    UINT index, 
     _Out_ wf::Point *item)
 {
     HRESULT hr = S_OK;
@@ -266,7 +266,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP
-PresentationFrameworkCollection<wf::Point>::InsertAt(_In_ UINT index, _In_ wf::Point item)
+PresentationFrameworkCollection<wf::Point>::InsertAt(UINT index, _In_ wf::Point item)
 {
     HRESULT hr = S_OK;
     CValue boxedValue;
@@ -304,7 +304,7 @@ Cleanup:
 
 IFACEMETHODIMP
 PresentationFrameworkCollection<xaml_docs::TextRange>::GetAt(
-    _In_opt_ UINT index,
+    UINT index,
     _Out_ xaml_docs::TextRange *item)
 {
     HRESULT hr = S_OK;
@@ -349,7 +349,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP
-PresentationFrameworkCollection<xaml_docs::TextRange>::InsertAt(_In_ UINT index, _In_ xaml_docs::TextRange item)
+PresentationFrameworkCollection<xaml_docs::TextRange>::InsertAt(UINT index, _In_ xaml_docs::TextRange item)
 {
     HRESULT hr = S_OK;
     CValue boxedValue;

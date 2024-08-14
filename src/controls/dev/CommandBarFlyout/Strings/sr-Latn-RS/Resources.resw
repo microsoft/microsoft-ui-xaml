@@ -137,16 +137,16 @@
     <value>Podebljaj izabrani tekst</value>
   </data>
   <data name="TextCommandDescriptionCopy" xml:space="preserve">
-    <value>Kopiraj izabrani sadržaj u ostavu</value>
+    <value>Kopiraj izabrani sadržaj u međuspremnik</value>
   </data>
   <data name="TextCommandDescriptionCut" xml:space="preserve">
-    <value>Ukloni izabrani sadržaj i stavi ga u ostavu</value>
+    <value>Ukloni izabrani sadržaj i stavi ga u međuspremnik</value>
   </data>
   <data name="TextCommandDescriptionItalic" xml:space="preserve">
     <value>Prebacite izabrani tekst u kurziv</value>
   </data>
   <data name="TextCommandDescriptionPaste" xml:space="preserve">
-    <value>Umetni sadržaj ostave na trenutnu lokaciju</value>
+    <value>Umetni sadržaj međuspremnika na trenutnu lokaciju</value>
   </data>
   <data name="TextCommandDescriptionRedo" xml:space="preserve">
     <value>Ponovi poslednju opozvanu radnju</value>

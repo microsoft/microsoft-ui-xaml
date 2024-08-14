@@ -17,11 +17,12 @@ using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     [TestClass]
-    public class CommandBarFlyoutTests
+    public partial class CommandBarFlyoutTests
     {
         // Values taken from https://docs.microsoft.com/en-us/windows/desktop/winauto/uiauto-automation-element-propids
         private const int UIA_FlowsFromPropertyId = 30148;
@@ -613,6 +614,67 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
+        public void VerifyFlyoutOpenKeyboardBehavior()
+        {
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with sub-menu");
+
+                Log.Comment("Show the CommandBarFlyout.");
+                InputHelper.RightClick(showCommandBarFlyoutButton, 10, 10);
+
+                Log.Comment("Press Down key to move focus to first secondary command: Proofing.");
+                for (int i = 0; i < 7; i++)
+                {
+                    KeyboardHelper.PressKey(Key.Down);
+                    Wait.ForIdle();
+                }
+
+                // Press right key to open flyout
+                KeyboardHelper.PressKey(Key.Right);
+
+                // Click first item on flyout
+                setup.ExecuteAndWaitForEvents(() => KeyboardHelper.PressKey(Key.Enter), new List<string>() { "FirstFlyoutItem clicked" });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void VerifyFlyoutCloseKeyboardBehavior()
+        {
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                Button showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with sub-menu");
+
+                Log.Comment("Show the CommandBarFlyout.");
+                InputHelper.RightClick(showCommandBarFlyoutButton, 10, 10);
+
+                Log.Comment("Press Down key to move focus to first secondary command: Proofing.");
+                for (int i = 0; i < 7; i++)
+                {
+                    KeyboardHelper.PressKey(Key.Down);
+                    Wait.ForIdle();
+                }
+
+                // Press right key to open flyout
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+
+                // Press left key to close flyout
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+
+                // Navigate down
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+
+                // Click AppBarButton item
+                setup.ExecuteAndWaitForEvents(() => KeyboardHelper.PressKey(Key.Enter), new List<string>() { "UndoButton5 clicked" });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void VerifyAlwaysExpandedBehavior()
         {
             using (var setup = new CommandBarFlyoutTestSetupHelper())
@@ -1187,5 +1249,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(ToggleState.Off, isFlyoutOpenCheckBox.ToggleState);
             }
         }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void CommandBarFlyoutCommandBecomingVisibleHasCorrectVisuals()
+        {
+            using (var setup = new CommandBarFlyoutTestSetupHelper())
+            {
+                var showCommandBarFlyoutButton = FindElement.ByName<Button>("Show CommandBarFlyout with a delayed AppBarButton flyout");
+                showCommandBarFlyoutButton.SetFocus();
+
+                Rectangle originalBoundingRectangle = new();
+                var isFlyoutOpenCheckBox = FindElement.ById<ToggleButton>("IsFlyoutOpenCheckBox");
+
+                setup.ExecuteAndWaitForEvent(() =>
+                {
+                    using (var waiter = isFlyoutOpenCheckBox.GetToggledWaiter())
+                    {
+                        showCommandBarFlyoutButton.Invoke();
+                        waiter.Wait();
+                    }
+
+                    var undoButton16 = FindElement.ById<Button>("UndoButton16");
+                    originalBoundingRectangle = undoButton16.BoundingRectangle;
+                }, "Undo with overflow visible");
+
+                Wait.ForIdle();
+
+                Log.Comment("The Undo button without an overflow should be less wide than the Undo button with an overflow.");
+                var undoButtonOverflow16 = FindElement.ById<Button>("UndoButtonOverflow16");
+                Verify.IsLessThan(originalBoundingRectangle.Width, undoButtonOverflow16.BoundingRectangle.Width);
+
+                var extraInformationTextBox = FindElement.ById<Edit>("ExtraInformationTextBox");
+                var boundsText = extraInformationTextBox.GetText();
+                Rectangle undoButtonOverflow16IconBounds;
+                Rectangle undoButtonOverflow16OverflowTextLabelBounds;
+                Rectangle redoButton16IconBounds;
+
+                var boundsPatternMatch = BoundsRegex().Match(boundsText);
+                undoButtonOverflow16IconBounds = new Rectangle(int.Parse(boundsPatternMatch.Groups[1].Value), int.Parse(boundsPatternMatch.Groups[2].Value), int.Parse(boundsPatternMatch.Groups[3].Value), int.Parse(boundsPatternMatch.Groups[4].Value));
+                undoButtonOverflow16OverflowTextLabelBounds = new Rectangle(int.Parse(boundsPatternMatch.Groups[5].Value), int.Parse(boundsPatternMatch.Groups[6].Value), int.Parse(boundsPatternMatch.Groups[7].Value), int.Parse(boundsPatternMatch.Groups[8].Value));
+                redoButton16IconBounds = new Rectangle(int.Parse(boundsPatternMatch.Groups[9].Value), int.Parse(boundsPatternMatch.Groups[10].Value), int.Parse(boundsPatternMatch.Groups[11].Value), int.Parse(boundsPatternMatch.Groups[12].Value));
+
+                Verify.IsLessThan(undoButtonOverflow16IconBounds.X, undoButtonOverflow16OverflowTextLabelBounds.X);
+                Verify.AreEqual(undoButtonOverflow16IconBounds.X, redoButton16IconBounds.X);
+            }
+        }
+
+        [GeneratedRegex("\\((\\d+), (\\d+), (\\d+), (\\d+)\\), \\((\\d+), (\\d+), (\\d+), (\\d+)\\), \\((\\d+), (\\d+), (\\d+), (\\d+)\\)")]
+        private static partial Regex BoundsRegex();
     }
 }

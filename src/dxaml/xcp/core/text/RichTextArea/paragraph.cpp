@@ -142,7 +142,7 @@ Cleanup:
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CParagraph::EnterImpl(
     _In_ CDependencyObject *pNamescopeOwner,
-         EnterParams        params)
+    _In_ EnterParams        params)
 {
     IFC_RETURN(CBlock::EnterImpl(pNamescopeOwner, params));
     IFC_RETURN(CompressInlinesWhitespace(m_pInlines));

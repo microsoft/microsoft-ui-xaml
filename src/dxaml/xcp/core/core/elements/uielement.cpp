@@ -1248,7 +1248,7 @@ void CUIElement::PropagateLayoutDirty(bool affectsParentMeasure, bool affectsPar
 //      then call Enter on any "children".
 //
 //------------------------------------------------------------------------
-_Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+_Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     CCoreServices * const core = GetContext();
     const bool isParentEnabled = params.fCoercedIsEnabled;
@@ -1622,7 +1622,7 @@ Cleanup:
 //      then call Leave on any "children".
 //
 //------------------------------------------------------------------------
-_Check_return_ HRESULT CUIElement::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+_Check_return_ HRESULT CUIElement::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     CCoreServices * const core = GetContext();
     const bool isParentEnabled = params.fCoercedIsEnabled;
@@ -4758,6 +4758,12 @@ CUIElement::ComputeEffectiveViewportChangedEventArgsAndNotifyLayoutManager(
 //------------------------------------------------------------------------
 float CUIElement::LayoutRoundHelper(const float value, _In_ RoundCeilOrFloorFn operationFn)
 {
+    // If the value isn't finite, then there's no rounding to be done.
+    if (!std::isfinite(value))
+    {
+        return value;
+    }
+
     double returnValue = value;
 
     // GetScaleFactorForLayoutRounding() returns the plateau scale in most cases. For ScrollContentPresenter children though,

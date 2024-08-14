@@ -173,7 +173,7 @@ CTextBlock::~CTextBlock()
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CTextBlock::EnterImpl(
     _In_ CDependencyObject *pNamescopeOwner,
-    EnterParams params
+    _In_ EnterParams params
     )
 {
     // First bring this TextBlock into scope.
@@ -199,7 +199,7 @@ _Check_return_ HRESULT CTextBlock::EnterImpl(
 //-------------------------------------------------------------------------
 _Check_return_ HRESULT CTextBlock::LeaveImpl(
     _In_ CDependencyObject *pNamescopeOwner,
-    LeaveParams params
+    _In_ LeaveParams params
     )
 {
     if (IsFocused() && GetContext())
@@ -1629,8 +1629,8 @@ _Check_return_ HRESULT CTextBlock::GetLineHeight(_Out_ float* baseline, _Out_ fl
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CTextBlock::MeasureOverride(
-    XSIZEF availableSize,
-    XSIZEF& desiredSize
+    _In_ XSIZEF availableSize,
+    _Out_ XSIZEF& desiredSize
     )
 {
     m_hasBeenMeasured = TRUE;
@@ -1772,8 +1772,8 @@ _Check_return_ HRESULT CTextBlock::MeasureOverride(
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CTextBlock::ArrangeOverride(
-    XSIZEF finalSize,
-    XSIZEF& newFinalSize
+    _In_ XSIZEF finalSize,
+    _Out_ XSIZEF& newFinalSize
     )
 {
     XSIZEF renderSize = {0.0f, 0.0f};

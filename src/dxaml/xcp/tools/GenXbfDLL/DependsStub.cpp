@@ -15,7 +15,7 @@ void CDependencyObject::UnpegManagedPeerNoRef()
 
 void __thiscall CDependencyObject::UnpegManagedPeer(bool) { }
 
-long __thiscall CDependencyObject::PegManagedPeer(bool,bool*) { return S_OK; }
+_Check_return_ long __thiscall CDependencyObject::PegManagedPeer(bool, _Out_opt_ bool*) { return S_OK; }
 
 void CDependencyObject::AddRefImpl(UINT32 cRef)
 {

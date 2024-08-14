@@ -1125,7 +1125,7 @@ Cleanup:
 
 _Check_return_ HRESULT CGlyphs::EnterImpl(
     _In_ CDependencyObject *pNamescopeOwner,
-    EnterParams params
+    _In_ EnterParams params
 )
 {
     HRESULT hr = S_OK;
@@ -1157,7 +1157,7 @@ Cleanup:
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CGlyphs::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+CGlyphs::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     IFC_RETURN(CFrameworkElement::LeaveImpl(pNamescopeOwner, params));
     if (params.fIsLive)
@@ -1178,7 +1178,7 @@ CGlyphs::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CGlyphs::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
+CGlyphs::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     desiredSize.width = 0;
     desiredSize.height = 0;

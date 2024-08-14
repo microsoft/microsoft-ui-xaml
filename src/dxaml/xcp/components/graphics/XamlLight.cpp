@@ -121,7 +121,7 @@ bool CXamlLight::IsEnabledInXamlIsland()
         && !lightId.Equals(XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml.Media.XamlAmbientLight"));
 }
 
-_Check_return_ HRESULT CXamlLight::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+_Check_return_ HRESULT CXamlLight::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     if (params.fIsLive)
     {
@@ -138,7 +138,7 @@ _Check_return_ HRESULT CXamlLight::EnterImpl(_In_ CDependencyObject *pNamescopeO
     return S_OK;
 }
 
-_Check_return_ HRESULT CXamlLight::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+_Check_return_ HRESULT CXamlLight::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     if (params.fIsLive)
     {

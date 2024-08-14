@@ -88,7 +88,7 @@ protected:
         _Out_ bool* pHit
         ) final;
 
-    _Check_return_ HRESULT ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize) final;
+    _Check_return_ HRESULT ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize) final;
 
 private:
     _Check_return_ HRESULT GetCompositionScaleImpl(

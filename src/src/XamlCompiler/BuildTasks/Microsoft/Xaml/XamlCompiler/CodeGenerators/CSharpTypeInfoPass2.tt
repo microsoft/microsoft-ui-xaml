@@ -36,7 +36,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#  if (ProjectInfo.GenerateFullXamlMetadataProvider) { #>
     [<#=Globalize(KnownNamespaces.XamlMarkup)#>.FullXamlMetadataProvider()]
 <#  } #>
-    public sealed class XamlMetaDataProvider : <#=Globalize(KnownTypes.IXamlMetadataProvider)#>
+    public sealed partial class XamlMetaDataProvider : <#=Globalize(KnownTypes.IXamlMetadataProvider)#>
     {
         private <#=Globalize(ProjectInfo.XamlTypeInfoNamespace)#>.XamlTypeInfoProvider _provider = null;
 

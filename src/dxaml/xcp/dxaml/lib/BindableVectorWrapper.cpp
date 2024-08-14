@@ -44,7 +44,7 @@ HRESULT BindableVectorWrapper::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void
 }
 
 // IVector
-IFACEMETHODIMP BindableVectorWrapper::GetAt(_In_opt_ unsigned index, _Out_  IInspectable **item)
+IFACEMETHODIMP BindableVectorWrapper::GetAt(unsigned index, _Out_  IInspectable **item)
 {
     RRETURN(m_tpSource->GetAt(index, item));
 }
@@ -77,17 +77,17 @@ IFACEMETHODIMP BindableVectorWrapper::IndexOf(_In_opt_ IInspectable * value, _Ou
     RRETURN(m_tpSource->IndexOf(value, index, found));
 }
 
-IFACEMETHODIMP BindableVectorWrapper::SetAt(_In_ unsigned index, _In_opt_ IInspectable *item)
+IFACEMETHODIMP BindableVectorWrapper::SetAt(unsigned index, _In_opt_ IInspectable *item)
 {
     RRETURN(m_tpSource->SetAt(index, item));
 }
 
-IFACEMETHODIMP BindableVectorWrapper::InsertAt(_In_ unsigned index, _In_ IInspectable *item)
+IFACEMETHODIMP BindableVectorWrapper::InsertAt(unsigned index, _In_ IInspectable *item)
 {
     RRETURN(m_tpSource->InsertAt(index, item));
 }
 
-IFACEMETHODIMP BindableVectorWrapper::RemoveAt(_In_ unsigned index)
+IFACEMETHODIMP BindableVectorWrapper::RemoveAt(unsigned index)
 {
     RRETURN(m_tpSource->RemoveAt(index));
 }

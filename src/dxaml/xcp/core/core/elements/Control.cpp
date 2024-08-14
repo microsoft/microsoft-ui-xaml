@@ -317,7 +317,7 @@ CControl::SupportsBuiltInStyles()
 //-------------------------------------------------------------------------
 _Check_return_
 HRESULT
-CControl::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+CControl::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     IFC_RETURN(CFrameworkElement::EnterImpl(pNamescopeOwner, params));
 
@@ -369,7 +369,7 @@ CControl::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
 //-------------------------------------------------------------------------
 _Check_return_
 HRESULT
-CControl::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+CControl::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     IFC_RETURN(RemoveFocusEngagement());
 
@@ -409,7 +409,7 @@ CControl::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
 //
 //-------------------------------------------------------------------------
 _Check_return_ HRESULT
-CControl::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
+CControl::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     CUIElement* pChild = (CUIElement*) GetFirstChildNoAddRef();
     if (pChild)
@@ -435,7 +435,7 @@ CControl::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
 //-------------------------------------------------------------------------
 _Check_return_
 HRESULT
-CControl::ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize)
+CControl::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize)
 {
     HRESULT hr = S_OK;
 
@@ -1287,7 +1287,7 @@ CUserControl::SetValue(_In_ const SetValueParams& args)
 }
 
 _Check_return_ HRESULT
-CUserControl::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+CUserControl::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     IFC_RETURN(CControl::EnterImpl(pNamescopeOwner, params));
 
@@ -1302,7 +1302,7 @@ CUserControl::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams par
 }
 
 _Check_return_ HRESULT
-CUserControl::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+CUserControl::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     IFC_RETURN(CControl::LeaveImpl(pNamescopeOwner, params));
 

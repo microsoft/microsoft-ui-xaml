@@ -17,7 +17,7 @@ CCanvas::~CCanvas()
 }
 
 _Check_return_ HRESULT
-CCanvas::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
+CCanvas::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     desiredSize.width = 0;
     desiredSize.height = 0;
@@ -40,7 +40,7 @@ CCanvas::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
 }
 
 _Check_return_ HRESULT
-CCanvas::ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize)
+CCanvas::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize)
 {
     HRESULT hr = S_OK;
 

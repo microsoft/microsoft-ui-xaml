@@ -5878,6 +5878,7 @@ namespace Microsoft.UI.Xaml
     [CodeGen(partial: true)]
     [Guids(ClassGuid = "eaad7a20-751b-4a85-b6c9-50231742b28f")]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 5)]
+    [Platform(3, typeof(Microsoft.UI.Xaml.WinUIContract), 7)]
     [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
     public sealed class XamlRoot
     {
@@ -5912,7 +5913,7 @@ namespace Microsoft.UI.Xaml
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         public Microsoft.UI.Content.ContentIslandEnvironment ContentIslandEnvironment { get; }
 
-        [VelocityFeature("Feature_ExperimentalApi")]
+        [Version(3)]
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         public Microsoft.UI.Content.ContentCoordinateConverter CoordinateConverter { get; }
 

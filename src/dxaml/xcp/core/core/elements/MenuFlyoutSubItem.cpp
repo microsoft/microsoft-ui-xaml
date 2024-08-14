@@ -6,7 +6,7 @@
 #include "MenuFlyout.h"
 #include "StableXbfIndexes.g.h"
 
-_Check_return_ HRESULT CMenuFlyoutSubItem::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+_Check_return_ HRESULT CMenuFlyoutSubItem::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     IFC_RETURN(__super::EnterImpl(pNamescopeOwner, params));
     IFC_RETURN(CMenuFlyout::KeyboardAcceleratorFlyoutItemEnter(this, pNamescopeOwner, KnownPropertyIndex::MenuFlyoutSubItem_Items, params));
@@ -14,7 +14,7 @@ _Check_return_ HRESULT CMenuFlyoutSubItem::EnterImpl(_In_ CDependencyObject *pNa
     return S_OK;
 }
 
-_Check_return_ HRESULT CMenuFlyoutSubItem::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+_Check_return_ HRESULT CMenuFlyoutSubItem::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     IFC_RETURN(__super::LeaveImpl(pNamescopeOwner, params));
     IFC_RETURN(CMenuFlyout::KeyboardAcceleratorFlyoutItemLeave(this, pNamescopeOwner, KnownPropertyIndex::MenuFlyoutSubItem_Items, params));

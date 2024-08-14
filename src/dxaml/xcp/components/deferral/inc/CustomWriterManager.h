@@ -91,7 +91,7 @@ public:
 
     // ICustomWriterCallbacks
     _Check_return_ HRESULT CreateStreamOffsetToken(_Out_ StreamOffsetToken* pToken) override;
-    _Check_return_ HRESULT SetCustomWriterRuntimeData(std::unique_ptr<CustomWriterRuntimeData>  runtimeData) override;
+    _Check_return_ HRESULT SetCustomWriterRuntimeData(_In_ std::unique_ptr<CustomWriterRuntimeData>  runtimeData) override;
     void SetAllowProcessStartObjectByCustomWriter(bool allow) override;
 
 private:

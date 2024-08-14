@@ -26,7 +26,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-wf::IPropertyValue* ctl::get_property_value(IInspectable *pIn)
+wf::IPropertyValue* ctl::get_property_value(_In_ IInspectable *pIn)
 {
    if (pIn)
    {

@@ -214,8 +214,8 @@ CBorder::GetChild(_Outptr_ CUIElement** ppChild)
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CBorder::MeasureOverride(
-    XSIZEF availableSize,
-    XSIZEF& desiredSize)
+    _In_ XSIZEF availableSize,
+    _Out_ XSIZEF& desiredSize)
 {
     HRESULT hr = S_OK;
     XSIZEF childAvailableSize;
@@ -259,8 +259,8 @@ Cleanup:
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CBorder::ArrangeOverride(
-    XSIZEF finalSize,
-    XSIZEF& newFinalSize)
+    _In_ XSIZEF finalSize,
+    _Out_ XSIZEF& newFinalSize)
 {
     HRESULT hr = S_OK;
 

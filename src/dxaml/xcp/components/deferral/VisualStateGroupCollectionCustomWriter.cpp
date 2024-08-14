@@ -24,9 +24,9 @@
 #define VSMLOG(...)
 
 VisualStateGroupCollectionCustomWriter::VisualStateGroupCollectionCustomWriter(
-    ICustomWriterCallbacks* callbacks,
-    std::shared_ptr<XamlSchemaContext> context,
-    std::shared_ptr<ObjectWriterContext> objectWriterContext)
+    _In_ ICustomWriterCallbacks* callbacks,
+    _Inout_ std::shared_ptr<XamlSchemaContext> context,
+    _Inout_ std::shared_ptr<ObjectWriterContext> objectWriterContext)
     : m_customWriterCallbacks(callbacks)
     , m_stackDepth(0)
     , m_context(context)

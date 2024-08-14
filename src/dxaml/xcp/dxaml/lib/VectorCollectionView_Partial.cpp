@@ -26,7 +26,7 @@ VectorCollectionView::~VectorCollectionView()
 
 // IVector<IInspectable *>
 IFACEMETHODIMP VectorCollectionView::GetAt(
-    _In_opt_ unsigned index,
+    unsigned index,
     _Out_  IInspectable **item)
 {
     HRESULT hr = S_OK;
@@ -81,20 +81,20 @@ Cleanup:
 }
 
 IFACEMETHODIMP VectorCollectionView::SetAt(
-    _In_ unsigned index,
+    unsigned index,
     _In_opt_ IInspectable *item)
 {
     RRETURN(m_tpSource->SetAt(index, item));
 }
 
 IFACEMETHODIMP VectorCollectionView::InsertAt(
-    _In_ unsigned index,
+    unsigned index,
     _In_ IInspectable *item)
 {
     RRETURN(m_tpSource->InsertAt(index, item));
 }
 
-IFACEMETHODIMP VectorCollectionView::RemoveAt(_In_ unsigned index)
+IFACEMETHODIMP VectorCollectionView::RemoveAt(unsigned index)
 {
     RRETURN(m_tpSource->RemoveAt(index));
 }

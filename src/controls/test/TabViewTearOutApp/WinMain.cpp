@@ -31,7 +31,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // Start a DispatcherQueueController.  A DispatcherQueue must be running on the thread for XAML to work.
     auto dqc = winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnCurrentThread();
-
     MainWindow::CreateNewWindow(nCmdShow, {});
 
     MSG msg;

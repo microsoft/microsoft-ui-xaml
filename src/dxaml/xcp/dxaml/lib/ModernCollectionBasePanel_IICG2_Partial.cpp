@@ -65,7 +65,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT ModernCollectionBasePanel::GetRootOfItemTemplateAsContainer(const ctl::ComPtr<IGeneratorHost>& host, const ctl::ComPtr<IInspectable>& item, bool queryForInspecting, ctl::ComPtr<xaml::IUIElement>& container)
+_Check_return_ HRESULT ModernCollectionBasePanel::GetRootOfItemTemplateAsContainer(const ctl::ComPtr<IGeneratorHost>& host, const ctl::ComPtr<IInspectable>& item, bool queryForInspecting, _Inout_ ctl::ComPtr<xaml::IUIElement>& container)
 {
     container = nullptr;
 

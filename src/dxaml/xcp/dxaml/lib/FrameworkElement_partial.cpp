@@ -1130,8 +1130,6 @@ _Check_return_ HRESULT FrameworkElement::FindNameInPage(
     _Outptr_ IInspectable **ppObj)
 {
     ctl::ComPtr<FrameworkElement> current;
-    ctl::ComPtr<DependencyObject> templatedParentAsDO;
-    BOOLEAN fIsItemsHost = false;
     ctl::ComPtr<IInspectable> foundElementValue;
 
     current = this;
@@ -1140,6 +1138,8 @@ _Check_return_ HRESULT FrameworkElement::FindNameInPage(
 
     while (!foundElementValue && current)
     {
+        ctl::ComPtr<DependencyObject> templatedParentAsDO;
+
         IFC_RETURN(current->get_TemplatedParent(&templatedParentAsDO));
         if ((templatedParentAsDO) && templatedParentAsDO.AsOrNull<IFrameworkElement>())
         {
@@ -1147,6 +1147,8 @@ _Check_return_ HRESULT FrameworkElement::FindNameInPage(
         }
         else
         {
+            ctl::ComPtr<DependencyObject> inheritanceParentAsDO;
+
             // ListBoxItem(s) inside of an ItemsControl do not have a
             // templated parent, so the TemplatedParent chain is broken.
             // To work around this, we get their parent and if it is a panel
@@ -1156,14 +1158,14 @@ _Check_return_ HRESULT FrameworkElement::FindNameInPage(
             // A MUXC ItemsRepeater may not have a TemplatedParent either, so that
             // panel is used as the next step in the chain as well. This allows its
             // ItemTemplate to use ElementName-based bindings to elements outside its scope.
-            IFC_RETURN(current->GetInheritanceParent(&templatedParentAsDO));
-            if (!templatedParentAsDO)
+            IFC_RETURN(current->GetInheritanceParent(&inheritanceParentAsDO));
+            if (!inheritanceParentAsDO)
             {
                 return S_OK;
             }
 
             ctl::ComPtr<IPanel> panel;
-            templatedParentAsDO.As(&panel);
+            inheritanceParentAsDO.As(&panel);
             current = nullptr;
 
             if (panel)
@@ -1172,12 +1174,47 @@ _Check_return_ HRESULT FrameworkElement::FindNameInPage(
                 // - items host for an ItemsControl,
                 // - MUXC ItemsRepeater
                 // In both cases, ElementName-based bindings need to be able to successfully find elements outside the ItemsControl or ItemsRepeater respectively.
+                BOOLEAN fIsItemsHost = false;
+
                 IFC_RETURN(panel->get_IsItemsHost(&fIsItemsHost));
                 if (fIsItemsHost ||
-                    static_cast<CFrameworkElement*>(templatedParentAsDO->GetHandle())->GetClassName().Equals(XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml.Controls.ItemsRepeater")))
+                    static_cast<CFrameworkElement*>(inheritanceParentAsDO->GetHandle())->GetClassName().Equals(XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml.Controls.ItemsRepeater")))
                 {
-                    current = templatedParentAsDO.Cast<FrameworkElement>();
+                    current = inheritanceParentAsDO.Cast<FrameworkElement>();
                 }
+            }
+
+            if (current == nullptr)
+            {
+                // Check if there is a parent MUXC ItemsRepeater and use it as the next step in the chain.
+                // This is to ensure ElementName bindings used in nested ItemsRepeater.ItemTemplate elements work.
+                do
+                {
+                    ctl::ComPtr<FrameworkElement> inheritanceParentAsFE = inheritanceParentAsDO.Cast<FrameworkElement>();
+
+                    // GetInheritanceParent does not support XamlIslandRootCollection or RootScrollViewer, so skip them & exit early.
+                    if (!inheritanceParentAsFE || 
+                        inheritanceParentAsFE->GetHandle()->OfTypeByIndex<KnownTypeIndex::XamlIslandRootCollection>() ||
+                        inheritanceParentAsFE->GetHandle()->OfTypeByIndex<KnownTypeIndex::RootScrollViewer>())
+                    {
+                        return S_OK;
+                    }
+
+                    IFC_RETURN(inheritanceParentAsFE->GetInheritanceParent(&inheritanceParentAsDO));
+                    if (!inheritanceParentAsDO)
+                    {
+                        return S_OK;
+                    }
+
+                    inheritanceParentAsDO.As(&panel);
+
+                    if (panel &&
+                        static_cast<CFrameworkElement*>(inheritanceParentAsDO->GetHandle())->GetClassName().Equals(XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml.Controls.ItemsRepeater")))
+                    {
+                        current = inheritanceParentAsDO.Cast<FrameworkElement>();
+                    }
+                }
+                while (current == nullptr);
             }
         }
 

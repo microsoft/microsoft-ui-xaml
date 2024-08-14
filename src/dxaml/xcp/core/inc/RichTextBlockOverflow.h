@@ -55,11 +55,11 @@ public:
 
     _Check_return_ HRESULT EnterImpl(
         _In_ CDependencyObject* pNamescopeOwner,
-        EnterParams params
+        _In_ EnterParams params
         ) override;
     _Check_return_ HRESULT LeaveImpl(
         _In_ CDependencyObject* pNamescopeOwner,
-        LeaveParams params
+        _In_ LeaveParams params
         ) override;
 
     _Check_return_ HRESULT SetValue(_In_ const SetValueParams& args) override;
@@ -193,8 +193,8 @@ protected:
     // Returns 'true' because the ArrangeOverride method always returns a size at least as large as its finalSize parameter
     // when the render size is smaller.
     bool IsFinalArrangeSizeMaximized() override { return true; }
-    _Check_return_ HRESULT MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize) override;
-    _Check_return_ HRESULT ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize) override;
+    _Check_return_ HRESULT MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize) override;
+    _Check_return_ HRESULT ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize) override;
 
 private:
     // Fields unique to RichTextBlockOverflow

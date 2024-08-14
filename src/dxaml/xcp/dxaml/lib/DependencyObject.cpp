@@ -833,16 +833,6 @@ DependencyObject::ClearPeerReferences()
     if (pDO != nullptr)
     {
         pDO->ClearPeerReferences();
-
-        if (pDO->ShouldFrameworkClearCoreExpectedReference())
-        {
-            // Release expected reference from core object to peer, which was set to keep peer alive for GC.
-            // Peer may have already been disconnected from its core object when DependencyObject::OnFinalRelease
-            // called RemovePeer, so core object can't ask the peer to release the reference. Release the
-            // expected reference here, and ask the core object to clear its flag.
-            pDO->OnClearedExpectedReferenceOnPeer();
-            ReleaseForPeerReferenceHelper();
-        }
     }
 
     // TODO: Can we just delete in DependencyObject destructor, so we don't need to
@@ -887,6 +877,23 @@ DependencyObject::ClearPeerReferences()
         delete pM3Parents;
         pM3Parents = nullptr;
     }
+
+    // Release expected reference from core object to peer, to keep peer alive for GC.
+    // Peer has already been disconnected from its core object, so core object can't
+    // ask the peer to release the reference. Release the expected reference here, and ask
+    // the core object to clear its flag.
+    // NOTE: In WinAppSDK 1.5 and prior, this was done earlier in this function, just after
+    // pDO->ClearPeerReferences().
+    if (pDO && pDO->ShouldFrameworkClearCoreExpectedReference())
+    {
+        pDO->OnClearedExpectedReferenceOnPeer();
+
+        // This function calls Release on the controlling/outer object, so after this call it's
+        // possible that the controlling/outer object has been destroyed.  If user code runs after
+        // this point, it's possible it might try to resolve a weakref to this object, which could AV.
+        ReleaseForPeerReferenceHelper();
+    }
+
 }
 
 // Handle change of parent
@@ -2549,7 +2556,7 @@ DependencyObject::ReleaseForPeerReferenceHelper(  )
         ctl::release_interface_inner(pTempDO);
     }
 
-    // This isn't a composed object, so just do a normal Release
+    // This isn't composed by a ReferenceTrackerTarget, so just do a normal Release
     else
     {
         pTempDO = this;

@@ -12,8 +12,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="controls:TitleBar">
                     <Grid x:Name="PART_LayoutRoot" Height="{ThemeResource TitleBarCompactHeight}" Background="Transparent">
-                        <VisualStateManager.VisualStateGroups>
-                            
+                        <VisualStateManager.VisualStateGroups>                     
                             <VisualStateGroup x:Name="BackButtonGroup">
                                 <VisualState x:Name="BackButtonCollapsed" />
                                 <VisualState x:Name="BackButtonVisible">
@@ -47,7 +46,7 @@
                             <VisualStateGroup x:Name="HeaderGroup">
                                 <VisualState x:Name="HeaderCollapsed" />
                                 <VisualState x:Name="HeaderVisible">
-                                    <VisualState.Setters>
+                                    <VisualState.Setters> 
                                         <Setter Target="PART_HeaderContentPresenter.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -154,116 +153,125 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="HeaderSpacingGroup">
+                                <VisualState x:Name="DefaultSpacing" />
+                                <VisualState x:Name="NegativeInsetSpacing">
+                                    <VisualState.Setters>
+                                        <Setter Target="HeaderPaddingColumn.Width" Value="2" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition x:Name="LeftPaddingColumn" Width="0" />
+                            <!-- 0: Left Padding Column-->
+                            <ColumnDefinition x:Name="LeftPaddingColumn" Width="2" />
+                            <!-- 1: Back Button -->
+                            <ColumnDefinition Width="Auto" />
+                            <!-- 2: Pane Toggle Button -->
+                            <ColumnDefinition Width="Auto" />
+                            <!-- 3: Header Content Presenter -->
+                            <ColumnDefinition Width="Auto" />
+                            <!-- 4: Header Padding Column -->
+                            <ColumnDefinition x:Name="HeaderPaddingColumn" Width="14" />
+                            <!-- 5: Icon -->
+                            <ColumnDefinition Width="Auto" />
+                            <!-- 6: Title -->
+                            <ColumnDefinition Width="Auto" />
+                            <!-- 7: Subtitle -->
+                            <ColumnDefinition Width="Auto" />
+                            <!-- 8: Content Presenter -->
                             <ColumnDefinition Width="*" />
+                            <!-- 9: Footer Content Presenter -->
+                            <ColumnDefinition Width="Auto" />
+                            <!-- 10: Min Drag Region -->
+                            <ColumnDefinition Width="60" />
+                            <!-- 11: Right Padding Column -->
                             <ColumnDefinition x:Name="RightPaddingColumn" Width="0" />
                         </Grid.ColumnDefinitions>
-                        <Grid Grid.Column="1">
-                            <Grid.ColumnDefinitions>
-                                <!-- 0: Back Button -->
-                                <ColumnDefinition Width="Auto" />
-                                <!-- 1: Pane Toggle Button -->
-                                <ColumnDefinition Width="Auto" />
-                                <!-- 2: Header Content Presenter -->
-                                <ColumnDefinition Width="Auto" />
-                                <!-- 3: Icon -->
-                                <ColumnDefinition Width="Auto" />
-                                <!-- 4: Title -->
-                                <ColumnDefinition Width="Auto" />
-                                <!-- 5: Subtitle -->
-                                <ColumnDefinition Width="Auto" />
-                                <!-- 6: Content Presenter -->
-                                <ColumnDefinition Width="*" />
-                                <!-- 7: Footer Content Presenter -->
-                                <ColumnDefinition Width="Auto" />
-                                <!-- 8: Min Drag Region -->
-                                <ColumnDefinition Width="60" />
-                            </Grid.ColumnDefinitions>
-                            <Button
-                                x:Name="PART_BackButton"
-                                x:DeferLoadStrategy="Lazy"
-                                Visibility="Collapsed"
-                                Grid.Column="0"
-                                Style="{ThemeResource TitleBarBackButtonStyle}"
-                                IsEnabled="{TemplateBinding IsBackEnabled}"
-                                ToolTipService.ToolTip="Back" />
+                        
+                        <Button
+                            x:Name="PART_BackButton"
+                            x:DeferLoadStrategy="Lazy"
+                            Visibility="Collapsed"
+                            Grid.Column="1"
+                            Style="{ThemeResource TitleBarBackButtonStyle}"
+                            IsEnabled="{TemplateBinding IsBackEnabled}"
+                            ToolTipService.ToolTip="Back" />
 
-                            <Button
-                                x:Name="PART_PaneToggleButton"
-                                x:DeferLoadStrategy="Lazy"
-                                Visibility="Collapsed"
-                                Grid.Column="1"
-                                Style="{ThemeResource TitleBarPaneToggleButtonStyle}"
-                                ToolTipService.ToolTip="Navigation" />
+                        <Button
+                            x:Name="PART_PaneToggleButton"
+                            x:DeferLoadStrategy="Lazy"
+                            Visibility="Collapsed"
+                            Grid.Column="2"
+                            Style="{ThemeResource TitleBarPaneToggleButtonStyle}"
+                            ToolTipService.ToolTip="Navigation" />
 
+                        <ContentPresenter
+                            x:Name="PART_HeaderContentPresenter"
+                            x:DeferLoadStrategy="Lazy"
+                            Visibility="Collapsed"
+                            Grid.Column="3"
+                            Content="{TemplateBinding Header}" />
+                            
+                        <Viewbox
+                            x:Name="PART_Icon"
+                            x:DeferLoadStrategy="Lazy"
+                            Visibility="Collapsed"
+                            Grid.Column="5"
+                            VerticalAlignment="Center"
+                            MaxWidth="16"
+                            MaxHeight="16"
+                            Margin="0,0,16,0"
+                            Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}" />
+                            
+                        <TextBlock
+                            x:Name="PART_TitleText"
+                            x:DeferLoadStrategy="Lazy"
+                            Visibility="Collapsed"
+                            Grid.Column="6"
+                            Text="{TemplateBinding Title}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Foreground="{ThemeResource TitleBarForegroundBrush}"
+                            Margin="0,0,8,0"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            MinWidth="48" />
+                            
+                        <TextBlock
+                            x:Name="PART_SubtitleText"
+                            x:DeferLoadStrategy="Lazy"
+                            Visibility="Collapsed"
+                            Grid.Column="7"
+                            Text="{TemplateBinding Subtitle}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Foreground="{ThemeResource TitleBarSubtitleForegroundBrush}"
+                            Margin="0,0,16,0"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            MinWidth="48" />
+                            
+                        <Grid
+                            x:Name="PART_ContentPresenterGrid"
+                            x:DeferLoadStrategy="Lazy"
+                            Visibility="Collapsed"
+                            Grid.Column="8">
                             <ContentPresenter
-                                x:Name="PART_HeaderContentPresenter"
-                                x:DeferLoadStrategy="Lazy"
-                                Visibility="Collapsed"
-                                Grid.Column="2"
-                                Content="{TemplateBinding Header}" />
-                            
-                            <Viewbox
-                                x:Name="PART_Icon"
-                                x:DeferLoadStrategy="Lazy"
-                                Visibility="Collapsed"
-                                Grid.Column="3"
-                                VerticalAlignment="Center"
-                                MaxWidth="16"
-                                MaxHeight="16"
-                                Margin="16,0,0,0"
-                                Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}" />
-                            
-                            <TextBlock
-                                x:Name="PART_TitleText"
-                                x:DeferLoadStrategy="Lazy"
-                                Visibility="Collapsed"
-                                Grid.Column="4"
-                                Text="{TemplateBinding Title}"
-                                Style="{StaticResource CaptionTextBlockStyle}"
-                                Foreground="{ThemeResource TitleBarForegroundBrush}"
-                                Margin="16,0"
-                                TextTrimming="CharacterEllipsis"
-                                TextWrapping="NoWrap"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                MinWidth="48" />
-                            
-                            <TextBlock
-                                x:Name="PART_SubtitleText"
-                                x:DeferLoadStrategy="Lazy"
-                                Visibility="Collapsed"
-                                Grid.Column="5"
-                                Text="{TemplateBinding Subtitle}"
-                                Style="{StaticResource CaptionTextBlockStyle}"
-                                Foreground="{ThemeResource TitleBarSubtitleForegroundBrush}"
-                                Margin="0,0,16,0"
-                                TextTrimming="CharacterEllipsis"
-                                TextWrapping="NoWrap"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                MinWidth="48" />
-                            
-                            <Grid
-                                x:Name="PART_ContentPresenterGrid"
-                                x:DeferLoadStrategy="Lazy"
-                                Visibility="Collapsed"
-                                Grid.Column="6">
-                                <ContentPresenter
-                                    x:Name="PART_ContentPresenter"
-                                    Content="{TemplateBinding Content}"
-                                    HorizontalAlignment="Center"/>
-                            </Grid>
-                           
-                            <ContentPresenter
-                                x:Name="PART_FooterContentPresenter"
-                                x:DeferLoadStrategy="Lazy"
-                                Visibility="Collapsed"
-                                Grid.Column="7"
-                                Content="{TemplateBinding Footer}" />
+                                x:Name="PART_ContentPresenter"
+                                Content="{TemplateBinding Content}"
+                                HorizontalAlignment="Center"/>
                         </Grid>
+                           
+                        <ContentPresenter
+                            x:Name="PART_FooterContentPresenter"
+                            x:DeferLoadStrategy="Lazy"
+                            Visibility="Collapsed"
+                            Grid.Column="9"
+                            Content="{TemplateBinding Footer}" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

@@ -19,7 +19,7 @@ namespace DirectUI
         _Check_return_ HRESULT get_ElementStartImpl(_Outptr_ xaml_docs::ITextPointer** pValue);
         _Check_return_ HRESULT get_ElementEndImpl(_Outptr_ xaml_docs::ITextPointer** pValue);
 
-        _Check_return_ HRESULT FindNameImpl(_In_ HSTRING name, _Out_ IInspectable** ppReturnValue);
+        _Check_return_ HRESULT FindNameImpl(_In_ HSTRING name, _Outptr_ IInspectable** ppReturnValue);
 
         _Check_return_ HRESULT get_AccessKeyScopeOwnerImpl(_Outptr_result_maybenull_ xaml::IDependencyObject** ppValue);
         _Check_return_ HRESULT put_AccessKeyScopeOwnerImpl(_In_opt_ xaml::IDependencyObject* pValue);

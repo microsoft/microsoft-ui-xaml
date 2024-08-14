@@ -51,7 +51,7 @@ public:
     }
 
     _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params) override;
-    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params) override;
+    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params) override;
 
     _Check_return_ HRESULT UpdateState() override;
 
@@ -102,8 +102,8 @@ protected:
         _Out_opt_ PrimaryStretchDirection* actualStretchDirection);
 
     virtual _Check_return_ HRESULT GetNaturalBounds(_Inout_ XRECTF& pNaturalBounds);
-    _Check_return_ HRESULT MeasureOverride(XSIZEF availableSize, _Inout_ XSIZEF& desiredSize) override;
-    _Check_return_ HRESULT ArrangeOverride(XSIZEF finalSize, _Inout_ XSIZEF& newFinalSize) override;
+    _Check_return_ HRESULT MeasureOverride(XSIZEF availableSize, _Out_ XSIZEF& desiredSize) override;
+    _Check_return_ HRESULT ArrangeOverride(XSIZEF finalSize, _Out_ XSIZEF& newFinalSize) override;
 
     virtual bool HasValidMediaSource();
     virtual bool ShouldCreateBackgroundBrush();

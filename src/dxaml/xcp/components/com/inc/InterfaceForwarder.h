@@ -144,6 +144,7 @@ namespace ctl
             return iinspectable_cast(this->template This_helper<impl_type>())->GetIids(iidCount, iids);
         }
 
+        #pragma warning(suppress: 6387 28196) // It doesn't like that classname can be null
         IFACEMETHODIMP GetRuntimeClassName(
             /* [out] */ __RPC__deref_out_opt HSTRING *className) final
         {

@@ -73,6 +73,7 @@ namespace Flyweight
             }
         };
 
+#pragma warning(suppress: 28251 28253) // Prefast says this is not consistent with itself
         template <typename ...Types>
         static wrapper_ref_type Create(
             _In_opt_ State* state,

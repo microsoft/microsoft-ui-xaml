@@ -641,7 +641,7 @@ _Check_return_ HRESULT XamlNativeRuntime::GetCore(_Outptr_ CCoreServices **ppCor
 
 }
 
-_Check_return_ HRESULT XamlNativeRuntime::GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext)
+_Check_return_ HRESULT XamlNativeRuntime::GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext)
 {
     outSchemaContext = m_spXamlSchemaContext.lock();
     if (!outSchemaContext)

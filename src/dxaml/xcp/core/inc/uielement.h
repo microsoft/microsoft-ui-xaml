@@ -152,8 +152,8 @@ public:
 protected:
     CUIElement(_In_ CCoreServices *pCore);
 
-    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params) override;
-    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params) override;
+    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params) override;
+    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params) override;
     _Check_return_ HRESULT MarkInheritedPropertyDirty(
         _In_ const CDependencyProperty* pdp,
         _In_ const CValue* pValue) override;
@@ -1390,7 +1390,7 @@ public:
     // IsLayoutElement
     // Determines whether or not an element requires layout. Note that all elements will support
     // layout, but only some require it. In general, all 1.0 elements are not layout elements.
-    virtual bool GetIsLayoutElement() const { return false; }
+    virtual _Check_return_ bool GetIsLayoutElement() const { return false; }
 
     _Check_return_ XUINT32 GetIsParentLayoutElement() const { const CUIElement* pParent = GetUIElementParentInternal(); return pParent && pParent->GetIsLayoutElement(); }
 
@@ -2098,7 +2098,7 @@ public:
     XCP_FORCEINLINE bool HasLayoutTransitionStorage() const { return m_pLayoutTransitionStorage != nullptr; }
     LayoutTransitionStorage* GetLayoutTransitionStorage() { return m_pLayoutTransitionStorage; }
     _Check_return_ HRESULT DeleteLayoutTransitionStorage();
-    virtual CTransitionCollection* GetTransitionsForChildElementNoAddRef(_In_ CUIElement* pChild) { return NULL; }
+    virtual _Check_return_ CTransitionCollection* GetTransitionsForChildElementNoAddRef(_In_ CUIElement* pChild) { return NULL; }
 
     _Check_return_ XCP_FORCEINLINE XUINT32 GetIsLayoutTransitionDirty() const { return GetLayoutFlagsAnd(LF_LAYOUTTRANSITION_DIRTY); }
     XCP_FORCEINLINE void SetIsLayoutTransitionDirty(_In_ XUINT32 value) { SetLayoutFlags(LF_LAYOUTTRANSITION_DIRTY, value); }

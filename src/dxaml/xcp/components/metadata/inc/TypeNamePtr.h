@@ -26,7 +26,7 @@ public:
         WindowsDuplicateString(other.Name, &m_typeName.Name);
     }
 
-    TypeNamePtr(TypeNamePtr&& other)
+    TypeNamePtr(TypeNamePtr&& other) noexcept
     {
         m_typeName = other.m_typeName;
         other.m_typeName = { nullptr, wxaml_interop::TypeKind_Primitive };

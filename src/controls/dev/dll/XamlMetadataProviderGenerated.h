@@ -1426,6 +1426,32 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.InkCanvas",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkCanvas",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.FrameworkElement",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IInkCanvasFactory>(L"Microsoft.UI.Xaml.Controls.InkCanvas"); },
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::IInkCanvasStatics statics = GetFactory<winrt::IInkCanvasStatics>(L"Microsoft.UI.Xaml.Controls.InkCanvas");
+                    {
+                        xamlType.AddDPMember(L"IsEnabled", L"Boolean", statics.IsEnabledProperty(), false /* isContent */);
+                    }
+
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.ItemCollectionTransition",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -7875,6 +7901,7 @@ hstring c_knownNamespacePrefixes[] =
 #include "InfoBar.properties.h"
 #include "InfoBarPanel.properties.h"
 #include "InfoBarTemplateSettings.properties.h"
+#include "InkCanvas.properties.h"
 #include "ItemContainer.properties.h"
 #include "ItemsRepeater.properties.h"
 #include "ItemsView.properties.h"
@@ -7971,6 +7998,7 @@ void ClearTypeProperties()
     InfoBarProperties::ClearProperties();
     InfoBarPanelProperties::ClearProperties();
     InfoBarTemplateSettingsProperties::ClearProperties();
+    InkCanvasProperties::ClearProperties();
     ItemContainerProperties::ClearProperties();
     ItemsRepeaterProperties::ClearProperties();
     ItemsViewProperties::ClearProperties();

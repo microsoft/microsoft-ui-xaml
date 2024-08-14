@@ -196,7 +196,7 @@ private:
     }
 
 protected:
-    HRESULT GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext);
+    HRESULT GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext);
 
 private:
     std::weak_ptr<XamlSchemaContext> m_spXamlSchemaContext;

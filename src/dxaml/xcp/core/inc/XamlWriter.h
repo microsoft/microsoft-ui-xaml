@@ -24,17 +24,17 @@ struct XamlPredicateAndArgs;
 class IXamlWriter
 {
 public:
-    virtual HRESULT WriteObject(const std::shared_ptr<XamlType>& inType, bool bIsObjectFromMember) = 0;
+    virtual HRESULT WriteObject(_In_ const std::shared_ptr<XamlType>& inType, _In_ bool bIsObjectFromMember) = 0;
     virtual HRESULT WriteEndObject() = 0;
-    virtual HRESULT WriteMember(const std::shared_ptr<XamlProperty>& inProperty) = 0;
+    virtual HRESULT WriteMember(_In_ const std::shared_ptr<XamlProperty>& inProperty) = 0;
     virtual HRESULT WriteEndMember() = 0;
-    virtual HRESULT WriteValue(const std::shared_ptr<XamlQualifiedObject>& value) = 0;
-    virtual HRESULT WriteNamespace(const xstring_ptr& inssPrefix, const std::shared_ptr<XamlNamespace>& inssXamlNamespace) = 0;
-    virtual HRESULT WriteConditionalScope(const std::shared_ptr<Parser::XamlPredicateAndArgs>& xamlPredicateAndArgs) = 0;
+    virtual HRESULT WriteValue(_In_ const std::shared_ptr<XamlQualifiedObject>& value) = 0;
+    virtual HRESULT WriteNamespace(_In_ const xstring_ptr& inssPrefix, _In_ const std::shared_ptr<XamlNamespace>& inssXamlNamespace) = 0;
+    virtual HRESULT WriteConditionalScope(_In_ const std::shared_ptr<Parser::XamlPredicateAndArgs>& xamlPredicateAndArgs) = 0;
     virtual HRESULT WriteEndConditionalScope() = 0;
     virtual HRESULT Close() = 0;
 
-    virtual HRESULT GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext) const = 0;
+    virtual HRESULT GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext) const = 0;
     virtual ~IXamlWriter() {}
 
     const XamlLineInfo& GetLineInfo()

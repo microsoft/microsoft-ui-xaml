@@ -16,6 +16,7 @@ namespace MUXControlsTestApp
             navigateToGroupedListView.Click += delegate { Frame.NavigateWithoutAnimation(typeof(GroupedListViewBasePage), false /*use GridView*/); };
             navigateToNestedListViews.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NestedListViewsPage)); };
             navigateToListViewAnchoring.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ListViewAnchoringPage)); };
+            navigateToListViewElementNameBinding.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ListViewElementNameBindingPage)); };
         }
     }
 }

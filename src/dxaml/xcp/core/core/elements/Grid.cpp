@@ -973,7 +973,7 @@ void CGrid::EnsureTempDefinitionsStorage(unsigned int minCount)
 //      Overriding CFrameworkElement virtual to add grid specific logic to measure pass
 //
 //------------------------------------------------------------------------
-_Check_return_ HRESULT CGrid::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
+_Check_return_ HRESULT CGrid::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     // Locking the row and columns definitions to prevent changes by user code
     // during the measure pass.
@@ -1252,7 +1252,7 @@ _Check_return_ HRESULT CGrid::MeasureOverride(XSIZEF availableSize, XSIZEF& desi
 //      Overriding CFrameworkElement virtual to add grid specific logic to arrange pass
 //
 //------------------------------------------------------------------------
-_Check_return_ HRESULT CGrid::ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize)
+_Check_return_ HRESULT CGrid::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize)
 {
     // Locking the row and columns definitions to prevent changes by user code
     // during the arrange pass.

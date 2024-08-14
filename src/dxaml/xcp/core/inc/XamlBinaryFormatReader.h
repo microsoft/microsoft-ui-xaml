@@ -49,7 +49,7 @@ public:
     HRESULT set_NextIndex(XUINT32 uiIndex) override   { ASSERT(FALSE); RRETURN(E_FAIL); }
     HRESULT get_NextIndex(XUINT32 *puiIndex) override { ASSERT(FALSE); RRETURN(E_FAIL); }
 
-    _Check_return_ HRESULT GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext) override
+    _Check_return_ HRESULT GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext) override
     {
         outSchemaContext = m_spXamlSchemaContext;
         RRETURN(S_OK);

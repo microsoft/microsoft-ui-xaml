@@ -333,11 +333,18 @@ void TreeViewList::PrepareContainerForItemOverride(winrt::DependencyObject const
     {
         const bool hasChildren = itemContainer.HasUnrealizedChildren() || itemNode.HasChildren();
         itemContainer.GlyphOpacity(hasChildren ? 1.0 : 0.0);
-        if (itemContainer.IsExpanded() != itemNode.IsExpanded()) {
+        if (itemContainer.IsExpanded() != itemNode.IsExpanded()) { 
             DispatcherQueue().TryEnqueue(winrt::DispatcherQueueHandler(
                 [itemNode, itemContainer]()
             {
-                itemNode.IsExpanded(itemContainer.IsExpanded());
+                if (itemContainer.GetBindingExpression(TreeViewItem::IsExpandedProperty()))
+                {
+                    itemNode.IsExpanded(itemContainer.IsExpanded()); 
+                }
+                else
+                {
+                    itemContainer.IsExpanded(itemNode.IsExpanded()); 
+                }
             }));
         }
     }

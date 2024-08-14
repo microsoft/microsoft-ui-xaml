@@ -41,6 +41,7 @@ private:
     void UpdateFooter();
     void UpdateDragRegion();
     void UpdateInteractableElementsList();
+    void UpdateHeaderSpacing();
 
     void OnInputActivationChanged(const winrt::InputActivationListener& sender, const winrt::InputActivationListenerActivationChangedEventArgs& args);
     void OnBackButtonClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
@@ -87,6 +88,8 @@ private:
     static constexpr std::wstring_view s_expandedVisualStateName{ L"Expanded"sv };
     static constexpr std::wstring_view s_compactHeightVisualStateName{ L"CompactHeight"sv };
     static constexpr std::wstring_view s_expandedHeightVisualStateName{ L"ExpandedHeight"sv };
+    static constexpr std::wstring_view s_defaultSpacingVisualStateName{ L"DefaultSpacing"sv };
+    static constexpr std::wstring_view s_negativeInsetVisualStateName{ L"NegativeInsetSpacing"sv };
     static constexpr std::wstring_view s_iconVisibleVisualStateName{ L"IconVisible"sv };
     static constexpr std::wstring_view s_iconCollapsedVisualStateName{ L"IconCollapsed"sv };
     static constexpr std::wstring_view s_iconDeactivatedVisualStateName{ L"IconDeactivated"sv };

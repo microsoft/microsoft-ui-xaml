@@ -64,6 +64,7 @@ _Check_return_ HRESULT CValidationErrorsCollection::Neat(bool)
     return S_OK;
 }
 
+_Success_(return != false)
 bool CValidationErrorsCollection::TryGetValidationError(_In_ CDependencyObject* obj, _COM_Outptr_ xaml_controls::IInputValidationError** error) const
 {
     // Initialize the output parameter to nullptr at the start

@@ -100,7 +100,7 @@ bool CXamlCompositionBrush::CheckUIElementParent()
     return false;
 }
 
-_Check_return_ HRESULT CXamlCompositionBrush::EnterImpl(_In_ CDependencyObject *namescopeOwner, EnterParams params)
+_Check_return_ HRESULT CXamlCompositionBrush::EnterImpl(_In_ CDependencyObject *namescopeOwner, _In_ EnterParams params)
 {
     IFC_RETURN(CBrush::EnterImpl(namescopeOwner, params));
 
@@ -112,7 +112,7 @@ _Check_return_ HRESULT CXamlCompositionBrush::EnterImpl(_In_ CDependencyObject *
     return S_OK;
 }
 
-_Check_return_ HRESULT CXamlCompositionBrush::LeaveImpl(_In_ CDependencyObject* namescopeOwner, LeaveParams params)
+_Check_return_ HRESULT CXamlCompositionBrush::LeaveImpl(_In_ CDependencyObject* namescopeOwner, _In_ LeaveParams params)
 {
     IFC_RETURN(CBrush::LeaveImpl(namescopeOwner, params));
 

@@ -76,7 +76,7 @@ namespace DirectUI
 
         // Handle the custom property changed event and call the
         // OnPropertyChanged methods.
-        _Check_return_ HRESULT OnPropertyChanged2(const PropertyChangedParams& args) override;
+        _Check_return_ HRESULT OnPropertyChanged2(_In_ const PropertyChangedParams& args) override;
 
         IFACEMETHOD(CreatePresenter)(_Outptr_ xaml_controls::IControl** ppReturnValue) override;
 

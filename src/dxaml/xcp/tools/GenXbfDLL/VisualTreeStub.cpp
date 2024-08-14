@@ -48,7 +48,7 @@ void CPopupRoot::CloseAllPopupsForTreeReset(void)
 {
 }
 
-CPopupRoot* VisualTree::GetPopupRoot(void)
+_Check_return_ CPopupRoot* VisualTree::GetPopupRoot(void)
 {
     return nullptr;
 }

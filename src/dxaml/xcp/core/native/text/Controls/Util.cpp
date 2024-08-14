@@ -213,7 +213,7 @@ std::wstring GetTextFromRange(_In_ ITextRange* range)
     return std::wstring();
 }
 
-void GetRangeForStory(_In_ ITextDocument2* doc, _COM_Outptr_ ITextRange2** range)
+void GetRangeForStory(_In_ ITextDocument2* doc, _Outptr_ ITextRange2** range)
 {
     wrl::ComPtr<ITextRange2> docRange;
     FAIL_FAST_IF_FAILED(doc->Range2(0, 0, &docRange));
@@ -221,7 +221,7 @@ void GetRangeForStory(_In_ ITextDocument2* doc, _COM_Outptr_ ITextRange2** range
     *range = docRange.Detach();
 }
 
-void GetRangeForPoint(_In_ ITextDocument2* doc, long x, long y, _COM_Outptr_ ITextRange2** range)
+void GetRangeForPoint(_In_ ITextDocument2* doc, long x, long y, _Outptr_ ITextRange2** range)
 {
     // RangeFromPoint2 returns unexpected results when y is above/below the document's content area.
     // Check for these condition and use the beginning/end of the story instead.
@@ -247,7 +247,7 @@ void GetRangeForPoint(_In_ ITextDocument2* doc, long x, long y, _COM_Outptr_ ITe
     *range = hitTestRange.Detach();
 }
 
-void GetRangeForRect(_In_ ITextDocument2* doc, const RECT& bounds, _COM_Outptr_ ITextRange2** range)
+void GetRangeForRect(_In_ ITextDocument2* doc, const RECT& bounds, _Outptr_ ITextRange2** range)
 {
     wrl::ComPtr<ITextRange2> start;
     GetRangeForPoint(doc, bounds.left, bounds.top, &start);
@@ -261,7 +261,7 @@ void GetRangeForRect(_In_ ITextDocument2* doc, const RECT& bounds, _COM_Outptr_ 
     *range = start.Detach();
 }
 
-void GetRangeForRect(_In_ ITextDocument2* doc, const wf::Rect& bounds, _COM_Outptr_ ITextRange2** range)
+void GetRangeForRect(_In_ ITextDocument2* doc, const wf::Rect& bounds, _Outptr_ ITextRange2** range)
 {
     RECT r = ToRECT(bounds);
     GetRangeForRect(doc, r, range);

@@ -295,14 +295,14 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 <#+                 {#>
                     if (auto <#=element.ElementTemplatedParentCodeName#> = target.try_as<<#=element.TemplatedParentType#>>())
                     {
-                        auto objBindings = std::make_unique<<#=element.BindUniverse.BindingsClassName#>>();
+                        auto objBindings = std::make_shared<<#=element.BindUniverse.BindingsClassName#>>();
                         objBindings->SetDataRoot(<#=element.ElementTemplatedParentCodeName#>);
                         bindings = ::winrt::make_self<<#=Projection(ProjectInfo.RootNamespace)#>::implementation::XamlBindings>(std::move(objBindings));
                         XamlBindingHelper::SetDataTemplateComponent(<#=element.ElementTemplatedParentCodeName#>, bindings.as<<#=Projection(KnownNamespaces.XamlMarkup)#>::IDataTemplateComponent>());
                     }
 <#+                 } else {#>
                     auto <#=element.ElementCodeName#> = target.as<<#=element.Type#>>();
-                    auto objBindings = std::make_unique<<#=element.BindUniverse.BindingsClassName#>>();
+                    auto objBindings = std::make_shared<<#=element.BindUniverse.BindingsClassName#>>();
                     objBindings->SetDataRoot(<#=element.IsBindingFileRoot ? "*this" : element.ElementCodeName + ".DataContext()"#>);
 <#+                     if (element.BindUniverse.DistinctConvertersUsed.Count() > 0) { #>
                     objBindings->SetConverterLookupRoot(*this);

@@ -27,7 +27,7 @@ public:
     bool ContainsNoRefItems() const override { return true; }
 
     XUINT32 GetCount() const override;
-    _Check_return_ HRESULT Append(_In_ CValue& value, XUINT32* index) override;
+    _Check_return_ HRESULT Append(_In_ CValue& value, _Out_opt_ XUINT32* index) override;
     _Check_return_ HRESULT Insert(XUINT32 index, _In_ CValue& value) override;
     void* RemoveAt(XUINT32 index) override;
     void* GetItemWithAddRef(XUINT32 index) override;

@@ -32,7 +32,7 @@ public:
 
     virtual bool IsDOCollection() const { return false; }
     virtual bool ContainsNoRefItems() const { return false; }
-    virtual _Check_return_ HRESULT Append(CValue& value, _Out_opt_ XUINT32 *pnIndex = NULL) = 0;
+    virtual _Check_return_ HRESULT Append(_In_ CValue& value, _Out_opt_ XUINT32 *pnIndex = NULL) = 0;
     virtual _Check_return_ HRESULT Insert(_In_ XUINT32 nIndex, _In_ CValue& value) = 0;
     virtual _Check_return_ void *RemoveAt(_In_ XUINT32 nIndex) = 0;
     virtual _Check_return_ void *GetItemWithAddRef(_In_ XUINT32 nIndex) = 0;

@@ -139,15 +139,15 @@ namespace DirectUI
         IFACEMETHOD(Clear)() override;
 
         // IIterable<IKeyValuePair<IInspectable*, IInspectable*>*> members.
-        IFACEMETHOD(GetAt)(_In_opt_ UINT index, _Out_ wfc::IKeyValuePair<IInspectable*, IInspectable*>** item) override;
+        IFACEMETHOD(GetAt)(UINT index, _Out_ wfc::IKeyValuePair<IInspectable*, IInspectable*>** item) override;
         IFACEMETHOD(GetView)(_Outptr_result_maybenull_ wfc::IVectorView<wfc::IKeyValuePair<IInspectable*, IInspectable*>*>** view) override;
         IFACEMETHOD(IndexOf)(_In_opt_ wfc::IKeyValuePair<IInspectable*, IInspectable*>* value, _Out_ UINT *index, _Out_ BOOLEAN *found) override;
         // TODO Bug# 105831
         // Code coverage note: unimplemented method purely for supporting an interface that is exposed via QueryInterface (IVector), but is not officially part of the public API.
-        IFACEMETHODIMP SetAt(_In_ UINT index, _In_opt_ wfc::IKeyValuePair<IInspectable*, IInspectable*>* item) override { return E_NOTIMPL; }
+        IFACEMETHODIMP SetAt(UINT index, _In_opt_ wfc::IKeyValuePair<IInspectable*, IInspectable*>* item) override { return E_NOTIMPL; }
         // Code coverage note: unimplemented method purely for supporting an interface that is exposed via QueryInterface (IVector), but is not officially part of the public API.
-        IFACEMETHODIMP InsertAt(_In_ UINT index, _In_opt_ wfc::IKeyValuePair<IInspectable*, IInspectable*>* item) override { return E_NOTIMPL; }
-        IFACEMETHOD(RemoveAt)(_In_ UINT index) override;
+        IFACEMETHODIMP InsertAt(UINT index, _In_opt_ wfc::IKeyValuePair<IInspectable*, IInspectable*>* item) override { return E_NOTIMPL; }
+        IFACEMETHOD(RemoveAt)(UINT index) override;
         IFACEMETHOD(Append)(_In_opt_ wfc::IKeyValuePair<IInspectable*, IInspectable*>* item) override;
         IFACEMETHOD(RemoveAtEnd)() override;
 

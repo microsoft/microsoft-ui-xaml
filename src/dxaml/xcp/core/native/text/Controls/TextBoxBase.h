@@ -269,8 +269,8 @@ protected:
     _Check_return_ HRESULT OnInheritedPropertyChanged(_In_ CEventArgs* pEventArgs) final;
     _Check_return_ HRESULT OnRightTapped(_In_ CEventArgs* pEventArgs) final;
     _Check_return_ HRESULT OnTapped(_In_ CEventArgs* pEventArgs) final;
-    _Check_return_ HRESULT ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize) override;
-    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params) override;
+    _Check_return_ HRESULT ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize) override;
+    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params) override;
 
     _Check_return_ HRESULT NotifyThemeChangedCore(_In_ Theming::Theme theme, _In_ bool fForceRefresh = false) override;
 
@@ -361,7 +361,7 @@ protected:
 
     bool IsSecondaryInputScopeDefault() const;
 
-    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *namescopeOwner, EnterParams params) override;
+    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *namescopeOwner, _In_ EnterParams params) override;
 
 private:
     _Check_return_ HRESULT InitializeTextServices();

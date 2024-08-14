@@ -114,7 +114,7 @@ public:
         _In_ const std::shared_ptr<XamlQualifiedObject>& spProxy) override;
 
 protected:
-    _Check_return_ HRESULT GetSchemaContext( std::shared_ptr<XamlSchemaContext>& outSchemaContext );
+    _Check_return_ HRESULT GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext );
 
 private:
     std::weak_ptr<XamlSchemaContext> m_spXamlSchemaContext;

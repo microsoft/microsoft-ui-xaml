@@ -94,7 +94,7 @@ _Check_return_ HRESULT CIconElement::PullInheritedTextFormatting()
 //
 //-------------------------------------------------------------------------
 _Check_return_ HRESULT
-CIconElement::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
+CIconElement::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     CUIElement* pChild = GetFirstChildNoAddRef();
     if (pChild)
@@ -129,7 +129,7 @@ CIconElement::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
 //-------------------------------------------------------------------------
 _Check_return_
 HRESULT
-CIconElement::ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize)
+CIconElement::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize)
 {
     HRESULT hr = S_OK;
     CUIElement* pChild;

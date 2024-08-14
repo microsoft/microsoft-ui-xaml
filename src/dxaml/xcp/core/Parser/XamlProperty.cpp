@@ -591,7 +591,7 @@ HRESULT XamlProperty::RetrieveBoolPropertyBits(const XamlBitSet<BoolPropertyBits
 //
 //------------------------------------------------------------------------
 //
-HRESULT XamlProperty::GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext)
+HRESULT XamlProperty::GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext)
 {
     outSchemaContext = m_spSchemaContext.lock();
     if (!outSchemaContext)

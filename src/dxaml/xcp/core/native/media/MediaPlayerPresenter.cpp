@@ -529,7 +529,7 @@ _Check_return_ HRESULT CMediaPlayerPresenter::EnterImpl(_In_ CDependencyObject *
     return S_OK;
 }
 
-_Check_return_ HRESULT CMediaPlayerPresenter::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+_Check_return_ HRESULT CMediaPlayerPresenter::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     IFC_RETURN(CFrameworkElement::LeaveImpl(pNamescopeOwner, params));
 
@@ -793,14 +793,14 @@ CFrameworkElement* CMediaPlayerPresenter::GetLayoutOwnerNoRef()
     }
 }
 
-_Check_return_ HRESULT CMediaPlayerPresenter::MeasureOverride(_In_ XSIZEF availableSize, _Inout_ XSIZEF& desiredSize)
+_Check_return_ HRESULT CMediaPlayerPresenter::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     PreMeasure(availableSize, desiredSize);
 
     return S_OK;
 }
 
-void CMediaPlayerPresenter::PreMeasure(_In_ XSIZEF availableSize, _Inout_ XSIZEF& desiredSize)
+void CMediaPlayerPresenter::PreMeasure(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     CFrameworkElement* pLayoutOwner = GetLayoutOwnerNoRef();
     const float explicitWidth = pLayoutOwner->IsDefaultWidth() ? -1.0f : pLayoutOwner->GetSpecifiedWidth();

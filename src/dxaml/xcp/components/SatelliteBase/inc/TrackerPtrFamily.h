@@ -56,7 +56,7 @@ namespace Private
         ReferenceTrackerBase(const ReferenceTrackerBase&) = delete;
         ReferenceTrackerBase& operator=(const ReferenceTrackerBase&) = delete;
 
-        ReferenceTrackerBase(ReferenceTrackerBase&& other)
+        ReferenceTrackerBase(ReferenceTrackerBase&& other) noexcept
             : m_pOwnerNoRef(other.m_pOwnerNoRef)
         {
             other.m_pOwnerNoRef = nullptr;
@@ -187,7 +187,7 @@ namespace Private
         // carefully so that we don't end up with two TrackerPtr instances
         // with the same data.
         // Move constructor.
-        TrackerPtr(TrackerPtr&& other)
+        TrackerPtr(TrackerPtr&& other) noexcept
             : ReferenceTrackerBase(static_cast<ReferenceTrackerBase&&>(other))
             , m_handle(std::move(other.m_handle))
             , m_pFallbackPtr(std::move(other.m_pFallbackPtr))
@@ -198,7 +198,7 @@ namespace Private
             other.m_pValueNoRef = nullptr;
         }
         // Move assignment operator.
-        TrackerPtr& operator=(TrackerPtr&& other)
+        TrackerPtr& operator=(TrackerPtr&& other) noexcept
         {
             if (this != std::addressof(other))
             {

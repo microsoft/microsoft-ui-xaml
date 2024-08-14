@@ -65,5 +65,7 @@
     <Import Project="$(MSBuildThisFileDirectory)dev\MapControl\MapControl.vcxitems" Label="Shared" Condition="$(FeatureMapControlEnabled) == 'true' Or $(FeatureMapControlEnabled) == 'productOnly'" />
     <Import Project="$(MSBuildThisFileDirectory)dev\SelectorBar\SelectorBar.vcxitems" Label="Shared" Condition="$(FeatureSelectorBarEnabled) == 'true' Or $(FeatureSelectorBarEnabled) == 'productOnly'" />
     <Import Project="$(MSBuildThisFileDirectory)dev\TitleBar\TitleBar.vcxitems" Label="Shared" Condition="$(FeatureTitleBarEnabled) == 'true' Or $(FeatureTitleBarEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\InkCanvas\InkCanvas.vcxitems" Label="Shared" Condition="$(FeatureInkCanvasEnabled) == 'true' Or $(FeatureInkCanvasEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\InkToolbar\InkToolBar.vcxitems" Label="Shared" Condition="$(FeatureInkToolBarEnabled) == 'true' Or $(FeatureInkToolBarEnabled) == 'productOnly'" />
   </ImportGroup>
 </Project>

@@ -19,7 +19,6 @@ private:
 protected:
 
     winrt::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSource CreateDesktopWindowsXamlSource(DWORD dwStylet);
-    void ClearXamlIslands();
     void RemoveDesktopWindowXamlSource(winrt::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSource dwxs);
 
     static void OnNCCreate(HWND const window, LPARAM const lparam) noexcept;

@@ -79,7 +79,7 @@ public:
     _Check_return_ HRESULT OnPropertyChanged(_In_ const PropertyChangedParams& args) override;
 
 protected:
-    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params) override;
+    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params) override;
     _Check_return_ HRESULT MarkInheritedPropertyDirty(
        _In_ const CDependencyProperty* pdp,
        _In_ const CValue* pValue) final;

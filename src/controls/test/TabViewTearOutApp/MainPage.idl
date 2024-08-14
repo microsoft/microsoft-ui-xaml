@@ -5,6 +5,6 @@
     {
         MainPage();
 
-        IObservableVector<IInspectable> StringList{ get; };
+        IObservableVector<IInspectable> DocumentList{ get; };
     }
 }

@@ -317,7 +317,7 @@ HRESULT CTextElement::MarkDirty(
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CTextElement::EnterImpl(
     _In_ CDependencyObject *pNamescopeOwner,
-         EnterParams        params)
+    _In_ EnterParams        params)
 {
     HRESULT hr = S_OK;
     CDependencyObject *pParent = NULL;

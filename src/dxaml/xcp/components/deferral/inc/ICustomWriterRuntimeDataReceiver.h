@@ -16,6 +16,7 @@ class CustomWriterRuntimeData;
 // data will be handed, through this interface, to that instance for storage.
 struct ICustomWriterRuntimeDataReceiver
 {
-    virtual _Check_return_ HRESULT SetCustomWriterRuntimeData(std::shared_ptr<CustomWriterRuntimeData> data,
-        std::unique_ptr<CustomWriterRuntimeContext> context) = 0;
+    virtual _Check_return_ HRESULT SetCustomWriterRuntimeData(
+        _In_ std::shared_ptr<CustomWriterRuntimeData> data,
+        _In_ std::unique_ptr<CustomWriterRuntimeContext> context) = 0;
 };

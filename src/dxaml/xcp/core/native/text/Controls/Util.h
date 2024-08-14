@@ -148,10 +148,10 @@ bool DoesRangeSpanMultipleUnits(_In_ ITextRange2* range, long tomUnit);
 void GetEncompassingSentenceBoundaries(_In_ ITextRange2* range, _Out_ long* cpStart, _Out_ long* cpEnd);
 std::wstring GetTextFromRange(_In_ ITextRange* range);
 
-void GetRangeForStory(_In_ ITextDocument2* doc, _COM_Outptr_ ITextRange2** range);
-void GetRangeForPoint(_In_ ITextDocument2* doc, long x, long y, _COM_Outptr_ ITextRange2** range);
-void GetRangeForRect(_In_ ITextDocument2* doc, const RECT& bounds, _COM_Outptr_ ITextRange2** range);
-void GetRangeForRect(_In_ ITextDocument2* doc, const wf::Rect& bounds, _COM_Outptr_ ITextRange2** range);
+void GetRangeForStory(_In_ ITextDocument2* doc, _Outptr_ ITextRange2** range);
+void GetRangeForPoint(_In_ ITextDocument2* doc, long x, long y, _Outptr_ ITextRange2** range);
+void GetRangeForRect(_In_ ITextDocument2* doc, const RECT& bounds, _Outptr_ ITextRange2** range);
+void GetRangeForRect(_In_ ITextDocument2* doc, const wf::Rect& bounds, _Outptr_ ITextRange2** range);
 wf::Rect GetRectForStory(_In_ ITextDocument2* doc);
 wf::Rect GetRectForRange(_In_ ITextRange2* range,_Out_opt_ float* baseline = nullptr);
 

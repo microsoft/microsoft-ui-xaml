@@ -270,7 +270,7 @@ public:
         return m_isWUCGeometryDirty;
     }
 
-    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params) override;
+    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params) override;
     void ReleaseDCompResources() override;
 
     //-----------------------------------------------------------------------------
@@ -416,7 +416,7 @@ protected:
     virtual _Check_return_ HRESULT GetPrintGeometryVirtual(
         _In_ const D2DPrecomputeParams& cp,
         _In_ const D2DRenderParams &printParams,
-        IPALAcceleratedGeometry** ppGeometry
+        _Outptr_ IPALAcceleratedGeometry** ppGeometry
         );
 };
 
@@ -573,7 +573,7 @@ protected:
     _Check_return_ HRESULT GetPrintGeometryVirtual(
         _In_ const D2DPrecomputeParams& cp,
         _In_ const D2DRenderParams &printParams,
-        IPALAcceleratedGeometry** ppGeometry
+        _Outptr_ IPALAcceleratedGeometry** ppGeometry
         ) override;
 
 private:

@@ -119,7 +119,7 @@ public:
 
 protected:
     _Check_return_ HRESULT GetCore( _Outptr_ CCoreServices **ppCore );
-    _Check_return_ HRESULT GetSchemaContext( std::shared_ptr<XamlSchemaContext>& outSchemaContext );
+    _Check_return_ HRESULT GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext );
 
 
 private:

@@ -54,11 +54,11 @@ public:
 
     _Check_return_ HRESULT EnterImpl(
         _In_ CDependencyObject *pNamescopeOwner,
-        EnterParams params) final;
+        _In_ EnterParams params) final;
 
     _Check_return_ HRESULT LeaveImpl(
         _In_ CDependencyObject *pNamescopeOwner,
-        LeaveParams params) final;
+        _In_ LeaveParams params) final;
 
     CDependencyObject *m_scopeOwner = nullptr;
     DirectUI::VirtualKey m_key = DirectUI::VirtualKey::None;

@@ -65,7 +65,7 @@ void CVisualState::UnparentAndLeaveDO(_In_ CDependencyObject* object)
 }
 
 _Check_return_ HRESULT CVisualState::EnterImpl(
-    _In_ CDependencyObject* namescopeOwner, EnterParams params)
+    _In_ CDependencyObject* namescopeOwner, _In_ EnterParams params)
 {
     IFC_RETURN(CDependencyObject::EnterImpl(namescopeOwner, params));
     if (m_pStoryboard)
@@ -76,7 +76,7 @@ _Check_return_ HRESULT CVisualState::EnterImpl(
 }
 
 _Check_return_ HRESULT CVisualState::LeaveImpl(
-    _In_ CDependencyObject* namescopeOwner, LeaveParams params)
+    _In_ CDependencyObject* namescopeOwner, _In_ LeaveParams params)
 {
     IFC_RETURN(CDependencyObject::LeaveImpl(namescopeOwner, params));
     if (m_pStoryboard)

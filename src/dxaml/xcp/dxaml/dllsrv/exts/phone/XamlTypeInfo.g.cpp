@@ -1958,7 +1958,7 @@ XamlRuntimeType::ResetDependencyProperties() const
 }
 
 // Called from XamlType::RunInitializer rather than relying on the factories RuntimeClassInitialize to do the registration
-HRESULT
+_Check_return_ HRESULT
 XamlRuntimeType::EnsureDependencyProperties(_In_ UINT16 typeLabel) const
 {
   switch(typeLabel)

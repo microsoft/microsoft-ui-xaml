@@ -318,6 +318,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 
 <#+     private void Output_GetBindingConnectorMethod()#>
 <#+     {#>
+
         /// <summary>
         /// GetBindingConnector(int connectionId, object target)
         /// </summary>
@@ -561,19 +562,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+                 foreach (BoundEventAssignment evt in element.BoundEventAssignments)#>
 <#+                 {#>
 <#+                     Output_ApiInformationCall_Push(evt.ApiInformation, Indent.ThreeTabs); #>
-                        this.<#=evt.EventHandlerCodeName#> = (<#=evt.Parameters.Declaration()#>) =>
-                        {
-<#+                     PushIndent();#>
-<#+                     if (!evt.PathStep.ValueType.IsDelegate())#>
-<#+                     {#>
-                        <#=evt.PathStep.CodeGen().PathExpression#>;
-<#+                     }#>
-<#+                     else#>
-<#+                     {#>
-                        <#=evt.PathStep.CodeGen().PathExpression#>(<#=evt.Parameters.ForCall()#>);
-<#+                     }#>
-<#+                     PopIndent();#>
-                        };
+<#+                     Output_NullCheckedEventAssignment(evt); #>
                         (<#=ObjectCast(element.Type.ToString(), "target")#>).<#=evt.MemberName#> += <#=evt.EventHandlerCodeName#>;
 <#+                     Output_ApiInformationCall_Pop(evt.ApiInformation, Indent.ThreeTabs); #>
 <#+                 }#>
@@ -1471,6 +1460,27 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
             }
 <#+     } #>
 <#+     PopIndent();#>
+<#+ } #>
+
+<#+ void  Output_NullCheckedEventAssignment(BoundEventAssignment evt) #>
+<#+ { #>
+                        this.<#=evt.EventHandlerCodeName#> = (<#=evt.Parameters.Declaration()#>) =>
+                        {
+<#+     foreach (var parent in evt.PathStep.Parents.Where(parent => parent.NeedsCheckForNull)) { #>
+                            if (<#=parent.CodeGen().PathExpression#> != null)
+                            {
+<#+         PushIndent(); #>
+<#+     } #>
+<#+     if (!evt.PathStep.ValueType.IsDelegate()) { #>
+                            <#=evt.PathStep.CodeGen().PathExpression#>;
+<#+     } else { #>
+                            <#=evt.PathStep.CodeGen().PathExpression#>(<#=evt.Parameters.ForCall()#>);
+<#+     } #>
+<#+     foreach (var parent in evt.PathStep.Parents.Where(parent => parent.NeedsCheckForNull)) { #>
+<#+         PopIndent(); #>
+                            }
+<#+     } #>
+                        };
 <#+ } #>
 
 <#+ void Output_UpdateErrors(BindUniverse bindUniverse) #>

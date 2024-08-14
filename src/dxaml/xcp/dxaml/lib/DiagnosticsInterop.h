@@ -142,11 +142,11 @@ namespace Diagnostics
         // TryGetVisualTreeParent returns the parent of the element that is displayed in the visual tree.
         // If the element shouldn't be displayed in the LVT, then this method will return false. Otherwise,
         // it returns true regardless if there is a parent or not.
-        bool TryGetVisualTreeParent(
+        _Success_(return != false) bool TryGetVisualTreeParent(
             _In_ IInspectable* child,
             _COM_Outptr_result_maybenull_ IInspectable** parent);
 
-        static bool TryGetOwnerFromIsland(
+        _Success_(return != false) static bool TryGetOwnerFromIsland(
             _In_ xaml_hosting::IXamlIslandRoot* island,
             _COM_Outptr_result_maybenull_ IInspectable** islandOwner);
 
@@ -306,7 +306,7 @@ namespace Diagnostics
             const xstring_ptr_view& key,
             const bool isImplicitStyle);
 
-        static bool TryGetDictionaryItem(
+        _Success_(return != false) static bool TryGetDictionaryItem(
             _In_ xaml::IResourceDictionary* resourceDictionary,
             const xstring_ptr_view& keyAsString,
             bool isImplicitStyle,

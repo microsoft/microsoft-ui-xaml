@@ -241,26 +241,26 @@ namespace DirectUI { namespace Components { namespace Moco {
 
         // Used by GetTargetIndexFromNavigationAction for item containers.
         _Check_return_ HRESULT GetTargetItemIndexInNextLineWithGrouping(
-            _In_ int currItemIndex,
-            _In_ int step,
-            _In_ int maxLineLength,
+            int currItemIndex,
+            int step,
+            int maxLineLength,
             _Out_ int& targetIndex);
 
         // Used by GetTargetIndexFromNavigationAction for item containers.
         _Check_return_ HRESULT TryGetTargetHeaderIndexWithItemNavigation(
-            _In_ int currentItemIndex,
-            _In_ int targetItemIndex,
-            _In_ int step,
-            _In_ int maxLineLength,
+            int currentItemIndex,
+            int targetItemIndex,
+            int step,
+            int maxLineLength,
             _Out_ int& targetGroupHeaderIndex);
 
         // Used by GetTargetIndexFromNavigationAction for group headers.
         _Check_return_ HRESULT TryGetTargetItemIndexWithHeaderNavigation(
-            _In_ int currentGroupIndex,
-            _In_ int targetGroupIndex,
-            _In_ int step,
-            _In_ int maxLineLength,
-            _In_ int lastTargetItemIndexHint,
+            int currentGroupIndex,
+            int targetGroupIndex,
+            int step,
+            int maxLineLength,
+            int lastTargetItemIndexHint,
             _Out_ int& targetItemIndex);
 
     private:

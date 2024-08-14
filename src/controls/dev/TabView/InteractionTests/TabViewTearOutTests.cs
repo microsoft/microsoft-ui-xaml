@@ -81,7 +81,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies that CanTearOutTabs does not prevent internally reordering tabs.")]
-        [TestProperty("Ignore", "True")] // Task 50591398: Re-enable tests when we ingest the latest Microsoft.UI.Input.dll
         public void CanReorderTabs()
         {
             TabViewTearOutTestHelpers.CanReorderTabs(GetTabViewTearOutAppWindows, GetTabViewFromWindow, GetTabsFromTabView);
@@ -143,9 +142,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("The window should have three tabs in the order 1, 2, 3.");
 
                 Verify.AreEqual(3, tabs.Count);
-                Verify.AreEqual("Item 1", tabs[0].Name);
-                Verify.AreEqual("Item 2", tabs[1].Name);
-                Verify.AreEqual("Item 3", tabs[2].Name);
+                Verify.AreEqual("Document 1", tabs[0].Name);
+                Verify.AreEqual("Document 2", tabs[1].Name);
+                Verify.AreEqual("Document 3", tabs[2].Name);
 
                 Log.Comment("Let's ensure the window is visible prior to dragging on it.");
 
@@ -161,17 +160,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(2, windows.Count);
 
                 // The new window is the one that contains Item 1.
-                var newWindow = windows.Where(w => w.Descendants.TryFind(UICondition.CreateFromName("Item 1"), out _)).First();
+                var newWindow = windows.Where(w => w.Descendants.TryFind(UICondition.CreateFromName("Document 1"), out _)).First();
                 var newWindowTabView = getTabViewFromWindowFunc(newWindow);
 
                 tabs = getTabsFromTabViewFunc(tabView);
                 var newTabs = getTabsFromTabViewFunc(newWindowTabView);
 
                 Verify.AreEqual(2, tabs.Count);
-                Verify.AreEqual("Item 2", tabs[0].Name);
-                Verify.AreEqual("Item 3", tabs[1].Name);
+                Verify.AreEqual("Document 2", tabs[0].Name);
+                Verify.AreEqual("Document 3", tabs[1].Name);
                 Verify.AreEqual(1, newTabs.Count);
-                Verify.AreEqual("Item 1", newTabs[0].Name);
+                Verify.AreEqual("Document 1", newTabs[0].Name);
 
                 Log.Comment("Let's ensure the second window is visible prior to dragging on it.");
 
@@ -194,9 +193,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.AreEqual(1, windows.Count);
                 Verify.AreEqual(3, tabs.Count);
-                Verify.AreEqual("Item 2", tabs[0].Name);
-                Verify.AreEqual("Item 3", tabs[1].Name);
-                Verify.AreEqual("Item 1", tabs[2].Name);
+                Verify.AreEqual("Document 2", tabs[0].Name);
+                Verify.AreEqual("Document 3", tabs[1].Name);
+                Verify.AreEqual("Document 1", tabs[2].Name);
             }
             finally
             {
@@ -232,9 +231,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("The window should have three tabs in the order 1, 2, 3.");
 
                 Verify.AreEqual(3, tabs.Count);
-                Verify.AreEqual("Item 1", tabs[0].Name);
-                Verify.AreEqual("Item 2", tabs[1].Name);
-                Verify.AreEqual("Item 3", tabs[2].Name);
+                Verify.AreEqual("Document 1", tabs[0].Name);
+                Verify.AreEqual("Document 2", tabs[1].Name);
+                Verify.AreEqual("Document 3", tabs[2].Name);
 
                 Log.Comment("Let's ensure the window is visible prior to dragging on it.");
 
@@ -242,7 +241,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Now we'll drag tab 1 to the right side of tab 2.");
 
-                InputHelper.MouseDragToTarget(tabs[0], tabs[1], 50);
+                InputHelper.MouseDragToTarget(tabs[0], tabs[1], tabs[1].BoundingRectangle.Width / 2);
 
                 Log.Comment("We should still have only one window.");
 
@@ -255,15 +254,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("The window should now have three tabs in the order 2, 1, 3.");
 
                 Verify.AreEqual(3, tabs.Count);
-                Verify.AreEqual("Item 2", tabs[0].Name);
-                Verify.AreEqual("Item 1", tabs[1].Name);
-                Verify.AreEqual("Item 3", tabs[2].Name);
+                Verify.AreEqual("Document 2", tabs[0].Name);
+                Verify.AreEqual("Document 1", tabs[1].Name);
+                Verify.AreEqual("Document 3", tabs[2].Name);
 
                 window.SetWindowVisualState(WindowVisualState.Normal);
 
                 Log.Comment("Now we'll drag tab 3 to the left side of tab 2.");
 
-                InputHelper.MouseDragToTarget(tabs[2], tabs[0], -50);
+                InputHelper.MouseDragToTarget(tabs[2], tabs[0], -tabs[0].BoundingRectangle.Width / 2);
 
                 Log.Comment("We should still have only one window.");
 
@@ -276,9 +275,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("The window should now have three tabs in the order 3, 2, 1.");
 
                 Verify.AreEqual(3, tabs.Count);
-                Verify.AreEqual("Item 3", tabs[0].Name);
-                Verify.AreEqual("Item 2", tabs[1].Name);
-                Verify.AreEqual("Item 1", tabs[2].Name);
+                Verify.AreEqual("Document 3", tabs[0].Name);
+                Verify.AreEqual("Document 2", tabs[1].Name);
+                Verify.AreEqual("Document 1", tabs[2].Name);
             }
             finally
             {
@@ -313,9 +312,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("The window should have three tabs in the order 1, 2, 3.");
 
                 Verify.AreEqual(3, tabs.Count);
-                Verify.AreEqual("Item 1", tabs[0].Name);
-                Verify.AreEqual("Item 2", tabs[1].Name);
-                Verify.AreEqual("Item 3", tabs[2].Name);
+                Verify.AreEqual("Document 1", tabs[0].Name);
+                Verify.AreEqual("Document 2", tabs[1].Name);
+                Verify.AreEqual("Document 3", tabs[2].Name);
 
                 Log.Comment("The first tab should be selected.");
 

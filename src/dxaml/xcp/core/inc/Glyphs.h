@@ -179,8 +179,8 @@ private:
    _Check_return_ HRESULT GetOrigin(_Out_ XFLOAT* peOriginX, _Out_ XFLOAT* peOriginY);
 
 protected:
-    _Check_return_ HRESULT MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize) override;
-    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params) override;
+    _Check_return_ HRESULT MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize) override;
+    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params) override;
 
 public:
 
@@ -207,7 +207,7 @@ public:
 public:
     _Check_return_ HRESULT EnterImpl(
         _In_ CDependencyObject *pNamescopeOwner,
-        EnterParams params
+        _In_ EnterParams params
     ) override;
 
     void CleanupDeviceRelatedResourcesRecursive(_In_ bool cleanupDComp) final;

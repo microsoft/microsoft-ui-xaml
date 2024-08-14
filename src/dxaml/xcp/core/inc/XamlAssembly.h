@@ -54,7 +54,7 @@ public:
         
 private:
 
-    _Check_return_ HRESULT GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext);
+    _Check_return_ HRESULT GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext);
 
     xstring_ptr m_spAssemblyName;
     

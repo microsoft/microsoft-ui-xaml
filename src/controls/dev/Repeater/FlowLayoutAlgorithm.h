@@ -82,6 +82,7 @@ private:
         GenerateDirection direction,
         int anchorIndex,
         const winrt::Size& availableSize,
+        bool isWrapping,
         double minItemSpacing,
         double lineSpacing,
         unsigned int maxItemsPerLine,

@@ -69,7 +69,7 @@ public:
         return *this;
     }
 
-    CLockableGraphicsPointer& operator=(CLockableGraphicsPointer&& other)
+    CLockableGraphicsPointer& operator=(CLockableGraphicsPointer&& other) noexcept
     {
         // Even though we have an r-value, we swap so the natural destruction of
         // the r-value will clean up the ref count on our pointers.
@@ -128,7 +128,7 @@ public:
         other.m_d3dMultithread = nullptr;
     }
 
-    CLockedGraphicsPointer& operator=(CLockedGraphicsPointer&& other)
+    CLockedGraphicsPointer& operator=(CLockedGraphicsPointer&& other) noexcept
     {
         if (this != &other)
         {

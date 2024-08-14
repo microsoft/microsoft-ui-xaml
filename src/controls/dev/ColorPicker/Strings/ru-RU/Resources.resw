@@ -118,15 +118,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="TextAlphaLabel" xml:space="preserve">
-    <value>Прозрачность</value>
+    <value>Непрозрачность</value>
     <comment>The label for the text box to edit the opacity.</comment>
   </data>
   <data name="AutomationNameAlphaSlider" xml:space="preserve">
-    <value>Прозрачность</value>
+    <value>Непрозрачность</value>
     <comment>The automation name for the opacity slider.</comment>
   </data>
   <data name="AutomationNameAlphaTextBox" xml:space="preserve">
-    <value>Прозрачность</value>
+    <value>Непрозрачность</value>
     <comment>The automation name for the text box to edit the opacity.</comment>
   </data>
   <data name="AutomationNameHueSlider" xml:space="preserve">
@@ -169,7 +169,7 @@
     <value>Двухмерная навигация с помощью клавиш со стрелками</value>
     <comment>The help text associated with ColorSpectrum.</comment>
   </data>
-  <data name="AutomationNameHexTextBox" xml:space="preserve">
+  <data name="AutomationNameRGBHexTextBox" xml:space="preserve">
     <value>Шестнадцатеричный формат RGB</value>
     <comment>The automation name for the text box to edit the current RGB color as a hex value.</comment>
   </data>
@@ -250,7 +250,7 @@
     <comment>The automation name for the text box to edit the value component of the current HSV color.</comment>
   </data>
   <data name="ToolTipStringAlphaSlider" xml:space="preserve">
-    <value>Прозрачность %1!u!%%</value>
+    <value>Непрозрачность %1!u!%%</value>
     <comment>The string to display in the tool tip for the alpha slider. %1 is the alpha value between 0 and 100.</comment>
   </data>
   <data name="ToolTipStringHueSliderWithColorName" xml:space="preserve">
@@ -278,7 +278,7 @@
     <comment>The string to display in the tool tip for the third-dimension slider when it's controlling value and we're not including the friendly color name. %1 is the value value between 0 and 100.</comment>
   </data>
   <data name="AutomationNameMoreButtonCollapsed" xml:space="preserve">
-    <value>Больше</value>
+    <value>Дополнительно</value>
     <comment>The string to provide as the UIA value of the "more" button when it's collapsed.</comment>
   </data>
   <data name="AutomationNameMoreButtonExpanded" xml:space="preserve">
@@ -290,11 +290,15 @@
     <comment>The help text associated with the "more" button.</comment>
   </data>
   <data name="TextMoreButtonLabelCollapsed" xml:space="preserve">
-    <value>Больше</value>
+    <value>Дополнительно</value>
     <comment>The string to display in the "more" button when it's collapsed.</comment>
   </data>
   <data name="TextMoreButtonLabelExpanded" xml:space="preserve">
     <value>Меньше</value>
     <comment>The string to display in the "more" button when it's expanded.</comment>
+  </data>
+  <data name="AutomationNameHSVHexTextBox" xml:space="preserve">
+    <value>Шестнадцатеричный HSV</value>
+    <comment>The automation name for the text box to edit the current HSV color as a hex value.</comment>
   </data>
 </root>

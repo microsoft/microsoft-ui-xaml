@@ -280,6 +280,8 @@
     <FeatureAnnotatedScrollBarEnabled>true</FeatureAnnotatedScrollBarEnabled>
     <FeatureMapControlEnabled>true</FeatureMapControlEnabled>
     <FeatureSelectorBarEnabled>true</FeatureSelectorBarEnabled>
+    <FeatureInkCanvasEnabled>true</FeatureInkCanvasEnabled>
+    <FeatureInkToolBarEnabled>false</FeatureInkToolBarEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>

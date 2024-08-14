@@ -17,11 +17,11 @@ struct Win32Button
 class MainWindow : public DesktopWindowT<MainWindow>
 {
 public:
-    static HWND CreateNewWindow(int nCmdShow, winrt::com_array<winrt::Windows::Foundation::IInspectable> const& stringList);
+    static HWND CreateNewWindow(int nCmdShow, winrt::com_array<winrt::Windows::Foundation::IInspectable> const& documentList);
 
     void Run();
 
-    MainWindow(int nCmdShow, _In_ winrt::com_array<winrt::Windows::Foundation::IInspectable> const& stringList) noexcept;
+    MainWindow(int nCmdShow, _In_ winrt::com_array<winrt::Windows::Foundation::IInspectable> const& documentList) noexcept;
 
     [[nodiscard]] LRESULT MessageHandler(UINT const message, WPARAM const wParam, LPARAM const lParam) noexcept;
 
@@ -34,10 +34,23 @@ private:
     void OnActivate(HWND hwnd, UINT state, HWND hwndActDeact, BOOL fMinimized);
     void OnSize(HWND hwnd, UINT state, int cx, int cy);
 
-    void SizeXamlWindow(int width, int height);
+    void SizeXamlWindow();
 
+    void OnPageLoaded(winrt::Windows::Foundation::IInspectable const& sender, winrt::Windows::Foundation::IInspectable const& args);
+    void OnPageKeyDown(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::KeyRoutedEventArgs const& args);
+    void CloseWindow();
+
+    winrt::Microsoft::UI::Xaml::DependencyObject GetVisualChildByName(winrt::Microsoft::UI::Xaml::DependencyObject const& root, winrt::hstring const& name);
+
+    winrt::Microsoft::UI::Windowing::AppWindowTitleBar m_titleBar{ nullptr };
     winrt::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSource m_desktopWindowXamlSource{ nullptr };
-    winrt::com_array<winrt::Windows::Foundation::IInspectable> m_stringList{};
+    winrt::Microsoft::UI::Xaml::FrameworkElement::Loaded_revoker m_mainPageLoadedRevoker{};
+    winrt::Microsoft::UI::Xaml::UIElement::KeyDown_revoker m_mainPageKeyDownRevoker{};
+    winrt::com_array<winrt::Windows::Foundation::IInspectable> m_documentList{};
+    LONG m_clientWidth{ -1 };
+
+    winrt::Windows::Graphics::RectInt32 m_captionRect{};
+    bool m_captionRectSet{ false };
     
     int m_returnValue{ 0 };
 };

@@ -130,7 +130,7 @@
     <comment>The automation name for the text box to edit the opacity.</comment>
   </data>
   <data name="AutomationNameHueSlider" xml:space="preserve">
-    <value>Sắc độ</value>
+    <value>Sắc thái</value>
     <comment>The automation name for the third-dimension slider when it's controlling hue.</comment>
   </data>
   <data name="AutomationNameSaturationSlider" xml:space="preserve">
@@ -142,11 +142,11 @@
     <comment>The automation name for the third-dimension slider when it's controlling value.</comment>
   </data>
   <data name="TextBlueLabel" xml:space="preserve">
-    <value>Xanh lam</value>
+    <value>Xanh dương</value>
     <comment>The label for the text box to edit the blue component of the current RGB color.</comment>
   </data>
   <data name="AutomationNameBlueTextBox" xml:space="preserve">
-    <value>Xanh lam</value>
+    <value>Xanh dương</value>
     <comment>The automation name for the text box to edit the blue component of the current RGB color.</comment>
   </data>
   <data name="AutomationNameColorModelComboBox" xml:space="preserve">
@@ -169,7 +169,7 @@
     <value>Điều hướng 2D bằng phím mũi tên</value>
     <comment>The help text associated with ColorSpectrum.</comment>
   </data>
-  <data name="AutomationNameHexTextBox" xml:space="preserve">
+  <data name="AutomationNameRGBHexTextBox" xml:space="preserve">
     <value>RGB - số hex</value>
     <comment>The automation name for the text box to edit the current RGB color as a hex value.</comment>
   </data>
@@ -178,11 +178,11 @@
     <comment>The combo box item content for selecting HSV as the color model to use.</comment>
   </data>
   <data name="TextHueLabel" xml:space="preserve">
-    <value>Sắc độ</value>
+    <value>Sắc thái</value>
     <comment>The label for the text box to edit the hue component of the current HSV color.</comment>
   </data>
   <data name="AutomationNameHueTextBox" xml:space="preserve">
-    <value>Sắc độ</value>
+    <value>Sắc thái</value>
     <comment>The automation name for the text box to edit the hue component of the current HSV color.</comment>
   </data>
   <data name="LocalizedControlTypeColorSpectrum" xml:space="preserve">
@@ -254,11 +254,11 @@
     <comment>The string to display in the tool tip for the alpha slider. %1 is the alpha value between 0 and 100.</comment>
   </data>
   <data name="ToolTipStringHueSliderWithColorName" xml:space="preserve">
-    <value>Sắc độ %1!u! (%2!s!)</value>
+    <value>Sắc thái %1!u! (%2!s!)</value>
     <comment>The string to display in the tool tip for the third-dimension slider when it's controlling hue and we're including the friendly color name. %1 is the hue value between 0 and 359; %2 is the friendly color name.</comment>
   </data>
   <data name="ToolTipStringHueSliderWithoutColorName" xml:space="preserve">
-    <value>Sắc độ %1!u!</value>
+    <value>Sắc thái %1!u!</value>
     <comment>The string to display in the tool tip for the third-dimension slider when it's controlling hue and we're not including the friendly color name. %1 is the hue value between 0 and 359.</comment>
   </data>
   <data name="ToolTipStringSaturationSliderWithColorName" xml:space="preserve">
@@ -296,5 +296,9 @@
   <data name="TextMoreButtonLabelExpanded" xml:space="preserve">
     <value>Bớt</value>
     <comment>The string to display in the "more" button when it's expanded.</comment>
+  </data>
+  <data name="AutomationNameHSVHexTextBox" xml:space="preserve">
+    <value>HSV – số hex</value>
+    <comment>The automation name for the text box to edit the current HSV color as a hex value.</comment>
   </data>
 </root>

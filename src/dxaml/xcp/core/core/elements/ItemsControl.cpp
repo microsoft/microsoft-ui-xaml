@@ -284,7 +284,7 @@ CItemsControl::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeavePara
 //  items host panel.
 //
 _Check_return_ HRESULT
-CItemsControl::MeasureOverride(_In_ XSIZEF availableSize, _Inout_ XSIZEF& desiredSize)
+CItemsControl::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     // See if we need to re-generate the item visual trees.
     if (m_bItemsHostInvalid && m_pItemsHost)

@@ -6,7 +6,7 @@
 #include "StableXbfIndexes.g.h"
 #include <RuntimeProfiler.h>
 
-_Check_return_ HRESULT CFlyout::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+_Check_return_ HRESULT CFlyout::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     IFC_RETURN(__super::EnterImpl(pNamescopeOwner, params));
 
@@ -29,7 +29,7 @@ _Check_return_ HRESULT CFlyout::EnterImpl(_In_ CDependencyObject *pNamescopeOwne
     return S_OK;
 }
 
-_Check_return_ HRESULT CFlyout::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+_Check_return_ HRESULT CFlyout::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     IFC_RETURN(__super::LeaveImpl(pNamescopeOwner, params));
 

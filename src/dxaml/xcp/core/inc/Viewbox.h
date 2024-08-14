@@ -57,10 +57,10 @@ public:
 
 protected:
     _Check_return_ HRESULT MeasureOverride(
-        XSIZEF availableSize,
-        XSIZEF& desiredSize) override;
+        _In_ XSIZEF availableSize,
+        _Out_ XSIZEF& desiredSize) override;
 
     _Check_return_ HRESULT ArrangeOverride(
-        XSIZEF finalSize,
-        XSIZEF& newFinalSize) override;
+        _In_ XSIZEF finalSize,
+        _Out_ XSIZEF& newFinalSize) override;
 };

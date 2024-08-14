@@ -31,7 +31,7 @@ DefaultObjectBaseValueStoreCleanup(
 //
 //------------------------------------------------------------------------
 
-CValueStore::CValueStore(bool bObjectBase, CDependencyObject* pOwner)
+CValueStore::CValueStore(bool bObjectBase, _In_opt_ CDependencyObject* pOwner)
     : m_cRef(1)
     , m_bObjectBase(bObjectBase)
     , m_pCleanupCallback(bObjectBase ? DefaultObjectBaseValueStoreCleanup : nullptr)

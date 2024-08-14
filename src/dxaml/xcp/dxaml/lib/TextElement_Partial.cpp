@@ -174,7 +174,7 @@ Cleanup:
 }
 
 _Check_return_ HRESULT TextElement::FindNameImpl(
-    _In_ HSTRING name, _Out_ IInspectable** ppReturnValue)
+    _In_ HSTRING name, _Outptr_ IInspectable** ppReturnValue)
 {
     *ppReturnValue = nullptr;
 

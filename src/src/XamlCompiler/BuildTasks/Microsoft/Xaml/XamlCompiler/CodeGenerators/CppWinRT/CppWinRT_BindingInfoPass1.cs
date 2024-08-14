@@ -118,7 +118,7 @@ namespace winrt::");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.XamlMarkup)));
             this.Write("::IComponentConnector,\r\n        ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.XamlMarkup)));
-            this.Write("::IDataTemplateComponent>\r\n    {\r\n        XamlBindings(std::unique_ptr<IXamlBindi" +
+            this.Write("::IDataTemplateComponent>\r\n    {\r\n        XamlBindings(std::shared_ptr<IXamlBindi" +
                     "ngs>&& pBindings);\r\n\r\n        // IComponentConnector\r\n        void Connect(int c" +
                     "onnectionId, IInspectable const& target);\r\n        IComponentConnector GetBindin" +
                     "gConnector(int32_t, IInspectable const&);\r\n\r\n        // IDataTemplateComponent\r\n" +
@@ -132,7 +132,7 @@ namespace winrt::");
                     "tedEventArgs const& args);\r\n        void DataContextChanged(FrameworkElement con" +
                     "st& sender, DataContextChangedEventArgs const& args);\r\n        void SubscribeFor" +
                     "DataContextChanged(FrameworkElement const& object);\r\n        virtual void Discon" +
-                    "nectUnloadedObject(int connectionId);\r\n\r\n    private:\r\n        std::unique_ptr<I" +
+                    "nectUnloadedObject(int connectionId);\r\n\r\n    private:\r\n        std::shared_ptr<I" +
                     "XamlBindings> _pBindings;\r\n    };\r\n\r\n    template <typename TBindingsTracking>\r\n" +
                     "    struct XamlBindingsBase : public IXamlBindings\r\n    {\r\n    protected:\r\n     " +
                     "   bool _isInitialized = false;\r\n        std::shared_ptr<TBindingsTracking> _bin" +

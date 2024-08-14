@@ -4,19 +4,15 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Linq;
-using System.Reflection;
-using Windows.Foundation.Collections;
+using Windows.Graphics;
 
 namespace MUXControlsTestApp
 {
     public sealed partial class TabViewTearOutWindowWithoutDataItems : Window
     {
+        public static readonly SizeInt32 DefaultWindowSize = new(1000, 300);
+
         TabViewTearOutWindowWithoutDataItems tearOutWindow;
 
         public TabViewTearOutWindowWithoutDataItems()
@@ -29,10 +25,10 @@ namespace MUXControlsTestApp
         // We'll create a hidden window with the tab's contents that will be shown if the user tears out the tab.
         private void OnTabTearOutWindowRequested(TabView _, TabViewTabTearOutWindowRequestedEventArgs args)
         {
-            tearOutWindow = new();
+            tearOutWindow = new() { ExtendsContentIntoTitleBar = true };
             tearOutWindow.TearOutTabsTabView.TabItems.Clear();
             tearOutWindow.AppWindow.Hide();
-            tearOutWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(800, 300));
+            tearOutWindow.AppWindow.Resize(DefaultWindowSize);
             args.NewWindowId = tearOutWindow.AppWindow.Id;
         }
 

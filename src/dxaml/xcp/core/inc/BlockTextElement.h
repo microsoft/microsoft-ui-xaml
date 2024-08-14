@@ -97,7 +97,7 @@ public:
 
     _Check_return_ HRESULT EnterImpl(
         _In_ CDependencyObject *pNamescopeOwner,
-        EnterParams params
+        _In_ EnterParams params
         ) override;
 
     // APIs for accessing the text in the Paragraph.

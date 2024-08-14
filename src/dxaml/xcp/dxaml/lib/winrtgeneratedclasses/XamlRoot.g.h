@@ -30,11 +30,17 @@ namespace ctl
         IFACEMETHOD(get_ContentIslandEnvironment)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IContentIslandEnvironment** ppValue) override { return This()->get_ContentIslandEnvironment(ppValue); }
     };
     template<typename impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::IXamlRoot3, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IXamlRoot3, impl_type>
+    {
+        impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(get_CoordinateConverter)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IContentCoordinateConverter** ppValue) override { return This()->get_CoordinateConverter(ppValue); }
+    };
+    template<typename impl_type>
     class interface_forwarder< ABI::Microsoft::UI::Xaml::IXamlRootFeature_ExperimentalApi, impl_type> final
         : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IXamlRootFeature_ExperimentalApi, impl_type>
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
-        IFACEMETHOD(get_CoordinateConverter)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IContentCoordinateConverter** ppValue) override { return This()->get_CoordinateConverter(ppValue); }
         IFACEMETHOD(TryGetContentIsland)(_Outptr_ ABI::Microsoft::UI::Content::IContentIsland** ppReturnValue) override { return This()->TryGetContentIsland(ppReturnValue); }
     };
 }
@@ -49,6 +55,7 @@ namespace DirectUI
         public ctl::WeakReferenceSource
         , public ABI::Microsoft::UI::Xaml::IXamlRoot
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IXamlRoot2, XamlRootGenerated >
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IXamlRoot3, XamlRootGenerated >
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IXamlRootFeature_ExperimentalApi, XamlRootGenerated >
 #endif
@@ -60,6 +67,7 @@ namespace DirectUI
         BEGIN_INTERFACE_MAP(XamlRootGenerated, ctl::WeakReferenceSource)
             INTERFACE_ENTRY(XamlRootGenerated, ABI::Microsoft::UI::Xaml::IXamlRoot)
             INTERFACE_ENTRY(XamlRootGenerated, ABI::Microsoft::UI::Xaml::IXamlRoot2)
+            INTERFACE_ENTRY(XamlRootGenerated, ABI::Microsoft::UI::Xaml::IXamlRoot3)
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
             INTERFACE_ENTRY(XamlRootGenerated, ABI::Microsoft::UI::Xaml::IXamlRootFeature_ExperimentalApi)
 #endif

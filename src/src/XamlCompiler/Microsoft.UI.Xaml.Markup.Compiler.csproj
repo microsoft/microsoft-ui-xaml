@@ -420,6 +420,10 @@
     <None Include="BuildTasks\packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="targets\Microsoft.UI.Xaml.Markup.Compiler.BeforeCommon.targets">
+      <Link>Targets\Microsoft.UI.Xaml.Markup.Compiler.BeforeCommon.targets</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="targets\Microsoft.UI.Xaml.Markup.Compiler.interop.targets">
       <Link>Targets\Microsoft.UI.Xaml.Markup.Compiler.interop.targets</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

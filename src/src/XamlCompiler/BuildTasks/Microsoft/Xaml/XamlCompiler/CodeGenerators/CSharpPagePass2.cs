@@ -598,8 +598,8 @@ this.Write("                }\r\n                break;\r\n");
      }
      private void Output_GetBindingConnectorMethod()
      {
-this.Write("        /// <summary>\r\n        /// GetBindingConnector(int connectionId, object t" +
-        "arget)\r\n        /// </summary>\r\n        ");
+this.Write("\r\n        /// <summary>\r\n        /// GetBindingConnector(int connectionId, object" +
+        " target)\r\n        /// </summary>\r\n        ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(GeneratedCodeAttribute));
 
@@ -1098,41 +1098,8 @@ this.Write("(target);\r\n                        NotifyDependentScopes(connectio
                  foreach (BoundEventAssignment evt in element.BoundEventAssignments)
                  {
                      Output_ApiInformationCall_Push(evt.ApiInformation, Indent.ThreeTabs); 
-this.Write("                        this.");
-
-this.Write(this.ToStringHelper.ToStringWithCulture(evt.EventHandlerCodeName));
-
-this.Write(" = (");
-
-this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.Declaration()));
-
-this.Write(") =>\r\n                        {\r\n");
-
-                     PushIndent();
-                     if (!evt.PathStep.ValueType.IsDelegate())
-                     {
-this.Write("                        ");
-
-this.Write(this.ToStringHelper.ToStringWithCulture(evt.PathStep.CodeGen().PathExpression));
-
-this.Write(";\r\n");
-
-                     }
-                     else
-                     {
-this.Write("                        ");
-
-this.Write(this.ToStringHelper.ToStringWithCulture(evt.PathStep.CodeGen().PathExpression));
-
-this.Write("(");
-
-this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.ForCall()));
-
-this.Write(");\r\n");
-
-                     }
-                     PopIndent();
-this.Write("                        };\r\n                        (");
+                     Output_NullCheckedEventAssignment(evt); 
+this.Write("                        (");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(ObjectCast(element.Type.ToString(), "target")));
 
@@ -2743,6 +2710,54 @@ this.Write("            }\r\n");
 
      } 
      PopIndent();
+ } 
+ void  Output_NullCheckedEventAssignment(BoundEventAssignment evt) 
+ { 
+this.Write("                        this.");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.EventHandlerCodeName));
+
+this.Write(" = (");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.Declaration()));
+
+this.Write(") =>\r\n                        {\r\n");
+
+     foreach (var parent in evt.PathStep.Parents.Where(parent => parent.NeedsCheckForNull)) { 
+this.Write("                            if (");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(parent.CodeGen().PathExpression));
+
+this.Write(" != null)\r\n                            {\r\n");
+
+         PushIndent(); 
+     } 
+     if (!evt.PathStep.ValueType.IsDelegate()) { 
+this.Write("                            ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.PathStep.CodeGen().PathExpression));
+
+this.Write(";\r\n");
+
+     } else { 
+this.Write("                            ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.PathStep.CodeGen().PathExpression));
+
+this.Write("(");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.ForCall()));
+
+this.Write(");\r\n");
+
+     } 
+     foreach (var parent in evt.PathStep.Parents.Where(parent => parent.NeedsCheckForNull)) { 
+         PopIndent(); 
+this.Write("                            }\r\n");
+
+     } 
+this.Write("                        };\r\n");
+
  } 
  void Output_UpdateErrors(BindUniverse bindUniverse) 
  { 

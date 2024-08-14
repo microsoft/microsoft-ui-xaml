@@ -574,7 +574,7 @@ CShape::SetValue(_In_ const SetValueParams& args)
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CShape::MeasureOverride(_In_ XSIZEF availableSize, _Inout_ XSIZEF &desiredSize)
+CShape::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF &desiredSize)
 {
     HRESULT hr = S_OK;
     XRECTF_RB geometryBounds = { };
@@ -617,7 +617,7 @@ Cleanup:
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CShape::ArrangeOverride(_In_ XSIZEF finalSize, _Inout_ XSIZEF& newFinalSize)
+CShape::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize)
 {
     HRESULT hr = S_OK;
     XRECTF_RB geometryBounds = { };

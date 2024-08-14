@@ -57,7 +57,7 @@ protected:
 
     xstring_ptr get_TargetNamespaceCore() const override;
 
-    HRESULT GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext);
+    HRESULT GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext);
 };
 
 

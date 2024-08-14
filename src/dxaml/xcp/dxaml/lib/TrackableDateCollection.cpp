@@ -53,7 +53,7 @@ void TrackableDateCollection::FetchAndResetChange(
     m_removedDates.clear();
 }
 
-IFACEMETHODIMP TrackableDateCollection::RemoveAt(_In_ UINT index)
+IFACEMETHODIMP TrackableDateCollection::RemoveAt(UINT index)
 {
     IFC_RETURN(RaiseCollectionChanging(TrackableDateCollection_CollectionChanging::ItemRemoving, wf::DateTime()));
 
@@ -99,7 +99,7 @@ IFACEMETHODIMP TrackableDateCollection::Append(_In_opt_  wf::DateTime item)
     return S_OK;
 }
 
-IFACEMETHODIMP TrackableDateCollection::SetAt(_In_ UINT index, _In_opt_ wf::DateTime item)
+IFACEMETHODIMP TrackableDateCollection::SetAt(UINT index, _In_opt_ wf::DateTime item)
 {
     IFC_RETURN(RaiseCollectionChanging(TrackableDateCollection_CollectionChanging::ItemChanging, item));
 
@@ -122,7 +122,7 @@ IFACEMETHODIMP TrackableDateCollection::SetAt(_In_ UINT index, _In_opt_ wf::Date
     return S_OK;
 }
 
-IFACEMETHODIMP TrackableDateCollection::InsertAt(_In_ UINT index, _In_opt_ wf::DateTime item)
+IFACEMETHODIMP TrackableDateCollection::InsertAt(UINT index, _In_opt_ wf::DateTime item)
 {
     IFC_RETURN(RaiseCollectionChanging(TrackableDateCollection_CollectionChanging::ItemInserting, item));
 

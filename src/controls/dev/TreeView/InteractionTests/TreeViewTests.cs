@@ -2770,6 +2770,45 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        [TestProperty("Ignore", "False")]
+        public void IsExpandedIsProperlyPreservedDuringItemRecycling()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TreeView Tests", "TreeViewItemsSourceTestPage" }))
+            {
+                ClickButton("SetUpContainerReuseTest1");
+                ClickButton("ExpandSecondItem");
+
+                UIObject root1 = FindElement.ByName("Root1");
+                Verify.IsNotNull(root1, "Verifying that we found a UIElement called Root1");
+
+                root1.SetFocus();
+                AutomationElement root1Peer = AutomationElement.FocusedElement;
+
+                // Verify that root1 is expanded
+                var root1ExpandCollapseItemPeer = (ExpandCollapsePattern)root1Peer.GetCurrentPattern(ExpandCollapsePattern.Pattern);
+                Verify.AreEqual(ExpandCollapseState.Expanded, root1ExpandCollapseItemPeer.Current.ExpandCollapseState);
+
+                ClickButton("ScrollToEndOfContentTreeView");
+                Wait.ForIdle();
+                Wait.ForSeconds(5);
+                ClickButton("ScrollToTopOfContentTreeView");
+                Wait.ForIdle();
+
+                // Verify tree view item is still expanded
+                ElementCache.Refresh();
+                root1 = FindElement.ByName("Root1");
+                Verify.IsNotNull(root1, "Verifying that we found a UIElement called Root1");
+
+                root1.SetFocus();
+                root1Peer = AutomationElement.FocusedElement;
+
+                root1ExpandCollapseItemPeer = (ExpandCollapsePattern)root1Peer.GetCurrentPattern(ExpandCollapsePattern.Pattern);
+                Verify.AreEqual(ExpandCollapseState.Expanded, root1ExpandCollapseItemPeer.Current.ExpandCollapseState);
+            }
+        }
+
         private void ClickButton(string buttonName)
         {
             var button = new Button(FindElement.ByName(buttonName));

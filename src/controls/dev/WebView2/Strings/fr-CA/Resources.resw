@@ -118,11 +118,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="WarningSuitableWebView2NotFound" xml:space="preserve">
-    <value>Une version appropriée de Microsoft Edge WebView2 Runtime n'a pas été détectée.</value>
+    <value>Aucune version appropriée de Microsoft Edge WebView2 Runtime n’a été détectée. </value>
     <comment>Represents warning when suitable WebView2 is not found.</comment>
   </data>
   <data name="DownloadWebView2Runtime" xml:space="preserve">
-    <value>Téléchargez et installez WebView2 Runtime</value>
+    <value>Télécharger et installer WebView2 Runtime</value>
     <comment>Part 2 of warning suitable WebView2 not found.</comment>
   </data>
 </root>

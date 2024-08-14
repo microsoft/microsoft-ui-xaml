@@ -307,6 +307,14 @@
                             </DataTemplate>
                         </GridView.ItemTemplate>
                     </GridView>
+
+                    <CheckBox x:Name="chkShowPopupWithElementNameBinding" Content="Show Popup with ElementName Binding?" Margin="2"/>
+                    <TextBlock x:Name="tblElementNameBindingSource" Tag="ElementNameBindingSource" Text="ElementName Binding Source" Margin="2"/>
+                    <Popup x:Name="popupWithElementNameBinding" ShouldConstrainToRootBounds="False" Margin="2" IsOpen="{Binding ElementName=chkShowPopupWithElementNameBinding, Path=IsChecked}">
+                        <Border x:Name="bdr" BorderBrush="Red" BorderThickness="1">
+                            <Button x:Name="btn" Content="{Binding ElementName=tblElementNameBindingSource, Path=Tag}"/>
+                        </Border>
+                    </Popup>
                 </StackPanel>
                 <StackPanel Style="{ThemeResource CompactPanelStyle}">
                     <TextBlock  Text="ListViewItem/GridViewItem testing area" Style="{ThemeResource StandardGroupHeader}"/>

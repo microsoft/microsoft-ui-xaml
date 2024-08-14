@@ -11,10 +11,12 @@
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition />
-            <RowDefinition Height="0"/>
         </Grid.RowDefinitions>
-        
+
+        <helpers:TestAutomationHelpersPanel />
+
         <TabView
             x:Name="TearOutTabsTabView"
             AutomationProperties.Name="TearOutTabsTabView"
@@ -22,15 +24,14 @@
             TabTearOutWindowRequested="OnTabTearOutWindowRequested"
             TabTearOutRequested="OnTabTearOutRequested"
             ExternalTornOutTabsDropping="OnExternalTornOutTabsDropping"
-            ExternalTornOutTabsDropped="OnExternalTornOutTabsDropped">
+            ExternalTornOutTabsDropped="OnExternalTornOutTabsDropped"
+            Grid.Row="1">
             <TabView.TabItems>
-                <TabViewItem Header="Item 1" Content="Item 1" />
-                <TabViewItem Header="Item 2" Content="Item 2" />
-                <TabViewItem Header="Item 3" Content="Item 3" />
+                <TabViewItem Header="Document 1" Content="Document 1" />
+                <TabViewItem Header="Document 2" Content="Document 2" />
+                <TabViewItem Header="Document 3" Content="Document 3" />
             </TabView.TabItems>
         </TabView>
-
-        <helpers:TestAutomationHelpersPanel Grid.Row="1" />
     </Grid>
     
 </Window>

@@ -30,7 +30,7 @@ namespace DirectUI
 
         TrackerPtr& operator= (const TrackerPtr& other) = delete;
 
-        TrackerPtr& operator= (TrackerPtr&& other)
+        TrackerPtr& operator= (TrackerPtr&& other) noexcept
         {
             if (*this != other)
             {

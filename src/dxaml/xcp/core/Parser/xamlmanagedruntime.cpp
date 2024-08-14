@@ -450,7 +450,7 @@ _Check_return_ HRESULT XamlManagedRuntime::GetXBindConnector(
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlManagedRuntime::GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext)
+_Check_return_ HRESULT XamlManagedRuntime::GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext)
 {
     outSchemaContext = m_spXamlSchemaContext.lock();
     if (!outSchemaContext)

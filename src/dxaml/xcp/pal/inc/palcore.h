@@ -238,7 +238,7 @@ struct IPALCoreServices
 
 // CPU Info
     virtual _Check_return_ HRESULT GetNumberOfCPUCores(_Out_ XUINT32 *pcProcessorCores) = 0;
-    virtual                bool IsSupportedPlatform() = 0;
+    virtual _Check_return_ bool IsSupportedPlatform() = 0;
 
 // Process wide control mechanisms
     virtual _Check_return_ HRESULT GetApplicationSingleton(_Out_ IPALApplicationSingleton **ppSingleton) = 0;
@@ -302,14 +302,14 @@ enum ZeroMemAllocationPolicy;
 // In fre builds we use the pal memory services to perform a failfast
 // if a small allocation failed and report memory usage to the GC.
 
-__declspec(allocator) void * __cdecl operator new(size_t cSize);
-__bcount(cSize) XCP_FORCEINLINE __declspec(allocator) void * __cdecl operator new[](size_t cSize);
+_Ret_notnull_ _Post_writable_byte_size_(cSize) __declspec(allocator) void * __cdecl operator new(size_t cSize);
+_Ret_notnull_ _Post_writable_byte_size_(cSize) XCP_FORCEINLINE __declspec(allocator) void * __cdecl operator new[](size_t cSize);
 
-__declspec(allocator) void * __cdecl operator new(size_t cSize, NoFailFastAllocationPolicy);
-__bcount(cSize) XCP_FORCEINLINE __declspec(allocator) void * __cdecl operator new[](size_t cSize, NoFailFastAllocationPolicy);
+_Ret_notnull_ _Post_writable_byte_size_(cSize) __declspec(allocator) void * __cdecl operator new(size_t cSize, NoFailFastAllocationPolicy);
+_Ret_notnull_ _Post_writable_byte_size_(cSize) XCP_FORCEINLINE __declspec(allocator) void * __cdecl operator new[](size_t cSize, NoFailFastAllocationPolicy);
 
-__declspec(allocator) void * __cdecl operator new(size_t cSize, ZeroMemAllocationPolicy);
-__bcount(cSize) XCP_FORCEINLINE __declspec(allocator) void * __cdecl operator new[](size_t cSize, ZeroMemAllocationPolicy);
+_Ret_notnull_ _Post_writable_byte_size_(cSize) __declspec(allocator) void * __cdecl operator new(size_t cSize, ZeroMemAllocationPolicy);
+_Ret_notnull_ _Post_writable_byte_size_(cSize) XCP_FORCEINLINE __declspec(allocator) void * __cdecl operator new[](size_t cSize, ZeroMemAllocationPolicy);
 
 #pragma warning(push)
 // Some header files have their own definition of this function and don't

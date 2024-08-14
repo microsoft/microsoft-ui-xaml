@@ -95,7 +95,7 @@ Cleanup:
 
 // Handle the custom property changed event and call the
 // OnPropertyChanged2 methods.
-_Check_return_ HRESULT MenuFlyout::OnPropertyChanged2(const PropertyChangedParams& args)
+_Check_return_ HRESULT MenuFlyout::OnPropertyChanged2(_In_ const PropertyChangedParams& args)
 {
     HRESULT hr = S_OK;
 

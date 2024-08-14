@@ -9,9 +9,9 @@
 struct IQualifier
 {
         virtual ~IQualifier() {};
-        virtual bool IsQualified() = 0;
-        virtual XINT32 Score(QualifierFlags flags) = 0;
-        virtual void Evaluate(QualifierContext* qualifierContext) = 0;
-        virtual QualifierFlags Flags() = 0;
+        virtual _Check_return_ bool IsQualified() = 0;
+        virtual _Check_return_ XINT32 Score(QualifierFlags flags) = 0;
+        virtual void Evaluate(_In_ QualifierContext* qualifierContext) = 0;
+        virtual _Check_return_ QualifierFlags Flags() = 0;
 };
 

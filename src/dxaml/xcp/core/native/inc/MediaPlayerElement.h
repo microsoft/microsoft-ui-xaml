@@ -62,7 +62,7 @@ protected:
 
     _Check_return_ HRESULT NotifyThemeChangedCore(_In_ Theming::Theme theme, _In_ bool fForceRefresh = false) final;
 
-    _Check_return_ HRESULT MeasureOverride(_In_ XSIZEF availableSize, _Inout_ XSIZEF& desiredSize) final;
+    _Check_return_ HRESULT MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize) final;
 
 private:
     bool m_bTemplateApplied;

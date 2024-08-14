@@ -247,7 +247,7 @@ Cleanup:
 //      Override to handle shape stretching.
 //
 //------------------------------------------------------------------------
-_Check_return_ HRESULT CRectangle::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
+_Check_return_ HRESULT CRectangle::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     if (m_Stretch == DirectUI::Stretch::UniformToFill)
     {
@@ -287,7 +287,7 @@ _Check_return_ HRESULT CRectangle::MeasureOverride(XSIZEF availableSize, XSIZEF&
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CRectangle::ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize)
+CRectangle::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize)
 
 {
     newFinalSize = finalSize;
@@ -481,7 +481,7 @@ _Check_return_ HRESULT
 CRectangleGeometry::GetPrintGeometryVirtual(
     _In_ const D2DPrecomputeParams& cp,
     _In_ const D2DRenderParams &printParams,
-    IPALAcceleratedGeometry** ppGeometry
+    _Outptr_ IPALAcceleratedGeometry** ppGeometry
     )
 {
     HRESULT hr = S_OK;

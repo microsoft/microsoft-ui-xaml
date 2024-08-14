@@ -403,7 +403,7 @@ void CImageBrush::GetActualBounds(
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CImageBrush::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+CImageBrush::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     CEventManager * pEventManager = nullptr;
     IPALUri* preferredBaseURI = GetPreferredBaseUri();
@@ -454,7 +454,7 @@ CImageBrush::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams para
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CImageBrush::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+CImageBrush::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     IFC_RETURN(CTileBrush::LeaveImpl(pNamescopeOwner, params));
 
@@ -754,7 +754,7 @@ bool CImageBrush::HasRetainedSize()
 //      Gets the software surface for the image brush.
 //
 //------------------------------------------------------------------------
-_Out_opt_ IPALSurface*
+_Ret_maybenull_ IPALSurface*
 CImageBrush::GetSoftwareSurface()
 {
     return m_pImageSource != NULL ? m_pImageSource->GetSoftwareSurface() : NULL;

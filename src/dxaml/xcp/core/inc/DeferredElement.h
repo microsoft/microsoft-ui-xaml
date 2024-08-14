@@ -110,8 +110,8 @@ public:
 
     // ICustomWriterRuntimeDataReceiver
     _Check_return_ HRESULT SetCustomWriterRuntimeData(
-        std::shared_ptr<CustomWriterRuntimeData> data,
-        std::unique_ptr<CustomWriterRuntimeContext> context) override;
+        _In_ std::shared_ptr<CustomWriterRuntimeData> data,
+        _In_ std::unique_ptr<CustomWriterRuntimeContext> context) override;
 
     static _Check_return_ HRESULT TryDefer(
         _In_ CDependencyObject* element);

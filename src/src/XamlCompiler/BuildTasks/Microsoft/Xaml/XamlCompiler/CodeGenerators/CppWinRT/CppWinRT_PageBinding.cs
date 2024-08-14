@@ -39,6 +39,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.DataRootType));
             this.Write(", ");
             this.Write(this.ToStringHelper.ToStringWithCulture(GetBindingTrackingClassName(bindUniverse, Model.CodeInfo)));
+            this.Write(">\r\n        , public std::enable_shared_from_this<");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Model.CodeInfo.ClassName.ShortName));
+            this.Write("T<D, I...>::");
+            this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.BindingsClassName));
             this.Write(">\r\n");
   if (bindUniverse.NeedsBindingsTracking) { 
             this.Write("        , public ");
@@ -633,37 +637,7 @@ this.Write(" = targetElement;\r\n");
 
      foreach (BoundEventAssignment evt in element.BoundEventAssignments) { 
          Output_ApiInformationCall_Push(evt.ApiInformation, Indent.ThreeTabs); 
-this.Write("                    targetElement.");
-
-this.Write(this.ToStringHelper.ToStringWithCulture(evt.MemberName));
-
-this.Write("([this](");
-
-this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.Declaration()));
-
-this.Write(")\r\n                    {\r\n");
-
-         if (!evt.PathStep.ValueType.IsDelegate()) { 
-this.Write("                        ");
-
-this.Write(this.ToStringHelper.ToStringWithCulture(evt.PathStep.CodeGen().PathExpression));
-
-this.Write(";\r\n");
-
-         } else { 
-this.Write("                        ");
-
-this.Write(this.ToStringHelper.ToStringWithCulture(evt.PathStep.CodeGen().PathExpression));
-
-this.Write("(");
-
-this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.ForCall()));
-
-this.Write(");\r\n");
-
-         }
-this.Write("                    });\r\n");
-
+         Output_NullCheckedEventAssignment(evt); 
          Output_ApiInformationCall_Pop(evt.ApiInformation, Indent.ThreeTabs); 
      }
      if (element.CanBeInstantiatedLater && (element.HasBindAssignments || element.HasBoundEventAssignments))
@@ -763,13 +737,24 @@ this.Write("                ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(ba.ConnectionIdElement.ReferenceExpression));
 
-this.Write(".LostFocus(\r\n                    [this] (IInspectable const& sender, ");
+this.Write(".LostFocus(\r\n                    [weakThis{ weak_from_this() }, this] (IInspectab" +
+        "le const& sender, ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.Xaml)));
 
 this.Write("::RoutedEventArgs const& e)\r\n                    {\r\n");
 
      } else { 
+             // Although it looks strange that we are capturing both `this` and a weak pointer to `this`, 
+             // there is a good reason that pattern is employed. In some cases, the reference exception where 
+             // we would need to replace the implicit `this->` with an explicit `strongThis->` is nested too 
+             // deeply within `ba.ReverseAssignmentExpression` to be modified here, e.g. if a cast is needed 
+             // between the source and target property types. While in principle we could plumb awareness of 
+             // `strongThis` all the way down, there is a non-negligible chance that one of the cases is missed 
+             // resulting in the generation of non-compilable code. 
+             // 
+             // Instead, we capture both `this` and a weak pointer to `this`, and only use the former if a valid 
+             // strong pointer can be derived from the latter thus guaranteeing that `this` can be safely used. 
 this.Write("                ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(ba.ConnectionIdElement.ReferenceExpression));
@@ -782,17 +767,18 @@ this.Write("::");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(ba.MemberName));
 
-this.Write("Property(),\r\n                    [this] (DependencyObject const& sender, Dependen" +
-        "cyProperty const& prop)\r\n                    {\r\n");
+this.Write("Property(),\r\n                    [weakThis{ weak_from_this() }, this] (Dependency" +
+        "Object const& sender, DependencyProperty const& prop)\r\n                    {\r\n");
 
      } 
-this.Write("                        if (IsInitialized())\r\n                        {\r\n        " +
-        "                    // Update Two Way binding\r\n");
+this.Write("                        if (auto strongThis{ weakThis.lock() })\r\n                " +
+        "        {\r\n                            if (IsInitialized())\r\n                   " +
+        "         {\r\n                                // Update Two Way binding\r\n");
 
      MethodStep bindBackStep = ba.BindBackStep as MethodStep; 
      if (bindBackStep != null) { 
          var param = bindBackStep.Parameters[0]; 
-this.Write("                            ");
+this.Write("                                ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(ba.MemberType));
 
@@ -810,7 +796,8 @@ this.Write(";\r\n");
      } else { 
                          Output_NullCheckedAssignment(ba.PathStep, ba.ReverseAssignmentExpression);
      }
-this.Write("                        }\r\n                    });\r\n");
+this.Write("                            }\r\n                        }\r\n                    });" +
+        "\r\n");
 
      Output_ApiInformationCall_Pop(ba.ApiInformation, Indent.None); 
  } 
@@ -818,23 +805,23 @@ this.Write("                        }\r\n                    });\r\n");
  { 
      PushIndent(Indent.FourTabs);
      foreach (var parent in step.Parents.Where(parent => parent.NeedsCheckForNull)) { 
-this.Write("            if (");
+this.Write("                if (");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(parent.CodeGen().PathExpression));
 
-this.Write(" != nullptr)\r\n            {\r\n");
+this.Write(" != nullptr)\r\n                {\r\n");
 
          PushIndent(); 
      } 
      if (value != null) { 
-this.Write("            ");
+this.Write("                ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(step.CodeGen().PathSetExpression(value)));
 
 this.Write(";\r\n");
 
      } else { 
-this.Write("            ");
+this.Write("                ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(step.CodeGen().PathExpression));
 
@@ -843,10 +830,71 @@ this.Write(";\r\n");
      } 
      foreach (var parent in step.Parents.Where(parent => parent.NeedsCheckForNull)) { 
          PopIndent(); 
-this.Write("            }\r\n");
+this.Write("                }\r\n");
 
      } 
      PopIndent();
+ } 
+ void  Output_NullCheckedEventAssignment(BoundEventAssignment evt) 
+ { 
+                 // Similar to the comment in Output_Connect_TwoWayBinding, this strange pattern 
+                 // (capturing both `this` and a weak pointer to `this`) is due to potential cases 
+                 // where blindly prepending `strongThis->` to the expression results in a build error, 
+                 // e.g. a static function. 
+                 // 
+                 // Instead, we capture both `this` and a weak pointer to `this`, and only use the former if a valid 
+                 // strong pointer can be derived from the latter thus guaranteeing that `this` can be safely used. 
+this.Write("                    targetElement.");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.MemberName));
+
+this.Write("([weakThis{ weak_from_this() }, this](");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.Declaration()));
+
+this.Write(")\r\n                    {\r\n");
+
+     PushIndent(Indent.ThreeTabs);
+this.Write("            if (auto strongThis{ weakThis.lock() })\r\n            {\r\n");
+
+     foreach (var parent in evt.PathStep.Parents.Where(parent => parent.NeedsCheckForNull)) { 
+this.Write("                if (");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(parent.CodeGen().PathExpression));
+
+this.Write(" != nullptr)\r\n                {\r\n");
+
+         PushIndent(); 
+     } 
+     if (!evt.PathStep.ValueType.IsDelegate()) { 
+this.Write("                ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.PathStep.CodeGen().PathExpression));
+
+this.Write(";\r\n");
+
+     } else { 
+this.Write("                ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.PathStep.CodeGen().PathExpression));
+
+this.Write("(");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.ForCall()));
+
+this.Write(");\r\n");
+
+     }
+     foreach (var parent in evt.PathStep.Parents.Where(parent => parent.NeedsCheckForNull)) { 
+         PopIndent(); 
+this.Write("                }\r\n");
+
+     } 
+this.Write("            }\r\n");
+
+     PopIndent();
+this.Write("                    });\r\n");
+
  } 
      private void Output_UpdateChildListeners_Call(BindPathStep step, string parameter)
      {

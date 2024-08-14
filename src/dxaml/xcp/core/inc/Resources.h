@@ -427,14 +427,14 @@ protected:
     _Check_return_ HRESULT ChildEnter(
         _In_ CDependencyObject *pChild,
         _In_ CDependencyObject *pNamescopeOwner,
-        EnterParams params,
+        _In_ EnterParams params,
         bool fCanProcessEnterLeave
         ) override;
 
     _Check_return_ HRESULT ChildLeave(
         _In_ CDependencyObject *pChild,
         _In_ CDependencyObject *pNamescopeOwner,
-        LeaveParams params,
+        _In_ LeaveParams params,
         bool fCanProcessEnterLeave
         ) override;
 

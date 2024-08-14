@@ -7,8 +7,8 @@ class ObjectWriterCallbacksDelegate
 {
 public:
     virtual HRESULT OnObjectCreated(
-        const std::shared_ptr<XamlQualifiedObject>& qoRoot, 
-        const std::shared_ptr<XamlQualifiedObject>& qoNewInstance) = 0;
+        _In_ const std::shared_ptr<XamlQualifiedObject>& qoRoot, 
+        _In_ const std::shared_ptr<XamlQualifiedObject>& qoNewInstance) = 0;
 
     virtual ~ObjectWriterCallbacksDelegate() {}
 };

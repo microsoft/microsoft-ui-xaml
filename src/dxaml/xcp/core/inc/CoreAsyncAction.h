@@ -22,7 +22,7 @@ template< typename TRESULT >
 class ICoreAsyncOperation : public ICoreAsyncAction
 {
 public:
-    virtual _Check_return_ HRESULT CoreSetResults(TRESULT results) = 0;
+    virtual _Check_return_ HRESULT CoreSetResults(_In_ TRESULT results) = 0;
 };
 
 class ICoreAsyncFocusOperation : public ICoreAsyncOperation<Focus::FocusMovementResult>

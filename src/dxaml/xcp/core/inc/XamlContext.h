@@ -22,7 +22,7 @@ public:
   
     virtual HRESULT AddNamespacePrefix(
                 _In_ const xstring_ptr& inPrefix, 
-                const std::shared_ptr<XamlNamespace>& inXamlNamespace) = 0;
+                _In_ const std::shared_ptr<XamlNamespace>& inXamlNamespace) = 0;
 
     virtual std::shared_ptr<XamlNamespace> FindNamespaceByPrefix(
                 _In_ const xstring_ptr& inPrefix) = 0;

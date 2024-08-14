@@ -21,14 +21,14 @@ class ICustomWriter
 {
 public:
     virtual ~ICustomWriter() {}
-    virtual _Check_return_ HRESULT WriteObject(const std::shared_ptr<XamlType>& inType, bool bIsObjectFromMember, _Out_ bool* pResult) = 0;
+    virtual _Check_return_ HRESULT WriteObject(_In_ const std::shared_ptr<XamlType>& inType, _In_ bool bIsObjectFromMember, _Out_ bool* pResult) = 0;
     virtual _Check_return_ HRESULT WriteEndObject(_Out_ bool* pResult) = 0;
-    virtual _Check_return_ HRESULT WriteMember(const std::shared_ptr<XamlProperty>& inProperty, _Out_ bool* pResult) = 0;
+    virtual _Check_return_ HRESULT WriteMember(_In_ const std::shared_ptr<XamlProperty>& inProperty, _Out_ bool* pResult) = 0;
     virtual _Check_return_ HRESULT WriteEndMember(_Out_ bool* pResult) = 0;
-    virtual _Check_return_ HRESULT WriteConditionalScope(const std::shared_ptr<Parser::XamlPredicateAndArgs>& xamlPredicateAndArgs, _Out_ bool* pResult) = 0;
+    virtual _Check_return_ HRESULT WriteConditionalScope(_In_ const std::shared_ptr<Parser::XamlPredicateAndArgs>& xamlPredicateAndArgs, _Out_ bool* pResult) = 0;
     virtual _Check_return_ HRESULT WriteEndConditionalScope(_Out_ bool* pResult) = 0;
-    virtual _Check_return_ HRESULT WriteValue(const std::shared_ptr<XamlQualifiedObject>& value, _Out_ bool* pResult) = 0;
-    virtual _Check_return_ HRESULT WriteNamespace(_In_ const xstring_ptr& inssPrefix, const std::shared_ptr<XamlNamespace>& inssXamlNamespace, _Out_ bool* pResult) = 0;
+    virtual _Check_return_ HRESULT WriteValue(_In_ const std::shared_ptr<XamlQualifiedObject>& value, _Out_ bool* pResult) = 0;
+    virtual _Check_return_ HRESULT WriteNamespace(_In_ const xstring_ptr& inssPrefix, _In_ const std::shared_ptr<XamlNamespace>& inssXamlNamespace, _Out_ bool* pResult) = 0;
     virtual bool IsCustomWriterFinished() const = 0;
 
     // A custom writer may override this to allow or disallow the CustomWriterManager to create 

@@ -70,7 +70,7 @@ namespace DebugTool
         {
             *this = other;
         }
-        DebugEnumInfo2(DebugEnumInfo2&& other)
+        DebugEnumInfo2(DebugEnumInfo2&& other) noexcept
         {
             *this = std::move(other);
         }

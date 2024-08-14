@@ -46,6 +46,7 @@ public:
 #define SR_RatingsControlName L"RatingsControlName"
 #define SR_RatingControlName L"RatingControlName"
 #define SR_RatingUnset L"RatingUnset"
+#define SR_NavigationButtonToggleName L"NavigationButtonToggleName"
 #define SR_NavigationButtonClosedName L"NavigationButtonClosedName"
 #define SR_NavigationButtonOpenName L"NavigationButtonOpenName"
 #define SR_NavigationViewItemDefaultControlName L"NavigationViewItemDefaultControlName"

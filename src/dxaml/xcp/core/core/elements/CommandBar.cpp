@@ -7,7 +7,7 @@
 #include "StableXbfIndexes.g.h"
 #include <RuntimeProfiler.h>
 
-_Check_return_ HRESULT CCommandBar::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+_Check_return_ HRESULT CCommandBar::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     IFC_RETURN(__super::EnterImpl(pNamescopeOwner, params));
 
@@ -34,7 +34,7 @@ _Check_return_ HRESULT CCommandBar::EnterImpl(_In_ CDependencyObject *pNamescope
     return S_OK;
 }
 
-_Check_return_ HRESULT CCommandBar::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+_Check_return_ HRESULT CCommandBar::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     IFC_RETURN(__super::LeaveImpl(pNamescopeOwner, params));
 

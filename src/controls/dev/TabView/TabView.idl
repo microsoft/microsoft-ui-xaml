@@ -54,7 +54,7 @@ runtimeclass TabViewTabDragCompletedEventArgs
     TabViewItem Tab { get; };
 }
 
-[MUX_PREVIEW]
+[MUX_PUBLIC_V7]
 [webhosthidden]
 runtimeclass TabViewTabTearOutWindowRequestedEventArgs
 {
@@ -64,7 +64,7 @@ runtimeclass TabViewTabTearOutWindowRequestedEventArgs
     Microsoft.UI.WindowId NewWindowId;
 };
 
-[MUX_PREVIEW]
+[MUX_PUBLIC_V7]
 [webhosthidden]
 runtimeclass TabViewTabTearOutRequestedEventArgs
 {
@@ -74,7 +74,7 @@ runtimeclass TabViewTabTearOutRequestedEventArgs
     Microsoft.UI.WindowId NewWindowId { get; };
 };
 
-[MUX_PREVIEW]
+[MUX_PUBLIC_V7]
 [webhosthidden]
 runtimeclass TabViewExternalTornOutTabsDroppingEventArgs
 {
@@ -85,7 +85,7 @@ runtimeclass TabViewExternalTornOutTabsDroppingEventArgs
     Boolean AllowDrop;
 };
 
-[MUX_PREVIEW]
+[MUX_PUBLIC_V7]
 [webhosthidden]
 runtimeclass TabViewExternalTornOutTabsDroppedEventArgs
 {
@@ -144,7 +144,7 @@ unsealed runtimeclass TabView : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("true")]
     Boolean AllowDropTabs{ get; set; };
 
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V7]
     {
         [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         [MUX_DEFAULT_VALUE("false")]
@@ -191,7 +191,7 @@ unsealed runtimeclass TabView : Microsoft.UI.Xaml.Controls.Control
     static Microsoft.UI.Xaml.DependencyProperty CanReorderTabsProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty AllowDropTabsProperty{ get; };
 
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V7]
     {
         static Microsoft.UI.Xaml.DependencyProperty CanTearOutTabsProperty{ get; };
     }

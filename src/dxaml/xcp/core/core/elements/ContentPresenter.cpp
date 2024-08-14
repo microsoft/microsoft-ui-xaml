@@ -836,7 +836,7 @@ xref_ptr<CControlTemplate> CContentPresenter::GetTemplate() const
 //-------------------------------------------------------------------------
 _Check_return_
 HRESULT
-CContentPresenter::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
+CContentPresenter::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     XSIZEF combined = CBorder::HelperGetCombinedThickness(this);
 
@@ -871,7 +871,7 @@ CContentPresenter::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
 //-------------------------------------------------------------------------
 _Check_return_
 HRESULT
-CContentPresenter::ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize)
+CContentPresenter::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize)
 {
         CUIElement* pChild;
         IFC_RETURN(DoPointerCast(pChild, GetFirstChildNoAddRef()));

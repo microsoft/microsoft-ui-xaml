@@ -37,7 +37,7 @@ HRESULT ReaderDelegate::Read()
     }
 }
 
-HRESULT ReaderDelegate::GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext)
+HRESULT ReaderDelegate::GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext)
 {
     outSchemaContext = m_SchemaContext.lock();
     if (!outSchemaContext)

@@ -352,8 +352,6 @@ void BreadcrumbBar::ReIndexVisibleElementsForAccessibility() const
             ellipsisItem.SetValue(winrt::AutomationProperties::AccessibilityViewProperty(), box_value(accessibilityView));
         }
 
-        const auto& itemsSourceView = itemsRepeater.ItemsSourceView();
-
         // For every BreadcrumbBar item we set the index (starting from 1 for the root/highest-level item)
         // accessibilityIndex is the index to be assigned to each item
         // itemToIndex is the real index and it may differ from accessibilityIndex as we must only index the visible items

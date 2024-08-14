@@ -223,6 +223,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             return true;
         }
 
+        public void SetNewApplicationFrameWindow(UIObject window)
+        {
+            ApplicationFrameWindow = window;
+
+            ElementCache.Refresh();
+
+            Wait.ResetIdleHelper();
+            Wait.InitializeWaitHelper();
+        }
+
         // This function runs on a thread pool thread, and waits on the the app's process so that we know right away if
         // it crashed (or exited unexpectedly).
         static void AppWatcherThread(Object state) 

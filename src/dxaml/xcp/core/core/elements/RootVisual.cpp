@@ -73,7 +73,7 @@ CRootVisual::SetBackgroundColor(XUINT32 backgroundColor)
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CRootVisual::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
+CRootVisual::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     desiredSize.width = 0;
     desiredSize.height = 0;
@@ -103,7 +103,7 @@ CRootVisual::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CRootVisual::ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize)
+CRootVisual::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize)
 {
     HRESULT hr = S_OK;
 

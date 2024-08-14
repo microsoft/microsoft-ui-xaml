@@ -27,5 +27,5 @@ public:
     _Check_return_ HRESULT Neat(bool) final;
 
 private:
-    bool TryGetValidationError(_In_ CDependencyObject* obj, _COM_Outptr_ xaml_controls::IInputValidationError** error) const;
+    _Success_(return != false) bool TryGetValidationError(_In_ CDependencyObject* obj, _COM_Outptr_ xaml_controls::IInputValidationError** error) const;
 };

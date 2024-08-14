@@ -133,7 +133,7 @@ CSplitView::OnApplyTemplate()
 }
 
 _Check_return_ HRESULT
-CSplitView::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
+CSplitView::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     CValue value;
 
@@ -157,7 +157,7 @@ CSplitView::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
 }
 
 _Check_return_ HRESULT
-CSplitView::ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize)
+CSplitView::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize)
 {
     CValue value;
 
@@ -657,7 +657,7 @@ CSplitView::OnLightDismissLayerPointerReleased(_In_ CDependencyObject* sender, _
 // to avoid because the one live Enter/Leave walk should happen through the visual child collection. We do want non-live
 // Enter/Leave walks though, so override Enter/Leave and kick those off manually.
 _Check_return_ HRESULT
-CSplitView::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+CSplitView::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     if (!params.fSkipNameRegistration)
     {
@@ -685,7 +685,7 @@ CSplitView::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams param
 // to avoid because the one live Enter/Leave walk should happen through the visual child collection. We do want non-live
 // Enter/Leave walks though, so override Enter/Leave and kick those off manually.
 _Check_return_ HRESULT
-CSplitView::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+CSplitView::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     if (!params.fSkipNameRegistration)
     {

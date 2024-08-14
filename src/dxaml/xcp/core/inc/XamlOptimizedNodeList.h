@@ -62,7 +62,7 @@ public:
                 );
             _Check_return_ HRESULT Read() override;
             const XamlNode& CurrentNode() override;
-            _Check_return_ HRESULT GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext) override;
+            _Check_return_ HRESULT GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext) override;
 
             HRESULT set_NextIndex(XUINT32 uiIndex) override   { m_nextIndex = uiIndex;   RRETURN(S_OK);  }
             HRESULT get_NextIndex(XUINT32 *puiIndex) override { *puiIndex = m_nextIndex; RRETURN(S_OK);  }
@@ -114,7 +114,7 @@ public:
 
         _Check_return_ HRESULT Close() override;
 
-        _Check_return_ HRESULT GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext) const override
+        _Check_return_ HRESULT GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext) const override
         {
             outSchemaContext = m_spXamlSchemaContext;
             RRETURN(S_OK);
@@ -170,7 +170,7 @@ protected:
 private:
     XamlOptimizedNodeList();
 
-    HRESULT GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext) const
+    HRESULT GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext) const
     {
         outSchemaContext = m_spXamlSchemaContext;
         RRETURN(S_OK);

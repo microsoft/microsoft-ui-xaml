@@ -102,7 +102,7 @@ public:
     XamlQualifiedObject(_In_ const XamlQualifiedObject &rhs) = delete;
     XamlQualifiedObject& operator=(_In_ const XamlQualifiedObject &rhs) = delete;
 
-    XamlQualifiedObject(XamlQualifiedObject&& other)
+    XamlQualifiedObject(XamlQualifiedObject&& other) noexcept
         : m_typeToken(std::move(other.m_typeToken))
         , m_flags(std::move(other.m_flags))
         , m_value(std::move(other.m_value))

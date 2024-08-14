@@ -622,9 +622,9 @@ _Check_return_ HRESULT CXcpBrowserHost::AbortAsyncCallback(_In_ IObject *data)
 //------------------------------------------------------------------------
 HRESULT CALLBACK CXcpBrowserHost::PostAsyncScriptCallbackRequest(
     _In_ void *pVoidBH,
-    _In_opt_ CDependencyObject *pListener,
-    _In_opt_ EventHandle hEvent,
-    _In_opt_ CDependencyObject *pSender,
+    _In_ CDependencyObject *pListener,
+    _In_ EventHandle hEvent,
+    _In_ CDependencyObject *pSender,
     _In_opt_ CEventArgs *pArgs,
     _In_ XINT32 flags,
     _In_opt_ IScriptObject *pScriptObject,

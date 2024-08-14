@@ -27,7 +27,7 @@ GroupedDataCollectionView::~GroupedDataCollectionView()
     }
 }
 
-IFACEMETHODIMP GroupedDataCollectionView::GetAt(_In_opt_ UINT index, _Out_  IInspectable **item)
+IFACEMETHODIMP GroupedDataCollectionView::GetAt(UINT index, _Out_  IInspectable **item)
 {
     HRESULT hr = S_OK;
     UINT nGroups = 0;

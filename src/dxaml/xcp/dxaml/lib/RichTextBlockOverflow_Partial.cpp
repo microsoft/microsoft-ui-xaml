@@ -42,7 +42,7 @@ Cleanup:
 
 IFACEMETHODIMP
 DirectUI::RichTextBlockOverflow::OnCreateAutomationPeer(
-    xaml_automation_peers::IAutomationPeer** ppAutomationPeer
+    _Outptr_ xaml_automation_peers::IAutomationPeer** ppAutomationPeer
     )
 {
     HRESULT hr = S_OK;

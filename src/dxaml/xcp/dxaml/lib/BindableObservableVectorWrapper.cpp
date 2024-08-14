@@ -65,7 +65,7 @@ HRESULT BindableObservableVectorWrapper::QueryInterfaceImpl(_In_ REFIID iid, _Ou
 // IObservableVector<IInspectable *>
 IFACEMETHODIMP BindableObservableVectorWrapper::add_VectorChanged(
     _In_ wfc::VectorChangedEventHandler<IInspectable *> *pHandler,
-    _In_ EventRegistrationToken *token)
+    _Out_ EventRegistrationToken *token)
 {
     HRESULT hr = S_OK;
 

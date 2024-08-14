@@ -3446,7 +3446,7 @@ Cleanup:
 }
 
 // Property changed event handler
-HRESULT ListPickerFlyoutFactory::OnPropertyChanged(
+_Check_return_ HRESULT ListPickerFlyoutFactory::OnPropertyChanged(
     _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pSender,
     _In_ ABI::Microsoft::UI::Xaml::IDependencyPropertyChangedEventArgs* pArgs)
 {
@@ -8173,7 +8173,7 @@ Cleanup:
 }
 
 // Property changed event handler
-HRESULT PivotFactory::OnPropertyChanged(
+_Check_return_ HRESULT PivotFactory::OnPropertyChanged(
     _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pSender,
     _In_ ABI::Microsoft::UI::Xaml::IDependencyPropertyChangedEventArgs* pArgs)
 {
@@ -13363,7 +13363,7 @@ Cleanup:
 }
 
 // Property changed event handler
-HRESULT LoopingSelectorFactory::OnPropertyChanged(
+_Check_return_ HRESULT LoopingSelectorFactory::OnPropertyChanged(
     _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pSender,
     _In_ ABI::Microsoft::UI::Xaml::IDependencyPropertyChangedEventArgs* pArgs)
 {

@@ -160,7 +160,7 @@ CRichTextBlock::~CRichTextBlock()
 
 _Check_return_ HRESULT CRichTextBlock::EnterImpl(
     _In_ CDependencyObject *pNamescopeOwner,
-    EnterParams params
+    _In_ EnterParams params
     )
 {
     // First bring this TextBlock into scope.
@@ -178,7 +178,7 @@ _Check_return_ HRESULT CRichTextBlock::EnterImpl(
 
 _Check_return_ HRESULT CRichTextBlock::LeaveImpl(
     _In_ CDependencyObject *pNamescopeOwner,
-    LeaveParams params
+    _In_ LeaveParams params
     )
 {
     if (IsFocused() && GetContext())
@@ -1324,8 +1324,8 @@ _Check_return_ HRESULT CRichTextBlock::GetTextPositionFromPoint(
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CRichTextBlock::MeasureOverride(
-    XSIZEF availableSize,
-    XSIZEF& desiredSize
+    _In_ XSIZEF availableSize,
+    _Out_ XSIZEF& desiredSize
     )
 {
     xref_ptr<RichTextBlockBreak> pBreak;
@@ -1433,8 +1433,8 @@ _Check_return_ HRESULT CRichTextBlock::MeasureOverride(
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CRichTextBlock::ArrangeOverride(
-    XSIZEF finalSize,
-    XSIZEF& newFinalSize
+    _In_ XSIZEF finalSize,
+    _Out_ XSIZEF& newFinalSize
     )
 {
     XSIZEF renderSize = {0.0f, 0.0f};

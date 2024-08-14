@@ -1463,6 +1463,62 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        [TestMethod]
+        public void ValidateStackLayoutArrangeWithInsertion()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 3));
+                var sp = new StackPanel();
+                var sl = new StackLayout()
+                {
+                    Orientation = Orientation.Horizontal,
+                    Spacing = 0
+                };
+                var repeater = new ItemsRepeater();
+                repeater.Layout = sl;
+                repeater.ItemsSource = itemsSource;
+                repeater.ItemTemplate = GetDataTemplate(@"<TextBlock Width='64' Height='32' Text='{Binding}'/>");
+
+                sp.Children.Add(repeater);
+
+                Content = sp;
+                Content.UpdateLayout();
+
+                Log.Comment("Item bounds before insertion:");
+
+                for (int index = 0; index < 3; index++)
+                {
+                    var item = repeater.TryGetElement(index) as FrameworkElement;
+                    var actualBounds = LayoutInformation.GetLayoutSlot(item);
+                    var expectedBounds = new Rect(64 * index, 0, 64, 32);
+
+                    Log.Comment(string.Format(@"  Index:{0}, Expected:{1} Actual:{2}", index, expectedBounds, actualBounds));
+                    Verify.AreEqual(expectedBounds, actualBounds);
+                }
+
+                for (int insertionIndex = 0; insertionIndex < 3; insertionIndex++)
+                {
+                    Log.Comment(string.Format(@"Item {0} insertion at index:{1}", itemsSource.Count, insertionIndex));
+                    itemsSource.Insert(insertionIndex, itemsSource.Count);
+
+                    Content.UpdateLayout();
+
+                    Log.Comment("Item bounds after insertion:");
+
+                    for (int index = 0; index < itemsSource.Count; index++)
+                    {
+                        var item = repeater.TryGetElement(index) as FrameworkElement;
+                        var actualBounds = LayoutInformation.GetLayoutSlot(item);
+                        var expectedBounds = new Rect(64 * index, 0, 64, 32);
+
+                        Log.Comment(string.Format(@"  Index:{0}, Expected:{1} Actual:{2}", index, expectedBounds, actualBounds));
+                        Verify.AreEqual(expectedBounds, actualBounds);
+                    }
+                }
+            });
+        }
+
         #region Private Helpers
 
         private enum LayoutChoice

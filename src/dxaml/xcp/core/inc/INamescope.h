@@ -20,11 +20,11 @@ public:
     // Register an association between a name and an object in this namescope.
     virtual _Check_return_ HRESULT RegisterName(
         _In_ const xstring_ptr& strName,
-        const std::shared_ptr<XamlQualifiedObject>& qoScopedObject) = 0;
+        _In_ const std::shared_ptr<XamlQualifiedObject>& qoScopedObject) = 0;
 
     // Receive a namescope owner, if one doesn't already exist.
     virtual void EnsureNamescopeOwner(
-        const std::shared_ptr<XamlQualifiedObject>& qoOwner) = 0;
+        _In_ const std::shared_ptr<XamlQualifiedObject>& qoOwner) = 0;
 
     virtual CDependencyObject* GetNamescopeOwner() const = 0;
     virtual Jupiter::NameScoping::NameScopeType GetNameScopeType() const = 0;

@@ -452,7 +452,7 @@ this.Write(" = target.try_as<");
 this.Write(this.ToStringHelper.ToStringWithCulture(element.TemplatedParentType));
 
 this.Write(">())\r\n                    {\r\n                        auto objBindings = std::make" +
-        "_unique<");
+        "_shared<");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(element.BindUniverse.BindingsClassName));
 
@@ -484,7 +484,7 @@ this.Write(" = target.as<");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(element.Type));
 
-this.Write(">();\r\n                    auto objBindings = std::make_unique<");
+this.Write(">();\r\n                    auto objBindings = std::make_shared<");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(element.BindUniverse.BindingsClassName));
 

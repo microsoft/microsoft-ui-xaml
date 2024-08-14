@@ -7,7 +7,7 @@
 #include "StableXbfIndexes.g.h"
 #include <RuntimeProfiler.h>
 
-_Check_return_ HRESULT CButton::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+_Check_return_ HRESULT CButton::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     CValue value;
 
@@ -27,7 +27,7 @@ _Check_return_ HRESULT CButton::EnterImpl(_In_ CDependencyObject *pNamescopeOwne
     return S_OK;
 }
 
-_Check_return_ HRESULT CButton::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+_Check_return_ HRESULT CButton::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     CValue value;
 

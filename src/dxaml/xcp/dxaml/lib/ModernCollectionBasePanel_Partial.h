@@ -353,8 +353,9 @@ namespace DirectUI
                 ~StrongRefLifetime() {if (m_pOwner) m_pOwner->UnguaranteeCache(); }
 
                 // Moveability and returnability
-                StrongRefLifetime(_Inout_ StrongRefLifetime&& other) : m_pOwner(other.m_pOwner) {other.m_pOwner = nullptr;}
-                StrongRefLifetime& operator=(_Inout_ StrongRefLifetime&& other)
+                StrongRefLifetime(_Inout_ StrongRefLifetime&& other)  noexcept
+                    : m_pOwner(other.m_pOwner) {other.m_pOwner = nullptr;}
+                StrongRefLifetime& operator=(_Inout_ StrongRefLifetime&& other) noexcept
                 {
                     if (this != &other) {m_pOwner = other.m_pOwner; other.m_pOwner = nullptr;}
                     return *this;
@@ -1076,7 +1077,7 @@ namespace DirectUI
             _In_ INT index,
             _Outptr_ xaml::IUIElement** ppReturnValue) noexcept;
 
-        _Check_return_ HRESULT GetRootOfItemTemplateAsContainer(const ctl::ComPtr<IGeneratorHost>& spHost, const ctl::ComPtr<IInspectable>& item, bool queryForInspecting, _Out_ ctl::ComPtr<xaml::IUIElement>& container);
+        _Check_return_ HRESULT GetRootOfItemTemplateAsContainer(const ctl::ComPtr<IGeneratorHost>& spHost, const ctl::ComPtr<IInspectable>& item, bool queryForInspecting, _Inout_ ctl::ComPtr<xaml::IUIElement>& container);
 
         // Creates or recycles a header for the given index.
         _Check_return_ HRESULT GenerateHeaderAtGroupIndexImpl(_In_ INT index, _Outptr_ xaml::IUIElement** ppReturnValue);

@@ -28,7 +28,7 @@ namespace DirectUI
     public:
 
         // IVector<IInspectable *>
-        IFACEMETHOD(GetAt)(_In_opt_ UINT index, _Out_  IInspectable **item) override;
+        IFACEMETHOD(GetAt)(UINT index, _Out_  IInspectable **item) override;
 
         IFACEMETHOD(get_Size)(_Out_ UINT *size) override;
 

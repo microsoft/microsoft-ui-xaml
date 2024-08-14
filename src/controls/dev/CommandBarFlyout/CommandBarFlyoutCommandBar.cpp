@@ -362,6 +362,7 @@ void CommandBarFlyoutCommandBar::AttachControlEventHandlers()
 void CommandBarFlyoutCommandBar::AttachItemEventHandlers()
 {
     m_itemLoadedRevokerVector.clear();
+    m_itemSizeChangedRevokerVector.clear();
 
     for (auto const& command : PrimaryCommands())
     {
@@ -371,6 +372,15 @@ void CommandBarFlyoutCommandBar::AttachItemEventHandlers()
                 [this](winrt::IInspectable const& sender, auto const&)
                 {
                     UpdateItemVisualState(sender.as<winrt::Control>(), true /* isPrimaryControl */);
+                    UpdateTemplateSettings();
+                }
+            }));
+
+            m_itemSizeChangedRevokerVector.push_back(commandAsFE.SizeChanged(winrt::auto_revoke, {
+                [this](winrt::IInspectable const& sender, auto const&)
+                {
+                    UpdateItemVisualState(sender.as<winrt::Control>(), true /* isPrimaryControl */);
+                    UpdateTemplateSettings();
                 }
             }));
         }
@@ -384,6 +394,15 @@ void CommandBarFlyoutCommandBar::AttachItemEventHandlers()
                 [this](winrt::IInspectable const& sender, auto const&)
                 {
                     UpdateItemVisualState(sender.as<winrt::Control>(), false /* isPrimaryControl */);
+                    UpdateTemplateSettings();
+                }
+            }));
+
+            m_itemSizeChangedRevokerVector.push_back(commandAsFE.SizeChanged(winrt::auto_revoke, {
+                [this](winrt::IInspectable const& sender, auto const&)
+                {
+                    UpdateItemVisualState(sender.as<winrt::Control>(), false /* isPrimaryControl */);
+                    UpdateTemplateSettings();
                 }
             }));
         }
@@ -1264,7 +1283,7 @@ winrt::IAsyncOperation<bool> CommandBarFlyoutCommandBar::FocusControl(
 
     if (newFocus.Focus(focusState))
     {
-        if (oldFocus && updateTabStop)
+        if (oldFocus && updateTabStop && oldFocus != newFocus)
         {
             oldFocus.IsTabStop(false);
         }

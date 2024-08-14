@@ -65,7 +65,7 @@ namespace DirectUI
         static _Check_return_ HRESULT OriginateError(_In_ HRESULT hrEncountered, _In_ XUINT32 nErrorMessageLength, _In_reads_(nErrorMessageLength) const WCHAR* pszErrorMessage = NULL);
         static _Check_return_ HRESULT OriginateError(_In_ HRESULT hrEncountered, _In_ const xstring_ptr_view& strErrorMessage, bool outputToDebugger = false);
         static _Check_return_ HRESULT OriginateErrorUsingResourceID(_In_ HRESULT hrEncountered, _In_ XUINT32 resourceStringID);
-        static _Check_return_ HRESULT OriginateErrorUsingFormattedResourceID(_In_ HRESULT hrEncountered, _In_ XUINT32 resourceStringFormatID, const xstring_ptr_view& strParam1, const WCHAR* param2 = nullptr);
+        static _Check_return_ HRESULT OriginateErrorUsingFormattedResourceID(HRESULT hrEncountered, XUINT32 resourceStringFormatID, _In_ const xstring_ptr_view& strParam1, const WCHAR* param2 = nullptr);
 
         static _Check_return_ HRESULT ClearError();
         static bool AreWRLDelegateErrorsReported();

@@ -131,8 +131,8 @@ protected:
     ~CShape() override;
 
     _Check_return_ HRESULT InitPenFromShape(_Out_ CPlainPen *pPen);
-    _Check_return_ HRESULT MeasureOverride(_In_ XSIZEF availableSize, _Inout_ XSIZEF &desiredSize) override;
-    _Check_return_ HRESULT ArrangeOverride(_In_ XSIZEF finalSize, _Inout_ XSIZEF& newFinalSize) override;
+    _Check_return_ HRESULT MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF &desiredSize) override;
+    _Check_return_ HRESULT ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize) override;
     virtual bool NeedsSmoothJoin() const
     {
         return false; // Shapes don't use smooth join by default.  Ellipse overrides and do need a smooth join.

@@ -8,6 +8,7 @@
     template <typename D, typename ... I>
     struct <#=Model.CodeInfo.ClassName.ShortName#>T<D, I...>::<#=bindUniverse.BindingsClassName#>
         : public <#=Projection(ProjectInfo.RootNamespace)#>::implementation::<#=bindUniverse.DataRootType.NeedsBoxUnbox() ? "ValueTypeXamlBindings" : "ReferenceTypeXamlBindings"#><<#=bindUniverse.DataRootType#>, <#=GetBindingTrackingClassName(bindUniverse, Model.CodeInfo)#>>
+        , public std::enable_shared_from_this<<#=Model.CodeInfo.ClassName.ShortName#>T<D, I...>::<#=bindUniverse.BindingsClassName#>>
 <#  if (bindUniverse.NeedsBindingsTracking) { #>
         , public <#=Projection(ProjectInfo.RootNamespace)#>::implementation::IXamlBindingTracking
 <#  }#>
@@ -525,14 +526,7 @@
                     <#=element.ObjectCodeName#> = targetElement;
 <#+     foreach (BoundEventAssignment evt in element.BoundEventAssignments) { #>
 <#+         Output_ApiInformationCall_Push(evt.ApiInformation, Indent.ThreeTabs); #>
-                    targetElement.<#=evt.MemberName#>([this](<#=evt.Parameters.Declaration()#>)
-                    {
-<#+         if (!evt.PathStep.ValueType.IsDelegate()) { #>
-                        <#=evt.PathStep.CodeGen().PathExpression#>;
-<#+         } else { #>
-                        <#=evt.PathStep.CodeGen().PathExpression#>(<#=evt.Parameters.ForCall()#>);
-<#+         }#>
-                    });
+<#+         Output_NullCheckedEventAssignment(evt); #>
 <#+         Output_ApiInformationCall_Pop(evt.ApiInformation, Indent.ThreeTabs); #>
 <#+     }#>
 <#+     if (element.CanBeInstantiatedLater && (element.HasBindAssignments || element.HasBoundEventAssignments))#>
@@ -595,24 +589,37 @@
 <#+     Output_ApiInformationCall_Push(ba.ApiInformation, Indent.None); #>
 <#+     if (ba.NeedsLostFocusForTwoWay) { #>
                 <#=ba.ConnectionIdElement.ReferenceExpression#>.LostFocus(
-                    [this] (IInspectable const& sender, <#=Projection(KnownNamespaces.Xaml)#>::RoutedEventArgs const& e)
+                    [weakThis{ weak_from_this() }, this] (IInspectable const& sender, <#=Projection(KnownNamespaces.Xaml)#>::RoutedEventArgs const& e)
                     {
 <#+     } else { #>
+<#+             // Although it looks strange that we are capturing both `this` and a weak pointer to `this`, #>
+<#+             // there is a good reason that pattern is employed. In some cases, the reference exception where #>
+<#+             // we would need to replace the implicit `this->` with an explicit `strongThis->` is nested too #>
+<#+             // deeply within `ba.ReverseAssignmentExpression` to be modified here, e.g. if a cast is needed #>
+<#+             // between the source and target property types. While in principle we could plumb awareness of #>
+<#+             // `strongThis` all the way down, there is a non-negligible chance that one of the cases is missed #>
+<#+             // resulting in the generation of non-compilable code. #>
+<#+             // #>
+<#+             // Instead, we capture both `this` and a weak pointer to `this`, and only use the former if a valid #>
+<#+             // strong pointer can be derived from the latter thus guaranteeing that `this` can be safely used. #>
                 <#=ba.ConnectionIdElement.ReferenceExpression#>.RegisterPropertyChangedCallback(<#=ba.MemberDeclaringType.CppWinRTLocalElseRef()#>::<#=ba.MemberName#>Property(),
-                    [this] (DependencyObject const& sender, DependencyProperty const& prop)
+                    [weakThis{ weak_from_this() }, this] (DependencyObject const& sender, DependencyProperty const& prop)
                     {
 <#+     } #>
-                        if (IsInitialized())
+                        if (auto strongThis{ weakThis.lock() })
                         {
-                            // Update Two Way binding
+                            if (IsInitialized())
+                            {
+                                // Update Two Way binding
 <#+     MethodStep bindBackStep = ba.BindBackStep as MethodStep; #>
 <#+     if (bindBackStep != null) { #>
 <#+         var param = bindBackStep.Parameters[0]; #>
-                            <#=ba.MemberType#> <#=param.Name#> = <#=ba.ReverseAssignmentExpression#>;
+                                <#=ba.MemberType#> <#=param.Name#> = <#=ba.ReverseAssignmentExpression#>;
 <#+                         Output_NullCheckedAssignment(bindBackStep, null);#>
 <#+     } else { #>
 <#+                         Output_NullCheckedAssignment(ba.PathStep, ba.ReverseAssignmentExpression);#>
 <#+     }#>
+                            }
                         }
                     });
 <#+     Output_ApiInformationCall_Pop(ba.ApiInformation, Indent.None); #>
@@ -622,20 +629,53 @@
 <#+ { #>
 <#+     PushIndent(Indent.FourTabs);#>
 <#+     foreach (var parent in step.Parents.Where(parent => parent.NeedsCheckForNull)) { #>
-            if (<#=parent.CodeGen().PathExpression#> != nullptr)
-            {
+                if (<#=parent.CodeGen().PathExpression#> != nullptr)
+                {
 <#+         PushIndent(); #>
 <#+     } #>
 <#+     if (value != null) { #>
-            <#=step.CodeGen().PathSetExpression(value)#>;
+                <#=step.CodeGen().PathSetExpression(value)#>;
 <#+     } else { #>
-            <#=step.CodeGen().PathExpression#>;
+                <#=step.CodeGen().PathExpression#>;
 <#+     } #>
 <#+     foreach (var parent in step.Parents.Where(parent => parent.NeedsCheckForNull)) { #>
 <#+         PopIndent(); #>
-            }
+                }
 <#+     } #>
 <#+     PopIndent();#>
+<#+ } #>
+
+<#+ void  Output_NullCheckedEventAssignment(BoundEventAssignment evt) #>
+<#+ { #>
+<#+                 // Similar to the comment in Output_Connect_TwoWayBinding, this strange pattern #>
+<#+                 // (capturing both `this` and a weak pointer to `this`) is due to potential cases #>
+<#+                 // where blindly prepending `strongThis->` to the expression results in a build error, #>
+<#+                 // e.g. a static function. #>
+<#+                 // #>
+<#+                 // Instead, we capture both `this` and a weak pointer to `this`, and only use the former if a valid #>
+<#+                 // strong pointer can be derived from the latter thus guaranteeing that `this` can be safely used. #>
+                    targetElement.<#=evt.MemberName#>([weakThis{ weak_from_this() }, this](<#=evt.Parameters.Declaration()#>)
+                    {
+<#+     PushIndent(Indent.ThreeTabs);#>
+            if (auto strongThis{ weakThis.lock() })
+            {
+<#+     foreach (var parent in evt.PathStep.Parents.Where(parent => parent.NeedsCheckForNull)) { #>
+                if (<#=parent.CodeGen().PathExpression#> != nullptr)
+                {
+<#+         PushIndent(); #>
+<#+     } #>
+<#+     if (!evt.PathStep.ValueType.IsDelegate()) { #>
+                <#=evt.PathStep.CodeGen().PathExpression#>;
+<#+     } else { #>
+                <#=evt.PathStep.CodeGen().PathExpression#>(<#=evt.Parameters.ForCall()#>);
+<#+     }#>
+<#+     foreach (var parent in evt.PathStep.Parents.Where(parent => parent.NeedsCheckForNull)) { #>
+<#+         PopIndent(); #>
+                }
+<#+     } #>
+            }
+<#+     PopIndent();#>
+                    });
 <#+ } #>
 
 <#+     private void Output_UpdateChildListeners_Call(BindPathStep step, string parameter)#>

@@ -41,7 +41,7 @@ namespace DirectUI
 
         // read methods
         IFACEMETHOD(GetAt)(
-            _In_opt_ UINT index,
+            UINT index,
             _Out_ IInspectable** item) override;
 
         IFACEMETHOD(get_Size)(_Out_ UINT* size) override;
@@ -56,14 +56,14 @@ namespace DirectUI
 
         // write methods
         IFACEMETHOD(SetAt)(
-            _In_ UINT index,
+            UINT index,
             _In_opt_ IInspectable* item) override;
 
         IFACEMETHOD(InsertAt)(
-            _In_ UINT index,
+            UINT index,
             _In_opt_ IInspectable* item) override;
 
-        IFACEMETHOD(RemoveAt)(_In_ UINT index) override;
+        IFACEMETHOD(RemoveAt)(UINT index) override;
 
         IFACEMETHOD(Append)(_In_opt_ IInspectable* item) override;
 
@@ -96,7 +96,7 @@ namespace DirectUI
         // Raise RaiseVectorChanged event
         _Check_return_ HRESULT RaiseVectorChanged(
             _In_ wfc::CollectionChange action,
-            _In_ UINT index);
+            UINT index);
 
         _Check_return_ HRESULT CheckReentrancy();
 

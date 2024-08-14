@@ -257,6 +257,10 @@ private:
     winrt::UIElement::DragLeave_revoker m_dragLeaveRevoker{};
     winrt::UIElement::Drop_revoker m_dropRevoker{};
 
+    void OnAppWindowPositionChanged(const winrt::Microsoft::UI::Windowing::AppWindow& sender, const winrt::Microsoft::UI::Windowing::AppWindowChangedEventArgs& args);
+    winrt::event_token m_appWindowPositionChangedToken{};
+    winrt::Microsoft::UI::Windowing::AppWindow m_appWindow{ nullptr };
+
     void ResetPointerHelper(const winrt::PointerRoutedEventArgs& args);
     XamlFocusChangeInfo m_xamlFocusChangeInfo{};
 

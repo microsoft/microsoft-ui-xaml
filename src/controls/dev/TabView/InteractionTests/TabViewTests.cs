@@ -1150,21 +1150,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("IsolationLevel", "Method")] // These tests create and destroy windows, so we'll isolate each test to ensure we start with a known good state each time.
         public void CanTearOutAndRejoinTabsWithDataItems()
         {
-            using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTearOutWindowWithDataItemsButton" }))
+            using (var windowOpenedWaiter = new WindowOpenedWaiter(_secondaryWindowCondition))
             {
-                TabViewTearOutTestHelpers.CanTearOutAndRejoinTabs(GetTabViewTearOutAppWindows, GetTabViewFromWindow, GetTabsFromTabView);
+                using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTearOutWindowWithDataItemsButton" }))
+                {
+                    windowOpenedWaiter.Wait();
+                    ClosePrimaryWindow(setup);
+                    TabViewTearOutTestHelpers.CanTearOutAndRejoinTabs(GetTabViewTearOutAppWindows, GetTabViewFromWindow, GetTabsFromTabView);
+                }
             }
         }
 
         [TestMethod]
         [TestProperty("Description", "Verifies that CanTearOutTabs does not prevent internally reordering tabs created for items.")]
         [TestProperty("IsolationLevel", "Method")] // These tests create and destroy windows, so we'll isolate each test to ensure we start with a known good state each time.
-        [TestProperty("Ignore", "True")] // Task 50591398: Re-enable tests  when we ingest the latest Microsoft.UI.Input.dll
+        [TestProperty("Ignore", "True")] // Bug 52324246: Re-enable TabViewTests.CanReorderTabsWithTabTearOutWithDataItems after determining what is failing in the lab
         public void CanReorderTabsWithTabTearOutWithDataItems()
         {
-            using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTearOutWindowWithDataItemsButton" }))
+            using (var windowOpenedWaiter = new WindowOpenedWaiter(_secondaryWindowCondition))
             {
-                TabViewTearOutTestHelpers.CanReorderTabs(GetTabViewTearOutAppWindows, GetTabViewFromWindow, GetTabsFromTabView);
+                using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTearOutWindowWithDataItemsButton" }))
+                {
+                    windowOpenedWaiter.Wait();
+                    ClosePrimaryWindow(setup);
+                    TabViewTearOutTestHelpers.CanReorderTabs(GetTabViewTearOutAppWindows, GetTabViewFromWindow, GetTabsFromTabView);
+                }
             }
         }
 
@@ -1173,9 +1183,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("IsolationLevel", "Method")] // These tests create and destroy windows, so we'll isolate each test to ensure we start with a known good state each time.
         public void CanSelectTabsWithTabTearOutWithDataItems()
         {
-            using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTearOutWindowWithDataItemsButton" }))
+            using (var windowOpenedWaiter = new WindowOpenedWaiter(_secondaryWindowCondition))
             {
-                TabViewTearOutTestHelpers.CanSelectTabs(GetTabViewTearOutAppWindows, GetTabViewFromWindow, GetTabsFromTabView);
+                using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTearOutWindowWithDataItemsButton" }))
+                {
+                    windowOpenedWaiter.Wait();
+                    ClosePrimaryWindow(setup);
+                    TabViewTearOutTestHelpers.CanSelectTabs(GetTabViewTearOutAppWindows, GetTabViewFromWindow, GetTabsFromTabView);
+                }
             }
         }
 
@@ -1184,21 +1199,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("IsolationLevel", "Method")] // These tests create and destroy windows, so we'll isolate each test to ensure we start with a known good state each time.
         public void CanTearOutAndRejoinTabsWithoutDataItems()
         {
-            using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTearOutWindowWithoutDataItemsButton" }))
+            using (var windowOpenedWaiter = new WindowOpenedWaiter(_secondaryWindowCondition))
             {
-                TabViewTearOutTestHelpers.CanTearOutAndRejoinTabs(GetTabViewTearOutAppWindows, GetTabViewFromWindow, GetTabsFromTabView);
+                using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTearOutWindowWithoutDataItemsButton" }))
+                {
+                    windowOpenedWaiter.Wait();
+                    ClosePrimaryWindow(setup);
+                    TabViewTearOutTestHelpers.CanTearOutAndRejoinTabs(GetTabViewTearOutAppWindows, GetTabViewFromWindow, GetTabsFromTabView);
+                }
             }
         }
 
         [TestMethod]
         [TestProperty("Description", "Verifies that CanTearOutTabs does not prevent internally reordering tabs not created for data items.")]
         [TestProperty("IsolationLevel", "Method")] // These tests create and destroy windows, so we'll isolate each test to ensure we start with a known good state each time.
-        [TestProperty("Ignore", "True")] // Task 50591398: Re-enable tests  when we ingest the latest Microsoft.UI.Input.dll
         public void CanReorderTabsWithTabTearOutWithoutDataItems()
         {
-            using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTearOutWindowWithoutDataItemsButton" }))
+            using (var windowOpenedWaiter = new WindowOpenedWaiter(_secondaryWindowCondition))
             {
-                TabViewTearOutTestHelpers.CanReorderTabs(GetTabViewTearOutAppWindows, GetTabViewFromWindow, GetTabsFromTabView);
+                using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTearOutWindowWithoutDataItemsButton" }))
+                {
+                    windowOpenedWaiter.Wait();
+                    ClosePrimaryWindow(setup);
+                    TabViewTearOutTestHelpers.CanReorderTabs(GetTabViewTearOutAppWindows, GetTabViewFromWindow, GetTabsFromTabView);
+                }
             }
         }
 
@@ -1207,9 +1231,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("IsolationLevel", "Method")] // These tests create and destroy windows, so we'll isolate each test to ensure we start with a known good state each time.
         public void CanSelectTabsWithTabTearOutWithoutDataItems()
         {
-            using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTearOutWindowWithoutDataItemsButton" }))
+            using (var windowOpenedWaiter = new WindowOpenedWaiter(_secondaryWindowCondition))
             {
-                TabViewTearOutTestHelpers.CanSelectTabs(GetTabViewTearOutAppWindows, GetTabViewFromWindow, GetTabsFromTabView);
+                using (var setup = new TestSetupHelper(new[] { "TabView Tests", "TabViewTearOutWindowWithoutDataItemsButton" }))
+                {
+                    windowOpenedWaiter.Wait();
+                    ClosePrimaryWindow(setup);
+                    TabViewTearOutTestHelpers.CanSelectTabs(GetTabViewTearOutAppWindows, GetTabViewFromWindow, GetTabsFromTabView);
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that right-clicking on a TabView tab does not select it.")]
+        [TestProperty("RegressionBug", "52129006")]
+        public void VerifyRightClickDoesNotSelectTab()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                Log.Comment("We should begin on the first tab.");
+                UIObject tabContent = FindElement.ByName("FirstTabContent");
+                Verify.IsNotNull(tabContent);
+
+                Log.Comment("Now we'll right-click on the last tab.");
+                UIObject lastTab = FindElement.ByName("LastTab");
+                InputHelper.RightClick(lastTab);
+
+                Log.Comment("We should still be on the first tab.");
+                ElementCache.Clear();
+                tabContent = FindElement.ByName("FirstTabContent");
+                Verify.IsNotNull(tabContent);
             }
         }
 
@@ -1245,7 +1296,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        private static readonly UICondition _windowCondition =
+        private static readonly UICondition _primaryWindowCondition =
+            UICondition.CreateFromName("MUXControlsTestApp.Desktop");
+
+        private static readonly UICondition _secondaryWindowCondition =
             UICondition.CreateFromName("MUXControlsTestApp.Desktop - Secondary TabViewTearOutWindow");
 
         private static readonly UICondition _tabViewCondition =
@@ -1254,9 +1308,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         private static readonly UICondition _tabCondition =
             UICondition.CreateFromClassName("ListViewItem");
 
+        private static void ClosePrimaryWindow(TestSetupHelper setup)
+        {
+            Log.Comment("We won't be needing the primary window, so we'll close it now in order to avoid it stealing focus.");
+
+            var primaryWindow = GetPrimaryWindow();
+            Window tabTearOutWindow = GetTabViewTearOutAppWindows().Single();
+            TestEnvironment.Application.SetNewApplicationFrameWindow(tabTearOutWindow);
+
+            using (var waiter = new WindowClosedWaiter(primaryWindow))
+            {
+                primaryWindow.Close();
+                waiter.Wait();
+            }
+
+            setup.ClearOpenedPages();
+            Wait.ForIdle();
+        }
+
+        private static Window GetPrimaryWindow()
+        {
+            return new Window(UIObject.Root.Children.Find(_primaryWindowCondition));
+        }
+
         private static List<Window> GetTabViewTearOutAppWindows()
         {
-            return UIObject.Root.Children.FindMultiple(_windowCondition).Select(o => new Window(o)).ToList();
+            return UIObject.Root.Children.FindMultiple(_secondaryWindowCondition).Select(o => new Window(o)).ToList();
         }
 
         private static Tab GetTabViewFromWindow(Window window)

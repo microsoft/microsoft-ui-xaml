@@ -6,7 +6,7 @@
 
 using namespace DirectUI;
 
-HRESULT Vector3Transition::QueryInterfaceImpl(_In_ REFIID riid, _Out_ void** ppObject)
+HRESULT Vector3Transition::QueryInterfaceImpl(_In_ REFIID riid, _Outptr_ void** ppObject)
 {
     if (InlineIsEqualGUID(riid, __uuidof(xaml::IDependencyObject)))
     {

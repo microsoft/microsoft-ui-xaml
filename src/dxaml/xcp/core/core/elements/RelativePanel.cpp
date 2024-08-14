@@ -15,7 +15,7 @@ CRelativePanel::~CRelativePanel()
 {
 }
 
-_Check_return_ HRESULT CRelativePanel::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
+_Check_return_ HRESULT CRelativePanel::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     XSIZEF availableSizeForChildren;
     XSIZEF borderSize = CBorder::HelperGetCombinedThickness(this);
@@ -65,7 +65,7 @@ Cleanup:
     }
 }
 
-_Check_return_ HRESULT CRelativePanel::ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize)
+_Check_return_ HRESULT CRelativePanel::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize)
 {
     XRECTF childRect = CBorder::HelperGetInnerRect(this, finalSize);
 

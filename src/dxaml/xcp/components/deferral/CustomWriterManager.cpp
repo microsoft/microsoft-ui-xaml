@@ -28,7 +28,7 @@ CustomWriterManager::CustomWriterManager(std::shared_ptr<ObjectWriterContext>& c
 CustomWriterManager::~CustomWriterManager()
 {}
 
-HRESULT CustomWriterManager::Initialize()
+_Check_return_ HRESULT CustomWriterManager::Initialize()
 {
     ASSERT(m_customWriterActivators.empty());
 
@@ -382,7 +382,7 @@ _Check_return_ HRESULT CustomWriterManager::CreateStreamOffsetToken(_Out_ Stream
     return S_OK;
 }
 
-_Check_return_ HRESULT CustomWriterManager::SetCustomWriterRuntimeData(std::unique_ptr<CustomWriterRuntimeData> runtimeData)
+_Check_return_ HRESULT CustomWriterManager::SetCustomWriterRuntimeData(_In_ std::unique_ptr<CustomWriterRuntimeData> runtimeData)
 {
     // The parent ObjectWriter should've already gotten and cleared the previous CustomWriterRuntimeData
     ASSERT(!IsCustomRuntimeDataAvailable());

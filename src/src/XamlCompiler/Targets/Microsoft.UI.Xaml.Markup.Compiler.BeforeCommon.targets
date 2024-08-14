@@ -1,0 +1,32 @@
+﻿<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+
+    <!-- Setting this property, WindowsKitsPath, makes the VS SDK targets selector "not find the right path"
+         when including UWP tools. We want to use WinUI tools, not UWP. Note that for modern .NET projects, we're
+         specifically setting these properties in a .targets file instead, so we can conditionally skip doing so
+         if 'UseUwpTools' is set. This is set in a custom 'BeforeCommon' .targets because we:
+           - Need this to be evaliated after the .csproj.
+           - Need this to be evaliated *before* 'Microsoft.Windows.UI.Xaml.Common.targets'.
+         Because of the second point, having this in a normal .targets would cause it to come on too late. -->
+    <UseWinUITools Condition="'$(UseWinUITools)' == '' and '$(UseUwpTools)' != 'true'">true</UseWinUITools>
+    <UseWinUITools Condition="'$(UseWinUITools)' == '' and '$(UseUwpTools)' == 'true'">false</UseWinUITools>
+    <WindowsKitsPath Condition="'$(UseWinUITools)' == 'true'">WinUI-Projects-Don-t-Use-SDK-Xaml-Tools</WindowsKitsPath>
+  </PropertyGroup>
+
+  <!-- When building UWP XAML apps, we don't want the WinAppSDK references at all.
+       These property assignments have to be here because setting them from other
+       normal .targets is too late (which causes unwanted code to be generated). -->
+  <PropertyGroup Condition="'$(UseUwpTools)' == 'true'">
+    <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
+    <WindowsAppSDKFrameworkPackageReference>false</WindowsAppSDKFrameworkPackageReference>
+  </PropertyGroup>
+
+  <!-- Add a marker value to verify from a later .targets that this .targets has been correctly invoked -->
+  <PropertyGroup>
+    <_IsWinUICustomBeforeMicrosoftCommonTargetsChainValid>true</_IsWinUICustomBeforeMicrosoftCommonTargetsChainValid>
+  </PropertyGroup>
+
+  <!-- Import the original custom .targets, if it exists -->
+  <Import Project="$(_OriginalCustomBeforeMicrosoftCommonTargetsFromWinUIProps)" Condition="'$(_OriginalCustomBeforeMicrosoftCommonTargetsFromWinUIProps)' != '' and Exists('$(_OriginalCustomBeforeMicrosoftCommonTargetsFromWinUIProps)')"/>  
+</Project>

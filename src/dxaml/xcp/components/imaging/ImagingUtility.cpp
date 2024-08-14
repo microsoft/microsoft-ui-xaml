@@ -32,7 +32,7 @@ using VectorOfVectors = std::vector<std::vector<T>>;
 
 static _Check_return_ HRESULT IsKnownSRGBProfile(
     _In_ const wrl::ComPtr<IWICColorContext>& spColorContext,
-    _Outref_ bool& isKnown
+    _Out_ bool& isKnown
     )
 {
     isKnown = false;

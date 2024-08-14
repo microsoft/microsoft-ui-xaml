@@ -20,7 +20,7 @@ namespace DirectUI
     public:
 
         // IVector<IInspectable *>
-        IFACEMETHOD(GetAt)(_In_opt_ unsigned index, _Out_  IInspectable **item) override;
+        IFACEMETHOD(GetAt)(unsigned index, _Out_  IInspectable **item) override;
 
         IFACEMETHOD(get_Size)(_Out_ unsigned *size) override;
 
@@ -28,11 +28,11 @@ namespace DirectUI
 
         IFACEMETHOD(IndexOf)(_In_opt_ IInspectable * value, _Out_ unsigned *index, _Out_ BOOLEAN *found) override;
 
-        IFACEMETHOD(SetAt)(_In_ unsigned index, _In_opt_ IInspectable *item) override;
+        IFACEMETHOD(SetAt)(unsigned index, _In_opt_ IInspectable *item) override;
 
-        IFACEMETHOD(InsertAt)(_In_ unsigned index, _In_ IInspectable *item) override;
+        IFACEMETHOD(InsertAt)(unsigned index, _In_ IInspectable *item) override;
 
-        IFACEMETHOD(RemoveAt)(_In_ unsigned index) override;
+        IFACEMETHOD(RemoveAt)(unsigned index) override;
 
         IFACEMETHOD(Append)(_In_opt_ IInspectable * item) override;
 

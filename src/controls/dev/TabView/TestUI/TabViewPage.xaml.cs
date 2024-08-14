@@ -423,15 +423,15 @@ namespace MUXControlsTestApp
 
         private void TabViewTearOutWindowWithDataItemsButton_Click(object sender, RoutedEventArgs e)
         {
-            TabViewTearOutWindowWithDataItems newWindow = new();
-            newWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(800, 300));
+            TabViewTearOutWindowWithDataItems newWindow = new() { ExtendsContentIntoTitleBar = true };
+            newWindow.AppWindow.Resize(TabViewTearOutWindowWithDataItems.DefaultWindowSize);
             newWindow.Activate();
         }
 
         private void TabViewTearOutWindowWithoutDataItemsButton_Click(object sender, RoutedEventArgs e)
         {
-            TabViewTearOutWindowWithoutDataItems newWindow = new();
-            newWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(800, 300));
+            TabViewTearOutWindowWithoutDataItems newWindow = new() { ExtendsContentIntoTitleBar = true };
+            newWindow.AppWindow.Resize(TabViewTearOutWindowWithoutDataItems.DefaultWindowSize);
             newWindow.Activate();
         }
 

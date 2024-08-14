@@ -413,8 +413,8 @@ _Check_return_ HRESULT CDeferredElement::RemoveRealizedElement(
 }
 
 _Check_return_ HRESULT CDeferredElement::SetCustomWriterRuntimeData(
-    std::shared_ptr<CustomWriterRuntimeData> data,
-    std::unique_ptr<CustomWriterRuntimeContext> context)
+    _In_ std::shared_ptr<CustomWriterRuntimeData> data,
+    _In_ std::unique_ptr<CustomWriterRuntimeContext> context)
 {
     // First, move the context, since there could be calls relying on it being set
     m_spRuntimeContext = std::move(context);

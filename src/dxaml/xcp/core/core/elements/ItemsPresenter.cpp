@@ -220,7 +220,7 @@ Cleanup:
 //
 //-------------------------------------------------------------------------
 _Check_return_ HRESULT
-CItemsPresenter::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
+CItemsPresenter::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     if (HasManagedPeer())
     {
@@ -255,7 +255,7 @@ CItemsPresenter::MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize)
 //-------------------------------------------------------------------------
 _Check_return_
 HRESULT
-CItemsPresenter::ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize)
+CItemsPresenter::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize)
 {
     HRESULT hr = S_OK;
 

@@ -69,7 +69,7 @@ CMemoryStream::~CMemoryStream()
 //      Increment the reference count on the object
 //
 //------------------------------------------------------------------------
-_Check_return_ XUINT32 CMemoryStream::AddRef()
+XUINT32 CMemoryStream::AddRef()
 {
     return PAL_InterlockedIncrement(&m_cRef);
 }
@@ -83,7 +83,7 @@ _Check_return_ XUINT32 CMemoryStream::AddRef()
 //      last reference is gone.
 //
 //------------------------------------------------------------------------
-_Check_return_ XUINT32 CMemoryStream::Release()
+XUINT32 CMemoryStream::Release()
 {
     XUINT32 cRef = PAL_InterlockedDecrement(&m_cRef);
     if (cRef == 0)

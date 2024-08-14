@@ -24,7 +24,7 @@ public:
         return DependencyObjectTraits<CKeyboardAcceleratorCollection>::Index;
     }
 
-    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params) override
+    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params) override
     {
 
         IFC_RETURN(__super::EnterImpl(pNamescopeOwner, params));
@@ -40,7 +40,7 @@ public:
         return S_OK;
     }
 
-    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params) override
+    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params) override
     {
         IFC_RETURN(__super::LeaveImpl(pNamescopeOwner, params));
         if (params.fIsLive || params.fIsForKeyboardAccelerator)

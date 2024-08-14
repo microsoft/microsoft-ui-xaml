@@ -43,4 +43,7 @@
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)TitleBar.idl" />
   </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
+  </ItemGroup>
 </Project>

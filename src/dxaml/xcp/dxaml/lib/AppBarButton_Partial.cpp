@@ -707,13 +707,6 @@ AppBarButton::OpenSubMenuImpl(wf::Point position)
 
         ASSERT(m_menuHelper);
         IFC_RETURN(m_menuHelper->SetSubMenuPresenter(flyoutPresenterNoRef));
-
-        BOOLEAN focusUpdated = FALSE;
-        IFC_RETURN(DependencyObject::SetFocusedElement(
-            flyoutPresenterNoRef,
-            xaml::FocusState_Programmatic,
-            FALSE /*animateIfBringIntoView*/,
-            &focusUpdated));
     }
 
     m_lastFlyoutPosition = position;

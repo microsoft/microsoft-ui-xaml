@@ -62,7 +62,7 @@ using System.Diagnostics.CodeAnalysis;
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownNamespaces.XamlMarkup)));
             this.Write(".FullXamlMetadataProvider()]\r\n");
   } 
-            this.Write("    public sealed class XamlMetaDataProvider : ");
+            this.Write("    public sealed partial class XamlMetaDataProvider : ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownTypes.IXamlMetadataProvider)));
             this.Write("\r\n    {\r\n        private ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(ProjectInfo.XamlTypeInfoNamespace)));

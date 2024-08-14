@@ -271,6 +271,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             _doCleanup = true;
         }
 
+        public void ClearOpenedPages()
+        {
+            OpenedTestPages = 0;
+        }
+
         public static void SetInnerFrameInLabDimensions(bool shouldRestrictInnerFrameSize)
         {
             UIObject innerFrameButton = TryFindElement.ById("__InnerFrameInLabDimensions");

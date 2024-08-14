@@ -47,8 +47,8 @@ public:
     // We override these three methods completely because our owned storyboard isn't
     // field-backed and isn't automatically Enter/Leaved by DO's own EnterImpl.
     _Check_return_ HRESULT NotifyThemeChangedCore(_In_ Theming::Theme theme, _In_ bool fForceRefresh = false) override;
-    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject* namescopeOwner, EnterParams params) override;
-    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject* namescopeOwner, LeaveParams params) override;
+    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject* namescopeOwner, _In_ EnterParams params) override;
+    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject* namescopeOwner, _In_ LeaveParams params) override;
 
     bool ReferenceTrackerWalkCore(
         _In_ DirectUI::EReferenceTrackerWalkType walkType,

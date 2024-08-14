@@ -31,7 +31,7 @@ _Check_return_ HRESULT CMediaBase::GetNaturalBounds(_Inout_ XRECTF& pNaturalBoun
     RRETURN(E_NOTIMPL);
 }
 
-_Check_return_ HRESULT CMediaBase::MeasureOverride(_In_ XSIZEF availableSize, _Inout_ XSIZEF &desiredSize)
+_Check_return_ HRESULT CMediaBase::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF &desiredSize)
 {
     IFC_RETURN(EnsureMedia());
 
@@ -45,7 +45,7 @@ _Check_return_ HRESULT CMediaBase::MeasureOverride(_In_ XSIZEF availableSize, _I
 }
 
 
-_Check_return_ HRESULT CMediaBase::ArrangeOverride(_In_ XSIZEF finalSize, _Inout_ XSIZEF& newFinalSize)
+_Check_return_ HRESULT CMediaBase::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize)
 {
     // Due to rounding the finalSize may happen to be bigger than the desired size returned from MeasureOverride.
     // When that happens the stretch algorithm here may choose a different dimension to stretch to which may
@@ -227,7 +227,7 @@ _Check_return_ HRESULT CMediaBase::ComputeScaleFactor(
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
- CMediaBase::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+ CMediaBase::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     IFC_RETURN(CFrameworkElement::LeaveImpl(pNamescopeOwner, params));
 

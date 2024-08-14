@@ -62,7 +62,7 @@ _Check_return_ HRESULT CMenuFlyout::KeyboardAcceleratorFlyoutItemLeave(
     return S_OK;
 }
 
-_Check_return_ HRESULT CMenuFlyout::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+_Check_return_ HRESULT CMenuFlyout::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     IFC_RETURN(__super::EnterImpl(pNamescopeOwner, params));
     IFC_RETURN(KeyboardAcceleratorFlyoutItemEnter(this, pNamescopeOwner, KnownPropertyIndex::MenuFlyout_Items, params));
@@ -70,7 +70,7 @@ _Check_return_ HRESULT CMenuFlyout::EnterImpl(_In_ CDependencyObject *pNamescope
     return S_OK;
 }
 
-_Check_return_ HRESULT CMenuFlyout::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+_Check_return_ HRESULT CMenuFlyout::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     IFC_RETURN(__super::LeaveImpl(pNamescopeOwner, params));
     IFC_RETURN(KeyboardAcceleratorFlyoutItemLeave(this, pNamescopeOwner, KnownPropertyIndex::MenuFlyout_Items, params));

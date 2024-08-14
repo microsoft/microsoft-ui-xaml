@@ -1584,10 +1584,29 @@ void WebView2::TryCompleteInitialization()
     // If we were recreating the webview after a core process failure, indicate that we have now recovered
     m_isCoreFailure_BrowserExited_State = false;
 
+    if (const auto contentIslandEnvironment = this->XamlRoot().ContentIslandEnvironment())
+    {
+        const auto appWindowId = contentIslandEnvironment.AppWindowId();
+        if(m_appWindow)
+        {
+            m_appWindow.Changed(m_appWindowPositionChangedToken);
+        }
+        m_appWindow = winrt::Microsoft::UI::Windowing::AppWindow::GetFromWindowId(appWindowId);
+        m_appWindowPositionChangedToken = m_appWindow.Changed({this, &WebView2::OnAppWindowPositionChanged});
+    }
+
     //HandleGotFocus will give focus to the CWV2 if we're still pending to give it focus
     const winrt::Windows::Foundation::IInspectable emptyIInspectable;
     const winrt::RoutedEventArgs emptyArgs;
     HandleGotFocus(emptyIInspectable, emptyArgs);
+}
+
+void WebView2::OnAppWindowPositionChanged(const winrt::Microsoft::UI::Windowing::AppWindow& sender, const winrt::Microsoft::UI::Windowing::AppWindowChangedEventArgs& args)
+{
+    if (args.DidPositionChange())
+    {
+        m_coreWebViewController.NotifyParentWindowPositionChanged();
+    }
 }
 
 winrt::DataPackageOperation WebView2::DataPackageOperationFromDropEffect(DWORD dropEffect)
@@ -1825,6 +1844,11 @@ void WebView2::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventA
     UpdateRenderedSubscriptionAndVisibility();
 
     m_xamlRootChangedRevoker.revoke();
+    if (m_appWindow)
+    {
+        m_appWindow.Changed(m_appWindowPositionChangedToken);
+        m_appWindow = nullptr;
+    }
 
     DisconnectFromRootVisualTarget();
 }

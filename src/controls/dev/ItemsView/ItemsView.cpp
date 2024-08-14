@@ -1503,10 +1503,16 @@ void ItemsView::OnSourceListChanged(
         if (const auto itemsSourceView = itemsRepeater.ItemsSourceView())
         {
             const auto count = itemsSourceView.Count();
+            const int childrenCount = winrt::VisualTreeHelper::GetChildrenCount(itemsRepeater);
 
-            for (auto index = 0; index < count; index++)
+            for (int childIndex = 0; childIndex < childrenCount; childIndex++)
             {
-                if (const auto element = itemsRepeater.TryGetElement(index))
+                auto const& elementAsDO = winrt::VisualTreeHelper::GetChild(itemsRepeater, childIndex);
+                auto const& element = elementAsDO.try_as<winrt::UIElement>();
+
+                // Checking if the element represents a valid item since there are cases where an element is parented to the ItemsRepeater
+                // but not in the realized range, like for example during a delete animation.
+                if (element != nullptr && itemsRepeater.GetElementIndex(element) != -1)
                 {
                     element.SetValue(winrt::AutomationProperties::SizeOfSetProperty(), box_value(count));
                 }

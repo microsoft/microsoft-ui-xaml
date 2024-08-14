@@ -31,6 +31,7 @@
 #include <winrt\Windows.UI.h>
 #include <winrt\Windows.UI.Core.h>
 #include <winrt\Windows.UI.Input.h>
+#include <winrt\Windows.UI.Input.Inking.h>
 #include <winrt\Windows.UI.Text.h>
 #include <winrt\Windows.UI.ViewManagement.h>
 #include <winrt\Windows.UI.Xaml.Interop.h>
@@ -242,6 +243,12 @@ namespace winrt
     using PointerUpdateKind = ::winrt::Microsoft::UI::Input::PointerUpdateKind;
     using PointerDeviceType = ::winrt::Microsoft::UI::Input::PointerDeviceType;
     using InputSystemCursorShape = ::winrt::Microsoft::UI::Input::InputSystemCursorShape;
+
+    // using namespace ::winrt::Windows::UI::Input::Inking;
+    using InkDrawingAttributes = ::winrt::Windows::UI::Input::Inking::InkDrawingAttributes;
+    using InkPresenter = ::winrt::Windows::UI::Input::Inking::InkPresenter;
+    using InkPresenterProtractor = ::winrt::Windows::UI::Input::Inking::InkPresenterProtractor;
+    using InkPresenterRuler = ::winrt::Windows::UI::Input::Inking::InkPresenterRuler;
 
     // using namespace ::winrt::Windows::UI::Xaml::Interop;
     using TypeName = ::winrt::Windows::UI::Xaml::Interop::TypeName;

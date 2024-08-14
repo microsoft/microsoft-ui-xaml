@@ -225,8 +225,8 @@ _Check_return_ HRESULT CPasswordBox::OnApplyTemplate()
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CPasswordBox::ArrangeOverride(
-    XSIZEF finalSize,
-    XSIZEF& newFinalSize
+    _In_ XSIZEF finalSize,
+    _Out_ XSIZEF& newFinalSize
     )
 {
     CValue value;

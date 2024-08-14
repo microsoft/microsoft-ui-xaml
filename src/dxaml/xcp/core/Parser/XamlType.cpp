@@ -761,7 +761,7 @@ void XamlType::SetIsDirective()
     SetBoolTypeBit(btbIsDirective, TRUE);
 }
 
-HRESULT XamlType::GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext)
+HRESULT XamlType::GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext)
 {
     outSchemaContext = m_spXamlSchemaContext.lock();
     if (!outSchemaContext)

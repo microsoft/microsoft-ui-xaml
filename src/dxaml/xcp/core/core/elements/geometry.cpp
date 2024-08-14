@@ -1977,7 +1977,7 @@ _Check_return_ HRESULT
 CPathGeometry::GetPrintGeometryVirtual(
     _In_ const D2DPrecomputeParams& cp,
     _In_ const D2DRenderParams &printParams,
-    IPALAcceleratedGeometry** ppGeometry
+    _Outptr_ IPALAcceleratedGeometry** ppGeometry
     )
 {
     HRESULT hr = S_OK;
@@ -2578,7 +2578,7 @@ _Check_return_ HRESULT
 CGeometry::GetPrintGeometryVirtual(
     _In_ const D2DPrecomputeParams& cp,
     _In_ const D2DRenderParams &printParams,
-    IPALAcceleratedGeometry** ppGeometry
+    _Outptr_ IPALAcceleratedGeometry** ppGeometry
     )
 {
     RRETURN(S_OK);
@@ -2969,7 +2969,7 @@ Cleanup:
 }
 _Check_return_ HRESULT CGeometry::LeaveImpl(
     _In_ CDependencyObject *pNamescopeOwner,
-    LeaveParams params)
+    _In_ LeaveParams params)
 {
     if (params.fIsLive)
     {

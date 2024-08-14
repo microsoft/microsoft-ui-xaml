@@ -941,7 +941,7 @@ CD2DGeometrySink::AddQuadraticBezier(
 //------------------------------------------------------------------------
 void
 CD2DGeometrySink::AddLines(
-    _In_reads_(uiCount) const XPOINTF *pPoints,
+    _In_reads_(pointCount) const XPOINTF *pPoints,
     XUINT32 pointCount
     )
 {
@@ -960,7 +960,7 @@ CD2DGeometrySink::AddLines(
 //------------------------------------------------------------------------
 void
 CD2DGeometrySink::AddBeziers(
-    _In_reads_(uiCount) const XPOINTF *pPoints,
+    _In_reads_(pointCount) const XPOINTF *pPoints,
     XUINT32 pointCount
     )
 {
@@ -979,7 +979,7 @@ CD2DGeometrySink::AddBeziers(
 //------------------------------------------------------------------------
 void
 CD2DGeometrySink::AddQuadraticBeziers(
-    _In_reads_(uiCount) const XPOINTF *pPoints,
+    _In_reads_(pointCount) const XPOINTF *pPoints,
     XUINT32 pointCount
     )
 {

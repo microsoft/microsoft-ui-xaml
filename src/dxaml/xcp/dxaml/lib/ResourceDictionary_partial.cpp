@@ -246,7 +246,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP ResourceDictionary::GetAt(_In_opt_ UINT index, _Out_ wfc::IKeyValuePair<IInspectable*, IInspectable*>** pItem)
+IFACEMETHODIMP ResourceDictionary::GetAt(UINT index, _Out_ wfc::IKeyValuePair<IInspectable*, IInspectable*>** pItem)
 {
     HRESULT hr = S_OK;
     ResourceKeyValuePair* pKeyValuePair = NULL;
@@ -352,7 +352,7 @@ Cleanup:
 // effectively dead code, we can't actually remove it because it's still reachable via
 // QueryInterface (and a bit of elbow grease)
 IFACEMETHODIMP ResourceDictionary::RemoveAt(
-    _In_ UINT index)
+    UINT index)
 {
     HRESULT hr = S_OK;
     IInspectable* pKey = NULL;

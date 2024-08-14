@@ -179,7 +179,7 @@ protected:
     void SetBoolPropertyBits(const XamlBitSet<BoolPropertyBits>& fPropertyBit, const XamlBitSet<BoolPropertyBits>& fValueBits);
     HRESULT GetBoolPropertyBit(BoolPropertyBits fPropertyBit, bool& fValue);
     HRESULT RetrieveBoolPropertyBits(const XamlBitSet<BoolPropertyBits>& fPropertyBits);
-    HRESULT GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext);
+    HRESULT GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext);
 
 private:
 

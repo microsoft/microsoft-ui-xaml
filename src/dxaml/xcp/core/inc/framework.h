@@ -336,8 +336,8 @@ protected:
 
     void SetTemplatedParentImpl(_In_ CDependencyObject* parent) final;
 
-    virtual _Check_return_ HRESULT MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize);
-    virtual _Check_return_ HRESULT ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize);
+    virtual _Check_return_ HRESULT MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize);
+    virtual _Check_return_ HRESULT ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize);
 
     virtual bool CompareForCircularReference(_In_ CFrameworkElement *pTreeChild);
 
@@ -351,8 +351,8 @@ protected:
     _Check_return_ HRESULT NotifyThemeChangedCore(_In_ Theming::Theme theme, _In_ bool fForceRefresh = false) override;
 
 protected:
-    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params) override;
-    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params) override;
+    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params) override;
+    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params) override;
 
     // Returns 'true' when the ArrangeOverride method always returns a size at least as large as its finalSize parameter.
     // The RichTextBlock is an example.

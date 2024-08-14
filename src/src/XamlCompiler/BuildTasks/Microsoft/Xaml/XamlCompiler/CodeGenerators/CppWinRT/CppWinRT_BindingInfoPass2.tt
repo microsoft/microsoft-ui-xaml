@@ -34,7 +34,7 @@ using DataErrorsChangedEventArgs = <#=Projection(KnownNamespaces.XamlData)#>::Da
 
 // XamlBindings
 
-XamlBindings::XamlBindings(std::unique_ptr<IXamlBindings>&& pBindings)
+XamlBindings::XamlBindings(std::shared_ptr<IXamlBindings>&& pBindings)
     : _pBindings(std::move(pBindings))
 {
 }

@@ -122,11 +122,11 @@
     <comment>The name of the control type for CommandBars inside CommandBarFlyouts to be reported to UIA clients.</comment>
   </data>
   <data name="CommandBarFlyoutAppBarButtonLocalizedControlType" xml:space="preserve">
-    <value>élément du menu</value>
+    <value>élément de menu</value>
     <comment>The name of the control type for AppBarButtons inside CommandBarFlyouts to be reported to UIA clients.</comment>
   </data>
   <data name="CommandBarFlyoutAppBarToggleButtonLocalizedControlType" xml:space="preserve">
-    <value>élément du menu</value>
+    <value>élément de menu</value>
     <comment>The name of the control type for AppBarToggleButtons inside CommandBarFlyouts to be reported to UIA clients.</comment>
   </data>
   <data name="ProofingMenuItemLabel" xml:space="preserve">

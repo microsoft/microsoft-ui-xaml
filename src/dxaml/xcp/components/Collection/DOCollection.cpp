@@ -312,7 +312,7 @@ _Check_return_ HRESULT
 CDOCollection::ChildEnter(
     _In_ CDependencyObject *pChild,
     _In_ CDependencyObject *pNamescopeOwner,
-    EnterParams params,
+    _In_ EnterParams params,
     bool fCanProcessEnterLeave
     )
 {
@@ -366,7 +366,7 @@ _Check_return_ HRESULT
 CDOCollection::ChildLeave(
     _In_ CDependencyObject *pChild,
     _In_ CDependencyObject *pNamescopeOwner,
-    LeaveParams params,
+    _In_ LeaveParams params,
     bool fCanProcessEnterLeave
     )
 {
@@ -1565,7 +1565,7 @@ _Check_return_ HRESULT CDependencyObjectCollection::ChildEnter(
     _In_ CDependencyObject* child,
     _In_ CDependencyObject* namescopeOwner,
     _In_ EnterParams params,
-    _In_ bool canProcessEnterLeave)
+    bool canProcessEnterLeave)
 {
     HRESULT hr = CDOCollection::ChildEnter(child, namescopeOwner, params, canProcessEnterLeave);
     if (SUCCEEDED(hr))
@@ -1582,7 +1582,7 @@ _Check_return_ HRESULT CDependencyObjectCollection::ChildLeave(
     _In_ CDependencyObject* child,
     _In_ CDependencyObject* namescopeOwner,
     _In_ LeaveParams params,
-    _In_ bool canProcessEnterLeave)
+    bool canProcessEnterLeave)
 {
     if (child->IsActive())
     {

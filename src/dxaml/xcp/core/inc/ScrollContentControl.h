@@ -39,7 +39,7 @@ public:
     void SetRootScrollViewer(bool bRootScrollViewer) { m_bRootScrollViewer = bRootScrollViewer; }
 
 protected:
-    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params) override;
+    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params) override;
     _Check_return_ HRESULT ApplyTemplate(_Out_ bool& fAddedVisuals) final;
 
 private:

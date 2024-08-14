@@ -41,7 +41,7 @@ protected:
 
 // CFrameworkElement overrides
 protected:
-    _Check_return_ HRESULT MeasureOverride(_In_ XSIZEF availableSize, _Inout_ XSIZEF& desiredSize) override;
+    _Check_return_ HRESULT MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize) override;
     _Check_return_ HRESULT ApplyTemplate(_Out_ bool& fAddedVisuals) final;
     void CleanupDeviceRelatedResourcesRecursive(_In_ bool cleanupDComp) override;
 

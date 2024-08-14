@@ -264,8 +264,8 @@ CViewbox::GetChild(_Outptr_result_maybenull_ CUIElement** ppChild)
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CViewbox::MeasureOverride(
-    XSIZEF availableSize,
-    XSIZEF& desiredSize)
+    _In_ XSIZEF availableSize,
+    _Out_ XSIZEF& desiredSize)
 {
     XSIZEF childDesiredSize, scale, infiniteSize;
 
@@ -300,8 +300,8 @@ _Check_return_ HRESULT CViewbox::MeasureOverride(
 //------------------------------------------------------------------------
 
 _Check_return_ HRESULT CViewbox::ArrangeOverride(
-    XSIZEF finalSize,
-    XSIZEF& newFinalSize)
+    _In_ XSIZEF finalSize,
+    _Out_ XSIZEF& newFinalSize)
 {
     HRESULT hr = S_OK;
     XSIZEF desiredSize, scale;

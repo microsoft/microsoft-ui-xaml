@@ -98,8 +98,8 @@ public:
 
     CUIElement* GetPublicRootVisual();
 
-    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params) override;
-    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params) override;
+    _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params) override;
+    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params) override;
 
     _Check_return_ HRESULT SetPointerCapture();
     _Check_return_ HRESULT ReleasePointerCapture();
@@ -162,8 +162,8 @@ public:
     wrl::ComPtr<ixp::IContentIslandEnvironment> GetContentIslandEnvironment() const { return m_topLevelHost; }
 
 protected:
-    _Check_return_ HRESULT MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize) final;
-    _Check_return_ HRESULT ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize) final;
+    _Check_return_ HRESULT MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize) final;
+    _Check_return_ HRESULT ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize) final;
 
     _Check_return_ HRESULT GenerateChildOuterBounds(
         _In_opt_ HitTestParams *hitTestParams,

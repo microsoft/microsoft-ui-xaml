@@ -37,8 +37,8 @@ public:
             return OPTIONALLY_PARTICIPATES_IN_MANAGED_TREE;
     }
 
-    _Check_return_ HRESULT Enter(_In_ CDependencyObject *pNamescopeOwner, EnterParams params) final;
-    _Check_return_ HRESULT Leave(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params) final;
+    _Check_return_ HRESULT Enter(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params) final;
+    _Check_return_ HRESULT Leave(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params) final;
 
     // allows skipping a call to enter
     virtual bool ShouldSharedObjectRegisterName(_In_opt_ CResourceDictionary *) const

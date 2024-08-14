@@ -258,7 +258,7 @@ namespace Diagnostics
         return nullptr;
     }
 
-    bool DiagnosticsInterop::TryGetDictionaryItem(
+    _Success_(return != false) bool DiagnosticsInterop::TryGetDictionaryItem(
         _In_ xaml::IResourceDictionary* resourceDictionary,
         const xstring_ptr_view& keyAsString,
         bool isImplicitStyle,
@@ -1419,7 +1419,7 @@ DiagnosticsInterop::GetChildren(
     return S_OK;
 }
 
-bool DiagnosticsInterop::TryGetOwnerFromIsland(
+_Success_(return != false) bool DiagnosticsInterop::TryGetOwnerFromIsland(
     _In_ xaml_hosting::IXamlIslandRoot* island,
     _COM_Outptr_result_maybenull_ IInspectable** islandOwner)
 {
@@ -1440,6 +1440,7 @@ LVT structure is governed by the following APIs:
     There are places where some logic overlaps (see other use of TryGetOwnerFromIsland). And if any change is made, it should be followed up with
     those other methods to make sure they are consistent. If any special filtering logic needs to be done, it should be done in one of these methods (as deemed appropriate)
 */
+_Success_(return != false) 
 bool DiagnosticsInterop::TryGetVisualTreeParent(
     _In_ IInspectable* child,
     _COM_Outptr_result_maybenull_ IInspectable** parent)
@@ -1705,7 +1706,7 @@ HRESULT DiagnosticsInterop::GetXamlRoot(
     return E_INVALIDARG;
 }
 
-HRESULT DiagnosticsInterop::GetXamlIslandRoots(std::vector<wrl::ComPtr<IInspectable>>& roots)
+_Check_return_ HRESULT DiagnosticsInterop::GetXamlIslandRoots(std::vector<wrl::ComPtr<IInspectable>>& roots)
 {
     CDOCollection* rootCollection = nullptr;
     if (auto visualTree = GetCore()->GetMainVisualTree())
@@ -2130,7 +2131,7 @@ HRESULT
 DiagnosticsInterop::GetPropertyIndex(
     _In_ IInspectable* pInspectable,
     _In_ LPCWSTR propertyName,
-    _COM_Outptr_ unsigned int* propertyIndex)
+    _Out_ unsigned int* propertyIndex)
 {
     IFCPTR_RETURN(pInspectable);
     IFCPTR_RETURN(propertyIndex);
@@ -2479,7 +2480,7 @@ _Check_return_ HRESULT DiagnosticsInterop::ClearToolbarOffset(
 
 _Check_return_ HRESULT DiagnosticsInterop::SetToolbarOffset(
     _In_ xaml::IUIElement* customTitleBar,
-    _In_ float offset)
+    float offset)
 {
     ctl::ComPtr<xaml::IXamlRoot> spXamlRoot;
 
@@ -2495,7 +2496,7 @@ _Check_return_ HRESULT DiagnosticsInterop::SetToolbarOffset(
 
 _Check_return_ HRESULT DiagnosticsInterop::SetToolbarOffset(
     _In_ xaml::IXamlRoot* ixamlRoot,
-    _In_ float offset)
+    float offset)
 {
     // If the XamlRoot for this element is null, that means the titlebar hasn't had its Enter walk or been measured yet
     // and isn't part of a visual tree.  Therefore we don't know what visual tree the titlebar belongs to, and offset the toolbar corresponding to the titlebar.

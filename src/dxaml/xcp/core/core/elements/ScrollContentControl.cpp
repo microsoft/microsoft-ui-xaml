@@ -28,7 +28,7 @@ CScrollContentControl::~CScrollContentControl()
 //------------------------------------------------------------------------
 _Check_return_
 HRESULT
-CScrollContentControl::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params)
+CScrollContentControl::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
     // Call the base class to enter all of this object's properties
     IFC_RETURN(CContentControl::EnterImpl(pNamescopeOwner, params));

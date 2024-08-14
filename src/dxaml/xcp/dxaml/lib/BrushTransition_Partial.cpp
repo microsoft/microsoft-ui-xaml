@@ -6,7 +6,7 @@
 
 using namespace DirectUI;
 
-HRESULT BrushTransition::QueryInterfaceImpl(_In_ REFIID riid, _Out_ void** ppObject)
+HRESULT BrushTransition::QueryInterfaceImpl(_In_ REFIID riid, _Outptr_ void** ppObject)
 {
     if (InlineIsEqualGUID(riid, __uuidof(xaml::IDependencyObject)))
     {

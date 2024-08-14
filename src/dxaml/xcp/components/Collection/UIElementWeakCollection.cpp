@@ -47,7 +47,7 @@ _Check_return_ HRESULT CUIElementWeakCollection::ValidateItem(const CValue& newI
     return S_OK;
 }
 
-_Check_return_ HRESULT CUIElementWeakCollection::Append(_In_ CValue& value, XUINT32* index)
+_Check_return_ HRESULT CUIElementWeakCollection::Append(_In_ CValue& value, _Out_opt_ XUINT32* index)
 {
     IFC_RETURN(ValidateItem(value));
     CUIElement* element = static_cast<CUIElement*>(value.AsObject());

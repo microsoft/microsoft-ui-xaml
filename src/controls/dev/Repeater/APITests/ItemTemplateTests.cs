@@ -253,15 +253,40 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void ValidateDataTemplateWithElementNameBinding()
         {
+            ValidateDataTemplateWithElementNameBinding(useNestedElements: false);
+        }
+
+        [TestMethod]
+        public void ValidateDataTemplateWithNestedElementNameBinding()
+        {
+            ValidateDataTemplateWithElementNameBinding(useNestedElements: true);
+        }
+
+        private void ValidateDataTemplateWithElementNameBinding(bool useNestedElements)
+        {
             const int numItems = 5;
             ItemsRepeater itemsRepeater = null;
 
             RunOnUIThread.Execute(() =>
             {
-                var dataTemplate = XamlReader.Load(
-                    @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
-                        <TextBlock Text='{Binding}' Tag='{Binding ElementName=siblingTextBlock, Path=Text}'/>
-                    </DataTemplate>") as DataTemplate;
+                DataTemplate dataTemplate = null;
+
+                if (useNestedElements)
+                {
+                    dataTemplate = XamlReader.Load(
+                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <Border BorderThickness='1'>
+                                <TextBlock Text='{Binding}' Tag='{Binding ElementName=siblingTextBlock, Path=Text}'/>
+                            </Border>
+                        </DataTemplate>") as DataTemplate;
+                }
+                else
+                {
+                    dataTemplate = XamlReader.Load(
+                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <TextBlock Text='{Binding}' Tag='{Binding ElementName=siblingTextBlock, Path=Text}'/>
+                        </DataTemplate>") as DataTemplate;
+                }
 
                 var stackPanel = new StackPanel()
                 {
@@ -299,7 +324,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 for (int i = 0; i < numItems; i++)
                 {
-                    var itemTextBlock = itemsRepeater.TryGetElement(i) as TextBlock;
+                    TextBlock itemTextBlock = null;
+
+                    if (useNestedElements)
+                    {
+                        Border itemBorder = itemsRepeater.TryGetElement(i) as Border;
+                        itemTextBlock = itemBorder.Child as TextBlock;
+                    }
+                    else
+                    {
+                        itemTextBlock = itemsRepeater.TryGetElement(i) as TextBlock;
+                    }
 
                     Verify.IsNotNull(itemTextBlock);
                     Verify.AreEqual(i.ToString(), itemTextBlock.Text);

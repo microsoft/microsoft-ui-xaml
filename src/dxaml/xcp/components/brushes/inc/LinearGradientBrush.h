@@ -21,7 +21,7 @@ protected:
 // CNoParentShareableDependencyObject overrides
 
     CLinearGradientBrush( _In_ const CLinearGradientBrush& original, _Out_ HRESULT& hr );
-    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params) override;
+    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params) override;
 
 public:
 // Creation method

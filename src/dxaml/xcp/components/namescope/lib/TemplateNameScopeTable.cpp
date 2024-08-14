@@ -19,7 +19,7 @@ namespace Jupiter {
         TemplateNameScopeTable::~TemplateNameScopeTable()
         {}
 
-        xref_ptr<CDependencyObject> TemplateNameScopeTable::TryGetElementImpl(const xstring_ptr_view& name, _Out_ bool* shouldRetry)
+        xref_ptr<CDependencyObject> TemplateNameScopeTable::TryGetElementImpl(_In_ const xstring_ptr_view& name, _Out_ bool* shouldRetry)
         {
             size_t idx = m_nameSource->TryGetNameIndex(name);
             if (idx != static_cast<size_t>(-1) && m_entries.size() > idx)
@@ -41,7 +41,7 @@ namespace Jupiter {
             }
         }
 
-        void TemplateNameScopeTable::RegisterNameImpl(const xstring_ptr_view& name, NameScopeTableEntry&& entry)
+        void TemplateNameScopeTable::RegisterNameImpl(_In_ const xstring_ptr_view& name, _In_ NameScopeTableEntry&& entry)
         {
             size_t idx = m_nameSource->GetOrCreateNameIndex(name);
             if (idx == m_entries.size())

@@ -1,0 +1,10 @@
+namespace MU_XAP_NAMESPACE
+{
+
+[MUX_PREVIEW]
+unsealed runtimeclass InkCanvasAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    InkCanvasAutomationPeer(MU_XC_NAMESPACE.InkCanvas owner);
+}
+
+}

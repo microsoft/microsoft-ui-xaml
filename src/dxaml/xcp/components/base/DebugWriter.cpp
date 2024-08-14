@@ -14,10 +14,12 @@ const unsigned int MaxFileNameString = 100;
 // ".cpp\0"
 const unsigned int MaxExtString = 5;
 
+#pragma warning (suppress : 6387) // param 1 could be null warning from inside wil\Telemetry.
 DECLARE_TRACELOGGING_CLASS(XamlTraceLogging, "Microsoft-Windows-XAML", (0x531A35AB, 0x63CE, 0x4BCF, 0xAA, 0x98, 0xF8, 0x8C, 0x7A, 0x89, 0xE4, 0x55));
 
 class DebugOutputTraceLogging final : public TelemetryBase
 {
+    #pragma warning (suppress : 6387) // param 1 could be null warning from inside wil\Telemetry.
     IMPLEMENT_TELEMETRY_CLASS(DebugOutputTraceLogging, XamlTraceLogging);
 
 public:

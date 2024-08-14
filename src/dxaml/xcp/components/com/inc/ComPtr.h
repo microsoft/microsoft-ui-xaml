@@ -686,6 +686,7 @@ namespace ctl
             WeakRefPtr &operator=(const WeakRefPtr&) noexcept = default;
 
 #if _MSC_VER >= 1900
+            #pragma warning(suppress: 28251) // Prefast says this is not consistent with itself
             WeakRefPtr &operator=(_Inout_ WeakRefPtr&&) noexcept = default;
 #endif
 

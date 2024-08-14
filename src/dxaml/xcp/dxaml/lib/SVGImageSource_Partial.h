@@ -59,7 +59,7 @@ namespace DirectUI
         }
 
         void CoreSetError(HRESULT hr) override;
-        _Check_return_ HRESULT CoreSetResults(xaml_imaging::SvgImageSourceLoadStatus results) override {m_status = results; return S_OK;}
+        _Check_return_ HRESULT CoreSetResults(_In_ xaml_imaging::SvgImageSourceLoadStatus results) override {m_status = results; return S_OK;}
     private:
         xaml_imaging::SvgImageSourceLoadStatus m_status;
     };

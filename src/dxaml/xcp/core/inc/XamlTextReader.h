@@ -42,7 +42,7 @@ public:
     ~XamlTextReader() override;
     _Check_return_ HRESULT Read() override;
     const XamlNode& CurrentNode() override;
-    _Check_return_ HRESULT GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext) override;
+    _Check_return_ HRESULT GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext) override;
     HRESULT set_NextIndex(XUINT32 uiIndex) override   { UNREFERENCED_PARAMETER(uiIndex); ASSERT(FALSE); RRETURN(E_FAIL); }
     HRESULT get_NextIndex(XUINT32 *puiIndex) override { UNREFERENCED_PARAMETER(puiIndex); ASSERT(FALSE); RRETURN(E_FAIL); }
 

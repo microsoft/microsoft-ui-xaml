@@ -68,7 +68,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.XamlData)));
             this.Write("::DataErrorsChangedEventArgs;\r\n");
  }
-            this.Write("\r\n// XamlBindings\r\n\r\nXamlBindings::XamlBindings(std::unique_ptr<IXamlBindings>&& " +
+            this.Write("\r\n// XamlBindings\r\n\r\nXamlBindings::XamlBindings(std::shared_ptr<IXamlBindings>&& " +
                     "pBindings)\r\n    : _pBindings(std::move(pBindings))\r\n{\r\n}\r\n\r\nvoid XamlBindings::I" +
                     "nitialize()\r\n{\r\n    if (!_pBindings->IsInitialized())\r\n    { \r\n        _pBinding" +
                     "s->Update();\r\n    }\r\n}\r\n\r\nvoid XamlBindings::Update()\r\n{\r\n    _pBindings->Update" +

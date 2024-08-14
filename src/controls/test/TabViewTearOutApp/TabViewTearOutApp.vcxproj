@@ -104,6 +104,10 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
       <SubType>Code</SubType>
     </ClInclude>
+    <ClInclude Include="DocumentInfo.h">
+      <DependentUpon>DocumentInfo.idl</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
     <ClInclude Include="DesktopWindow.h" />
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="pch.h" />
@@ -119,6 +123,10 @@
   <ItemGroup>
     <ClCompile Include="MainPage.xaml.cpp">
       <DependentUpon>MainPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="DocumentInfo.cpp">
+      <DependentUpon>DocumentInfo.idl</DependentUpon>
       <SubType>Code</SubType>
     </ClCompile>
     <ClCompile Include="DesktopWindow.cpp" />
@@ -139,6 +147,9 @@
     <Midl Include="MainPage.idl">
       <DependentUpon>MainPage.xaml</DependentUpon>
       <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="DocumentInfo.idl">
+      <SubType>Designer</SubType>
     </Midl>
   </ItemGroup>
   <ItemGroup>
@@ -181,36 +192,6 @@
     <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets'))" />
     <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.targets'))" />
-  </Target>
-  <PropertyGroup>
-    <ResolveReferencesDependsOn>ReferencePrivateWinUIWinMDs;$(ResolveReferencesDependsOn)</ResolveReferencesDependsOn>
-  </PropertyGroup>
-  <Target Name="ReferencePrivateWinUIWinMDs">
-    <!-- This is a test app that can exercise preview or private APIs, so we need to ensure we reference the set of private WinMDs. -->
-    <PropertyGroup>
-      <WinUIPackagePath>$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)\</WinUIPackagePath>
-      <WinMDTempPath>$(TEMP)\TabViewTearOutAppWinMDs\</WinMDTempPath>
-    </PropertyGroup>
-    <ItemGroup>
-      <Reference Remove="@(Reference)" Condition="$([System.String]::Copy('%(ReferencePath.Identity)').StartsWith('$(WinUIPackagePath)'))" />
-      <Reference Remove="@(Reference)" Condition="$([System.String]::Copy('%(ReferencePath.HintPath)').StartsWith('$(WinUIPackagePath)'))" />
-      <Reference Include="$(ArtifactsObjDir)MergedWinMD\private\Merged\*.winmd" />
-    </ItemGroup>
-    <!-- We do, however, need to include these WinMDs that are not included in our merged WinMDs.
-         We can't include them in-place, though, because Microsoft.UI.Xaml.winmd will also be pulled in then, since C++/WinRT references metadata folders rather than files.
-         To get around that limitation, we'll copy the WinMDs we need to a temp folder and include them from there. -->
-    <ItemGroup>
-      <OtherWinMDs Include="$(WinUIPackagePath)\lib\uap10.0\*.winmd" Exclude="$(WinUIPackagePath)\lib\uap10.0\Microsoft.UI.Xaml.winmd" />
-    </ItemGroup>
-    <RemoveDir Directories="$(WinMDTempPath)" />
-    <MakeDir Directories="$(WinMDTempPath)" />
-    <Copy SourceFiles="@(OtherWinMDs)" DestinationFiles="@(OtherWinMDs->'$(WinMDTempPath)%(Filename)%(Extension)')" SkipUnchangedFiles="True" />
-    <ItemGroup>
-      <Reference Include="$(WinMDTempPath)*.winmd" />
-    </ItemGroup>
-    <ItemGroup>
-      <FileWrites Include="$(WinMDTempPath)*" />
-    </ItemGroup>
   </Target>
   <Target Name="AddExtraPayloadFiles" AfterTargets="AddMicrosoftWindowsAppSDKPayloadFiles">
     <ItemGroup>

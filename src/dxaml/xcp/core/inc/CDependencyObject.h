@@ -569,7 +569,7 @@ public:
     }
 
     #pragma warning( suppress : 6101 ) // pppReturnAP doesn't get set, but this copy of the function should never be called.
-    virtual XUINT32 GetAPChildren(_Outptr_result_buffer_(return) CAutomationPeer ***pppReturnAP)
+    virtual _Check_return_ XUINT32 GetAPChildren(_Outptr_result_buffer_(return) CAutomationPeer ***pppReturnAP)
     {
         (pppReturnAP); // Ignore the parameter.
         return 0;
@@ -745,7 +745,7 @@ public:
 
     virtual bool IsRightToLeft();
 
-    virtual bool IsPropertySetByStyle(_In_ const CDependencyProperty*) const
+    virtual _Check_return_ bool IsPropertySetByStyle(_In_ const CDependencyProperty*) const
     {
         return false;
     }
@@ -1087,8 +1087,8 @@ public:
     virtual void ReleaseDCompResources();
 
 protected:
-    virtual _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, EnterParams params);
-    virtual _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params);
+    virtual _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params);
+    virtual _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params);
     virtual _Check_return_ HRESULT InvokeImpl(_In_ const CDependencyProperty* pDP, _In_opt_ CDependencyObject* namescopeOwner);
 
     void SetParentInternal(
@@ -1150,8 +1150,8 @@ public:
     // automatically be added to the event queue.
     virtual bool IsFiringEvents();
 
-    virtual _Check_return_ HRESULT Enter(_In_ CDependencyObject *pNamescopeOwner, EnterParams params);
-    virtual _Check_return_ HRESULT Leave(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params);
+    virtual _Check_return_ HRESULT Enter(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params);
+    virtual _Check_return_ HRESULT Leave(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params);
 
     _Check_return_ HRESULT Invoke(_In_ const CDependencyProperty* pDP, _In_opt_ CDependencyObject* namescopeOwner, _In_ bool live);
 

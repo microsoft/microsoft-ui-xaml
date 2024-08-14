@@ -153,7 +153,7 @@ private:
     };
 
 public:
-    static HRESULT Create(_In_ XUINT32 cbMaxBytes, _Outptr_result_maybenull_ CWinHttp11StreamBuffer **ppBuffer);
+    static HRESULT Create(XUINT32 cbMaxBytes, _Outptr_result_maybenull_ CWinHttp11StreamBuffer **ppBuffer);
 
     XUINT32 AddRef() override;
     XUINT32 Release() override;
@@ -167,7 +167,7 @@ public:
                                        _In_ XUINT32 cbOffset,
                                        _In_ XUINT32 cbLength,
                                        _Out_opt_ XUINT32* pcbRead) override;
-    _Check_return_ HRESULT SetSize(_In_ XUINT32 cb) override;
+    _Check_return_ HRESULT SetSize(XUINT32 cb) override;
 
     XUINT32 Length() override;
     XUINT32 Size() override;
@@ -239,7 +239,7 @@ public:
                                         _In_ XUINT32 cbOffset,
                                         _In_ IStream *pStream = NULL) override;
     _Check_return_ HRESULT Read(_Out_writes_bytes_(cb) void* pv, _In_ XUINT32 cbOffset, _In_ XUINT32 cb,  _Out_opt_ XUINT32* pcbRead) override;
-    _Check_return_ HRESULT SetSize(_In_ XUINT32 cb) override;
+    _Check_return_ HRESULT SetSize(XUINT32 cb) override;
 
     XUINT32 Length() override;
     XUINT32 Size() override;

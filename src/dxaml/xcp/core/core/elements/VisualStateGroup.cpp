@@ -13,7 +13,7 @@
 
 using namespace DirectUI;
 
-CVisualStateGroup::CVisualStateGroup(CCoreServices *pCore)
+CVisualStateGroup::CVisualStateGroup(_In_ CCoreServices *pCore)
     : CDependencyObject(pCore)
     , m_pTransitions(nullptr)
     , m_pVisualStates(nullptr)

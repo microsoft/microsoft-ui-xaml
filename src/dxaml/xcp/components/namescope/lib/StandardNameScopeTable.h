@@ -20,8 +20,8 @@ namespace Jupiter {
             static void MoveEntries(StandardNameScopeTable* pSource, StandardNameScopeTable* pDestination);
 
         private:
-            void RegisterNameImpl(const xstring_ptr_view& name, _In_ NameScopeTableEntry&& entry) final;
-            xref_ptr<CDependencyObject> TryGetElementImpl(const xstring_ptr_view& name, _Out_ bool* shouldRetry) final;
+            void RegisterNameImpl(_In_ const xstring_ptr_view& name, _In_ NameScopeTableEntry&& entry) final;
+            xref_ptr<CDependencyObject> TryGetElementImpl(_In_ const xstring_ptr_view& name, _Out_ bool* shouldRetry) final;
 
             containers::vector_map<xstring_ptr, NameScopeTableEntry> m_entries;
         };

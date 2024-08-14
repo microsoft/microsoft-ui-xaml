@@ -22,7 +22,7 @@ public:
     virtual ~XamlReader() {}
     virtual HRESULT Read() = 0;
     virtual const XamlNode& CurrentNode() = 0;
-    virtual HRESULT GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext) = 0;
+    virtual HRESULT GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext) = 0;
     virtual HRESULT set_NextIndex(XUINT32 uiIndex)   = 0;
     virtual HRESULT get_NextIndex(XUINT32 *puiIndex) = 0;
 };
@@ -34,7 +34,7 @@ public:
     ~ReaderDelegate() override;
     HRESULT Read() override;
     const XamlNode& CurrentNode() override;
-    HRESULT GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext) override;
+    HRESULT GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext) override;
 
 private:
     std::weak_ptr<XamlSchemaContext> m_SchemaContext;

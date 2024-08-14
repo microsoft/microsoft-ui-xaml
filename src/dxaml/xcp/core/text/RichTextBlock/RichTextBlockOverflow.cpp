@@ -98,7 +98,7 @@ bool CRichTextBlockOverflow::IsRightToLeft()
 
 _Check_return_ HRESULT CRichTextBlockOverflow::EnterImpl(
     _In_ CDependencyObject *pNamescopeOwner,
-    EnterParams params
+    _In_ EnterParams params
     )
 {
     IFC_RETURN(CFrameworkElement::EnterImpl(pNamescopeOwner, params));
@@ -113,7 +113,7 @@ _Check_return_ HRESULT CRichTextBlockOverflow::EnterImpl(
 
 _Check_return_ HRESULT CRichTextBlockOverflow::LeaveImpl(
     _In_ CDependencyObject *pNamescopeOwner,
-    LeaveParams params
+    _In_ LeaveParams params
     )
 {
     if (m_pMaster != nullptr && m_pMaster->GetSelectionManager() != nullptr)
@@ -782,8 +782,8 @@ _Check_return_ HRESULT CRichTextBlockOverflow::GetTextPositionFromPoint(
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CRichTextBlockOverflow::MeasureOverride(
-    XSIZEF availableSize,
-    XSIZEF& desiredSize
+    _In_ XSIZEF availableSize,
+    _Out_ XSIZEF& desiredSize
     )
 {
     desiredSize.width = 0.0f;
@@ -912,8 +912,8 @@ _Check_return_ HRESULT CRichTextBlockOverflow::MeasureOverride(
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CRichTextBlockOverflow::ArrangeOverride(
-    XSIZEF finalSize,
-    XSIZEF& newFinalSize
+    _In_ XSIZEF finalSize,
+    _Out_ XSIZEF& newFinalSize
     )
 {
     XSIZEF renderSize = {0.0f, 0.0f};

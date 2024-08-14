@@ -88,7 +88,7 @@ protected:
 
     // CDependencyObject/CUIElement/CFrameworkElement overrides.
     _Check_return_ HRESULT OnGotFocus(_In_ CEventArgs* pEventArgs) final;
-    _Check_return_ HRESULT ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize) final;
+    _Check_return_ HRESULT ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize) final;
     _Check_return_ HRESULT OnCharacterReceived(_In_ CEventArgs* pEventArgs) final;
 
     // TextBoxBase overrides.

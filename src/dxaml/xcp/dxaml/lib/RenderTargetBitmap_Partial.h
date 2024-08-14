@@ -131,7 +131,7 @@ namespace DirectUI
             CoreSetErrorImpl(hr);
         }
 
-        _Check_return_ HRESULT CoreSetResults(RenderTargetBitmapPixelData results) override;
+        _Check_return_ HRESULT CoreSetResults(_In_ RenderTargetBitmapPixelData results) override;
     private:
         ctl::ComPtr<RenderTargetBitmapPixelBuffer> m_spPixelBuffer;
     };

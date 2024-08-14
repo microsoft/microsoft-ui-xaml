@@ -67,6 +67,7 @@ namespace RuntimeProfiler
         ProfId_MapControl,
         ProfId_SelectorBar,
         ProfId_TitleBar,
+        ProfId_InkCanvas,
         ProfId_Size // ProfId_Size is the last always. 
     } ProfilerClassId;
 

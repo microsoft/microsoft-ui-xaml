@@ -146,7 +146,7 @@ void DirectUI::XamlIslandRoot::SetOwner(_In_opt_ IInspectable* owner)
     }
 }
 
-bool DirectUI::XamlIslandRoot::TryGetOwner(_COM_Outptr_opt_result_maybenull_ IInspectable** owner)
+_Success_(return != false) bool DirectUI::XamlIslandRoot::TryGetOwner(_COM_Outptr_opt_result_maybenull_ IInspectable** owner)
 {
     *owner = nullptr;
     wrl::ComPtr<IInspectable> resolvedOwner;

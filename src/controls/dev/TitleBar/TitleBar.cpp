@@ -245,6 +245,7 @@ void TitleBar::UpdateBackButton()
     }
     
     UpdateInteractableElementsList();
+    UpdateHeaderSpacing();
 }
 
 void TitleBar::UpdatePaneToggleButton()
@@ -264,6 +265,7 @@ void TitleBar::UpdatePaneToggleButton()
     }
 
     UpdateInteractableElementsList();
+    UpdateHeaderSpacing();
 }
 
 void TitleBar::UpdateHeight()
@@ -530,6 +532,15 @@ void TitleBar::UpdateInteractableElementsList()
     }
 }
 
+void TitleBar::UpdateHeaderSpacing()
+{
+    winrt::VisualStateManager::GoToState(
+        *this,
+        IsBackButtonVisible() == IsPaneToggleButtonVisible() ?
+        s_defaultSpacingVisualStateName : s_negativeInsetVisualStateName,
+        false);
+}
+
 void TitleBar::LoadBackButton()
 {
     m_backButton.set(GetTemplateChildT<winrt::Button>(s_backButtonPartName, *this));
@@ -564,7 +575,7 @@ void TitleBar::LoadPaneToggleButton()
         // Do localization for paneToggleButton
         if (winrt::AutomationProperties::GetName(paneToggleButton).empty())
         {
-            const auto paneToggleButtonName = ResourceAccessor::GetLocalizedStringResource(SR_NavigationButtonOpenName);
+            const auto paneToggleButtonName = ResourceAccessor::GetLocalizedStringResource(SR_NavigationButtonToggleName);
             winrt::AutomationProperties::SetName(paneToggleButton, paneToggleButtonName);
         }
 

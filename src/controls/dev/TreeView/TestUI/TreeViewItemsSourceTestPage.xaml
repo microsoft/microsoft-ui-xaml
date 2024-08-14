@@ -8,7 +8,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Height="160">
+        <StackPanel Orientation="Vertical">
+            <Button x:Name="SetUpContainerReuseTest1" AutomationProperties.Name="SetUpContainerReuseTest1" Content="SetUpContainerReuseTest1" HorizontalAlignment="Stretch" Margin="1" Click="SetUpContainerReuseTest_Click"/>
+            <Button x:Name="ExpandSecondItem" AutomationProperties.Name="ExpandSecondItem" Content="ExpandSecondItem" HorizontalAlignment="Stretch" Margin="1" Click="ExpandSecondItem_Click"/>
+            <Button x:Name="ScrollToEndOfContentTreeView" AutomationProperties.Name="ScrollToEndOfContentTreeView" Content="ScrollToEndOfContentTreeView" HorizontalAlignment="Stretch" Margin="1" Click="ScrollToEndOfContentTreeView_Click"/>
+            <Button x:Name="ScrollToTopOfContentTreeView" AutomationProperties.Name="ScrollToTopOfContentTreeView" Content="ScrollToTopOfContentTreeView" HorizontalAlignment="Stretch" Margin="1" Click="ScrollToTopOfContentTreeView_Click"/>
+        </StackPanel>
         <muxcontrols:TreeView
             x:Name="TestTreeView"
             HorizontalContentAlignment="Stretch" HorizontalAlignment="Stretch"

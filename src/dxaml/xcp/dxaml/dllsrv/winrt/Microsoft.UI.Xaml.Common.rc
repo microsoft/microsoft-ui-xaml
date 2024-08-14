@@ -499,6 +499,9 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
     UIA_MEDIA_SEEKSLIDER_SECONDS "%1 seconds"
     UIA_MEDIA_SEEKSLIDER_POSITION_2 "position %1 %2" // The current playback position where there are 2 time components (no hour component). Example: position 3 minutes 1 second
     UIA_MEDIA_SEEKSLIDER_POSITION_3 "position %1 %2 %3" // The current playback position where there are 3 time components (hour component).  Example: position 2 hours 5 minutes 0 seconds
+
+    // Narrator says "<character_typed> not added because the maximum character count was reached.
+    UIA_TEXT_MAX_CHARACTER_COUNT_REACHED "not added because the maximum character count was reached."
 }
 
 // Increment this prior to any public release of WinUI Previews.

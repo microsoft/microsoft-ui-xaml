@@ -41,7 +41,7 @@ Cleanup:
 // he is still able to recover SW surface if it's lost so when we run low on memory we can stomp over the performance
 // and use that knowledge of the user's ability to restore the surface to decide which surfaces are safe to kill.
 ImageSurfaceWrapper::ImageSurfaceWrapper(
-    CCoreServices *pCore,
+    _In_ CCoreServices *pCore,
     bool mustKeepSoftwareSurface
     )
     : m_pImageSurfaceSoftware(NULL)

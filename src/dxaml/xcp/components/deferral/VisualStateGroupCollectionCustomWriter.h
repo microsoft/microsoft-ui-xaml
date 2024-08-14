@@ -29,8 +29,8 @@ class VisualStateGroupCollectionCustomWriter
 private:
     VisualStateGroupCollectionCustomWriter(
         _In_ ICustomWriterCallbacks* callbacks,
-        _In_ std::shared_ptr<XamlSchemaContext> context,
-        _In_ std::shared_ptr<ObjectWriterContext> objectWriterContext);
+        _Inout_ std::shared_ptr<XamlSchemaContext> context,
+        _Inout_ std::shared_ptr<ObjectWriterContext> objectWriterContext);
 
     _Check_return_ HRESULT Initialize();
 

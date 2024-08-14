@@ -107,7 +107,7 @@ Cleanup:
    }#>
 <# if (Model.HasPropertyChangeCallback && (Model.DependencyProperties.Any() || Model.DeclaredAttachedProperties.Any())) { #>
 // Property changed event handler
-HRESULT <#= Model.GeneratedFactoryName #>::OnPropertyChanged(
+_Check_return_ HRESULT <#= Model.GeneratedFactoryName #>::OnPropertyChanged(
     _In_ <#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyObject") #>* pSender,
     _In_ <#= Helper.PrefixAbiIfNeeded($"{Helper.GetRootNamespaceCpp()}::IDependencyProperty") #>ChangedEventArgs* pArgs)
 {

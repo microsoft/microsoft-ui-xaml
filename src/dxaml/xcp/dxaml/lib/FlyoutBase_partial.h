@@ -134,7 +134,7 @@ namespace DirectUI
         ctl::ComPtr<ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop> GetSystemBackdrop();
 
     protected:
-        _Check_return_ HRESULT OnPropertyChanged2(const PropertyChangedParams& args) override;
+        _Check_return_ HRESULT OnPropertyChanged2(_In_ const PropertyChangedParams& args) override;
 
         // Convenience method which sets presenter style or clears the property if passed pStyle is null.
         static _Check_return_ HRESULT SetPresenterStyle(

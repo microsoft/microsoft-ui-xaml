@@ -34,8 +34,8 @@ protected:
     ~CItemsPresenter() override;
 
     _Check_return_ HRESULT ApplyTemplate(_Out_ bool& fAddedVisuals) final;
-    _Check_return_ HRESULT MeasureOverride(XSIZEF availableSize, XSIZEF& desiredSize) override;
-    _Check_return_ HRESULT ArrangeOverride(XSIZEF finalSize, XSIZEF& newFinalSize) override;
+    _Check_return_ HRESULT MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize) override;
+    _Check_return_ HRESULT ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize) override;
     _Check_return_ HRESULT OnApplyTemplate() override;
 
 private:

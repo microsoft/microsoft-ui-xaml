@@ -1923,10 +1923,14 @@ namespace Microsoft.UI.Xaml
         }
     
         [contract(Microsoft.UI.Xaml.WinUIContract, 7)]
+        {
+            Microsoft.UI.Content.ContentCoordinateConverter CoordinateConverter{ get; };
+        }
+    
+        [contract(Microsoft.UI.Xaml.WinUIContract, 7)]
         [feature(Feature_ExperimentalApi)]
         [interface_name("Microsoft.UI.Xaml.IXamlRootFeature_ExperimentalApi")]
         {
-            Microsoft.UI.Content.ContentCoordinateConverter CoordinateConverter{ get; };
             Microsoft.UI.Content.ContentIsland TryGetContentIsland();
         }
     };

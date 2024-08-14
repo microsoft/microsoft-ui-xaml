@@ -650,7 +650,7 @@ CWinHttp11StreamBuffer::Read(
 // Set the length of the data
 //
 //------------------------------------------------------------------------
-HRESULT CWinHttp11StreamBuffer::SetSize (XUINT32 cb)
+_Check_return_ HRESULT CWinHttp11StreamBuffer::SetSize (XUINT32 cb)
 {
     // Currently changing the size is not supported.
     RRETURN(E_NOTIMPL);
@@ -1134,7 +1134,7 @@ _Check_return_ HRESULT CWinBasicStreamBuffer::Read(_Out_writes_bytes_(cb) void* 
 // Set the length of the data
 //
 //------------------------------------------------------------------------
-HRESULT CWinBasicStreamBuffer::SetSize (XUINT32 cb)
+_Check_return_ HRESULT CWinBasicStreamBuffer::SetSize (XUINT32 cb)
 {
     XUINT8* pTemp = NULL;
 
@@ -1557,7 +1557,7 @@ Cleanup:
 // Set the length of the data
 //
 //------------------------------------------------------------------------
-HRESULT CWinDataStream::SetSize (XUINT64 qwNewSize)
+_Check_return_ HRESULT CWinDataStream::SetSize (XUINT64 qwNewSize)
 {
     HRESULT hr = S_OK;
 

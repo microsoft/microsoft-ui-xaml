@@ -10,7 +10,7 @@
 
 namespace Jupiter {
     namespace NameScoping {
-        xref_ptr<CDependencyObject> StandardNameScopeTable::TryGetElementImpl(const xstring_ptr_view& name, _Out_ bool* shouldRetry)
+        xref_ptr<CDependencyObject> StandardNameScopeTable::TryGetElementImpl(_In_ const xstring_ptr_view& name, _Out_ bool* shouldRetry)
         {
             auto entry = m_entries.find(name);
             if (entry != m_entries.end())
@@ -32,7 +32,7 @@ namespace Jupiter {
             }
         }
 
-        void StandardNameScopeTable::RegisterNameImpl(const xstring_ptr_view& name, NameScopeTableEntry&& entry)
+        void StandardNameScopeTable::RegisterNameImpl(_In_ const xstring_ptr_view& name, _In_ NameScopeTableEntry&& entry)
         {
             // Avoid doing the key search twice by using lower_bound instead of find, and reusing the iterator as a hint if needed
             auto iter = m_entries.lower_bound(name);

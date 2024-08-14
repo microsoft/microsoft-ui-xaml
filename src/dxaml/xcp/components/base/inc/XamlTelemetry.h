@@ -6,10 +6,12 @@
 #include <wil/TraceLogging.h>
 
 // GUID for "Microsoft-Windows-Xaml": {531a35ab-63ce-4bcf-aa98-f88c7a89e455}
+#pragma warning (suppress : 6387) // param 1 could be null warning from inside wil\Telemetry.
 DECLARE_TRACELOGGING_CLASS(XamlTelemetryLogging, "Microsoft-Windows-XAML", (0x531a35ab, 0x63ce, 0x4bcf, 0xaa, 0x98, 0xf8, 0x8c, 0x7a, 0x89, 0xe4, 0x55));
 
 class XamlTelemetry final : public TelemetryBase
 {
+    #pragma warning (suppress : 6387) // param 1 could be null warning from inside wil\Telemetry.
     IMPLEMENT_TELEMETRY_CLASS(XamlTelemetry, XamlTelemetryLogging);
 
 public:

@@ -549,7 +549,7 @@ _Check_return_ HRESULT CStyle::EnsureOptimizedStyle()
 
 // SetCustomWriterRuntimeData override to create optimized from style runtime data.
 _Check_return_ HRESULT
-CStyle::SetCustomWriterRuntimeData(std::shared_ptr<CustomWriterRuntimeData> data, std::unique_ptr<CustomWriterRuntimeContext> context)
+CStyle::SetCustomWriterRuntimeData(_In_ std::shared_ptr<CustomWriterRuntimeData> data, _In_ std::unique_ptr<CustomWriterRuntimeContext> context)
 {
     // Depending on how the ObjectWriter is configured these invarients might not always be true.
     // It's better to capture this condition on origination than allow it to blow up later.

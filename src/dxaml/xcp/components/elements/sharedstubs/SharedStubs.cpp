@@ -7,7 +7,7 @@
 #include <ErrorHelper.h>
 
 long __stdcall DirectUI::ErrorHelper::OriginateErrorUsingResourceID(long hr,unsigned int resID) { return hr; }
-long __stdcall DirectUI::ErrorHelper::OriginateErrorUsingFormattedResourceID(long hr,unsigned int resID,class xstring_ptr_view const &str, const WCHAR* param2) { return hr; }
+long __stdcall DirectUI::ErrorHelper::OriginateErrorUsingFormattedResourceID(long hr,unsigned int resID, _In_ class xstring_ptr_view const &str, const WCHAR* param2) { return hr; }
 
 extern "C"
 void MicrosoftTelemetryAssertTriggeredArgs(const char *OriginatingBinary, ULONG BucketArg1, ULONG BucketArg2)

@@ -255,13 +255,13 @@ protected:
         ) override;
 
     _Check_return_ HRESULT MeasureOverride(
-        XSIZEF availableSize,
-        XSIZEF &desiredSize
+        _In_ XSIZEF availableSize,
+        _Out_ XSIZEF &desiredSize
         ) override;
 
     _Check_return_ HRESULT ArrangeOverride(
-        XSIZEF finalSize,
-        XSIZEF &newFinalSize
+        _In_ XSIZEF finalSize,
+        _Out_ XSIZEF &newFinalSize
         ) override;
 
     _Check_return_ HRESULT MarkInheritedPropertyDirty(
@@ -286,7 +286,7 @@ protected:
         _Out_ bool* pHit
         ) override;
 
-    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params) override;
+    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params) override;
 
     _Check_return_ HRESULT OnPropertyChanged(_In_ const PropertyChangedParams& args) override;
 
@@ -466,8 +466,8 @@ private:
        XRECT_RB& updateBounds);
 
    _Check_return_ HRESULT GetTextNaturalSize(
-       XSIZEF availableSize,
-       XSIZEF& naturalSize);
+       _In_ XSIZEF availableSize,
+       _Out_ XSIZEF& naturalSize);
 
    bool IsHighContrastAdjustmentActive() const;
 

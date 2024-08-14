@@ -24,8 +24,8 @@ namespace Jupiter {
             void UnregisterName(const xstring_ptr_view& name) final;
 
         private:
-            xref_ptr<CDependencyObject> TryGetElementImpl(const xstring_ptr_view& strName, _Out_ bool* shouldRetry) final;
-            void RegisterNameImpl(const xstring_ptr_view& name, NameScopeTableEntry&& entry) final;
+            xref_ptr<CDependencyObject> TryGetElementImpl(_In_ const xstring_ptr_view& strName, _Out_ bool* shouldRetry) final;
+            void RegisterNameImpl(_In_ const xstring_ptr_view& name, _In_ NameScopeTableEntry&& entry) final;
 
             std::vector<NameScopeTableEntry> m_entries;
             xref_ptr<CTemplateContent> m_nameSource;

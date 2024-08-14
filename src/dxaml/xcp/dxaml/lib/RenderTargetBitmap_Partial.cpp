@@ -316,7 +316,7 @@ Cleanup:
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-RenderTargetBitmapGetPixelsAsyncOperation::CoreSetResults(RenderTargetBitmapPixelData results)
+RenderTargetBitmapGetPixelsAsyncOperation::CoreSetResults(_In_ RenderTargetBitmapPixelData results)
 {
     HRESULT hr = S_OK;
     RenderTargetBitmapPixelBuffer* pPixelBuffer = NULL;

@@ -4,7 +4,7 @@
 #include "precomp.h"
 #include "InputServices.h"
 
-CInputServices::CInputServices(CCoreServices*)
+CInputServices::CInputServices(_In_ CCoreServices*)
 {
 }
 
@@ -39,7 +39,7 @@ void CInteractionManager::DestroyAllInteractionEngine(void)
 {
 }
 
-HRESULT CDragDropState::ClearCache(bool)
+_Check_return_ HRESULT CDragDropState::ClearCache(bool)
 {
     return S_OK;
 }

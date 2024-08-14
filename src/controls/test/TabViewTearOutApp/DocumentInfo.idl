@@ -1,0 +1,12 @@
+﻿namespace TabViewTearOutApp
+{
+    [bindable]
+    [default_interface]
+    runtimeclass DocumentInfo : Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+    {
+        DocumentInfo();
+
+        String Name;
+        String Text;
+    }
+}

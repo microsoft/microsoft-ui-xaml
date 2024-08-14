@@ -86,7 +86,7 @@ public:
     _Check_return_ HRESULT OnPropertyChanged(_In_ const PropertyChangedParams& args) override;
 
     _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params) override;
-    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params) override;
+    _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params) override;
 
     _Check_return_ bool GetIsLayoutElement() const override
     {
@@ -98,13 +98,13 @@ public:
     _Check_return_ HRESULT OnResume() override;
     void OnLowMemory() override {}
 
-    void PreMeasure(_In_ XSIZEF availableSize, _Inout_ XSIZEF& desiredSize);
+    void PreMeasure(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize);
 
     void SetOwner(_In_ CMediaPlayerElement* pOwner);
 
 protected:
 
-    _Check_return_ HRESULT MeasureOverride(_In_ XSIZEF availableSize, _Inout_ XSIZEF& desiredSize) override;
+    _Check_return_ HRESULT MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize) override;
 
 private:
 

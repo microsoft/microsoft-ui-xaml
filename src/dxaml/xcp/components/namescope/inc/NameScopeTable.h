@@ -26,8 +26,8 @@ namespace Jupiter {
             virtual ~NameScopeTable() {}
 
         private:
-            virtual xref_ptr<CDependencyObject> TryGetElementImpl(const xstring_ptr_view& name, _Out_ bool* shouldRetry) = 0;
-            virtual void RegisterNameImpl(const xstring_ptr_view& name, NameScopeTableEntry&& entry) = 0;
+            virtual xref_ptr<CDependencyObject> TryGetElementImpl(_In_ const xstring_ptr_view& name, _Out_ bool* shouldRetry) = 0;
+            virtual void RegisterNameImpl(_In_ const xstring_ptr_view& name, _In_ NameScopeTableEntry&& entry) = 0;
         };
     }
 }

@@ -122,7 +122,7 @@
     <comment>This is used to announce Error state.</comment>
   </data>
   <data name="ProgressBarIndeterminateStatus" xml:space="preserve">
-    <value>Зает/а</value>
+    <value>Зает(а)</value>
     <comment>This is used to announce Indeterminate state.</comment>
   </data>
   <data name="ProgressBarPausedStatus" xml:space="preserve">

@@ -380,8 +380,6 @@ void TabViewItem::OnHeaderChanged()
 
 void TabViewItem::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
 { 
-    this->IsSelected(true);
-
     const auto pointer = args.Pointer();
     const auto pointerDeviceType = pointer.PointerDeviceType();
     const auto pointerPoint = args.GetCurrentPoint(*this);
@@ -398,6 +396,8 @@ void TabViewItem::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
 
             if (ctrlDown)
             {
+                this->IsSelected(true);
+
                 // Return here so the base class will not pick it up, but let it remain unhandled so someone else could handle it.
                 return;
             }

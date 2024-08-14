@@ -237,14 +237,14 @@ protected:
     virtual _Check_return_ HRESULT ChildEnter(
         _In_ CDependencyObject *pChild,
         _In_ CDependencyObject *pNamescopeOwner,
-        EnterParams params,
+        _In_ EnterParams params,
         bool fCanProcessEnterLeave
         );
 
     virtual _Check_return_ HRESULT ChildLeave(
         _In_ CDependencyObject *pChild,
         _In_ CDependencyObject *pNamescopeOwner,
-        LeaveParams params,
+        _In_ LeaveParams params,
         bool fCanProcessEnterLeave
         );
 
@@ -366,13 +366,13 @@ protected:
         _In_ CDependencyObject* child,
         _In_ CDependencyObject* namescopeOwner,
         _In_ EnterParams params,
-        _In_ bool canProcessEnterLeave) override;
+        bool canProcessEnterLeave) override;
 
     _Check_return_ HRESULT ChildLeave(
         _In_ CDependencyObject* child,
         _In_ CDependencyObject* namescopeOwner,
         _In_ LeaveParams params,
-        _In_ bool canProcessEnterLeave) override;
+        bool canProcessEnterLeave) override;
 
 private:
     enum class CollectionChangeBehavior : bool

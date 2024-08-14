@@ -61,7 +61,7 @@ XamlTextReader::CurrentNode()
 }
 
 _Check_return_ HRESULT 
-XamlTextReader::GetSchemaContext(std::shared_ptr<XamlSchemaContext>& outSchemaContext)
+XamlTextReader::GetSchemaContext(_Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext)
 {
     outSchemaContext = m_spXamlSchemaContext.lock();
     if (!outSchemaContext)

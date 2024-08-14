@@ -10,11 +10,14 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using Windows.Foundation.Collections;
+using Windows.Graphics;
 
 namespace MUXControlsTestApp
 {
     public sealed partial class TabViewTearOutWindowWithDataItems : Window
     {
+        public static readonly SizeInt32 DefaultWindowSize = new(1000, 300);
+
         public ObservableCollection<object> StringList { get; set; }
 
         public TabViewTearOutWindowWithDataItems()
@@ -22,9 +25,9 @@ namespace MUXControlsTestApp
             this.InitializeComponent();
 
             StringList = [
-                "Item 1",
-                "Item 2",
-                "Item 3",
+                "Document 1",
+                "Document 2",
+                "Document 3",
             ];
 
             Title = "MUXControlsTestApp.Desktop - Secondary TabViewTearOutWindow";
@@ -34,9 +37,9 @@ namespace MUXControlsTestApp
         // We'll create a hidden window with the tab's contents that will be shown if the user tears out the tab.
         private void OnTabTearOutWindowRequested(TabView _, TabViewTabTearOutWindowRequestedEventArgs args)
         {
-            TabViewTearOutWindowWithDataItems newWindow = new() { StringList = [.. args.Items] };
+            TabViewTearOutWindowWithDataItems newWindow = new() { StringList = [.. args.Items], ExtendsContentIntoTitleBar = true };
             newWindow.AppWindow.Hide();
-            newWindow.AppWindow.Resize(new Windows.Graphics.SizeInt32(800, 300));
+            newWindow.AppWindow.Resize(DefaultWindowSize);
             args.NewWindowId = newWindow.AppWindow.Id;
         }
 

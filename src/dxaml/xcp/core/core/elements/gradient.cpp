@@ -422,7 +422,7 @@ CGradientBrush::GetAcceleratedGradientStops(
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CLinearGradientBrush::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, LeaveParams params)
+CLinearGradientBrush::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params)
 {
     IFC_RETURN(CGradientBrush::LeaveImpl(pNamescopeOwner, params));
     if (params.fIsLive)

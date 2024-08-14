@@ -9,11 +9,6 @@
     <LangVersion>preview</LangVersion>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
 
-    <!-- Both the IID optimizer and the CsWinRT lookup table aren't needed with the new CsWinRT version,
-         so disabling them here until they are disabled automatically by CsWinRT. -->
-    <CsWinRTIIDOptimizerOptOut>true</CsWinRTIIDOptimizerOptOut>
-    <CsWinRTCcwLookupTableGeneratorEnabled>false</CsWinRTCcwLookupTableGeneratorEnabled>
-
     <!-- Causes loading of winrt dependencies from CoreWebView2 SDK package - required for any usage from WinUI3/WinAppSDK.
          Note end-user WASDK apps get this implicitly via $(MicrosoftWindowsAppSDKPackageDir).
 
