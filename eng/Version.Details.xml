@@ -6,13 +6,13 @@
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
       <Sha>ad621f84e7cc1b2c4e2409f82582cda4570f22d9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="1.5.4-CI-26105.1002.240617-0923.0">
+    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="1.5.4-CI-26105.1006.240730-1425.0">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
-      <Sha>8ae48bdfe2603ad520a56f5bcd40e136c2026c0e</Sha>
+      <Sha>534b0b3660f84e948237f93c52b11bb816fb985c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.InteractiveExperiences" Version="1.5.4-CI-26105.1002.240617-0923.0">
+    <Dependency Name="Microsoft.Internal.InteractiveExperiences" Version="1.5.4-CI-26105.1006.240730-1425.0">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
-      <Sha>8ae48bdfe2603ad520a56f5bcd40e136c2026c0e</Sha>
+      <Sha>534b0b3660f84e948237f93c52b11bb816fb985c</Sha>
     </Dependency>
     <!-- Microsoft-WinUI-SDK repo (MSBuild and Visual Studio extensions for building, deploying, and debugging packaged applications.)  -->
     <Dependency Name="Microsoft.Build.Msix" Version="1.5.0-zmain.240510.2">
