@@ -1677,6 +1677,13 @@ protected:
         _In_ std::vector<UnidimensionalViewportInformation>& verticalViewports,
         _Out_ bool& addedViewports);
 
+    virtual _Check_return_ HRESULT EffectiveViewportWalkToChild(
+        _In_ CUIElement* child,
+        const bool dirtyFound,
+        _In_ std::vector<TransformToPreviousViewport>& transformsToViewports,
+        _In_ std::vector<UnidimensionalViewportInformation>& horizontalViewports,
+        _In_ std::vector<UnidimensionalViewportInformation>& verticalViewports); 
+
 private:
     float LayoutRoundHelper(const float value, const bool useCeiling);
 

@@ -18,6 +18,10 @@
 #include "AnnotatedScrollBarValueFromScrollOffsetRequestedEventArgs.h"
 #include "AnnotatedScrollBarDetailLabelRequestedEventArgs.h"
 #include "Vector.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 51993634: [1.4 servicing] - Prevent crash in AnnotatedScrollBar::LayoutLabels() method at app-shutdown time.
+#define WINAPPSDK_CHANGEID_51993634 51993634
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool AnnotatedScrollBarTrace::s_IsDebugOutputEnabled{ false };
@@ -325,20 +329,47 @@ void AnnotatedScrollBar::QueueLayoutLabels(unsigned int millisecondWait)
     
     if (!m_labelsDebounce.test_and_set())
     {
-        auto strongThis = get_strong(); // ensure object lifetime during coroutines
-        auto runLayoutLabelsAction = [&, strongThis]()
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_51993634>())
         {
-            strongThis->m_labelsDebounce.clear();
-            strongThis->LayoutLabels();
-        };
+            auto weakThis = get_weak();
+            auto runLayoutLabelsAction = [weakThis]()
+            {
+                /* WindowsXamlManager::GetForCurrentThread does not exist in WinAppSDK 1.4.
+                if (winrt::WindowsXamlManager::GetForCurrentThread() == nullptr)
+                {
+                    // Exit early if Xaml core has already shut down.
+                    return;
+                }
+                */
 
-        SharedHelpers::ScheduleActionAfterWait(runLayoutLabelsAction, millisecondWait);
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->m_labelsDebounce.clear();
+                    strongThis->LayoutLabels();
+                }
+            };
+
+            SharedHelpers::ScheduleActionAfterWait(runLayoutLabelsAction, millisecondWait);
+        }
+        else
+        {
+            auto strongThis = get_strong(); // ensure object lifetime during coroutines
+            auto runLayoutLabelsAction = [&, strongThis]()
+            {
+                strongThis->m_labelsDebounce.clear();
+                strongThis->LayoutLabels();
+            };
+
+            SharedHelpers::ScheduleActionAfterWait(runLayoutLabelsAction, millisecondWait);
+        }
     }
 }
 
 void AnnotatedScrollBar::LayoutLabels()
 {
-    auto labelsGrid = m_labelsGrid.get();
+    auto labelsGrid = WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_51993634>() ?
+        m_labelsGrid.safe_get() : m_labelsGrid.get();
+
     if (!labelsGrid)
     {
         return;
