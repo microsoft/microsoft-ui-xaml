@@ -34,9 +34,9 @@ jobs:
       - ${{ parameters.dependsOn }}
 
   pool: 
-    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/shine-oss/') }}:
       name: WinDevPoolOSS-S
-    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/shine-oss/') }}:
       name: WinDevPool-S
     demands: ImageOverride -equals WinDevVS16-9
   strategy:
