@@ -29,7 +29,7 @@ stages:
         name: WinDevPoolOSS-L
       ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/shine-oss/') }}:
         name: WinDevPool-L
-      demands: ImageOverride -equals WinDevVS17-6
+      demands: ImageOverride -equals WinDevVS17-latest
     timeoutInMinutes: 120
     strategy:
       maxParallel: 10
