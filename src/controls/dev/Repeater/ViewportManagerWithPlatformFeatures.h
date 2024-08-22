@@ -4,7 +4,8 @@
 #pragma once
 
 #include "ViewportManager.h"
-#include "ScrollingViewChangingEventArgs.h"
+#include "ScrollingScrollStartingEventArgs.h"
+#include "ScrollingZoomStartingEventArgs.h"
 
 class ItemsRepeater;
 
@@ -62,7 +63,9 @@ private:
     void OnCacheBuildActionCompleted();
     void OnEffectiveViewportChanged(winrt::FrameworkElement const& sender, winrt::EffectiveViewportChangedEventArgs const& args);
     void OnLayoutUpdated(winrt::IInspectable const& sender, winrt::IInspectable const& args);
-    void OnScrollPresenterViewChanging(winrt::ScrollPresenter const& scrollPresenter, winrt::ScrollingViewChangingEventArgs const& args);
+    void OnScrollPresenterScrollStarting(winrt::ScrollPresenter const& scrollPresenter, winrt::ScrollingScrollStartingEventArgs const& args);
+    void OnScrollPresenterZoomStarting(winrt::ScrollPresenter const& scrollPresenter, winrt::ScrollingZoomStartingEventArgs const& args);
+    void OnScrollPresenterViewChangeStarting(winrt::ScrollPresenter const& scrollPresenter, double horizontalOffset, double verticalOffset, float zoomFactor);
 
     void EnsureScroller();
     bool HasScroller() const { return m_scroller != nullptr; }
@@ -129,7 +132,8 @@ private:
     bool m_managingViewportDisabled{ false };
 
     // Event tokens
-    winrt::ScrollPresenter::ViewChanging_revoker m_scrollPresenterViewChangingRevoker{};
+    winrt::ScrollPresenter::ScrollStarting_revoker m_scrollPresenterScrollStartingRevoker{};
+    winrt::ScrollPresenter::ZoomStarting_revoker m_scrollPresenterZoomStartingRevoker{};
     winrt::FrameworkElement::EffectiveViewportChanged_revoker m_effectiveViewportChangedRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedRevoker{};
     winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_renderingToken{};

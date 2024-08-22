@@ -1412,7 +1412,7 @@ Cleanup:
 // Creates TextDrawingContext if necessary.
 //
 //------------------------------------------------------------------------
-HRESULT CGlyphs::EnsureTextDrawingContext()
+_Check_return_ HRESULT CGlyphs::EnsureTextDrawingContext()
 {
     if (m_pTextDrawingContext == NULL)
     {

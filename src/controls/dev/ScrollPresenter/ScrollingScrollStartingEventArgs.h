@@ -4,42 +4,36 @@
 #pragma once
 
 #include "ScrollPresenter.h"
-#include "ScrollingViewChangingEventArgs.g.h"
+#include "ScrollingScrollStartingEventArgs.g.h"
 
-class ScrollingViewChangingEventArgs :
-    public winrt::implementation::ScrollingViewChangingEventArgsT<ScrollingViewChangingEventArgs>
+class ScrollingScrollStartingEventArgs :
+    public winrt::implementation::ScrollingScrollStartingEventArgsT<ScrollingScrollStartingEventArgs>
 {
 public:
-    ScrollingViewChangingEventArgs()
+    ScrollingScrollStartingEventArgs()
     {
         SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ~ScrollingViewChangingEventArgs()
+    ~ScrollingScrollStartingEventArgs()
     {
         SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    // IScrollingViewChangingEventArgs overrides
+    // IScrollingScrollStartingEventArgs overrides
+    int32_t CorrelationId() const;
     double HorizontalOffset() const;
     double VerticalOffset() const;
     float ZoomFactor() const;
 
+    void SetCorrelationId(int32_t correlationId);
     void SetHorizontalOffset(double horizontalOffset);
     void SetVerticalOffset(double verticalOffset);
     void SetZoomFactor(float zoomFactor);
 
-#ifdef DBG
-    int32_t CorrelationIdDbg() const;
-    void SetCorrelationIdDbg(int32_t correlationIdDbg);
-#endif // DBG
-
 private:
+    int32_t m_correlationId{ -1 };
     double m_horizontalOffset{};
     double m_verticalOffset{};
     float m_zoomFactor{};
-
-#ifdef DBG
-    int32_t m_correlationIdDbg{ -1 };
-#endif // DBG
 };

@@ -66,9 +66,9 @@
     <!-- For compat reasons, this should always be .NET 6, as it controls the .NET version the Microsoft.WinUI.dll CSWinRT projection assembly targets. -->
     <WindowsAppSdkTargetFrameworkMoniker>net6.0-windows$(WindowsAppSdkTargetPlatformVersion)</WindowsAppSdkTargetFrameworkMoniker>
     <SamplesTargetFrameworkMoniker>$(WindowsAppSdkTargetFrameworkMoniker)</SamplesTargetFrameworkMoniker>
-    <MicrosoftCsWinRTPackageVersion>2.1.0-prerelease.240605.1</MicrosoftCsWinRTPackageVersion>
-    <MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>36-preview</MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>
-    <WebView2PackageVersion>1.0.2646-prerelease</WebView2PackageVersion>
+    <MicrosoftCsWinRTPackageVersion>2.1.1</MicrosoftCsWinRTPackageVersion>
+    <MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>38</MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>
+    <WebView2PackageVersion>1.0.2651.64</WebView2PackageVersion>
     <dotNetSdkChannel>8.0.1xx</dotNetSdkChannel>
     <dotNetSdkVNextChannel>9.0.xx</dotNetSdkVNextChannel>
     <CppWinRTVersion>2.0.230706.1</CppWinRTVersion>

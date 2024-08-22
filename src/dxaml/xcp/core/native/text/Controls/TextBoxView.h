@@ -86,8 +86,8 @@ public:
     _Check_return_ HRESULT UpdateVisibility() override;
 
     // ITextHost
-    bool TxCreateCaret(_In_ XHANDLE bitmap, _In_ XINT32 width, _In_ XINT32 height);
-    bool TxSetCaretPos(_In_ XINT32 x, _In_ XINT32 y);
+    bool TxCreateCaret(XHANDLE bitmap, XINT32 width, XINT32 height);
+    bool TxSetCaretPos(XINT32 x, XINT32 y);
     HRESULT TxGetClientRect(_Out_ XRECT_RB *pClientRect);
     HRESULT TxGetViewportRect(_Out_ XRECT_RB *pViewportRect);
     HRESULT TxGetContentPadding(_Out_ XRECT_RB *pContentPadding);
@@ -173,7 +173,7 @@ public:
     bool IsCaretInViewport() const;
     bool IsPixelSnapped() const { return m_pixelSnapped; }
 
-    _Check_return_ bool TxShowCaret(_In_ BOOL isCaretVisible);
+    _Check_return_ bool TxShowCaret(BOOL isCaretVisible);
     _Check_return_ HRESULT ShowOrHideCaret();
     _Check_return_ HRESULT ShowCaretElement();
     _Check_return_ HRESULT HideCaretElement();

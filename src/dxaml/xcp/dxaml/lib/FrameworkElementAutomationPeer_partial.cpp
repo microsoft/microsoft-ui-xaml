@@ -767,7 +767,7 @@ _Check_return_ HRESULT FrameworkElementAutomationPeer::GetAnnotationsCoreImpl(_O
     return S_OK;
 }
 
-void FrameworkElementAutomationPeer::SetControlType(xaml_automation_peers::AutomationControlType controlType)
+void FrameworkElementAutomationPeer::SetControlType(_In_ xaml_automation_peers::AutomationControlType controlType)
 {
     m_ControlType = controlType;
 }

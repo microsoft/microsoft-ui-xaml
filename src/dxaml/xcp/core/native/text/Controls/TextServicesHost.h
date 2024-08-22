@@ -54,14 +54,14 @@ public:
     virtual void TxInvalidateRect(LPCRECT prc, BOOL fMode) final;
     virtual void TxViewChange(BOOL fUpdate) final;
     virtual BOOL TxCreateCaret(
-        _In_ HBITMAP bitmap,
-        _In_ INT width,
-        _In_ INT height
+        HBITMAP bitmap,
+        INT width,
+        INT height
         ) final;
-    virtual BOOL TxShowCaret(_In_ BOOL isCaretVisible) final;
+    virtual BOOL TxShowCaret(BOOL isCaretVisible) final;
     virtual BOOL TxSetCaretPos(
-        _In_ INT x,
-        _In_ INT y
+        INT x,
+        INT y
         ) final;
     virtual BOOL TxSetTimer(
         _In_ UINT id,

@@ -703,7 +703,7 @@ InvalidRectF(
     _Out_ XRECTF_RB *pRect
 )
 {
-    const float inf = std::numeric_limits<float>::infinity();
+    constexpr float inf = std::numeric_limits<float>::infinity();
 
     pRect->left = inf;
     pRect->top = inf;

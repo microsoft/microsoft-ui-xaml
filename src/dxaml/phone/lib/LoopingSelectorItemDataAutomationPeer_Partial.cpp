@@ -86,7 +86,7 @@ LoopingSelectorItemDataAutomationPeer::GetItem(_Outptr_result_maybenull_ IInspec
     RRETURN(S_OK);
 }
 
-HRESULT LoopingSelectorItemDataAutomationPeer::SetItemIndex(int index)
+HRESULT LoopingSelectorItemDataAutomationPeer::SetItemIndex(_In_ int index)
 {
     _itemIndex = index;
     RRETURN(S_OK);

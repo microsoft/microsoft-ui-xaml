@@ -176,9 +176,12 @@ private:
     void OnZoomAnimationStarting(
         const winrt::IInspectable& sender,
         const winrt::ScrollingZoomAnimationStartingEventArgs& args);
-    void OnScrollPresenterViewChanging(
+    void OnScrollPresenterScrollStarting(
         const winrt::IInspectable& sender,
-        const winrt::ScrollingViewChangingEventArgs& args);
+        const winrt::ScrollingScrollStartingEventArgs& args);
+    void OnScrollPresenterZoomStarting(
+        const winrt::IInspectable& sender,
+        const winrt::ScrollingZoomStartingEventArgs& args);
     void OnScrollPresenterViewChanged(
         const winrt::IInspectable& sender,
         const winrt::IInspectable& args);
@@ -297,7 +300,8 @@ private:
     winrt::event_token m_scrollPresenterStateChangedToken{};
     winrt::event_token m_scrollPresenterScrollAnimationStartingToken{};
     winrt::event_token m_scrollPresenterZoomAnimationStartingToken{};
-    winrt::event_token m_scrollPresenterViewChangingToken{};
+    winrt::event_token m_scrollPresenterScrollStartingToken{};
+    winrt::event_token m_scrollPresenterZoomStartingToken{};
     winrt::event_token m_scrollPresenterViewChangedToken{};
     winrt::event_token m_scrollPresenterScrollCompletedToken{};
     winrt::event_token m_scrollPresenterZoomCompletedToken{};

@@ -36,13 +36,13 @@ public:
     void Teardown();
 
     _Check_return_ HRESULT OnSpellCheckEnabledChanged(
-        _In_ BOOL isSpellCheckEnabled);
+        BOOL isSpellCheckEnabled);
 
     _Check_return_ HRESULT OnTextPredictionEnabledChanged(
-        _In_ BOOL bIsTextPredictionEnabled);
+        BOOL bIsTextPredictionEnabled);
 
     _Check_return_ HRESULT OnCandidateWindowAlignmentChanged(
-        _In_ BOOL bIsCandidateWindowAlignAtBottom);
+        BOOL bIsCandidateWindowAlignAtBottom);
 
     _Check_return_ HRESULT UpdateSIPSettings(_In_ bool disable);
     _Check_return_ HRESULT NotifyFocusEnter();

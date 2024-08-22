@@ -656,7 +656,7 @@ _Check_return_ HRESULT CMediaPlayerPresenter::UpdateRenderingAndPowerSettings()
     return S_OK;
 }
 
-HRESULT CMediaPlayerPresenter::UpdatePowerSettings()
+_Check_return_ HRESULT CMediaPlayerPresenter::UpdatePowerSettings()
 {
     bool mediaPlaying = false;
     MediaPlayerExtension_MediaPlayerCastingRenderLocation castingRenderLocation = MediaPlayerExtension_MediaPlayerCastingRenderLocation::None;

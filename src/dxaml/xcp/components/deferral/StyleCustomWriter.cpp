@@ -24,7 +24,7 @@
 #define STYLELOG(...)
 
 StyleCustomWriter::StyleCustomWriter(
-    _In_ ICustomWriterCallbacks* callbacks,
+    _In_ _Notnull_ ICustomWriterCallbacks* callbacks,
     _In_ std::shared_ptr<XamlSchemaContext> context,
     _In_ std::shared_ptr<ObjectWriterContext> objectWriterContext)
     : m_customWriterCallbacks(callbacks)
@@ -48,7 +48,7 @@ _Check_return_ HRESULT StyleCustomWriter::Initialize()
 }
 
 _Check_return_ HRESULT StyleCustomWriter::Create(
-    _In_ ICustomWriterCallbacks* callbacks,
+    _In_ _Notnull_ ICustomWriterCallbacks* callbacks,
     _In_ std::shared_ptr<XamlSchemaContext> context,
     _In_ std::shared_ptr<ObjectWriterContext> objectWriterContext,
     _Out_ std::unique_ptr<ICustomWriter>* ppValue)

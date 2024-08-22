@@ -166,7 +166,7 @@ void __stdcall FailFastWithStowedExceptions(HRESULT hrError, ULONG cStowedExcept
     while(UNCONDITIONAL_EXPR(0))
 
 // DISPLAY_DEBUG calls out to WIL instead of using DisplayDebugMessage.  This ensures that errors are logged to WIL and are also output to the console.
-#define DISPLAY_DEBUG(hr, testString) LOG_HR_MSG((hr), (testString));
+#define DISPLAY_DEBUG(hr, testString) LOG_HR_MSG((hr), "%ls", (testString));
 
 #define DISPLAY_DIAGNOSTICS_RELEASE(diagnosticMessage) DisplayReleaseMessage((diagnosticMessage));
 
@@ -229,7 +229,7 @@ namespace Details
         else \
         { \
             OnFailure<__COUNTER__>(hr); \
-            DISPLAY_DEBUG(hr, #x) \
+            DISPLAY_DEBUG(hr, L#x) \
             goto Cleanup; \
         } \
     } \
@@ -246,7 +246,7 @@ namespace Details
         else \
         { \
             OnFailureWithExtraInfo<__COUNTER__>(hr, extraInfo); \
-            DISPLAY_DEBUG(hr, #x) \
+            DISPLAY_DEBUG(hr, L#x) \
             if (extraInfo) \
             { \
                 for (const auto& _extraInfoEntry_ : *extraInfo) \
@@ -271,7 +271,7 @@ namespace Details
         else \
         { \
             OnFailure<__COUNTER__>(hr); \
-            DISPLAY_DEBUG(hr, #x) \
+            DISPLAY_DEBUG(hr, L#x) \
             goto Cleanup; \
         } \
     } \
@@ -288,7 +288,7 @@ namespace Details
         else \
         { \
             OnFailure<__COUNTER__>(_hr_); \
-            DISPLAY_DEBUG(_hr_, #x) \
+            DISPLAY_DEBUG(_hr_, L#x) \
             return _hr_; \
         } \
     } \
@@ -305,7 +305,7 @@ namespace Details
         else \
         { \
             OnFailureWithExtraInfo<__COUNTER__>(_hr_, extraInfo); \
-            DISPLAY_DEBUG(_hr_, #x) \
+            DISPLAY_DEBUG(_hr_, L#x) \
             if (extraInfo) \
             { \
                 for (const auto& _extraInfoEntry_ : *extraInfo) \
@@ -329,7 +329,7 @@ namespace Details
         else \
         { \
             OnFailure<__COUNTER__>(_hr_); \
-            DISPLAY_DEBUG(_hr_, #x) \
+            DISPLAY_DEBUG(_hr_, L#x) \
             return _hr_; \
         } \
     } \
@@ -346,7 +346,7 @@ namespace Details
         else \
         { \
             OnFailure<__COUNTER__>(_hr_); \
-            DISPLAY_DEBUG(_hr_, #x) \
+            DISPLAY_DEBUG(_hr_, L#x) \
             return _hr_; \
         } \
     } \
@@ -361,7 +361,7 @@ namespace Details
     { \
         hr = E_OUTOFMEMORY; \
         OnNewFailure<__COUNTER__>(hr); \
-        DISPLAY_DEBUG(hr, #x) \
+        DISPLAY_DEBUG(hr, L#x) \
         goto Cleanup; \
     } \
     CHECK_MISMATCH_GOTO
@@ -375,7 +375,7 @@ namespace Details
     { \
         constexpr HRESULT _hr_ = E_OUTOFMEMORY; \
         OnNewFailure<__COUNTER__>(_hr_); \
-        DISPLAY_DEBUG(_hr_, #x) \
+        DISPLAY_DEBUG(_hr_, L#x) \
         return _hr_; \
     } \
     CHECK_MISMATCH_RETURN
@@ -390,7 +390,7 @@ namespace Details
     { \
         hr = E_POINTER; \
         OnNewFailure<__COUNTER__>(hr); \
-        DISPLAY_DEBUG(hr, #x) \
+        DISPLAY_DEBUG(hr, L#x) \
         goto Cleanup; \
     } \
     CHECK_MISMATCH_GOTO
@@ -404,7 +404,7 @@ namespace Details
     { \
         constexpr HRESULT _hr_ = E_POINTER; \
         OnNewFailure<__COUNTER__>(_hr_); \
-        DISPLAY_DEBUG(_hr_, #x) \
+        DISPLAY_DEBUG(_hr_, L#x) \
         return _hr_; \
     } \
     CHECK_MISMATCH_RETURN
@@ -419,7 +419,7 @@ namespace Details
     { \
         hr = E_HANDLE; \
         OnNewFailure<__COUNTER__>(hr); \
-        DISPLAY_DEBUG(hr, #x) \
+        DISPLAY_DEBUG(hr, L#x) \
         goto Cleanup; \
     } \
     CHECK_MISMATCH_GOTO
@@ -433,7 +433,7 @@ namespace Details
     { \
         constexpr HRESULT _hr_ = E_HANDLE; \
         OnNewFailure<__COUNTER__>(_hr_); \
-        DISPLAY_DEBUG(_hr_, #x) \
+        DISPLAY_DEBUG(_hr_, L#x) \
         return _hr_; \
     } \
     CHECK_MISMATCH_RETURN
@@ -448,7 +448,7 @@ namespace Details
     { \
         hr = E_FAIL; \
         OnNewFailure<__COUNTER__>(hr); \
-        DISPLAY_DEBUG(hr, #x) \
+        DISPLAY_DEBUG(hr, L#x) \
         goto Cleanup; \
     } \
     CHECK_MISMATCH_GOTO
@@ -462,7 +462,7 @@ namespace Details
     { \
         constexpr HRESULT _hr_ = E_FAIL; \
         OnNewFailure<__COUNTER__>(_hr_); \
-        DISPLAY_DEBUG(_hr_, #x) \
+        DISPLAY_DEBUG(_hr_, L#x) \
         return _hr_; \
     } \
     CHECK_MISMATCH_RETURN
@@ -478,7 +478,7 @@ namespace Details
         ASSERT(!"Internal Error"); \
         hr = E_UNEXPECTED; \
         OnNewFailure<__COUNTER__>(hr); \
-        DISPLAY_DEBUG(hr, #x) \
+        DISPLAY_DEBUG(hr, L#x) \
         goto Cleanup; \
     } \
     CHECK_MISMATCH_GOTO
@@ -493,7 +493,7 @@ namespace Details
         ASSERT(!"Internal Error"); \
         constexpr HRESULT _hr_ = E_UNEXPECTED; \
         OnNewFailure<__COUNTER__>(_hr_); \
-        DISPLAY_DEBUG(_hr_, #x) \
+        DISPLAY_DEBUG(_hr_, L#x) \
         return _hr_; \
     } \
     CHECK_MISMATCH_RETURN
@@ -508,7 +508,7 @@ namespace Details
     { \
         hr = E_UNEXPECTED; \
         OnNewFailure<__COUNTER__>(hr); \
-        DISPLAY_DEBUG(hr, #x) \
+        DISPLAY_DEBUG(hr, L#x) \
         goto Cleanup; \
     } \
     CHECK_MISMATCH_GOTO
@@ -522,7 +522,7 @@ namespace Details
     { \
         constexpr HRESULT _hr_ = E_UNEXPECTED; \
         OnNewFailure<__COUNTER__>(_hr_); \
-        DISPLAY_DEBUG(_hr_, #x) \
+        DISPLAY_DEBUG(_hr_, L#x) \
         return _hr_; \
     } \
     CHECK_MISMATCH_RETURN
@@ -536,7 +536,7 @@ namespace Details
     { \
         hr = y; \
         OnNewFailure<__COUNTER__>(hr); \
-        DISPLAY_DEBUG(hr, #x) \
+        DISPLAY_DEBUG(hr, L#x) \
         goto Cleanup; \
     } \
     CHECK_MISMATCH_GOTO
@@ -550,7 +550,7 @@ namespace Details
     { \
         const HRESULT _hr_ = y; \
         OnNewFailure<__COUNTER__>(_hr_); \
-        DISPLAY_DEBUG(_hr_, #x) \
+        DISPLAY_DEBUG(_hr_, L#x) \
         return _hr_; \
     } \
     CHECK_MISMATCH_RETURN
@@ -565,7 +565,7 @@ namespace Details
     { \
         hr = y; \
         OnNewFailure<__COUNTER__>(hr); \
-        DISPLAY_DEBUG(hr, #x) \
+        DISPLAY_DEBUG(hr, L#x) \
         goto Cleanup; \
     } \
     CHECK_MISMATCH_GOTO
@@ -579,7 +579,7 @@ namespace Details
     { \
         constexpr HRESULT _hr_ = y; \
         OnNewFailure<__COUNTER__>(_hr_); \
-        DISPLAY_DEBUG(_hr_, #x) \
+        DISPLAY_DEBUG(_hr_, L#x) \
         return _hr_; \
     } \
     CHECK_MISMATCH_RETURN
@@ -596,7 +596,7 @@ namespace Details
         else \
         { \
             hrTemp = hr; \
-            DISPLAY_DEBUG(hr, #x) \
+            DISPLAY_DEBUG(hr, L#x) \
         } \
     }
 
@@ -609,7 +609,7 @@ namespace Details
         hr = HRESULT_FROM_WIN32(GetLastError());                            \
         if (SUCCEEDED(hr)) hr = E_FAIL;                                     \
         OnNewFailure<__COUNTER__>(hr);                                      \
-        DISPLAY_DEBUG(hr, #x)                                              \
+        DISPLAY_DEBUG(hr, L#x)                                              \
         goto Cleanup;                                                       \
     }                                                                       \
     CHECK_MISMATCH_GOTO
@@ -621,7 +621,7 @@ namespace Details
         HRESULT _hr_ = HRESULT_FROM_WIN32(GetLastError());                  \
         if (SUCCEEDED(_hr_)) _hr_ = E_FAIL;                                 \
         OnNewFailure<__COUNTER__>(_hr_);                                    \
-        DISPLAY_DEBUG(_hr_, #x)                                            \
+        DISPLAY_DEBUG(_hr_, L#x)                                            \
         return _hr_;                                                        \
     }                                                                       \
     CHECK_MISMATCH_RETURN
@@ -665,7 +665,7 @@ namespace Details
         else \
         { \
             OnFailure<__COUNTER__>(__HR); \
-            DISPLAY_DEBUG(__HR, #x) \
+            DISPLAY_DEBUG(__HR, L#x) \
             FAIL_FAST_USING_EXISTING_ERROR_CONTEXT(__HR); \
         } \
     }
@@ -681,7 +681,7 @@ namespace Details
         else \
         { \
             OnFailure<__COUNTER__>(__HR); \
-            DISPLAY_DEBUG(__HR, #x) \
+            DISPLAY_DEBUG(__HR, L#x) \
             FAIL_FAST_USING_EXISTING_ERROR_CONTEXT(__HR); \
         } \
     }

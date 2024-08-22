@@ -541,7 +541,7 @@ bool CTargetPropertyPath::IsPathFullyQualifiedPropertyName(const xstring_ptr& pa
         && path.FindChar(L'.', firstDotIndexActual) == xstring_ptr_view::npos);
 }
 
-HRESULT CTargetPropertyPath::ResolveFullyQualifiedPropertyNames(const xstring_ptr& path, XamlServiceProviderContext* serviceProviderContext)
+_Check_return_ HRESULT CTargetPropertyPath::ResolveFullyQualifiedPropertyNames(const xstring_ptr& path, XamlServiceProviderContext* serviceProviderContext)
 {
     unsigned int startIndex = 0;
     unsigned int endIndex = 0;

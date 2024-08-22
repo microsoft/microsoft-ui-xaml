@@ -405,18 +405,18 @@
                     <TextBlock Text="Vertical Offset:" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center"/>
                     <TextBox x:Name="txtScrollVerticalOffset" Text="0" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center"/>
                     <TextBlock Text="AnimationMode:" Grid.Column="0" Grid.Row="3" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="cmbScrollAnimationMode" Grid.Column="1" Grid.Row="3" VerticalAlignment="Center" SelectedIndex="2">
+                    <ComboBox x:Name="cmbScrollAnimationMode" Grid.Column="1" Grid.Row="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="2">
                         <ComboBoxItem>Disabled</ComboBoxItem>
                         <ComboBoxItem>Enabled</ComboBoxItem>
                         <ComboBoxItem>Auto</ComboBoxItem>
                     </ComboBox>
                     <TextBlock Text="SnapPointsMode:" Grid.Column="0" Grid.Row="4" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="cmbScrollSnapPointsMode" Grid.Column="1" Grid.Row="4" VerticalAlignment="Center" SelectedIndex="0">
+                    <ComboBox x:Name="cmbScrollSnapPointsMode" Grid.Column="1" Grid.Row="4" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="0">
                         <ComboBoxItem>Default</ComboBoxItem>
                         <ComboBoxItem>Ignore</ComboBoxItem>
                     </ComboBox>
                     <TextBlock Text="Animation override:" Grid.Column="0" Grid.Row="5" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="cmbOverriddenOffsetsChangeAnimation" Grid.Column="1" Grid.Row="5" VerticalAlignment="Center" SelectedIndex="0">
+                    <ComboBox x:Name="cmbOverriddenOffsetsChangeAnimation" Grid.Column="1" Grid.Row="5" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="0">
                         <ComboBoxItem>None</ComboBoxItem>
                         <ComboBoxItem>Accordion</ComboBoxItem>
                         <ComboBoxItem>Teleportation</ComboBoxItem>
@@ -451,19 +451,19 @@
                     <TextBox x:Name="txtZoomZoomFactor" Text="1" Grid.Column="1" Grid.Row="15" VerticalAlignment="Center"/>
                     <TextBlock Text="CenterPoint:" Grid.Column="0" Grid.Row="16" VerticalAlignment="Center"/>
                     <TextBox x:Name="txtZoomCenterPoint" Text="0, 0"  Grid.Column="1" Grid.Row="16" VerticalAlignment="Center"/>
-                    <TextBlock Text="AnimationMode:" Grid.Column="0" Grid.Row="17" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="cmbZoomAnimationMode" Grid.Column="1" Grid.Row="17" VerticalAlignment="Center" SelectedIndex="2">
+                    <TextBlock Text="AnimationMode:" Grid.Column="0" Grid.Row="17" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="cmbZoomAnimationMode" Grid.Column="1" Grid.Row="17" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="2">
                         <ComboBoxItem>Disabled</ComboBoxItem>
                         <ComboBoxItem>Enabled</ComboBoxItem>
                         <ComboBoxItem>Auto</ComboBoxItem>
                     </ComboBox>
                     <TextBlock Text="SnapPointsMode:" Grid.Column="0" Grid.Row="18" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="cmbZoomSnapPointsMode" Grid.Column="1" Grid.Row="18" VerticalAlignment="Center" SelectedIndex="0">
+                    <ComboBox x:Name="cmbZoomSnapPointsMode" Grid.Column="1" Grid.Row="18" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="0">
                         <ComboBoxItem>Default</ComboBoxItem>
                         <ComboBoxItem>Ignore</ComboBoxItem>
                     </ComboBox>
                     <TextBlock Text="Animation override:" Grid.Column="0" Grid.Row="19" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="cmbOverriddenZoomFactorChangeAnimation" Grid.Column="1" Grid.Row="19" VerticalAlignment="Center" SelectedIndex="0">
+                    <ComboBox x:Name="cmbOverriddenZoomFactorChangeAnimation" Grid.Column="1" Grid.Row="19" HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="0">
                         <ComboBoxItem>None</ComboBoxItem>
                         <ComboBoxItem>Accordion</ComboBoxItem>
                         <ComboBoxItem>Teleportation</ComboBoxItem>

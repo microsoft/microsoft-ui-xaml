@@ -605,7 +605,7 @@ void CLinearGradientBrush::CreateBackingCompositionObjectForFacade(_In_ WUComp::
     *listener = nullptr;
 }
 
-void CLinearGradientBrush::PopulateBackingCompositionObjectWithFacade(WUComp::ICompositionObject* backingCO, KnownPropertyIndex facadeID)
+void CLinearGradientBrush::PopulateBackingCompositionObjectWithFacade(_In_ WUComp::ICompositionObject* backingCO, KnownPropertyIndex facadeID)
 {
     wrl::ComPtr<WUComp::ICompositionGradientBrush> backingPS;
     VERIFYHR(backingCO->QueryInterface(IID_PPV_ARGS(&backingPS)));

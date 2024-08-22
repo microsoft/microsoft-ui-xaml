@@ -2238,7 +2238,7 @@ Pivot::CancelDManipAnimations()
 }
 
 _Check_return_ HRESULT
-Pivot::UpdateScrollViewerDragDirection(PivotAnimationDirection direction)
+Pivot::UpdateScrollViewerDragDirection(_In_ PivotAnimationDirection direction)
 {
     wrl::ComPtr<wfc::IVector<IInspectable*>> spItemsAsVector;
     UINT itemCount = 0;

@@ -85,7 +85,7 @@ public:
     bool IsStopped();
     bool IsInertial();
     void ProcessInertiaInteraction();
-    void SetManipulationStarting(_In_ bool bManipulationStarting);
+    void SetManipulationStarting(bool bManipulationStarting);
     bool IsManipulationStarting();
     bool IsManipulationStarted();
     bool IsPegged();

@@ -735,7 +735,7 @@ public:
 
     // Releases previously held value, converts HSTRING to xstring_ptr and sets the value.
     _Check_return_ HRESULT SetString(
-        _In_ HSTRING value);
+        HSTRING value);
 
     // Releases previously held value, moves xstring_ptr to this CValue.
     void SetString(

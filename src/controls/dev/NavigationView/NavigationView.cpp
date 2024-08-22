@@ -2407,13 +2407,17 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
             m_pendingSelectionChangedItem = nextItem;
             m_pendingSelectionChangedDirection = recommendedDirection;
 
+            // Previously we used get_weak() here, but we hit a refcounting problem where 
+            // in some scenarios the outer object gets an extra Release() in this process.
+            auto weakThis {winrt::make_weak(static_cast<winrt::NavigationView>(*this))};
             DispatcherQueue().TryEnqueue(
                 winrt::DispatcherQueuePriority::Low,
-                winrt::DispatcherQueueHandler([weakThis{get_weak()}]()
+                winrt::DispatcherQueueHandler([weakThis]()
                 {
                     if(auto strongThis = weakThis.get())
                     {
-                        strongThis->CompletePendingSelectionChange();
+                        NavigationView* rawThis = winrt::get_self<NavigationView>(strongThis);
+                        rawThis->CompletePendingSelectionChange();
                     }
                 }));
         }

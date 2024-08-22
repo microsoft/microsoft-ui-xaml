@@ -383,11 +383,16 @@ void WebView2::HandlePointerExited(const winrt::Windows::Foundation::IInspectabl
 
     if (deviceType == winrt::PointerDeviceType::Mouse)
     {
-        message = WM_MOUSELEAVE;
-        if (!m_hasMouseCapture)
+        if (m_hasMouseCapture)
         {
-            ResetMouseInputState();
+            // WM_MOUSELEAVE should not fire while we have capture, since doing so
+            // will cancel capture in the WebView.
+            m_isMouseLeaveNeeded = true;
+            return;
         }
+
+        message = WM_MOUSELEAVE;
+        ResetMouseInputState();
     }
     else
     {
@@ -404,6 +409,12 @@ void WebView2::HandlePointerEntered(const winrt::Windows::Foundation::IInspectab
     if (deviceType != winrt::PointerDeviceType::Mouse) //mouse does not have an equivalent pointer_entered event, so only handling pen/touch
     {
         OnXamlPointerMessage(WM_POINTERENTER, args);
+    }
+    else
+    {
+        MUX_ASSERT(deviceType == winrt::PointerDeviceType::Mouse);
+        // If there was a queued MouseLeave, clear it now that the mouse has re-entered.
+        m_isMouseLeaveNeeded = false;
     }
 }
 
@@ -425,6 +436,11 @@ void WebView2::ResetPointerHelper(const winrt::PointerRoutedEventArgs& args)
     {
         m_hasMouseCapture = false;
         ResetMouseInputState();
+        if (m_isMouseLeaveNeeded)
+        {
+            m_isMouseLeaveNeeded = false;
+            SendMouseLeave();
+        }
     }
     else if (deviceType == winrt::PointerDeviceType::Touch)
     {
@@ -440,6 +456,21 @@ void WebView2::ResetPointerHelper(const winrt::PointerRoutedEventArgs& args)
     {
         m_hasPenCapture = false;
     }
+}
+
+void WebView2::SendMouseLeave()
+{
+    if (!m_coreWebView || !m_coreWebViewCompositionController || CoreWebView2HasInvalidState())
+    {
+        // nothing to forward input to
+        return;
+    }
+
+    m_coreWebViewCompositionController.SendMouseInput(
+        winrt::CoreWebView2MouseEventKind{ static_cast<winrt::CoreWebView2MouseEventKind>(WM_MOUSELEAVE) },
+        winrt::CoreWebView2MouseEventVirtualKeys{ static_cast<winrt::CoreWebView2MouseEventVirtualKeys>(0) },
+        0,
+        winrt::Point{ 0, 0 });
 }
 
 bool WebView2::ShouldNavigate(const winrt::Uri& uri)
@@ -1670,7 +1701,7 @@ void WebView2::ConvertXamlArgsToOle32Args(const winrt::DragEventArgs& args, DWOR
     // point parameter must be modified to include the WebView's offset and be
     // in the WebView's client coordinates (Similar to how SendMouseInput works).
     winrt::Point cursorPosition_winrt{args.GetPosition(*this /* relativeTo */)};
-    cursorPosition = {static_cast<LONG>(cursorPosition_winrt.X), static_cast<LONG>(cursorPosition_winrt.Y)};
+    cursorPosition = {static_cast<LONG>(cursorPosition_winrt.X * m_rasterizationScale), static_cast<LONG>(cursorPosition_winrt.Y * m_rasterizationScale)};
 
     // Map source's AllowedOperations to dropEffect
     winrt::DataPackageOperation allowedOperations = args.AllowedOperations();

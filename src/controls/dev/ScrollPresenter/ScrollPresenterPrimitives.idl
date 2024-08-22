@@ -354,7 +354,9 @@ unsealed runtimeclass ScrollPresenter :
     event Windows.Foundation.TypedEventHandler<ScrollPresenter, MU_XC_NAMESPACE.ScrollingAnchorRequestedEventArgs> AnchorRequested;
 
     [MUX_PREVIEW]
-    event Windows.Foundation.TypedEventHandler<ScrollPresenter, MU_XC_NAMESPACE.ScrollingViewChangingEventArgs> ViewChanging;
+    event Windows.Foundation.TypedEventHandler<ScrollPresenter, MU_XC_NAMESPACE.ScrollingScrollStartingEventArgs> ScrollStarting;
+    [MUX_PREVIEW]
+    event Windows.Foundation.TypedEventHandler<ScrollPresenter, MU_XC_NAMESPACE.ScrollingZoomStartingEventArgs> ZoomStarting;
 
     static Microsoft.UI.Xaml.DependencyProperty BackgroundProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty ContentProperty { get; };

@@ -971,15 +971,27 @@ void ScrollView::OnZoomAnimationStarting(
     }
 }
 
-void ScrollView::OnScrollPresenterViewChanging(
+void ScrollView::OnScrollPresenterScrollStarting(
     const winrt::IInspectable& /*sender*/,
-    const winrt::ScrollingViewChangingEventArgs& args)
+    const winrt::ScrollingScrollStartingEventArgs& args)
 {
-    if (m_viewChangingEventSource)
+    if (m_scrollStartingEventSource)
     {
         SCROLLVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-        m_viewChangingEventSource(*this, args);
+        m_scrollStartingEventSource(*this, args);
+    }
+}
+
+void ScrollView::OnScrollPresenterZoomStarting(
+    const winrt::IInspectable& /*sender*/,
+    const winrt::ScrollingZoomStartingEventArgs& args)
+{
+    if (m_zoomStartingEventSource)
+    {
+        SCROLLVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
+        m_zoomStartingEventSource(*this, args);
     }
 }
 
@@ -1271,7 +1283,8 @@ void ScrollView::HookScrollPresenterEvents()
     MUX_ASSERT(m_scrollPresenterStateChangedToken.value == 0);
     MUX_ASSERT(m_scrollPresenterScrollAnimationStartingToken.value == 0);
     MUX_ASSERT(m_scrollPresenterZoomAnimationStartingToken.value == 0);
-    MUX_ASSERT(m_scrollPresenterViewChangingToken.value == 0);
+    MUX_ASSERT(m_scrollPresenterScrollStartingToken.value == 0);
+    MUX_ASSERT(m_scrollPresenterZoomStartingToken.value == 0);
     MUX_ASSERT(m_scrollPresenterViewChangedToken.value == 0);
     MUX_ASSERT(m_scrollPresenterScrollCompletedToken.value == 0);
     MUX_ASSERT(m_scrollPresenterZoomCompletedToken.value == 0);
@@ -1296,7 +1309,8 @@ void ScrollView::HookScrollPresenterEvents()
 
         if (scrollPresenter2)
         {
-            m_scrollPresenterViewChangingToken = scrollPresenter2.ViewChanging({ this, &ScrollView::OnScrollPresenterViewChanging });
+            m_scrollPresenterScrollStartingToken = scrollPresenter2.ScrollStarting({ this, &ScrollView::OnScrollPresenterScrollStarting });
+            m_scrollPresenterZoomStartingToken = scrollPresenter2.ZoomStarting({ this, &ScrollView::OnScrollPresenterZoomStarting });
         }
 
         const winrt::DependencyObject scrollPresenterAsDO = scrollPresenter.try_as<winrt::DependencyObject>();
@@ -1346,16 +1360,28 @@ void ScrollView::UnhookScrollPresenterEvents(bool isForDestructor)
             m_scrollPresenterZoomAnimationStartingToken.value = 0;
         }
 
-        if (m_scrollPresenterViewChangingToken.value != 0)
+        if (m_scrollPresenterScrollStartingToken.value != 0)
         {
             const winrt::IScrollPresenter2 scrollPresenter2 = scrollPresenter.try_as<winrt::IScrollPresenter2>();
 
             if (scrollPresenter2)
             {
-                scrollPresenter2.ViewChanging(m_scrollPresenterViewChangingToken);
+                scrollPresenter2.ScrollStarting(m_scrollPresenterScrollStartingToken);
             }
 
-            m_scrollPresenterViewChangingToken.value = 0;
+            m_scrollPresenterScrollStartingToken.value = 0;
+        }
+
+        if (m_scrollPresenterZoomStartingToken.value != 0)
+        {
+            const winrt::IScrollPresenter2 scrollPresenter2 = scrollPresenter.try_as<winrt::IScrollPresenter2>();
+
+            if (scrollPresenter2)
+            {
+                scrollPresenter2.ZoomStarting(m_scrollPresenterZoomStartingToken);
+            }
+
+            m_scrollPresenterZoomStartingToken.value = 0;
         }
 
         if (m_scrollPresenterViewChangedToken.value != 0)

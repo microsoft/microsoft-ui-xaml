@@ -2467,7 +2467,7 @@ bool CommandBar::HasPrimaryCommands()
 // This function checks that there is room for both things.
 //
 _Check_return_ HRESULT
-CommandBar::GetShouldOpenUp(bool* shouldOpenUp)
+CommandBar::GetShouldOpenUp(_Out_ bool* shouldOpenUp)
 {
     // Bottom appbars always open up.  All other appbars by default open down.
     *shouldOpenUp = (GetMode() == AppBarMode_Bottom);
@@ -2553,7 +2553,7 @@ _Check_return_ HRESULT CommandBar::HasNonLabeledDynamicPrimaryCommand(_Out_ bool
     return S_OK;
 }
 
-_Check_return_ HRESULT CommandBar::HasSpaceForOverflowPopupToOpenDown(bool* hasSpace)
+_Check_return_ HRESULT CommandBar::HasSpaceForOverflowPopupToOpenDown(_Out_ bool* hasSpace)
 {
     ASSERT(GetMode() == AppBarMode_Inline);
 

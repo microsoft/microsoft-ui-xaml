@@ -1558,6 +1558,7 @@ namespace Microsoft.UI.Xaml.Automation.Peers
         FlipView,
     }
 
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
     [NativeName("APAutomationEvents")]
     [NativeCategory(EnumCategory.AutomationEnum)]
     [EnumFlags(HasTypeConverter = true, IsTypeConverter = true, NativeUsesNumericValues = false)]
@@ -1624,6 +1625,9 @@ namespace Microsoft.UI.Xaml.Automation.Peers
         TextEditTextChanged,
         [NativeValueName("AELayoutInvalidated")]
         LayoutInvalidated,
+        [NativeValueName("AENotification")]
+        [VelocityFeature("Feature_ExperimentalApi")]
+        Notification,
     }
 
     [NativeName("APPatternInterface")]

@@ -2206,7 +2206,7 @@ _Check_return_ HRESULT ToolTip::RepositionPopup()
 }
 
 _Check_return_ HRESULT
-ToolTip::HandlePointInSafeZone(const POINT& position)
+ToolTip::HandlePointInSafeZone(_In_ const POINT& position)
 {
     if (auto visualTree = VisualTree::GetForElementNoRef(GetHandle()))
     {
@@ -2218,7 +2218,7 @@ ToolTip::HandlePointInSafeZone(const POINT& position)
 }
 
 _Check_return_ HRESULT
-ToolTip::HandlePointInSafeZone(const wf::Point& point)
+ToolTip::HandlePointInSafeZone(_In_ const wf::Point& point)
 {
     ctl::ComPtr<xaml::IDependencyObject> owner;
     IFC_RETURN(m_wrOwner.As(&owner));

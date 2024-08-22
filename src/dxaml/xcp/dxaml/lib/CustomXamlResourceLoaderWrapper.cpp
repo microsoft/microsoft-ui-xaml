@@ -79,7 +79,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-xaml::Resources::ICustomXamlResourceLoader* CustomXamlResourceLoaderWrapper::GetLoader()
+_Check_return_ xaml::Resources::ICustomXamlResourceLoader* CustomXamlResourceLoaderWrapper::GetLoader()
 {
     return m_pWinrtLoader;
 }

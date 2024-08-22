@@ -1893,8 +1893,9 @@ namespace MUXControlsTestApp
                     {
                         scrollView.ExtentChanged -= ScrollView_ExtentChanged;
                         scrollView.StateChanged -= ScrollView_StateChanged;
-                        scrollView.ViewChanging -= ScrollView_ViewChanging;
                         scrollView.ViewChanged -= ScrollView_ViewChanged;
+                        scrollView.ScrollStarting -= ScrollView_ScrollStarting;
+                        scrollView.ZoomStarting -= ScrollView_ZoomStarting;
                         scrollView.ScrollAnimationStarting -= ScrollView_ScrollAnimationStarting;
                         scrollView.ZoomAnimationStarting -= ScrollView_ZoomAnimationStarting;
                         if (scrollViewPointerWheelChangedEventHandler != null)
@@ -1909,8 +1910,9 @@ namespace MUXControlsTestApp
                     {
                         scrollPresenter.ExtentChanged -= ScrollPresenter_ExtentChanged;
                         scrollPresenter.StateChanged -= ScrollPresenter_StateChanged;
-                        scrollPresenter.ViewChanging -= ScrollPresenter_ViewChanging;
                         scrollPresenter.ViewChanged -= ScrollPresenter_ViewChanged;
+                        scrollPresenter.ScrollStarting -= ScrollPresenter_ScrollStarting;
+                        scrollPresenter.ZoomStarting -= ScrollPresenter_ZoomStarting;
                         scrollPresenter.ScrollAnimationStarting -= ScrollPresenter_ScrollAnimationStarting;
                         scrollPresenter.ZoomAnimationStarting -= ScrollPresenter_ZoomAnimationStarting;
                         if (scrollPresenterPointerWheelChangedEventHandler != null)
@@ -1972,8 +1974,9 @@ namespace MUXControlsTestApp
                     {
                         scrollView.ExtentChanged += ScrollView_ExtentChanged;
                         scrollView.StateChanged += ScrollView_StateChanged;
-                        scrollView.ViewChanging += ScrollView_ViewChanging;
                         scrollView.ViewChanged += ScrollView_ViewChanged;
+                        scrollView.ScrollStarting += ScrollView_ScrollStarting;
+                        scrollView.ZoomStarting += ScrollView_ZoomStarting;
                         scrollView.ScrollAnimationStarting += ScrollView_ScrollAnimationStarting;
                         scrollView.ZoomAnimationStarting += ScrollView_ZoomAnimationStarting;
                         if (scrollViewPointerWheelChangedEventHandler == null)
@@ -1989,8 +1992,9 @@ namespace MUXControlsTestApp
                     {
                         scrollPresenter.ExtentChanged += ScrollPresenter_ExtentChanged;
                         scrollPresenter.StateChanged += ScrollPresenter_StateChanged;
-                        scrollPresenter.ViewChanging += ScrollPresenter_ViewChanging;
                         scrollPresenter.ViewChanged += ScrollPresenter_ViewChanged;
+                        scrollPresenter.ScrollStarting += ScrollPresenter_ScrollStarting;
+                        scrollPresenter.ZoomStarting += ScrollPresenter_ZoomStarting;
                         scrollPresenter.ScrollAnimationStarting += ScrollPresenter_ScrollAnimationStarting;
                         scrollPresenter.ZoomAnimationStarting += ScrollPresenter_ZoomAnimationStarting;
                         if (scrollPresenterPointerWheelChangedEventHandler == null)
@@ -2099,14 +2103,19 @@ namespace MUXControlsTestApp
             AppendAsyncEventMessage("ScrollPresenter.StateChanged " + sender.State.ToString());
         }
 
-        private void ScrollPresenter_ViewChanging(ScrollPresenter sender, ScrollingViewChangingEventArgs args)
-        {
-            AppendAsyncEventMessage("ScrollPresenter.ViewChanging H=" + args.HorizontalOffset.ToString() + ", V=" + args.VerticalOffset + ", ZF=" + args.ZoomFactor);
-        }
-
         private void ScrollPresenter_ViewChanged(ScrollPresenter sender, object args)
         {
             AppendAsyncEventMessage("ScrollPresenter.ViewChanged H=" + sender.HorizontalOffset.ToString() + ", V=" + sender.VerticalOffset + ", ZF=" + sender.ZoomFactor);
+        }
+
+        private void ScrollPresenter_ScrollStarting(ScrollPresenter sender, ScrollingScrollStartingEventArgs args)
+        {
+            AppendAsyncEventMessage($"ScrollPresenter.ScrollStarting OffsetsChangeCorrelationId={args.CorrelationId}, H={args.HorizontalOffset}, V={args.VerticalOffset}, ZF={args.ZoomFactor}");
+        }
+
+        private void ScrollPresenter_ZoomStarting(ScrollPresenter sender, ScrollingZoomStartingEventArgs args)
+        {
+            AppendAsyncEventMessage($"ScrollPresenter.ZoomStarting ZoomFactorChangeCorrelationId={args.CorrelationId}, H={args.HorizontalOffset}, V={args.VerticalOffset}, ZF={args.ZoomFactor}");
         }
 
         private void ScrollPresenter_ScrollAnimationStarting(ScrollPresenter sender, ScrollingScrollAnimationStartingEventArgs args)
@@ -2134,14 +2143,19 @@ namespace MUXControlsTestApp
             AppendAsyncEventMessage("ScrollView.StateChanged " + sender.State.ToString());
         }
 
-        private void ScrollView_ViewChanging(ScrollView sender, ScrollingViewChangingEventArgs args)
-        {
-            AppendAsyncEventMessage("ScrollView.ViewChanging H=" + args.HorizontalOffset.ToString() + ", V=" + args.VerticalOffset + ", ZF=" + args.ZoomFactor);
-        }
-
         private void ScrollView_ViewChanged(ScrollView sender, object args)
         {
             AppendAsyncEventMessage("ScrollView.ViewChanged H=" + sender.HorizontalOffset.ToString() + ", V=" + sender.VerticalOffset + ", ZF=" + sender.ZoomFactor);
+        }
+
+        private void ScrollView_ScrollStarting(ScrollView sender, ScrollingScrollStartingEventArgs args)
+        {
+            AppendAsyncEventMessage($"ScrollView.ScrollStarting OffsetsChangeCorrelationId={args.CorrelationId}, H={args.HorizontalOffset}, V={args.VerticalOffset}, ZF={args.ZoomFactor}");
+        }
+
+        private void ScrollView_ZoomStarting(ScrollView sender, ScrollingZoomStartingEventArgs args)
+        {
+            AppendAsyncEventMessage($"ScrollView.ZoomStarting ZoomFactorChangeCorrelationId={args.CorrelationId}, H={args.HorizontalOffset}, V={args.VerticalOffset}, ZF={args.ZoomFactor}");
         }
 
         private void ScrollView_ScrollAnimationStarting(ScrollView sender, ScrollingScrollAnimationStartingEventArgs args)
@@ -2215,8 +2229,9 @@ namespace MUXControlsTestApp
                 {
                     scrollPresenter.ExtentChanged += ScrollPresenter_ExtentChanged;
                     scrollPresenter.StateChanged += ScrollPresenter_StateChanged;
-                    scrollPresenter.ViewChanging += ScrollPresenter_ViewChanging;
                     scrollPresenter.ViewChanged += ScrollPresenter_ViewChanged;
+                    scrollPresenter.ScrollStarting += ScrollPresenter_ScrollStarting;
+                    scrollPresenter.ZoomStarting += ScrollPresenter_ZoomStarting;
                     scrollPresenter.ScrollAnimationStarting += ScrollPresenter_ScrollAnimationStarting;
                     scrollPresenter.ZoomAnimationStarting += ScrollPresenter_ZoomAnimationStarting;
                     if (scrollPresenterPointerWheelChangedEventHandler == null)
@@ -2238,8 +2253,9 @@ namespace MUXControlsTestApp
                 {
                     scrollPresenter.ExtentChanged -= ScrollPresenter_ExtentChanged;
                     scrollPresenter.StateChanged -= ScrollPresenter_StateChanged;
-                    scrollPresenter.ViewChanging -= ScrollPresenter_ViewChanging;
                     scrollPresenter.ViewChanged -= ScrollPresenter_ViewChanged;
+                    scrollPresenter.ScrollStarting -= ScrollPresenter_ScrollStarting;
+                    scrollPresenter.ZoomStarting -= ScrollPresenter_ZoomStarting;
                     scrollPresenter.ScrollAnimationStarting -= ScrollPresenter_ScrollAnimationStarting;
                     scrollPresenter.ZoomAnimationStarting -= ScrollPresenter_ZoomAnimationStarting;
                     if (scrollPresenterPointerWheelChangedEventHandler != null)
@@ -2256,8 +2272,9 @@ namespace MUXControlsTestApp
             {
                 scrollView.ExtentChanged += ScrollView_ExtentChanged;
                 scrollView.StateChanged += ScrollView_StateChanged;
-                scrollView.ViewChanging += ScrollView_ViewChanging;
                 scrollView.ViewChanged += ScrollView_ViewChanged;
+                scrollView.ScrollStarting += ScrollView_ScrollStarting;
+                scrollView.ZoomStarting += ScrollView_ZoomStarting;
                 scrollView.ScrollAnimationStarting += ScrollView_ScrollAnimationStarting;
                 scrollView.ZoomAnimationStarting += ScrollView_ZoomAnimationStarting;
                 if (scrollViewPointerWheelChangedEventHandler == null)
@@ -2274,8 +2291,9 @@ namespace MUXControlsTestApp
             {
                 scrollView.ExtentChanged -= ScrollView_ExtentChanged;
                 scrollView.StateChanged -= ScrollView_StateChanged;
-                scrollView.ViewChanging -= ScrollView_ViewChanging;
                 scrollView.ViewChanged -= ScrollView_ViewChanged;
+                scrollView.ScrollStarting -= ScrollView_ScrollStarting;
+                scrollView.ZoomStarting -= ScrollView_ZoomStarting;
                 scrollView.ScrollAnimationStarting -= ScrollView_ScrollAnimationStarting;
                 scrollView.ZoomAnimationStarting -= ScrollView_ZoomAnimationStarting;
                 if (scrollViewPointerWheelChangedEventHandler != null)

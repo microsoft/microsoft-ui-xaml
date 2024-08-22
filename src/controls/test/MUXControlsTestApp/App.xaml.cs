@@ -36,9 +36,6 @@ namespace MUXControlsTestApp
         [DllImport("Microsoft.WindowsAppRuntime.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
         internal static extern int WindowsAppRuntime_EnsureIsLoaded();
 
-        [DllImport("Microsoft.UI.Xaml.dll")]
-        private static extern void XamlCheckProcessRequirements();
-
         [STAThread]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Required parameter.")]
         public static void Main(string[] args)
@@ -49,8 +46,6 @@ namespace MUXControlsTestApp
                 SetAsUnpackaged();
                 _ = WindowsAppRuntime_EnsureIsLoaded();
             }
-
-            XamlCheckProcessRequirements();
 
             WinRT.ComWrappersSupport.InitializeComWrappers();
             Microsoft.UI.Xaml.Application.Start((p) => {
@@ -72,7 +67,7 @@ namespace MUXControlsTestApp
         /// <summary>
         /// AdditionalStyles.xaml file for ScrollViewer tests
         /// </summary>
-        /// 
+        ///
         private static ResourceDictionary additionStylesXaml = null;
         public static ResourceDictionary AdditionStylesXaml
         {
@@ -86,7 +81,7 @@ namespace MUXControlsTestApp
                 return additionStylesXaml;
             }
         }
-        
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -202,7 +197,7 @@ namespace MUXControlsTestApp
             }
             set
             {
-#if !INNERLOOP_BUILD // The xaml files below need to be factored better into appropriate feature area projects - Tracked by Issue: 1044 
+#if !INNERLOOP_BUILD // The xaml files below need to be factored better into appropriate feature area projects - Tracked by Issue: 1044
                 if (value != DisableLongAnimations)
                 {
                     if (value)
@@ -321,13 +316,13 @@ namespace MUXControlsTestApp
                 createRoot();
             }
             else
-            {   
+            {
                 var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
                 if (dispatcherQueue == null)
                 {
                     throw new Exception("DispatcherQueue not available");
                 }
-                   
+
                 System.Threading.Tasks.Task.Delay(2000).ContinueWith(
                     (t) => {
                             var ignored = dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal,
@@ -388,7 +383,7 @@ namespace MUXControlsTestApp
                 Log.Comment("Test window got focus.");
             }
         }
-        
+
         private static void AppendResourceToMergedDictionaries(string resource, ResourceDictionary targetDictionary = null)
         {
             ResourceDictionary resourceDictionary = new ResourceDictionary();
@@ -400,7 +395,7 @@ namespace MUXControlsTestApp
         public static void AppendResourceDictionaryToMergedDictionaries(ResourceDictionary dictionary)
         {
             // Check for null and dictionary not present
-            if (!(dictionary is null) && 
+            if (!(dictionary is null) &&
                 !Application.Current.Resources.MergedDictionaries.Contains(dictionary))
             {
                 Application.Current.Resources.MergedDictionaries.Add(dictionary);
@@ -412,7 +407,7 @@ namespace MUXControlsTestApp
             // Check for null and dictionary is in list
             if(!(dictionary is null) &&
                 Application.Current.Resources.MergedDictionaries.Contains(dictionary))
-            { 
+            {
                 Application.Current.Resources.MergedDictionaries.Remove(dictionary);
             }
         }

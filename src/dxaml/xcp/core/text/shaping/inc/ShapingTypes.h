@@ -45,8 +45,8 @@ typedef INT*            PINT;
 typedef wchar_t         WCHAR;
 typedef WCHAR*          PWCHAR;
 typedef const WCHAR*    PCWCHAR;
-typedef WCHAR*          LPWSTR;
-typedef const WCHAR*    LPCWSTR;
+typedef _Null_terminated_ WCHAR*          LPWSTR;
+typedef _Null_terminated_ const WCHAR*    LPCWSTR;
 typedef unsigned long long ULONGLONG;
 
 typedef unsigned long   LCHAR;

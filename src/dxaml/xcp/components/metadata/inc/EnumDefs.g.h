@@ -222,6 +222,7 @@ namespace DirectUI
         ConversionTargetChanged = 27,
         TextEditTextChanged = 28,
         LayoutInvalidated = 29,
+        Notification = 30,
     };
     DEFINE_ENUM_FLAG_OPERATORS(AutomationEvents);
 

@@ -95,7 +95,7 @@ void AsyncImageDecoder::SharedState::CancelPresent()
 }
 
 // static
-HRESULT AsyncImageDecoder::SetupDecodeCurrentFrame(std::shared_ptr<SharedState> sharedState)
+_Check_return_ HRESULT AsyncImageDecoder::SetupDecodeCurrentFrame(std::shared_ptr<SharedState> sharedState)
 {
     uint64_t imageSourceId = sharedState->m_spDecodeParams->GetImageId();
     ImagingTelemetry::QueueOffThreadDecode(imageSourceId);
@@ -119,7 +119,7 @@ HRESULT AsyncImageDecoder::SetupDecodeCurrentFrame(std::shared_ptr<SharedState> 
 }
 
 // static
-HRESULT AsyncImageDecoder::OnDecodeCurrentFrame(std::shared_ptr<SharedState> sharedState)
+_Check_return_ HRESULT AsyncImageDecoder::OnDecodeCurrentFrame(std::shared_ptr<SharedState> sharedState)
 {
     using namespace std::chrono;
 
@@ -155,7 +155,7 @@ HRESULT AsyncImageDecoder::OnDecodeCurrentFrame(std::shared_ptr<SharedState> sha
 }
 
 // static
-HRESULT AsyncImageDecoder::ScheduleNextPresent(std::shared_ptr<SharedState> sharedState)
+_Check_return_ HRESULT AsyncImageDecoder::ScheduleNextPresent(std::shared_ptr<SharedState> sharedState)
 {
     ASSERT(sharedState->m_spPresentTimer == nullptr);
     ASSERT(!sharedState->m_needsPresentAfterDecode);
@@ -199,7 +199,7 @@ HRESULT AsyncImageDecoder::ScheduleNextPresent(std::shared_ptr<SharedState> shar
 }
 
 // static
-HRESULT AsyncImageDecoder::PresentAndProceedToNextFrame(std::shared_ptr<SharedState> sharedState)
+_Check_return_ HRESULT AsyncImageDecoder::PresentAndProceedToNextFrame(std::shared_ptr<SharedState> sharedState)
 {
     if (auto imageDecodeCallback = sharedState->m_imageDecodeCallback.lock())
     {
@@ -258,7 +258,7 @@ HRESULT AsyncImageDecoder::PresentAndProceedToNextFrame(std::shared_ptr<SharedSt
 }
 
 // static
-HRESULT AsyncImageDecoder::RestartPlayback(std::shared_ptr<SharedState> sharedState)
+_Check_return_ HRESULT AsyncImageDecoder::RestartPlayback(std::shared_ptr<SharedState> sharedState)
 {
     if (sharedState->NeedMoreFrames())
     {

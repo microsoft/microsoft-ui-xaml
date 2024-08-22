@@ -29,7 +29,7 @@ XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { n
             _Outptr_result_maybenull_ xaml_automation_peers::ILoopingSelectorItemAutomationPeer** ppPeer);
         _Check_return_ HRESULT AutomationTryScrollItemIntoView(_In_ IInspectable* pItem);
         _Check_return_ HRESULT AutomationClearPeerMap();
-        _Check_return_ HRESULT AutomationRealizeItemForAP(_In_ UINT32 itemIdxToRealize);
+        _Check_return_ HRESULT AutomationRealizeItemForAP(UINT32 itemIdxToRealize);
 
         // Used by LoopingSelectorItem to ScrollIntoView/Select
         _Check_return_ HRESULT AutomationScrollToVisualIdx(_In_ INT visualIdx, bool ignoreScrollingState = false);

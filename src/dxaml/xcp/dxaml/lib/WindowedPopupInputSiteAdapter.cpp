@@ -7,6 +7,12 @@
 #include "GeneralTransform.h"
 #include "InputSiteAdapter.h"
 #include "WindowedPopupInputSiteAdapter.h"
+#include "DropOperationTarget.h"
+
+WindowedPopupInputSiteAdapter::~WindowedPopupInputSiteAdapter()
+{
+    IGNOREHR(m_dragDropManager->remove_TargetRequested(m_dropTargetRequestedToken));
+}
 
 void WindowedPopupInputSiteAdapter::Initialize(_In_ CPopup* popup, _In_ ixp::IContentIsland* contentIsland, _In_ CContentRoot* contentRoot, _In_ CJupiterWindow* jupiterWindow)
 {
@@ -27,6 +33,17 @@ void WindowedPopupInputSiteAdapter::Initialize(_In_ CPopup* popup, _In_ ixp::ICo
 
     // Windowed popups do not ever take activation.
     IFCFAILFAST(m_inputPointerSource2->put_ActivationBehavior(ixp::InputPointerActivationBehavior_NoActivate));
+
+    // Set up the popup as a potential drop target
+    wrl::ComPtr<mui::DragDrop::IDragDropManagerStatics> dragDropManagerStatics;
+    IFCFAILFAST(ActivationFactoryCache::GetActivationFactoryCache()->GetDragDropManagerStatics(&dragDropManagerStatics));
+
+    IFCFAILFAST(dragDropManagerStatics->GetForIsland(contentIsland, &m_dragDropManager));
+
+    // Callback object is not agile; this is intended for XAML objects that are thread affine
+    auto callback = wrl::Callback<wf::ITypedEventHandler<mui::DragDrop::DragDropManager*, mui::DragDrop::DropOperationTargetRequestedEventArgs*>>(this, &WindowedPopupInputSiteAdapter::OnDropTargetRequested);
+    IFCFAILFAST(m_dragDropManager->add_TargetRequested(callback.Get(), &m_dropTargetRequestedToken));
+
 }
 
 _Check_return_ HRESULT WindowedPopupInputSiteAdapter::OnDirectManipulationHitTest(_In_ ixp::IPointerEventArgs* args)
@@ -39,6 +56,21 @@ _Check_return_ HRESULT WindowedPopupInputSiteAdapter::OnDirectManipulationHitTes
     IFCFAILFAST(args->put_Handled(handled));
     IFC_RETURN(hr);
 
+    return S_OK;
+}
+
+_Check_return_ HRESULT WindowedPopupInputSiteAdapter::OnDropTargetRequested(_In_ mui::DragDrop::IDragDropManager* /*sender*/, _In_ mui::DragDrop::IDropOperationTargetRequestedEventArgs* args)
+{
+    ctl::ComPtr<DirectUI::DropOperationTarget> dropTarget;
+
+    auto contentRoot = GetContentRoot();
+    if (contentRoot)
+    {
+        IFC_RETURN(ctl::make<DirectUI::DropOperationTarget>(contentRoot->GetXamlIslandRootNoRef(), &dropTarget));
+
+        dropTarget->SetDragDropPointTransform(m_pointerPointTransformFromContentRoot);
+        IFC_RETURN(args->SetTarget(dropTarget.Get()));
+    }
     return S_OK;
 }
 

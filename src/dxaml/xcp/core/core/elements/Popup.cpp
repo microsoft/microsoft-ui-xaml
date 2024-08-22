@@ -1215,6 +1215,8 @@ _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
                 }).Get(),
                 &m_automationProviderRequestedToken));
 
+        IFC_RETURN(m_desktopBridge->Connect(m_contentIsland.Get()));
+
         m_inputSiteAdapter = std::make_unique<WindowedPopupInputSiteAdapter>();
         CContentRoot* contentRoot = VisualTree::GetContentRootForElement(this);
         m_inputSiteAdapter->Initialize(this, m_contentIsland.Get(), contentRoot, DirectUI::DXamlServices::GetCurrentJupiterWindow());
@@ -1222,8 +1224,6 @@ _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
         // Force an update of the input offset to make sure it is initialized to something and
         // propogated to the inputsite adapter.
         IFC_RETURN(UpdateTranslationFromContentRoot({}, /*forceUpdate*/ true));
-
-        IFC_RETURN(m_desktopBridge->Connect(m_contentIsland.Get()));
     }
 
     return S_OK;

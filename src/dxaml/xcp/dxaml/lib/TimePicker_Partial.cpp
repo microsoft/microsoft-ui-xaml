@@ -1344,7 +1344,7 @@ Cleanup:
 }
 
 // Clears the ItemsSource  properties of the selectors.
-HRESULT
+_Check_return_ HRESULT
 TimePicker::ClearSelectors()
 {
     HRESULT hr = S_OK;

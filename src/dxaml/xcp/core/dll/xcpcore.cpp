@@ -5598,7 +5598,7 @@ CUIAWindow* CCoreServices::GetUIAWindowForElementRootNoRef(_In_ CDependencyObjec
     CXamlIslandRoot* xamlIslandRoot = do_pointer_cast<CXamlIslandRoot>(elementRoot);
     if (xamlIslandRoot)
     {
-        return xamlIslandRoot->GetUIAWindowNoRef();
+        return xamlIslandRoot->GetUIAWindowNoRef(true /* onlyGet */);
     }
 
     if (UseUiaOnMainWindow() && m_pBrowserHost)

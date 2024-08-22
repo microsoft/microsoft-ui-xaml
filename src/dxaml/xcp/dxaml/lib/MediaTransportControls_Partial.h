@@ -442,7 +442,7 @@ namespace DirectUI
                                     _In_ IInspectable* pSender,
                                     _In_ xaml_input::IPointerRoutedEventArgs* pArgs);
         _Check_return_ HRESULT UpdateFullScreenMode(
-                                    _In_ BOOLEAN isFullWindow);
+                                    BOOLEAN isFullWindow);
         _Check_return_ HRESULT GetFullScreenView(
                                     _Outptr_opt_ wuv::IApplicationView3** ppAppView);
         _Check_return_ HRESULT GetMiniView(

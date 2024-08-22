@@ -2603,13 +2603,18 @@ void D2DTextDrawingContext::InvalidateRegion(
     // During the second iteration move remaining lines to empty spots in the collection
     // to ensure there are no gaps.
     //
+    //  Note: There is a oddity here in that it appears that RichEdit will request rendering of lines
+    //        outside of the invalidated area.  This ends up with us having duplicated line requests in
+    //        this collection.  This doesn't seem to hurt anything but possibly some performance, but 
+    //        maybe when we get around to incorporating the new RichEdit, we can clean this up.
     newSize = m_lines.GetCount();
     origin.x = origin.y = 0;
     for (XUINT32 i = 0, collectionSize = m_lines.GetCount(); i < collectionSize; i++)
     {
         LineData * pLineData = &m_lines[i];
         pLineData->Transform.Transform(&origin, &transformedOrigin, 1);
-        if (DoesRectContainPoint(*pRegion, transformedOrigin))
+        XRECTF_RB lineRect = { transformedOrigin.x, transformedOrigin.y, pLineData->Width, pLineData->Thickness };
+        if (DoRectsIntersect(*pRegion, lineRect))
         {
             newSize--;
             pLineData->BrushSource.reset();

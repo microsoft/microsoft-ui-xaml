@@ -1495,7 +1495,7 @@ void ObjectWriterNodeList::DebugFailure(
 {
 #if DBG
     xstring_ptr strIndent = xstring_ptr::EmptyString();
-    Dump(nodeList, strIndent);
+    IGNOREHR(Dump(nodeList, strIndent));
 #endif
 
     ASSERT(false);

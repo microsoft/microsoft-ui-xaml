@@ -45,15 +45,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 namespace ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Model.CodeInfo.ClassName.Namespace));
             this.Write("\r\n{\r\n#if !DISABLE_XAML_GENERATED_MAIN\r\n    /// <summary>\r\n    /// Program class\r\n" +
-                    "    /// </summary>\r\n    public static class Program\r\n    {\r\n");
-  if (ProjectInfo.IsWin32App) { 
-            this.Write(@"        [global::System.Runtime.InteropServices.DllImport(""Microsoft.ui.xaml.dll"")]
-        [global::System.Runtime.InteropServices.DefaultDllImportSearchPaths(global::System.Runtime.InteropServices.DllImportSearchPath.SafeDirectories)]
-        private static extern void XamlCheckProcessRequirements();
-
-");
-  } 
-            this.Write("        ");
+                    "    /// </summary>\r\n    public static class Program\r\n    {\r\n        ");
             this.Write(this.ToStringHelper.ToStringWithCulture(GeneratedCodeAttribute));
             this.Write("\r\n        ");
             this.Write(this.ToStringHelper.ToStringWithCulture(DebuggerNonUserCodeAttribute));
@@ -62,9 +54,6 @@ namespace ");
             this.Write("        [global::System.STAThreadAttribute]\r\n");
   } 
             this.Write("        static void Main(string[] args)\r\n        {\r\n");
-  if (ProjectInfo.IsWin32App) { 
-            this.Write("            XamlCheckProcessRequirements();\r\n            \r\n");
-  } 
   if (ProjectInfo.UsingCSWinRT) { 
             this.Write("            global::WinRT.ComWrappersSupport.InitializeComWrappers();\r\n");
   }

@@ -84,7 +84,7 @@ public:
     void ClientPhysicalToScreenPhysical(_Inout_ POINT& pt);
     void ScreenPhysicalToClientPhysical(_Inout_ POINT& pt);
 
-    CUIAWindow* GetUIAWindowNoRef();
+    CUIAWindow* GetUIAWindowNoRef(bool onlyGet = false);
     HRESULT UIAClientsAreListening(_In_ UIAXcp::APAutomationEvents automationEvent) const;
 
     VisualTree* GetVisualTreeNoRef();

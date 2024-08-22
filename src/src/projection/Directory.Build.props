@@ -19,10 +19,6 @@
     <!-- Causes loading of cswinrt projection (Microsoft.Web.WebView2.Core.Projection.dll) from CWV2 SDK package,
          needed by cswinrt's CoreCompile target. -->
     <WebView2EnableCsWinRTProjection>true</WebView2EnableCsWinRTProjection>
-
-    <!-- Workaround for CWV2 SDK package bug referencing the winrt implementation binary (Microsoft.Web.WebView2.Core.dll)
-         when TargetPlatform=AnyCPU (as in this project). We don't need it for the cswinrt projection, set flag to  avoid loading it. --> 
-    <WebView2EnableCsWinRTProjectionExcludeCoreRef>true</WebView2EnableCsWinRTProjectionExcludeCoreRef>
   </PropertyGroup>
 
   <ItemGroup>
@@ -49,8 +45,6 @@
       Microsoft.UI.Private;
       Microsoft.UI.Text;
       Microsoft.UI.Xaml;
-      Windows.UI.Xaml.Interop;
-      Windows.UI.Text;
     </WinUI_CSWinRTIncludes>
 
     <!-- Windows App SDK targets 17763, but [attributename] is defined in Windows SDK 19041,
@@ -61,27 +55,25 @@
       Windows.Foundation.Metadata.AttributeName;
     </WinUI_CSWinRTIncludes>
 
-      <!-- Bug 25974595: MUXC types mistakenly use WUX.ContentProperty attribute -->
+    <!-- These types are custom type mappings, but WinUI happened to project them.
+         They should be removed at some point. -->
     <WinUI_CSWinRTIncludes>
       $(WinUI_CSWinRTIncludes);
-      Windows.UI.Xaml.Markup.ContentPropertyAttribute;
-      Windows.UI.Xaml.Data.BindableAttribute;
+      Windows.UI.Xaml.Interop.IBindableIterable;
+      Windows.UI.Xaml.Interop.IBindableVector;
+      Windows.UI.Xaml.Interop.INotifyCollectionChanged;
+      Windows.UI.Xaml.Interop.NotifyCollectionChangedAction;
+      Windows.UI.Xaml.Interop.INotifyCollectionChangedEventArgs;
+      Windows.UI.Xaml.Interop.INotifyCollectionChangedEventArgsFactory;
+      Windows.UI.Xaml.Interop.NotifyCollectionChangedEventArgs;
+      Windows.UI.Xaml.Interop.NotifyCollectionChangedEventHandler;
     </WinUI_CSWinRTIncludes>
 
-    <!-- Exclude duplicated text types (exist in SDK interop assembly as well as our own winmd) -->
-    <WinUI_CSWinRTExcludes>
-        Windows.UI.Text.Core;
-        Windows.UI.Text.FontStretch;
-        Windows.UI.Text.FontStyle;
-        Windows.UI.Text.FontWeight;
-        Windows.UI.Text.UnderlineType;
-    </WinUI_CSWinRTExcludes>
-        <!-- Exclude text types that have been moved to new namespace -->
+    <!-- Exclude type that moved to the Windows SDK projection. -->
     <WinUI_CSWinRTExcludes>
       $(WinUI_CSWinRTExcludes);
-      Windows.UI.Text.FontWeights;
-      Windows.UI.Text.IFontWeights;
-      Windows.UI.Text.IFontWeightsStatics;
+      Windows.UI.Xaml.Interop.IBindableVectorView;
     </WinUI_CSWinRTExcludes>
+
   </PropertyGroup>
 </Project>

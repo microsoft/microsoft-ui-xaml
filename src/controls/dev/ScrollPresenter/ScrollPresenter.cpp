@@ -235,8 +235,8 @@ double ScrollPresenter::ScrollableHeight() const
 }
 
 // AnticipatedZoomedHorizontalOffset, AnticipatedZoomedVerticalOffset() and AnticipatedZoomFactor() are
-// used to evaluate the view for the ViewChanging event raised when a ScrollTo, ScrollBy, ZoomTo or ZoomBy
-// request is handed off to the InteractionTracker.
+// used to evaluate the view for the ScrollStarting/ZoomStarting events raised when a ScrollTo, ScrollBy,
+// ZoomTo or ZoomBy request is handed off to the InteractionTracker.
 
 double ScrollPresenter::AnticipatedZoomedHorizontalOffset() const
 {
@@ -3739,7 +3739,7 @@ void ScrollPresenter::SetContentLayoutOffsetXDbg(float contentLayoutOffsetX)
 
     if (m_contentLayoutOffsetX != contentLayoutOffsetX)
     {
-        UpdateOffset(ScrollPresenterDimension::HorizontalScroll, m_zoomedHorizontalOffset + contentLayoutOffsetX - m_contentLayoutOffsetX);
+        UpdateOffset(ScrollPresenterDimension::HorizontalScroll, m_zoomedHorizontalOffset - contentLayoutOffsetX + m_contentLayoutOffsetX);
         m_contentLayoutOffsetX = contentLayoutOffsetX;
         InvalidateArrange();
         OnContentLayoutOffsetChanged(ScrollPresenterDimension::HorizontalScroll);
@@ -3753,7 +3753,7 @@ void ScrollPresenter::SetContentLayoutOffsetYDbg(float contentLayoutOffsetY)
 
     if (m_contentLayoutOffsetY != contentLayoutOffsetY)
     {
-        UpdateOffset(ScrollPresenterDimension::VerticalScroll, m_zoomedVerticalOffset + contentLayoutOffsetY - m_contentLayoutOffsetY);
+        UpdateOffset(ScrollPresenterDimension::VerticalScroll, m_zoomedVerticalOffset - contentLayoutOffsetY + m_contentLayoutOffsetY);
         m_contentLayoutOffsetY = contentLayoutOffsetY;
         InvalidateArrange();
         OnContentLayoutOffsetChanged(ScrollPresenterDimension::VerticalScroll);
@@ -5212,6 +5212,13 @@ void ScrollPresenter::UpdateContent(
     }
     else
     {
+        UpdateUnzoomedExtentAndViewport(
+            false /*renderSizeChanged*/,
+            0.0 /*unzoomedExtentWidth*/,
+            0.0 /*unzoomedExtentHeight*/,
+            m_viewportWidth,
+            m_viewportHeight);
+
         if (m_contentLayoutOffsetX != 0.0f)
         {
             m_contentLayoutOffsetX = 0.0f;
@@ -5340,18 +5347,18 @@ void ScrollPresenter::UpdateUnzoomedExtentAndViewport(
     double viewportWidth,
     double viewportHeight)
 {
-    SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"renderSizeChanged", renderSizeChanged);
-    SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"unzoomedExtentWidth", unzoomedExtentWidth);
-    SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"unzoomedExtentHeight", unzoomedExtentHeight);
-    SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"viewportWidth", viewportWidth);
-    SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"viewportHeight", viewportHeight);
-
     const winrt::UIElement content = Content();
     const winrt::UIElement thisAsUIE = *this;
     const double oldUnzoomedExtentWidth = m_unzoomedExtentWidth;
     const double oldUnzoomedExtentHeight = m_unzoomedExtentHeight;
     const double oldViewportWidth = m_viewportWidth;
     const double oldViewportHeight = m_viewportHeight;
+
+    SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"renderSizeChanged", renderSizeChanged);
+    SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_DBL_DBL, METH_NAME, this, L"old/new unzoomedExtentWidth", oldUnzoomedExtentWidth, unzoomedExtentWidth);
+    SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_DBL_DBL, METH_NAME, this, L"old/new unzoomedExtentHeight", oldUnzoomedExtentHeight, unzoomedExtentHeight);
+    SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_DBL_DBL, METH_NAME, this, L"old/new viewportWidth", oldViewportWidth, viewportWidth);
+    SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_DBL_DBL, METH_NAME, this, L"old/new viewportHeight", oldViewportHeight, viewportHeight);
 
     MUX_ASSERT(!isinf(unzoomedExtentWidth));
     MUX_ASSERT(!isnan(unzoomedExtentWidth));
@@ -5467,7 +5474,7 @@ void ScrollPresenter::UpdateAnticipatedOffset(ScrollPresenterDimension dimension
     {
         if (m_anticipatedZoomedHorizontalOffset != zoomedOffset)
         {
-            SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"anticipatedZoomedHorizontalOffset", zoomedOffset);
+            SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_DBL_DBL, METH_NAME, this, L"old/new anticipatedZoomedHorizontalOffset", m_anticipatedZoomedHorizontalOffset, zoomedOffset);
 
             m_anticipatedZoomedHorizontalOffset = zoomedOffset;
         }
@@ -5477,7 +5484,7 @@ void ScrollPresenter::UpdateAnticipatedOffset(ScrollPresenterDimension dimension
         MUX_ASSERT(dimension == ScrollPresenterDimension::VerticalScroll);
         if (m_anticipatedZoomedVerticalOffset != zoomedOffset)
         {
-            SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"anticipatedZoomedVerticalOffset", zoomedOffset);
+            SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_DBL_DBL, METH_NAME, this, L"old/new anticipatedZoomedVerticalOffset", m_anticipatedZoomedVerticalOffset, zoomedOffset);
 
             m_anticipatedZoomedVerticalOffset = zoomedOffset;
         }
@@ -5488,7 +5495,7 @@ void ScrollPresenter::UpdateAnticipatedZoomFactor(float zoomFactor)
 {
     if (m_anticipatedZoomFactor != zoomFactor)
     {
-        SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this, L"anticipatedZoomFactor", zoomFactor);
+        SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"old/new anticipatedZoomFactor", m_anticipatedZoomFactor, zoomFactor);
 
         m_anticipatedZoomFactor = zoomFactor;
     }
@@ -5500,7 +5507,7 @@ void ScrollPresenter::UpdateOffset(ScrollPresenterDimension dimension, double zo
     {
         if (m_zoomedHorizontalOffset != zoomedOffset)
         {
-            SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"zoomedHorizontalOffset", zoomedOffset);
+            SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_DBL_DBL, METH_NAME, this, L"old/new zoomedHorizontalOffset", m_zoomedHorizontalOffset, zoomedOffset);
 
             m_zoomedHorizontalOffset = zoomedOffset;
         }
@@ -5510,7 +5517,7 @@ void ScrollPresenter::UpdateOffset(ScrollPresenterDimension dimension, double zo
         MUX_ASSERT(dimension == ScrollPresenterDimension::VerticalScroll);
         if (m_zoomedVerticalOffset != zoomedOffset)
         {
-            SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"zoomedVerticalOffset", zoomedOffset);
+            SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_DBL_DBL, METH_NAME, this, L"old/new zoomedVerticalOffset", m_zoomedVerticalOffset, zoomedOffset);
 
             m_zoomedVerticalOffset = zoomedOffset;
         }
@@ -6372,10 +6379,8 @@ void ScrollPresenter::ProcessOffsetsChange(
             UpdateAnticipatedOffset(ScrollPresenterDimension::VerticalScroll, newAnticipatedZoomedVerticalOffset);
         }
 
-        RaiseViewChanging(
-#ifdef DBG
+        RaiseScrollStarting(
             offsetsChangeCorrelationId,
-#endif // DBG
             AnticipatedZoomedHorizontalOffset(),
             AnticipatedZoomedVerticalOffset(),
             AnticipatedZoomFactor());
@@ -6589,10 +6594,8 @@ void ScrollPresenter::ProcessZoomFactorChange(
         newAnticipatedZoomedVerticalOffset = std::min(AnticipatedScrollableHeight(), newAnticipatedZoomedVerticalOffset);
         UpdateAnticipatedOffset(ScrollPresenterDimension::VerticalScroll, newAnticipatedZoomedVerticalOffset);
 
-        RaiseViewChanging(
-#ifdef DBG
+        RaiseZoomStarting(
             zoomFactorChangeCorrelationId,
-#endif // DBG
             newAnticipatedZoomedHorizontalOffset,
             newAnticipatedZoomedVerticalOffset,
             zoomFactor);
@@ -6698,7 +6701,7 @@ void ScrollPresenter::PostProcessZoomFactorChange(
     ResetZoomFactorInertiaDecayRate();
 }
 
-// Clears the last recorded anticipated view for the ViewChanging event.
+// Clears the last recorded anticipated view for the ScrollStarting/ZoomStarting events.
 // Called in two classes of circumstances:
 // - all queued view change requested were completed,
 // - an animated view change request is handed off to the InteractionTracker.
@@ -6784,15 +6787,18 @@ void ScrollPresenter::CompleteViewChange(
         break;
         case static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest) :
             onHorizontalOffsetChangeCompleted = true;
+            RaiseViewChangeCompleted(true /*isForScroll*/, result, viewChangeCorrelationId);
             break;
         case static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest) :
             onVerticalOffsetChangeCompleted = true;
+            RaiseViewChangeCompleted(true /*isForScroll*/, result, viewChangeCorrelationId);
             break;
         case static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest) |
              static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest) :
-             onHorizontalOffsetChangeCompleted = true;
-             onVerticalOffsetChangeCompleted = true;
-             break;
+            onHorizontalOffsetChangeCompleted = true;
+            onVerticalOffsetChangeCompleted = true;
+            RaiseViewChangeCompleted(true /*isForScroll*/, result, viewChangeCorrelationId);
+            break;
     }
 
     if (onHorizontalOffsetChangeCompleted && m_horizontalScrollController)
@@ -7492,30 +7498,47 @@ void ScrollPresenter::RaiseStateChanged()
     }
 }
 
-void ScrollPresenter::RaiseViewChanging(
-#ifdef DBG
-    int32_t viewChangeCorrelationIdDbg,
-#endif // DBG
+void ScrollPresenter::RaiseScrollStarting(
+    int32_t offsetsChangeCorrelationId,
     double anticipatedHorizontalOffset,
     double anticipatedVerticalOffset,
     float anticipatedZoomFactor)
 {
-    if (m_viewChangingEventSource)
+    if (m_scrollStartingEventSource)
     {
-        auto viewChangingEventArgs = winrt::make_self<ScrollingViewChangingEventArgs>();
+        auto scrollStartingEventArgs = winrt::make_self<ScrollingScrollStartingEventArgs>();
 
-#ifdef DBG
-        SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, viewChangeCorrelationIdDbg);
-        SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, anticipatedHorizontalOffset, anticipatedVerticalOffset);
-        SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_FLT, METH_NAME, this, anticipatedZoomFactor);
+        SCROLLPRESENTER_TRACE_INFO_DBG(*this, TRACE_MSG_METH_INT, METH_NAME, this, offsetsChangeCorrelationId);
+        SCROLLPRESENTER_TRACE_INFO_DBG(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, anticipatedHorizontalOffset, anticipatedVerticalOffset);
+        SCROLLPRESENTER_TRACE_INFO_DBG(*this, TRACE_MSG_METH_FLT, METH_NAME, this, anticipatedZoomFactor);
 
-        viewChangingEventArgs->SetCorrelationIdDbg(viewChangeCorrelationIdDbg);
-#endif // DBG
+        scrollStartingEventArgs->SetCorrelationId(offsetsChangeCorrelationId);
+        scrollStartingEventArgs->SetHorizontalOffset(anticipatedHorizontalOffset);
+        scrollStartingEventArgs->SetVerticalOffset(anticipatedVerticalOffset);
+        scrollStartingEventArgs->SetZoomFactor(anticipatedZoomFactor);
+        m_scrollStartingEventSource(*this, *scrollStartingEventArgs);
+    }
+}
 
-        viewChangingEventArgs->SetHorizontalOffset(anticipatedHorizontalOffset);
-        viewChangingEventArgs->SetVerticalOffset(anticipatedVerticalOffset);
-        viewChangingEventArgs->SetZoomFactor(anticipatedZoomFactor);
-        m_viewChangingEventSource(*this, *viewChangingEventArgs);
+void ScrollPresenter::RaiseZoomStarting(
+    int32_t zoomFactorChangeCorrelationId,
+    double anticipatedHorizontalOffset,
+    double anticipatedVerticalOffset,
+    float anticipatedZoomFactor)
+{
+    if (m_zoomStartingEventSource)
+    {
+        auto zoomStartingEventArgs = winrt::make_self<ScrollingZoomStartingEventArgs>();
+
+        SCROLLPRESENTER_TRACE_INFO_DBG(*this, TRACE_MSG_METH_INT, METH_NAME, this, zoomFactorChangeCorrelationId);
+        SCROLLPRESENTER_TRACE_INFO_DBG(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, anticipatedHorizontalOffset, anticipatedVerticalOffset);
+        SCROLLPRESENTER_TRACE_INFO_DBG(*this, TRACE_MSG_METH_FLT, METH_NAME, this, anticipatedZoomFactor);
+
+        zoomStartingEventArgs->SetCorrelationId(zoomFactorChangeCorrelationId);
+        zoomStartingEventArgs->SetHorizontalOffset(anticipatedHorizontalOffset);
+        zoomStartingEventArgs->SetVerticalOffset(anticipatedVerticalOffset);
+        zoomStartingEventArgs->SetZoomFactor(anticipatedZoomFactor);
+        m_zoomStartingEventSource(*this, *zoomStartingEventArgs);
     }
 }
 
