@@ -15,7 +15,7 @@ jobs:
       name: WinDevPoolOSS-L
     ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/shine-oss/') }}:
       name: WinDevPool-L
-    demands: ImageOverride -equals WinDevVS17-latest
+    demands: ImageOverride -equals WinDevVS17-6
   timeoutInMinutes: 120
   variables:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages

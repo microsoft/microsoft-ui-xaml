@@ -3,6 +3,12 @@ parameters:
 
 steps:
 
+  - task: CmdLine@1
+    displayName: 'dir c'
+    inputs:
+      filename: 'dir'
+      arguments: 'c:'
+
   - template: MUX-InstallDotNetSDK-Steps.yml
 
   - template: MUX-InstallWindowsSDK-Steps.yml

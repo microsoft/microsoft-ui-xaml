@@ -26,7 +26,7 @@ stages:
   - job: GetBuild
     pool: 
       name: WinDevPool-L
-      demands: ImageOverride -equals WinDevVS17-latest
+      demands: ImageOverride -equals WinDevVS17-6
     timeoutInMinutes: 120
 
     variables:
