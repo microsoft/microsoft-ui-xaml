@@ -64,7 +64,7 @@ public:
 
     _Ret_notnull_ CRenderTargetElementData* GetRenderTargetElementData() const override;
 
-    void CleanupDeviceRelatedResourcesRecursive(_In_ bool cleanupDComp) override;
+    void CleanupDeviceRelatedResourcesRecursive(bool cleanupDComp) override;
 
     void AbortPixelWaitExecutors(HRESULT resultHR) override;
 

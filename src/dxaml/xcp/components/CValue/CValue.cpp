@@ -910,7 +910,7 @@ const CValueCustomData& CValue::GetCustomData() const
 }
 
 void CValue::SetCustomData(
-    const CValueCustomData& customData)
+    _In_ const CValueCustomData& customData)
 {
     m_flags.m_state.m_asOne &= ~CustomDataMask;
     m_flags.m_state.m_asOne |= (customData.m_asOne & CustomDataMask);

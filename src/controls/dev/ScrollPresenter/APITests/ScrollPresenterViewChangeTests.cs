@@ -38,7 +38,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private const int c_MaxStockOffsetsChangeDuration = 1000;
         private const int c_MaxStockZoomFactorChangeDuration = 1000;
 
-        private uint viewChangingCount = 0u;
+        private uint scrollStartingCount = 0u;
+        private uint zoomStartingCount = 0u;
         private uint viewChangedCount = 0u;
 
         [TestMethod]
@@ -526,9 +527,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    scrollPresenter.ViewChanging += (sender, args) =>
+                    scrollPresenter.ScrollStarting += (sender, args) =>
                     {
-                        Log.Comment($"ViewChanging viewChangingCount={++viewChangingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                        Log.Comment($"ScrollStarting scrollStartingCount={++scrollStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                    };
+
+                    scrollPresenter.ZoomStarting += (sender, args) =>
+                    {
+                        Log.Comment($"ZoomStarting zoomStartingCount={++zoomStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
                     };
 
                     scrollPresenter.ViewChanged += (sender, args) =>
@@ -561,14 +567,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment($"Final HorizontalOffset={scrollPresenter.HorizontalOffset}, VerticalOffset={scrollPresenter.VerticalOffset}, ZoomFactor={scrollPresenter.ZoomFactor}");
-                    Log.Comment($"Final viewChangingCount={viewChangingCount}");
+                    Log.Comment($"Final scrollStartingCount={scrollStartingCount}");
+                    Log.Comment($"Final zoomStartingCount={zoomStartingCount}");
                     Log.Comment($"Final viewChangedCount={viewChangedCount}");
 
                     Verify.AreEqual(600.0, scrollPresenter.HorizontalOffset);
                     Verify.AreEqual(400.0, scrollPresenter.VerticalOffset);
                     Verify.AreEqual(1.0f, scrollPresenter.ZoomFactor);
 
-                    Verify.AreEqual(0u, viewChangingCount);
+                    Verify.AreEqual(0u, scrollStartingCount);
+                    Verify.AreEqual(0u, zoomStartingCount);
                     Verify.IsLessThanOrEqual(viewChangedCount, 2u);
 
                     Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operation.Result);
@@ -600,9 +608,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    scrollPresenter.ViewChanging += (sender, args) =>
+                    scrollPresenter.ScrollStarting += (sender, args) =>
                     {
-                        Log.Comment($"ViewChanging viewChangingCount={++viewChangingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                        Log.Comment($"ScrollStarting scrollStartingCount={++scrollStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                    };
+
+                    scrollPresenter.ZoomStarting += (sender, args) =>
+                    {
+                        Log.Comment($"ZoomStarting zoomStartingCount={++zoomStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
                     };
 
                     scrollPresenter.ViewChanged += (sender, args) =>
@@ -636,14 +649,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment($"Final HorizontalOffset={scrollPresenter.HorizontalOffset}, VerticalOffset={scrollPresenter.VerticalOffset}, ZoomFactor={scrollPresenter.ZoomFactor}");
-                    Log.Comment($"Final viewChangingCount={viewChangingCount}");
+                    Log.Comment($"Final scrollStartingCount={scrollStartingCount}");
+                    Log.Comment($"Final zoomStartingCount={zoomStartingCount}");
                     Log.Comment($"Final viewChangedCount={viewChangedCount}");
 
                     Verify.IsLessThan(Math.Abs(scrollPresenter.HorizontalOffset - 700.0), 0.01);
                     Verify.IsLessThan(Math.Abs(scrollPresenter.VerticalOffset - 1050.0), 0.01);
                     Verify.AreEqual(8.0f, scrollPresenter.ZoomFactor);
 
-                    Verify.AreEqual(0u, viewChangingCount);
+                    Verify.AreEqual(0u, scrollStartingCount);
+                    Verify.AreEqual(0u, zoomStartingCount);
                     Verify.IsLessThanOrEqual(viewChangedCount, 2u);
 
                     Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operation.Result);
@@ -673,9 +688,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                scrollPresenter.ViewChanging += (sender, args) =>
+                scrollPresenter.ScrollStarting += (sender, args) =>
                 {
-                    Log.Comment($"ViewChanging viewChangingCount={++viewChangingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                    Log.Comment($"ScrollStarting scrollStartingCount={++scrollStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                };
+
+                scrollPresenter.ZoomStarting += (sender, args) =>
+                {
+                    Log.Comment($"ZoomStarting zoomStartingCount={++zoomStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
                 };
 
                 scrollPresenter.ViewChanged += (sender, args) =>
@@ -859,9 +879,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 operations = new ScrollPresenterOperation[3];
 
-                scrollPresenter.ViewChanging += (sender, args) =>
+                scrollPresenter.ScrollStarting += (sender, args) =>
                 {
-                    Log.Comment($"ViewChanging viewChangingCount={++viewChangingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                    Log.Comment($"ScrollStarting scrollStartingCount={++scrollStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                };
+
+                scrollPresenter.ZoomStarting += (sender, args) =>
+                {
+                    Log.Comment($"ZoomStarting zoomStartingCount={++zoomStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
                 };
 
                 scrollPresenter.ViewChanged += (sender, args) =>
@@ -983,9 +1008,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 operations = new ScrollPresenterOperation[3];
 
-                scrollPresenter.ViewChanging += (sender, args) =>
+                scrollPresenter.ScrollStarting += (sender, args) =>
                 {
-                    Log.Comment($"ViewChanging viewChangingCount={++viewChangingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                    Log.Comment($"ScrollStarting scrollStartingCount={++scrollStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                };
+
+                scrollPresenter.ZoomStarting += (sender, args) =>
+                {
+                    Log.Comment($"ZoomStarting zoomStartingCount={++zoomStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
                 };
 
                 scrollPresenter.ViewChanged += (sender, args) =>
@@ -1130,9 +1160,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 operations = new ScrollPresenterOperation[2];
 
-                scrollPresenter.ViewChanging += (sender, args) =>
+                scrollPresenter.ScrollStarting += (sender, args) =>
                 {
-                    Log.Comment($"ViewChanging viewChangingCount={++viewChangingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                    Log.Comment($"ScrollStarting scrollStartingCount={++scrollStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                };
+
+                scrollPresenter.ZoomStarting += (sender, args) =>
+                {
+                    Log.Comment($"ZoomStarting zoomStartingCount={++zoomStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
                 };
 
                 scrollPresenter.ViewChanged += (sender, args) =>
@@ -1252,9 +1287,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 operations = new ScrollPresenterOperation[2];
 
-                scrollPresenter.ViewChanging += (sender, args) =>
+                scrollPresenter.ScrollStarting += (sender, args) =>
                 {
-                    Log.Comment($"ViewChanging viewChangingCount={++viewChangingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                    Log.Comment($"ScrollStarting scrollStartingCount={++scrollStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                };
+
+                scrollPresenter.ZoomStarting += (sender, args) =>
+                {
+                    Log.Comment($"ZoomStarting zoomStartingCount={++zoomStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
                 };
 
                 scrollPresenter.ViewChanged += (sender, args) =>
@@ -1417,9 +1457,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent, false /*setAsContentRoot*/);
 
-                scrollPresenter.ViewChanging += (sender, args) =>
+                scrollPresenter.ScrollStarting += (sender, args) =>
                 {
-                    Log.Comment($"ViewChanging viewChangingCount={++viewChangingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                    Log.Comment($"ScrollStarting scrollStartingCount={++scrollStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                };
+
+                scrollPresenter.ZoomStarting += (sender, args) =>
+                {
+                    Log.Comment($"ZoomStarting zoomStartingCount={++zoomStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
                 };
 
                 scrollPresenter.ViewChanged += (sender, args) =>
@@ -1470,9 +1515,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 SetupDefaultUI(scrollPresenter, rectangleScrollPresenterContent, scrollPresenterLoadedEvent, false /*setAsContentRoot*/);
 
-                scrollPresenter.ViewChanging += (sender, args) =>
+                scrollPresenter.ScrollStarting += (sender, args) =>
                 {
-                    Log.Comment($"ViewChanging viewChangingCount={++viewChangingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                    Log.Comment($"ScrollStarting scrollStartingCount={++scrollStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                };
+
+                scrollPresenter.ZoomStarting += (sender, args) =>
+                {
+                    Log.Comment($"ZoomStarting zoomStartingCount={++zoomStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
                 };
 
                 scrollPresenter.ViewChanged += (sender, args) =>
@@ -1542,9 +1592,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     if (hookViewChangingAndChanged)
                     {
-                        scrollPresenter.ViewChanging += (sender, args) =>
+                        scrollPresenter.ScrollStarting += (sender, args) =>
                         {
-                            Log.Comment($"ViewChanging viewChangingCount={++viewChangingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                            Log.Comment($"ScrollStarting scrollStartingCount={++scrollStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                            anticipatedHorizontalOffset = args.HorizontalOffset;
+                            anticipatedVerticalOffset = args.VerticalOffset;
+                            anticipatedZoomFactor = args.ZoomFactor;
+                        };
+
+                        scrollPresenter.ZoomStarting += (sender, args) =>
+                        {
+                            Log.Comment($"ZoomStarting zoomStartingCount={++zoomStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
                             anticipatedHorizontalOffset = args.HorizontalOffset;
                             anticipatedVerticalOffset = args.VerticalOffset;
                             anticipatedZoomFactor = args.ZoomFactor;
@@ -1582,22 +1640,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment($"Final HorizontalOffset={scrollPresenter.HorizontalOffset}, VerticalOffset={scrollPresenter.VerticalOffset}, ZoomFactor={scrollPresenter.ZoomFactor}");
-                    Log.Comment($"Final viewChangingCount={viewChangingCount}");
+                    Log.Comment($"Final scrollStartingCount={scrollStartingCount}");
+                    Log.Comment($"Final zoomStartingCount={zoomStartingCount}");
                     Log.Comment($"Final viewChangedCount={viewChangedCount}");
 
                     Verify.AreEqual(expectedFinalHorizontalOffset, scrollPresenter.HorizontalOffset);
                     Verify.AreEqual(expectedFinalVerticalOffset, scrollPresenter.VerticalOffset);
                     Verify.AreEqual(originalZoomFactor, scrollPresenter.ZoomFactor);
                     Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operation.Result);
+                    Verify.AreEqual(0u, zoomStartingCount);
 
                     if (GetEffectiveIsAnimationEnabled(animationMode, isAnimationsEnabledOverride))
                     {
-                        Verify.AreEqual(0u, viewChangingCount);
+                        Verify.AreEqual(0u, scrollStartingCount);
                         Verify.IsFalse(viewChangedCount == 1u);
                     }
                     else
                     {
-                        Verify.IsLessThanOrEqual(viewChangingCount, 1u);
+                        Verify.IsLessThanOrEqual(scrollStartingCount, 1u);
                         Verify.IsLessThanOrEqual(viewChangedCount, 1u);
                         if (anticipatedHorizontalOffset != null && anticipatedVerticalOffset != null && anticipatedZoomFactor != null)
                         {
@@ -1655,9 +1715,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     if (hookViewChangingAndChanged)
                     {
-                        scrollPresenter.ViewChanging += (sender, args) =>
+                        scrollPresenter.ScrollStarting += (sender, args) =>
                         {
-                            Log.Comment($"ViewChanging viewChangingCount={++viewChangingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                            Log.Comment($"ScrollStarting scrollStartingCount={++scrollStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                            anticipatedHorizontalOffset = args.HorizontalOffset;
+                            anticipatedVerticalOffset = args.VerticalOffset;
+                            anticipatedZoomFactor = args.ZoomFactor;
+                        };
+
+                        scrollPresenter.ZoomStarting += (sender, args) =>
+                        {
+                            Log.Comment($"ZoomStarting zoomStartingCount={++zoomStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
                             anticipatedHorizontalOffset = args.HorizontalOffset;
                             anticipatedVerticalOffset = args.VerticalOffset;
                             anticipatedZoomFactor = args.ZoomFactor;
@@ -1699,22 +1767,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment($"Final HorizontalOffset={scrollPresenter.HorizontalOffset}, VerticalOffset={scrollPresenter.VerticalOffset}, ZoomFactor={scrollPresenter.ZoomFactor}");
-                    Log.Comment($"Final viewChangingCount={viewChangingCount}");
+                    Log.Comment($"Final scrollStartingCount={scrollStartingCount}");
+                    Log.Comment($"Final zoomStartingCount={zoomStartingCount}");
                     Log.Comment($"Final viewChangedCount={viewChangedCount}");
 
                     Verify.AreEqual(expectedFinalHorizontalOffset, scrollPresenter.HorizontalOffset);
                     Verify.AreEqual(expectedFinalVerticalOffset, scrollPresenter.VerticalOffset);
                     Verify.AreEqual(originalZoomFactor, scrollPresenter.ZoomFactor);
                     Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operation.Result);
+                    Verify.AreEqual(0u, zoomStartingCount);
 
                     if (GetEffectiveIsAnimationEnabled(animationMode, isAnimationsEnabledOverride))
                     {
-                        Verify.AreEqual(0u, viewChangingCount);
+                        Verify.AreEqual(0u, scrollStartingCount);
                         Verify.IsGreaterThan(viewChangedCount, 1u);
                     }
                     else
                     {
-                        Verify.AreEqual(1u, viewChangingCount);
+                        Verify.AreEqual(1u, scrollStartingCount);
                         Verify.AreEqual(1u, viewChangedCount);
                         if (anticipatedHorizontalOffset != null && anticipatedVerticalOffset != null && anticipatedZoomFactor != null)
                         {
@@ -1766,9 +1836,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     if (hookViewChangingAndChanged)
                     {
-                        scrollPresenter.ViewChanging += (sender, args) =>
+                        scrollPresenter.ScrollStarting += (sender, args) =>
                         {
-                            Log.Comment($"ViewChanging viewChangingCount={++viewChangingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                            Log.Comment($"ScrollStarting scrollStartingCount={++scrollStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                        };
+
+                        scrollPresenter.ZoomStarting += (sender, args) =>
+                        {
+                            Log.Comment($"ZoomStarting zoomStartingCount={++zoomStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
                         };
 
                         scrollPresenter.ViewChanged += (sender, args) =>
@@ -1841,7 +1916,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Log.Comment("ScrollTo - horizontalOffset={0}, verticalOffset={1}, animationMode={2}, snapPointsMode={3}",
                 horizontalOffset, verticalOffset, animationMode, snapPointsMode);
 
-            viewChangingCount = 0u;
+            scrollStartingCount = 0u;
+            zoomStartingCount = 0u;
             viewChangedCount = 0u;
             ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
@@ -1885,7 +1961,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Log.Comment("ScrollBy - horizontalOffsetDelta={0}, verticalOffsetDelta={1}, animationMode={2}, snapPointsMode={3}",
                 horizontalOffsetDelta, verticalOffsetDelta, animationMode, snapPointsMode);
 
-            viewChangingCount = 0u;
+            scrollStartingCount = 0u;
+            zoomStartingCount = 0u;
             viewChangedCount = 0u;
             ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
@@ -1936,7 +2013,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 inertiaDecayRate = new Vector2((float)horizontalInertiaDecayRate, (float)verticalInertiaDecayRate);
             }
 
-            viewChangingCount = 0u;
+            scrollStartingCount = 0u;
+            zoomStartingCount = 0u;
             viewChangedCount = 0u;
             ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
@@ -1994,9 +2072,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     if (hookViewChangingAndChanged)
                     {
-                        scrollPresenter.ViewChanging += (sender, args) =>
+                        scrollPresenter.ScrollStarting += (sender, args) =>
                         {
-                            Log.Comment($"ViewChanging viewChangingCount={++viewChangingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                            Log.Comment($"ScrollStarting scrollStartingCount={++scrollStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                            anticipatedHorizontalOffset = args.HorizontalOffset;
+                            anticipatedVerticalOffset = args.VerticalOffset;
+                            anticipatedZoomFactor = args.ZoomFactor;
+                        };
+
+                        scrollPresenter.ZoomStarting += (sender, args) =>
+                        {
+                            Log.Comment($"ZoomStarting zoomStartingCount={++zoomStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
                             anticipatedHorizontalOffset = args.HorizontalOffset;
                             anticipatedVerticalOffset = args.VerticalOffset;
                             anticipatedZoomFactor = args.ZoomFactor;
@@ -2023,20 +2109,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment($"Final HorizontalOffset={scrollPresenter.HorizontalOffset}, VerticalOffset={scrollPresenter.VerticalOffset}, ZoomFactor={scrollPresenter.ZoomFactor}");
-                    Log.Comment($"Final viewChangingCount={viewChangingCount}");
+                    Log.Comment($"Final scrollStartingCount={scrollStartingCount}");
+                    Log.Comment($"Final zoomStartingCount={zoomStartingCount}");
                     Log.Comment($"Final viewChangedCount={viewChangedCount}");
 
                     Verify.AreEqual(zoomFactor, scrollPresenter.ZoomFactor);
                     Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operation.Result);
+                    Verify.AreEqual(0u, scrollStartingCount);
 
                     if (GetEffectiveIsAnimationEnabled(animationMode, isAnimationsEnabledOverride))
                     {
-                        Verify.AreEqual(0u, viewChangingCount);
+                        Verify.AreEqual(0u, zoomStartingCount);
                         Verify.IsGreaterThan(viewChangedCount, 1u);
                     }
                     else
                     {
-                        Verify.AreEqual(1u, viewChangingCount);
+                        Verify.AreEqual(1u, zoomStartingCount);
                         Verify.AreEqual(1u, viewChangedCount);
                         if (anticipatedHorizontalOffset != null && anticipatedVerticalOffset != null && anticipatedZoomFactor != null)
                         {
@@ -2086,9 +2174,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     if (hookViewChangingAndChanged)
                     {
-                        scrollPresenter.ViewChanging += (sender, args) =>
+                        scrollPresenter.ScrollStarting += (sender, args) =>
                         {
-                            Log.Comment($"ViewChanging viewChangingCount={++viewChangingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                            Log.Comment($"ScrollStarting scrollStartingCount={++scrollStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                            anticipatedHorizontalOffset = args.HorizontalOffset;
+                            anticipatedVerticalOffset = args.VerticalOffset;
+                            anticipatedZoomFactor = args.ZoomFactor;
+                        };
+
+                        scrollPresenter.ZoomStarting += (sender, args) =>
+                        {
+                            Log.Comment($"ZoomStarting zoomStartingCount={++zoomStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
                             anticipatedHorizontalOffset = args.HorizontalOffset;
                             anticipatedVerticalOffset = args.VerticalOffset;
                             anticipatedZoomFactor = args.ZoomFactor;
@@ -2119,20 +2215,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment($"Final HorizontalOffset={scrollPresenter.HorizontalOffset}, VerticalOffset={scrollPresenter.VerticalOffset}, ZoomFactor={scrollPresenter.ZoomFactor}");
-                    Log.Comment($"Final viewChangingCount={viewChangingCount}");
+                    Log.Comment($"Final scrollStartingCount={scrollStartingCount}");
+                    Log.Comment($"Final zoomStartingCount={zoomStartingCount}");
                     Log.Comment($"Final viewChangedCount={viewChangedCount}");
 
                     Verify.AreEqual(zoomFactorDelta + originalZoomFactor, scrollPresenter.ZoomFactor);
                     Verify.AreEqual(ScrollPresenterViewChangeResult.Completed, operation.Result);
+                    Verify.AreEqual(0u, scrollStartingCount);
 
                     if (GetEffectiveIsAnimationEnabled(animationMode, isAnimationsEnabledOverride))
                     {
-                        Verify.AreEqual(0u, viewChangingCount);
+                        Verify.AreEqual(0u, zoomStartingCount);
                         Verify.IsGreaterThan(viewChangedCount, 1u);
                     }
                     else
                     {
-                        Verify.AreEqual(1u, viewChangingCount);
+                        Verify.AreEqual(1u, zoomStartingCount);
                         Verify.AreEqual(1u, viewChangedCount);
                         if (anticipatedHorizontalOffset != null && anticipatedVerticalOffset != null && anticipatedZoomFactor != null)
                         {
@@ -2177,9 +2275,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     if (hookViewChangingAndChanged)
                     {
-                        scrollPresenter.ViewChanging += (sender, args) =>
+                        scrollPresenter.ScrollStarting += (sender, args) =>
                         {
-                            Log.Comment($"ViewChanging viewChangingCount={++viewChangingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                            Log.Comment($"ScrollStarting scrollStartingCount={++scrollStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
+                        };
+
+                        scrollPresenter.ZoomStarting += (sender, args) =>
+                        {
+                            Log.Comment($"ZoomStarting zoomStartingCount={++zoomStartingCount} - HorizontalOffset={args.HorizontalOffset}, VerticalOffset={args.VerticalOffset}, ZoomFactor={args.ZoomFactor}");
                         };
 
                         scrollPresenter.ViewChanged += (sender, args) =>
@@ -2244,7 +2347,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Log.Comment("ZoomTo - zoomFactor={0}, centerPoint=({1},{2}), animationMode={3}, snapPointsMode={4}",
                 zoomFactor, centerPointX, centerPointY, animationMode, snapPointsMode);
 
-            viewChangingCount = 0u;
+            scrollStartingCount = 0u;
+            zoomStartingCount = 0u;
             viewChangedCount = 0u;
             ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
@@ -2289,7 +2393,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Log.Comment("ZoomBy - zoomFactorDelta={0}, centerPoint=({1},{2}), animationMode={3}, snapPointsMode={4}",
                 zoomFactorDelta, centerPointX, centerPointY, animationMode, snapPointsMode);
 
-            viewChangingCount = 0u;
+            scrollStartingCount = 0u;
+            zoomStartingCount = 0u;
             viewChangedCount = 0u;
             ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
@@ -2333,7 +2438,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Log.Comment("AddZoomVelocity - zoomFactorVelocity={0}, inertiaDecayRate={1}, centerPoint=({2},{3})",
                 zoomFactorVelocity, inertiaDecayRate, centerPointX, centerPointY);
 
-            viewChangingCount = 0u;
+            scrollStartingCount = 0u;
+            zoomStartingCount = 0u;
             viewChangedCount = 0u;
             ScrollPresenterOperation operation = new ScrollPresenterOperation();
 

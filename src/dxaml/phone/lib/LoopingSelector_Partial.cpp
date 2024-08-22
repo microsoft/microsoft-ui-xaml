@@ -2516,7 +2516,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-HRESULT xaml_primitives::LoopingSelector::AutomationRealizeItemForAP(UINT32 itemIdxToRealize)
+_Check_return_ HRESULT xaml_primitives::LoopingSelector::AutomationRealizeItemForAP(UINT32 itemIdxToRealize)
 {
     wrl::ComPtr<ILoopingSelectorItem> spItem;
     IFC_RETURN(RealizeItem(itemIdxToRealize, &spItem));

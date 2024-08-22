@@ -748,7 +748,7 @@ void ThemeShadowScene::ClearCasters()
 // Estimate shadow depth from the Translate.Z value set on the caster UIElement,
 // since this is how shadow depth is set for all in-box Controls. If the popup is parented,
 // we find all popups in the ancestor chain and accumulate the Translate.Z values.
-float ThemeShadowGlobalScene::EstimateShadowDepth(CPopup* popup)
+float ThemeShadowGlobalScene::EstimateShadowDepth(_In_ CPopup* popup)
 {
     float totalDepth = 0;
     CPopup* currentPopup = popup;

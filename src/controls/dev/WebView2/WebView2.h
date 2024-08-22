@@ -208,6 +208,7 @@ private:
     bool m_isRightMouseButtonPressed{};
     bool m_isXButton1Pressed{};
     bool m_isXButton2Pressed{};
+    bool m_isMouseLeaveNeeded{};
     bool m_hasMouseCapture{};
     std::map<int32_t, bool> m_hasTouchCapture{};
     bool m_hasPenCapture{};
@@ -262,6 +263,7 @@ private:
     winrt::Microsoft::UI::Windowing::AppWindow m_appWindow{ nullptr };
 
     void ResetPointerHelper(const winrt::PointerRoutedEventArgs& args);
+    void SendMouseLeave();
     XamlFocusChangeInfo m_xamlFocusChangeInfo{};
 
     bool m_isVisible{};

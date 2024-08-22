@@ -218,7 +218,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT TextElement::OnCreateAutomationPeer(xaml_automation_peers::IAutomationPeer** ppAutomationPeer)
+_Check_return_ HRESULT TextElement::OnCreateAutomationPeer(_Outptr_ xaml_automation_peers::IAutomationPeer** ppAutomationPeer)
 {
     RRETURN(S_FALSE);
 }

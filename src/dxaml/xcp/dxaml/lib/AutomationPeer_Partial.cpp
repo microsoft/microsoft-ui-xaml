@@ -3952,7 +3952,7 @@ _Check_return_ HRESULT AutomationPeerFactory::GenerateRawElementProviderRuntimeI
     RRETURN(hr);
 }
 
-HRESULT AutomationPeer::BoxArrayOfHStrings(Automation::CValue* pReturnVal, XINT32 nLength, HSTRING* phsArray)
+_Check_return_ HRESULT AutomationPeer::BoxArrayOfHStrings(Automation::CValue* pReturnVal, XINT32 nLength, HSTRING* phsArray)
 {
     HRESULT hr = S_OK;
     Automation::CValue* pValueArray = NULL;
@@ -4013,7 +4013,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-HRESULT AutomationPeer::BoxArrayOfRawElementProviderSimple(Automation::CValue* pReturnVal, XINT32 nLength, xaml_automation::Provider::IIRawElementProviderSimple** pRepsArray)
+_Check_return_ HRESULT AutomationPeer::BoxArrayOfRawElementProviderSimple(Automation::CValue* pReturnVal, XINT32 nLength, xaml_automation::Provider::IIRawElementProviderSimple** pRepsArray)
 {
     HRESULT hr = S_OK;
     CDependencyObject** pDoArray = NULL;

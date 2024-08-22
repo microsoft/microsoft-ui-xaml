@@ -42,6 +42,7 @@
 #include "Button.h"
 
 #include "PointerInputTelemetry.h"
+#include "WindowedPopupInputSiteAdapter.h"
 
 using namespace ContentRootInput;
 
@@ -1649,15 +1650,28 @@ _Check_return_ HRESULT PointerInputProcessor::ReleasePointerCapture(_In_ CDepend
 
     if (pointerPoint == nullptr)
     {
-        CXamlIslandRoot* pIslandRoot = m_inputManager.GetContentRoot()->GetXamlIslandRootNoRef();
-        if (pIslandRoot)
+        xref_ptr<CPopup> popup;
+        xref_ptr<CUIElement> capturedUIElement(static_cast<CUIElement*>(pPointerCaptureDO));
+        if (capturedUIElement)
         {
-            pointerPoint = (pIslandRoot->GetPreviousPointerPoint()).Get();
+            IFCFAILFAST(CPopupRoot::GetOpenPopupForElement(capturedUIElement, popup.ReleaseAndGetAddressOf()));
+        }
+        if (popup && popup->IsWindowed())
+        {
+            pointerPoint = popup->GetInputSiteAdapter()->GetPreviousPointerPoint().Get();
         }
         else
         {
-            CJupiterWindow* jupiterWindow = DirectUI::DXamlServices::GetCurrentJupiterWindow();
-            pointerPoint = (jupiterWindow->GetInputSiteAdapterPointerPoint()).Get();
+            CXamlIslandRoot* pIslandRoot = m_inputManager.GetContentRoot()->GetXamlIslandRootNoRef();
+            if (pIslandRoot)
+            {
+                pointerPoint = (pIslandRoot->GetPreviousPointerPoint()).Get();
+            }
+            else
+            {
+                CJupiterWindow* jupiterWindow = DirectUI::DXamlServices::GetCurrentJupiterWindow();
+                pointerPoint = (jupiterWindow->GetInputSiteAdapterPointerPoint()).Get();
+            }
         }
     }
     pArgs->m_pPointerPoint = pointerPoint;

@@ -251,7 +251,7 @@ CDownloader::ResetDownloader()
 //
 //------------------------------------------------------------------------
 
-HRESULT
+_Check_return_ HRESULT
 CDownloader::StopAllDownloads()
 {
     // TODO: We aren't handling this correctly as yet.

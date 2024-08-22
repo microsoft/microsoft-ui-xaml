@@ -12,7 +12,8 @@
 #include "ScrollingZoomCompletedEventArgs.h"
 #include "ScrollingBringingIntoViewEventArgs.h"
 #include "ScrollingAnchorRequestedEventArgs.h"
-#include "ScrollingViewChangingEventArgs.h"
+#include "ScrollingScrollStartingEventArgs.h"
+#include "ScrollingZoomStartingEventArgs.h"
 #include "SnapPointWrapper.h"
 #include "ScrollPresenterTrace.h"
 #include "ViewChange.h"
@@ -615,10 +616,13 @@ private:
         wstring_view const& propertyName);
     void RaiseExtentChanged();
     void RaiseStateChanged();
-    void RaiseViewChanging(
-#ifdef DBG
-        int32_t viewChangeCorrelationIdDbg,
-#endif // DBG
+    void RaiseScrollStarting(
+        int32_t offsetsChangeCorrelationId,
+        double anticipatedHorizontalOffset,
+        double anticipatedVerticalOffset,
+        float anticipatedZoomFactor);
+    void RaiseZoomStarting(
+        int32_t zoomFactorChangeCorrelationId,
         double anticipatedHorizontalOffset,
         double anticipatedVerticalOffset,
         float anticipatedZoomFactor);

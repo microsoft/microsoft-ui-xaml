@@ -375,7 +375,7 @@ void CImageSource::DisconnectImageOperation()
 //      Marks the image source as dirty for rendering.
 //
 //------------------------------------------------------------------------
-HRESULT
+_Check_return_ HRESULT
 CImageSource::SetDirty()
 {
     // Mark this object as dirty for rendering.
@@ -399,7 +399,7 @@ CImageSource::SetDirty()
     return S_OK;
 }
 
-HRESULT
+_Check_return_ HRESULT
 CImageSource::RequestMeasure()
 {
     m_fSourceNeedsMeasure = TRUE;
@@ -3486,7 +3486,7 @@ HRESULT CBitmapImage::GetAutoPlay(
     PixelFormat pixelFormat,
     bool forceUiThreadCopy,
     bool retainPlaybackState,
-    xref_ptr<ImageDecodeParams>& decodeParams
+    _Out_ xref_ptr<ImageDecodeParams>& decodeParams
     )
 {
     auto core = GetContext();

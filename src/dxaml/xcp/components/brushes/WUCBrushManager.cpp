@@ -647,7 +647,7 @@ void WUCBrushManager::CleanUpBrushTransitions(const CUIElement& element)
     }
 }
 
-bool WUCBrushManager::HasActiveBrushTransitions(const CUIElement* element)
+bool WUCBrushManager::HasActiveBrushTransitions(_In_ const CUIElement* element)
 {
     for (auto iterator = m_wucColorBrushTransitions->begin(); iterator != m_wucColorBrushTransitions->end(); ++iterator)
     {
@@ -659,7 +659,7 @@ bool WUCBrushManager::HasActiveBrushTransitions(const CUIElement* element)
     return false;
 }
 
-bool WUCBrushManager::HasActiveBrushTransition(const CUIElement* element, ElementBrushProperty elementBrushProperty)
+bool WUCBrushManager::HasActiveBrushTransition(_In_ const CUIElement* element, ElementBrushProperty elementBrushProperty)
 {
     for (auto iterator = m_wucColorBrushTransitions->begin(); iterator != m_wucColorBrushTransitions->end(); ++iterator)
     {

@@ -838,9 +838,9 @@ _Check_return_ HRESULT CTextBoxView::TxGetParaFormat(
 //
 //---------------------------------------------------------------------------
 bool CTextBoxView::TxCreateCaret(
-    _In_ XHANDLE bitmap,
-    _In_ XINT32 width,
-    _In_ XINT32 height
+    XHANDLE bitmap,
+    XINT32 width,
+    XINT32 height
     )
 {
     if (m_isRendering)
@@ -885,8 +885,8 @@ void CTextBoxView::ResetCaretElement()
 //
 //---------------------------------------------------------------------------
 bool CTextBoxView::TxSetCaretPos(
-    _In_ XINT32 x,
-    _In_ XINT32 y
+    XINT32 x,
+    XINT32 y
     )
 {
     m_caretRect.X = static_cast<XFLOAT>(x);
@@ -901,7 +901,7 @@ bool CTextBoxView::TxSetCaretPos(
 //      ITextServices callback, called when caret visibility changes.
 //
 //---------------------------------------------------------------------------
-_Check_return_ bool CTextBoxView::TxShowCaret(_In_ BOOL isCaretVisible)
+_Check_return_ bool CTextBoxView::TxShowCaret(BOOL isCaretVisible)
 {
     HRESULT hr = S_OK;
 

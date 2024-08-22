@@ -47,8 +47,8 @@ CTextInputPrivateSettings::~CTextInputPrivateSettings()
 
 
 void CTextInputPrivateSettings::Create(
-    CTextBoxBase *pTextBox,
-    CTextInputPrivateSettings **ppPrivateTextInputSettings)
+    _In_ CTextBoxBase *pTextBox,
+    _Outptr_ CTextInputPrivateSettings **ppPrivateTextInputSettings)
 {
     Microsoft::WRL::ComPtr<CTextInputPrivateSettings> spPrivateTextInputSettings;
 
@@ -60,7 +60,7 @@ void CTextInputPrivateSettings::Create(
     *ppPrivateTextInputSettings = spPrivateTextInputSettings.Detach();
 }
 
-_Check_return_ HRESULT CTextInputPrivateSettings::Initialize(ITextServices2 *pTextServices)
+_Check_return_ HRESULT CTextInputPrivateSettings::Initialize(_In_ ITextServices2 *pTextServices)
 {
     bool bIsEnabled = false;
     bool bIsDefault = false;
@@ -169,7 +169,7 @@ _Check_return_ HRESULT CTextInputPrivateSettings::OnSpellCheckEnabledChanged(
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CTextInputPrivateSettings::OnTextPredictionEnabledChanged(
-BOOL bIsTextPredictionEnabled)
+    BOOL bIsTextPredictionEnabled)
 {
     if (IsPureNumberIS(m_inputScope))
     {
@@ -183,7 +183,7 @@ BOOL bIsTextPredictionEnabled)
 }
 
 _Check_return_ HRESULT CTextInputPrivateSettings::OnCandidateWindowAlignmentChanged(
-    _In_ BOOL bIsCandidateWindowAlignAtBottom)
+    BOOL bIsCandidateWindowAlignAtBottom)
 {
 
     if (bIsCandidateWindowAlignAtBottom)

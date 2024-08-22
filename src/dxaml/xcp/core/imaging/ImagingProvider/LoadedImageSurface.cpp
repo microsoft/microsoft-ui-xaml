@@ -216,7 +216,7 @@ _Check_return_ HRESULT CLoadedImageSurface::GetImageDescription(ImageCache &imag
     return S_OK;
 }
 
-_Check_return_ HRESULT CLoadedImageSurface::InitFromUri(xstring_ptr uri)
+_Check_return_ HRESULT CLoadedImageSurface::InitFromUri(_In_ xstring_ptr uri)
 {
     IFCEXPECTRC_RETURN(!m_closed, RO_E_CLOSED);
 

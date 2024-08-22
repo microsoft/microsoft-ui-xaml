@@ -184,6 +184,8 @@ private:
     Microsoft::WRL::ComPtr<IDWriteTextAnalyzer> m_dwriteTextAnalyzer;
 
     HRESULT EnsureSystemFontCollection();
+    
+    HRESULT CreateSystemFontCollection(bool includeDownloadedFOnts, PALText::IFontCollection** fontCollection);
 
     // Release resources associated with the DWriteFontAndScriptServices.
     ~DWriteFontAndScriptServices() override;

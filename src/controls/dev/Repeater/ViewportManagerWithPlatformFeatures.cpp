@@ -624,7 +624,8 @@ void ViewportManagerWithPlatformFeatures::OnCompositionTargetRendering(const win
 void ViewportManagerWithPlatformFeatures::ResetScrollers()
 {
     m_scroller.set(nullptr);
-    m_scrollPresenterViewChangingRevoker.revoke();
+    m_scrollPresenterScrollStartingRevoker.revoke();
+    m_scrollPresenterZoomStartingRevoker.revoke();
     m_effectiveViewportChangedRevoker.revoke();
     m_skipScrollAnchorRegistrationsDuringNextMeasurePass = false;
     m_skipScrollAnchorRegistrationsDuringNextArrangePass = false;
@@ -652,12 +653,22 @@ void ViewportManagerWithPlatformFeatures::OnCacheBuildActionCompleted()
 // This event handler checks if that anticipated view, without UI re-generation, would create a blank region in the ScrollPresenter. In the interest of performance, less than
 // 5% blank is tolerated and will not trigger a re-generation. Beyond that, UpdateViewport is called with the anticipated realization window. This is trigger an ItemsRepeater
 // measure/arrange pass based on the anticipated view.
-void ViewportManagerWithPlatformFeatures::OnScrollPresenterViewChanging(winrt::ScrollPresenter const& scrollPresenter, winrt::ScrollingViewChangingEventArgs const& args)
+void ViewportManagerWithPlatformFeatures::OnScrollPresenterScrollStarting(winrt::ScrollPresenter const& scrollPresenter, winrt::ScrollingScrollStartingEventArgs const& args)
+{
+    OnScrollPresenterViewChangeStarting(scrollPresenter, args.HorizontalOffset(), args.VerticalOffset(), args.ZoomFactor());
+}
+
+void ViewportManagerWithPlatformFeatures::OnScrollPresenterZoomStarting(winrt::ScrollPresenter const& scrollPresenter, winrt::ScrollingZoomStartingEventArgs const& args)
+{
+    OnScrollPresenterViewChangeStarting(scrollPresenter, args.HorizontalOffset(), args.VerticalOffset(), args.ZoomFactor());
+}
+
+void ViewportManagerWithPlatformFeatures::OnScrollPresenterViewChangeStarting(winrt::ScrollPresenter const& scrollPresenter, double horizontalOffset, double verticalOffset, float zoomFactor)
 {
     const float blankViewportRatioTolerated = 0.05f;
-    const float anticipatedHorizontalOffset = static_cast<float>(args.HorizontalOffset());
-    const float anticipatedVerticalOffset = static_cast<float>(args.VerticalOffset());
-    const float anticipatedZoomFactor = args.ZoomFactor();
+    const float anticipatedHorizontalOffset = static_cast<float>(horizontalOffset);
+    const float anticipatedVerticalOffset = static_cast<float>(verticalOffset);
+    const float anticipatedZoomFactor = zoomFactor;
     const float anticipatedExtentWidth = static_cast<float>(scrollPresenter.ExtentWidth() * anticipatedZoomFactor);
     const float anticipatedExtentHeight = static_cast<float>(scrollPresenter.ExtentHeight() * anticipatedZoomFactor);
     const float viewportWidth = static_cast<float>(scrollPresenter.ViewportWidth());
@@ -809,7 +820,8 @@ void ViewportManagerWithPlatformFeatures::EnsureScroller()
 
         if (const auto scrollPresenter2 = m_scroller.try_as<winrt::IScrollPresenter2>())
         {
-            m_scrollPresenterViewChangingRevoker = scrollPresenter2.ViewChanging(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnScrollPresenterViewChanging });
+            m_scrollPresenterScrollStartingRevoker = scrollPresenter2.ScrollStarting(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnScrollPresenterScrollStarting });
+            m_scrollPresenterZoomStartingRevoker = scrollPresenter2.ZoomStarting(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnScrollPresenterZoomStarting });
         }
 
         m_ensuredScroller = true;

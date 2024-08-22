@@ -655,7 +655,7 @@ Cleanup:
 
 // make sure to call this after an arrange has occurred, since that is the moment the ItemsHost
 // will have updated its ItemBounds fully.
-HRESULT ListViewBase::UpdateClip()
+_Check_return_ HRESULT ListViewBase::UpdateClip()
 {
     HRESULT hr = S_OK;
     ctl::ComPtr<IPanel> spItemsHost;

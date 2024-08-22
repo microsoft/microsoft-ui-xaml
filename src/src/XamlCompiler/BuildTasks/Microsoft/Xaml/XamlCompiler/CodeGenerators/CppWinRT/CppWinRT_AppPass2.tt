@@ -60,21 +60,6 @@ extern "C"
 int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 {
 <#  if (ProjectInfo.IsWin32App) { #>
-    {
-        void (WINAPI *pfnXamlCheckProcessRequirements)();
-        auto module = ::LoadLibrary(L"Microsoft.ui.xaml.dll");
-        if (module)
-        {
-            pfnXamlCheckProcessRequirements = reinterpret_cast<decltype(pfnXamlCheckProcessRequirements)>(GetProcAddress(module, "XamlCheckProcessRequirements"));
-            if (pfnXamlCheckProcessRequirements)
-            {
-                (*pfnXamlCheckProcessRequirements)();
-            }
-
-            ::FreeLibrary(module);
-        }
-    }
-
     winrt::init_apartment(winrt::apartment_type::single_threaded);
 <#  } else { #>
     winrt::init_apartment();

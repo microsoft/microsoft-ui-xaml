@@ -81,7 +81,7 @@ _Check_return_ HRESULT LoopingSelectorAutomationPeer::ClearPeerMap()
     RRETURN(S_OK);
 }
 
-HRESULT LoopingSelectorAutomationPeer::RealizeItemAtIndex(INT index)
+_Check_return_ HRESULT LoopingSelectorAutomationPeer::RealizeItemAtIndex(_In_ INT index)
 {
     xaml_primitives::LoopingSelector* pOwnerNoRef = nullptr;
     IFC_RETURN(GetOwnerAsInternalPtrNoRef(&pOwnerNoRef));

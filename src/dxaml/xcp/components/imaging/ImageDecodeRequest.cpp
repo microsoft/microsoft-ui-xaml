@@ -42,7 +42,7 @@ ImageDecodeRequest::~ImageDecodeRequest()
     }
 }
 
-HRESULT ImageDecodeRequest::SetImageDecoder(std::unique_ptr<AsyncImageDecoder> imageDecoder)
+_Check_return_ HRESULT ImageDecodeRequest::SetImageDecoder(std::unique_ptr<AsyncImageDecoder> imageDecoder)
 {
     m_imageDecoder = std::move(imageDecoder);
 
@@ -156,7 +156,7 @@ void ImageDecodeRequest::SuspendAnimation()
     }
 }
 
-HRESULT ImageDecodeRequest::ResumeAnimation()
+_Check_return_ HRESULT ImageDecodeRequest::ResumeAnimation()
 {
     if (m_imageDecoder != nullptr)
     {

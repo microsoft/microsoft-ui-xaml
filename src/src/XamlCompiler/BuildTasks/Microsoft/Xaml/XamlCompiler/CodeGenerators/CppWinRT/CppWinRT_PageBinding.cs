@@ -737,8 +737,8 @@ this.Write("                ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(ba.ConnectionIdElement.ReferenceExpression));
 
-this.Write(".LostFocus(\r\n                    [weakThis{ weak_from_this() }, this] (IInspectab" +
-        "le const& sender, ");
+this.Write(".LostFocus(\r\n                    [weakThis{ this->weak_from_this() }, this] (IIns" +
+        "pectable const& sender, ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.Xaml)));
 
@@ -767,8 +767,9 @@ this.Write("::");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(ba.MemberName));
 
-this.Write("Property(),\r\n                    [weakThis{ weak_from_this() }, this] (Dependency" +
-        "Object const& sender, DependencyProperty const& prop)\r\n                    {\r\n");
+this.Write("Property(),\r\n                    [weakThis{ this->weak_from_this() }, this] (Depe" +
+        "ndencyObject const& sender, DependencyProperty const& prop)\r\n                   " +
+        " {\r\n");
 
      } 
 this.Write("                        if (auto strongThis{ weakThis.lock() })\r\n                " +
@@ -848,7 +849,7 @@ this.Write("                    targetElement.");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(evt.MemberName));
 
-this.Write("([weakThis{ weak_from_this() }, this](");
+this.Write("([weakThis{ this->weak_from_this() }, this](");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.Declaration()));
 

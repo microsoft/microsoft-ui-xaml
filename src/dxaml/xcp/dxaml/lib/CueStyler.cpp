@@ -1589,7 +1589,7 @@ Cleanup:
 // Helper to determine if the font string is a "font style"
 // if not it will be treated as a real font family name
 bool
-CCueStyler::IsW3CFontStyle(LPWSTR fontStyle)
+CCueStyler::IsW3CFontStyle(_In_ LPWSTR fontStyle)
 {
     if (fontStyle != nullptr)
     {

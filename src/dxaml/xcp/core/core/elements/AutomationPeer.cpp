@@ -73,7 +73,7 @@ void CAutomationPeer::Deinit()
 //  Method:   Initialize
 //
 //------------------------------------------------------------------------
-HRESULT CAutomationPeer::InitInstance()
+_Check_return_ HRESULT CAutomationPeer::InitInstance()
 {
     m_pPatternsList = new CXcpList<IUIAProvider>();
 
@@ -1551,15 +1551,7 @@ void CAutomationPeer::RaiseNotificationEvent(
     _In_opt_ xstring_ptr displayString,
     _In_ xstring_ptr activityId)
 {
-    bool reentrancyChecksEnabled = RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector()->IsFeatureEnabled(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableReentrancyChecks);
-    if (reentrancyChecksEnabled)
-    {
-        if (ListenerExists(UIAXcp::AESelectionItemPatternOnElementSelected))
-        {
-            VERIFYHR(GetContext()->UIARaiseNotificationEvent(this, notificationKind, notificationProcessing, displayString, activityId));
-        }
-    }
-    else
+    if (ListenerExists(UIAXcp::AENotification))
     {
         VERIFYHR(GetContext()->UIARaiseNotificationEvent(this, notificationKind, notificationProcessing, displayString, activityId));
     }

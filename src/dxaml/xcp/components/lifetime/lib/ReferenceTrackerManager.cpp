@@ -290,7 +290,7 @@ ReferenceTrackerManager::OnShutdownAllPeers( )
 //+--------------------------------------------------------------------
 
 //static
-HRESULT
+_Check_return_ HRESULT
 ReferenceTrackerManager::TriggerCollection( )
 {
     // Forward the recommendation
@@ -320,7 +320,7 @@ ReferenceTrackerManager::TriggerCollection( )
 //
 //+--------------------------------------------------------------------
 //static
-HRESULT
+_Check_return_ HRESULT
 ReferenceTrackerManager::TriggerFinalization( )
 {
     // Forward the recommendation
@@ -350,7 +350,7 @@ ReferenceTrackerManager::TriggerFinalization( )
 //
 //+--------------------------------------------------------------------
 // static
-HRESULT
+_Check_return_ HRESULT
 ReferenceTrackerManager::TriggerCollectionForSuspend( )
 {
     if( This->_pReferenceTrackerHost != NULL )
@@ -706,7 +706,7 @@ ReferenceTrackerManager::ReferenceTrackingCompleted()
 }
 
 #if DBG
-HRESULT
+_Check_return_ HRESULT
 ReferenceTrackerManager::RunValidation()
 {
     IDXamlCore* pCore = DXamlServices::GetDXamlCore();

@@ -738,6 +738,11 @@ namespace PALText
         virtual HRESULT CreateFontFallbackBuilder(
             _Outptr_ PALText::IFontFallbackBuilder **ppFontFallbackBuilder
             ) = 0;
+
+        virtual HRESULT CreateSystemFontCollection(
+            bool includeDownloadedFonts,
+            PALText::IFontCollection** fontCollection
+        ) = 0;
     };
 }
 

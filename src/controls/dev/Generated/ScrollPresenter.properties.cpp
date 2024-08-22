@@ -38,11 +38,12 @@ ScrollPresenterProperties::ScrollPresenterProperties()
     , m_extentChangedEventSource{static_cast<ScrollPresenter*>(this)}
     , m_scrollAnimationStartingEventSource{static_cast<ScrollPresenter*>(this)}
     , m_scrollCompletedEventSource{static_cast<ScrollPresenter*>(this)}
+    , m_scrollStartingEventSource{static_cast<ScrollPresenter*>(this)}
     , m_stateChangedEventSource{static_cast<ScrollPresenter*>(this)}
     , m_viewChangedEventSource{static_cast<ScrollPresenter*>(this)}
-    , m_viewChangingEventSource{static_cast<ScrollPresenter*>(this)}
     , m_zoomAnimationStartingEventSource{static_cast<ScrollPresenter*>(this)}
     , m_zoomCompletedEventSource{static_cast<ScrollPresenter*>(this)}
+    , m_zoomStartingEventSource{static_cast<ScrollPresenter*>(this)}
 {
     EnsureProperties();
 }
@@ -747,6 +748,16 @@ void ScrollPresenterProperties::ScrollCompleted(winrt::event_token const& token)
     m_scrollCompletedEventSource.remove(token);
 }
 
+winrt::event_token ScrollPresenterProperties::ScrollStarting(winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::ScrollingScrollStartingEventArgs> const& value)
+{
+    return m_scrollStartingEventSource.add(value);
+}
+
+void ScrollPresenterProperties::ScrollStarting(winrt::event_token const& token)
+{
+    m_scrollStartingEventSource.remove(token);
+}
+
 winrt::event_token ScrollPresenterProperties::StateChanged(winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::IInspectable> const& value)
 {
     return m_stateChangedEventSource.add(value);
@@ -767,16 +778,6 @@ void ScrollPresenterProperties::ViewChanged(winrt::event_token const& token)
     m_viewChangedEventSource.remove(token);
 }
 
-winrt::event_token ScrollPresenterProperties::ViewChanging(winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::ScrollingViewChangingEventArgs> const& value)
-{
-    return m_viewChangingEventSource.add(value);
-}
-
-void ScrollPresenterProperties::ViewChanging(winrt::event_token const& token)
-{
-    m_viewChangingEventSource.remove(token);
-}
-
 winrt::event_token ScrollPresenterProperties::ZoomAnimationStarting(winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::ScrollingZoomAnimationStartingEventArgs> const& value)
 {
     return m_zoomAnimationStartingEventSource.add(value);
@@ -795,4 +796,14 @@ winrt::event_token ScrollPresenterProperties::ZoomCompleted(winrt::TypedEventHan
 void ScrollPresenterProperties::ZoomCompleted(winrt::event_token const& token)
 {
     m_zoomCompletedEventSource.remove(token);
+}
+
+winrt::event_token ScrollPresenterProperties::ZoomStarting(winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::ScrollingZoomStartingEventArgs> const& value)
+{
+    return m_zoomStartingEventSource.add(value);
+}
+
+void ScrollPresenterProperties::ZoomStarting(winrt::event_token const& token)
+{
+    m_zoomStartingEventSource.remove(token);
 }

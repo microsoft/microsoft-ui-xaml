@@ -68,23 +68,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                     "ISABLE_XAML_GENERATED_MAIN\r\nint __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, " +
                     "int)\r\n{\r\n");
   if (ProjectInfo.IsWin32App) { 
-            this.Write(@"    {
-        void (WINAPI *pfnXamlCheckProcessRequirements)();
-        auto module = ::LoadLibrary(L""Microsoft.ui.xaml.dll"");
-        if (module)
-        {
-            pfnXamlCheckProcessRequirements = reinterpret_cast<decltype(pfnXamlCheckProcessRequirements)>(GetProcAddress(module, ""XamlCheckProcessRequirements""));
-            if (pfnXamlCheckProcessRequirements)
-            {
-                (*pfnXamlCheckProcessRequirements)();
-            }
-
-            ::FreeLibrary(module);
-        }
-    }
-
-    winrt::init_apartment(winrt::apartment_type::single_threaded);
-");
+            this.Write("    winrt::init_apartment(winrt::apartment_type::single_threaded);\r\n");
   } else { 
             this.Write("    winrt::init_apartment();\r\n");
   }

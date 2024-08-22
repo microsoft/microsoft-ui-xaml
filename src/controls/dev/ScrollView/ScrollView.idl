@@ -134,7 +134,9 @@ unsealed runtimeclass ScrollView : Microsoft.UI.Xaml.Controls.Control
     event Windows.Foundation.TypedEventHandler<ScrollView, ScrollingAnchorRequestedEventArgs> AnchorRequested;
 
     [MUX_PREVIEW]
-    event Windows.Foundation.TypedEventHandler<ScrollView, ScrollingViewChangingEventArgs> ViewChanging;
+    event Windows.Foundation.TypedEventHandler<ScrollView, ScrollingScrollStartingEventArgs> ScrollStarting;
+    [MUX_PREVIEW]
+    event Windows.Foundation.TypedEventHandler<ScrollView, ScrollingZoomStartingEventArgs> ZoomStarting;
 
     static Microsoft.UI.Xaml.DependencyProperty ContentProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty ScrollPresenterProperty { get; };

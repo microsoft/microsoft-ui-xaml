@@ -103,6 +103,7 @@ namespace CustomRuntimeDataSerializationHelpers
         return S_OK;
     }
 
+#pragma warning(suppress: 28251) // C28251: False positive. Prefast says this is not annotated, but it is.
     template<>
     VisualTransitionTableOptimizedLookup Deserialize<VisualTransitionTableOptimizedLookup>(_In_ XamlBinaryFormatSubReader2* reader)
     {

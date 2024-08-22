@@ -237,7 +237,7 @@ CWinWorkItemFactory::~CWinWorkItemFactory()
 // the factory, which can have new work queued to it
 //
 // ----------------------------------------------------
-HRESULT
+_Check_return_ HRESULT
 CWinWorkItemFactory::CancelAndCleanupAllWork()
 {
     if (m_pCleanupGroup != NULL)
@@ -255,7 +255,7 @@ CWinWorkItemFactory::CancelAndCleanupAllWork()
 // Sets up the threadpool environment and cleanup group
 //
 //--------------------------------------------------------
-HRESULT
+_Check_return_ HRESULT
 CWinWorkItemFactory::Initialize()
 {
     HRESULT hr = S_OK;

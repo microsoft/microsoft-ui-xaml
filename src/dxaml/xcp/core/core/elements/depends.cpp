@@ -2459,7 +2459,7 @@ CDependencyObject::TryEnsureManagedPeer(
 // peer has been created for this object.  This could happen
 // on the initiative of the framework, or as a result of the
 // above EnsurePeerAndTryPeg call.
-HRESULT CDependencyObject::OnManagedPeerCreated(XUINT32 fIsCustomDOType, XUINT32 fIsManagedPeerPeggedNoRef)
+_Check_return_ HRESULT CDependencyObject::OnManagedPeerCreated(XUINT32 fIsCustomDOType, XUINT32 fIsManagedPeerPeggedNoRef)
 {
     CDependencyObject *pParent = nullptr;
 

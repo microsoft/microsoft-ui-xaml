@@ -40,7 +40,7 @@ PALFontAndScriptServices::~PALFontAndScriptServices()
 
     ReleaseInterface(m_pInstalledFontCollection);
 
-    m_pUltimateFallbackFontFamily = NULL;
+    ReleaseInterface(m_pUltimateFallbackFontFamily);
 
     ReleaseInterface(m_pPALFontAndScriptServices);
 }
@@ -108,11 +108,11 @@ void PALFontAndScriptServices::ResetSystemFontCollection()
     ReleaseInterface(m_pInstalledFontCollection);
     ReleaseInterface(m_pUltimateFont);
 
-    // This ideally should be released via ref-counting, but it never was the expectation
-    // that callers of GetUltimateFallbackFontFamily need to release the object. So it
-    // is held with a single reference count by m_pInstalledFontCollection instead, and
-    // released when that goes away.
-    m_pUltimateFallbackFontFamily = nullptr;
+    // Now that we load the Ultimate font fallback family from a different font collection
+    // than the one that is kept around (one that doesn't contain downloadable fonts), we
+    // need to ensure the life time of the family because the font collection will go away
+    // and not keep it around.
+    ReleaseInterface(m_pUltimateFallbackFontFamily);
 }
 
 HRESULT PALFontAndScriptServices::ClearDefaultLanguageString()
@@ -253,20 +253,38 @@ HRESULT PALFontAndScriptServices::GetUltimateFallbackFontFamily(
     _Outptr_ CCompositeFontFamily **ppUltimateCompositeFontFamily
 )
 {
-    HRESULT              hr                  = S_OK;
-    IFontCollection     *pFontCollection     = NULL;
+    HRESULT hr  = S_OK;
 
     if (m_pUltimateFallbackFontFamily == NULL)
     {
-        IFC(PALFontAndScriptServices::GetSystemFontCollection(&pFontCollection));
-        IFC(m_pInstalledFontCollection->LookupDefaultFontFamily(&m_pUltimateFallbackFontFamily));
+        // It is possible that our ultimate font fallback, may not be properly installed on the system.  When this 
+        // occurs, DWrite will return from  IDWriteFontFamily::GetFirstMatchingFont an S_OK result and a NULL Font.  
+        // This occurs because DWite thinks the font is a downloadable one.  To get around this, we will create a new
+        // font collection that excludes downloadable fonts and get our composite family from that.  That will ensure
+        // that what ever font is selected is currently available.
+
+        xref_ptr<PALText::IFontCollection> pFontCollection;
+        IFC(m_pPALFontAndScriptServices->CreateSystemFontCollection(false /*includeDownloadedFonts*/ , pFontCollection.ReleaseAndGetAddressOf()));
+
+        xref_ptr<CTypefaceCollection> typefaceCollection;
+        IFC(CTypefaceCollection::CreatePALWrapper(this,
+            pFontCollection,
+            NULL, //Fallback font collection. We do not need a fallback
+            //font collection since this is the system font collection.
+            typefaceCollection.ReleaseAndGetAddressOf()));
+       
+        IFC(typefaceCollection->LookupDefaultFontFamily(&m_pUltimateFallbackFontFamily));
+        // In general, we don't addref the font family returned from LookupDefaultFontFamily because we assume the
+        // the typeface collection will remain around and thus ensure the lifetime of the family.  However, we don't
+        // want to carry that weight for the fallback font family, so we will addreff it and release in the destructor.
+        AddRefInterface(m_pUltimateFallbackFontFamily);
+
         XCP_FAULT_ON_FAILURE(m_pUltimateFallbackFontFamily->GetNumberofFontLookups() != 0);
     }
 
     *ppUltimateCompositeFontFamily = m_pUltimateFallbackFontFamily;
 
 Cleanup:
-    ReleaseInterface(pFontCollection);
     RRETURN(hr);
 }
 

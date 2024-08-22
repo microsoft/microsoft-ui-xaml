@@ -129,7 +129,7 @@ HRESULT EffectPolicyHelper::Execute()
     return S_OK;
 }
 
-HRESULT EffectPolicyHelper::ReevaluateShadowPolicy()
+_Check_return_ HRESULT EffectPolicyHelper::ReevaluateShadowPolicy()
 {
     bool areShadowsEnabled = m_forceShadowsOn;
 

@@ -169,8 +169,19 @@ runtimeclass ScrollingAnchorRequestedEventArgs
 
 [MUX_PREVIEW]
 [webhosthidden]
-runtimeclass ScrollingViewChangingEventArgs
+runtimeclass ScrollingScrollStartingEventArgs
 {
+    Int32 CorrelationId { get; };
+    Double HorizontalOffset { get; };
+    Double VerticalOffset { get; };
+    Single ZoomFactor{ get; };
+}
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass ScrollingZoomStartingEventArgs
+{
+    Int32 CorrelationId { get; };
     Double HorizontalOffset { get; };
     Double VerticalOffset { get; };
     Single ZoomFactor{ get; };

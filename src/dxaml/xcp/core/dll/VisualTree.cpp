@@ -395,7 +395,7 @@ CFullWindowMediaRoot* VisualTree::GetFullWindowMediaRoot()
 //      Returns the main rendertargetbitmap root for this visual tree.
 //
 //------------------------------------------------------------------------
-CRenderTargetBitmapRoot* VisualTree::GetRenderTargetBitmapRoot()
+_Check_return_ CRenderTargetBitmapRoot* VisualTree::GetRenderTargetBitmapRoot()
 {
     if (m_pCoreNoRef->IsInBackgroundTask() && !m_shutdownInProgress)
     {

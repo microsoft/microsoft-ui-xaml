@@ -1413,7 +1413,7 @@ AppBar::HasNonLabeledDynamicPrimaryCommand(_Out_ bool* hasNonLabeledDynamicPrima
 
 // If the appbar is inline, check to see if opening in the default direction would cause the appbar to appear partially
 // offscreen.
-_Check_return_ HRESULT AppBar::HasSpaceForAppBarToOpenDown(bool* hasSpace)
+_Check_return_ HRESULT AppBar::HasSpaceForAppBarToOpenDown(_Out_ bool* hasSpace)
 {
     ASSERT(m_Mode == AppBarMode_Inline);
 

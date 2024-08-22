@@ -595,8 +595,8 @@ StackPanel::GetInsertionIndexesImpl(
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
 StackPanel::GetLastItemIndexInViewport(
-    IScrollInfo* pScrollInfo,
-    INT* pResult)
+    _In_opt_ IScrollInfo* pScrollInfo,
+    _Inout_ INT* pResult)
 {
     HRESULT hr = S_OK;
     ctl::ComPtr<wfc::IVector<xaml::UIElement*>> spChildren = NULL;

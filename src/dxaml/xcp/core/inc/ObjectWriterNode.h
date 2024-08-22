@@ -529,7 +529,7 @@ private:
     std::shared_ptr<XamlTextSyntax> m_spTextSyntaxConverter;
     std::shared_ptr<XamlBinaryFormatSubReader2> m_spSubReader;
     xstring_ptr m_strValue;
-    UINT32 m_intValue;
+    UINT32 m_intValue = 0;
     std::vector<std::pair<bool,xstring_ptr>> m_vecResourceList;
 };
 

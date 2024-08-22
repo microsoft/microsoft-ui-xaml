@@ -320,6 +320,7 @@ public:
     wrl::ComPtr<ixp::IPointerPoint> GetPreviousPointerPoint();
 
     wrl::ComPtr<ixp::IIslandInputSitePartner> GetIslandInputSite() const;
+    WindowedPopupInputSiteAdapter* GetInputSiteAdapter() { return m_inputSiteAdapter.get(); };
 
     // https://task.ms/48749483
     // TODO: Remove once XAML creates Windowed popups without a DesktopSiteBridge. This is a

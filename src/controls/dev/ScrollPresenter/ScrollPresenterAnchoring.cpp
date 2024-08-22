@@ -341,6 +341,15 @@ void ScrollPresenter::EnsureAnchorElementSelection()
     m_anchorElementBounds = winrt::Rect{};
     m_isAnchorElementDirty = false;
 
+    const winrt::UIElement content = Content();
+
+    if (!content)
+    {
+        SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, m_anchorElement.get(), L"Early exit as Content is null.");
+
+        return;
+    }
+
     com_ptr<ScrollPresenterTestHooks> globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks();
     double viewportAnchorPointHorizontalOffset{ 0.0 };
     double viewportAnchorPointVerticalOffset{ 0.0 };
@@ -358,7 +367,6 @@ void ScrollPresenter::EnsureAnchorElementSelection()
     auto anchorRequestedEventArgs = winrt::get_self<ScrollingAnchorRequestedEventArgs>(m_anchorRequestedEventArgs.get());
     winrt::UIElement requestedAnchorElement{ nullptr };
     winrt::IVector<winrt::UIElement> anchorCandidates{ nullptr };
-    const winrt::UIElement content = Content();
 
     if (anchorRequestedEventArgs)
     {

@@ -883,6 +883,9 @@ namespace Microsoft.UI.Xaml.Automation.Peers
         ConversionTargetChanged,
         TextEditTextChanged,
         LayoutInvalidated,
+        [feature(Feature_ExperimentalApi)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 7)]
+        Notification,
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]

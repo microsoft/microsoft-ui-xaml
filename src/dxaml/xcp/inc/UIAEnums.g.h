@@ -224,6 +224,7 @@ enum APAutomationEvents
     AEConversionTargetChanged,
     AETextEditTextChanged,
     AELayoutInvalidated,
+    AENotification,
 };
 
 //------------------------------------------------------------------------

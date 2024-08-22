@@ -100,6 +100,13 @@ HRESULT DWriteFontAndScriptServices::EnsureSystemFontCollection()
 {
     if (m_systemFontCollection == nullptr)
     {
+        CreateSystemFontCollection(true /*includeDownloadableFonts*/, m_systemFontCollection.ReleaseAndGetAddressOf());
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT DWriteFontAndScriptServices::CreateSystemFontCollection(bool includeDownloadedFonts, PALText::IFontCollection** fontCollection)
+{
         Microsoft::WRL::ComPtr<IDWriteFontCollection2> dWriteFontCollection;
         if (s_customSystemFontCollection != nullptr)
         {
@@ -108,12 +115,13 @@ HRESULT DWriteFontAndScriptServices::EnsureSystemFontCollection()
         else
         {
             DWRITE_FONT_FAMILY_MODEL fontFamilyModel = ShouldUseTypographicFontModel() ? DWRITE_FONT_FAMILY_MODEL_TYPOGRAPHIC : DWRITE_FONT_FAMILY_MODEL_WEIGHT_STRETCH_STYLE;
-            IFC_RETURN(m_dwriteFactory->GetSystemFontCollection(/*includeDownloadableFonts*/ true, fontFamilyModel, dWriteFontCollection.GetAddressOf()));
+            IFC_RETURN(m_dwriteFactory->GetSystemFontCollection(includeDownloadedFonts, fontFamilyModel, dWriteFontCollection.GetAddressOf()));
         }
-        IFC_RETURN(DWriteFontCollection::Create(dWriteFontCollection.Get(), m_systemFontCollection.ReleaseAndGetAddressOf()));
-    }
-    return S_OK;
+        IFC_RETURN(DWriteFontCollection::Create(dWriteFontCollection.Get(), fontCollection));
+
+        return S_OK;
 }
+
 
 bool DWriteFontAndScriptServices::ShouldUseTypographicFontModel()
 {

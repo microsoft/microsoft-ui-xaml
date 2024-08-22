@@ -213,6 +213,7 @@ extern __declspec(selectany) const XTABLE satAutomationEvents[] =
     { XSTRING_PTR_STORAGE(L"ConversionTargetChanged"), 27 },
     { XSTRING_PTR_STORAGE(L"TextEditTextChanged"), 28 },
     { XSTRING_PTR_STORAGE(L"LayoutInvalidated"), 29 },
+    { XSTRING_PTR_STORAGE(L"Notification"), 30 },
 };
 
 extern __declspec(selectany) const XTABLE satAutomationFlowDirections[] =

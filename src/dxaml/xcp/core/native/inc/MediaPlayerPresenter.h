@@ -171,7 +171,7 @@ private:
         return HasRenderSize() && HasVideo() && HasFirstFrameBasedOnState();
     }
 
-    _Check_return_ HRESULT HandleError(_In_ HRESULT hr);
+    _Check_return_ HRESULT HandleError(HRESULT hr);
 
     _Check_return_ HRESULT RegisterForUpdate();
     _Check_return_ HRESULT UnregisterForUpdate();

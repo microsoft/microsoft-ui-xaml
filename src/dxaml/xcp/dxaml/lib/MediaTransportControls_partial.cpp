@@ -2342,7 +2342,7 @@ MediaTransportControls::OnCCSelectionButtonClick()
         if (!m_tpAvailableCCTracksMenuFlyout)
         {
             IFC(ctl::make<MenuFlyout>(&spNewMenuFlyout));
-            IFC(spNewMenuFlyout->put_ShouldConstrainToRootBounds(TRUE));
+            IFC(spNewMenuFlyout->put_ShouldConstrainToRootBounds(FALSE));
             SetPtrValue(m_tpAvailableCCTracksMenuFlyout, spNewMenuFlyout.Get());
             IFC(m_tpCCSelectionButton.Cast<Button>()->put_Flyout(m_tpAvailableCCTracksMenuFlyout.Cast<MenuFlyout>()));
         }
@@ -2374,7 +2374,7 @@ MediaTransportControls::OnPlaybackRateButtonClick()
         if (!m_tpAvailablePlaybackRateMenuFlyout)
         {
             IFC(ctl::make<MenuFlyout>(&spNewMenuFlyout));
-            IFC(spNewMenuFlyout->put_ShouldConstrainToRootBounds(TRUE));
+            IFC(spNewMenuFlyout->put_ShouldConstrainToRootBounds(FALSE));
             SetPtrValue(m_tpAvailablePlaybackRateMenuFlyout, spNewMenuFlyout.Get());
             IFC(m_tpPlaybackRateButton.Cast<Button>()->put_Flyout(m_tpAvailablePlaybackRateMenuFlyout.Cast<MenuFlyout>()));
         }
@@ -6262,7 +6262,7 @@ Cleanup:
     return hr;
 }
 
-HRESULT MediaTransportControls::SetMediaPlayerElementFullWindow(ctl::ComPtr<xaml_controls::IMediaPlayerElement> spMediaPlayer, BOOLEAN value)
+_Check_return_ HRESULT MediaTransportControls::SetMediaPlayerElementFullWindow(ctl::ComPtr<xaml_controls::IMediaPlayerElement> spMediaPlayer, BOOLEAN value)
 {
 #if false // DISABLE_FULL_WINDOW
     IFC_RETURN(spMediaPlayer->put_IsFullWindow(value));

@@ -589,7 +589,7 @@
 <#+     Output_ApiInformationCall_Push(ba.ApiInformation, Indent.None); #>
 <#+     if (ba.NeedsLostFocusForTwoWay) { #>
                 <#=ba.ConnectionIdElement.ReferenceExpression#>.LostFocus(
-                    [weakThis{ weak_from_this() }, this] (IInspectable const& sender, <#=Projection(KnownNamespaces.Xaml)#>::RoutedEventArgs const& e)
+                    [weakThis{ this->weak_from_this() }, this] (IInspectable const& sender, <#=Projection(KnownNamespaces.Xaml)#>::RoutedEventArgs const& e)
                     {
 <#+     } else { #>
 <#+             // Although it looks strange that we are capturing both `this` and a weak pointer to `this`, #>
@@ -603,7 +603,7 @@
 <#+             // Instead, we capture both `this` and a weak pointer to `this`, and only use the former if a valid #>
 <#+             // strong pointer can be derived from the latter thus guaranteeing that `this` can be safely used. #>
                 <#=ba.ConnectionIdElement.ReferenceExpression#>.RegisterPropertyChangedCallback(<#=ba.MemberDeclaringType.CppWinRTLocalElseRef()#>::<#=ba.MemberName#>Property(),
-                    [weakThis{ weak_from_this() }, this] (DependencyObject const& sender, DependencyProperty const& prop)
+                    [weakThis{ this->weak_from_this() }, this] (DependencyObject const& sender, DependencyProperty const& prop)
                     {
 <#+     } #>
                         if (auto strongThis{ weakThis.lock() })
@@ -654,7 +654,7 @@
 <#+                 // #>
 <#+                 // Instead, we capture both `this` and a weak pointer to `this`, and only use the former if a valid #>
 <#+                 // strong pointer can be derived from the latter thus guaranteeing that `this` can be safely used. #>
-                    targetElement.<#=evt.MemberName#>([weakThis{ weak_from_this() }, this](<#=evt.Parameters.Declaration()#>)
+                    targetElement.<#=evt.MemberName#>([weakThis{ this->weak_from_this() }, this](<#=evt.Parameters.Declaration()#>)
                     {
 <#+     PushIndent(Indent.ThreeTabs);#>
             if (auto strongThis{ weakThis.lock() })
