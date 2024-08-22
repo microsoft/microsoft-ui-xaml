@@ -5,22 +5,22 @@ variables:
   useBuildOutputFromBuildId: ''
 
 stages:
-- stage: Setup
-  jobs:
-  - job: Setup
-    pool:
-      vmImage: 'windows-latest'
-    steps:
-      - task: powershell@2
-        name: checkPayload
-        displayName: 'Check if build is required for this PR'
-        inputs:
-          targetType: filePath
-          filePath: build\ShouldSkipPRBuild.ps1
+# - stage: Setup
+#   jobs:
+#   - job: Setup
+#     pool:
+#       vmImage: 'windows-latest'
+#     steps:
+#       - task: powershell@2
+#         name: checkPayload
+#         displayName: 'Check if build is required for this PR'
+#         inputs:
+#           targetType: filePath
+#           filePath: build\ShouldSkipPRBuild.ps1
 
 - stage: Build
-  dependsOn: Setup
-  condition: ne(dependencies.Setup.outputs['Setup.checkPayload.shouldSkipPRBuild'],'True')
+  # dependsOn: Setup
+  # condition: ne(dependencies.Setup.outputs['Setup.checkPayload.shouldSkipPRBuild'],'True')
   jobs:
   - job: Build
     condition: eq(variables['useBuildOutputFromBuildId'],'')
@@ -29,7 +29,9 @@ stages:
         name: WinDevPoolOSS-L
       ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/shine-oss/') }}:
         name: WinDevPool-L
-      demands: ImageOverride -equals WinDevVS17-latest
+      demands: |
+        ImageOverride -equals WinDevVS17-latest
+        ImageVersionOverride -equals 7.0.0
     timeoutInMinutes: 120
     strategy:
       maxParallel: 10
