@@ -9,6 +9,11 @@ steps:
       filename: 'dir'
       arguments: 'c:'
 
+  - powershell: |
+      Get-Volume
+    displayName: 'Get-Volume'
+    continueOnError: true
+
   - template: MUX-InstallDotNetSDK-Steps.yml
 
   - template: MUX-InstallWindowsSDK-Steps.yml
