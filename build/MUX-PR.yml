@@ -31,7 +31,7 @@ stages:
         name: WinDevPool-L
       demands: 
         - ImageOverride -equals WinDevVS17-latest
-        - ImageVersionOverride -equals 7.0.0
+        # - ImageVersionOverride -equals 7.0.0
     timeoutInMinutes: 120
     strategy:
       maxParallel: 10
