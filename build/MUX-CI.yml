@@ -23,11 +23,11 @@ stages:
         Release_x86:
           buildPlatform: 'x86'
           buildConfiguration: 'Release'
-          PGOBuildMode: 'Optimize'
+          # PGOBuildMode: 'Optimize'
         Release_x64:
           buildPlatform: 'x64'
           buildConfiguration: 'Release'
-          PGOBuildMode: 'Optimize'
+          # PGOBuildMode: 'Optimize'
         Release_Arm:
           buildPlatform: 'arm'
           buildConfiguration: 'Release'
