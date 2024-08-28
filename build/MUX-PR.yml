@@ -42,11 +42,11 @@ stages:
         Release_x86:
           buildPlatform: 'x86'
           buildConfiguration: 'Release'
-          # PGOBuildMode: 'Optimize'
+          PGOBuildMode: 'Optimize'
         Release_x64:
           buildPlatform: 'x64'
           buildConfiguration: 'Release'
-          # PGOBuildMode: 'Optimize'
+          PGOBuildMode: 'Optimize'
     variables:
       appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
       buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
