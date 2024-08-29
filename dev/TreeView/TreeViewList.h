@@ -6,6 +6,8 @@
 
 #include "TreeViewList.g.h"
 
+#pragma warning(disable: 26813)  
+
 class TreeViewList :
     public ReferenceTracker<TreeViewList, winrt::implementation::TreeViewListT>
 {
