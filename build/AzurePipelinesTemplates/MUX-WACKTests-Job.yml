@@ -19,9 +19,9 @@ jobs:
 - job: ${{ parameters.name }}
   dependsOn: ${{ parameters.dependsOn }}
   pool: 
-    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/shine-oss/') }}:
       name: WinDevPoolOSS-S
-    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/shine-oss/') }}:
       name: WinDevPool-S
   strategy:
     maxParallel: 10

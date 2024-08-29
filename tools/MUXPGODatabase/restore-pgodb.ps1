@@ -41,9 +41,12 @@ function Install-Package ( $package, $version )
     }
 }
 
-$forkPoint = ( GetForkPoint $pgoBranch )
+# We are no longer running the PGO pipeline. WinUI2 development has switched from 'main' branch to 'winui2/main'. 
+# To keep things working without having to re-enable the PGO pipeline we hard-code the last version of MUXPGODatabase and skip generating it from git history.
+# $forkPoint = ( GetForkPoint $pgoBranch )
+# $requestedVersion = MakeVersion $releaseVersionMajor $releaseVersionMinor $rel4873563b7953e2431caed4efcdc3b8261d1405cdaseVersionPatch $releaseVersionPrerelease $forkPoint.DateString $forkPoint.BranchString
 
-$requestedVersion = MakeVersion $releaseVersionMajor $releaseVersionMinor $releaseVersionPatch $releaseVersionPrerelease $forkPoint.DateString $forkPoint.BranchString
+$requestedVersion = MakeVersion $releaseVersionMajor $releaseVersionMinor $releaseVersionPatch $releaseVersionPrerelease $forkPointDateString $pgoBranch
 
 Write-Host ( "PGO OPTIMIZE: requesting {0} version {1} ({2})" -f $packageId, ( FormatVersion $requestedVersion ), $forkPoint.SHA )
 
