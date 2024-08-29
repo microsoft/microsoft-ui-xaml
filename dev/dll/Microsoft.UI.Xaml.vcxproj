@@ -41,6 +41,7 @@
     <CppWinRTParameters>-ignore_velocity</CppWinRTParameters>
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTHeapEnforcement>true</CppWinRTHeapEnforcement>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <!-- <PropertyGroup Condition="'$(Use64BitLinker)' == 'true' AND '$(BuildingWithBuildExe)' != 'true'">
       <LinkToolPath>$(OSBuildToolsRoot)\vc\HostX64\$(BuildArchName)</LinkToolPath>
@@ -57,7 +58,6 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <LinkIncremental>false</LinkIncremental>
-    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Condition="'$(Configuration)' == 'Release'" Project="$(MSBuildProjectDirectory)\..\..\PGO.compile.props" />
   <Import Condition="'$(PGOBuildMode)' == 'Optimize'" Project="$(MSBuildProjectDirectory)\..\..\tools\MUXPGODatabase\PGO.version.props" />
