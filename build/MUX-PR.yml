@@ -26,11 +26,12 @@ stages:
   - job: Build
     condition: eq(variables['useBuildOutputFromBuildId'],'')
     pool: 
-      ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/shine-oss/') }}:
         name: WinDevPoolOSS-L
-      ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+      ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/shine-oss/') }}:
         name: WinDevPool-L
-      demands: ImageOverride -equals WinDevVS17-latest
+      demands: 
+        - ImageOverride -equals WinDevVS17-latest
     timeoutInMinutes: 120
     strategy:
       maxParallel: 10

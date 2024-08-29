@@ -40,7 +40,7 @@ template <typename T, bool isBindable = false, bool isDependencyObjectBase = tru
 class VectorIterator : 
     public ReferenceTracker<
         VectorIterator<T, isBindable, isDependencyObjectBase, Traits>,
-        reference_tracker_implements_t<typename Traits::IteratorType>::type>
+        typename reference_tracker_implements_t<typename Traits::IteratorType>::type>
 {
 public:
     VectorIterator(typename Traits::VectorType const& vector)
