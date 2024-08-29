@@ -4,7 +4,10 @@ param
     [string] $releaseFolder,
 
     [Parameter(Mandatory=$true)]
-    [string] $publicsRoot
+    [string] $publicsRoot,
+
+    [Parameter(Mandatory=$true)]
+    [string] $publishDir
 )
 
 Trap
@@ -86,8 +89,8 @@ if(!(Get-Command mdmerge -ErrorAction Ignore))
     Write-Error "Cannot find mdmerge. Make sure to run from a Developer Command Prompt."
     exit 1
 }
-$winuiVpackFolder = "$releaseFolder\WinUIVpack"
-$cbsFolder = "$releaseFolder\CBS"
+$winuiVpackFolder = "$publishDir\WinUIVpack"
+$cbsFolder = "$publishDir\CBS"
 $cbswinmdFolder = "$cbsFolder\winmd"
 $packagesDir = Join-Path $repoRoot "packages"
 $winmdReferencesDir = Join-Path $repoRoot "winmdreferences"
@@ -202,4 +205,4 @@ $contentString = "This is the contents of version '$($vpackversion)' of the Micr
 Set-Content -Path $readmeFilePath -Value $contentString 
 
 # This sets a Pipeline variable that the Job will use to push the created vpacks with the specified version.
-Write-Host "##vso[task.setvariable variable=vpackversion]$vpackversion"
+Write-Host "##vso[task.setvariable variable=vpackversion;isOutput=true;]$vpackversion"

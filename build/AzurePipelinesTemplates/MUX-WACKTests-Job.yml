@@ -15,8 +15,11 @@ parameters:
 jobs:
 - job: ${{ parameters.name }}
   dependsOn: ${{ parameters.dependsOn }}
-  pool:
-    vmImage: windows-latest
+  pool: 
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/shine-oss/') }}:
+      name: WinDevPoolOSS-S
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/shine-oss/') }}:
+      name: WinDevPool-S
   strategy:
     maxParallel: 10
     matrix: ${{ parameters.matrix }}
@@ -32,7 +35,7 @@ jobs:
     inputs: 
       artifactName: ${{ parameters.artifactName }} 
       downloadPath: '$(artifactDownloadPath)'
-      itemPattern: '**\*.appx'
+      itemPattern: '**\*.?(appx|msix)'
 
   - task: PkgESWACKTests@12
     displayName: Run WACK tests for NugetPackageTestApp
@@ -62,6 +65,21 @@ jobs:
     condition: succeededOrFailed()
     inputs:
       sourceFolder: $(appxPackagesPath)\AppThatUsesMUXIndirectly_Test\
+      contents: '*.xml'
+      targetFolder: $(resultLogStagingPath)
+
+  - task: PkgESWACKTests@12
+    displayName: Run WACK tests for UwpAppWithFullTrustProcess
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    condition: succeededOrFailed()
+    inputs:
+      PackageFilePath: '$(appxPackagesPath)\UwpAppWithFullTrustProcess_package_Test\UwpAppWithFullTrustProcess_package.msix'
+  - task: CopyFiles@2
+    displayName: 'Copy results for UwpAppWithFullTrustProcess'
+    condition: succeededOrFailed()
+    inputs:
+      sourceFolder: $(appxPackagesPath)\UwpAppWithFullTrustProcess_package_Test\
       contents: '*.xml'
       targetFolder: $(resultLogStagingPath)
 

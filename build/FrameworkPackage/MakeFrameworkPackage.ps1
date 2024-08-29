@@ -317,7 +317,7 @@ $priOutputPath = [IO.Path]::GetFullPath("$fullOutputPath\resources.pri")
 $priCBSOutputPath = [IO.Path]::GetFullPath("$fullOutputPath\CBSresources.pri")
 $noiseAssetPath = [IO.Path]::GetFullPath("$fullOutputPath\Assets\NoiseAsset_256x256_PNG.png")
 $resourceContents = [IO.Path]::GetFullPath("$fullOutputPath\Resources")
-$pfxPath = [IO.Path]::GetFullPath("..\MSTest.pfx")
+$pfxPath = [IO.Path]::GetFullPath("..\WinUITest.pfx")
 
 pushd $fullOutputPath\PackageContents
 

@@ -6,8 +6,8 @@ parameters:
 jobs:
 - job: MergePGD
   dependsOn: ${{ parameters.dependsOn }}
-  pool:
-    vmImage: 'windows-2019'
+  pool: 
+    name: WinDevPool-S
   variables:
     artifactsPath: $(Build.SourcesDirectory)\Artifacts
     pgoArtifactsPath: $(artifactsPath)\${{ parameters.pgoArtifact }}
@@ -27,8 +27,20 @@ jobs:
 
   - task: DownloadBuildArtifacts@0
     inputs:
+      artifactName: TestOutput-fwPkg
+      downloadPath: $(artifactsPath)\pgo
+
+  - task: DownloadBuildArtifacts@0
+    inputs:
       artifactName: ${{ parameters.pgoArtifact }}
       downloadPath: $(artifactsPath)
+
+  - task: powershell@2
+    displayName: CopyPGOFiles.ps1
+    inputs:
+      targetType: filePath
+      filePath: build\Helix\CopyPGOFiles.ps1
+      arguments: -SourceFolder '$(artifactsPath)\pgo\TestOutput-fwPkg\$(testos)\$(buildPlatform)$(buildConfiguration)' -OutputFolder '$(artifactsPath)'
 
   - script: |
       cd $(buildPlatform)

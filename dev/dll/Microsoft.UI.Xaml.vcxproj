@@ -910,6 +910,15 @@
     </Exec>
     <Error Text="BinSkim task failed." Condition="'$(ExitCode)'=='0'" />
   </Target>
+  <PropertyGroup>
+    <!-- Generate the test pfx file before building -->
+    <GeneratePfxScript>$(MSBuildProjectDirectory)\..\..\GenerateTestPfx.ps1</GeneratePfxScript>
+    <PfxFile>$(MSBuildProjectDirectory)\..\..\build\WinUITest.pfx</PfxFile>
+  </PropertyGroup>
+  <Target Name="GeneratePfx" BeforeTargets="PrepareForBuild" Condition="!Exists('$(PfxFile)')" >
+    <Message Text="Generate test .pfx file" />
+    <RunPowershellScript Path="$(GeneratePfxScript)" FilesWritten="$(PfxFile)" />
+  </Target>
   <Target Name="CheckCompatibility" BeforeTargets="PrepareForBuild" Condition="'$(Configuration)'=='Release'">
     <Message Text="Running CheckCompatibility to ensure that no known incompatibilities between the WinUI and Windows depots have been introduced." />
     <RunPowershellScript Path="$(ScriptPath)CheckCompatibility.ps1" />
