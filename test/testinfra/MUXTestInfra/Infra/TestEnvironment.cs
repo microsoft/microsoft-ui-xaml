@@ -166,8 +166,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 return new TestApplicationInfo("WpfApp_6f07fta6qpts2", "WpfApp", @"WpfApp\WpfApp.exe");
             }
         }
-            }
-        }
     }
 
     public class TestEnvironment
