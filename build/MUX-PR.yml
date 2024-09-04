@@ -5,22 +5,22 @@ variables:
   useBuildOutputFromBuildId: ''
 
 stages:
-# - stage: Setup
-#   jobs:
-#   - job: Setup
-#     pool:
-#       vmImage: 'windows-latest'
-#     steps:
-#       - task: powershell@2
-#         name: checkPayload
-#         displayName: 'Check if build is required for this PR'
-#         inputs:
-#           targetType: filePath
-#           filePath: build\ShouldSkipPRBuild.ps1
+- stage: Setup
+  jobs:
+  - job: Setup
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+      - task: powershell@2
+        name: checkPayload
+        displayName: 'Check if build is required for this PR'
+        inputs:
+          targetType: filePath
+          filePath: build\ShouldSkipPRBuild.ps1
 
 - stage: Build
-  # dependsOn: Setup
-  # condition: ne(dependencies.Setup.outputs['Setup.checkPayload.shouldSkipPRBuild'],'True')
+  dependsOn: Setup
+  condition: ne(dependencies.Setup.outputs['Setup.checkPayload.shouldSkipPRBuild'],'True')
   jobs:
   - job: Build
     condition: eq(variables['useBuildOutputFromBuildId'],'')
@@ -41,11 +41,11 @@ stages:
         Release_x86:
           buildPlatform: 'x86'
           buildConfiguration: 'Release'
-          # PGOBuildMode: 'Optimize'
+          PGOBuildMode: 'Optimize'
         Release_x64:
           buildPlatform: 'x64'
           buildConfiguration: 'Release'
-          # PGOBuildMode: 'Optimize'
+          PGOBuildMode: 'Optimize'
     variables:
       appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
       buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
