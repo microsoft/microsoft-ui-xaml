@@ -55,25 +55,5 @@
       Windows.Foundation.Metadata.AttributeName;
     </WinUI_CSWinRTIncludes>
 
-    <!-- These types are custom type mappings, but WinUI happened to project them.
-         They should be removed at some point. -->
-    <WinUI_CSWinRTIncludes>
-      $(WinUI_CSWinRTIncludes);
-      Windows.UI.Xaml.Interop.IBindableIterable;
-      Windows.UI.Xaml.Interop.IBindableVector;
-      Windows.UI.Xaml.Interop.INotifyCollectionChanged;
-      Windows.UI.Xaml.Interop.NotifyCollectionChangedAction;
-      Windows.UI.Xaml.Interop.INotifyCollectionChangedEventArgs;
-      Windows.UI.Xaml.Interop.INotifyCollectionChangedEventArgsFactory;
-      Windows.UI.Xaml.Interop.NotifyCollectionChangedEventArgs;
-      Windows.UI.Xaml.Interop.NotifyCollectionChangedEventHandler;
-    </WinUI_CSWinRTIncludes>
-
-    <!-- Exclude type that moved to the Windows SDK projection. -->
-    <WinUI_CSWinRTExcludes>
-      $(WinUI_CSWinRTExcludes);
-      Windows.UI.Xaml.Interop.IBindableVectorView;
-    </WinUI_CSWinRTExcludes>
-
   </PropertyGroup>
 </Project>
