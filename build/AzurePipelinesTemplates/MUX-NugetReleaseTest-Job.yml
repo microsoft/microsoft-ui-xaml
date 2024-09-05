@@ -93,6 +93,8 @@ jobs:
   - template: MUX-InstallNuget-Steps.yml
 
   - template: MUX-InstallDotNetSDK-Steps.yml
+    parameters:
+      dotNetVersion: 3.1.415
 
   # The environment variable VCToolsInstallDir isn't defined on lab machines, so we need to retrieve it ourselves.
   - script: |
