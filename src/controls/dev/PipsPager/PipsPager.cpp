@@ -68,11 +68,6 @@ PipsPager::PipsPager()
     SetDefaultStyleKey(this);
 }
 
-PipsPager::~PipsPager()
-{
-    RestoreLayoutVirtualization();
-}
-
 void PipsPager::OnApplyTemplate()
 {
     winrt::AutomationProperties::SetName(*this, ResourceAccessor::GetLocalizedStringResource(SR_PipsPagerNameText));

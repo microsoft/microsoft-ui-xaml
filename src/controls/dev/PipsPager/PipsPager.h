@@ -20,7 +20,6 @@ class PipsPager :
 {
 public:
     PipsPager();
-    ~PipsPager();
 
     /* IFrameworkElement */
     void OnApplyTemplate();
