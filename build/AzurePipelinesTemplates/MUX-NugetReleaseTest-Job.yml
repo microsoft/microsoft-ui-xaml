@@ -38,7 +38,7 @@ jobs:
       name: WinDevPoolOSS-S
     ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/shine-oss/') }}:
       name: WinDevPool-S
-    demands: ImageOverride -equals WinDevVS16-9
+    demands: ImageOverride -equals WinDevVS17-latest
   strategy:
     maxParallel: 10
     matrix: ${{ parameters.matrix }}
