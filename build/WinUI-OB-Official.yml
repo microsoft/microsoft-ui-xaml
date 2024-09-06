@@ -199,6 +199,7 @@ extends:
         pool:
           type: windows  
         variables:
+          ob_outputDirectory: $(build.artifactStagingDirectory)
           pdbDir: $(Build.SourcesDirectory)\Artifacts\drop
         steps:
         - task: DownloadPipelineArtifact@2
