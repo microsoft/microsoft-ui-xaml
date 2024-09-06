@@ -134,35 +134,24 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
     // return false.  If we're off the UI thread but can't get to it, then do the DeleteInstance() here (asynchronously).
     static void DeleteInstanceOnUIThread(std::unique_ptr<D>&& self) noexcept
     {
+        bool queued = false;
+        
         // See if we're on the UI thread
         if(!self->IsOnThread())
         {
-            struct LoggingState
-            {
-                void* dispatcherQueueWhenLambdaRan{ nullptr };
-                void* coreDispatcherWhenLambdaRan{ nullptr };
-                std::atomic<int> runCount;
-            };
-            auto loggingState = std::make_shared<LoggingState>();
             // We're not on the UI thread
-            auto instance = static_cast<ReferenceTracker<D, ImplT, I...>*>(self.release());
-            instance->m_dispatcherHelper.RunAsync(
-                [instance, loggingState]()
+            static_cast<ReferenceTracker<D, ImplT, I...>*>(self.get())->m_dispatcherHelper.RunAsync(
+                [instance = self.release()]()
                 {
-                    if (loggingState->runCount++ == 0)
-                    {
-                        loggingState->dispatcherQueueWhenLambdaRan = winrt::get_abi(instance->m_dispatcherHelper.DispatcherQueue());
-                        loggingState->coreDispatcherWhenLambdaRan = winrt::get_abi(instance->m_dispatcherHelper.CoreDispatcher());
-                        delete instance;
-                    }
-                    else
-                    {
-                        MUX_FAIL_FAST();
-                    }
+                    delete instance;
                 },
-                true /* fallbackToThisThread */);
+                true /*fallbackToThisThread*/);
+
+            queued = true;
         }
-        else
+        
+
+        if (!queued)
         {
             self.reset();
         }
