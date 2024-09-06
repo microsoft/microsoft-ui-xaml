@@ -206,15 +206,56 @@ extends:
             artifactName: drop_build_main_x64_Release
             targetPath: $(pdbDir)
             buildType: specific
+            buildVersionToDownload: specific
             project: $(System.TeamProjectId)
             definition: $(System.DefinitionId)
+            # pipelineId : $(Build.BuildId)
+            pipelineId : 106311713
+            itemPattern: '**/*.pdb'
+
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            artifactName: drop_build_main_x86_Release
+            targetPath: $(pdbDir)
+            buildType: specific
             buildVersionToDownload: specific
+            project: $(System.TeamProjectId)
+            definition: $(System.DefinitionId)
+            # pipelineId : $(Build.BuildId)
+            pipelineId : 106311713
+            itemPattern: '**/*.pdb'
+
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            artifactName: drop_build_main_arm_Release
+            targetPath: $(pdbDir)
+            buildType: specific
+            buildVersionToDownload: specific
+            project: $(System.TeamProjectId)
+            definition: $(System.DefinitionId)
+            # pipelineId : $(Build.BuildId)
+            pipelineId : 106311713
+            itemPattern: '**/*.pdb'
+
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            artifactName: drop_build_main_arm64_Release
+            targetPath: $(pdbDir)
+            buildType: specific
+            buildVersionToDownload: specific
+            project: $(System.TeamProjectId)
+            definition: $(System.DefinitionId)
             # pipelineId : $(Build.BuildId)
             pipelineId : 106311713
             itemPattern: '**/*.pdb'
 
         - script: dir /s /b $(pdbDir)
           displayName: Dump public symbols staging directory
+
+        - template: ${{variables['System.DefaultWorkingDirectory']}}\AzurePipelinesTemplates\WindowsAppSDK-PublishSymbol-Steps.yml@WindowsAppSDKConfig
+          parameters:
+            SearchPattern: '$(pdbDir)\**\*.pdb'
+            IsOfficial: true
             
 
 
