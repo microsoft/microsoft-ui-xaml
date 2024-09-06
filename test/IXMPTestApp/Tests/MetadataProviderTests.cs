@@ -20,7 +20,9 @@ namespace IXMPTestApp.Tests
     [TestClass]
     public class MetadataProviderTests
     {
+#if MUX_PRERELEASE
         [TestMethod]
+#endif
         public void CanLoadXamlFragments()
         {
             var dispatcher = CoreApplication.MainView.Dispatcher;
