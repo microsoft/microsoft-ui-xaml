@@ -68,21 +68,6 @@ jobs:
       contents: '*.xml'
       targetFolder: $(resultLogStagingPath)
 
-  - task: PkgESWACKTests@12
-    displayName: Run WACK tests for UwpAppWithFullTrustProcess
-    env:
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-    condition: succeededOrFailed()
-    inputs:
-      PackageFilePath: '$(appxPackagesPath)\UwpAppWithFullTrustProcess_package_Test\UwpAppWithFullTrustProcess_package.msix'
-  - task: CopyFiles@2
-    displayName: 'Copy results for UwpAppWithFullTrustProcess'
-    condition: succeededOrFailed()
-    inputs:
-      sourceFolder: $(appxPackagesPath)\UwpAppWithFullTrustProcess_package_Test\
-      contents: '*.xml'
-      targetFolder: $(resultLogStagingPath)
-
   - task: PublishBuildArtifacts@1
     displayName: Publish results
     condition: succeededOrFailed()
