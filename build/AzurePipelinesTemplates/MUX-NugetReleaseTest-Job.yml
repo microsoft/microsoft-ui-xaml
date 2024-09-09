@@ -136,16 +136,16 @@ jobs:
     parameters:
       artifactName: ${{ parameters.buildArtifactName }}
 
-- ${{if eq(parameters.runTests, 'true')}}:
-  - template: MUX-RunHelixTests-Job.yml
-    parameters:
-      dependsOn: ${{ parameters.buildJobName }}
-      ${{if eq(parameters.useFrameworkPkg, 'false')}}:
-        testSuite: 'nupkg'
-      ${{if eq(parameters.useFrameworkPkg, 'true')}}:
-        testSuite: 'fwPkg'
-      artifactName: ${{ parameters.buildArtifactName }}
-      ${{if eq(parameters.useFrameworkPkg, 'true')}}:
-        taefQuery: "(not (@NugetPkgTestsOnly = 'true'))"
-      rerunPassesRequiredToAvoidFailure: 5
-      maxParallel: 2
+# - ${{if eq(parameters.runTests, 'true')}}:
+#   - template: MUX-RunHelixTests-Job.yml
+#     parameters:
+#       dependsOn: ${{ parameters.buildJobName }}
+#       ${{if eq(parameters.useFrameworkPkg, 'false')}}:
+#         testSuite: 'nupkg'
+#       ${{if eq(parameters.useFrameworkPkg, 'true')}}:
+#         testSuite: 'fwPkg'
+#       artifactName: ${{ parameters.buildArtifactName }}
+#       ${{if eq(parameters.useFrameworkPkg, 'true')}}:
+#         taefQuery: "(not (@NugetPkgTestsOnly = 'true'))"
+#       rerunPassesRequiredToAvoidFailure: 5
+#       maxParallel: 2

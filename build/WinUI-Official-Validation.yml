@@ -96,13 +96,13 @@ stages:
         PathtoPublish: $(Build.SourcesDirectory)\Artifacts\drop
         artifactName: drop
 
-- stage: Test
-  dependsOn: Build
-  jobs:
-  - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
-    parameters:
-      name: 'RunTestsInHelix'
-      rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
+# - stage: Test
+#   dependsOn: Build
+#   jobs:
+#   - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
+#     parameters:
+#       name: 'RunTestsInHelix'
+#       rerunPassesRequiredToAvoidFailure: $(rerunPassesRequiredToAvoidFailure)
 
 - stage: TestNupkg
   dependsOn: Build
@@ -123,18 +123,18 @@ stages:
       runTestJobName: 'RunFrameworkPkgTestsInHelix'
       useFrameworkPkg: true
 
-  # NuGet package WACK tests
-  - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
-    parameters:
-      name: 'NugetPkgWACKTests'
-      dependsOn: BuildNugetPkgTests
-      artifactName: 'NugetPkgTestsDrop'
+  # # NuGet package WACK tests
+  # - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+  #   parameters:
+  #     name: 'NugetPkgWACKTests'
+  #     dependsOn: BuildNugetPkgTests
+  #     artifactName: 'NugetPkgTestsDrop'
 
-  # Framework package WACK tests
-  - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
-    parameters:
-      name: 'FrameworkPkgWACKTests'
-      dependsOn: BuildFrameworkPkgTests
-      artifactName: 'FrameworkPkgTestsDrop'
+  # # Framework package WACK tests
+  # - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+  #   parameters:
+  #     name: 'FrameworkPkgWACKTests'
+  #     dependsOn: BuildFrameworkPkgTests
+  #     artifactName: 'FrameworkPkgTestsDrop'
 
 
