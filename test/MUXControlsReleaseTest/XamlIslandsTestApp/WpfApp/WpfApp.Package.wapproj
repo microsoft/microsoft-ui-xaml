@@ -37,7 +37,7 @@
     <EntryPointProjectUniqueName>WpfApp.csproj</EntryPointProjectUniqueName>
     <AppxPackageName>WpfApp</AppxPackageName>
     <AppxBundleNameForOutput>WpfApp</AppxBundleNameForOutput>
-    <PackageCertificateKeyFile>..\..\..\..\build\MSTest.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>..\..\..\..\build\WinUITest.pfx</PackageCertificateKeyFile>
     <AppxValidateAppxManifest>false</AppxValidateAppxManifest>
   </PropertyGroup>
   <ItemGroup>

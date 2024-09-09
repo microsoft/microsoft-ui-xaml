@@ -152,7 +152,7 @@ struct RoutedEventTraits<RoutedEventType::PointerCaptureLost>
 template<RoutedEventType eventType, typename traits = RoutedEventTraits<eventType>>
 inline RoutedEventHandler_revoker AddRoutedEventHandler(winrt::UIElement const& object, typename traits::HandlerT const& callback, bool handledEventsToo)
 {
-    auto handler = winrt::box_value<traits::HandlerT>(callback);
+    auto handler = winrt::box_value<typename traits::HandlerT>(callback);
     auto event = traits::Event();
     object.AddHandler(event, handler, handledEventsToo);
     return { object, event, handler };

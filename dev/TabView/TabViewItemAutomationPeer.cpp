@@ -11,6 +11,8 @@
 
 #include "TabViewItemAutomationPeer.properties.cpp"
 
+#pragma warning(disable: 26462)  
+
 TabViewItemAutomationPeer::TabViewItemAutomationPeer(winrt::TabViewItem const& owner)
     : ReferenceTracker(owner)
 {

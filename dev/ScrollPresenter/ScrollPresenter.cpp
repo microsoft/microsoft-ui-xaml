@@ -16,6 +16,8 @@
 #include "Vector.h"
 #include "RegUtil.h"
 
+#pragma warning(disable: 26813)  
+
 // Change to 'true' to turn on debugging outputs in Output window
 bool ScrollPresenterTrace::s_IsDebugOutputEnabled{ false };
 bool ScrollPresenterTrace::s_IsVerboseDebugOutputEnabled{ false };
@@ -930,7 +932,6 @@ winrt::Size ScrollPresenter::ArrangeOverride(winrt::Size const& finalSize)
     {
         // Ensure that this ScrollPresenter has a rectangular clip.
         winrt::RectangleGeometry newRectangleGeometry;
-        newRectangleGeometry.Rect();
         Clip(newRectangleGeometry);
 
         rectangleGeometry = newRectangleGeometry;

@@ -11,7 +11,7 @@
     <AuthenticodeSignScenario>MicrosoftCorporationBlockHash</AuthenticodeSignScenario>
     <AuthenticodeSignType>TestSignOnly</AuthenticodeSignType>
     <AppxPackageIncludePrivateSymbols>true</AppxPackageIncludePrivateSymbols>
-    <PackageCertificateKeyFile>$(PathToTestRoot)\..\build\MSTest.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>$(PathToTestRoot)\..\build\WinUITest.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageItems Include="$(PathToTestObjectRoot)\..\idl\$(ObjectDirectory)\TestMergedWindowsMetadata\windows.winmd">

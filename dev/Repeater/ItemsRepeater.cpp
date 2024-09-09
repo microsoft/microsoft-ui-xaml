@@ -560,7 +560,6 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
             nullptr /* oldItems */,
             -1 /* newIndex */,
             -1 /* oldIndex */);
-        args.Action();
         auto const processingChange = gsl::finally([this]()
             {
                 m_processingItemsSourceChange.set(nullptr);
@@ -609,7 +608,6 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
             nullptr /* oldItems */,
             -1 /* newIndex */,
             -1 /* oldIndex */);
-        args.Action();
         auto const processingChange = gsl::finally([this]()
             {
                 m_processingItemsSourceChange.set(nullptr);

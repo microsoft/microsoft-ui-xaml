@@ -1,7 +1,6 @@
 parameters:
 # Extract the build revision number from Build.BuildNumber. This is needed to pass to build-nupkg
   jobName: ''
-  dependsOn: ''
   buildOutputDir: '$(Build.SourcesDirectory)\BuildOutput'
   nupkgdir: '$(build.artifactStagingDirectory)'
 # The "primary" build arch is the one that the nuspec gets its winmd, pri, and other neutral files from
@@ -13,11 +12,11 @@ parameters:
 
 jobs:
 - job: ${{ parameters.jobName }}
-  dependsOn:
-    - ${{ parameters.dependsOn }}
-
-  pool:
-    vmImage: 'windows-2019'
+  pool: 
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/shine-oss/') }}:
+      name: WinDevPoolOSS-S
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/shine-oss/') }}:
+      name: WinDevPool-S
 
   steps:
 
@@ -33,7 +32,7 @@ jobs:
       echo useReleaseTag=${{ parameters.useReleaseTag }}
     displayName: 'CreateNugetPackage: Display parameters'
 
-  - task: DownloadBuildArtifacts@0 
+  - task: DownloadBuildArtifacts@1 
     inputs: 
       artifactName: drop
       downloadPath: '$(Build.SourcesDirectory)\Artifacts'
@@ -56,10 +55,15 @@ jobs:
     displayName: 'build-nupkg.ps1'
 
   - ${{ if eq( parameters.signOutput, true) }}:
-    - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@5
       displayName: 'CodeSign (nupkg)'
       inputs:
-        ConnectedServiceName: WinUISigning
+        ConnectedServiceName: $(WinUI2SigningConnectedServiceName)
+        AppRegistrationClientId: $(WinUI2SigningAppRegistrationClientId)
+        AppRegistrationTenantId: $(WinUI2SigningAppRegistrationTenantId)
+        AuthAKVName: $(WinUI2SigningAuthAKVName)
+        AuthCertName: $(WinUI2SigningAuthCertName)
+        AuthSignCertName: $(WinUI2SigningAuthSignCertName)
         FolderPath: '${{ parameters.nupkgdir }}'
         Pattern: |
           **/Microsoft.UI.Xaml*.nupkg
@@ -88,13 +92,3 @@ jobs:
     inputs:
       PathtoPublish: '${{ parameters.nupkgdir }}'
       artifactName: 'drop'
-
-# To publish the package to vsts feed, set queue time variable NuGetFeed = d62f8eac-f05c-4c25-bccb-21f98b95c95f
-# This is the magic GUID from the pipeline visual designer for this feed: https://dev.azure.com/ms/microsoft-ui-xaml/_packaging?_a=feed&feed=MUX-CI
-  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-    condition: and(ne(variables['NuGetFeed'], ''), ne(variables['Build.Reason'], 'Manual'))
-    displayName: 'NuGet push to $(NuGetFeed)'
-    inputs:
-      command: push
-      publishVstsFeed: $(NuGetFeed)
-      packagesToPush: $(Build.ArtifactStagingDirectory)/*.nupkg

@@ -1,0 +1,10 @@
+parameters:
+  dotNetVersion: 6.0.414
+
+steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk ${{ parameters.dotNetVersion }}'
+    inputs:
+      packageType: sdk
+      version: ${{ parameters.dotNetVersion }}
+      installationPath: $(Agent.ToolsDirectory)/dotnet
