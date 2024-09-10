@@ -158,9 +158,7 @@ if(-not $SkipFrameworkPackage)
     #Copy-IntoNewDirectory -IfExists $BuildOutput\debug\arm\FrameworkPackage\Microsoft.UI.Xaml.Debug.*.appx "$toolsDir\AppX\arm\Debug"
     #Copy-IntoNewDirectory -IfExists $BuildOutput\debug\arm64\FrameworkPackage\Microsoft.UI.Xaml.Debug.*.appx "$toolsDir\AppX\arm64\Debug"
 
-    # $NugetCmdLine = "$nugetExe pack MUXControlsFrameworkPackage.nuspec $NugetArgs -version $version"
-    #TODO: temporarily adding -fr suffix to framework package nupkg
-    $NugetCmdLine = "$nugetExe pack MUXControlsFrameworkPackage.nuspec $NugetArgs -version $version-fr"
+    $NugetCmdLine = "$nugetExe pack MUXControlsFrameworkPackage.nuspec $NugetArgs -version $version"
     Write-Host $NugetCmdLine
     Invoke-Expression $NugetCmdLine
     if ($lastexitcode -ne 0)
