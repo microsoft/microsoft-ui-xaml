@@ -1,28 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<Platform>AnyCPU</Platform>
-		<UseUwp>true</UseUwp>
-		<IsAotCompatible>true</IsAotCompatible>
-		<WindowsSdkPackageVersion>10.0.22621.37-preview</WindowsSdkPackageVersion>
-	</PropertyGroup>
+   <PropertyGroup>
+      <TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
+      <ImplicitUsings>enable</ImplicitUsings>
+      <Nullable>enable</Nullable>
+      <Platform>AnyCPU</Platform>
+      <UseUwp>true</UseUwp>
+      <IsAotCompatible>true</IsAotCompatible>
+      <WindowsSdkPackageVersion>10.0.22621.37-preview</WindowsSdkPackageVersion>
+   </PropertyGroup>
 
-	<PropertyGroup>
-		<CsWinRTIncludes>Microsoft.UI.Xaml</CsWinRTIncludes>
-	</PropertyGroup>
+   <PropertyGroup>
+      <CsWinRTIncludes>Microsoft.UI.Xaml</CsWinRTIncludes>
+   </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.Windows.CSWinRT" Version="2.1.1" />
-		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2739.15" >
-			<IncludeAssets>none</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
+   <ItemGroup>
+      <PackageReference Include="Microsoft.Windows.CSWinRT" Version="2.1.1" />
+      <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2739.15">
+         <IncludeAssets>none</IncludeAssets>
+      </PackageReference>
+   </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\dll\Microsoft.UI.Xaml.vcxproj" />
-		<CsWinRTInputs Include="$(PkgMicrosoft_Web_WebView2)\lib\Microsoft.Web.WebView2.Core.winmd" />
-		<Reference Include="$(PkgMicrosoft_Web_WebView2)\lib_manual\net6.0-windows10.0.17763.0\Microsoft.Web.WebView2.Core.Projection.dll" />
-	</ItemGroup>
+   <ItemGroup>
+      <ProjectReference Include="..\dll\Microsoft.UI.Xaml.vcxproj" />
+      <CsWinRTInputs Include="$(PkgMicrosoft_Web_WebView2)\lib\Microsoft.Web.WebView2.Core.winmd" />
+      <Reference
+         Include="$(PkgMicrosoft_Web_WebView2)\lib_manual\net6.0-windows10.0.17763.0\Microsoft.Web.WebView2.Core.Projection.dll" />
+   </ItemGroup>
 </Project>
