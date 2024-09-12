@@ -96,19 +96,6 @@ stages:
         PathtoPublish: $(Build.SourcesDirectory)\Artifacts\drop
         artifactName: drop
 
-    # We can't publish to the public Symbol Server from the main OneBranch build, so we do it here instead.
-    - task: PublishSymbols@2  # Publish symbols to public Microsoft Symbol Server
-      displayName: 'Publish symbols (public)'
-      continueOnError: true
-      inputs:
-        SymbolsFolder: $(Build.SourcesDirectory)\Artifacts\drop
-        SearchPattern: '**/Microsoft.UI.Xaml.pdb'
-        SymbolServerType: 'TeamServices'
-        IndexSources: false
-      env:
-        ArtifactServices_Symbol_AccountName: microsoftpublicsymbols
-        ArtifactServices_Symbol_PAT: $(WinUILab-Pipeline-PAT)
-
 - stage: Test
   dependsOn: Build
   jobs:
