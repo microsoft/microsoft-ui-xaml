@@ -33,6 +33,10 @@ resources:
       type: git
       name: OneBranch.Pipelines/GovernedTemplates
       ref: refs/heads/main
+    - repository: WindowsAppSDKConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
+      ref: refs/heads/main
 
 extends:
   template: v2/Microsoft.Official.yml@templates # https://aka.ms/obpipelines/templates
@@ -181,6 +185,68 @@ extends:
               Get-ChildItem -Recurse $(Build.ArtifactStagingDirectory)
             displayName: 'list contents of ArtifactStagingDirectory'
             continueOnError: true
+
+    - stage: symbols
+      dependsOn: build
+      jobs:
+      - job: publishsymbols
+        pool:
+          type: windows  
+        variables:
+          ob_outputDirectory: $(build.artifactStagingDirectory)
+          pdbDir: $(Build.SourcesDirectory)\Artifacts\drop
+        steps:
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            artifactName: drop_build_main_x64_Release
+            targetPath: $(pdbDir)
+            buildType: specific
+            buildVersionToDownload: specific
+            project: $(System.TeamProjectId)
+            definition: $(System.DefinitionId)
+            pipelineId : $(Build.BuildId)
+            itemPattern: '**/*.pdb'
+
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            artifactName: drop_build_main_x86_Release
+            targetPath: $(pdbDir)
+            buildType: specific
+            buildVersionToDownload: specific
+            project: $(System.TeamProjectId)
+            definition: $(System.DefinitionId)
+            pipelineId : $(Build.BuildId)
+            itemPattern: '**/*.pdb'
+
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            artifactName: drop_build_main_arm_Release
+            targetPath: $(pdbDir)
+            buildType: specific
+            buildVersionToDownload: specific
+            project: $(System.TeamProjectId)
+            definition: $(System.DefinitionId)
+            pipelineId : $(Build.BuildId)
+            itemPattern: '**/*.pdb'
+
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            artifactName: drop_build_main_arm64_Release
+            targetPath: $(pdbDir)
+            buildType: specific
+            buildVersionToDownload: specific
+            project: $(System.TeamProjectId)
+            definition: $(System.DefinitionId)
+            pipelineId : $(Build.BuildId)
+            itemPattern: '**/*.pdb'
+
+        - script: dir /s /b $(pdbDir)
+          displayName: Dump symbols staging directory
+
+        - template: ${{variables['System.DefaultWorkingDirectory']}}\AzurePipelinesTemplates\WindowsAppSDK-PublishSymbol-Steps.yml@WindowsAppSDKConfig
+          parameters:
+            SearchPattern: '$(pdbDir)\**\*.pdb'
+            IsOfficial: true
 
     - stage: pack
       dependsOn: build
@@ -380,7 +446,7 @@ extends:
           ob_createvpack_provData: true
           ob_createvpack_versionAs: string
           vpackversion: $[ dependencies.vpack.outputs['createvpack.vpackversion'] ]
-          ob_createvpack_version: $(vpackversion)-kmahonetest4
+          ob_createvpack_version: $(vpackversion)
           ob_createvpack_verbose: true
           ob_createvpack_topLevelRetries: 0
           ob_createvpack_failOnStdErr: true
