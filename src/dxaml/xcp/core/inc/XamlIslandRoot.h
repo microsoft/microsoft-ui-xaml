@@ -279,6 +279,8 @@ private:
     typedef decltype(&CXamlIslandRoot::OnIslandNonClientPointerEntered) PointerHandlerFunction;
     wrl::ComPtr<wf::ITypedEventHandler<ixp::InputNonClientPointerSource*, ixp::NonClientPointerEventArgs*>> GetNonClientPointerEventHandler(PointerHandlerFunction pointerHandler, std::optional<bool> newContactState = std::optional<bool>());
 
+    _Check_return_ HRESULT ConvertNonClientPointToXamlCoordinates(wf::Point& point);
+
     bool IsDisposed() const { return m_contentRoot == nullptr; }
 
     void UpdateLastPointerPointForReplay(const UINT uMsg, _In_ ixp::IPointerPoint* pointerPoint, _In_opt_ ixp::IPointerEventArgs* pointerEventArgs, bool previousPointerPointIsNonClient = false);
