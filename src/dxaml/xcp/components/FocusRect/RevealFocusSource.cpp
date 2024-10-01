@@ -26,11 +26,14 @@
 #include "RevealFocusDefaultValue.h"
 #include "RootScale.h"
 #include <FxCallbacks.h>
+#include <FrameworkUdk/Containment.h>
 
 using namespace DirectUI;
 using namespace RevealFocus;
 
 using wrl_wrappers::HStringReference;
+
+#define WINAPPSDK_CHANGEID_53858715 53858715
 
 namespace FocusRect {
 
@@ -488,7 +491,15 @@ bool RevealFocusSource::IsTravelingFocusEnabled(_In_ DirectUI::FocusNavigationDi
 wf::TimeSpan RevealFocusSource::GetSpotLightDuration(_In_ DirectUI::FocusNavigationDirection direction) const
 {
     const float spotLightSpeed = GetTravelingDistance(direction) / GetDefaultValue(DefaultValue::SpotLightSpeed);
-    return wf::TimeSpan { HNS_FROM_SECOND(static_cast<int64_t>(spotLightSpeed)) };
+    
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_53858715>())
+    {
+        return wf::TimeSpan { static_cast<int64_t>(HNS_FROM_SECOND(spotLightSpeed)) };
+    }
+    else
+    {
+        return wf::TimeSpan { HNS_FROM_SECOND(static_cast<int64_t>(spotLightSpeed)) };
+    }
 }
 
 float RevealFocusSource::GetTravelingDistance(_In_ DirectUI::FocusNavigationDirection direction) const

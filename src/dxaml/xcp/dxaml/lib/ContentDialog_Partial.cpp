@@ -46,6 +46,12 @@
 #include "ElementSoundPlayerService_Partial.h"
 #include "XamlTelemetry.h"
 
+#include <FrameworkUdk/Containment.h>
+
+// Bug 53719202: [Regression] [WinAppSdk v1.6 | Extra Unload call] After instantiating a custom dialog, it will immediately raises Unloaded event
+// Bug 53870041: [1.6 servicing] [Regression] [WinAppSdk v1.6 | Extra Unload call] After instantiating a custom dialog, it will immediately raises Unloaded event
+#define WINAPPSDK_CHANGEID_53870041 53870041
+
 #undef min
 #undef max
 
@@ -63,10 +69,13 @@ ContentDialog::~ContentDialog()
 {
     VERIFYHR(DetachEventHandlers());
 
-    auto xamlRoot = XamlRoot::GetForElementStatic(this);
-    if (m_xamlRootChangedEventHandler && xamlRoot)
+    if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_53870041>())
     {
-        VERIFYHR(m_xamlRootChangedEventHandler.DetachEventHandler(xamlRoot.Get()));
+        auto xamlRoot = XamlRoot::GetForElementStatic(this);
+        if (m_xamlRootChangedEventHandler && xamlRoot)
+        {
+            VERIFYHR(m_xamlRootChangedEventHandler.DetachEventHandler(xamlRoot.Get()));
+        }
     }
 
     if (auto popup = m_tpPopup.GetSafeReference())
@@ -784,6 +793,15 @@ ContentDialog::ShowAsyncWithPlacementImpl(
         if (m_isTemplateApplied)
         {
             IFC_RETURN(PrepareContent());
+        }
+
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_53870041>())
+        {
+            // We need to explicitly apply the template here to avoid a bug where applying the template
+            // during a measure pass causes us to erroneously raise the Unloaded event immediately after
+            // the Loaded event.
+            BOOLEAN ignore = FALSE;
+            IFC_RETURN(ApplyTemplate(&ignore));
         }
 
         IFC_RETURN(HostDialogWithinPopup(false /*wasSmokeLayerFoundAsTemplatePart*/));
@@ -1833,6 +1851,17 @@ _Check_return_ HRESULT ContentDialog::DetachEventHandlers()
         if (m_dialogShowingStateChangedEventHandler)
         {
             IFC_RETURN(m_dialogShowingStateChangedEventHandler.DetachEventHandler(dialogShowingStates.Get()));
+        }
+    }
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_53870041>())
+    {
+        if (auto xamlRoot = XamlRoot::GetForElementStatic(this))
+        {
+            if (m_xamlRootChangedEventHandler)
+            {
+                IFC_RETURN(m_xamlRootChangedEventHandler.DetachEventHandler(xamlRoot.Get()));
+            }
         }
     }
 
