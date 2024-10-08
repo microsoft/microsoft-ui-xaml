@@ -27,6 +27,12 @@
 #include "XamlRoot.g.h"
 #include "ElementSoundPlayerService_Partial.h"
 
+#include <FrameworkUdk/Containment.h>
+
+// Bug 53617690: [(GE)WCD_ON][2024.09A][Compat][OS Issue][File explorer]: The context menu appears upside when clicking "See more" in Windows File Explorer.
+// Bug 53845621: [1.5 servicing] [(GE)WCD_ON][2024.09A][Compat][OS Issue][File explorer]: The context menu appears upside when clicking "See more" in Windows File Explorer.
+#define WINAPPSDK_CHANGEID_53845621 53845621
+
 using namespace DirectUI;
 using namespace std::placeholders;
 
@@ -1435,7 +1441,17 @@ _Check_return_ HRESULT AppBar::HasSpaceForAppBarToOpenDown(bool* hasSpace)
     layoutBounds.X -= windowBounds.X;
     layoutBounds.Y -= windowBounds.Y;
 
-    *hasSpace = (bottomOfExpandedAppBar.Y <= layoutBounds.Y + layoutBounds.Height);
+    auto bottomOfLayout = layoutBounds.Y + layoutBounds.Height;
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_53845621>())
+    {
+        // Pixel rounding can sometimes cause the bounds and AppBar size to be off by a pixel when we expect them to be equal.
+        // To account for that possibility, we'll allow the AppBar to open down if its height is at most one pixel greater
+        // than the layout bounds height.
+        bottomOfLayout += 1;
+    }
+
+    *hasSpace = (bottomOfExpandedAppBar.Y <= bottomOfLayout);
     return S_OK;
 }
 
