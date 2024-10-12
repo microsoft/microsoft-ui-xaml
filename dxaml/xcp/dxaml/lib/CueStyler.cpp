@@ -1436,44 +1436,29 @@ CCueStyler::CreateOutline(_In_ wmc::ITimedTextLine* pLine,
 
     wmc::TimedTextDouble thickness = {};
     double fontSize = {};
-    double offset = {};
+    double outlineWidth = {};
 
     IFC(CalculateFontSize(pStyle, &fontSize));
-
     IFC(pStyle->get_OutlineThickness(&thickness));
 
     if (thickness.Unit == wmc::TimedTextUnit_Percentage)
     {
-        offset = (thickness.Value / 100) * fontSize;
+        outlineWidth = (thickness.Value / 100) * fontSize;
     }
     else
     {
-        offset = thickness.Value;
+        outlineWidth = thickness.Value;
     }
 
-    // Upper left
-    IFC(CreateOutlineHelper(pLine, pStyle, pRegion, pCueElement, -offset, -offset));
+    const int iterations = 32;
+    for (int i = 0; i < iterations; ++i)
+    {
+        double fraction = static_cast<double>(i) / iterations;
+        double offsetX = std::sin(fraction * 2 * M_PI) * outlineWidth;
+        double offsetY = std::cos(fraction * 2 * M_PI) * outlineWidth;
 
-    // Upper center
-    IFC(CreateOutlineHelper(pLine, pStyle, pRegion, pCueElement, 0, -offset));
-
-    // Upper right
-    IFC(CreateOutlineHelper(pLine, pStyle, pRegion, pCueElement, offset, -offset));
-
-    // Left
-    IFC(CreateOutlineHelper(pLine, pStyle, pRegion, pCueElement, -offset, 0));
-
-    // Right
-    IFC(CreateOutlineHelper(pLine, pStyle, pRegion, pCueElement, offset, 0));
-
-    // Lower left
-    IFC(CreateOutlineHelper(pLine, pStyle, pRegion, pCueElement, -offset, offset));
-
-    // Lower center
-    IFC(CreateOutlineHelper(pLine, pStyle, pRegion, pCueElement, 0, offset));
-
-    // Lower right
-    IFC(CreateOutlineHelper(pLine, pStyle, pRegion, pCueElement, offset, offset));
+        IFC(CreateOutlineHelper(pLine, pStyle, pRegion, pCueElement, offsetX, offsetY));
+    }
 
 Cleanup:
     return hr;
