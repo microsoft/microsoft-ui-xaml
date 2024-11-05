@@ -15,7 +15,7 @@
     <iconUrl>https://aka.ms/winui_icon</iconUrl>
 
     <dependencies>
-      <dependency id="Microsoft.Web.WebView2" version="[1.0.2739.15,)" />
+      <dependency id="Microsoft.Web.WebView2" version="[1.0.2849.39,)" />
     </dependencies>  
   </metadata>
   <files>
@@ -31,6 +31,8 @@
     <file target="lib\uap10.0\Microsoft.UI.Xaml\Themes" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml\Generic.xaml"/>
 
     <file target="lib\net8.0-windows10.0.22621.0\Microsoft.UI.Xaml.Projection.dll" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml.Projection\Microsoft.UI.Xaml.Projection.dll" />
+    <file target="lib\net8.0-windows10.0.22621.0\Microsoft.UI.Xaml\Themes" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml\Generic.xaml"/>
+    <file target="lib\net8.0-windows10.0.22621.0" src="Intellisense\Microsoft.UI.Xaml.Projection.xml"/>
 
     <file target="tools" src="$TOOLSDIR$\**\*.*"/>
 
