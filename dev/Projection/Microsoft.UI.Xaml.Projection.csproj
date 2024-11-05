@@ -5,7 +5,8 @@
       <UseUwp>true</UseUwp>
       <IsAotCompatible>true</IsAotCompatible>
       <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
-      <WindowsSdkPackageVersion>10.0.22621.39</WindowsSdkPackageVersion>
+      <EmbedUntrackedSources>true</EmbedUntrackedSources>
+      <WindowsSdkPackageVersion>10.0.22621.54</WindowsSdkPackageVersion>
    </PropertyGroup>
 
    <PropertyGroup>
