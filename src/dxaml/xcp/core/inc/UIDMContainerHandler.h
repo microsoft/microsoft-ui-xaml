@@ -159,6 +159,11 @@ private:
 
 private:
     CInputServices* m_inputServices;
+
+    // Used when WinAppSDK 1.6.2 fix for 54705344 is not applied:
     CUIElement* m_pUIElement; // CUIElement object associated to this IDirectManipulationContainerHandler implementation
+
+    // Used when WinAppSDK 1.6.2 fix for 54705344 is applied:
+    xref::weakref_ptr<CUIElement> m_pUIElementWeakRef; // CUIElement object associated to this IDirectManipulationContainerHandler implementation
 };
 
