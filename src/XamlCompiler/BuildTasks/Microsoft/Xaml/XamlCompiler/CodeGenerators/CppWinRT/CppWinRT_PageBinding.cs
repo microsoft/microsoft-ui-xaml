@@ -633,37 +633,7 @@ this.Write(" = targetElement;\r\n");
 
      foreach (BoundEventAssignment evt in element.BoundEventAssignments) { 
          Output_ApiInformationCall_Push(evt.ApiInformation, Indent.ThreeTabs); 
-this.Write("                    targetElement.");
-
-this.Write(this.ToStringHelper.ToStringWithCulture(evt.MemberName));
-
-this.Write("([this](");
-
-this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.Declaration()));
-
-this.Write(")\r\n                    {\r\n");
-
-         if (!evt.PathStep.ValueType.IsDelegate()) { 
-this.Write("                        ");
-
-this.Write(this.ToStringHelper.ToStringWithCulture(evt.PathStep.CodeGen().PathExpression));
-
-this.Write(";\r\n");
-
-         } else { 
-this.Write("                        ");
-
-this.Write(this.ToStringHelper.ToStringWithCulture(evt.PathStep.CodeGen().PathExpression));
-
-this.Write("(");
-
-this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.ForCall()));
-
-this.Write(");\r\n");
-
-         }
-this.Write("                    });\r\n");
-
+         Output_NullCheckedEventAssignment(evt); 
          Output_ApiInformationCall_Pop(evt.ApiInformation, Indent.ThreeTabs); 
      }
      if (element.CanBeInstantiatedLater && (element.HasBindAssignments || element.HasBoundEventAssignments))
@@ -847,6 +817,56 @@ this.Write("            }\r\n");
 
      } 
      PopIndent();
+ } 
+ void  Output_NullCheckedEventAssignment(BoundEventAssignment evt) 
+ { 
+this.Write("                    targetElement.");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.MemberName));
+
+this.Write("([this](");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.Declaration()));
+
+this.Write(")\r\n                    {\r\n");
+
+     PushIndent(Indent.ThreeTabs);
+     foreach (var parent in evt.PathStep.Parents.Where(parent => parent.NeedsCheckForNull)) { 
+this.Write("            if (");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(parent.CodeGen().PathExpression));
+
+this.Write(" != nullptr)\r\n            {\r\n");
+
+         PushIndent(); 
+     } 
+     if (!evt.PathStep.ValueType.IsDelegate()) { 
+this.Write("            ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.PathStep.CodeGen().PathExpression));
+
+this.Write(";\r\n");
+
+     } else { 
+this.Write("            ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.PathStep.CodeGen().PathExpression));
+
+this.Write("(");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.ForCall()));
+
+this.Write(");\r\n");
+
+     }
+     foreach (var parent in evt.PathStep.Parents.Where(parent => parent.NeedsCheckForNull)) { 
+         PopIndent(); 
+this.Write("            }\r\n");
+
+     } 
+     PopIndent();
+this.Write("                    });\r\n");
+
  } 
      private void Output_UpdateChildListeners_Call(BindPathStep step, string parameter)
      {

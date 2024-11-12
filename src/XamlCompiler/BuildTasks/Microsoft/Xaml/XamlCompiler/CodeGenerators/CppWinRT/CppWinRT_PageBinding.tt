@@ -525,14 +525,7 @@
                     <#=element.ObjectCodeName#> = targetElement;
 <#+     foreach (BoundEventAssignment evt in element.BoundEventAssignments) { #>
 <#+         Output_ApiInformationCall_Push(evt.ApiInformation, Indent.ThreeTabs); #>
-                    targetElement.<#=evt.MemberName#>([this](<#=evt.Parameters.Declaration()#>)
-                    {
-<#+         if (!evt.PathStep.ValueType.IsDelegate()) { #>
-                        <#=evt.PathStep.CodeGen().PathExpression#>;
-<#+         } else { #>
-                        <#=evt.PathStep.CodeGen().PathExpression#>(<#=evt.Parameters.ForCall()#>);
-<#+         }#>
-                    });
+<#+         Output_NullCheckedEventAssignment(evt); #>
 <#+         Output_ApiInformationCall_Pop(evt.ApiInformation, Indent.ThreeTabs); #>
 <#+     }#>
 <#+     if (element.CanBeInstantiatedLater && (element.HasBindAssignments || element.HasBoundEventAssignments))#>
@@ -636,6 +629,29 @@
             }
 <#+     } #>
 <#+     PopIndent();#>
+<#+ } #>
+
+<#+ void  Output_NullCheckedEventAssignment(BoundEventAssignment evt) #>
+<#+ { #>
+                    targetElement.<#=evt.MemberName#>([this](<#=evt.Parameters.Declaration()#>)
+                    {
+<#+     PushIndent(Indent.ThreeTabs);#>
+<#+     foreach (var parent in evt.PathStep.Parents.Where(parent => parent.NeedsCheckForNull)) { #>
+            if (<#=parent.CodeGen().PathExpression#> != nullptr)
+            {
+<#+         PushIndent(); #>
+<#+     } #>
+<#+     if (!evt.PathStep.ValueType.IsDelegate()) { #>
+            <#=evt.PathStep.CodeGen().PathExpression#>;
+<#+     } else { #>
+            <#=evt.PathStep.CodeGen().PathExpression#>(<#=evt.Parameters.ForCall()#>);
+<#+     }#>
+<#+     foreach (var parent in evt.PathStep.Parents.Where(parent => parent.NeedsCheckForNull)) { #>
+<#+         PopIndent(); #>
+            }
+<#+     } #>
+<#+     PopIndent();#>
+                    });
 <#+ } #>
 
 <#+     private void Output_UpdateChildListeners_Call(BindPathStep step, string parameter)#>
