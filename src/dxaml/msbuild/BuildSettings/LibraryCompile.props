@@ -131,7 +131,6 @@
       <!-- MSVC options. -->
       <ExtraOptions Condition="'$(ExperimentalClang)' != 'true'">%(ExtraOptions)
         /d1import_no_registry
-        /d1vc7dname
         /d2NoSmallFunctionOpt
         /d2CoroOptsWorkaround
         /d2AllowCompatibleILVersions
@@ -166,7 +165,6 @@
             /Brepro
             /d1import_no_registry
             /d1ReturnUdtEHInline
-            -d1vc7dname
             /d1ZWodr
             /d2AllowCompatibleILVersions
             /d2CoroOptsWorkaround

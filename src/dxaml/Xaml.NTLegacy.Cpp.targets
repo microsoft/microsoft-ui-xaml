@@ -112,12 +112,9 @@
 
         <ClCompile>
             <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_MAGIC_STATICS=1;</PreprocessorDefinitions>
-            <!-- <AdditionalOptions>%(AdditionalOptions) -dvc7dname</AdditionalOptions> -->
-            <AdditionalOptions>%(AdditionalOptions) /Qspectre -d1vc7dname -Zc:sizedDealloc-</AdditionalOptions>
             <AdditionalOptions Condition="'$(PlatformTarget)'=='x86'">%(AdditionalOptions) /d2noftol3</AdditionalOptions>
         </ClCompile>
        <ClCompile Condition="'$(Immersive)'=='true'">
-           <!-- <AdditionalOptions>%(AdditionalOptions) -dvc7dname</AdditionalOptions> -->
            <AdditionalOptions Condition="'$(PlatformTarget)'=='x86'">%(AdditionalOptions) /d2noftol3 /d2CoroOptsWorkaround</AdditionalOptions>
 
         </ClCompile>
