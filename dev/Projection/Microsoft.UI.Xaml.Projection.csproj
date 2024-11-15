@@ -8,6 +8,7 @@
       <EmbedUntrackedSources>true</EmbedUntrackedSources>
       <WindowsSdkPackageVersion>10.0.22621.54</WindowsSdkPackageVersion>
       <UseRidGraph>true</UseRidGraph>
+      <UseUwpTools>false</UseUwpTools>
    </PropertyGroup>
 
    <PropertyGroup>

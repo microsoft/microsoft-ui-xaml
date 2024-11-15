@@ -9,7 +9,7 @@ steps:
     displayName: 'Use .NET 8 SDK'
     inputs:
       packageType: sdk
-      version: '8.0.403'
+      version: '8.x'
 
   - template: MUX-InstallWindowsSDK-Steps.yml
 
