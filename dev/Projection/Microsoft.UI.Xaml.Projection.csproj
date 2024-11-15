@@ -11,6 +11,21 @@
       <UseUwpTools>false</UseUwpTools>
    </PropertyGroup>
 
+   <Import Project="$(MSBuildProjectDirectory)\..\..\version.props" />
+
+   <PropertyGroup>
+
+     <!--
+         Set the version (this includes both version number and prefix). It's all documented
+         here: https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props#generateassemblyinfo.
+         In particular, the default targets in the SDK do the following:
+         - Set "AssemblyVersion" to the value $(Version) without the suffix (eg. "1.1.0").
+         - Set "AssemblyFile" to match the assembly version.
+         - Set "AssemblyInformationVersion" to $(Version) plus git hash (eg. "1.1.0+1b95cfe91e").
+      -->
+      <Version>$(MUXVersionMajor).$(MUXVersionMinor).$(MUXVersionPatch)</Version>
+   </PropertyGroup>
+
    <PropertyGroup>
       <CsWinRTIncludes>Microsoft.UI.Xaml</CsWinRTIncludes>
    </PropertyGroup>
