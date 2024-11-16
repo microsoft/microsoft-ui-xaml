@@ -7,7 +7,7 @@ template <typename K, typename V>
 class HashMap :
     public ReferenceTracker<
         HashMap<K, V>,
-        reference_tracker_implements_t<winrt::IMap<K, V>>::type,
+        typename reference_tracker_implements_t<winrt::IMap<K, V>>::type,
         winrt::IMapView<K, V>,
         winrt::IIterable<winrt::IKeyValuePair<K, V>>>
 {

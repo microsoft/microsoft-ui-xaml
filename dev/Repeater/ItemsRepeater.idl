@@ -188,7 +188,7 @@ interface IElementFactoryShim
     void RecycleElement(ElementFactoryRecycleArgs args);
 }
 
-[MUX_PREVIEW]
+[MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass ElementFactory : Windows.UI.Xaml.DependencyObject, IElementFactoryShim
 {

@@ -33,6 +33,10 @@ resources:
       type: git
       name: OneBranch.Pipelines/GovernedTemplates
       ref: refs/heads/main
+    - repository: WindowsAppSDKConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
+      ref: refs/heads/main
 
 extends:
   template: v2/Microsoft.Official.yml@templates # https://aka.ms/obpipelines/templates
@@ -83,6 +87,12 @@ extends:
           - template: build\AzurePipelinesTemplates\MUX-InstallNuget-Steps.yml@self
 
           - template: build\AzurePipelinesTemplates\MUX-InstallDotNetSDK-Steps.yml@self
+
+          - task: UseDotNet@2
+            displayName: 'Use .NET 8 SDK'
+            inputs:
+              packageType: sdk
+              version: '8.x'
 
           - powershell: |
               ls env:
@@ -182,6 +192,68 @@ extends:
             displayName: 'list contents of ArtifactStagingDirectory'
             continueOnError: true
 
+    - stage: symbols
+      dependsOn: build
+      jobs:
+      - job: publishsymbols
+        pool:
+          type: windows  
+        variables:
+          ob_outputDirectory: $(build.artifactStagingDirectory)
+          pdbDir: $(Build.SourcesDirectory)\Artifacts\drop
+        steps:
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            artifactName: drop_build_main_x64_Release
+            targetPath: $(pdbDir)
+            buildType: specific
+            buildVersionToDownload: specific
+            project: $(System.TeamProjectId)
+            definition: $(System.DefinitionId)
+            pipelineId : $(Build.BuildId)
+            itemPattern: '**/*.pdb'
+
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            artifactName: drop_build_main_x86_Release
+            targetPath: $(pdbDir)
+            buildType: specific
+            buildVersionToDownload: specific
+            project: $(System.TeamProjectId)
+            definition: $(System.DefinitionId)
+            pipelineId : $(Build.BuildId)
+            itemPattern: '**/*.pdb'
+
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            artifactName: drop_build_main_arm_Release
+            targetPath: $(pdbDir)
+            buildType: specific
+            buildVersionToDownload: specific
+            project: $(System.TeamProjectId)
+            definition: $(System.DefinitionId)
+            pipelineId : $(Build.BuildId)
+            itemPattern: '**/*.pdb'
+
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            artifactName: drop_build_main_arm64_Release
+            targetPath: $(pdbDir)
+            buildType: specific
+            buildVersionToDownload: specific
+            project: $(System.TeamProjectId)
+            definition: $(System.DefinitionId)
+            pipelineId : $(Build.BuildId)
+            itemPattern: '**/*.pdb'
+
+        - script: dir /s /b $(pdbDir)
+          displayName: Dump symbols staging directory
+
+        - template: ${{variables['System.DefaultWorkingDirectory']}}\AzurePipelinesTemplates\WindowsAppSDK-PublishSymbol-Steps.yml@WindowsAppSDKConfig
+          parameters:
+            SearchPattern: '$(pdbDir)\**\*.pdb'
+            IsOfficial: true
+
     - stage: pack
       dependsOn: build
       jobs:
@@ -245,10 +317,15 @@ extends:
                 -BuildFlavor Release
             displayName: 'build-nupkg.ps1'
 
-          - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+          - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@5
             displayName: 'CodeSign (nupkg)'
             inputs:
-              ConnectedServiceName: WinUISigning
+              ConnectedServiceName: $(WinUI2SigningConnectedServiceName)
+              AppRegistrationClientId: $(WinUI2SigningAppRegistrationClientId)
+              AppRegistrationTenantId: $(WinUI2SigningAppRegistrationTenantId)
+              AuthAKVName: $(WinUI2SigningAuthAKVName)
+              AuthCertName: $(WinUI2SigningAuthCertName)
+              AuthSignCertName: $(WinUI2SigningAuthSignCertName)
               FolderPath: $(nupkgdir)
               Pattern: |
                 **/Microsoft.UI.Xaml*.nupkg

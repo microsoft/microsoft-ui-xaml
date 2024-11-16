@@ -15,8 +15,21 @@
     <iconUrl>https://aka.ms/winui_icon</iconUrl>
 
     <dependencies>
-      <dependency id="Microsoft.Web.WebView2" version="[1.0.1264.42,)" />
-    </dependencies>  
+      <group targetFramework="native">
+        <dependency id="Microsoft.Web.WebView2" version="[1.0.2849.39,)" />
+      </group>
+      <group targetFramework="net8.0-windows10.0.22621.0">
+        <dependency id="Microsoft.Web.WebView2" version="[1.0.2849.39,)" />
+      </group>
+      <group targetFramework="uap10.0">
+        <dependency id="Microsoft.Web.WebView2" version="[1.0.2849.39,)" />
+      </group>
+    </dependencies>
+    <frameworkReferences>
+      <group targetFramework="net8.0-windows10.0.22621.0">
+        <frameworkReference name="Microsoft.Windows.SDK.NET.Ref.Xaml" />
+      </group>
+    </frameworkReferences>
   </metadata>
   <files>
     <file src="readme.txt"/>
@@ -27,6 +40,10 @@
 
     <file target="lib\uap10.0\Microsoft.UI.Xaml\Themes" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml\Generic.xaml"/>
     <file target="lib\uap10.0\Design" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml.Design\Microsoft.UI.Xaml.design.dll"/>
+
+    <file target="lib\net8.0-windows10.0.22621.0\Microsoft.UI.Xaml.Projection.dll" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml.Projection\Microsoft.UI.Xaml.Projection.dll" />
+    <file target="lib\net8.0-windows10.0.22621.0\Microsoft.UI.Xaml\Themes" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml\Generic.xaml"/>
+    <file target="lib\net8.0-windows10.0.22621.0\Microsoft.UI.Xaml.Projection.xml" src="Intellisense\Microsoft.UI.Xaml.xml"/>
 
     <file target="runtimes" src="$RUNTIMESDIR$\**\*.*"/>
 

@@ -9,8 +9,8 @@
     <Reference Include="$(MSBuildThisFileDirectory)..\..\lib\uap10.0\Microsoft.UI.Xaml.winmd">
       <Implementation>Microsoft.UI.Xaml.dll</Implementation>
     </Reference>
-    <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win10-$(Native-Platform)\native\Microsoft.UI.Xaml.dll" />
-    <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win10-$(Native-Platform)\native\Microsoft.UI.Xaml.pri" />
+    <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-$(Native-Platform)\native\Microsoft.UI.Xaml.dll" />
+    <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win-$(Native-Platform)\native\Microsoft.UI.Xaml.pri" />
   </ItemGroup>
   <Import Project="$(MSBuildThisFileDirectory)..\Microsoft.UI.Xaml.targets"/>
 </Project>
