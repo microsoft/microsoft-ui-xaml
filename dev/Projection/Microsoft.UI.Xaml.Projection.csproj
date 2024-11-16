@@ -24,6 +24,13 @@
          - Set "AssemblyInformationVersion" to $(Version) plus git hash (eg. "1.1.0+1b95cfe91e").
       -->
       <Version>$(MUXVersionMajor).$(MUXVersionMinor).$(MUXVersionPatch)</Version>
+
+      <!--
+        For non stable builds, also add the '-prereleaase<BUILD><REVISION>' suffix to the assembly version.
+        The build is year and month, the revision is 'day-of-month' and 'build-number'. For instance,
+        for '2.8.7-prerelease.241115009', that's version 2.8.7 from 2024, November 15th, 9th build of the day.
+      -->
+      <Version Condition="$(MUXFinalRelease) != 'true'">$(Version)-prerelease.$(MUXVersionBuild)$(MUXVersionRevision)</Version>
    </PropertyGroup>
 
    <PropertyGroup>
