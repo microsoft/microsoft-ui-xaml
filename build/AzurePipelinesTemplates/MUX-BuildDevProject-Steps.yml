@@ -5,6 +5,12 @@ steps:
 
   - template: MUX-InstallDotNetSDK-Steps.yml
 
+  - task: UseDotNet@2
+    displayName: 'Use .NET 8 SDK'
+    inputs:
+      packageType: sdk
+      version: '8.x'
+
   - template: MUX-InstallWindowsSDK-Steps.yml
 
   - template: MUX-InstallNuget-Steps.yml

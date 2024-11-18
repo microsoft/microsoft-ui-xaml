@@ -574,7 +574,7 @@ template <typename T, bool isObservable, bool isBindable, bool isDependencyObjec
 class VectorBase :
     public ReferenceTracker<
     VectorBase<T, isObservable, isBindable, isDependencyObjectBase, isNoTrackerRef, Options>,
-    reference_tracker_implements_t<typename Options::VectorType>::type,
+    typename reference_tracker_implements_t<typename Options::VectorType>::type,
     typename Options::IterableType,
     std::conditional_t<isObservable, typename Options::ObservableVectorType, void>>,
     public Options::IVectorOwner

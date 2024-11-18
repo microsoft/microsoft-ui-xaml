@@ -14,9 +14,9 @@ jobs:
   dependsOn: ${{ parameters.dependsOn }}
   condition: not(failed())
   pool:
-    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+    ${{ if eq(variables['System.CollectionUri'], 'https://dev.azure.com/shine-oss/') }}:
       name: WinDevPoolOSS-Test
-    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/ms/') }}:
+    ${{ if ne(variables['System.CollectionUri'], 'https://dev.azure.com/shine-oss/') }}:
       name: WinDevPool-Test
     demands: ImageOverride -equals ${{ parameters.testOS }}
 

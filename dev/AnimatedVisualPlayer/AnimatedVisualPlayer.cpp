@@ -10,6 +10,8 @@
 #include <winerror.h>
 #include <math.h>
 
+#pragma warning(disable: 26495)
+
 AnimatedVisualPlayer::AnimationPlay::AnimationPlay(
     AnimatedVisualPlayer& owner,
     float fromProgress,
