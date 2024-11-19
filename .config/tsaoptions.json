@@ -1,7 +1,7 @@
 {
     "instanceUrl": "https://microsoft.visualstudio.com",
     "projectName": "os",
-    "areaPath": "OS\\Windows Client and Services\\ADEPT\\NEON\\WinUIX",
+    "areaPath": "OS\\Windows Client and Services\\WinPD\\UXIP-UX Intelligence Platform\\WinUIX",
     "iterationPath": "OS",
     "notificationAliases": [ "uxpct@microsoft.com" ],
     "ignoreBranchName": true,
